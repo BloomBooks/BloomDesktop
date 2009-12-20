@@ -19,11 +19,11 @@
       <controlProperties>
         <close>true</close>
         <dragger>true</dragger>
-        <topheight>26</topheight>
+        <maximizeRestore>false</maximizeRestore>
         <text>BLOOM%3A%20Edolo</text>
         <minimize>false</minimize>
-        <maximizeRestore>false</maximizeRestore>
         <bottomheight>0</bottomheight>
+        <topheight>26</topheight>
       </controlProperties>
     </control>
     <control controlID="11" controlTypeID="com.balsamiq.mockups::VSplitter" x="163" y="323" w="159" h="-1" measuredW="100" measuredH="12" zOrder="7" locked="false" isInGroup="-1"/>

@@ -4,11 +4,11 @@
       <controlProperties>
         <close>true</close>
         <dragger>true</dragger>
-        <maximizeRestore>false</maximizeRestore>
+        <bottomheight>0</bottomheight>
         <text>BLOOM%3A%20Edolo</text>
         <minimize>false</minimize>
-        <bottomheight>0</bottomheight>
         <topheight>26</topheight>
+        <maximizeRestore>false</maximizeRestore>
       </controlProperties>
     </control>
     <control controlID="4" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="195" y="150" w="996" h="396" measuredW="200" measuredH="194" zOrder="1" locked="false" isInGroup="-1">
@@ -44,7 +44,7 @@
         <text>About%2C%20Write%2C%20Publish</text>
         <selectedIndex>0</selectedIndex>
         <borderStyle>none</borderStyle>
-        <hrefs>About%26bm%3BAbout.bmml%26bm%3BAbout.bmml%26bm%3BAbout.bmml%2CWrite%26bm%3BWrite.bmml%26bm%3BWrite.bmml%26bm%3BWrite.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
+        <hrefs>About%26bm%3BAbout.bmml%26bm%3BAbout.bmml%26bm%3BAbout.bmml%2CPage3%26bm%3BPage3.bmml%26bm%3BPage3.bmml%26bm%3BPage3.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22404%2C24%2C452%2C53%22%20href%3D%22About.bmml%22%20alt%3D%22About%22%20id%3D%2210_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22452%2C24%2C500%2C53%22%20href%3D%22Write.bmml%22%20alt%3D%22Write%22%20id%3D%2210_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22500%2C24%2C555%2C53%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%2210_2%22/%3E%0A</map>
       </controlProperties>
     </control>
