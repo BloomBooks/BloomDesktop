@@ -1,18 +1,18 @@
-<mockup version="1.0" skin="sketch" measuredW="1216" measuredH="651" mockupW="1025" mockupH="532">
+<mockup version="1.0" skin="sketch" measuredW="1216" measuredH="649" mockupW="1025" mockupH="530">
   <controls>
-	<control controlID="3" controlTypeID="com.balsamiq.mockups::IconLabel" x="267" y="214" w="-1" h="-1" measuredW="48" measuredH="73" zOrder="4" locked="false" isInGroup="-1">
+	<control controlID="3" controlTypeID="com.balsamiq.mockups::IconLabel" x="267" y="214" w="-1" h="-1" measuredW="48" measuredH="73" zOrder="3" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<icon>PrintIcon%7Clarge</icon>
 		<text>Print</text>
 	  </controlProperties>
 	</control>
-	<control controlID="4" controlTypeID="com.balsamiq.mockups::IconLabel" x="258" y="295" w="-1" h="-1" measuredW="66" measuredH="73" zOrder="5" locked="false" isInGroup="-1">
+	<control controlID="4" controlTypeID="com.balsamiq.mockups::IconLabel" x="258" y="295" w="-1" h="-1" measuredW="66" measuredH="73" zOrder="4" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<icon>EmailIcon%7Clarge</icon>
 		<text>Email%20PDF</text>
 	  </controlProperties>
 	</control>
-	<control controlID="5" controlTypeID="com.balsamiq.mockups::IconLabel" x="258" y="383" w="-1" h="-1" measuredW="64" measuredH="73" zOrder="6" locked="false" isInGroup="-1">
+	<control controlID="5" controlTypeID="com.balsamiq.mockups::IconLabel" x="258" y="383" w="-1" h="-1" measuredW="64" measuredH="73" zOrder="5" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<icon>DocPDFIcon%7Clarge</icon>
 		<text>Save%20PDF</text>
@@ -22,11 +22,11 @@
 	  <controlProperties>
 		<close>true</close>
 		<dragger>true</dragger>
-		<topheight>26</topheight>
+		<maximizeRestore>false</maximizeRestore>
 		<text>BLOOM%3A%20Edolo</text>
 		<minimize>false</minimize>
-		<maximizeRestore>false</maximizeRestore>
 		<bottomheight>0</bottomheight>
+		<topheight>26</topheight>
 	  </controlProperties>
 	</control>
 	<control controlID="8" controlTypeID="com.balsamiq.mockups::Canvas" x="184" y="132" w="1013" h="31" measuredW="100" measuredH="70" zOrder="1" locked="false" isInGroup="-1">
@@ -35,27 +35,27 @@
 		<color>15790322</color>
 	  </controlProperties>
 	</control>
-	<control controlID="9" controlTypeID="com.balsamiq.mockups::TabBar" x="565" y="133" w="632" h="508" measuredW="243" measuredH="100" zOrder="2" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>About%2C%20Write%2C%20Publish</text>
-		<selectedIndex>2</selectedIndex>
-		<borderStyle>none</borderStyle>
-		<hrefs>About%26bm%3BAbout.bmml%26bm%3BAbout.bmml%26bm%3BAbout.bmml%2CPage3%26bm%3BPage3.bmml%26bm%3BPage3.bmml%26bm%3BPage3.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22404%2C24%2C451%2C53%22%20href%3D%22About.bmml%22%20alt%3D%22About%22%20id%3D%221_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22451%2C24%2C501%2C53%22%20href%3D%22Write.bmml%22%20alt%3D%22Write%22%20id%3D%221_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22501%2C24%2C556%2C53%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%221_2%22/%3E%0A</map>
-	  </controlProperties>
-	</control>
-	<control controlID="10" controlTypeID="com.balsamiq.mockups::Label" x="463" y="133" w="-1" h="-1" measuredW="109" measuredH="25" zOrder="3" locked="false" isInGroup="-1">
+	<control controlID="10" controlTypeID="com.balsamiq.mockups::Label" x="463" y="133" w="-1" h="-1" measuredW="109" measuredH="25" zOrder="2" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>%22Lucy%27s%20Big%20Day%22</text>
 		<color>255</color>
 	  </controlProperties>
 	</control>
-	<control controlID="11" controlTypeID="com.balsamiq.mockups::TabBar" x="181" y="132" w="394" h="96" measuredW="164" measuredH="100" zOrder="7" locked="false" isInGroup="-1">
+	<control controlID="11" controlTypeID="com.balsamiq.mockups::TabBar" x="181" y="132" w="394" h="96" measuredW="164" measuredH="100" zOrder="6" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<borderStyle>none</borderStyle>
 		<text>Collection</text>
+		<borderStyle>none</borderStyle>
 		<hrefs>Collection%26bm%3BCollection.bmml%26bm%3BCollection.bmml%26bm%3BCollection.bmml</hrefs>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C22%2C90%2C51%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2258_0%22/%3E%0A</map>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C23%2C90%2C52%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2211_0%22/%3E%0A</map>
+	  </controlProperties>
+	</control>
+	<control controlID="12" controlTypeID="com.balsamiq.mockups::TabBar" x="566" y="133" w="632" h="37" measuredW="308" measuredH="100" zOrder="7" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Write%2C%20Notes%20%26%20History%2C%20Publish</text>
+		<selectedIndex>2</selectedIndex>
+		<borderStyle>none</borderStyle>
+		<hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22405%2C24%2C453%2C53%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%2212_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22453%2C24%2C565%2C53%22%20href%3D%22NotesAndHistory.bmml%22%20alt%3D%22NotesAndHistory%22%20id%3D%2212_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22565%2C24%2C619%2C53%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%2212_2%22/%3E%0A</map>
 	  </controlProperties>
 	</control>
   </controls>

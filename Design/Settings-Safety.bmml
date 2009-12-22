@@ -1,0 +1,70 @@
+<mockup version="1.0" skin="sketch" measuredW="1276" measuredH="653" mockupW="1025" mockupH="530">
+  <controls>
+	<control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="241" y="113" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<close>true</close>
+		<dragger>true</dragger>
+		<bottomheight>0</bottomheight>
+		<text>BLOOM%3A%20Edolo</text>
+		<minimize>false</minimize>
+		<topheight>26</topheight>
+		<maximizeRestore>false</maximizeRestore>
+	  </controlProperties>
+	</control>
+	<control controlID="4" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="363" y="180" w="-1" h="426" measuredW="16" measuredH="100" zOrder="1" locked="false" isInGroup="-1"/>
+	<control controlID="16" controlTypeID="com.balsamiq.mockups::IconLabel" x="274" y="489" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="8" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>CreativeCommonsIcon%7Clarge</icon>
+		<text>Licenses</text>
+		<href>Settings-Licenses%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml</href>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2233%2C376%2C89%2C449%22%20href%3D%22Settings-Licenses.bmml%22%20alt%3D%22Settings-Licenses%22%20id%3D%2216%22/%3E</map>
+		<borderStyle>square</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="9" controlTypeID="com.balsamiq.mockups::CheckBox" x="448" y="313" w="-1" h="-1" measuredW="276" measuredH="22" zOrder="2" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Hide%20the%20Settings%20tab%20on%20this%20computer</text>
+	  </controlProperties>
+	</control>
+	<control controlID="10" controlTypeID="com.balsamiq.mockups::Paragraph" x="445" y="199" w="577" h="140" measuredW="200" measuredH="140" zOrder="3" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Often%2C%20Bloom%20is%20set%20up%20by%20an%20advisor%20and%20then%20used%20by%20someone%20withtout%20the%20technical%20background%20necessary%20for%20setting%20up%20things%20like%20writing%20systems%20and%20interent%20repositories.%20%20In%20these%20situations%2C%20it%27s%20best%20to%20prevent%20accidental%20damage%20to%20the%20settings%2C%20by%20hiding%20the%20settings%20tab.%20%20Pressing%20CTRL-ALT-S%20will%20show%20it%20temporarily.</text>
+	  </controlProperties>
+	</control>
+	<control controlID="11" controlTypeID="com.balsamiq.mockups::TabBar" x="241" y="138" w="1024" h="96" measuredW="229" measuredH="100" zOrder="4" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Settings%2C%20Collection</text>
+		<selectedIndex>0</selectedIndex>
+		<borderStyle>none</borderStyle>
+		<hrefs>Settings%26bm%3BSettings.bmml%26bm%3BSettings.bmml%26bm%3BSettings.bmml%2CCollection%26bm%3BCollection.bmml%26bm%3BCollection.bmml%26bm%3BCollection.bmml</hrefs>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C25%2C84%2C54%22%20href%3D%22Settings.bmml%22%20alt%3D%22Settings%22%20id%3D%2211_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%2284%2C25%2C155%2C54%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2211_1%22/%3E%0A</map>
+	  </controlProperties>
+	</control>
+	<control controlID="13" controlTypeID="com.balsamiq.mockups::IconLabel" x="271" y="193" w="69" h="-1" measuredW="107" measuredH="73" zOrder="5" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Writing%20Systems</text>
+		<icon>WriteIcon%7Clarge</icon>
+		<href>Settings-WritingSystems%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml</href>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2230%2C80%2C99%2C153%22%20href%3D%22Settings-WritingSystems.bmml%22%20alt%3D%22Settings-WritingSystems%22%20id%3D%2213%22/%3E</map>
+	  </controlProperties>
+	</control>
+	<control controlID="14" controlTypeID="com.balsamiq.mockups::IconLabel" x="260" y="299" w="-1" h="-1" measuredW="90" measuredH="73" zOrder="6" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Send/Receive</text>
+		<icon>UpRightArrowIcon%7Clarge</icon>
+		<href>Settings-Collaboration%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml</href>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2219%2C186%2C109%2C259%22%20href%3D%22Settings-Collaboration.bmml%22%20alt%3D%22Settings-Collaboration%22%20id%3D%2214%22/%3E</map>
+	  </controlProperties>
+	</control>
+	<control controlID="15" controlTypeID="com.balsamiq.mockups::IconLabel" x="280" y="397" w="-1" h="-1" measuredW="49" measuredH="73" zOrder="7" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>LockIcon%7Clarge</icon>
+		<href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
+		<color>128</color>
+		<borderStyle>square</borderStyle>
+		<text>Safety</text>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2239%2C284%2C88%2C357%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%2215%22/%3E</map>
+	  </controlProperties>
+	</control>
+  </controls>
+</mockup>
