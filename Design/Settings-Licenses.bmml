@@ -1,0 +1,98 @@
+<mockup version="1.0" skin="sketch" measuredW="1275" measuredH="658" mockupW="1028" mockupH="530">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="237" y="118" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
+      <controlProperties>
+        <close>true</close>
+        <dragger>true</dragger>
+        <maximizeRestore>false</maximizeRestore>
+        <text>BLOOM%3A%20Edolo</text>
+        <minimize>false</minimize>
+        <bottomheight>0</bottomheight>
+        <topheight>26</topheight>
+      </controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="363" y="180" w="-1" h="460" measuredW="16" measuredH="100" zOrder="1" locked="false" isInGroup="-1"/>
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::TabBar" x="241" y="138" w="1024" h="96" measuredW="229" measuredH="100" zOrder="2" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Settings%2C%20Collection</text>
+        <selectedIndex>0</selectedIndex>
+        <borderStyle>none</borderStyle>
+        <hrefs>Settings%26bm%3BSettings.bmml%26bm%3BSettings.bmml%26bm%3BSettings.bmml%2CCollection%26bm%3BCollection.bmml%26bm%3BCollection.bmml%26bm%3BCollection.bmml</hrefs>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2224%2C20%2C88%2C49%22%20href%3D%22Settings.bmml%22%20alt%3D%22Settings%22%20id%3D%2211_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%2288%2C20%2C159%2C49%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2211_1%22/%3E%0A</map>
+      </controlProperties>
+    </control>
+    <control controlID="13" controlTypeID="com.balsamiq.mockups::IconLabel" x="267" y="193" w="69" h="-1" measuredW="107" measuredH="73" zOrder="3" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Writing%20Systems</text>
+        <icon>WriteIcon%7Clarge</icon>
+        <href>Settings-WritingSystems%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml</href>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2230%2C75%2C99%2C148%22%20href%3D%22Settings-WritingSystems.bmml%22%20alt%3D%22Settings-WritingSystems%22%20id%3D%2213%22/%3E</map>
+      </controlProperties>
+    </control>
+    <control controlID="14" controlTypeID="com.balsamiq.mockups::IconLabel" x="256" y="299" w="-1" h="-1" measuredW="90" measuredH="73" zOrder="4" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Send/Receive</text>
+        <icon>UpRightArrowIcon%7Clarge</icon>
+        <href>Settings-Collaboration%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml</href>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2219%2C181%2C109%2C254%22%20href%3D%22Settings-Collaboration.bmml%22%20alt%3D%22Settings-Collaboration%22%20id%3D%2214%22/%3E</map>
+      </controlProperties>
+    </control>
+    <control controlID="15" controlTypeID="com.balsamiq.mockups::IconLabel" x="276" y="397" w="-1" h="-1" measuredW="49" measuredH="73" zOrder="5" locked="false" isInGroup="-1">
+      <controlProperties>
+        <icon>LockIcon%7Clarge</icon>
+        <text>Safety</text>
+        <href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2239%2C279%2C88%2C352%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%2215%22/%3E</map>
+        <borderStyle>square</borderStyle>
+      </controlProperties>
+    </control>
+    <control controlID="16" controlTypeID="com.balsamiq.mockups::IconLabel" x="270" y="489" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="6" locked="false" isInGroup="-1">
+      <controlProperties>
+        <icon>CreativeCommonsIcon%7Clarge</icon>
+        <href>Settings-Licenses%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml</href>
+        <color>128</color>
+        <borderStyle>square</borderStyle>
+        <text>Licenses</text>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2233%2C371%2C89%2C444%22%20href%3D%22Settings-Licenses.bmml%22%20alt%3D%22Settings-Licenses%22%20id%3D%2216%22/%3E</map>
+      </controlProperties>
+    </control>
+    <control controlID="18" controlTypeID="com.balsamiq.mockups::Label" x="432" y="192" w="-1" h="-1" measuredW="144" measuredH="25" zOrder="7" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Setup%20License%20Choices</text>
+      </controlProperties>
+    </control>
+    <control controlID="19" controlTypeID="com.balsamiq.mockups::Label" x="430" y="225" w="352" h="71" measuredW="866" measuredH="25" zOrder="8" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>The%20selected%20choices%20will%20be%20available%20on%20Page%202%20of%20each%20document.%20%20Ideally%2C%20the%20team%20would%20select%20a%20single%2C%20very%20open%20license%20for%20all%20their%20work.</text>
+        <bold>false</bold>
+      </controlProperties>
+    </control>
+    <control controlID="20" controlTypeID="com.balsamiq.mockups::CheckBox" x="432" y="386" w="-1" h="-1" measuredW="115" measuredH="22" zOrder="9" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>CC%20Attribution</text>
+        <state>selected</state>
+      </controlProperties>
+    </control>
+    <control controlID="22" controlTypeID="com.balsamiq.mockups::CheckBox" x="432" y="320" w="-1" h="-1" measuredW="108" measuredH="22" zOrder="10" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Public%20Domain</text>
+      </controlProperties>
+    </control>
+    <control controlID="23" controlTypeID="com.balsamiq.mockups::CheckBox" x="432" y="464" w="-1" h="-1" measuredW="212" measuredH="22" zOrder="11" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>CC%20Attribution-NonCommercial</text>
+      </controlProperties>
+    </control>
+    <control controlID="24" controlTypeID="com.balsamiq.mockups::CheckBox" x="432" y="548" w="-1" h="-1" measuredW="183" measuredH="22" zOrder="12" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Other%20%28type%20in%20the%20URI%29</text>
+      </controlProperties>
+    </control>
+    <control controlID="25" controlTypeID="com.balsamiq.mockups::TextArea" x="460" y="570" w="307" h="33" measuredW="200" measuredH="140" zOrder="13" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>http%3A//</text>
+        <bold>false</bold>
+      </controlProperties>
+    </control>
+  </controls>
+</mockup>
