@@ -9,12 +9,12 @@
     <control controlID="8" controlTypeID="com.balsamiq.mockups::TitleWindow" x="161" y="33" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
       <controlProperties>
         <close>true</close>
-        <dragger>true</dragger>
-        <topheight>26</topheight>
-        <text>BLOOM%3A%20Edolo</text>
-        <minimize>false</minimize>
         <maximizeRestore>false</maximizeRestore>
         <bottomheight>0</bottomheight>
+        <text>BLOOM%3A%20Edolo</text>
+        <minimize>false</minimize>
+        <topheight>26</topheight>
+        <dragger>true</dragger>
       </controlProperties>
     </control>
     <control controlID="73" controlTypeID="com.balsamiq.mockups::Label" x="445" y="59" w="-1" h="-1" measuredW="109" measuredH="25" zOrder="9" locked="false" isInGroup="-1">
@@ -180,8 +180,8 @@
     </control>
     <control controlID="108" controlTypeID="com.balsamiq.mockups::Canvas" x="243" y="123" w="68" h="54" measuredW="100" measuredH="70" zOrder="34" locked="false" isInGroup="-1">
       <controlProperties>
-        <backgroundAlpha>0.25</backgroundAlpha>
         <href>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml</href>
+        <backgroundAlpha>0.25</backgroundAlpha>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2282%2C90%2C150%2C144%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22108%22/%3E</map>
       </controlProperties>
     </control>
@@ -209,26 +209,26 @@
         </control>
       </groupChildrenDescriptors>
     </control>
-    <control controlID="111" controlTypeID="com.balsamiq.mockups::Canvas" x="740" y="426" w="266" h="105" measuredW="100" measuredH="70" zOrder="36" locked="false" isInGroup="-1">
+    <control controlID="111" controlTypeID="com.balsamiq.mockups::Canvas" x="754" y="426" w="266" h="105" measuredW="100" measuredH="70" zOrder="36" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
         <color>16777215</color>
       </controlProperties>
     </control>
-    <control controlID="112" controlTypeID="com.balsamiq.mockups::Label" x="741" y="433" w="244" h="80" measuredW="330" measuredH="25" zOrder="37" locked="false" isInGroup="-1">
+    <control controlID="112" controlTypeID="com.balsamiq.mockups::Label" x="755" y="433" w="244" h="80" measuredW="330" measuredH="25" zOrder="37" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Enter%20the%20names%20of%20authors%2C%20illustrators%2C%20etc.%20here</text>
         <italic>false</italic>
         <color>6710886</color>
       </controlProperties>
     </control>
-    <control controlID="113" controlTypeID="com.balsamiq.mockups::Canvas" x="503" y="122" w="380" h="70" measuredW="100" measuredH="70" zOrder="38" locked="false" isInGroup="-1">
+    <control controlID="113" controlTypeID="com.balsamiq.mockups::Canvas" x="517" y="122" w="380" h="70" measuredW="100" measuredH="70" zOrder="38" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
         <color>16777215</color>
       </controlProperties>
     </control>
-    <control controlID="114" controlTypeID="com.balsamiq.mockups::Label" x="510" y="125" w="358" h="52" measuredW="208" measuredH="46" zOrder="39" locked="false" isInGroup="-1">
+    <control controlID="114" controlTypeID="com.balsamiq.mockups::Label" x="524" y="125" w="358" h="52" measuredW="208" measuredH="46" zOrder="39" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Lucy%27s%20Big%20Day</text>
         <italic>false</italic>
@@ -236,7 +236,7 @@
         <color>0</color>
       </controlProperties>
     </control>
-    <control controlID="115" controlTypeID="com.balsamiq.mockups::Image" x="583" y="211" w="209" h="174" measuredW="542" measuredH="543" zOrder="40" locked="false" isInGroup="-1">
+    <control controlID="115" controlTypeID="com.balsamiq.mockups::Image" x="597" y="211" w="209" h="174" measuredW="542" measuredH="543" zOrder="40" locked="false" isInGroup="-1">
       <controlProperties>
         <src>./assets/TitlePicture.png</src>
       </controlProperties>
@@ -244,9 +244,9 @@
     <control controlID="116" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="397" y="153" w="-1" h="-1" measuredW="200" measuredH="144" zOrder="41" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
-        <color>16777215</color>
         <text>Edit%0APreview</text>
         <selectedIndex>1</selectedIndex>
+        <color>16777215</color>
         <hrefs>page1-Edit%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%2Cpage1-Preview%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%2CPage1-Notes%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22236%2C140%2C296%2C173%22%20href%3D%22page1-Edit.bmml%22%20alt%3D%22page1-Edit%22%20id%3D%22116_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22236%2C173%2C296%2C206%22%20href%3D%22page1-Preview.bmml%22%20alt%3D%22page1-Preview%22%20id%3D%22116_1%22/%3E%0A</map>
       </controlProperties>
@@ -260,7 +260,7 @@
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22403%2C25%2C452%2C54%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22117_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22452%2C25%2C564%2C54%22%20href%3D%22NotesAndHistory.bmml%22%20alt%3D%22NotesAndHistory%22%20id%3D%22117_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22564%2C25%2C619%2C54%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%22117_2%22/%3E%0A</map>
       </controlProperties>
     </control>
-    <control controlID="62" controlTypeID="com.balsamiq.mockups::Button" x="581" y="383" w="-1" h="-1" measuredW="110" measuredH="28" zOrder="7" locked="false" isInGroup="-1">
+    <control controlID="62" controlTypeID="com.balsamiq.mockups::Button" x="595" y="383" w="-1" h="-1" measuredW="110" measuredH="28" zOrder="7" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Change%20Image</text>
       </controlProperties>

@@ -9,12 +9,12 @@
     <control controlID="8" controlTypeID="com.balsamiq.mockups::TitleWindow" x="161" y="33" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
       <controlProperties>
         <close>true</close>
-        <dragger>true</dragger>
         <maximizeRestore>false</maximizeRestore>
+        <topheight>26</topheight>
         <text>BLOOM%3A%20Edolo</text>
         <minimize>false</minimize>
         <bottomheight>0</bottomheight>
-        <topheight>26</topheight>
+        <dragger>true</dragger>
       </controlProperties>
     </control>
     <control controlID="73" controlTypeID="com.balsamiq.mockups::Label" x="445" y="59" w="-1" h="-1" measuredW="109" measuredH="25" zOrder="8" locked="false" isInGroup="-1">
@@ -37,9 +37,9 @@
     <control controlID="76" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="402" y="144" w="-1" h="-1" measuredW="200" measuredH="144" zOrder="9" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
-        <color>16777215</color>
         <text>Edit%0APreview</text>
         <selectedIndex>1</selectedIndex>
+        <color>16777215</color>
         <hrefs>page1-Edit%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%2Cpage1-Preview%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%2CPage1-Notes%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22241%2C131%2C301%2C164%22%20href%3D%22page1-Edit.bmml%22%20alt%3D%22page1-Edit%22%20id%3D%2276_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22241%2C164%2C301%2C197%22%20href%3D%22page1-Preview.bmml%22%20alt%3D%22page1-Preview%22%20id%3D%2276_1%22/%3E%0A</map>
       </controlProperties>
@@ -190,8 +190,8 @@
     </control>
     <control controlID="108" controlTypeID="com.balsamiq.mockups::Canvas" x="243" y="123" w="68" h="54" measuredW="100" measuredH="70" zOrder="34" locked="false" isInGroup="-1">
       <controlProperties>
-        <backgroundAlpha>0.25</backgroundAlpha>
         <href>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml</href>
+        <backgroundAlpha>0.25</backgroundAlpha>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2282%2C90%2C150%2C144%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22108%22/%3E</map>
       </controlProperties>
     </control>
@@ -219,7 +219,7 @@
         </control>
       </groupChildrenDescriptors>
     </control>
-    <control controlID="111" controlTypeID="com.balsamiq.mockups::Canvas" x="720" y="426" w="266" h="105" measuredW="100" measuredH="70" zOrder="36" locked="false" isInGroup="-1">
+    <control controlID="111" controlTypeID="com.balsamiq.mockups::Canvas" x="760" y="426" w="266" h="105" measuredW="100" measuredH="70" zOrder="36" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
         <color>16777215</color>
@@ -231,7 +231,7 @@
         <color>16777215</color>
       </controlProperties>
     </control>
-    <control controlID="114" controlTypeID="com.balsamiq.mockups::Label" x="490" y="125" w="358" h="52" measuredW="208" measuredH="46" zOrder="38" locked="false" isInGroup="-1">
+    <control controlID="114" controlTypeID="com.balsamiq.mockups::Label" x="538" y="125" w="358" h="52" measuredW="208" measuredH="46" zOrder="38" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Lucy%27s%20Big%20Day</text>
         <italic>false</italic>
@@ -239,7 +239,7 @@
         <color>0</color>
       </controlProperties>
     </control>
-    <control controlID="115" controlTypeID="com.balsamiq.mockups::Image" x="576" y="209" w="270" h="215" measuredW="542" measuredH="543" zOrder="39" locked="false" isInGroup="-1">
+    <control controlID="115" controlTypeID="com.balsamiq.mockups::Image" x="624" y="209" w="270" h="215" measuredW="542" measuredH="543" zOrder="39" locked="false" isInGroup="-1">
       <controlProperties>
         <src>./assets/TitlePicture.png</src>
       </controlProperties>
@@ -251,6 +251,24 @@
         <borderStyle>none</borderStyle>
         <hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22407%2C26%2C456%2C55%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22116_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22456%2C26%2C568%2C55%22%20href%3D%22NotesAndHistory.bmml%22%20alt%3D%22NotesAndHistory%22%20id%3D%22116_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22568%2C26%2C623%2C55%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%22116_2%22/%3E%0A</map>
+      </controlProperties>
+    </control>
+    <control controlID="117" controlTypeID="com.balsamiq.mockups::VRule" x="491" y="144" w="-1" h="29" measuredW="5" measuredH="100" zOrder="41" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>32896</color>
+        <backgroundAlpha>0.25</backgroundAlpha>
+      </controlProperties>
+    </control>
+    <control controlID="118" controlTypeID="com.balsamiq.mockups::VRule" x="490" y="299" w="-1" h="29" measuredW="5" measuredH="100" zOrder="42" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>32896</color>
+        <backgroundAlpha>0.25</backgroundAlpha>
+      </controlProperties>
+    </control>
+    <control controlID="119" controlTypeID="com.balsamiq.mockups::VRule" x="491" y="443" w="-1" h="29" measuredW="5" measuredH="100" zOrder="43" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>32896</color>
+        <backgroundAlpha>0.25</backgroundAlpha>
       </controlProperties>
     </control>
   </controls>
