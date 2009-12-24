@@ -1,11 +1,17 @@
 <mockup version="1.0" skin="sketch" measuredW="1196" measuredH="573" mockupW="1025" mockupH="530">
   <controls>
-	<control controlID="180" controlTypeID="com.balsamiq.mockups::IconLabel" x="1091" y="64" w="-1" h="-1" measuredW="84" measuredH="25" zOrder="5" locked="false" isInGroup="-1">
+	<control controlID="217" controlTypeID="com.balsamiq.mockups::IconLabel" x="304" y="317" w="70" h="-1" measuredW="94" measuredH="73" zOrder="19" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<labelPosition>right</labelPosition>
-		<icon>GearIcon%7Csmall</icon>
-		<text>Settings</text>
-		<color>0</color>
+		<icon>LockIcon%7Clarge</icon>
+		<text>Safe%20%26%20Simple</text>
+		<href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22158%2C291%2C207%2C364%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22237%22/%3E</map>
+		<borderStyle>square</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="212" controlTypeID="com.balsamiq.mockups::Label" x="470" y="115" w="-1" h="-1" measuredW="287" measuredH="25" zOrder="17" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Language%20Forge%20Internet%20Repository%20Settings</text>
 	  </controlProperties>
 	</control>
 	<control controlID="200" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="400" y="110" w="-1" h="426" measuredW="16" measuredH="100" zOrder="6" locked="false" isInGroup="-1"/>
@@ -26,16 +32,7 @@
 		<color>128</color>
 	  </controlProperties>
 	</control>
-	<control controlID="203" controlTypeID="com.balsamiq.mockups::IconLabel" x="313" y="327" w="-1" h="-1" measuredW="49" measuredH="73" zOrder="9" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<icon>LockIcon%7Clarge</icon>
-		<text>Safety</text>
-		<href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22152%2C294%2C201%2C367%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22203%22/%3E</map>
-		<borderStyle>square</borderStyle>
-	  </controlProperties>
-	</control>
-	<control controlID="204" controlTypeID="com.balsamiq.mockups::IconLabel" x="307" y="419" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="10" locked="false" isInGroup="-1">
+	<control controlID="204" controlTypeID="com.balsamiq.mockups::IconLabel" x="307" y="419" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="9" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<icon>CreativeCommonsIcon%7Clarge</icon>
 		<text>Licenses</text>
@@ -44,47 +41,50 @@
 		<borderStyle>square</borderStyle>
 	  </controlProperties>
 	</control>
-	<control controlID="205" controlTypeID="com.balsamiq.mockups::Label" x="470" y="153" w="-1" h="-1" measuredW="169" measuredH="25" zOrder="11" locked="false" isInGroup="-1">
+	<control controlID="205" controlTypeID="com.balsamiq.mockups::Label" x="470" y="153" w="-1" h="-1" measuredW="169" measuredH="25" zOrder="10" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>ISO%20639/Ethnologue%20Code</text>
 	  </controlProperties>
 	</control>
-	<control controlID="206" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="178" w="116" h="-1" measuredW="79" measuredH="29" zOrder="12" locked="false" isInGroup="-1">
+	<control controlID="206" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="178" w="116" h="-1" measuredW="79" measuredH="29" zOrder="11" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text/>
 	  </controlProperties>
 	</control>
-	<control controlID="207" controlTypeID="com.balsamiq.mockups::Button" x="586" y="178" w="30" h="-1" measuredW="42" measuredH="28" zOrder="13" locked="false" isInGroup="-1">
+	<control controlID="207" controlTypeID="com.balsamiq.mockups::Button" x="586" y="178" w="30" h="-1" measuredW="42" measuredH="28" zOrder="12" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>...</text>
 	  </controlProperties>
 	</control>
-	<control controlID="208" controlTypeID="com.balsamiq.mockups::Label" x="470" y="243" w="-1" h="-1" measuredW="237" measuredH="25" zOrder="14" locked="false" isInGroup="-1">
+	<control controlID="208" controlTypeID="com.balsamiq.mockups::Label" x="470" y="243" w="-1" h="-1" measuredW="237" measuredH="25" zOrder="13" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>Language%20Forge%20account%20for%20this%20user</text>
 	  </controlProperties>
 	</control>
-	<control controlID="209" controlTypeID="com.balsamiq.mockups::Label" x="470" y="303" w="-1" h="-1" measuredW="60" measuredH="25" zOrder="15" locked="false" isInGroup="-1">
+	<control controlID="209" controlTypeID="com.balsamiq.mockups::Label" x="470" y="303" w="-1" h="-1" measuredW="60" measuredH="25" zOrder="14" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>Password</text>
 	  </controlProperties>
 	</control>
-	<control controlID="210" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="268" w="217" h="-1" measuredW="79" measuredH="29" zOrder="16" locked="false" isInGroup="-1">
+	<control controlID="210" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="268" w="217" h="-1" measuredW="79" measuredH="29" zOrder="15" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text/>
 	  </controlProperties>
 	</control>
-	<control controlID="211" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="328" w="217" h="-1" measuredW="79" measuredH="29" zOrder="17" locked="false" isInGroup="-1">
+	<control controlID="211" controlTypeID="com.balsamiq.mockups::TextInput" x="470" y="328" w="217" h="-1" measuredW="79" measuredH="29" zOrder="16" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text/>
 	  </controlProperties>
 	</control>
-	<control controlID="212" controlTypeID="com.balsamiq.mockups::Label" x="470" y="115" w="-1" h="-1" measuredW="287" measuredH="25" zOrder="18" locked="false" isInGroup="-1">
+	<control controlID="180" controlTypeID="com.balsamiq.mockups::IconLabel" x="1091" y="64" w="-1" h="-1" measuredW="84" measuredH="25" zOrder="5" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<text>Language%20Forge%20Internet%20Repository%20Settings</text>
+		<labelPosition>right</labelPosition>
+		<icon>GearIcon%7Csmall</icon>
+		<text>Settings</text>
+		<color>0</color>
 	  </controlProperties>
 	</control>
-	<control controlID="213" controlTypeID="com.balsamiq.mockups::Paragraph" x="828" y="293" w="292" h="88" measuredW="200" measuredH="140" zOrder="19" locked="false" isInGroup="-1">
+	<control controlID="213" controlTypeID="com.balsamiq.mockups::Paragraph" x="828" y="293" w="292" h="88" measuredW="200" measuredH="140" zOrder="18" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>This%20will%20actually%20be%20more%20complicated...%20we%20need%20ways%20to%20create%20the%20repository%20and%20accounts%20if%20they%20don%27t%20already%20exist.</text>
 		<color>128</color>
@@ -132,13 +132,13 @@
 	</control>
 	<control controlID="92" controlTypeID="com.balsamiq.mockups::TabBar" x="161" y="70" w="1025" h="40" measuredW="278" measuredH="100" zOrder="1" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<selectedIndex>0</selectedIndex>
-		<text>Edolo%20Books%2C%20Template%20Books</text>
 		<hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
-		<size>12</size>
-		<borderStyle>none</borderStyle>
 		<color>11776947</color>
+		<selectedIndex>0</selectedIndex>
+		<size>12</size>
+		<text>Edolo%20Books%2C%20Template%20Books</text>
 		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C37%2C101%2C64%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2292_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22101%2C37%2C204%2C64%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2292_1%22/%3E%0A</map>
+		<borderStyle>none</borderStyle>
 	  </controlProperties>
 	</control>
   </controls>

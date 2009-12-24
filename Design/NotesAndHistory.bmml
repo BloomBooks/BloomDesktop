@@ -42,8 +42,8 @@
 	<control controlID="72" controlTypeID="com.balsamiq.mockups::TabBar" x="163" y="57" w="394" h="96" measuredW="164" measuredH="100" zOrder="7" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>Collection</text>
-		<borderStyle>none</borderStyle>
 		<hrefs>Collection%26bm%3BCollection.bmml%26bm%3BCollection.bmml%26bm%3BCollection.bmml</hrefs>
+		<borderStyle>none</borderStyle>
 		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2222%2C24%2C92%2C53%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2272_0%22/%3E%0A</map>
 	  </controlProperties>
 	</control>
@@ -212,9 +212,9 @@
 	<control controlID="110" controlTypeID="com.balsamiq.mockups::TabBar" x="554" y="59" w="632" h="37" measuredW="314" measuredH="100" zOrder="35" locked="false" isInGroup="-1">
 	  <controlProperties>
 		<text>Write%2C%20Notes%20%26%20History%2C%20Publish</text>
+		<hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
 		<selectedIndex>1</selectedIndex>
 		<borderStyle>none</borderStyle>
-		<hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
 		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22413%2C26%2C461%2C55%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22110_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22461%2C26%2C578%2C55%22%20href%3D%22NotesAndHistory.bmml%22%20alt%3D%22NotesAndHistory%22%20id%3D%22110_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22578%2C26%2C633%2C55%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%22110_2%22/%3E%0A</map>
 	  </controlProperties>
 	</control>
@@ -242,24 +242,24 @@
 	</control>
 	<control controlID="118" controlTypeID="com.balsamiq.mockups::DataGrid" x="520" y="347" w="473" h="169" measuredW="200" measuredH="58" zOrder="40" locked="false" isInGroup="-1">
 	  <controlProperties>
+		<alternateRowColor>16777215</alternateRowColor>
 		<borderStyle>square</borderStyle>
 		<vLines>false</vLines>
-		<verticalScrollbar>true</verticalScrollbar>
-		<hLines>false</hLines>
 		<text>Date%2C%20Who%2C%20What%0A8/8/2009%2C%20Kim%2C%20Created</text>
 		<bold>true</bold>
-		<alternateRowColor>16777215</alternateRowColor>
+		<hLines>false</hLines>
+		<verticalScrollbar>true</verticalScrollbar>
 	  </controlProperties>
 	</control>
 	<control controlID="119" controlTypeID="com.balsamiq.mockups::DataGrid" x="520" y="167" w="473" h="117" measuredW="313" measuredH="88" zOrder="41" locked="false" isInGroup="-1">
 	  <controlProperties>
+		<alternateRowColor>16777215</alternateRowColor>
 		<borderStyle>square</borderStyle>
 		<vLines>false</vLines>
-		<verticalScrollbar>true</verticalScrollbar>
-		<hLines>false</hLines>
 		<text>Kind%2C%20Who%2C%20Date%0A%20%20%20%20%20%20Question%2C%20Kim%2C%2012/12/2010%0A%20%20%20%20%20%20Merge%20Conflict%2C%20Merger%2C%209/9/2010</text>
 		<bold>true</bold>
-		<alternateRowColor>16777215</alternateRowColor>
+		<hLines>false</hLines>
+		<verticalScrollbar>true</verticalScrollbar>
 	  </controlProperties>
 	</control>
 	<control controlID="120" controlTypeID="com.balsamiq.mockups::Icon" x="534" y="200" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="42" locked="false" isInGroup="-1">
