@@ -1,14 +1,14 @@
 <mockup version="1.0" skin="sketch" measuredW="1196" measuredH="573" mockupW="1025" mockupH="530">
   <controls>
     <control controlID="229" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="395" y="104" w="-1" h="426" measuredW="16" measuredH="100" zOrder="6" locked="false" isInGroup="-1"/>
-    <control controlID="230" controlTypeID="com.balsamiq.mockups::CheckBox" x="480" y="237" w="-1" h="-1" measuredW="276" measuredH="22" zOrder="7" locked="false" isInGroup="-1">
+    <control controlID="230" controlTypeID="com.balsamiq.mockups::CheckBox" x="476" y="313" w="-1" h="-1" measuredW="271" measuredH="22" zOrder="7" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>Hide%20the%20Settings%20tab%20on%20this%20computer</text>
+        <text>Lock%20the%20Settings%20tab%20on%20this%20computer</text>
       </controlProperties>
     </control>
-    <control controlID="231" controlTypeID="com.balsamiq.mockups::Paragraph" x="477" y="123" w="577" h="140" measuredW="200" measuredH="140" zOrder="8" locked="false" isInGroup="-1">
+    <control controlID="231" controlTypeID="com.balsamiq.mockups::Paragraph" x="476" y="148" w="577" h="155" measuredW="200" measuredH="140" zOrder="8" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>Often%2C%20Bloom%20is%20set%20up%20by%20an%20advisor%20and%20then%20used%20by%20someone%20withtout%20the%20technical%20background%20necessary%20for%20setting%20up%20things%20like%20writing%20systems%20and%20interent%20repositories.%20%20In%20these%20situations%2C%20it%27s%20best%20to%20prevent%20accidental%20damage%20to%20the%20settings%2C%20by%20hiding%20the%20settings%20tab.%20%20Pressing%20CTRL-ALT-S%20will%20show%20it%20temporarily.</text>
+        <text>Often%2C%20Bloom%20is%20set%20up%20by%20an%20advisor%20and%20then%20used%20by%20someone%20without%20the%20technical%20background%20necessary%20for%20setting%20up%20things%20like%20writing%20systems%20and%20internet%20repositories.%20%20Or%20perhaps%20they%20do%20have%20some%20ability%20in%20these%20areas%2C%20but%20they%20work%20in%20a%20remote%20setting%20where%20technical%20help%20is%20unavailable%2C%20so%20the%20risk%20is%20too%20high.%0A%20%0AIn%20these%20situations%2C%20it%27s%20best%20to%20prevent%20accidental%20damage%20to%20the%20settings%20by%20locking%20the%20settings%20tab.%20%20Pressing%20CTRL-ALT-S%20will%20unlock%20it%20temporarily.</text>
       </controlProperties>
     </control>
     <control controlID="8" controlTypeID="com.balsamiq.mockups::TitleWindow" x="161" y="33" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
@@ -30,22 +30,37 @@
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22131%2C190%2C221%2C263%22%20href%3D%22Settings-Collaboration.bmml%22%20alt%3D%22Settings-Collaboration%22%20id%3D%22233%22/%3E</map>
       </controlProperties>
     </control>
-    <control controlID="234" controlTypeID="com.balsamiq.mockups::IconLabel" x="312" y="321" w="-1" h="-1" measuredW="49" measuredH="73" zOrder="11" locked="false" isInGroup="-1">
-      <controlProperties>
-        <icon>LockIcon%7Clarge</icon>
-        <text>Safety</text>
-        <color>128</color>
-        <href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
-        <borderStyle>square</borderStyle>
-        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22151%2C288%2C200%2C361%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22234%22/%3E</map>
-      </controlProperties>
-    </control>
-    <control controlID="235" controlTypeID="com.balsamiq.mockups::IconLabel" x="306" y="413" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="12" locked="false" isInGroup="-1">
+    <control controlID="235" controlTypeID="com.balsamiq.mockups::IconLabel" x="306" y="413" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="11" locked="false" isInGroup="-1">
       <controlProperties>
         <icon>CreativeCommonsIcon%7Clarge</icon>
         <text>Licenses</text>
         <href>Settings-Licenses%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml</href>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22145%2C380%2C201%2C453%22%20href%3D%22Settings-Licenses.bmml%22%20alt%3D%22Settings-Licenses%22%20id%3D%22235%22/%3E</map>
+        <borderStyle>square</borderStyle>
+      </controlProperties>
+    </control>
+    <control controlID="236" controlTypeID="com.balsamiq.mockups::IconLabel" x="453" y="117" w="-1" h="-1" measuredW="117" measuredH="25" zOrder="12" locked="false" isInGroup="-1">
+      <controlProperties>
+        <labelPosition>right</labelPosition>
+        <icon>GearIcon%7Csmall</icon>
+        <text>Lock%20Settings</text>
+        <color>8421504</color>
+      </controlProperties>
+    </control>
+    <control controlID="237" controlTypeID="com.balsamiq.mockups::Icon" x="446" y="122" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="13" locked="false" isInGroup="-1">
+      <controlProperties>
+        <icon>LockIcon%7Csmall</icon>
+        <borderStyle>none</borderStyle>
+        <color>8355711</color>
+      </controlProperties>
+    </control>
+    <control controlID="238" controlTypeID="com.balsamiq.mockups::IconLabel" x="304" y="313" w="70" h="-1" measuredW="94" measuredH="73" zOrder="14" locked="false" isInGroup="-1">
+      <controlProperties>
+        <icon>LockIcon%7Clarge</icon>
+        <text>Safe%20%26%20Simple</text>
+        <color>128</color>
+        <href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22158%2C291%2C207%2C364%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22237%22/%3E</map>
         <borderStyle>square</borderStyle>
       </controlProperties>
     </control>
@@ -96,12 +111,12 @@
     </control>
     <control controlID="92" controlTypeID="com.balsamiq.mockups::TabBar" x="161" y="70" w="1025" h="40" measuredW="278" measuredH="100" zOrder="1" locked="false" isInGroup="-1">
       <controlProperties>
-        <selectedIndex>0</selectedIndex>
-        <text>Edolo%20Books%2C%20Template%20Books</text>
         <hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
-        <size>12</size>
-        <borderStyle>none</borderStyle>
         <color>11776947</color>
+        <borderStyle>none</borderStyle>
+        <size>12</size>
+        <text>Edolo%20Books%2C%20Template%20Books</text>
+        <selectedIndex>0</selectedIndex>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C37%2C101%2C64%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2292_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22101%2C37%2C204%2C64%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2292_1%22/%3E%0A</map>
       </controlProperties>
     </control>

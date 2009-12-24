@@ -36,12 +36,12 @@
     </control>
     <control controlID="76" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="402" y="144" w="-1" h="-1" measuredW="200" measuredH="144" zOrder="9" locked="false" isInGroup="-1">
       <controlProperties>
-        <borderStyle>none</borderStyle>
-        <text>Edit%0APreview</text>
-        <selectedIndex>1</selectedIndex>
-        <color>16777215</color>
         <hrefs>page1-Edit%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%26bm%3Bpage1-Edit.bmml%2Cpage1-Preview%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%2CPage1-Notes%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml%26bm%3BPage1-Notes.bmml</hrefs>
+        <color>16777215</color>
+        <selectedIndex>1</selectedIndex>
+        <text>Edit%0APreview</text>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22241%2C131%2C301%2C164%22%20href%3D%22page1-Edit.bmml%22%20alt%3D%22page1-Edit%22%20id%3D%2276_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22241%2C164%2C301%2C197%22%20href%3D%22page1-Preview.bmml%22%20alt%3D%22page1-Preview%22%20id%3D%2276_1%22/%3E%0A</map>
+        <borderStyle>none</borderStyle>
       </controlProperties>
     </control>
     <control controlID="14" controlTypeID="com.balsamiq.mockups::Canvas" x="458" y="96" w="576" h="453" measuredW="100" measuredH="70" zOrder="3" locked="false" isInGroup="-1">
@@ -52,8 +52,8 @@
     <control controlID="72" controlTypeID="com.balsamiq.mockups::TabBar" x="163" y="57" w="394" h="96" measuredW="164" measuredH="100" zOrder="7" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Collection</text>
-        <borderStyle>none</borderStyle>
         <hrefs>Collection%26bm%3BCollection.bmml%26bm%3BCollection.bmml%26bm%3BCollection.bmml</hrefs>
+        <borderStyle>none</borderStyle>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2222%2C24%2C92%2C53%22%20href%3D%22Collection.bmml%22%20alt%3D%22Collection%22%20id%3D%2272_0%22/%3E%0A</map>
       </controlProperties>
     </control>
@@ -247,9 +247,9 @@
     <control controlID="116" controlTypeID="com.balsamiq.mockups::TabBar" x="548" y="59" w="632" h="37" measuredW="310" measuredH="100" zOrder="40" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Write%2C%20Notes%20%26%20History%2C%20Publish</text>
+        <hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
         <selectedIndex>0</selectedIndex>
         <borderStyle>none</borderStyle>
-        <hrefs>Page2-Edit%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%26bm%3BPage2-Edit.bmml%2CNotesAndHistory%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%26bm%3BNotesAndHistory.bmml%2CPublish%26bm%3BPublish.bmml%26bm%3BPublish.bmml%26bm%3BPublish.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22407%2C26%2C456%2C55%22%20href%3D%22Page2-Edit.bmml%22%20alt%3D%22Page2-Edit%22%20id%3D%22116_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22456%2C26%2C568%2C55%22%20href%3D%22NotesAndHistory.bmml%22%20alt%3D%22NotesAndHistory%22%20id%3D%22116_1%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22568%2C26%2C623%2C55%22%20href%3D%22Publish.bmml%22%20alt%3D%22Publish%22%20id%3D%22116_2%22/%3E%0A</map>
       </controlProperties>
     </control>
@@ -269,6 +269,11 @@
       <controlProperties>
         <color>32896</color>
         <backgroundAlpha>0.25</backgroundAlpha>
+      </controlProperties>
+    </control>
+    <control controlID="120" controlTypeID="com.balsamiq.mockups::Paragraph" x="822" y="462" w="200" h="69" measuredW="200" measuredH="140" zOrder="44" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>You%20need%20to%20enter%20the%20author%20information%20under%20the%20edit%20tab.%20</text>
       </controlProperties>
     </control>
   </controls>

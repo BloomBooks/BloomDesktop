@@ -10,11 +10,11 @@
       <controlProperties>
         <close>true</close>
         <maximizeRestore>false</maximizeRestore>
-        <dragger>true</dragger>
+        <topheight>26</topheight>
         <text>BLOOM%3A%20Edolo</text>
         <minimize>false</minimize>
         <bottomheight>0</bottomheight>
-        <topheight>26</topheight>
+        <dragger>true</dragger>
       </controlProperties>
     </control>
     <control controlID="71" controlTypeID="com.balsamiq.mockups::Label" x="227" y="428" w="-1" h="-1" measuredW="48" measuredH="19" zOrder="15" locked="false" isInGroup="-1">
@@ -66,9 +66,9 @@
     <control controlID="23" controlTypeID="com.balsamiq.mockups::TabBar" x="201" y="95" w="1025" h="40" measuredW="284" measuredH="100" zOrder="5" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Edolo%20Books%2C%20Template%20Books</text>
+        <hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
         <selectedIndex>2</selectedIndex>
         <borderStyle>none</borderStyle>
-        <hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
         <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C22%2C103%2C51%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2223_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22103%2C22%2C210%2C51%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2223_1%22/%3E%0A</map>
       </controlProperties>
     </control>
@@ -89,8 +89,8 @@
     </control>
     <control controlID="92" controlTypeID="com.balsamiq.mockups::Icon" x="451" y="399" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="28" locked="false" isInGroup="-1">
       <controlProperties>
-        <borderStyle>none</borderStyle>
         <icon>EmoticonIcon%7Csmall</icon>
+        <borderStyle>none</borderStyle>
       </controlProperties>
     </control>
     <control controlID="29" controlTypeID="com.balsamiq.mockups::Label" x="227" y="144" w="-1" h="-1" measuredW="138" measuredH="25" zOrder="8" locked="false" isInGroup="-1">
@@ -100,8 +100,8 @@
     </control>
     <control controlID="94" controlTypeID="com.balsamiq.mockups::Icon" x="244" y="395" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="30" locked="false" isInGroup="-1">
       <controlProperties>
-        <borderStyle>none</borderStyle>
         <icon>UserIcon%7Csmall</icon>
+        <borderStyle>none</borderStyle>
       </controlProperties>
     </control>
     <control controlID="31" controlTypeID="com.balsamiq.mockups::Canvas" x="227" y="169" w="63" h="49" measuredW="100" measuredH="70" zOrder="9" locked="false" isInGroup="-1"/>
@@ -120,8 +120,8 @@
     </control>
     <control controlID="93" controlTypeID="com.balsamiq.mockups::Icon" x="342" y="398" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="29" locked="false" isInGroup="-1">
       <controlProperties>
-        <borderStyle>none</borderStyle>
         <icon>UsersIcon%7Csmall</icon>
+        <borderStyle>none</borderStyle>
       </controlProperties>
     </control>
     <control controlID="85" controlTypeID="com.balsamiq.mockups::Label" x="321" y="530" w="-1" h="-1" measuredW="87" measuredH="19" zOrder="24" locked="false" isInGroup="-1">
@@ -158,8 +158,8 @@
     </control>
     <control controlID="110" controlTypeID="com.balsamiq.mockups::Icon" x="244" y="492" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="34" locked="false" isInGroup="-1">
       <controlProperties>
-        <borderStyle>none</borderStyle>
         <icon>StarIcon%7Cxsmall</icon>
+        <borderStyle>none</borderStyle>
       </controlProperties>
     </control>
     <control controlID="112" controlTypeID="com.balsamiq.mockups::VRule" x="637" y="195" w="-1" h="29" measuredW="5" measuredH="100" zOrder="35" locked="false" isInGroup="-1">
@@ -223,20 +223,20 @@
         </control>
         <control controlID="99" controlTypeID="com.balsamiq.mockups::Icon" x="19" y="25" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="3" locked="false" isInGroup="108">
           <controlProperties>
-            <borderStyle>none</borderStyle>
             <icon>LightBulbIcon%7Cxsmall</icon>
+            <borderStyle>none</borderStyle>
           </controlProperties>
         </control>
         <control controlID="100" controlTypeID="com.balsamiq.mockups::Icon" x="50" y="26" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="4" locked="false" isInGroup="108">
           <controlProperties>
-            <borderStyle>none</borderStyle>
             <icon>StarIcon%7Cxsmall</icon>
+            <borderStyle>none</borderStyle>
           </controlProperties>
         </control>
         <control controlID="101" controlTypeID="com.balsamiq.mockups::Icon" x="34" y="46" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="5" locked="false" isInGroup="108">
           <controlProperties>
-            <borderStyle>none</borderStyle>
             <icon>CutIcon%7Cxsmall</icon>
+            <borderStyle>none</borderStyle>
           </controlProperties>
         </control>
       </groupChildrenDescriptors>
@@ -260,8 +260,8 @@
         </control>
         <control controlID="66" controlTypeID="com.balsamiq.mockups::Icon" x="27" y="19" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="3" locked="false" isInGroup="109">
           <controlProperties>
-            <borderStyle>none</borderStyle>
             <icon>PencilIcon%7Cxsmall</icon>
+            <borderStyle>none</borderStyle>
           </controlProperties>
         </control>
       </groupChildrenDescriptors>
