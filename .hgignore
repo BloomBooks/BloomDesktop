@@ -1,0 +1,9 @@
+glob:src/Bloom.suo
+glob:*.user
+glob:lib\GeckoFx\Skybound.Gecko\*
+glob:lib/GeckoFX/Skybound.Gecko/*
+glob:output/*
+glob:*\.svn
+glob:*/bin/*
+glob:*\obj
+glob:userProject
