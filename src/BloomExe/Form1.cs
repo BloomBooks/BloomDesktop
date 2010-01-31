@@ -24,7 +24,7 @@ namespace BloomApp
 
 			Directory.CreateDirectory(ProjectDirectory);
 			var bookName = "Lucy'sBigDay";
-			CopyBookToProjectDir(bookName);
+			CopyBookToProjectDir(Path.Combine(FactoryTemplatesDirectory,"A4Portrait"), bookName);
 
 
 			var path = Path.Combine(ProjectDirectory, Path.Combine(bookName, bookName+".htm"));
@@ -41,16 +41,17 @@ namespace BloomApp
 			control.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "editMode.css"));
 		}
 
-		private void CopyBookToProjectDir(string bookFolderName)
+		private void CopyBookToProjectDir(string templateFolderPath, string bookName)
 		{
-			string targetDir = Path.Combine(ProjectDirectory, bookFolderName);
+			string targetDir = Path.Combine(ProjectDirectory, bookName);
 			Directory.CreateDirectory(targetDir);
-			string sourceDir = Path.Combine(FactoryTemplatesDirectory, bookFolderName);
+			//string sourceDir = Path.Combine(FactoryTemplatesDirectory, bookName);
 
 			foreach (string source in
-				Directory.GetFiles(sourceDir, "*.*"))
+				Directory.GetFiles(templateFolderPath, "*.*"))
 			{
-				string target = Path.Combine(targetDir, Path.GetFileName(source));
+				var fileName = Path.GetFileName(source).Replace("starter", bookName);
+				string target = Path.Combine(targetDir, fileName);
 				File.Copy(source, target, true);
 			}
 		}
