@@ -10,11 +10,12 @@ using System.Text;
 using System.Windows.Forms;
 using Skybound.Gecko;
 
-namespace BloomApp
+namespace Bloom
 {
 	public partial class Form1 : Form
 	{
-		private GeckoWebBrowser _browser;
+		private EditPageControl _editControl;
+		private PageControl _previewPage;
 
 		public Form1()
 		{
@@ -24,21 +25,32 @@ namespace BloomApp
 
 			Directory.CreateDirectory(ProjectDirectory);
 			var bookName = "Lucy'sBigDay";
-			CopyBookToProjectDir(Path.Combine(FactoryTemplatesDirectory,"A4Portrait"), bookName);
+			CopyBookToProjectDir(Path.Combine(FactoryTemplatesDirectory,"A4LandscapeBooklet"), bookName);
 
 
 			var path = Path.Combine(ProjectDirectory, Path.Combine(bookName, bookName+".htm"));
-			var control = new PageControl();
-			control.Dock= DockStyle.Fill;
-			htmlPreviewPage.Controls.Add(control);
-			control.DocumentPath = path;
-			control.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "previewMode.css"));
+			_previewPage = new PageControl();
+			_previewPage.Dock= DockStyle.Fill;
+			htmlPreviewPage.Controls.Add(_previewPage);
+			_previewPage.DocumentPath = path;
+			_previewPage.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "previewMode.css"));
 
-			control = new PageControl();
-			control.Dock = DockStyle.Fill;
-			editPage.Controls.Add(control);
-			control.DocumentPath = path;
-			control.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "editMode.css"));
+			_editControl = new EditPageControl();
+			_editControl.Dock = DockStyle.Fill;
+			editPage.Controls.Add(_editControl);
+			tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
+			_editControl.DocumentPath = path;
+			_editControl.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "editMode.css"));
+		}
+
+
+
+		void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
+		{
+			if(e.TabPage!=editPage)
+			{
+				_previewPage.RefreshContents();
+			}
 		}
 
 		private void CopyBookToProjectDir(string templateFolderPath, string bookName)
@@ -97,6 +109,11 @@ namespace BloomApp
 				}
 				return Directory.GetParent(path).FullName;
 			}
+		}
+
+		private void _saveButton_Click(object sender, EventArgs e)
+		{
+			_editControl.SaveHtml();
 		}
 
 

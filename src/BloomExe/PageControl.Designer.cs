@@ -1,4 +1,4 @@
-﻿namespace BloomApp
+﻿namespace Bloom
 {
     partial class PageControl
     {

@@ -6,3 +6,4 @@ glob:*\.svn
 glob:*/bin/*
 glob:*\obj
 glob:userProject
+glob:templates/A4LandscapeBooklet/starter.pdf
