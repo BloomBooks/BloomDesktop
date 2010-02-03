@@ -1,4 +1,4 @@
-﻿namespace BloomApp
+﻿namespace Bloom
 {
     partial class Form1
     {
@@ -39,7 +39,7 @@
             // 
             this.pdfPage.Location = new System.Drawing.Point(4, 22);
             this.pdfPage.Name = "pdfPage";
-            this.pdfPage.Size = new System.Drawing.Size(400, 342);
+            this.pdfPage.Size = new System.Drawing.Size(818, 531);
             this.pdfPage.TabIndex = 2;
             this.pdfPage.Text = "PDF Preview";
             this.pdfPage.UseVisualStyleBackColor = true;
@@ -48,7 +48,7 @@
             // 
             this.htmlPreviewPage.Location = new System.Drawing.Point(4, 22);
             this.htmlPreviewPage.Name = "htmlPreviewPage";
-            this.htmlPreviewPage.Size = new System.Drawing.Size(400, 342);
+            this.htmlPreviewPage.Size = new System.Drawing.Size(818, 531);
             this.htmlPreviewPage.TabIndex = 1;
             this.htmlPreviewPage.Text = "Html Preview";
             this.htmlPreviewPage.UseVisualStyleBackColor = true;
@@ -58,7 +58,7 @@
             this.editPage.Location = new System.Drawing.Point(4, 22);
             this.editPage.Name = "editPage";
             this.editPage.Padding = new System.Windows.Forms.Padding(3);
-            this.editPage.Size = new System.Drawing.Size(818, 531);
+            this.editPage.Size = new System.Drawing.Size(818, 554);
             this.editPage.TabIndex = 0;
             this.editPage.Text = "Html Edit";
             this.editPage.UseVisualStyleBackColor = true;
@@ -71,10 +71,10 @@
             this.tabControl1.Controls.Add(this.editPage);
             this.tabControl1.Controls.Add(this.htmlPreviewPage);
             this.tabControl1.Controls.Add(this.pdfPage);
-            this.tabControl1.Location = new System.Drawing.Point(2, 27);
+            this.tabControl1.Location = new System.Drawing.Point(2, 4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(826, 557);
+            this.tabControl1.Size = new System.Drawing.Size(826, 580);
             this.tabControl1.TabIndex = 1;
             // 
             // Form1
@@ -85,6 +85,7 @@
             this.Controls.Add(this.tabControl1);
             this.Name = "Form1";
             this.Text = "Bloom Test";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.tabControl1.ResumeLayout(false);
             this.ResumeLayout(false);
 

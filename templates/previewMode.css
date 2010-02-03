@@ -1,4 +1,19 @@
+INPUT
+{
+	border: 0 none #000000;
+}
+BODY
+{
+	background-color: #FFFFFF;
+}
 TEXTAREA
 {
-	border: 1px none #BD0404;
+	border: thin none #E81F1F;
+	background: #FFFFFF;
+}
+DIV.page
+{
+	background-color: #FFFFFF;
+	border: 1px none #000000;
+	page-break-after: always;
 }

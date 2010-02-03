@@ -1,9 +1,22 @@
-TEXTAREA
-{
-	border: thin solid #0F1C91;
-	overflow: hidden;
-}
 BODY
 {
-	background-color: #E2E2E2;
+	background-color: #4A4141;
+}
+DIV.page
+{
+	background-color: #E5DBDB;
+	border: 1px solid #000000;
+	margin: 0 0 1cm;
+}
+INPUT
+{
+	border: thin solid #000000;
+}
+TEXTAREA
+{
+	border: thin solid #000000;
+}
+IMG
+{
+	border: thin solid #000000;
 }

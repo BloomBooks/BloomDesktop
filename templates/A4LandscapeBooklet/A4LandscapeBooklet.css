@@ -1,0 +1,117 @@
+.titlePage .bookLabel
+{
+	text-align: center;
+	font: 1em verdana;
+	width: 5cm;
+	position: relative;
+	top: 2cm;
+	left: 5cm;
+	/*[empty]word-break:;*/
+}
+.titlePage .languageName
+{
+	text-align: center;
+	font: 1em verdana;
+	width: 9.5cm;
+	position: relative;
+	top: 4.5cm;
+	left: 2cm;
+}
+.titlePage .title
+{
+	text-align: center;
+	font: 2em verdana;
+	width: 12cm;
+	position: relative;
+	top: 1cm;
+	left: 1.25cm;
+	height: 2cm;
+	/*[empty]word-break:;*/
+}
+.cover .title
+{
+	text-align: center;
+	font: 3em verdana;
+	width: 12cm;
+	position: absolute;
+	top: 1cm;
+	left: 1.25cm;
+	height: 4cm;
+	/*[empty]word-break:;*/
+}
+.cover .picture
+{
+	width: 12cm;
+	position: absolute;
+	top: 5.5cm;
+	left: 1.25cm;
+}
+.cover .BookLabel
+{
+	text-align: right;
+	font: 1em verdana;
+	width: 5cm;
+	position: absolute;
+	top: 19cm;
+	left: 8.5cm;
+	/*[empty]word-break:;*/
+}
+.cover .LanguageName
+{
+	text-align: left;
+	font: 1em verdana;
+	width: 5cm;
+	position: absolute;
+	top: 19cm;
+	left: 1.25cm;
+	/*[empty]word-break:;*/
+}
+DIV.page
+{
+	width: 14.5cm;
+	height: 21cm;
+}
+.titlePage .credits
+{
+	text-align: center;
+	height: 5cm;
+	width: 10cm;
+	top: 3cm;
+	position: relative;
+	left: 2cm;
+}
+.titlePage .printingHistory
+{
+	text-align: center;
+	height: 6cm;
+	width: 10cm;
+	top: 4cm;
+	position: relative;
+	left: 2cm;
+}
+.imageOnTop .picture
+{
+	height: 7cm;
+}
+.imageOnTop .text
+{
+	margin-left: 1cm;
+	position: relative;
+	width: 13cm;
+	height: 9cm;
+	top: 3cm;
+}
+TEXTAREA
+{
+	font: 25px sans-serif;
+	overflow: hidden;
+	border: inherit solid #000000;
+}
+.fred
+{
+	height: 6cm;
+}
+INPUT
+{
+	border: none;
+}
