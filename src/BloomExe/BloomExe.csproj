@@ -61,10 +61,19 @@
     <Compile Include="PageControl.Designer.cs">
       <DependentUpon>PageControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="PdfView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfView.Designer.cs">
+      <DependentUpon>PdfView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfView.resx">
+      <DependentUpon>PdfView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
