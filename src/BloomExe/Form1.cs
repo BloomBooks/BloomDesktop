@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Skybound.Gecko;
 
 namespace Bloom
@@ -29,20 +30,53 @@ namespace Bloom
 
 
 			var path = Path.Combine(ProjectDirectory, Path.Combine(bookName, bookName+".htm"));
-			_previewPage = new PageControl();
+			_previewPage = new PageControl(false);
 			_previewPage.Dock= DockStyle.Fill;
+			_previewPage.Name = "preview";
 			htmlPreviewPage.Controls.Add(_previewPage);
 			_previewPage.DocumentPath = path;
 			_previewPage.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "previewMode.css"));
 
 			_editControl = new EditPageControl();
+			_editControl.Name = "edit";
 			_editControl.Dock = DockStyle.Fill;
 			editPage.Controls.Add(_editControl);
 			tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
 			_editControl.DocumentPath = path;
 			_editControl.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "editMode.css"));
+
+			var b = new PdfView();
+			b.Dock = DockStyle.Fill;
+			b.DocumentPath= path;
+			pdfPage.Controls.Add(b);
+
+			LoadDocumentThumbnails(path);
 		}
 
+		private void LoadDocumentThumbnails(string path)
+		{
+			_documentThumnails.Items.Clear();
+
+			int pageNumber = 0;
+			foreach (XmlNode page in GetElementsFromFile(path, "//x:div[contains(@class,'page')]"))
+			{
+				var id = page.GetStringAttribute("id");
+				var item = new ListViewItem(string.Format("Page {0} [{1}]", pageNumber, id));
+				item.ImageIndex = 0;
+				item.Tag = id;
+				_documentThumnails.Items.Add(item);
+				pageNumber++;
+			}
+		}
+
+		public XmlNodeList GetElementsFromFile(string path, string queryWithXForNamespace)
+		{
+			XmlDocument dom = new XmlDocument();
+			dom.Load(path);
+			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(dom.NameTable);
+			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+			return dom.SafeSelectNodes(queryWithXForNamespace, namespaceManager);
+		}
 
 
 		void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
@@ -115,6 +149,15 @@ namespace Bloom
 		{
 			_editControl.SaveHtml();
 		}
+
+		private void _documentThumnails_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (_documentThumnails.SelectedItems.Count > 0)
+			{
+				_editControl.ShowPage(_documentThumnails.SelectedItems[0].Tag as string);
+			}
+		}
+
 
 
 	}

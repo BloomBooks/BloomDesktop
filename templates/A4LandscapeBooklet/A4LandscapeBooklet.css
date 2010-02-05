@@ -70,6 +70,7 @@ DIV.page
 {
 	width: 14.5cm;
 	height: 21cm;
+	border: 1px solid #000000;
 }
 .titlePage .credits
 {
