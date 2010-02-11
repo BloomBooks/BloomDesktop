@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>Bloom.Program</StartupObject>
+    <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,36 +50,114 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="Edit\DocumentView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\DocumentView.Designer.cs">
+      <DependentUpon>DocumentView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\EdittingView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\EdittingView.Designer.cs">
+      <DependentUpon>EdittingView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Experiment\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="Experiment\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="PageControl.cs">
+    <Compile Include="HtmlPageView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PageControl.Designer.cs">
+    <Compile Include="HtmlPageView.Designer.cs">
+      <DependentUpon>HtmlPageView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Library\LibraryListView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\LibraryListView.Designer.cs">
+      <DependentUpon>LibraryListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Library\LibraryView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\LibraryView.Designer.cs">
+      <DependentUpon>LibraryView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Experiment\PageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Experiment\PageControl.Designer.cs">
       <DependentUpon>PageControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="PdfView.cs">
+    <Compile Include="PageListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PdfView.Designer.cs">
+    <Compile Include="PageListView.Designer.cs">
+      <DependentUpon>PageListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\PdfView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\PdfView.Designer.cs">
       <DependentUpon>PdfView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Library\ProjectBooksListView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\ProjectBooksListView.Designer.cs">
+      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\ProjectView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\ProjectView.Designer.cs">
+      <DependentUpon>ProjectView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Include="Edit\DocumentView.resx">
+      <DependentUpon>DocumentView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\EdittingView.resx">
+      <DependentUpon>EdittingView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Experiment\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PdfView.resx">
+    <EmbeddedResource Include="Library\LibraryListView.resx">
+      <DependentUpon>LibraryListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\LibraryView.resx">
+      <DependentUpon>LibraryView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PageListView.resx">
+      <DependentUpon>PageListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\PdfView.resx">
       <DependentUpon>PdfView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\ProjectBooksListView.resx">
+      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\ProjectView.resx">
+      <DependentUpon>ProjectView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Shell.resx">
+      <DependentUpon>Shell.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\TemplateBookView.resx">
+      <DependentUpon>TemplateBookView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\TemplatePagesView.resx">
+      <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -94,7 +173,25 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Shell.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Shell.Designer.cs">
+      <DependentUpon>Shell.cs</DependentUpon>
+    </Compile>
     <Compile Include="StyleSheetService.cs" />
+    <Compile Include="Library\TemplateBookView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\TemplateBookView.Designer.cs">
+      <DependentUpon>TemplateBookView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Library\TemplatePagesView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\TemplatePagesView.Designer.cs">
+      <DependentUpon>TemplatePagesView.cs</DependentUpon>
+    </Compile>
     <Compile Include="XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +199,12 @@
       <Project>{877D1A24-2D5E-4C46-A933-FCF11EA0403B}</Project>
       <Name>Skybound.Gecko</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Bloom.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

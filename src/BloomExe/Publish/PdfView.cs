@@ -23,6 +23,8 @@ namespace Bloom
 		public PdfView()
 		{
 			InitializeComponent();
+			if(this.DesignMode)
+				return;
 			_browser = new GeckoWebBrowser();
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
