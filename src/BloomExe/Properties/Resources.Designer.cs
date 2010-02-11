@@ -59,5 +59,19 @@ namespace Bloom.Properties {
                 resourceCulture = value;
             }
         }
+        
+        internal static System.Drawing.Icon Bloom {
+            get {
+                object obj = ResourceManager.GetObject("Bloom", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Logo27x32 {
+            get {
+                object obj = ResourceManager.GetObject("Logo27x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

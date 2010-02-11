@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,11 +117,47 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Bloom" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Bloom.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Logo27x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Logo27x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <metadata name="_pageThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="_pageThumbnails.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACS
+        BwAAAk1TRnQBSQFMAwEBAAEoAQABKAEAASABAAEgAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABgAMA
+        ASADAAEBAQABGAYAATAeAAP+A/w8+gP8A/0D//8AMAAD/gP3A+8D5wPiNuED5QPjA+kD8gP8/wAtAAP8
+        A/UDyANgPFYDYAPAA+8D+AP//wAtAAP8A2ID9wb2A/MD+DP3A2ED+QP+/wAzAANPA/gD5gPoA+QD7gPr
+        A+wD7QPuA+8D8APyA/MD9Ab1CfYD9QP0A/cDS/8AOQADUwP4A+YD6APkA+4D6wPsA+0D7gPwA/ED8gPz
+        A/QD9QP2BvcD9gP1A/QD9wNL/wA5AANWA/gD5wPoA+QD7gPrA8MDwAbBBsIGwwPHA/cG+AP3A/YD9QP3
+        A0v/ADkAA1kD+QPnA+gD5APuA+sD7APtA+8D8APxA/ID8wP0A/UD9gP3A/gD9wP2A/UD9wNL/wA5AANd
+        A/kD5gPoA+QD7gPrA8MGwAPBBsIJwwnEA8gD9QP0A/cDS/8AOQADYAP5A+YD5wPkA+4D6wPsA+0D7gPv
+        A/AD8QPyA/MD9AP1BvYG9QP0A/cDS/8AOQADYwP6A+YD6gPjA+0D6wPDBsAGwQbCD8MDxwP0A/MD9wNL
+        /wA5AANmA/oD5gOxA+UD7QPqA+sD7APtA+4D7wPwA/ED8gbzBvQG8wPyA/cDS/8AOQADagP6A+YD5wPj
+        A+0D6gO3CbgMuQ+6A/ID8QP3A0v/ADkAA20D+wPlA+YD4gPtA+kBtwK2AZsBhQF5AZwBhgF6AZwBhgF6
+        AZwBhgF6AZ0BhwF7AZ0BhwF7AZ0BhwF7AZ0BhwF7AZ0BhwF7AZkBgwF4AZUBgQF3A7kD8QPwA/cDTP8A
+        OQADcAP7A+UD5gPiA+0D6QG4AbcBtgGpAZEBhAGqAZIBhQGqAZIBhQGqAZIBhQGqAZIBhQGrAZMBhgGr
+        AZMBhgGnAY8BgwGXAYQBewGbAYcBfQGYAYUBewO5BvAD9wNO/wA5AANzA/sD5APlA+ED7APoAbgBtwG2
+        AbkBnwGUAbkBnwGUAboBoAGVAboBoAGVAboBoAGVAboBoAGVAaoBmAGPAZ8BkAGKAZ0BjwGKAZ8BkQGJ
+        AbkBoQGVA7kG7wP4A1D/ADkAA3cD+wPkA+UD4QPsA+gBuQG4AbcB2gHCAa4B2wHDAa8B2wHDAa8B3AHE
+        AbAB3AHEAbAB3AHEAbABzAG4AakBiwGKAYkBrgGjAZoBlgGSAY4B3QHFAbEDuAbuA/gDUv8AOQADegP8
+        A+MD5APhA+sD5wG5AbgBtwHYAbgBmgHVAboBnQHRAbwBoAHXAbcBmgHZAbkBmwHZAbkBmwHZAbkBmwGo
+        AZoBjgGsAZ0BjwOFAdQBtgGaA7gG7QP4A1T/ADkAA30D/APjA+QD4QPqA+YBuQG4AbcB0gG6AZwBxQHp
+        Ad8B0gHxAewBxQHJAbMB2AG4AZoB2AG4AZoB2AG4AZoB1AG2AZoBqAGbAY4BoAGWAYwB2QG5AZsDuAbs
+        A/gDVf8AOQADgAP8A+ID5gPgA+oD5gG4AbcBtgHKAcABpwHkAfUB8wHyAfcB9gG9AdwBzwHYAbgBmgHY
+        AbgBmgHYAbgBmgHYAbgBmgHGAa0BlQHUAbYBmQHYAbgBmgO3BusD+ANX/wA5AAODA/0D4QOwA+ED6gPl
+        AbgBtwG2AdMBuQGcAb4B3wHUAcgB7AHlAccBxAGqAdgBuAGaAdgBuAGaAdgBuAGaAdgBuAGaAdgBuAGa
+        AdgBuAGaAdgBuAGaA7cG6gP4A1j/ADkAA4YD/QPhA+ID3gPpA+QGtRK2D7cG6QP4A1n/ADkAA4kD/QPg
+        A+ED3gPoA+MD5AblBuYJ5xXoA/gDWv8AOQADiwP9A98D4APdA+gD4gO+DLwJvQPAD+cD5gP4A1v/ADkA
+        A44D/QbfA9wD5wbiBuMG5AnlEuYD5QP4A1z/ADkAA5AD/gPeA98D2wPmA+EDvQy7FbwDvwPlA+QD+ANc
+        /wA5AAOSA/4D3QPeA9oD5gbgBuEG4gnjEuQD4wP4A13/ADkAA5MD/QPcA90D2gPlBt8D4AnhDOIP4wPi
+        A/gDXf8AOQADoAb9A/4D+gP+DP0J/An7CfoJ+QP4A3P/ADkAA+oDoQOZA5wDngOcA5kDlgOTA48DjAOI
+        A4QDgQN9A3oDdgNyA28DawNoA2QDcgPl/wD/AP8A/wAwAAFCAU0BPgcAAT4DAAEoAwABgAMAASADAAEB
+        AQABAQYAAQIWAAP/AQAB8AIAAQcMAAHAAgABAwwAAcACAAEBDAAB4AIAAQMMAAHwAgABDwwAAfACAAEP
+        DAAB8AIAAQ8MAAHwAgABDwwAAfACAAEPDAAB8AIAAQ8MAAHwAgABDwwAAfACAAEPDAAB8AIAAQ8MAAHw
+        AgABDwwAAfACAAEPDAAB8AIAAQ8MAAHwAgABDwwAAfACAAEPDAAB8AIAAQ8MAAHwAgABDwwAAfACAAEP
+        DAAB8AIAAQ8MAAHwAgABDwwAAfACAAEPDAAB8AIAAQ8MAAHwAgABDwwAAfACAAEPDAAB8AIAAQ8MAAHw
+        AgABDwwAAfACAAEPDAAE/wwABP8MAAs=
+</value>
   </data>
 </root>
