@@ -59,12 +59,11 @@
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2});
-            this.listView1.LabelWrap = false;
             this.listView1.LargeImageList = this._pageThumbnails;
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(163, 468);
+            this.listView1.Size = new System.Drawing.Size(167, 468);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
@@ -80,7 +79,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.listView1);
             this.Name = "LibraryListView";
-            this.Size = new System.Drawing.Size(163, 468);
+            this.Size = new System.Drawing.Size(167, 468);
             this.ResumeLayout(false);
 
         }

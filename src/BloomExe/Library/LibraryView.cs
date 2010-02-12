@@ -11,8 +11,11 @@ namespace Bloom
 {
 	public partial class LibraryView : UserControl
 	{
-		public LibraryView()
+		private readonly LibraryModel _model;
+
+		public LibraryView(LibraryModel model)
 		{
+			_model = model;
 			InitializeComponent();
 		}
 	}

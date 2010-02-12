@@ -1,4 +1,4 @@
-﻿namespace Bloom
+﻿namespace Bloom.Project
 {
     partial class ProjectView
     {
@@ -32,9 +32,6 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.libraryView1 = new Bloom.LibraryView();
-            this.edittingView1 = new Bloom.EdittingView();
-            this.pdfView1 = new Bloom.PdfView();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -85,30 +82,7 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Publish";
             this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // libraryView1
-            // 
-            this.libraryView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.libraryView1.Location = new System.Drawing.Point(3, 3);
-            this.libraryView1.Name = "libraryView1";
-            this.libraryView1.Size = new System.Drawing.Size(871, 508);
-            this.libraryView1.TabIndex = 10;
-            // 
-            // edittingView1
-            // 
-            this.edittingView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.edittingView1.Location = new System.Drawing.Point(3, 3);
-            this.edittingView1.Name = "edittingView1";
-            this.edittingView1.Size = new System.Drawing.Size(871, 508);
-            this.edittingView1.TabIndex = 0;
-            // 
-            // pdfView1
-            // 
-            this.pdfView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pdfView1.Location = new System.Drawing.Point(3, 3);
-            this.pdfView1.Name = "pdfView1";
-            this.pdfView1.Size = new System.Drawing.Size(871, 508);
-            this.pdfView1.TabIndex = 0;
+          
             // 
             // ProjectView
             // 
@@ -131,9 +105,6 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
-        private LibraryView libraryView1;
-        private EdittingView edittingView1;
-        private PdfView pdfView1;
 
 
     }
