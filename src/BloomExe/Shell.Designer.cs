@@ -1,4 +1,6 @@
-﻿namespace Bloom
+﻿using Bloom.Project;
+
+namespace Bloom
 {
     partial class Shell
     {
@@ -29,17 +31,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Shell));
-            this.projectView1 = new Bloom.ProjectView();
             this.SuspendLayout();
-            // 
-            // projectView1
-            // 
-            this.projectView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.projectView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.projectView1.Location = new System.Drawing.Point(0, 0);
-            this.projectView1.Name = "projectView1";
-            this.projectView1.Size = new System.Drawing.Size(797, 546);
-            this.projectView1.TabIndex = 0;
             // 
             // Shell
             // 
@@ -47,16 +39,15 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(797, 546);
-            this.Controls.Add(this.projectView1);
+            
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Shell";
-            this.Text = "Shell";
+            this.Text = "Bloom";
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private ProjectView projectView1;
     }
 }
