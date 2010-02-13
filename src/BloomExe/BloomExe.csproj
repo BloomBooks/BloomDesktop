@@ -66,18 +66,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Edit\DocumentView.cs">
+    <Compile Include="Edit\EditingModel.cs" />
+    <Compile Include="Edit\EditingView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Edit\DocumentView.Designer.cs">
-      <DependentUpon>DocumentView.cs</DependentUpon>
+    <Compile Include="Edit\EditingView.Designer.cs">
+      <DependentUpon>EditingView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\EdittingView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\EdittingView.Designer.cs">
-      <DependentUpon>EdittingView.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Event.cs" />
     <Compile Include="Experiment\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,13 +86,16 @@
     <Compile Include="HtmlPageView.Designer.cs">
       <DependentUpon>HtmlPageView.cs</DependentUpon>
     </Compile>
-    <Compile Include="LibraryModel.cs" />
+    <Compile Include="Library\Book.cs" />
+    <Compile Include="Library\BookCollection.cs" />
+    <Compile Include="Library\BookSelection.cs" />
     <Compile Include="Library\LibraryListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Library\LibraryListView.Designer.cs">
       <DependentUpon>LibraryListView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Library\LibraryModel.cs" />
     <Compile Include="Library\LibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -116,6 +115,7 @@
       <DependentUpon>PageListView.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\ProjectModel.cs" />
+    <Compile Include="Publish\PdfModel.cs" />
     <Compile Include="Publish\PdfView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -136,11 +136,8 @@
       <DependentUpon>ProjectView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Edit\DocumentView.resx">
-      <DependentUpon>DocumentView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\EdittingView.resx">
-      <DependentUpon>EdittingView.cs</DependentUpon>
+    <EmbeddedResource Include="Edit\EditingView.resx">
+      <DependentUpon>EditingView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Experiment\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
