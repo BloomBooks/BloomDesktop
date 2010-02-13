@@ -6,14 +6,40 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Library;
 
 namespace Bloom
 {
 	public partial class TemplateBookView : UserControl
 	{
-		public TemplateBookView()
+		private readonly BookSelection _bookSelection;
+
+		public delegate TemplateBookView Factory();//autofac uses this
+
+		public TemplateBookView(BookSelection bookSelection)
 		{
 			InitializeComponent();
+			_bookSelection = bookSelection;
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			LoadBook();
+		}
+
+		void OnBookSelectionChanged(object sender, EventArgs e)
+		{
+			LoadBook();
+		}
+
+		private void LoadBook()
+		{
+			if(_bookSelection.CurrentSelection==null)
+				return;
+
+			label1.Text = _bookSelection.CurrentSelection.Title;
 		}
 	}
 }

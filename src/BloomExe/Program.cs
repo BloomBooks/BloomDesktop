@@ -1,10 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
+using Bloom.Edit;
+using Bloom.Library;
+using Bloom.Publish;
 
 namespace Bloom
 {
@@ -25,9 +27,20 @@ namespace Bloom
 
 			var builder = new Autofac.ContainerBuilder();
 
-			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly());
+			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).InstancePerLifetimeScope();
+			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
+
+			builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
+			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, FactoryCollectionsDirectory));
 
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
+			builder.RegisterGeneratedFactory(typeof(LibraryListView.Factory));
+			builder.RegisterGeneratedFactory(typeof(LibraryView.Factory));
+			builder.RegisterGeneratedFactory(typeof(TemplateBookView.Factory));
+			builder.RegisterGeneratedFactory(typeof(EditingView.Factory));
+			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
+			builder.RegisterGeneratedFactory(typeof(PdfModel.Factory));
+			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
 
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());
@@ -50,6 +63,23 @@ namespace Bloom
 				}
 				return Directory.GetParent(path).FullName;
 			}
+		}
+		private static string FactoryCollectionsDirectory
+		{
+			get { return Path.Combine(GetTopAppDirectory(), "factoryCollections"); }
+		}
+
+		private static string GetTopAppDirectory()
+		{
+			string path = DirectoryOfTheApplicationExecutable;
+			char sep = Path.DirectorySeparatorChar;
+			int i = path.ToLower().LastIndexOf(sep + "output" + sep);
+
+			if (i > -1)
+			{
+				path = path.Substring(0, i + 1);
+			}
+			return path;
 		}
 
 	}

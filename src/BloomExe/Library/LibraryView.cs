@@ -6,17 +6,32 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Library;
 
 namespace Bloom
 {
 	public partial class LibraryView : UserControl
 	{
-		private readonly LibraryModel _model;
+		public delegate LibraryView Factory();//autofac uses this
 
-		public LibraryView(LibraryModel model)
+		private readonly LibraryModel _model;
+		private LibraryListView libraryListView1;
+		private TemplateBookView _bookView;
+
+		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, TemplateBookView.Factory templateBookViewFactory)
 		{
 			_model = model;
 			InitializeComponent();
+
+			this.libraryListView1 = libraryListViewFactory();
+			this.libraryListView1.Dock = System.Windows.Forms.DockStyle.Fill;
+			splitContainer1.Panel1.Controls.Add(libraryListView1);
+
+			_bookView = templateBookViewFactory();
+			_bookView.Dock = System.Windows.Forms.DockStyle.Fill;
+			splitContainer1.Panel2.Controls.Add(_bookView);
+
+			splitContainer1.SplitterDistance = libraryListView1.PreferredWidth;
 		}
 	}
 }

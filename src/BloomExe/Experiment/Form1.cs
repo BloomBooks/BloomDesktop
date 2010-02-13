@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Publish;
 using Skybound.Gecko;
 
 namespace Bloom
@@ -44,11 +45,11 @@ namespace Bloom
 			tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
 			_editControl.DocumentPath = path;
 			_editControl.AddStyleSheet(Path.Combine(FactoryTemplatesDirectory, "editMode.css"));
-
-			var b = new PdfView();
-			b.Dock = DockStyle.Fill;
-			b.DocumentPath= path;
-			pdfPage.Controls.Add(b);
+//
+//            var b = new PdfView();
+//            b.Dock = DockStyle.Fill;
+//            b.DocumentPath= path;
+//            pdfPage.Controls.Add(b);
 
 			LoadDocumentThumbnails(path);
 		}

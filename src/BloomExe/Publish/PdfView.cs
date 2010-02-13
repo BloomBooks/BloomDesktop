@@ -9,26 +9,38 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Project;
 using Skybound.Gecko;
 
-namespace Bloom
+namespace Bloom.Publish
 {
 	public partial class PdfView : UserControl
 	{
-	   protected GeckoWebBrowser _browser;
+		private readonly PdfModel _model;
+
+		public delegate PdfView Factory();//autofac uses this
+
+		protected GeckoWebBrowser _browser;
 		bool _alreadyLoaded = false;
 		protected string _htmlDocPath;
 		private string _tempFile;
 
-		public PdfView()
+		public PdfView(PdfModel model)
 		{
 			InitializeComponent();
 			if(this.DesignMode)
 				return;
+			_model = model;
+			model.CurrentBookChanged += new EventHandler(OnCurrentBookChanged);
 			_browser = new GeckoWebBrowser();
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
 			_tempFile = Path.GetTempFileName()+".pdf";
+		}
+
+		void OnCurrentBookChanged(object sender, EventArgs e)
+		{
+			LoadNow();
 		}
 
 		public string DocumentPath
@@ -47,11 +59,9 @@ namespace Bloom
 		private void LoadNow()
 		{
 			ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe", string.Format("--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-				Path.GetFileName(_htmlDocPath), _tempFile));
+																						  Path.GetFileName(_htmlDocPath), _tempFile));
 			info.WorkingDirectory = Path.GetDirectoryName(_htmlDocPath) ;
 			info.ErrorDialog = false;
-//            info.UseShellExecute = false;
-//            info.CreateNoWindow = true;
 			info.WindowStyle = ProcessWindowStyle.Hidden;
 
 			try
@@ -77,7 +87,7 @@ namespace Bloom
 				Cursor = Cursors.Default;
 			}
 
-		   _browser.Navigate(_tempFile);
+			_browser.Navigate(_tempFile);
 		}
 
 		private void PdfView_Load(object sender, EventArgs e)

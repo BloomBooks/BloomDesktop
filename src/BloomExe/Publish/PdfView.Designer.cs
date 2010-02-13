@@ -1,4 +1,4 @@
-﻿namespace Bloom
+﻿namespace Bloom.Publish
 {
     partial class PdfView
     {

@@ -7,5 +7,11 @@ namespace Bloom.Project
 {
 	public class ProjectModel
 	{
+		private readonly string _pathToProjectDirectory;
+
+		public ProjectModel(string pathToProjectDirectory)
+		{
+			_pathToProjectDirectory = pathToProjectDirectory;
+		}
 	}
 }

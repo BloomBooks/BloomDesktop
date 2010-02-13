@@ -63,7 +63,7 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.edittingView1);
+            this.tabPage2.Controls.Add(this._editingView);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
