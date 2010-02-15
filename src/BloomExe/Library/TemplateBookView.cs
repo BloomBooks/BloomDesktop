@@ -6,7 +6,6 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Bloom.Library;
 
 namespace Bloom
 {
@@ -38,8 +37,8 @@ namespace Bloom
 		{
 			if(_bookSelection.CurrentSelection==null)
 				return;
-
-			label1.Text = _bookSelection.CurrentSelection.Title;
+			_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
+			button1.Visible = _bookSelection.CurrentSelection.Type == Book.BookType.Template;
 		}
 	}
 }

@@ -10,65 +10,83 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Project;
+using Palaso.Reporting;
 using Skybound.Gecko;
 
 namespace Bloom.Publish
 {
 	public partial class PdfView : UserControl
 	{
+		private readonly BookSelection _bookSelection;
 		private readonly PdfModel _model;
 
 		public delegate PdfView Factory();//autofac uses this
 
-		protected GeckoWebBrowser _browser;
-		bool _alreadyLoaded = false;
-		protected string _htmlDocPath;
-		private string _tempFile;
+		private bool _selectionChangedWhileWeWereInvisible;
 
-		public PdfView(PdfModel model)
+		public PdfView(BookSelection bookSelection)
 		{
 			InitializeComponent();
 			if(this.DesignMode)
 				return;
-			_model = model;
-			model.CurrentBookChanged += new EventHandler(OnCurrentBookChanged);
-			_browser = new GeckoWebBrowser();
-			_browser.Parent = this;
-			_browser.Dock = DockStyle.Fill;
-			_tempFile = Path.GetTempFileName()+".pdf";
+
+			_bookSelection = bookSelection;
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 		}
 
-		void OnCurrentBookChanged(object sender, EventArgs e)
+		protected override void OnLoad(EventArgs e)
 		{
-			LoadNow();
+			base.OnLoad(e);
+			LoadBook();
 		}
 
-		public string DocumentPath
+		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			set
+			LoadBook();
+		}
+
+
+		private void LoadBook()
+		{
+			if(!Visible)
 			{
-				_htmlDocPath = value;
-
-				if (_alreadyLoaded)
-				{
-					LoadNow();
-				}
+				_selectionChangedWhileWeWereInvisible = true;
+				return;
 			}
-		}
 
-		private void LoadNow()
-		{
-			ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe", string.Format("--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-																						  Path.GetFileName(_htmlDocPath), _tempFile));
-			info.WorkingDirectory = Path.GetDirectoryName(_htmlDocPath) ;
-			info.ErrorDialog = false;
-			info.WindowStyle = ProcessWindowStyle.Hidden;
+			var pleaseWaitNotice = new PleaseWait();
+			pleaseWaitNotice.Show(this);
 
+			string tempFile = Path.GetTempFileName() + ".pdf";
 			try
 			{
+				_selectionChangedWhileWeWereInvisible=false;
+
+				if(_bookSelection.CurrentSelection ==null)
+				{
+					_browser.Navigate("about:blank");
+					return;
+				}
+				var path = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
+
+				ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe", string.Format("--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
+																							  Path.GetFileName(path), tempFile));
+				info.WorkingDirectory = Path.GetDirectoryName(path) ;
+				info.ErrorDialog = true;
+				info.WindowStyle = ProcessWindowStyle.Hidden;
+
+
 				Cursor = Cursors.WaitCursor;
+				_browser.Visible = false;
 				var proc = System.Diagnostics.Process.Start(info);
-				proc.WaitForExit(1000);
+				proc.WaitForExit(20*1000);
+				if (!proc.HasExited)
+				{
+					proc.Kill();
+					tempFile = Path.GetTempFileName();//change it so we aren't competing
+				   File.WriteAllText(tempFile, "<html><body>Making the PDF took too long</body></html>");
+				}
+
 			}
 			catch (Exception e)
 			{
@@ -85,16 +103,20 @@ namespace Bloom.Publish
 			finally
 			{
 				Cursor = Cursors.Default;
+				_browser.Visible = true;
+				pleaseWaitNotice.Dispose();
 			}
 
-			_browser.Navigate(_tempFile);
+			if (File.Exists(tempFile))
+			{
+				_browser.Navigate(tempFile);
+			}
 		}
 
-		private void PdfView_Load(object sender, EventArgs e)
+		private void _browser_VisibleChanged(object sender, EventArgs e)
 		{
-			_alreadyLoaded = true;
-			if (!string.IsNullOrEmpty(_htmlDocPath))
-				LoadNow();
+			if(Visible && _selectionChangedWhileWeWereInvisible)
+				LoadBook();
 		}
 	}
 }

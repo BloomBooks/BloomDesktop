@@ -7,6 +7,7 @@ using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Publish;
+using Palaso.IO;
 
 namespace Bloom
 {
@@ -31,7 +32,11 @@ namespace Bloom
 			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
 
 			builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
-			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, FactoryCollectionsDirectory));
+			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, FactoryCollectionsDirectory, c.Resolve<BookCollection.Factory>()));
+			builder.Register<IFileLocator>(c => new FileLocator(new string[] { FactoryCollectionsDirectory }));
+
+			builder.RegisterType<Book>().InstancePerDependency();
+			builder.RegisterType<BookCollection>().InstancePerDependency();
 
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
 			builder.RegisterGeneratedFactory(typeof(LibraryListView.Factory));
@@ -41,6 +46,8 @@ namespace Bloom
 			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(PdfModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
+			builder.RegisterGeneratedFactory(typeof(Book.Factory));
+			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));
 
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());

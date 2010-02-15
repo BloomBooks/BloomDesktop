@@ -14,6 +14,10 @@
     <FileAlignment>512</FileAlignment>
     <StartupObject>Bloom.Program</StartupObject>
     <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
+    <SccProjectName>&lt;Project Location In Database&gt;</SccProjectName>
+    <SccLocalPath>&lt;Local Binding Root of Project&gt;</SccLocalPath>
+    <SccAuxPath>&lt;Source Control Database&gt;</SccAuxPath>
+    <SccProvider>Mercurial Source Control Package</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,6 +53,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.Integration.Web.dll</HintPath>
     </Reference>
+    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -66,6 +74,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Browser.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Browser.Designer.cs">
+      <DependentUpon>Browser.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\EditingModel.cs" />
     <Compile Include="Edit\EditingView.cs">
       <SubType>UserControl</SubType>
@@ -80,15 +94,9 @@
     <Compile Include="Experiment\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="HtmlPageView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="HtmlPageView.Designer.cs">
-      <DependentUpon>HtmlPageView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Library\Book.cs" />
+    <Compile Include="Book.cs" />
     <Compile Include="Library\BookCollection.cs" />
-    <Compile Include="Library\BookSelection.cs" />
+    <Compile Include="BookSelection.cs" />
     <Compile Include="Library\LibraryListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -165,6 +173,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\PleaseWait.resx">
+      <DependentUpon>PleaseWait.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
@@ -187,6 +198,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Publish\PleaseWait.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\PleaseWait.Designer.cs">
+      <DependentUpon>PleaseWait.cs</DependentUpon>
     </Compile>
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>

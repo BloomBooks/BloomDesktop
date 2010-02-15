@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Bloom.Library;
+using Skybound.Gecko;
 
 namespace Bloom.Edit
 {
@@ -10,7 +10,7 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 
-		public event EventHandler CurrentBookChanged;
+		public event EventHandler UpdateDisplay;
 
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -32,14 +32,23 @@ namespace Bloom.Edit
 			}
 		}
 
+		public bool HaveCurrentEditableBook
+		{
+			get { return _bookSelection.CurrentSelection != null; }
+		}
+
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			EventHandler handler = CurrentBookChanged;
+			EventHandler handler = UpdateDisplay;
 			if (handler != null)
 			{
 				handler(this, null);
 			}
 		}
 
+		public string GetPathToHtmlFileForCurrentPage()
+		{
+			return _bookSelection.CurrentSelection.GetHtmlFileForCurrentPage();
+		}
 	}
 }
