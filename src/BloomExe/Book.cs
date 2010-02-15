@@ -142,12 +142,22 @@ namespace Bloom
 					return BookType.Shell;
 
 				//directory name matches htm name
-				if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileName(pathToHtml))
+				if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
 				{
 					return BookType.Publication;
 				}
 				return BookType.Unknown;
 			}
+		}
+
+		public bool CanPublish
+		{
+			get { return CanEdit; }
+		}
+
+		public bool CanEdit
+		{
+			get {return Type == Book.BookType.Publication;  }
 		}
 
 		public string GetPreviewHtmlFileForWholeBook()

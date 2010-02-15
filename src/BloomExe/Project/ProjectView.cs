@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Edit;
-using Bloom.Library;
 using Bloom.Publish;
 
 namespace Bloom.Project
@@ -15,9 +8,9 @@ namespace Bloom.Project
 	public partial class ProjectView : UserControl
 	{
 		private readonly ProjectModel _model;
-		private LibraryView libraryView1;
+		private LibraryView _libraryView;
 		private EditingView _editingView;
-		private PdfView pdfView1;
+		private PdfView _pdfView;
 
 		public delegate ProjectView Factory();//autofac uses this
 
@@ -27,14 +20,15 @@ namespace Bloom.Project
 			PdfView.Factory pdfViewFactory)
 		{
 			_model = model;
+			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
 			//
-			// libraryView1
+			// _libraryView
 			//
-			this.libraryView1 = libraryViewFactory();
-			this.libraryView1.Dock = System.Windows.Forms.DockStyle.Fill;
-			tabPage1.Controls.Add(libraryView1);
+			this._libraryView = libraryViewFactory();
+			this._libraryView.Dock = System.Windows.Forms.DockStyle.Fill;
+			tabPage1.Controls.Add(_libraryView);
 
 			//
 			// _editingView
@@ -43,11 +37,46 @@ namespace Bloom.Project
 			this._editingView.Dock = System.Windows.Forms.DockStyle.Fill;
 			tabPage2.Controls.Add(_editingView);
 			//
-			// pdfView1
+			// _pdfView
 			//
-			this.pdfView1 = pdfViewFactory();
-			this.pdfView1.Dock = System.Windows.Forms.DockStyle.Fill;
-			tabPage3.Controls.Add(pdfView1);
+			this._pdfView = pdfViewFactory();
+			this._pdfView.Dock = System.Windows.Forms.DockStyle.Fill;
+			tabPage3.Controls.Add(_pdfView);
+
+			tabPage2.Tag = this.tabControl1.TabPages.IndexOf(tabPage2); //remember initial location
+			tabPage3.Tag = this.tabControl1.TabPages.IndexOf(tabPage3); //remember initial location
+			SetTabVisibility(tabPage3, false);
+			SetTabVisibility(tabPage2, false);
+
+			this.tabPage1.Controls.Add(_libraryView);
+			this.tabPage2.Controls.Add(this._editingView);
+			this.tabPage3.Controls.Add(this._pdfView);
+
+		}
+
+		void OnUpdateDisplay(object sender, System.EventArgs e)
+		{
+			SetTabVisibility(tabPage2, _model.ShowEditPage);
+			SetTabVisibility(tabPage3, _model.ShowPublishPage);
+		}
+
+		private void SetTabVisibility(TabPage page, bool visible)
+		{
+			if (!visible)
+			{
+				if(tabControl1.TabPages.Contains(page))
+				{
+					tabControl1.TabPages.Remove(page);
+				}
+			}
+			else
+			{
+				if (!tabControl1.TabPages.Contains(page))
+				{
+					var index = (int)page.Tag;
+					tabControl1.TabPages.Insert(index,page);
+				}
+			}
 		}
 	}
 }

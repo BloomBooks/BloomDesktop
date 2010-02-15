@@ -31,7 +31,7 @@ namespace Bloom
 			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).InstancePerLifetimeScope();
 			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
 
-			builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
+			//builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
 			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, FactoryCollectionsDirectory, c.Resolve<BookCollection.Factory>()));
 			builder.Register<IFileLocator>(c => new FileLocator(new string[] { FactoryCollectionsDirectory }));
 
@@ -39,12 +39,12 @@ namespace Bloom
 			builder.RegisterType<BookCollection>().InstancePerDependency();
 
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
+			builder.RegisterGeneratedFactory(typeof(Project.ProjectModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(LibraryListView.Factory));
 			builder.RegisterGeneratedFactory(typeof(LibraryView.Factory));
 			builder.RegisterGeneratedFactory(typeof(TemplateBookView.Factory));
 			builder.RegisterGeneratedFactory(typeof(EditingView.Factory));
 			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
-			builder.RegisterGeneratedFactory(typeof(PdfModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
 			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));

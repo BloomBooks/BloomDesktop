@@ -7,11 +7,40 @@ namespace Bloom.Project
 {
 	public class ProjectModel
 	{
-		private readonly string _pathToProjectDirectory;
+		private readonly BookSelection _bookSelection;
 
-		public ProjectModel(string pathToProjectDirectory)
+		public delegate ProjectModel Factory();//autofac uses this
+		public event EventHandler UpdateDisplay;
+
+
+		public ProjectModel(BookSelection bookSelection)
 		{
-			_pathToProjectDirectory = pathToProjectDirectory;
+			_bookSelection = bookSelection;
+			_bookSelection.SelectionChanged += new EventHandler(OnSelectionChanged);
+		}
+
+		public bool ShowEditPage
+		{
+			get { return _bookSelection.CurrentSelection.CanEdit; }
+		}
+
+		public bool ShowPublishPage
+		{
+			get { return _bookSelection.CurrentSelection.CanPublish; }
+		}
+
+		void OnSelectionChanged(object sender, EventArgs e)
+		{
+			InvokeUpdateDisplay();
+		}
+
+		private void InvokeUpdateDisplay()
+		{
+			EventHandler handler = UpdateDisplay;
+			if (handler != null)
+			{
+				handler(this, null);
+			}
 		}
 	}
 }

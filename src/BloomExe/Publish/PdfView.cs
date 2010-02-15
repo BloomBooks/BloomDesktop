@@ -1,24 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
-using Bloom.Project;
-using Palaso.Reporting;
-using Skybound.Gecko;
 
 namespace Bloom.Publish
 {
 	public partial class PdfView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly PdfModel _model;
 
 		public delegate PdfView Factory();//autofac uses this
 
