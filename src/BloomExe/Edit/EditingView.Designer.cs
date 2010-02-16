@@ -30,9 +30,8 @@
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.pageListView1 = new Bloom.PageListView();
-            this.templatePagesView1 = new Bloom.TemplatePagesView();
             this._browser1 = new Bloom.Browser();
+            this.templatePagesView1 = new Bloom.TemplatePagesView();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -46,16 +45,13 @@
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this._browser1);
-            // 
+             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Size = new System.Drawing.Size(686, 497);
-            this.splitContainer1.SplitterDistance = 590;
+            this.splitContainer1.SplitterDistance = 86;
+            this.splitContainer1.SplitterWidth = 1;
             this.splitContainer1.TabIndex = 0;
             // 
             // splitContainer2
@@ -63,47 +59,39 @@
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
-            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.pageListView1);
+            this.splitContainer2.Panel1.Controls.Add(this._browser1);
             // 
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.templatePagesView1);
-            this.splitContainer2.Size = new System.Drawing.Size(92, 497);
-            this.splitContainer2.SplitterDistance = 215;
+            this.splitContainer2.Size = new System.Drawing.Size(599, 497);
+            this.splitContainer2.SplitterDistance = 494;
+            this.splitContainer2.SplitterWidth = 1;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // pageListView1
-            // 
-            this.pageListView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(60)))), ((int)(((byte)(80)))));
-            this.pageListView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pageListView1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.pageListView1.Location = new System.Drawing.Point(0, 0);
-            this.pageListView1.Name = "pageListView1";
-            this.pageListView1.Size = new System.Drawing.Size(92, 215);
-            this.pageListView1.TabIndex = 0;
-            // 
-            // templatePagesView1
-            // 
-            this.templatePagesView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(60)))), ((int)(((byte)(80)))));
-            this.templatePagesView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.templatePagesView1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.templatePagesView1.Location = new System.Drawing.Point(0, 0);
-            this.templatePagesView1.Name = "templatePagesView1";
-            this.templatePagesView1.Size = new System.Drawing.Size(92, 278);
-            this.templatePagesView1.TabIndex = 0;
+
             // 
             // _browser1
             // 
-            this._browser1.BackColor = System.Drawing.Color.Blue;
+            this._browser1.BackColor = System.Drawing.Color.DarkGray;
             this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
             this._browser1.Location = new System.Drawing.Point(0, 0);
             this._browser1.Name = "_browser1";
-            this._browser1.Size = new System.Drawing.Size(590, 497);
-            this._browser1.TabIndex = 0;
+            this._browser1.Size = new System.Drawing.Size(494, 497);
+            this._browser1.TabIndex = 1;
+            // 
+            // templatePagesView1
+            // 
+            this.templatePagesView1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(55)))), ((int)(((byte)(63)))));
+            this.templatePagesView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.templatePagesView1.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.templatePagesView1.Location = new System.Drawing.Point(0, 0);
+            this.templatePagesView1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.templatePagesView1.Name = "templatePagesView1";
+            this.templatePagesView1.Size = new System.Drawing.Size(104, 497);
+            this.templatePagesView1.TabIndex = 0;
             // 
             // EditingView
             // 
@@ -126,9 +114,8 @@
 
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private TemplatePagesView templatePagesView1;
-        private PageListView pageListView1;
         private Browser _browser1;
+        private TemplatePagesView templatePagesView1;
 
 
     }

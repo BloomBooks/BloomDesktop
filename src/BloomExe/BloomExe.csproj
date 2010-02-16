@@ -80,6 +80,7 @@
     <Compile Include="Browser.Designer.cs">
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
     <Compile Include="Edit\EditingView.cs">
       <SubType>UserControl</SubType>
@@ -116,10 +117,10 @@
     <Compile Include="Experiment\PageControl.Designer.cs">
       <DependentUpon>PageControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="PageListView.cs">
+    <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PageListView.Designer.cs">
+    <Compile Include="Edit\PageListView.Designer.cs">
       <DependentUpon>PageListView.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\ProjectModel.cs" />
@@ -155,7 +156,7 @@
     <EmbeddedResource Include="Library\LibraryView.resx">
       <DependentUpon>LibraryView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PageListView.resx">
+    <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PdfView.resx">
@@ -181,7 +182,7 @@
     <EmbeddedResource Include="Library\TemplateBookView.resx">
       <DependentUpon>TemplateBookView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\TemplatePagesView.resx">
+    <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -217,10 +218,10 @@
     <Compile Include="Library\TemplateBookView.Designer.cs">
       <DependentUpon>TemplateBookView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Library\TemplatePagesView.cs">
+    <Compile Include="Edit\TemplatePagesView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\TemplatePagesView.Designer.cs">
+    <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlUtilities.cs" />
@@ -236,6 +237,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Logo27x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\x-office-document.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

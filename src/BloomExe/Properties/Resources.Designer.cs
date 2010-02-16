@@ -67,6 +67,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap GenericPage32x32 {
+            get {
+                object obj = ResourceManager.GetObject("GenericPage32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap Logo27x32 {
             get {
                 object obj = ResourceManager.GetObject("Logo27x32", resourceCulture);
