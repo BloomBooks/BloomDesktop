@@ -34,9 +34,11 @@
             // 
             // listView1
             // 
-            this.listView1.BackColor = System.Drawing.SystemColors.InactiveCaption;
+            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView1.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.listView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listView1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.listView1.Location = new System.Drawing.Point(0, 28);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(103, 122);
@@ -46,13 +48,13 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Location = new System.Drawing.Point(2, 7);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(84, 13);
+            this.label1.Size = new System.Drawing.Size(86, 18);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Template Pages";
+            this.label1.Text = "Templates";
             // 
             // TemplatePagesView
             // 

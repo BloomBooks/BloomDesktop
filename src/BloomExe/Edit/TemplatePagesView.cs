@@ -9,15 +9,17 @@ using System.Windows.Forms;
 
 namespace Bloom
 {
-	public partial class PageListView : UserControl
+	public partial class TemplatePagesView : UserControl
 	{
-		public PageListView()
+		public delegate TemplatePagesView Factory();//autofac uses this
+
+		public TemplatePagesView()
 		{
-			this.Font= SystemFonts.MessageBoxFont;
+			this.Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
 		}
 
-		private void PageListView_BackColorChanged(object sender, EventArgs e)
+		private void TemplatePagesView_BackColorChanged(object sender, EventArgs e)
 		{
 			listView1.BackColor = BackColor;
 		}

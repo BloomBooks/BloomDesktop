@@ -28,7 +28,7 @@ namespace Bloom
 
 			if(DesignMode)
 			{
-				this.BackColor=Color.Blue;
+				this.BackColor=Color.DarkGray;
 				return;
 			}
 

@@ -78,9 +78,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(63)))), ((int)(((byte)(51)))));
             this.Controls.Add(this.listView1);
             this.Name = "LibraryListView";
             this.Size = new System.Drawing.Size(167, 468);
+            this.BackColorChanged += new System.EventHandler(this.LibraryListView_BackColorChanged);
             this.ResumeLayout(false);
 
         }

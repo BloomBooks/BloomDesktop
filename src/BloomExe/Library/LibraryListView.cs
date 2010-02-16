@@ -58,5 +58,10 @@ namespace Bloom.Library
 				return;
 			_model.SelectBook((Book) listView1.SelectedItems[0].Tag);
 		}
+
+		private void LibraryListView_BackColorChanged(object sender, EventArgs e)
+		{
+			listView1.BackColor = BackColor;
+		}
 	}
 }

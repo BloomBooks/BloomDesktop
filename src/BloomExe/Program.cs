@@ -48,6 +48,8 @@ namespace Bloom
 			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
 			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));
+//            builder.RegisterGeneratedFactory(typeof(PageListView.Factory));
+			builder.RegisterGeneratedFactory(typeof(TemplatePagesView.Factory));
 
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());

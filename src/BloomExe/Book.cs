@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Properties;
 using Palaso.IO;
 
 namespace Bloom
@@ -16,7 +18,6 @@ namespace Bloom
 
 		private readonly string _path;
 		private readonly IFileLocator _fileLocator;
-		private string _currentPageId;
 
 		public Book(string path, IFileLocator fileLocator)
 		{
@@ -45,12 +46,7 @@ namespace Bloom
 			}
 		}
 
-		public void ShowPage(string id)
-		{
-			_currentPageId = id;
-		}
-
-		public string GetHtmlFileForCurrentPage()
+		public string GetHtmlFileForPage(Page page)
 		{
 			if(!File.Exists(PathToHtml))
 			{
@@ -73,11 +69,11 @@ namespace Bloom
 			//for the one page
 			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", namespaceManager))
 			{
-				if (string.IsNullOrEmpty(_currentPageId))
-				{
-					_currentPageId = node.GetStringAttribute("id");
-				}
-				if (node.GetStringAttribute("id") != _currentPageId)
+//                if (string.IsNullOrEmpty(_currentPageId))
+//                {
+//                    _currentPageId = node.GetStringAttribute("id");
+//                }
+				if (node.GetStringAttribute("id") != page.Id)
 				{
 					node.SetAttribute("style", "", "display:none");
 				}
@@ -160,6 +156,11 @@ namespace Bloom
 			get {return Type == Book.BookType.Publication;  }
 		}
 
+		public Page FirstPage
+		{
+			get { return GetPages().First(); }
+		}
+
 		public string GetPreviewHtmlFileForWholeBook()
 		{
 			if (!File.Exists(PathToHtml))
@@ -193,7 +194,41 @@ namespace Bloom
 			link.SetAttribute("type", "text/css");
 			head.AppendChild(link);
 		}
+
+		public IEnumerable<Page> GetPages()
+		{
+			int pageNumber = 0;
+			foreach (XmlNode page in GetElementsFromFile(PathToHtml, "//x:div[contains(@class,'page')]"))
+			{
+				pageNumber++;
+				var id = page.GetStringAttribute("id");
+				yield return new Page(id, pageNumber.ToString(), Resources.GenericPage32x32);
+			}
+
+		}
+
+		private XmlNodeList GetElementsFromFile(string path, string queryWithXForNamespace)
+		{
+			XmlDocument dom = new XmlDocument();
+			dom.Load(path);
+			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(dom.NameTable);
+			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+			return dom.SafeSelectNodes(queryWithXForNamespace, namespaceManager);
+		}
 	}
 
+	public class Page
+	{
+		public Page(string id, string caption, Image thumbnail)
+		{
+			Id = id;
+			Caption = caption;
+			Thumbnail = thumbnail;
+		}
 
+
+		public string Id {get;private set;}
+		public string Caption { get; private set; }
+		public Image Thumbnail { get; private set; }
+	}
 }
