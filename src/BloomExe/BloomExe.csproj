@@ -96,6 +96,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Book.cs" />
+    <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Library\BookCollection.cs" />
     <Compile Include="BookSelection.cs" />
     <Compile Include="Library\LibraryListView.cs">

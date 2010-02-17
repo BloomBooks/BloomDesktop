@@ -53,7 +53,7 @@
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(91, 187);
+            this.listView1.Size = new System.Drawing.Size(113, 187);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
@@ -86,7 +86,7 @@
             this.Controls.Add(this.listView1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "PageListView";
-            this.Size = new System.Drawing.Size(94, 216);
+            this.Size = new System.Drawing.Size(116, 216);
             this.BackColorChanged += new System.EventHandler(this.PageListView_BackColorChanged);
             this.ResumeLayout(false);
             this.PerformLayout();
