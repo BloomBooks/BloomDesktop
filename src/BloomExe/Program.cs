@@ -37,6 +37,7 @@ namespace Bloom
 
 			builder.RegisterType<Book>().InstancePerDependency();
 			builder.RegisterType<BookCollection>().InstancePerDependency();
+			builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
 
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectModel.Factory));

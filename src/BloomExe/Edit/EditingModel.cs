@@ -67,7 +67,7 @@ namespace Bloom.Edit
 
 		public string GetPathToHtmlFileForCurrentPage()
 		{
-			return _bookSelection.CurrentSelection.GetHtmlFileForPage(_pageSelection.CurrentSelection);
+			return _bookSelection.CurrentSelection.GetEditableHtmlFileForPage(_pageSelection.CurrentSelection);
 		}
 	}
 }

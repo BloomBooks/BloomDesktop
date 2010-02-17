@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
@@ -18,12 +21,16 @@ namespace Bloom
 
 		private readonly string _path;
 		private readonly IFileLocator _fileLocator;
+		private HtmlThumbNailer _thumbnailProvider;
+		private XmlNamespaceManager _namespaceManager;
 
-		public Book(string path, IFileLocator fileLocator)
+		public Book(string path, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
 		{
 			_path = path;
 			_fileLocator = fileLocator;
+			_thumbnailProvider = thumbnailProvider;
 		}
+
 
 		public string Title
 		{
@@ -32,53 +39,71 @@ namespace Bloom
 
 		public  Image GetThumbNail()
 		{
-			var existing = Path.Combine(_path, "thumbnail.png");
-			if(!File.Exists(existing))
-				return null;
-
-			try
+//            var existing = Path.Combine(_path, "thumbnail.png");
+//            if(!File.Exists(existing))
+//                return null;
+//
+//            try
+//            {
+//                return Image.FromFile(existing);
+//            }
+//            catch (Exception)
+//            {
+//                return null;
+//            }
+			var path = GetPreviewHtmlFileForFirstPage();
+			if(string.IsNullOrEmpty(path))
 			{
-				return Image.FromFile(existing);
+				return Resources.GenericPage32x32;
 			}
-			catch (Exception)
-			{
-				return null;
-			}
+			return _thumbnailProvider.GetThumbnail(_path, path);
 		}
 
-		public string GetHtmlFileForPage(Page page)
+		public string GetEditableHtmlFileForPage(Page page)
 		{
-			if(!File.Exists(PathToHtml))
+			return GetEditableHtmlFileForPage(page.Id);
+		}
+		public string GetEditableHtmlFileForPage(string id)
+		{
+
+			if (!File.Exists(PathToHtml))
 			{
 				return GetPageSayingCantShowBook();
 			}
 
-			XmlNamespaceManager namespaceManager;
-			XmlDocument dom = GetDomWithStyleSheet(out namespaceManager, "editMode.css");
+			XmlDocument dom = GetDomWithStyleSheet( "editMode.css");
+			HideEverythingButCurrentPage(dom,  id);
+			AddJavaScriptForEditing(dom);
+			return WriteDomToTempHtml(dom, "-tempEdit.htm");
+		}
 
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", namespaceManager))
+		public string GetPreviewHtmlFileForPage(string pageId)
+		{
+			if(!File.Exists(PathToHtml))
 			{
-				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
-			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:textarea", namespaceManager))
-			{
-				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
+				return string.Empty;
 			}
 
-			//Note here we're just hiding the other pages... we could instead just create the file
-			//for the one page
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", namespaceManager))
+			XmlDocument dom = GetDomWithStyleSheet( "previewMode.css");
+			HideEverythingButCurrentPage(dom, pageId);
+			return WriteDomToTempHtml(dom, "-tempPreview.htm");
+		}
+
+		public string GetPreviewHtmlFileForFirstPage()
+		{
+			if (!File.Exists(PathToHtml))
 			{
-//                if (string.IsNullOrEmpty(_currentPageId))
-//                {
-//                    _currentPageId = node.GetStringAttribute("id");
-//                }
-				if (node.GetStringAttribute("id") != page.Id)
-				{
-					node.SetAttribute("style", "", "display:none");
-				}
+				return null;
 			}
-			string tempPath = PathToHtml.Replace(".htm", "-tempEdit.htm");// Path.GetTempFileName() + ".htm";
+
+			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
+			HideEverythingButFirstPage(dom);
+			return WriteDomToTempHtml(dom, "-tempPreview.htm");
+		}
+
+		private string WriteDomToTempHtml(XmlDocument dom, string suffix)
+		{
+			string tempPath = PathToHtml.Replace(".htm", suffix);
 
 			using (var writer = XmlWriter.Create(tempPath))
 			{
@@ -88,13 +113,52 @@ namespace Bloom
 			return tempPath;
 		}
 
-		private XmlDocument GetDomWithStyleSheet(out XmlNamespaceManager namespaceManager, string cssFileName)
+		private void HideEverythingButFirstPage(XmlDocument dom)
+		{
+			bool onFirst = true;
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", _namespaceManager))
+			{
+				if (!onFirst)
+				{
+					node.SetAttribute("style", "", "display:none");
+				}
+				onFirst =false;
+			}
+		}
+
+		//Note here we're just hiding the other pages... we could instead just create the file
+		//for the one page
+		private void HideEverythingButCurrentPage(XmlDocument dom,  string pageId)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", _namespaceManager))
+			{
+				if (node.GetStringAttribute("id") != pageId)
+				{
+					node.SetAttribute("style", "", "display:none");
+				}
+			}
+		}
+
+		private void AddJavaScriptForEditing(XmlDocument dom)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", _namespaceManager))
+			{
+				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
+			}
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:textarea", _namespaceManager))
+			{
+				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
+			}
+		}
+
+		private XmlDocument GetDomWithStyleSheet(string cssFileName)
 		{
 			XmlDocument dom = new XmlDocument();
 			dom.Load(PathToHtml);
-			namespaceManager = new XmlNamespaceManager(dom.NameTable);
-			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			var head = dom.SelectSingleNode("//x:head", namespaceManager);
+			_namespaceManager = new XmlNamespaceManager(dom.NameTable);
+			_namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+
+			var head = dom.SelectSingleNode("//x:head", _namespaceManager);
 
 			AddSheet(dom, head, cssFileName);
 			return dom;
@@ -169,7 +233,7 @@ namespace Bloom
 			}
 
 			XmlNamespaceManager namespaceManager;
-			XmlDocument dom = GetDomWithStyleSheet(out namespaceManager, "previewMode.css");
+			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
 
 			string tempPath = PathToHtml.Replace(".htm", "-tempPreview.htm");
 
@@ -202,10 +266,13 @@ namespace Bloom
 			{
 				pageNumber++;
 				var id = page.GetStringAttribute("id");
-				yield return new Page(id, pageNumber.ToString(), Resources.GenericPage32x32);
+				var htmlPath = GetPreviewHtmlFileForPage(id);
+				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_path+":"+id, htmlPath));
 			}
 
 		}
+
+
 
 		private XmlNodeList GetElementsFromFile(string path, string queryWithXForNamespace)
 		{

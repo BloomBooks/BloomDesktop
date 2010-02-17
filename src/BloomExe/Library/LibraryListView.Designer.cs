@@ -41,6 +41,7 @@
             // 
             // listView1
             // 
+            this.listView1.BackColor = System.Drawing.Color.Lavender;
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             listViewGroup1.Header = "Our Books";
             listViewGroup1.Name = "Our Books";
