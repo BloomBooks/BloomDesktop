@@ -28,22 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listView1 = new System.Windows.Forms.ListView();
             this.label1 = new System.Windows.Forms.Label();
+            this._thumbNailList = new Bloom.Edit.ThumbNailList();
             this.SuspendLayout();
-            // 
-            // listView1
-            // 
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.listView1.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.listView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listView1.Location = new System.Drawing.Point(0, 28);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(103, 122);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
             // 
             // label1
             // 
@@ -56,15 +43,26 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Templates";
             // 
+            // _thumbNailList
+            // 
+            this._thumbNailList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this._thumbNailList.Font = new System.Drawing.Font("Tahoma", 9F);
+            this._thumbNailList.Location = new System.Drawing.Point(0, 38);
+            this._thumbNailList.Name = "_thumbNailList";
+            this._thumbNailList.Size = new System.Drawing.Size(155, 140);
+            this._thumbNailList.TabIndex = 2;
+            // 
             // TemplatePagesView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.Controls.Add(this._thumbNailList);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.listView1);
             this.Name = "TemplatePagesView";
-            this.Size = new System.Drawing.Size(103, 150);
+            this.Size = new System.Drawing.Size(155, 179);
             this.BackColorChanged += new System.EventHandler(this.TemplatePagesView_BackColorChanged);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -73,7 +71,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Label label1;
+        private Bloom.Edit.ThumbNailList _thumbNailList;
     }
 }

@@ -88,6 +88,12 @@
     <Compile Include="Edit\EditingView.Designer.cs">
       <DependentUpon>EditingView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\ThumbNailList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\ThumbNailList.Designer.cs">
+      <DependentUpon>ThumbNailList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Event.cs" />
     <Compile Include="Experiment\Form1.cs">
       <SubType>Form</SubType>
@@ -124,6 +130,7 @@
     <Compile Include="Edit\PageListView.Designer.cs">
       <DependentUpon>PageListView.cs</DependentUpon>
     </Compile>
+    <Compile Include="TemplateCollectionList.cs" />
     <Compile Include="Project\ProjectModel.cs" />
     <Compile Include="Publish\PdfView.cs">
       <SubType>UserControl</SubType>
@@ -147,6 +154,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Edit\EditingView.resx">
       <DependentUpon>EditingView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\ThumbNailList.resx">
+      <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Experiment\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
