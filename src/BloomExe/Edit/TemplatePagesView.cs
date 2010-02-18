@@ -1,27 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Bloom
 {
 	public partial class TemplatePagesView : UserControl
 	{
+		private readonly BookSelection _bookSelection;
+
 		public delegate TemplatePagesView Factory();//autofac uses this
 
-		public TemplatePagesView()
+		public TemplatePagesView(BookSelection bookSelection)
 		{
+			_bookSelection = bookSelection;
+
 			this.Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+		 }
+
+		void OnBookSelectionChanged(object sender, EventArgs e)
+		{
+			if (_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.TemplateBook==null)
+			{
+				_thumbNailList.SetItems(new Page[] { });
+			}
+			else
+			{
+				_thumbNailList.SetItems(((Book) _bookSelection.CurrentSelection.TemplateBook).GetPages());
+			}
 		}
 
 		private void TemplatePagesView_BackColorChanged(object sender, EventArgs e)
 		{
-			listView1.BackColor = BackColor;
+			_thumbNailList.BackColor = BackColor;
 		}
+
 	}
 }

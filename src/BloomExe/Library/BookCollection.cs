@@ -7,7 +7,7 @@ namespace Bloom.Library
 {
 	public class BookCollection
 	{
-		public delegate BookCollection Factory(string path);//autofac uses this
+		public delegate BookCollection Factory(string path/*, Func<string, Book> templateFindingMethod*/);//autofac uses this
 
 		private readonly string _path;
 		private readonly Book.Factory _bookFactory;
@@ -30,5 +30,7 @@ namespace Bloom.Library
 				yield return _bookFactory(path);
 			}
 		}
+
+
 	}
 }

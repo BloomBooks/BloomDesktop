@@ -11,15 +11,15 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToProject;
-		private readonly string _pathToFactoryCollections;
+		private readonly TemplateCollectionList _templateCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 
-		public LibraryModel(BookSelection bookSelection, string pathToProject, string pathToFactoryCollections,
+		public LibraryModel(BookSelection bookSelection, string pathToProject, TemplateCollectionList templateCollectionList,
 			BookCollection.Factory bookFactory)
 		{
 			_bookSelection = bookSelection;
 			_pathToProject = pathToProject;
-			_pathToFactoryCollections = pathToFactoryCollections;
+			_templateCollectionList = templateCollectionList;
 			_bookCollectionFactory = bookFactory;
 		}
 
@@ -27,9 +27,12 @@ namespace Bloom.Library
 		{
 			yield return _bookCollectionFactory(_pathToProject);
 
-			foreach (var dir in Directory.GetDirectories(_pathToFactoryCollections))
+			foreach (var root in _templateCollectionList.ReposistoryFolders)
 			{
-				yield return _bookCollectionFactory(dir);
+				foreach (var dir in Directory.GetDirectories(root))
+				{
+					yield return _bookCollectionFactory(dir);
+				}
 			}
 		}
 

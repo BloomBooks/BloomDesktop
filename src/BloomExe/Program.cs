@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
+using Bloom.Project;
 using Bloom.Publish;
 using Palaso.IO;
 
@@ -31,13 +32,30 @@ namespace Bloom
 			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).InstancePerLifetimeScope();
 			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
 
+			builder.RegisterType<Book>().InstancePerDependency();
+
 			//builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
-			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, FactoryCollectionsDirectory, c.Resolve<BookCollection.Factory>()));
+			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>()));
 			builder.Register<IFileLocator>(c => new FileLocator(new string[] { FactoryCollectionsDirectory }));
 
-			builder.RegisterType<Book>().InstancePerDependency();
 			builder.RegisterType<BookCollection>().InstancePerDependency();
 			builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
+			builder.RegisterType<PageListView>().InstancePerDependency();
+			builder.RegisterType<TemplatePagesView>().InstancePerDependency();
+			builder.RegisterType<ThumbNailList>().InstancePerDependency();
+			builder.Register<TemplateCollectionList>(c=>
+				 {
+					 var l = new TemplateCollectionList(c.Resolve<Book.Factory>());
+					 l.ReposistoryFolders = new string[] {FactoryCollectionsDirectory };
+					 return l;
+				 }).InstancePerLifetimeScope();
+
+			builder.Register<ITemplateFinder>(c =>
+				 {
+					 return c.Resolve<TemplateCollectionList>();
+				 }).InstancePerLifetimeScope();
+
+   //       didn't give me the same one  builder.RegisterType<TemplateCollectionList>().As<ITemplateFinder>().InstancePerLifetimeScope();
 
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
 			builder.RegisterGeneratedFactory(typeof(Project.ProjectModel.Factory));
@@ -47,14 +65,14 @@ namespace Bloom
 			builder.RegisterGeneratedFactory(typeof(EditingView.Factory));
 			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
-			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));
-//            builder.RegisterGeneratedFactory(typeof(PageListView.Factory));
-			builder.RegisterGeneratedFactory(typeof(TemplatePagesView.Factory));
 
+			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());
 		}
+
+
 
 		public static string DirectoryOfTheApplicationExecutable
 		{
@@ -93,4 +111,6 @@ namespace Bloom
 		}
 
 	}
+
+
 }

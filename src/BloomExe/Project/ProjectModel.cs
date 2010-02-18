@@ -42,5 +42,12 @@ namespace Bloom.Project
 				handler(this, null);
 			}
 		}
+
+		public Book FindTemplate(string key)
+		{
+			return null;
+		}
 	}
+
+
 }

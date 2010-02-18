@@ -8,6 +8,8 @@ namespace Bloom.Edit
 		private readonly PageSelection _pageSelection;
 
 		public event EventHandler UpdateDisplay;
+		public event EventHandler UpdatePageList;
+
 
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -50,10 +52,15 @@ namespace Bloom.Edit
 					_pageSelection.SelectPage(page);
 			}
 
-			EventHandler handler = UpdateDisplay;
-			if (handler != null)
+
+			if (UpdateDisplay != null)
 			{
-				handler(this, null);
+				UpdateDisplay(this, null);
+			}
+
+			if (UpdatePageList != null)
+			{
+				UpdatePageList(this, null);
 			}
 		}
 		void OnPageSelectionChanged(object sender, EventArgs e)
@@ -70,4 +77,6 @@ namespace Bloom.Edit
 			return _bookSelection.CurrentSelection.GetEditableHtmlFileForPage(_pageSelection.CurrentSelection);
 		}
 	}
+
+
 }

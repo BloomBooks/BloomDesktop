@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom.Edit
@@ -8,31 +9,31 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _updatePending;
 		private PageListView _pageListView;
+		private TemplatePagesView _templatePagesView;
 		public delegate EditingView Factory();//autofac uses this
 
 
-		public EditingView(EditingModel model, PageListView pageListView)
+		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView)
 		{
 			_model = model;
 			_pageListView = pageListView;
+			_templatePagesView = templatePagesView;
 			InitializeComponent();
 			model.UpdateDisplay += new EventHandler(OnUpdateDisplay);
-//            splitContainer1.SplitterMoving += ((object sender, SplitterCancelEventArgs e) => e.Cancel = true);
-//            splitContainer2.SplitterMoving += ((object sender, SplitterCancelEventArgs e) => e.Cancel = true);
+			model.UpdatePageList += new EventHandler((s,e)=>_pageListView.SetBook(_model.CurrentBook));
 			splitContainer1.Tag = splitContainer1.SplitterDistance;//save it
 			//don't let it grow automatically
 			splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => splitContainer1.SplitterDistance = (int)splitContainer1.Tag);
 
-//            this._pageListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-//                        | System.Windows.Forms.AnchorStyles.Left)
-//                        | System.Windows.Forms.AnchorStyles.Right)));
 			_pageListView.Dock=DockStyle.Fill;
-			this._pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._pageListView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(55)))), ((int)(((byte)(63)))));
-			this._pageListView.Font = new System.Drawing.Font("Segoe UI", 9F);
+			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			_pageListView.BackColor = splitContainer1.Panel1.BackColor;
+			splitContainer1.Panel1.Controls.Add(_pageListView);
 
-			this.splitContainer1.Panel1.Controls.Add(_pageListView);
-
+			_templatePagesView.Dock = DockStyle.Fill;
+			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			_templatePagesView.BackColor = Color.Red;// splitContainer2.Panel2.BackColor;
+			splitContainer2.Panel2.Controls.Add(_templatePagesView);
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -61,7 +62,7 @@ namespace Bloom.Edit
 			{
 				var path = _model.GetPathToHtmlFileForCurrentPage();
 				_browser1.Navigate(path);
-				this._pageListView.SetBook(_model.CurrentBook);
+			 //   this._pageListView.SetBook(_model.CurrentBook);
 			}
 		}
 	}

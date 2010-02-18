@@ -1,32 +1,33 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 using System.Xml;
+using Bloom.Project;
 using Bloom.Properties;
+using Palaso.Code;
 using Palaso.IO;
 
 namespace Bloom
 {
+
+
 	public class Book
 	{
-		public delegate Book Factory(string path);//autofac uses this
+		public delegate Book Factory(string folderPath );//autofac uses this
 
-		private readonly string _path;
+		private readonly string _folderPath;
+		private readonly ITemplateFinder _templateFinder;
 		private readonly IFileLocator _fileLocator;
 		private HtmlThumbNailer _thumbnailProvider;
 		private XmlNamespaceManager _namespaceManager;
 
-		public Book(string path, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
+
+		public Book(string folderPath, ITemplateFinder templateFinder, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
 		{
-			_path = path;
+			_folderPath = folderPath;
+			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
 			_thumbnailProvider = thumbnailProvider;
 		}
@@ -34,29 +35,17 @@ namespace Bloom
 
 		public string Title
 		{
-			get { return Path.GetFileNameWithoutExtension(_path); }
+			get { return Path.GetFileNameWithoutExtension(_folderPath); }
 		}
 
 		public  Image GetThumbNail()
 		{
-//            var existing = Path.Combine(_path, "thumbnail.png");
-//            if(!File.Exists(existing))
-//                return null;
-//
-//            try
-//            {
-//                return Image.FromFile(existing);
-//            }
-//            catch (Exception)
-//            {
-//                return null;
-//            }
 			var path = GetPreviewHtmlFileForFirstPage();
 			if(string.IsNullOrEmpty(path))
 			{
 				return Resources.GenericPage32x32;
 			}
-			return _thumbnailProvider.GetThumbnail(_path, path);
+			return _thumbnailProvider.GetThumbnail(_folderPath, path);
 		}
 
 		public string GetEditableHtmlFileForPage(Page page)
@@ -98,7 +87,7 @@ namespace Bloom
 
 			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
 			HideEverythingButFirstPage(dom);
-			return WriteDomToTempHtml(dom, "-tempPreview.htm");
+			return WriteDomToTempHtml(dom, "-tempFirstPreview.htm");
 		}
 
 		private string WriteDomToTempHtml(XmlDocument dom, string suffix)
@@ -178,12 +167,12 @@ namespace Bloom
 		{
 			get
 			{
-				string p = Path.Combine(_path, Path.GetFileName(_path)+".htm");
+				string p = Path.Combine(_folderPath, Path.GetFileName(_folderPath)+".htm");
 				if(File.Exists(p))
 					return p;
 
 				//template
-				p = Path.Combine(_path, "templatePages.htm");
+				p = Path.Combine(_folderPath, "templatePages.htm");
 				if (File.Exists(p))
 					return p;
 
@@ -225,6 +214,27 @@ namespace Bloom
 			get { return GetPages().First(); }
 		}
 
+		public Book TemplateBook
+		{
+			get
+			{
+				Guard.AgainstNull(_templateFinder, "_templateFinder");
+				if(Type!=BookType.Publication)
+					return null;
+				return _templateFinder.FindTemplateBook(GetTemplateKey());
+			}
+		}
+
+		private string GetTemplateKey()
+		{
+			//for now, we're just using the name of the first css we find
+			foreach (var path in  Directory.GetFiles(_folderPath, "*.css"))
+			{
+				return Path.GetFileNameWithoutExtension(path);
+			}
+			return null;
+		}
+
 		public string GetPreviewHtmlFileForWholeBook()
 		{
 			if (!File.Exists(PathToHtml))
@@ -261,13 +271,16 @@ namespace Bloom
 
 		public IEnumerable<Page> GetPages()
 		{
+			if (string.IsNullOrEmpty(PathToHtml) || !File.Exists(PathToHtml))
+				yield break;
+
 			int pageNumber = 0;
 			foreach (XmlNode page in GetElementsFromFile(PathToHtml, "//x:div[contains(@class,'page')]"))
 			{
 				pageNumber++;
 				var id = page.GetStringAttribute("id");
 				var htmlPath = GetPreviewHtmlFileForPage(id);
-				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_path+":"+id, htmlPath));
+				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_folderPath+":"+id, htmlPath));
 			}
 
 		}
