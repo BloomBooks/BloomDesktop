@@ -184,6 +184,11 @@ namespace Bloom
 			get { return _storage.BookType; }
 		}
 
+		public XmlDocument RawDom
+		{
+			get {return  _storage.Dom; }
+		}
+
 
 		public XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
@@ -229,9 +234,11 @@ namespace Bloom
 			foreach (XmlNode page in _storage.Dom.SafeSelectNodes("//x:div[contains(@class,'page')]", GetNamespaceManager(_storage.Dom)))
 			{
 				pageNumber++;
-				var id = page.GetStringAttribute("id");
+				var id = page.GetOptionalStringAttribute("id","missing");
+				if(id=="missing")
+					throw new ApplicationException("page divs must have id attributes");
 				var dom = GetPreviewHtmlFileForPage(id);
-				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_storage.Key+":"+id, dom));
+				yield return new Page(id, pageNumber.ToString(), (()=>_thumbnailProvider.GetThumbnail(_storage.Key+":"+id, dom)), (()=>FindPageDiv(id)));
 			}
 
 		}
@@ -252,20 +259,19 @@ namespace Bloom
 			return namespaceManager;
 		}
 
-		public void InsertPageAfter(Page selection, Page templatePage)
+		public void InsertPageAfter(Page selection, IPage templatePage)
 		{
 			XmlDocument dom = _storage.Dom;
-			var pageNode = FindPageDiv(dom, selection.Id);
-			var newElement = dom.CreateElement("div");
-			newElement.InnerXml = templatePage.GetHtmlOfDiv();
-			 dom.InsertAfter(newElement, pageNode);
+			var pageNode = FindPageDiv(selection.Id);
+			var node = dom.ImportNode(templatePage.GetDivNode(), true);
+			pageNode.ParentNode.InsertAfter(node, pageNode);
 
 			_storage.Save();
 		}
 
-		private XmlElement FindPageDiv(XmlDocument dom, string id)
+		private XmlElement FindPageDiv(string id)
 		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(dom)))
+			foreach (XmlElement node in _storage.Dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(_storage.Dom)))
 			{
 				if (node.GetStringAttribute("id") == id)
 				{

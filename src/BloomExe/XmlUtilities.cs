@@ -30,6 +30,14 @@ namespace Bloom
 
 	public static class XmlNodeExtensions
 	{
+		public static XmlDocument StripXHtmlNameSpace(this XmlDocument node)
+		{
+//            var x = node.Clone() as XmlDocument;
+			XmlDocument x = new XmlDocument();
+			x.LoadXml(node.OuterXml.Replace("xmlns", "xmlnsNeutered"));
+			return x;
+		}
+
 		/// <summary>
 		/// this is safe to use with foreach, unlike SelectNodes
 		/// </summary>
