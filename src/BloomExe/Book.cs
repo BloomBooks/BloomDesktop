@@ -1,111 +1,100 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Bloom.Project;
 using Bloom.Properties;
 using Palaso.Code;
 using Palaso.IO;
 
 namespace Bloom
 {
-
-
 	public class Book
 	{
-		public delegate Book Factory(string folderPath );//autofac uses this
+		public delegate Book Factory(BookStorage storage);//autofac uses this
 
-		private readonly string _folderPath;
+	   // private readonly string _folderPathx;
 		private readonly ITemplateFinder _templateFinder;
 		private readonly IFileLocator _fileLocator;
 		private HtmlThumbNailer _thumbnailProvider;
-		private XmlNamespaceManager _namespaceManager;
+		private IBookStorage _storage;
 
-
-		public Book(string folderPath, ITemplateFinder templateFinder, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
+		public Book(IBookStorage storage, ITemplateFinder templateFinder, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
 		{
-			_folderPath = folderPath;
+		   // _folderPath = folderPath;
+			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
 			_thumbnailProvider = thumbnailProvider;
 		}
 
+		public enum BookType { Unknown, Template, Shell, Publication }
 
 		public string Title
 		{
-			get { return Path.GetFileNameWithoutExtension(_folderPath); }
+			get { return _storage.Title; }
 		}
 
 		public  Image GetThumbNail()
 		{
-			var path = GetPreviewHtmlFileForFirstPage();
-			if(string.IsNullOrEmpty(path))
+			var dom = GetPreviewHtmlFileForFirstPage();
+			if(dom == null)
 			{
 				return Resources.GenericPage32x32;
 			}
-			return _thumbnailProvider.GetThumbnail(_folderPath, path);
+			return _thumbnailProvider.GetThumbnail(_storage.Key, GetPreviewHtmlFileForFirstPage());
 		}
 
-		public string GetEditableHtmlFileForPage(Page page)
+		public XmlDocument GetEditableHtmlFileForPage(Page page)
 		{
 			return GetEditableHtmlFileForPage(page.Id);
 		}
-		public string GetEditableHtmlFileForPage(string id)
+		public XmlDocument GetEditableHtmlFileForPage(string id)
 		{
-
-			if (!File.Exists(PathToHtml))
+			if (!_storage.LooksOk)
 			{
-				return GetPageSayingCantShowBook();
+				return GetErrorDom();
 			}
 
 			XmlDocument dom = GetDomWithStyleSheet( "editMode.css");
 			HideEverythingButCurrentPage(dom,  id);
 			AddJavaScriptForEditing(dom);
-			return WriteDomToTempHtml(dom, "-tempEdit.htm");
+			return dom;
 		}
 
-		public string GetPreviewHtmlFileForPage(string pageId)
+		public XmlDocument GetPreviewHtmlFileForPage(string pageId)
 		{
-			if(!File.Exists(PathToHtml))
+			if(!_storage.LooksOk)
 			{
-				return string.Empty;
+				return GetErrorDom();
 			}
 
 			XmlDocument dom = GetDomWithStyleSheet( "previewMode.css");
 			HideEverythingButCurrentPage(dom, pageId);
-			return WriteDomToTempHtml(dom, "-tempPreview.htm");
+			return dom;
 		}
 
-		public string GetPreviewHtmlFileForFirstPage()
+		public XmlDocument GetPreviewHtmlFileForFirstPage()
 		{
-			if (!File.Exists(PathToHtml))
+			if (!_storage.LooksOk)
 			{
 				return null;
 			}
 
 			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
 			HideEverythingButFirstPage(dom);
-			return WriteDomToTempHtml(dom, "-tempFirstPreview.htm");
+			return dom;
 		}
 
-		private string WriteDomToTempHtml(XmlDocument dom, string suffix)
-		{
-			string tempPath = PathToHtml.Replace(".htm", suffix);
 
-			using (var writer = XmlWriter.Create(tempPath))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-			return tempPath;
-		}
+
 
 		private void HideEverythingButFirstPage(XmlDocument dom)
 		{
 			bool onFirst = true;
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", _namespaceManager))
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(dom)))
 			{
 				if (!onFirst)
 				{
@@ -119,7 +108,7 @@ namespace Bloom
 		//for the one page
 		private void HideEverythingButCurrentPage(XmlDocument dom,  string pageId)
 		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", _namespaceManager))
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(dom)))
 			{
 				if (node.GetStringAttribute("id") != pageId)
 				{
@@ -130,11 +119,11 @@ namespace Bloom
 
 		private void AddJavaScriptForEditing(XmlDocument dom)
 		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", _namespaceManager))
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", GetNamespaceManager(dom)))
 			{
 				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
 			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:textarea", _namespaceManager))
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:textarea", GetNamespaceManager(dom)))
 			{
 				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
 			}
@@ -142,62 +131,27 @@ namespace Bloom
 
 		private XmlDocument GetDomWithStyleSheet(string cssFileName)
 		{
-			XmlDocument dom = new XmlDocument();
-			dom.Load(PathToHtml);
-			_namespaceManager = new XmlNamespaceManager(dom.NameTable);
-			_namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-
-			var head = dom.SelectSingleNode("//x:head", _namespaceManager);
-
+			XmlDocument dom = (XmlDocument)_storage.Dom.Clone();
+			var head = dom.SelectSingleNode("//x:head", GetNamespaceManager(dom));
 			AddSheet(dom, head, cssFileName);
 			return dom;
 		}
 
-		private string GetPageSayingCantShowBook()
+
+		private XmlDocument GetPageSayingCantShowBook()
 		{
-			string tempNoticePath = Path.GetTempFileName();
-			using (var stream = File.CreateText(tempNoticePath))
-			{
-				stream.WriteLine("<html><body>Could not display that book.</body></html>");
-			}
-			return tempNoticePath;
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body>Could not display that book.</body></html>");
+			return dom;
 		}
 
-		protected string PathToHtml
+		private XmlDocument GetErrorDom()
 		{
-			get
-			{
-				string p = Path.Combine(_folderPath, Path.GetFileName(_folderPath)+".htm");
-				if(File.Exists(p))
-					return p;
-
-				//template
-				p = Path.Combine(_folderPath, "templatePages.htm");
-				if (File.Exists(p))
-					return p;
-
-				return string.Empty;
-			}
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body>Something went wrong</body></html>");
+			return dom;
 		}
 
-		public enum BookType {Unknown, Template, Shell, Publication}
-		public BookType Type {
-			get
-			{
-				var pathToHtml = PathToHtml;
-				if (pathToHtml.EndsWith("templatePages.htm"))
-					return BookType.Template;
-				if (pathToHtml.EndsWith("shellPages.htm"))
-					return BookType.Shell;
-
-				//directory name matches htm name
-				if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
-				{
-					return BookType.Publication;
-				}
-				return BookType.Unknown;
-			}
-		}
 
 		public bool CanPublish
 		{
@@ -206,7 +160,7 @@ namespace Bloom
 
 		public bool CanEdit
 		{
-			get {return Type == Book.BookType.Publication;  }
+			get {return _storage.BookType == BookType.Publication;  }
 		}
 
 		public Page FirstPage
@@ -219,48 +173,45 @@ namespace Bloom
 			get
 			{
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
-				if(Type!=BookType.Publication)
+				if(_storage.BookType!=BookType.Publication)
 					return null;
-				return _templateFinder.FindTemplateBook(GetTemplateKey());
+				return _templateFinder.FindTemplateBook(_storage.GetTemplateKey());
 			}
 		}
 
-		private string GetTemplateKey()
+		public BookType Type
 		{
-			//for now, we're just using the name of the first css we find
-			foreach (var path in  Directory.GetFiles(_folderPath, "*.css"))
-			{
-				return Path.GetFileNameWithoutExtension(path);
-			}
-			return null;
+			get { return _storage.BookType; }
 		}
 
-		public string GetPreviewHtmlFileForWholeBook()
+
+		public XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
-			if (!File.Exists(PathToHtml))
+			if (!_storage.LooksOk)
 			{
 				return GetPageSayingCantShowBook();
 			}
 
-			XmlNamespaceManager namespaceManager;
-			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
+//            XmlNamespaceManager namespaceManager;
+//            XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
+//
+//            string tempPath = _storage.PathToHtml.Replace(".htm", "-tempPreview.htm");
+//
+//            using (var writer = XmlWriter.Create(tempPath))
+//            {
+//                dom.WriteContentTo(writer);
+//                writer.Close();
+//            }
 
-			string tempPath = PathToHtml.Replace(".htm", "-tempPreview.htm");
-
-			using (var writer = XmlWriter.Create(tempPath))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-			return tempPath;
+			return GetDomWithStyleSheet("previewMode.css");
 		}
 
 		private void AddSheet(XmlDocument dom, XmlNode head, string cssFileName)
 		{
-			string path = _fileLocator.LocateFile(cssFileName, "stylesheet");
-
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
-				return;
+			string path = _fileLocator.LocateFile(cssFileName);//, "stylesheet '"+cssFileName+"'");
+//
+//            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+//                return;
 
 			var link = dom.CreateElement("link", "http://www.w3.org/1999/xhtml");
 			link.SetAttribute("rel", "stylesheet");
@@ -271,16 +222,16 @@ namespace Bloom
 
 		public IEnumerable<Page> GetPages()
 		{
-			if (string.IsNullOrEmpty(PathToHtml) || !File.Exists(PathToHtml))
+			if (!_storage.LooksOk)
 				yield break;
 
 			int pageNumber = 0;
-			foreach (XmlNode page in GetElementsFromFile(PathToHtml, "//x:div[contains(@class,'page')]"))
+			foreach (XmlNode page in _storage.Dom.SafeSelectNodes("//x:div[contains(@class,'page')]", GetNamespaceManager(_storage.Dom)))
 			{
 				pageNumber++;
 				var id = page.GetStringAttribute("id");
-				var htmlPath = GetPreviewHtmlFileForPage(id);
-				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_folderPath+":"+id, htmlPath));
+				var dom = GetPreviewHtmlFileForPage(id);
+				yield return new Page(id, pageNumber.ToString(), _thumbnailProvider.GetThumbnail(_storage.Key+":"+id, dom));
 			}
 
 		}
@@ -291,24 +242,52 @@ namespace Bloom
 		{
 			XmlDocument dom = new XmlDocument();
 			dom.Load(path);
+			 return dom.SafeSelectNodes(queryWithXForNamespace, GetNamespaceManager(dom));
+		}
+
+		private XmlNamespaceManager GetNamespaceManager(XmlDocument dom)
+		{
 			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(dom.NameTable);
 			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			return dom.SafeSelectNodes(queryWithXForNamespace, namespaceManager);
+			return namespaceManager;
 		}
-	}
 
-	public class Page
-	{
-		public Page(string id, string caption, Image thumbnail)
+		public void InsertPageAfter(Page selection, Page templatePage)
 		{
-			Id = id;
-			Caption = caption;
-			Thumbnail = thumbnail;
+			XmlDocument dom = _storage.Dom;
+			var pageNode = FindPageDiv(dom, selection.Id);
+			var newElement = dom.CreateElement("div");
+			newElement.InnerXml = templatePage.GetHtmlOfDiv();
+			 dom.InsertAfter(newElement, pageNode);
+
+			_storage.Save();
+		}
+
+		private XmlElement FindPageDiv(XmlDocument dom, string id)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(dom)))
+			{
+				if (node.GetStringAttribute("id") == id)
+				{
+					return node;
+				}
+			}
+			return null;
 		}
 
 
-		public string Id {get;private set;}
-		public string Caption { get; private set; }
-		public Image Thumbnail { get; private set; }
+		public string WriteDomToTempHtml(string stylesheetName)
+		{
+			string tempPath = Path.GetTempFileName() +".htm";
+
+			XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
+
+			using (var writer = XmlWriter.Create(tempPath))
+			{
+				dom.WriteContentTo(writer);
+				writer.Close();
+			}
+			return tempPath;
+		}
 	}
 }

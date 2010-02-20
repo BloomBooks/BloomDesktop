@@ -74,6 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BookStorage.cs" />
     <Compile Include="Browser.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -130,6 +131,8 @@
     <Compile Include="Edit\PageListView.Designer.cs">
       <DependentUpon>PageListView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Page.cs" />
+    <Compile Include="TempFiles.cs" />
     <Compile Include="TemplateCollectionList.cs" />
     <Compile Include="Project\ProjectModel.cs" />
     <Compile Include="Publish\PdfView.cs">

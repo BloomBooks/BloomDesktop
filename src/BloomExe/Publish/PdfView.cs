@@ -56,26 +56,31 @@ namespace Bloom.Publish
 					_browser.Navigate("about:blank");
 					return;
 				}
-				var path = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
+				var dom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
 
-				ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe", string.Format("--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-																							  Path.GetFileName(path), tempFile));
-				info.WorkingDirectory = Path.GetDirectoryName(path) ;
-				info.ErrorDialog = true;
-				info.WindowStyle = ProcessWindowStyle.Hidden;
-
-
-				Cursor = Cursors.WaitCursor;
-				_browser.Visible = false;
-				var proc = System.Diagnostics.Process.Start(info);
-				proc.WaitForExit(20*1000);
-				if (!proc.HasExited)
+				using (var tempHtml = TempFile.CreateHtm(dom))
 				{
-					proc.Kill();
-					tempFile = Path.GetTempFileName();//change it so we aren't competing
-				   File.WriteAllText(tempFile, "<html><body>Making the PDF took too long</body></html>");
-				}
 
+					ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe",
+																 string.Format(
+																	 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
+																	 Path.GetFileName(tempHtml.Path), tempFile));
+					info.WorkingDirectory = Path.GetDirectoryName(tempHtml.Path);
+					info.ErrorDialog = true;
+					info.WindowStyle = ProcessWindowStyle.Hidden;
+
+
+					Cursor = Cursors.WaitCursor;
+					_browser.Visible = false;
+					var proc = System.Diagnostics.Process.Start(info);
+					proc.WaitForExit(20*1000);
+					if (!proc.HasExited)
+					{
+						proc.Kill();
+						tempFile = Path.GetTempFileName(); //change it so we aren't competing
+						File.WriteAllText(tempFile, "<html><body>Making the PDF took too long</body></html>");
+					}
+				}
 			}
 			catch (Exception e)
 			{

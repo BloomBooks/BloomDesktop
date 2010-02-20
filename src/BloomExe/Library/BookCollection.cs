@@ -27,7 +27,7 @@ namespace Bloom.Library
 		{
 			foreach(string path in Directory.GetDirectories(_path))
 			{
-				yield return _bookFactory(path);
+				yield return _bookFactory(new BookStorage(path));
 			}
 		}
 

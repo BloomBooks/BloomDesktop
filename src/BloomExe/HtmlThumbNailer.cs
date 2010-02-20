@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
+using Bloom.Properties;
 
 namespace Bloom
 {
@@ -21,8 +23,10 @@ namespace Bloom
 			_sizeInPixels = sizeInPixels;
 		}
 
-		public Image GetThumbnail(string key, string url)
+		public Image GetThumbnail(string key, XmlNode divNode)
 		{
+		   // return Resources.GenericPage32x32;
+
 			Image image;
 			if(_images.TryGetValue(key, out image))
 			{
@@ -33,11 +37,15 @@ namespace Bloom
 			{
 
 				_browser.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(OnThumbNailBrowser_DocumentCompleted);
-				_browser.Navigate(url);
-				while (_pendingThumbnail == null)
+
+				using (var temp = TempFile.CreateHtm(divNode))
 				{
-					Application.DoEvents();
-					Thread.Sleep(100);
+					_browser.Navigate(temp.Path);
+					while (_pendingThumbnail == null)
+					{
+						Application.DoEvents();
+						Thread.Sleep(100);
+					}
 				}
 				_images.Add(key, _pendingThumbnail);
 			}

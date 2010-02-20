@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Skybound.Gecko;
 
 namespace Bloom
@@ -47,6 +48,13 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
+		//NB: make sure the <base> is set correctly, 'cause you don't know where this method will
+		//save the file before navigating to it.
+		public void Navigate(XmlDocument dom)
+		{
+			_url = TempFile.CreateHtm(dom).Path;
+			UpdateDisplay();
+		}
 		private void UpdateDisplay()
 		{
 			if (!_browserIsReadyToNavigate)

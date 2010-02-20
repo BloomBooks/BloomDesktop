@@ -60,7 +60,7 @@ namespace Bloom.Edit
 		   _updatePending = false;
 		   if (_model.HaveCurrentEditableBook)
 			{
-				var path = _model.GetPathToHtmlFileForCurrentPage();
+				var path = _model.GetPathToHtmlForCurrentPage();
 				_browser1.Navigate(path);
 			 //   this._pageListView.SetBook(_model.CurrentBook);
 			}
