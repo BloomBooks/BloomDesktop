@@ -7,3 +7,4 @@ glob:*/bin/*
 glob:*\obj
 glob:userProject
 glob:templates/A4LandscapeBooklet/starter.pdf
+glob:src/_ReSharper.Bloom/*
