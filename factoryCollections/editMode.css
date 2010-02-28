@@ -1,0 +1,22 @@
+BODY
+{
+	text-align: center;
+	background-color: #363333;
+}
+DIV.page
+{
+	background-color: #657789;
+	border: medium outset #000000;
+}
+INPUT
+{
+	border: thin solid #000000;
+}
+TEXTAREA
+{
+	border: thin solid #000000;
+}
+IMG
+{
+	border: thin solid #000000;
+}
