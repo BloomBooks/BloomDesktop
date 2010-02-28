@@ -32,7 +32,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PageListView));
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
             this.label1 = new System.Windows.Forms.Label();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deletePageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.thumbNailList1 = new Bloom.Edit.ThumbNailList();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // _pageThumbnails
@@ -53,11 +56,27 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Pages";
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deletePageToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
+            // 
+            // deletePageToolStripMenuItem
+            // 
+            this.deletePageToolStripMenuItem.Name = "deletePageToolStripMenuItem";
+            this.deletePageToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deletePageToolStripMenuItem.Text = "&Delete Page";
+            this.deletePageToolStripMenuItem.Click += new System.EventHandler(this.deletePageToolStripMenuItem_Click);
+            // 
             // thumbNailList1
             // 
             this.thumbNailList1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.thumbNailList1.ContextMenuStrip = this.contextMenuStrip1;
+            this.thumbNailList1.Font = new System.Drawing.Font("Tahoma", 9F);
             this.thumbNailList1.Location = new System.Drawing.Point(3, 40);
             this.thumbNailList1.Name = "thumbNailList1";
             this.thumbNailList1.Size = new System.Drawing.Size(113, 173);
@@ -75,6 +94,7 @@
             this.Name = "PageListView";
             this.Size = new System.Drawing.Size(116, 216);
             this.BackColorChanged += new System.EventHandler(this.PageListView_BackColorChanged);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -85,5 +105,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ImageList _pageThumbnails;
         private Bloom.Edit.ThumbNailList thumbNailList1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem deletePageToolStripMenuItem;
     }
 }

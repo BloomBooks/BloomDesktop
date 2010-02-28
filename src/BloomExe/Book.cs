@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.Edit;
 using Bloom.Properties;
 using Palaso.Code;
 using Palaso.IO;
@@ -19,15 +20,25 @@ namespace Bloom
 		private readonly ITemplateFinder _templateFinder;
 		private readonly IFileLocator _fileLocator;
 		private HtmlThumbNailer _thumbnailProvider;
+		private readonly PageSelection _pageSelection;
+		private readonly PageListChangedEvent _pageListChangedEvent;
 		private IBookStorage _storage;
+//        public event EventHandler PageDeleted;
+//        public event EventHandler PageInserted;
 
-		public Book(IBookStorage storage, ITemplateFinder templateFinder, IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider)
+
+		public Book(IBookStorage storage, ITemplateFinder templateFinder,
+			IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
+			PageSelection pageSelection,
+			PageListChangedEvent pageListChangedEvent)
 		{
 		   // _folderPath = folderPath;
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
 			_thumbnailProvider = thumbnailProvider;
+			_pageSelection = pageSelection;
+			_pageListChangedEvent = pageListChangedEvent;
 		}
 
 		public enum BookType { Unknown, Template, Shell, Publication }
@@ -259,15 +270,7 @@ namespace Bloom
 			return namespaceManager;
 		}
 
-		public void InsertPageAfter(Page selection, IPage templatePage)
-		{
-			XmlDocument dom = _storage.Dom;
-			var pageNode = FindPageDiv(selection.Id);
-			var node = dom.ImportNode(templatePage.GetDivNode(), true);
-			pageNode.ParentNode.InsertAfter(node, pageNode);
 
-			_storage.Save();
-		}
 
 		private XmlElement FindPageDiv(string id)
 		{
@@ -295,5 +298,68 @@ namespace Bloom
 			}
 			return tempPath;
 		}
+
+		public void InsertPageAfter(Page selection, IPage templatePage)
+		{
+			XmlDocument dom = _storage.Dom;
+			var pageNode = FindPageDiv(selection.Id);
+			var node = dom.ImportNode(templatePage.GetDivNode(), true);
+			pageNode.ParentNode.InsertAfter(node, pageNode);
+			_pageSelection.SelectPage(GetPageFromNode(pageNode));
+			_storage.Save();
+			_pageListChangedEvent.Raise(null);
+		}
+
+		public void DeletePage(IPage page)
+		{
+			if(GetPageCount() <2)
+				return;
+
+			var pageNode = FindPageDiv(page.Id);
+		   pageNode.ParentNode.RemoveChild(pageNode);
+	//        InvokePageDeleted(page);
+
+			var prevNod = pageNode.PreviousSibling;
+			if(prevNod == null)
+			{
+				_pageSelection.SelectPage(FirstPage);
+			}
+			else
+			{
+				var previousPage = GetPageFromNode(pageNode);
+				_pageSelection.SelectPage(previousPage);
+			}
+			_storage.Save();
+			_pageListChangedEvent.Raise(null);
+		}
+
+		private Page GetPageFromNode(XmlElement element)
+		{
+			var id = element.GetStringAttribute("id");
+			return GetPages().Where(p => p.Id == id).First();
+		}
+
+		private int GetPageCount()
+		{
+			return GetPages().Count();
+		}
+
+//        private void InvokePageDeleted(IPage page)
+//        {
+//            EventHandler handler = PageDeleted;
+//            if (handler != null)
+//            {
+//                handler(page, null);
+//            }
+//        }
+//        private void InvokePageInserted(Page page)
+//        {
+//            EventHandler inserted = PageInserted;
+//            if (inserted != null)
+//            {
+//                inserted(page, null);
+//            }
+//        }
+
 	}
 }

@@ -16,7 +16,9 @@ namespace Bloom.Edit
 
 		public delegate EditingModel Factory();//autofac uses this
 
-		public EditingModel(BookSelection bookSelection, PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand)
+		public EditingModel(BookSelection bookSelection, PageSelection pageSelection,
+			TemplateInsertionCommand templateInsertionCommand,
+			PageListChangedEvent pageListChangedEvent)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -25,11 +27,16 @@ namespace Bloom.Edit
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			pageListChangedEvent.Subscribe(x=>  InvokeUpdatePageList());
 		}
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
 			_bookSelection.CurrentSelection.InsertPageAfter(_pageSelection.CurrentSelection, sender as Page);
+			if(UpdatePageList!=null)
+			{
+				UpdatePageList(this, null);
+			}
 			//_pageSelection.SelectPage(newPage);
 		}
 
@@ -68,11 +75,17 @@ namespace Bloom.Edit
 				UpdateDisplay(this, null);
 			}
 
+			InvokeUpdatePageList();
+		}
+
+		private void InvokeUpdatePageList()
+		{
 			if (UpdatePageList != null)
 			{
 				UpdatePageList(this, null);
 			}
 		}
+
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			EventHandler handler = UpdateDisplay;

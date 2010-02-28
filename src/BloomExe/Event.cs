@@ -26,4 +26,9 @@ namespace Bloom
 			get { return _subscribers.Count > 0; }
 		}
 	}
+
+	public class DeletePageCommand: Event<IPage>
+	{}
+	public class PageListChangedEvent : Event<object>
+	{ }
 }

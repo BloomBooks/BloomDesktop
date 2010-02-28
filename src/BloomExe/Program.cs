@@ -25,7 +25,7 @@ namespace Bloom
 
 //            var programfiles = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles);
 //            Skybound.Gecko.Xpcom.Initialize(Path.Combine(programfiles, "Mozilla Firefox")); //@"%ProgramFiles%\Mozilla Firefox");
-			Skybound.Gecko.Xpcom.Initialize(Path.Combine(DirectoryOfTheApplicationExecutable, "xulrunner1.9.1"));
+			Skybound.Gecko.Xpcom.Initialize(Path.Combine(DirectoryOfTheApplicationExecutable, "xulrunner"));
 
 			var builder = new Autofac.ContainerBuilder();
 

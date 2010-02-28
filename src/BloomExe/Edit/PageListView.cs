@@ -8,10 +8,13 @@ namespace Bloom
 	public partial class PageListView : UserControl
 	{
 		private readonly PageSelection _pageSelection;
+		private readonly DeletePageCommand _deletePageCommand;
+		private Book _book;
 
-		public PageListView(PageSelection pageSelection)
+		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand)
 		{
 			_pageSelection = pageSelection;
+			_deletePageCommand = deletePageCommand;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
 			thumbNailList1.PageSelectedChanged+=new EventHandler(thumbNailList1_PageSelectedChanged);
@@ -31,6 +34,7 @@ namespace Bloom
 
 		public void SetBook(Book book)//review: could do this instead by giving this class the bookselection object
 		{
+			_book = book;
 			if (book == null)
 			{
 				thumbNailList1.SetItems(new Page[] { });
@@ -39,6 +43,11 @@ namespace Bloom
 			{
 				thumbNailList1.SetItems(book.GetPages());
 			}
+		}
+
+		private void deletePageToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_book.DeletePage(_pageSelection.CurrentSelection);
 		}
 	}
 

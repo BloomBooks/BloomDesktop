@@ -12,11 +12,13 @@ namespace Bloom
 		{
 			//enhance... send out cancellable pre-change event
 
-			_currentSelection = book;
+		   _currentSelection = book;
 
 			InvokeSelectionChanged();
 			return true;
 		}
+
+
 
 		public Book CurrentSelection
 		{
