@@ -1,6 +1,8 @@
 using System;
+using System.Drawing;
 using System.IO;
 using System.Xml;
+using Palaso.Code;
 
 namespace Bloom
 {
@@ -17,6 +19,7 @@ namespace Bloom
 		bool LooksOk { get; }
 		string Title { get; }
 		void Save();
+		bool TryGetPremadeThumbnail(out Image image);
 	}
 
 	public class BookStorage : IBookStorage
@@ -123,6 +126,8 @@ namespace Bloom
 
 		public void Save()
 		{
+			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
+
 			string tempPath = Path.GetTempFileName();
 
 			using (var writer = XmlWriter.Create(tempPath))
@@ -133,5 +138,16 @@ namespace Bloom
 			File.Replace(tempPath, PathToHtml, PathToHtml + ".bak");
 		}
 
+		public bool TryGetPremadeThumbnail(out Image image)
+		{
+			string path = Path.Combine(_folderPath, "thumbnail.png");
+			if(File.Exists(path))
+			{
+				image= Image.FromFile(path);
+				return true;
+			}
+			image = null;
+			return false;
+		}
 	}
 }

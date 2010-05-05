@@ -50,6 +50,10 @@ namespace Bloom
 
 		public  Image GetThumbNail()
 		{
+			Image thumb;
+			if(_storage.TryGetPremadeThumbnail(out thumb))
+				return thumb;
+
 			var dom = GetPreviewHtmlFileForFirstPage();
 			if(dom == null)
 			{
@@ -301,6 +305,8 @@ namespace Bloom
 
 		public void InsertPageAfter(Page selection, IPage templatePage)
 		{
+			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+
 			XmlDocument dom = _storage.Dom;
 			var pageNode = FindPageDiv(selection.Id);
 			var node = dom.ImportNode(templatePage.GetDivNode(), true);
@@ -312,6 +318,8 @@ namespace Bloom
 
 		public void DeletePage(IPage page)
 		{
+			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+
 			if(GetPageCount() <2)
 				return;
 
