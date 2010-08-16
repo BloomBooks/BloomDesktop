@@ -313,7 +313,8 @@ namespace Bloom
 			pageNode.ParentNode.InsertAfter(node, pageNode);
 			_pageSelection.SelectPage(GetPageFromNode(pageNode));
 			_storage.Save();
-			_pageListChangedEvent.Raise(null);
+			if (_pageListChangedEvent != null)
+				_pageListChangedEvent.Raise(null);
 		}
 
 		public void DeletePage(IPage page)
@@ -338,7 +339,8 @@ namespace Bloom
 				_pageSelection.SelectPage(previousPage);
 			}
 			_storage.Save();
-			_pageListChangedEvent.Raise(null);
+			if(_pageListChangedEvent !=null)
+				_pageListChangedEvent.Raise(null);
 		}
 
 		private Page GetPageFromNode(XmlElement element)
