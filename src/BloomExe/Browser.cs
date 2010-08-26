@@ -16,11 +16,17 @@ namespace Bloom
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate = false;
 		private string _url;
+		private XmlDocument _domBeingEditted;
 
 		public Browser()
 		{
 			InitializeComponent();
 
+		}
+
+		void OnValidating(object sender, CancelEventArgs e)
+		{
+			UpdateDomWithNewEditsCopiedOver();
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -40,6 +46,8 @@ namespace Bloom
 
 			_browserIsReadyToNavigate = true;
 			UpdateDisplay();
+			_browser.Validating += new CancelEventHandler(OnValidating);
+
 		}
 
 		public void Navigate(string url)
@@ -52,6 +60,7 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
+			_domBeingEditted = dom;
 			_url = TempFile.CreateHtm(dom).Path;
 			UpdateDisplay();
 		}
@@ -63,6 +72,41 @@ namespace Bloom
 			if (_url!=null)
 			{
 				_browser.Navigate(_url);
+			}
+		}
+
+		/// <summary>
+		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
+		/// So we need to copy any changes back to the real DOM.  As a complicating factor, we can't actually
+		/// just grab the new value of, say, a textarea.  It will always return the original value to us, even
+		/// after being editted. So previously (in AddJavaScriptForEditing), we injected some javascript which
+		/// copies the editted values to an attribute we can get at, "newValue".  Now, we can read those values,
+		/// and push them into the original DOM.
+		/// </summary>
+		private void UpdateDomWithNewEditsCopiedOver()
+		{
+			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(_domBeingEditted.NameTable);
+			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+			foreach (XmlElement node in _domBeingEditted.SafeSelectNodes("//x:input", namespaceManager))
+			{
+				var id = node.GetAttribute("id");
+				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("newValue"));
+			}
+			foreach (XmlElement node in _domBeingEditted.SafeSelectNodes("//x:textarea", namespaceManager))
+			{
+				var id = node.GetAttribute("id");
+				if (string.IsNullOrEmpty(id))
+				{
+					// Debug.Fail();
+				}
+				else
+				{
+					var value = _browser.Document.GetElementById(id).GetAttribute("newValue");
+					if (!string.IsNullOrEmpty(value))
+					{
+						node.InnerText = value;
+					}
+				}
 			}
 		}
 	}

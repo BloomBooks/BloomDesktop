@@ -127,7 +127,7 @@ namespace Bloom
 		public void Save()
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
-
+			//UpdateDomWithNewEditsCopiedOver();
 			string tempPath = Path.GetTempFileName();
 
 			using (var writer = XmlWriter.Create(tempPath))

@@ -8,6 +8,7 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
+		private XmlDocument _domForCurrentPage;
 
 		public event EventHandler UpdateDisplay;
 		public event EventHandler UpdatePageList;
@@ -95,10 +96,19 @@ namespace Bloom.Edit
 			}
 		}
 
-		public XmlDocument GetPathToHtmlForCurrentPage()
+		public XmlDocument GetXmlDocumentForCurrentPage()
 		{
-			return _bookSelection.CurrentSelection.GetEditableHtmlFileForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetDomForPage(_pageSelection.CurrentSelection);
+			return _domForCurrentPage;
 		}
+
+		public void SaveNow()
+		{
+		//	UpdateDomWithNewEditsCopiedOver();
+			//	_pageSelection.CurrentSelection.
+			_bookSelection.CurrentSelection.SaveDomForPage(_domForCurrentPage);
+		}
+
 	}
 
 	public class TemplateInsertionCommand

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -54,19 +55,19 @@ namespace Bloom
 			if(_storage.TryGetPremadeThumbnail(out thumb))
 				return thumb;
 
-			var dom = GetPreviewHtmlFileForFirstPage();
+			var dom = GetPreviewXmlDocumentForFirstPage();
 			if(dom == null)
 			{
 				return Resources.GenericPage32x32;
 			}
-			return _thumbnailProvider.GetThumbnail(_storage.Key, GetPreviewHtmlFileForFirstPage());
+			return _thumbnailProvider.GetThumbnail(_storage.Key, GetPreviewXmlDocumentForFirstPage());
 		}
 
-		public XmlDocument GetEditableHtmlFileForPage(Page page)
+		public XmlDocument GetDomForPage(Page page)
 		{
-			return GetEditableHtmlFileForPage(page.Id);
+			return GetDomForPage(page.Id);
 		}
-		public XmlDocument GetEditableHtmlFileForPage(string id)
+		public XmlDocument GetDomForPage(string id)
 		{
 			if (!_storage.LooksOk)
 			{
@@ -79,7 +80,7 @@ namespace Bloom
 			return dom;
 		}
 
-		public XmlDocument GetPreviewHtmlFileForPage(string pageId)
+		public XmlDocument GetPreviewXmlDocumentForPage(string pageId)
 		{
 			if(!_storage.LooksOk)
 			{
@@ -91,7 +92,7 @@ namespace Bloom
 			return dom;
 		}
 
-		public XmlDocument GetPreviewHtmlFileForFirstPage()
+		public XmlDocument GetPreviewXmlDocumentForFirstPage()
 		{
 			if (!_storage.LooksOk)
 			{
@@ -131,9 +132,19 @@ namespace Bloom
 				}
 			}
 		}
-
+		/// <summary>
+		/// When editting using a browser (at least, gecko), we can't actually
+		/// just grab the new value of, say, a textarea.  It will always return the original value to us, even
+		/// after being editted. So previously, we injected some javascript which
+		/// copies the editted values to an attribute we can get at, "newValue".  Later, we can read those values,
+		/// and push them into the original DOM.
+		/// </summary>
+		/// <param name="dom"></param>
 		private void AddJavaScriptForEditing(XmlDocument dom)
 		{
+
+			//REVIEW: does this belong in Browser?  We're already doing the reading there.
+
 			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", GetNamespaceManager(dom)))
 			{
 				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
@@ -252,7 +263,7 @@ namespace Bloom
 				var id = page.GetOptionalStringAttribute("id","missing");
 				if(id=="missing")
 					throw new ApplicationException("page divs must have id attributes");
-				var dom = GetPreviewHtmlFileForPage(id);
+				var dom = GetPreviewXmlDocumentForPage(id);
 				yield return new Page(id, pageNumber.ToString(), (()=>_thumbnailProvider.GetThumbnail(_storage.Key+":"+id, dom)), (()=>FindPageDiv(id)));
 			}
 
@@ -371,5 +382,45 @@ namespace Bloom
 //            }
 //        }
 
+
+		/// <summary>
+		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
+		/// so we now we need to fold changes back in
+		/// </summary>
+		/// <param name="domForPage"></param>
+		public void SaveDomForPage(XmlDocument domForPage)
+		{
+			//review: does this belong down in the storage?
+
+			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(domForPage.NameTable);
+			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+			foreach (XmlElement sourceNode in domForPage.SafeSelectNodes("//x:input", namespaceManager))
+			{
+				var id = sourceNode.GetAttribute("id");
+				var destNode = _storage.Dom.GetElementById(id);
+				Guard.AgainstNull(destNode,id);
+				destNode.SetAttribute("value", sourceNode.GetAttribute("value"));
+			}
+			foreach (XmlElement sourceNode in domForPage.SafeSelectNodes("//x:textarea", namespaceManager))
+			{
+				var id = sourceNode.GetAttribute("id");
+				if (string.IsNullOrEmpty(id))
+				{
+					Debug.Fail(id);
+				}
+				else
+				{
+					var value = sourceNode.GetAttribute("newValue");
+					if (!string.IsNullOrEmpty(value))
+					{
+						var destNode = _storage.Dom.GetElementById(id);
+						Guard.AgainstNull(destNode, id);
+						destNode.InnerText = value;
+					}
+				}
+			}
+
+			_storage.Save();
+		}
 	}
 }

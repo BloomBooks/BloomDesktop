@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace Bloom.Edit
 {
@@ -60,9 +61,15 @@ namespace Bloom.Edit
 		   _updatePending = false;
 		   if (_model.HaveCurrentEditableBook)
 			{
-				var path = _model.GetPathToHtmlForCurrentPage();
-				_browser1.Navigate(path);
-			 //   this._pageListView.SetBook(_model.CurrentBook);
+				_browser1.Navigate(_model.GetXmlDocumentForCurrentPage());
+			}
+		}
+
+		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (_model.HaveCurrentEditableBook)
+			{
+				_model.SaveNow();
 			}
 		}
 	}
