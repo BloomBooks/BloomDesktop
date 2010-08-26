@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
+<!-- will be used later on in this file.                                                                 -->
+<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
+<!--this is replaced at build time by the msbuild 'package' target -->
+<?define Property_ProductCode = "*" ?>
+<!-- auto-generate a new guid each time -->
+<?define Property_UpgradeCode = "{8C4424C1-5474-4121-9A0B-49BED5B1840A}" ?>
+<!--Don't even think of EVER changing this -->
+
+<!-- good intro to the component vs. file thing, and why each file here is a separate component:
+http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+
+  <Product Id="$(var.Property_ProductCode)" Name="Bloom $(var.Property_ProductVersion)" Language="1033"
+			 Version="$(var.Property_ProductVersion)" Manufacturer="SIL"
+			 UpgradeCode="$(var.Property_UpgradeCode)">
+
+	<Package  Compressed="yes" InstallerVersion="200" />
+
+	<Upgrade Id ="$(var.Property_UpgradeCode)" >
+	  <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
+	  <UpgradeVersion Minimum ="0.0.0" IncludeMinimum ="yes" Maximum ="$(var.Property_ProductVersion)" IncludeMaximum ="no" Property ="OLDERVERSIONBEINGUPGRADED" />
+	</Upgrade >
+
+	<!--
+	"from the list: Don't use Advertise="yes" Advertised shortcuts are designed to allow
+users to install just the shortcut for your app, then demand-install the
+rest of the app the first time the icon is run.  If this is not behavior you
+are trying to support, you're better off using non-advertised shortcuts. "-->
+
+	<PropertyRef Id="NETFRAMEWORK35" />
+	<Condition Message="Before Bloom can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of Bloom's requirements can be found at Bloom.org/wiki/Prerequisites.">
+	  Installed OR NETFRAMEWORK35
+	</Condition>
+
+	<!--because of bug, this needs to be 1 -->
+	<Property Id ="ALLUSERS">1</Property>
+
+	<Directory Id="TARGETDIR" Name="SourceDir">
+
+		<Directory Id="CommonAppDataFolder">
+			<Directory Id="BloomCommonAppData" Name="Bloom">
+			  <Directory Id="SampleDataDir" Name="Samples">
+			  </Directory>
+			</Directory>
+		</Directory>
+
+	  <Directory Id='ProgramMenuFolder' Name='Programs'>
+		<Directory Id='BloomShortcutDir' Name='Bloom'>
+		  <Component Id ='removeShortcutDir' Guid ="{A8000306-EB15-4458-8264-97C1F888AD1F}">
+			<RemoveFolder Id ="shortcutDirRemover" On ="uninstall"/>
+			<RegistryKey Id="keyPathForRemoveShortcutDir" Action ="createAndRemoveOnUninstall" Root="HKCU" Key="SOFTWARE\Bloom\Components\BloomShortcutDir">
+			  <RegistryValue Type ="string" Value =""  Action ="write" KeyPath ="yes"/>
+			</RegistryKey>
+		  </Component>
+
+		</Directory>
+	  </Directory>
+	  <Directory Id="ProgramFilesFolder" Name="PFiles">
+
+		<Directory Id="ProgramDir" Name="Bloom">
+
+		  <Component Id="Bloom.exe" Guid="{A3493982-C68A-4f01-93BC-5F92B380CF89}">
+			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
+
+			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
+			<!--- todo: icons for Bloom files -->
+
+			<!--- connect file types to icons and program to launch -->
+
+			<!--- todo:
+					  any connections between file types and Bloom
+					<RemoveRegistryKey Action ='removeOnUninstall' Root ='HKCR' Key ='.blah'/>
+					<RemoveRegistryKey Action ='removeOnUninstall' Root ='HKCR' Key ='Bloom.blah'/>
+-->
+
+			<!-- another way:                 <Registry Id='LuaReg8' Root='HKCR' Key='VisualStudio.luaproj.8.0\Shell\Open\Command' Action='write'
+					 Type='string' Value='"[ENVPATH_2005]" "%1"'/> -->
+
+			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
+				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
+
+		  </Component>
+
+		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
+			<File Id="autofac.dll" Name="autofac.dll" KeyPath="yes" Source="..\..\output\release\autofac.dll" />
+		  </Component>
+		   <Component Id="Palaso.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5634}">
+			<File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
+		  </Component>
+		  <Component Id="PalasoUIWindowsForms.dll" Guid="{A7046B6E-668C-4a4d-A866-719922C142B5}">
+			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
+		  </Component>
+		  <Component Id="Palaso.Media.dll" Guid="{A42F2F76-3978-4d83-BC98-C7585B6F69D8}">
+			<File Id="Palaso.Media.dll" Name="Palaso.Media.dll" KeyPath="yes" Source="..\..\output\release\Palaso.Media.dll" />
+		  </Component>
+
+		</Directory>
+	  </Directory>
+	</Directory>
+
+
+	<Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
+	  <ComponentRef Id ="removeShortcutDir"/>
+
+	  <ComponentRef Id="autofac.dll"/>
+	  <ComponentRef Id="Palaso.dll"/>
+	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
+	  <ComponentRef Id="Palaso.Media.dll" />
+	  <ComponentRef Id="Bloom.exe" />
+
+	  <ComponentGroupRef Id ="DistFiles"/>
+	  <ComponentGroupRef Id ="SampleData"/>
+
+	</Feature>
+	<Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+	<Icon Id="Bloom.exe" SourceFile ="..\..\output\release\Bloom.exe" />
+	<Property Id="ARPPRODUCTICON" Value="Bloom.exe" />
+	<!-- what you see in add/remove programs control panel -->
+
+
+
+	<CustomAction Id="LaunchBloom"
+				  FileKey="Bloom.exe"
+				  ExeCommand=""
+				  Return="asyncNoWait"/>
+
+	<InstallExecuteSequence>
+	  <RemoveExistingProducts After="InstallInitialize" />
+
+	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
+		  <Custom Action='LaunchBloom' After="InstallFinalize">NOT Installed</Custom>
+		</InstallExecuteSequence>
+  </Product>
+</Wix>
