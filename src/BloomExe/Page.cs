@@ -9,18 +9,18 @@ namespace Bloom
 		string Id { get; }
 		string Caption { get; }
 		Image Thumbnail { get; }
-		XmlNode GetDivNode();
+		XmlNode GetDivNodeForThisPage();
 	}
 
 	public class Page : IPage
 	{
 		private readonly Func<Image> _getThumbnail;
-		private readonly Func<XmlNode> _getDivNodeMethod;
+		private readonly Func<XmlNode> _getDivNodeForThisPageMethod;
 
-		public Page(string id, string caption, Func<Image> GetThumbnail, Func<XmlNode> GetDivNodeMethod)
+		public Page(string id, string caption, Func<Image> getThumbnail, Func<XmlNode> getDivNodeForThisPageMethod)
 		{
-			_getThumbnail = GetThumbnail;
-			_getDivNodeMethod = GetDivNodeMethod;
+			_getThumbnail = getThumbnail;
+			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Id = id;
 			Caption = caption;
 		}
@@ -30,9 +30,9 @@ namespace Bloom
 		public string Caption { get; private set; }
 		public Image Thumbnail { get { return _getThumbnail(); } }
 
-		public XmlNode GetDivNode()
+		public XmlNode GetDivNodeForThisPage()
 		{
-			return _getDivNodeMethod();
+			return _getDivNodeForThisPageMethod();
 		}
 	}
 }

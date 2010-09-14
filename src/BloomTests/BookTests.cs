@@ -28,7 +28,8 @@ namespace BloomTests
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.SetupGet(x => x.LooksOk).Returns(true);
-			_storage.SetupGet(x => x.Dom).Returns(GetTwoPageDom());
+			XmlDocument storageDom = GetTwoPageDom();
+			_storage.SetupGet(x => x.Dom).Returns(storageDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.Title).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Book.BookType.Publication);
@@ -75,6 +76,41 @@ namespace BloomTests
 //            TestTemplateInsertion(book, existingPage, 1);
 //            Assert.IsTrue(gotEvent);
 //        }
+
+		[Test]
+		public void SavePage_ChangeMadeToInputBox_StorageUpdatedAndToldToSave()
+		{
+			var book = CreateBook();
+			var dom = book.GetDomForPage("1");
+			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
+			//nb: we dont' have to simulate the business wehre the browser actually puts
+			//new values into a "newValue" attribute, since it is required to pull those back
+			//into 'value' before the Book's SavePage is called.
+			Assert.AreEqual("one", inputBox.Attributes["value"].Value, "the test conditions aren't correct");
+			inputBox.Attributes["value"].Value = "two";
+			book.SavePage(dom);
+			var inputBoxInStorageDom = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
+
+			Assert.AreEqual("two", inputBoxInStorageDom.Attributes["value"].Value, "the value didn't get copied to  the storage dom");
+			_storage.Verify(s=>s.Save(), Times.Once());
+		}
+		[Test]
+		public void SavePage_ChangeMadeToTextArea_StorageUpdatedAndToldToSave()
+		{
+			var book = CreateBook();
+			var dom = book.GetDomForPage("2");
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
+			//nb: we dont' have to simulate the business wehre the browser actually puts
+			//new values into a "newValue" attribute, since it is required to pull those back
+			//into 'value' before the Book's SavePage is called.
+			Assert.AreEqual("original", textArea.InnerText, "the test conditions aren't correct");
+			textArea.InnerText = "changed";
+			book.SavePage(dom);
+			var textNodeInStorage = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
+
+			Assert.AreEqual("changed", textNodeInStorage.InnerText, "the value didn't get copied to  the storage dom");
+			_storage.Verify(s=>s.Save(), Times.Once());
+		}
 
 		[Test]
 		public void InsertPageAfter_OnFirstPage_NewPageInsertedAsSecond()
@@ -152,7 +188,7 @@ namespace BloomTests
 			var templatePage = new Moq.Mock<IPage>();
 			XmlDocument d = new XmlDocument();
 			d.LoadXml("<wrapper><div class='page somekind'>hello</div></wrapper>");
-			templatePage.Setup(x=>x.GetDivNode()).Returns(d.FirstChild);
+			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(d.FirstChild);
 			return templatePage;
 		}
 
@@ -166,8 +202,8 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div id='1' class='page'>one</div>
-				<div id='2' class='page'>two</div>
+				<div id='1' class='page'><input id='testInput' class='Blah' value='one' /></div>
+				<div id='2' class='page'><textarea id='testText'>original</textarea></div>
 				</body></html>");
 			return dom;
 		}

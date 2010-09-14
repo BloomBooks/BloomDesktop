@@ -104,9 +104,7 @@ namespace Bloom.Edit
 
 		public void SaveNow()
 		{
-		//	UpdateDomWithNewEditsCopiedOver();
-			//	_pageSelection.CurrentSelection.
-			_bookSelection.CurrentSelection.SaveDomForPage(_domForCurrentPage);
+			_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
 		}
 
 	}

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Skybound.Gecko;
@@ -16,7 +13,7 @@ namespace Bloom
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate = false;
 		private string _url;
-		private XmlDocument _domBeingEditted;
+		private XmlDocument _pageDom;
 
 		public Browser()
 		{
@@ -60,7 +57,8 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
-			_domBeingEditted = dom;
+			_pageDom = dom;
+			AddJavaScriptForEditing(_pageDom);
 			_url = TempFile.CreateHtm(dom).Path;
 			UpdateDisplay();
 		}
@@ -77,36 +75,48 @@ namespace Bloom
 
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
-		/// So we need to copy any changes back to the real DOM.  As a complicating factor, we can't actually
-		/// just grab the new value of, say, a textarea.  It will always return the original value to us, even
-		/// after being editted. So previously (in AddJavaScriptForEditing), we injected some javascript which
-		/// copies the editted values to an attribute we can get at, "newValue".  Now, we can read those values,
-		/// and push them into the original DOM.
+		/// So we need to copy any changes back to the real DOM.
 		/// </summary>
 		private void UpdateDomWithNewEditsCopiedOver()
 		{
-			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(_domBeingEditted.NameTable);
-			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			foreach (XmlElement node in _domBeingEditted.SafeSelectNodes("//x:input", namespaceManager))
+			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
 			{
 				var id = node.GetAttribute("id");
-				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("newValue"));
+				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("value"));
 			}
-			foreach (XmlElement node in _domBeingEditted.SafeSelectNodes("//x:textarea", namespaceManager))
+
+			foreach (XmlElement node in _pageDom.SafeSelectNodes("//textarea"))
 			{
 				var id = node.GetAttribute("id");
 				if (string.IsNullOrEmpty(id))
 				{
-					// Debug.Fail();
+					throw new ApplicationException("Could not find the id '"+id+"' in the textarea");
 				}
 				else
 				{
-					var value = _browser.Document.GetElementById(id).GetAttribute("newValue");
-					if (!string.IsNullOrEmpty(value))
-					{
-						node.InnerText = value;
-					}
+					node.InnerText = _browser.Document.GetElementById(id).InnerHtml;
 				}
+			}
+		}
+
+		/// <summary>
+		/// When editting using a browser (at least, gecko), we can't actually
+		/// just grab the new value of, say, a textarea.  Gecko will always return the
+		/// original value to us, even after being editted.
+		/// But from *within* the browser, javascript can get at the new values.
+		/// So here, we inject some javascript which
+		/// copies the editted values back into the dom.
+		/// </summary>
+		private void AddJavaScriptForEditing(XmlDocument dom)
+		{
+			//ref: http://dev-answers.blogspot.com/2007/08/firefox-does-not-reflect-input-form.html
+			foreach (XmlElement node in dom.SafeSelectNodes("//input"))
+			{
+				node.SetAttribute("onblur", "", "this.setAttribute('Value',this.value);");
+			}
+			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+			{
+				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
 			}
 		}
 	}

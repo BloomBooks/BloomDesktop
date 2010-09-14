@@ -76,7 +76,6 @@ namespace Bloom
 
 			XmlDocument dom = GetDomWithStyleSheet( "editMode.css");
 			HideEverythingButCurrentPage(dom,  id);
-			AddJavaScriptForEditing(dom);
 			return dom;
 		}
 
@@ -132,28 +131,7 @@ namespace Bloom
 				}
 			}
 		}
-		/// <summary>
-		/// When editting using a browser (at least, gecko), we can't actually
-		/// just grab the new value of, say, a textarea.  It will always return the original value to us, even
-		/// after being editted. So previously, we injected some javascript which
-		/// copies the editted values to an attribute we can get at, "newValue".  Later, we can read those values,
-		/// and push them into the original DOM.
-		/// </summary>
-		/// <param name="dom"></param>
-		private void AddJavaScriptForEditing(XmlDocument dom)
-		{
 
-			//REVIEW: does this belong in Browser?  We're already doing the reading there.
-
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:input", GetNamespaceManager(dom)))
-			{
-				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
-			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:textarea", GetNamespaceManager(dom)))
-			{
-				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
-			}
-		}
 
 		private XmlDocument GetDomWithStyleSheet(string cssFileName)
 		{
@@ -257,12 +235,13 @@ namespace Bloom
 				yield break;
 
 			int pageNumber = 0;
-			foreach (XmlNode page in _storage.Dom.SafeSelectNodes("//x:div[contains(@class,'page')]", GetNamespaceManager(_storage.Dom)))
+			foreach (XmlNode pageNode in _storage.Dom.SafeSelectNodes("//x:div[contains(@class,'page')]", GetNamespaceManager(_storage.Dom)))
 			{
 				pageNumber++;
-				var id = page.GetOptionalStringAttribute("id","missing");
-				if(id=="missing")
-					throw new ApplicationException("page divs must have id attributes");
+
+//                var id = pageNode.GetOptionalStringAttribute("id","missing");
+//                if(id=="missing")
+//                    throw new ApplicationException("page divs must have id attributes");
 				var dom = GetPreviewXmlDocumentForPage(id);
 				yield return new Page(id, pageNumber.ToString(), (()=>_thumbnailProvider.GetThumbnail(_storage.Key+":"+id, dom)), (()=>FindPageDiv(id)));
 			}
@@ -320,7 +299,7 @@ namespace Bloom
 
 			XmlDocument dom = _storage.Dom;
 			var pageNode = FindPageDiv(selection.Id);
-			var node = dom.ImportNode(templatePage.GetDivNode(), true);
+			var node = dom.ImportNode(templatePage.GetDivNodeForThisPage(), true);
 			pageNode.ParentNode.InsertAfter(node, pageNode);
 			_pageSelection.SelectPage(GetPageFromNode(pageNode));
 			_storage.Save();
@@ -387,21 +366,18 @@ namespace Bloom
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
 		/// </summary>
-		/// <param name="domForPage"></param>
-		public void SaveDomForPage(XmlDocument domForPage)
+		public void SavePage(XmlDocument pageDom)
 		{
 			//review: does this belong down in the storage?
 
-			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(domForPage.NameTable);
-			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			foreach (XmlElement sourceNode in domForPage.SafeSelectNodes("//x:input", namespaceManager))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes("//input"))
 			{
-				var id = sourceNode.GetAttribute("id");
-				var destNode = _storage.Dom.GetElementById(id);
-				Guard.AgainstNull(destNode,id);
-				destNode.SetAttribute("value", sourceNode.GetAttribute("value"));
+				var id = editNode.GetAttribute("id");
+				var storageNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='"+id+"']") as XmlElement;
+				Guard.AgainstNull(storageNode,id);
+				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
-			foreach (XmlElement sourceNode in domForPage.SafeSelectNodes("//x:textarea", namespaceManager))
+			foreach (XmlElement sourceNode in pageDom.SafeSelectNodes("//textarea"))
 			{
 				var id = sourceNode.GetAttribute("id");
 				if (string.IsNullOrEmpty(id))
@@ -410,16 +386,11 @@ namespace Bloom
 				}
 				else
 				{
-					var value = sourceNode.GetAttribute("newValue");
-					if (!string.IsNullOrEmpty(value))
-					{
-						var destNode = _storage.Dom.GetElementById(id);
-						Guard.AgainstNull(destNode, id);
-						destNode.InnerText = value;
-					}
+					var destNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='" + id + "']") as XmlElement;
+					Guard.AgainstNull(destNode, id);
+					destNode.InnerText = sourceNode.InnerText;
 				}
 			}
-
 			_storage.Save();
 		}
 	}
