@@ -98,7 +98,7 @@ namespace Bloom.Edit
 
 		public XmlDocument GetXmlDocumentForCurrentPage()
 		{
-			_domForCurrentPage = _bookSelection.CurrentSelection.GetDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			return _domForCurrentPage;
 		}
 

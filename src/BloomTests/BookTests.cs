@@ -60,10 +60,10 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void GetPreviewHtmlFileForWholeBook_BookHasTwoPages_ResultHasBothPages()
+		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
 			var result = CreateBook().GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
-			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]",2);
+			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]",3);
 		}
 
 //        [Test]
@@ -81,7 +81,7 @@ namespace BloomTests
 		public void SavePage_ChangeMadeToInputBox_StorageUpdatedAndToldToSave()
 		{
 			var book = CreateBook();
-			var dom = book.GetDomForPage("1");
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
 			//nb: we dont' have to simulate the business wehre the browser actually puts
 			//new values into a "newValue" attribute, since it is required to pull those back
@@ -94,45 +94,67 @@ namespace BloomTests
 			Assert.AreEqual("two", inputBoxInStorageDom.Attributes["value"].Value, "the value didn't get copied to  the storage dom");
 			_storage.Verify(s=>s.Save(), Times.Once());
 		}
+
 		[Test]
-		public void SavePage_ChangeMadeToTextArea_StorageUpdatedAndToldToSave()
+		public void SavePage_ChangeMade_StorageToldToSave()
 		{
 			var book = CreateBook();
-			var dom = book.GetDomForPage("2");
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+			book.SavePage(dom);
+			_storage.Verify(s => s.Save(), Times.Once());
+		}
+
+		[Test]
+		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
+		{
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
-			//nb: we dont' have to simulate the business wehre the browser actually puts
-			//new values into a "newValue" attribute, since it is required to pull those back
-			//into 'value' before the Book's SavePage is called.
-			Assert.AreEqual("original", textArea.InnerText, "the test conditions aren't correct");
+			Assert.AreEqual("original1", textArea.InnerText, "the test conditions aren't correct");
 			textArea.InnerText = "changed";
 			book.SavePage(dom);
-			var textNodeInStorage = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
+			var textNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText']");
 
-			Assert.AreEqual("changed", textNodeInStorage.InnerText, "the value didn't get copied to  the storage dom");
-			_storage.Verify(s=>s.Save(), Times.Once());
+			Assert.AreEqual("changed", textNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
+			Assert.AreEqual("original2", textNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
+		}
+
+		[Test]
+		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
+		{
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
+			Assert.AreEqual("original2", textArea.InnerText, "the test conditions aren't correct");
+			textArea.InnerText = "changed";
+			book.SavePage(dom);
+			var textNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText']");
+
+			Assert.AreEqual("original1", textNodesInStorage.Item(0).InnerText, "the first copy of this page should not have been changed");
+			Assert.AreEqual("changed", textNodesInStorage.Item(1).InnerText, "the value didn't get copied to  the storage dom");
 		}
 
 		[Test]
 		public void InsertPageAfter_OnFirstPage_NewPageInsertedAsSecond()
 		{
 			var book = CreateBook();
-			Page existingPage=book.GetPages().First();
+			var existingPage=book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
 		[Test]
 		public void InsertPageAfter_OnLastPage_NewPageInsertedAtEnd()
 		{
 			var book = CreateBook();
-			Page existingPage = book.GetPages().First();
+			var existingPage = book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
 
-		private void TestTemplateInsertion(Book book, Page existingPage, int expectedLocation)
+		private void TestTemplateInsertion(Book book, IPage existingPage, int expectedLocation)
 		{
 			Mock<IPage> templatePage = CreateTemplatePage();
 
 			book.InsertPageAfter(existingPage, templatePage.Object);
-			AssertPageCount(book, 3);
+			AssertPageCount(book, 4);
 			Assert.AreEqual("page somekind", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
 
@@ -167,7 +189,7 @@ namespace BloomTests
 		{
 			var book = CreateBook();
 			var original= book.GetPages().Count();
-			Page existingPage = book.GetPages().Last();
+			var existingPage = book.GetPages().Last();
 			book.DeletePage(existingPage);
 			AssertPageCount(book,original-1);
 		}
@@ -202,8 +224,9 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div id='1' class='page'><input id='testInput' class='Blah' value='one' /></div>
-				<div id='2' class='page'><textarea id='testText'>original</textarea></div>
+				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /></div>
+				<div class='page' id='guid2'><textarea id='testText'>original1</textarea></div>
+				<div class='page' id='guid3'><textarea id='testText'>original2</textarea></div>
 				</body></html>");
 			return dom;
 		}

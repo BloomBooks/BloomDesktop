@@ -59,9 +59,22 @@ namespace Bloom
 		{
 			_pageDom = dom;
 			AddJavaScriptForEditing(_pageDom);
+			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
 			_url = TempFile.CreateHtm(dom).Path;
 			UpdateDisplay();
 		}
+
+		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText))
+				{
+					node.InnerText = " ";
+				}
+			}
+		}
+
 		private void UpdateDisplay()
 		{
 			if (!_browserIsReadyToNavigate)

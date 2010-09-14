@@ -36,19 +36,23 @@ namespace Bloom
 				Dom = new XmlDocument();
 				Dom.Load(PathToHtml);
 				SetBaseForRelativePaths(folderPath);
+
+				//add a unique id for our use
+				foreach(XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
+				{
+					node.SetAttribute("id", Guid.NewGuid().ToString());
+				}
 			}
 		}
 
-		private XmlNamespaceManager GetNamespaceManager()
-		{
-			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(Dom.NameTable);
-			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			return namespaceManager;
-		}
 
 		private void SetBaseForRelativePaths(string folderPath)
 		{
-			var head = Dom.SelectSingleNode("//x:head", GetNamespaceManager());
+			var head = Dom.SelectSingleNodeHonoringDefaultNS("//head");
+			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+			{
+				head.RemoveChild(baseNode);
+			}
 			var baseElement = Dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
 			baseElement.SetAttribute("href", "file://"+folderPath+Path.DirectorySeparatorChar);
 			head.AppendChild(baseElement);
@@ -127,16 +131,20 @@ namespace Bloom
 		public void Save()
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
-			//UpdateDomWithNewEditsCopiedOver();
 			string tempPath = Path.GetTempFileName();
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
 
-			using (var writer = XmlWriter.Create(tempPath))
+
+			using (var writer = XmlWriter.Create(tempPath, settings))
 			{
 				Dom.WriteContentTo(writer);
 				writer.Close();
 			}
 			File.Replace(tempPath, PathToHtml, PathToHtml + ".bak");
 		}
+
 
 		public bool TryGetPremadeThumbnail(out Image image)
 		{

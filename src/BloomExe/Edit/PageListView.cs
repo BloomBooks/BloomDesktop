@@ -17,10 +17,11 @@ namespace Bloom
 			_deletePageCommand = deletePageCommand;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
-			thumbNailList1.PageSelectedChanged+=new EventHandler(thumbNailList1_PageSelectedChanged);
+			_thumbNailList.CanSelect = true;
+			_thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
 		}
 
-		private void thumbNailList1_PageSelectedChanged(object page, EventArgs e)
+		private void OnSelectedThumbnailChanged(object page, EventArgs e)
 		{
 			if (page == null)
 				return;
@@ -29,7 +30,7 @@ namespace Bloom
 
 		private void PageListView_BackColorChanged(object sender, EventArgs e)
 		{
-			thumbNailList1.BackColor = BackColor;
+			_thumbNailList.BackColor = BackColor;
 		}
 
 		public void SetBook(Book book)//review: could do this instead by giving this class the bookselection object
@@ -37,11 +38,11 @@ namespace Bloom
 			_book = book;
 			if (book == null)
 			{
-				thumbNailList1.SetItems(new Page[] { });
+				_thumbNailList.SetItems(new Page[] { });
 			}
 			else
 			{
-				thumbNailList1.SetItems(book.GetPages());
+				_thumbNailList.SetItems(book.GetPages());
 			}
 		}
 

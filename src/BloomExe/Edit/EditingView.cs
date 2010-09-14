@@ -33,7 +33,6 @@ namespace Bloom.Edit
 
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_templatePagesView.BackColor = Color.Red;// splitContainer2.Panel2.BackColor;
 			splitContainer2.Panel2.Controls.Add(_templatePagesView);
 		}
 
@@ -60,10 +59,13 @@ namespace Bloom.Edit
 		   }
 		   _updatePending = false;
 		   if (_model.HaveCurrentEditableBook)
-			{
-				_browser1.Navigate(_model.GetXmlDocumentForCurrentPage());
-			}
+		   {
+			var dom = _model.GetXmlDocumentForCurrentPage();
+			_browser1.Navigate(dom);
+		   }
 		}
+
+
 
 		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
 		{

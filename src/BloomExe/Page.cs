@@ -9,30 +9,43 @@ namespace Bloom
 		string Id { get; }
 		string Caption { get; }
 		Image Thumbnail { get; }
+		string XPathToDiv { get; }
 		XmlNode GetDivNodeForThisPage();
 	}
 
 	public class Page : IPage
 	{
-		private readonly Func<Image> _getThumbnail;
-		private readonly Func<XmlNode> _getDivNodeForThisPageMethod;
+		private readonly string _id;
+		private readonly Func<IPage, Image> _getThumbnail;
+		private readonly Func<IPage, XmlNode> _getDivNodeForThisPageMethod;
 
-		public Page(string id, string caption, Func<Image> getThumbnail, Func<XmlNode> getDivNodeForThisPageMethod)
+		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlNode> getDivNodeForThisPageMethod)
 		{
+			_id = sourcePage.Attributes["id"].Value;
 			_getThumbnail = getThumbnail;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
-			Id = id;
 			Caption = caption;
 		}
 
+		public string Id{get { return _id; }}
 
-		public string Id {get;private set;}
 		public string Caption { get; private set; }
-		public Image Thumbnail { get { return _getThumbnail(); } }
+		public Image Thumbnail { get { return _getThumbnail(this); } }
+
+		public string XPathToDiv
+		{
+			get { return "/html/body/div[@id='"+_id+"']";}
+		}
 
 		public XmlNode GetDivNodeForThisPage()
 		{
-			return _getDivNodeForThisPageMethod();
+			return _getDivNodeForThisPageMethod(this);
+		}
+
+		public static string GetPageSelectorXPath(XmlDocument pageDom)
+		{
+			var id = pageDom.SelectSingleNodeHonoringDefaultNS("/html/body/div").Attributes["id"].Value;
+			return string.Format("/html/body/div[@id='{0}']", id);
 		}
 	}
 }

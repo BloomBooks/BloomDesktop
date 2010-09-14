@@ -25,6 +25,7 @@ namespace Bloom
 
 		void OnPageClicked(object sender, EventArgs e)
 		{
+
 			_templateInsertionCommand.Insert(sender as Page);
 		}
 
@@ -44,6 +45,8 @@ namespace Bloom
 		{
 			_thumbNailList.BackColor = BackColor;
 		}
+
+
 
 	}
 }

@@ -5,7 +5,7 @@ namespace Bloom.Edit
 	public class PageSelection
 	{
 		private readonly BookSelection _bookSelection;
-		private Page _currentSelection;
+		private IPage _currentSelection;
 		private Book _currentBook;
 		public event EventHandler SelectionChanged;
 
@@ -27,7 +27,7 @@ namespace Bloom.Edit
 //            _currentBook.PageDeleted += OnPageDeleted;
 //        }
 
-		public bool SelectPage(Page page)
+		public bool SelectPage(IPage page)
 		{
 			//enhance... send out cancellable pre-change event
 
@@ -37,7 +37,7 @@ namespace Bloom.Edit
 			return true;
 		}
 
-		public Page CurrentSelection
+		public IPage CurrentSelection
 		{
 			get { return _currentSelection; }
 		}

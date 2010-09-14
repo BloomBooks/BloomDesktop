@@ -23,9 +23,11 @@ namespace Bloom
 			_sizeInPixels = sizeInPixels;
 		}
 
-		public Image GetThumbnail(string key, XmlNode divNode)
+		//Enhance: currently, this uses the whole doc with all but one page hidden
+		//elsewhere, we have code which just makes a one-page document
+		public Image GetThumbnail(string key, XmlDocument document)
 		{
-		   // return Resources.GenericPage32x32;
+			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
 
 			Image image;
 			if(_images.TryGetValue(key, out image))
@@ -36,9 +38,9 @@ namespace Bloom
 			using (_browser = new WebBrowser())
 			{
 
-				_browser.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(OnThumbNailBrowser_DocumentCompleted);
+				_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;
 
-				using (var temp = TempFile.CreateHtm(divNode))
+				using (var temp = TempFile.CreateHtm(document))
 				{
 					_browser.Navigate(temp.Path);
 					while (_pendingThumbnail == null)
@@ -53,6 +55,16 @@ namespace Bloom
 			return _pendingThumbnail;
 		}
 
+		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText))
+				{
+					node.InnerText = " ";
+				}
+			}
+		}
 		private void OnThumbNailBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
 		{
 			var width = _browser.Document.ActiveElement.ScrollRectangle.Width;
