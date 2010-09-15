@@ -2,10 +2,10 @@
 {
 	text-align: center;
 	font: 1em verdana;
-	width: 5cm;
+	width: 10cm;
 	position: relative;
-	top: 2cm;
-	left: 5cm;
+	top: 1.6cm;
+	left: 2.1cm;
 	/*[empty]word-break:;*/
 }
 .titlePage .languageName

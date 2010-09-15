@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace Bloom
@@ -172,8 +174,14 @@ namespace Bloom
 
 		private static string GetHtmlTempPath()
 		{
-			var x = System.IO.Path.GetTempFileName();
-			var y= @"C:\dev\Bloom\userProject\Lucy'sBigDay\" + System.IO.Path.GetFileName(x) + ".htm";
+			string x,y;
+			do
+			{
+				x = System.IO.Path.GetTempFileName();
+				//y = x + ".htm";
+				//TODO: right now, the stylesheets aren't found if it isn't in the same folder
+				y= @"C:\dev\Bloom\userProject\Lucy'sBigDay\" + System.IO.Path.GetFileName(x) + ".htm";
+			} while (File.Exists(y));
 			File.Move(x,y);
 			return y;
 		}
@@ -314,5 +322,8 @@ namespace Bloom
 			}
 		}
 	}
+
+
+
 
 }

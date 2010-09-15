@@ -82,6 +82,9 @@
     <Compile Include="Browser.Designer.cs">
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\DragListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
     <Compile Include="Edit\EditingView.cs">
@@ -156,6 +159,9 @@
       <DependentUpon>ProjectView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Edit\DragListView.resx">
+      <DependentUpon>DragListView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\EditingView.resx">
       <DependentUpon>EditingView.cs</DependentUpon>
     </EmbeddedResource>

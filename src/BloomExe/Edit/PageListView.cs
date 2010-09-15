@@ -18,6 +18,7 @@ namespace Bloom
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
 			_thumbNailList.CanSelect = true;
+			_thumbNailList.CanReorder = true;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
 		}
 

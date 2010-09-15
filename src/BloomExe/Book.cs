@@ -254,7 +254,14 @@ namespace Bloom
 			int pageNumber = 0;
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page')]"))
 			{
-				yield return CreatePageDecriptor(pageNode, (pageNumber+1).ToString());
+				//review: we want to show titles for template books, numbers for other books.
+				//this here requires that titles be removed when the page is inserted, kind of a hack.
+				var caption = pageNode.GetAttribute("title");
+				if(string.IsNullOrEmpty(caption))
+				{
+					caption = (pageNumber + 1).ToString();
+				}
+				yield return CreatePageDecriptor(pageNode, caption);
 				++pageNumber;
 			}
 		}
@@ -299,6 +306,7 @@ namespace Bloom
 			var newPageElement = dom.ImportNode(templatePage.GetDivNodeForThisPage(), true) as XmlElement;
 			newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
 			ClearEditableValues(newPageElement);
+			newPageElement.RemoveAttribute("title"); //titles are just for templates
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageElement, elementOfPageBefore);
