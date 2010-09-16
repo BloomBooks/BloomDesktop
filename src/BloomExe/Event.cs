@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Bloom
 {
-    public class Event<TPayload>
+    public class Event<TPayload> 
     {
         private readonly List<Action<TPayload>> _subscribers = new List<Action<TPayload>>();
 
@@ -27,7 +27,9 @@ namespace Bloom
         }
     }
 
-    public class DeletePageCommand: Event<IPage> 
+
+
+	public class DeletePageCommand: Event<IPage> 
     {}
     public class PageListChangedEvent : Event<object>
     { }
