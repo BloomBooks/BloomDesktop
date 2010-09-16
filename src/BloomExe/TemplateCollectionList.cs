@@ -12,10 +12,12 @@ namespace Bloom
 	public class TemplateCollectionList : ITemplateFinder
 	{
 		private readonly Book.Factory _bookFactory;
+		private readonly BookStorage.Factory _storageFactory;
 
-		public TemplateCollectionList(Book.Factory bookFactory)
+		public TemplateCollectionList(Book.Factory bookFactory, BookStorage.Factory storageFactory)
 		{
 			_bookFactory = bookFactory;
+			_storageFactory = storageFactory;
 		}
 
 		public IEnumerable<string> ReposistoryFolders
@@ -33,7 +35,7 @@ namespace Bloom
 					foreach (var templateDir in Directory.GetDirectories(collection))
 					{
 						if (Path.GetFileName(templateDir) == key)
-							return _bookFactory(new BookStorage(templateDir));
+							return _bookFactory(_storageFactory(templateDir));
 								//review: this is loading the book both in the librarymodel, and here
 					}
 				}

@@ -2,13 +2,16 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Xml;
+
 using Palaso.Code;
+using Palaso.IO;
 
 namespace Bloom
 {
 	/* The role of this class is simply to isolate the actual storage mechanism (e.g. file system)
 	 * to a single place.  All the other classes can then just pass around DOMs.
 	 */
+
 
 	public interface IBookStorage
 	{
@@ -25,9 +28,9 @@ namespace Bloom
 	public class BookStorage : IBookStorage
 	{
 		private readonly string _folderPath;
+		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
-
-		public BookStorage(string folderPath)
+		public BookStorage(string folderPath, IFileLocator fileLocator)
 		{
 			_folderPath = folderPath;
 
@@ -37,10 +40,34 @@ namespace Bloom
 				Dom.Load(PathToHtml);
 				SetBaseForRelativePaths(folderPath);
 
+				UpdateStyleSheetLinkPaths(fileLocator);
+
 				//add a unique id for our use
 				foreach(XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
 					node.SetAttribute("id", Guid.NewGuid().ToString());
+				}
+			}
+		}
+
+		private void UpdateStyleSheetLinkPaths(IFileLocator fileLocator)
+		{
+			foreach(XmlElement linkNode in Dom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if(href==null)
+				{
+					continue;
+				}
+
+				var fileName = Path.GetFileName(href);
+				if(!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
+				{
+					var path = fileLocator.LocateFile(fileName, string.Format("Stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+					if(!string.IsNullOrEmpty(path))
+					{
+						linkNode.SetAttribute("href", "file://"+path);
+					}
 				}
 			}
 		}

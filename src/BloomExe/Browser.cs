@@ -11,9 +11,10 @@ namespace Bloom
 	public partial class Browser : UserControl
 	{
 		protected GeckoWebBrowser _browser;
-		bool _browserIsReadyToNavigate = false;
+		bool _browserIsReadyToNavigate;
 		private string _url;
 		private XmlDocument _pageDom;
+		private TempFile _tempHtmlFile;
 
 		public Browser()
 		{
@@ -24,6 +25,24 @@ namespace Bloom
 		void OnValidating(object sender, CancelEventArgs e)
 		{
 			UpdateDomWithNewEditsCopiedOver();
+		}
+
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (_tempHtmlFile != null)
+			{
+				_tempHtmlFile.Dispose();
+				_tempHtmlFile = null;
+			}
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -44,12 +63,25 @@ namespace Bloom
 			_browserIsReadyToNavigate = true;
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
-
+			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 		}
 
-		public void Navigate(string url)
+		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
+		{
+			if(_tempHtmlFile!=null)
+			{
+				_tempHtmlFile.Dispose();
+				_tempHtmlFile = null;
+			}
+		}
+
+		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
 			_url=url;
+			if(cleanupFileAfterNavigating)
+			{
+				SetNewTempFile(TempFile.TrackExisting(url));
+			}
 			UpdateDisplay();
 		}
 
@@ -60,8 +92,18 @@ namespace Bloom
 			_pageDom = dom;
 			AddJavaScriptForEditing(_pageDom);
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
-			_url = TempFile.CreateHtm(dom).Path;
+			SetNewTempFile(TempFile.CreateHtm(dom));
+			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
+		}
+
+		private void SetNewTempFile(TempFile tempFile)
+		{
+			if(_tempHtmlFile!=null)
+			{
+				_tempHtmlFile.Dispose();
+			}
+			_tempHtmlFile = tempFile;
 		}
 
 		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)

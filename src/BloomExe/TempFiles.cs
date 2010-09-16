@@ -178,9 +178,7 @@ namespace Bloom
 			do
 			{
 				x = System.IO.Path.GetTempFileName();
-				//y = x + ".htm";
-				//TODO: right now, the stylesheets aren't found if it isn't in the same folder
-				y= @"C:\dev\Bloom\userProject\Lucy'sBigDay\" + System.IO.Path.GetFileName(x) + ".htm";
+				y = x + ".htm";
 			} while (File.Exists(y));
 			File.Move(x,y);
 			return y;

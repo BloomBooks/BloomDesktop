@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Edit;
@@ -57,7 +56,7 @@ namespace Bloom
 			{
 				return Resources.GenericPage32x32;
 			}
-			return _thumbnailProvider.GetThumbnail(_storage.Key, GetPreviewXmlDocumentForFirstPage());
+			return _thumbnailProvider.GetThumbnail(_storage.Key, dom);
 		}
 
 		public XmlDocument GetEditableHtmlDomForPage(IPage page)
@@ -67,11 +66,10 @@ namespace Bloom
 				return GetErrorDom();
 			}
 
-//            XmlDocument dom = GetDomWithStyleSheet( "editMode.css");
-//            HideEverythingButCurrentPage(dom,  page);
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
-			AddStyleSheetToDom(dom, "editMode.css");
+			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
 			return dom;
+
 		}
 
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)
@@ -91,9 +89,8 @@ namespace Bloom
 			{
 				return GetErrorDom();
 			}
-
-			XmlDocument dom = GetBookDomWithStyleSheet( "previewMode.css");
-			HideEverythingButCurrentPage(dom, page);
+			var dom = GetHtmlDomWithJustOnePage(page);
+			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
 			return dom;
 		}
 
@@ -109,10 +106,7 @@ namespace Bloom
 			return bookDom;
 		}
 
-
-
-
-		private void HideEverythingButFirstPage(XmlDocument bookDom)
+		private static void HideEverythingButFirstPage(XmlDocument bookDom)
 		{
 			bool onFirst = true;
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'page')]"))
@@ -125,34 +119,12 @@ namespace Bloom
 			}
 		}
 
-		//Note here we're just hiding the other pages... we could instead just create the file
-		//for the one page
-		private void HideEverythingButCurrentPage(XmlDocument dom,  IPage page)
-		{
-			int count = 0;
-			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class, 'page')]"))
-			{
-				if(div.Attributes["id"].Value != page.Id) //enhance: could do with the xpath above
-//				if (count != page.Number)
-				{
-					div.SetAttribute("style", "", "display:none");
-				}
-				++count;
-			}
-		}
-
 
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
 			XmlDocument dom = (XmlDocument)_storage.Dom.Clone();
-			AddStyleSheetToDom(dom, cssFileName);
+			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
 			return dom;
-		}
-
-		private void AddStyleSheetToDom(XmlDocument dom, string cssFileName)
-		{
-			var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
-			AddSheet(dom, head, cssFileName);
 		}
 
 
@@ -214,34 +186,9 @@ namespace Bloom
 			{
 				return GetPageSayingCantShowBook();
 			}
-
-//            XmlNamespaceManager namespaceManager;
-//            XmlDocument dom = GetDomWithStyleSheet("previewMode.css");
-//
-//            string tempPath = _storage.PathToHtml.Replace(".htm", "-tempPreview.htm");
-//
-//            using (var writer = XmlWriter.Create(tempPath))
-//            {
-//                dom.WriteContentTo(writer);
-//                writer.Close();
-//            }
-
 			return GetBookDomWithStyleSheet("previewMode.css");
 		}
 
-		private void AddSheet(XmlDocument dom, XmlNode head, string cssFileName)
-		{
-			string path = _fileLocator.LocateFile(cssFileName);//, "stylesheet '"+cssFileName+"'");
-//
-//            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-//                return;
-
-			var link = dom.CreateElement("link", "http://www.w3.org/1999/xhtml");
-			link.SetAttribute("rel", "stylesheet");
-			link.SetAttribute("href", "file://" + path);
-			link.SetAttribute("type", "text/css");
-			head.AppendChild(link);
-		}
 
 		public IEnumerable<IPage> GetPages()
 		{

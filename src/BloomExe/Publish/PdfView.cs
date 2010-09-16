@@ -53,7 +53,7 @@ namespace Bloom.Publish
 
 				if(_bookSelection.CurrentSelection ==null)
 				{
-					_browser.Navigate("about:blank");
+					_browser.Navigate("about:blank", false);
 					return;
 				}
 				var dom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
@@ -103,7 +103,7 @@ namespace Bloom.Publish
 
 			if (File.Exists(tempFile))
 			{
-				_browser.Navigate(tempFile);
+				_browser.Navigate(tempFile, true);
 			}
 		}
 

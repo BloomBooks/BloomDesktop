@@ -23,8 +23,6 @@ namespace Bloom
 			_sizeInPixels = sizeInPixels;
 		}
 
-		//Enhance: currently, this uses the whole doc with all but one page hidden
-		//elsewhere, we have code which just makes a one-page document
 		public Image GetThumbnail(string key, XmlDocument document)
 		{
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
@@ -38,14 +36,16 @@ namespace Bloom
 			using (_browser = new WebBrowser())
 			{
 
-				_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;
+				_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
 
 				using (var temp = TempFile.CreateHtm(document))
 				{
 					_browser.Navigate(temp.Path);
 					while (_pendingThumbnail == null)
 					{
+						//TODO: could lead to hard to reproduce bugs
 						Application.DoEvents();
+						//TODO:  could be stuck here forever
 						Thread.Sleep(100);
 					}
 				}

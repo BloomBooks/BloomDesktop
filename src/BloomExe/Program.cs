@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,9 +35,11 @@ namespace Bloom
 
 			builder.RegisterType<Book>().InstancePerDependency();
 
+			builder.RegisterType<BookStorage>().InstancePerDependency();
+
 			//builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
 			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>()));
-			builder.Register<IFileLocator>(c => new FileLocator(new string[] { FactoryCollectionsDirectory }));
+			builder.Register<IFileLocator>(c => new FileLocator( GetFileLocations()));
 
 			builder.RegisterType<BookCollection>().InstancePerDependency();
 			builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
@@ -45,7 +48,7 @@ namespace Bloom
 			builder.RegisterType<ThumbNailList>().InstancePerDependency();
 			builder.Register<TemplateCollectionList>(c=>
 				 {
-					 var l = new TemplateCollectionList(c.Resolve<Book.Factory>());
+					 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
 					 l.ReposistoryFolders = new string[] {FactoryCollectionsDirectory };
 					 return l;
 				 }).InstancePerLifetimeScope();
@@ -66,12 +69,22 @@ namespace Bloom
 			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
 			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
 			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));
+			builder.RegisterGeneratedFactory(typeof(BookStorage.Factory));
 
 			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());
 		}
 
+		private static IEnumerable<string> GetFileLocations()
+		{
+			yield return FactoryCollectionsDirectory;
+			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
+			foreach (var templateDir in Directory.GetDirectories(templatesDir))
+			{
+				yield return templateDir;
+			}
+		}
 
 
 		public static string DirectoryOfTheApplicationExecutable
