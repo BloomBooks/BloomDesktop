@@ -115,6 +115,7 @@ namespace Bloom.Edit
 
 	}
 
+
 	public class TemplateInsertionCommand
 	{
 		public event EventHandler InsertPage;

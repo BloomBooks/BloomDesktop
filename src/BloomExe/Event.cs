@@ -27,6 +27,8 @@ namespace Bloom
 		}
 	}
 
+
+
 	public class DeletePageCommand: Event<IPage>
 	{}
 	public class PageListChangedEvent : Event<object>

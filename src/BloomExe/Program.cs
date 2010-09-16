@@ -7,45 +7,46 @@ using System.Windows.Forms;
 using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
-using Bloom.Project;
-using Bloom.Publish;
 using Palaso.IO;
 
 namespace Bloom
 {
 	static class Program
 	{
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
 		[STAThread]
 		static void Main()
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
-//            var programfiles = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles);
-//            Skybound.Gecko.Xpcom.Initialize(Path.Combine(programfiles, "Mozilla Firefox")); //@"%ProgramFiles%\Mozilla Firefox");
 			Skybound.Gecko.Xpcom.Initialize(Path.Combine(DirectoryOfTheApplicationExecutable, "xulrunner"));
 
+			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
 			var builder = new Autofac.ContainerBuilder();
 
-			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).InstancePerLifetimeScope();
-			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
+			//default to InstancePerDependency, i.e., they it will make a new
+			//one each time someone asks for one
+			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly());
 
-			builder.RegisterType<Book>().InstancePerDependency();
+			//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
+			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+				.InstancePerLifetimeScope()
+				.Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
 
-			builder.RegisterType<BookStorage>().InstancePerDependency();
+			//Other classes which are also  singletons
+			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+				.InstancePerLifetimeScope()
+				.Where(t => new[]{
+					typeof(TemplateInsertionCommand),
+					typeof(BookSelection),
+					typeof(PageSelection)}.Contains(t));
+
 
 			//builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
-			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>()));
-			builder.Register<IFileLocator>(c => new FileLocator( GetFileLocations()));
-
-			builder.RegisterType<BookCollection>().InstancePerDependency();
+			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
+			builder.Register<IFileLocator>(c => new FileLocator( GetFileLocations())).InstancePerLifetimeScope();
 			builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
-			builder.RegisterType<PageListView>().InstancePerDependency();
-			builder.RegisterType<TemplatePagesView>().InstancePerDependency();
-			builder.RegisterType<ThumbNailList>().InstancePerDependency();
+
 			builder.Register<TemplateCollectionList>(c=>
 				 {
 					 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
@@ -60,18 +61,6 @@ namespace Bloom
 
    //       didn't give me the same one  builder.RegisterType<TemplateCollectionList>().As<ITemplateFinder>().InstancePerLifetimeScope();
 
-			builder.RegisterGeneratedFactory(typeof(Project.ProjectView.Factory));
-			builder.RegisterGeneratedFactory(typeof(Project.ProjectModel.Factory));
-			builder.RegisterGeneratedFactory(typeof(LibraryListView.Factory));
-			builder.RegisterGeneratedFactory(typeof(LibraryView.Factory));
-			builder.RegisterGeneratedFactory(typeof(TemplateBookView.Factory));
-			builder.RegisterGeneratedFactory(typeof(EditingView.Factory));
-			builder.RegisterGeneratedFactory(typeof(EditingModel.Factory));
-			builder.RegisterGeneratedFactory(typeof(PdfView.Factory));
-			builder.RegisterGeneratedFactory(typeof(BookCollection.Factory));
-			builder.RegisterGeneratedFactory(typeof(BookStorage.Factory));
-
-			builder.RegisterGeneratedFactory(typeof(Book.Factory));
 			var container = builder.Build();
 			Application.Run(container.Resolve<Shell>());
 		}
