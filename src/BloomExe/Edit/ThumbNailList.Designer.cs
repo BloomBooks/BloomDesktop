@@ -42,7 +42,9 @@
 			// 
 			// _listView
 			// 
+			this._listView.BackColor = System.Drawing.SystemColors.MenuHighlight;
 			this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._listView.ForeColor = System.Drawing.Color.White;
 			this._listView.LargeImageList = this._thumbnailImageList;
 			this._listView.Location = new System.Drawing.Point(0, 0);
 			this._listView.MultiSelect = false;
@@ -61,7 +63,9 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._listView);
+			this.ForeColor = System.Drawing.SystemColors.WindowText;
 			this.Name = "ThumbNailList";
 			this.BackColorChanged += new System.EventHandler(this.ThumbNailList_BackColorChanged);
 			this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ThumbNailList_MouseUp);

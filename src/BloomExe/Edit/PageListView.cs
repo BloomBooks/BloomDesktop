@@ -9,16 +9,16 @@ namespace Bloom
     {
         private readonly PageSelection _pageSelection;
         private readonly DeletePageCommand _deletePageCommand;
-        private Book _book;
+    	private Book _book;
 
-        public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand)
+		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent)
         {
             _pageSelection = pageSelection;
             _deletePageCommand = deletePageCommand;
-            this.Font= SystemFonts.MessageBoxFont;
+			this.Font= SystemFonts.MessageBoxFont;
             InitializeComponent();
         	_thumbNailList.CanSelect = true;
-        	_thumbNailList.CanReorder = true;
+			_thumbNailList.RelocatePageEvent = relocatePageEvent;
             _thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
         }
 

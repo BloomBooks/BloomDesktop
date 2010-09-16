@@ -13,13 +13,12 @@ namespace Bloom.Edit
     	public event EventHandler UpdateDisplay;
         public event EventHandler UpdatePageList;
 
-
-
         public delegate EditingModel Factory();//autofac uses this
 
         public EditingModel(BookSelection bookSelection, PageSelection pageSelection, 
             TemplateInsertionCommand templateInsertionCommand,
-            PageListChangedEvent pageListChangedEvent)
+            PageListChangedEvent pageListChangedEvent,
+			RelocatePageEvent relocatePageEvent)
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
@@ -29,9 +28,16 @@ namespace Bloom.Edit
             pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
             templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
             pageListChangedEvent.Subscribe(x=>  InvokeUpdatePageList());
+        	relocatePageEvent.Subscribe(OnRelocatePage);
         }
 
-        private void OnInsertTemplatePage(object sender, EventArgs e)
+    	private void OnRelocatePage(RelocatePageInfo info)
+    	{
+            _bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+    	}
+
+
+    	private void OnInsertTemplatePage(object sender, EventArgs e)
         {
             _bookSelection.CurrentSelection.InsertPageAfter(_pageSelection.CurrentSelection, sender as Page);
             if(UpdatePageList!=null)
