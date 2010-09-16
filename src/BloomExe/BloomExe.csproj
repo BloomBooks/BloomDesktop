@@ -82,6 +82,7 @@
     <Compile Include="Browser.Designer.cs">
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
+    <Compile Include="XmlDomExtensions.cs" />
     <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
     <Compile Include="Edit\EditingView.cs">
@@ -239,6 +240,7 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
+    <Compile Include="XmlNodeExtensions.cs" />
     <Compile Include="XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
