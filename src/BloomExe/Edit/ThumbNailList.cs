@@ -70,11 +70,8 @@ namespace Bloom.Edit
 
 
 		public bool CanSelect { get; set; }
-		public bool CanReorder
-		{
-			get;
-			set;
-		}
+
+		public RelocatePageEvent RelocatePageEvent { get; set; }
 
 		private void listView1_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -117,10 +114,10 @@ namespace Bloom.Edit
 		private void _listView_MouseDown(object sender, MouseEventArgs e)
 		{
 			_mouseDidGoDown = true;
-			Capture = true;
 
-			if (CanReorder)
+			if (this.RelocatePageEvent !=null)
 			{
+				Capture = true;
 				_currentDraggingItem = _listView.GetItemAt(e.X, e.Y);
 				Cursor = Cursors.Hand;
 			}
@@ -144,7 +141,7 @@ namespace Bloom.Edit
 
 			Cursor = Cursors.Default;
 
-			if (CanReorder && _currentDraggingItem != null)
+			if (RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				Debug.WriteLine("Re-ordering");
 				if (_currentTarget == null ||
@@ -154,6 +151,8 @@ namespace Bloom.Edit
 					_currentDraggingItem = null;
 					return;
 				}
+
+				RelocatePageEvent.Raise(new RelocatePageInfo((IPage)_currentDraggingItem.Tag, _currentTarget.Index));
 
 				_listView.BeginUpdate();
 				_listView.Items.Remove(_currentDraggingItem);
@@ -175,7 +174,7 @@ namespace Bloom.Edit
 
 		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (CanReorder && _currentDraggingItem != null)
+			if (this.RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				if (Control.MouseButtons != MouseButtons.Left)
 				{//hack trying to get a correct notion of when the mouse is up

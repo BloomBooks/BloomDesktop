@@ -22,13 +22,14 @@ namespace BloomTests
 		private Mock<PageSelection> _pageSelection;
 		private DeletePageCommand _deletePageCommand;
 		private PageListChangedEvent _pageListChangedEvent;
+		private RelocatePageEvent _relocatePageEvent;
 
 		[SetUp]
 		public void Setup()
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.SetupGet(x => x.LooksOk).Returns(true);
-			XmlDocument storageDom = GetTwoPageDom();
+			XmlDocument storageDom = GetTheePageDom();
 			_storage.SetupGet(x => x.Dom).Returns(storageDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.Title).Returns("testTitle");
@@ -40,8 +41,9 @@ namespace BloomTests
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
-			 DeletePageCommand _deletePageCommand=new DeletePageCommand();
-			PageListChangedEvent _pageListChangedEvent = new PageListChangedEvent();
+			_deletePageCommand=new DeletePageCommand();
+			_pageListChangedEvent = new PageListChangedEvent();
+			_relocatePageEvent = new RelocatePageEvent();
 	  }
 
 //        [Test]
@@ -204,6 +206,57 @@ namespace BloomTests
 			}
 			AssertPageCount(book, 1);
 		}
+		[Test]
+		public void RelocatePage_FirstPageToSecond_DoesRelocate()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+			book.RelocatePage(pages[0], 1);
+			var newPages = book.GetPages().ToArray();
+			Assert.AreEqual(pages[0].Id, newPages[1].Id);
+			Assert.AreEqual(pages[1].Id, newPages[0].Id);
+			Assert.AreEqual(pages[2].Id, newPages[2].Id);
+			Assert.AreEqual(3, pages.Length);
+		}
+
+		[Test]
+		public void RelocatePage_FirstPageToLast_DoesRelocate()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+			book.RelocatePage(pages[0], 2);
+			var newPages = book.GetPages().ToArray();
+			Assert.AreEqual(pages[1].Id, newPages[0].Id);
+			Assert.AreEqual(pages[2].Id, newPages[1].Id);
+			Assert.AreEqual(pages[0].Id, newPages[2].Id);
+			Assert.AreEqual(3, pages.Length);
+		}
+
+		[Test]
+		public void RelocatePage_LastPageToSecond_DoesRelocate()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+			book.RelocatePage(pages[2], 1);
+			var newPages = book.GetPages().ToArray();
+			Assert.AreEqual(pages[0].Id, newPages[0].Id);
+			Assert.AreEqual(pages[2].Id, newPages[1].Id);
+			Assert.AreEqual(pages[1].Id, newPages[2].Id);
+			Assert.AreEqual(3, pages.Length);
+		}
+
+		[Test]
+		public void RelocatePage_LastPageToFirst_DoesRelocate()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+			book.RelocatePage(pages[2], 0);
+			var newPages = book.GetPages().ToArray();
+			Assert.AreEqual(pages[2].Id, newPages[0].Id);
+			Assert.AreEqual(pages[0].Id, newPages[1].Id);
+			Assert.AreEqual(pages[1].Id, newPages[2].Id);
+			Assert.AreEqual(3, pages.Length);
+		}
 
 		private Mock<IPage> CreateTemplatePage()
 		{
@@ -220,7 +273,7 @@ namespace BloomTests
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
-		private XmlDocument GetTwoPageDom()
+		private XmlDocument GetTheePageDom()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>

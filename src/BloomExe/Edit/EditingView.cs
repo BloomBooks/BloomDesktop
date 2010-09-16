@@ -28,7 +28,7 @@ namespace Bloom.Edit
 
 			_pageListView.Dock=DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_pageListView.BackColor = splitContainer1.Panel1.BackColor;
+		   _templatePagesView.BackColor = _pageListView.BackColor = splitContainer1.Panel1.BackColor;
 			splitContainer1.Panel1.Controls.Add(_pageListView);
 
 			_templatePagesView.Dock = DockStyle.Fill;

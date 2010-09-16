@@ -31,4 +31,19 @@ namespace Bloom
 	{}
 	public class PageListChangedEvent : Event<object>
 	{ }
+
+	public class RelocatePageInfo
+	{
+		public IPage Page;
+		public int IndexOfPageAfterMove;
+
+		public RelocatePageInfo(IPage page, int indexOfPageAfterMove)
+		{
+			Page = page;
+			IndexOfPageAfterMove = indexOfPageAfterMove;
+		}
+	}
+
+	public class RelocatePageEvent : Event<RelocatePageInfo>
+	{ }
 }

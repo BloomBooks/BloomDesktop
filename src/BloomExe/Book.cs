@@ -17,23 +17,18 @@ namespace Bloom
 	{
 		public delegate Book Factory(BookStorage storage);//autofac uses this
 
-	   // private readonly string _folderPathx;
 		private readonly ITemplateFinder _templateFinder;
 		private readonly IFileLocator _fileLocator;
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private IBookStorage _storage;
-//        public event EventHandler PageDeleted;
-//        public event EventHandler PageInserted;
-
 
 		public Book(IBookStorage storage, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
-		   // _folderPath = folderPath;
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
@@ -41,6 +36,8 @@ namespace Bloom
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 		}
+
+
 
 		public enum BookType { Unknown, Template, Shell, Publication }
 
@@ -118,7 +115,7 @@ namespace Bloom
 		private void HideEverythingButFirstPage(XmlDocument bookDom)
 		{
 			bool onFirst = true;
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//x:div[contains(@class, 'page')]", GetNamespaceManager(bookDom)))
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'page')]"))
 			{
 				if (!onFirst)
 				{
@@ -154,7 +151,7 @@ namespace Bloom
 
 		private void AddStyleSheetToDom(XmlDocument dom, string cssFileName)
 		{
-			var head = dom.SelectSingleNode("//x:head", GetNamespaceManager(dom));
+			var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
 			AddSheet(dom, head, cssFileName);
 		}
 
@@ -273,30 +270,11 @@ namespace Bloom
 					(page => FindPageDiv(page)));
 		}
 
-
-		private XmlNodeList GetElementsFromFile(string path, string queryWithXForNamespace)
-		{
-			XmlDocument dom = new XmlDocument();
-			dom.Load(path);
-			 return dom.SafeSelectNodes(queryWithXForNamespace, GetNamespaceManager(dom));
-		}
-
-		private XmlNamespaceManager GetNamespaceManager(XmlDocument dom)
-		{
-			XmlNamespaceManager namespaceManager = new XmlNamespaceManager(dom.NameTable);
-			namespaceManager.AddNamespace("x", "http://www.w3.org/1999/xhtml");
-			return namespaceManager;
-		}
-
-
-
 		private XmlElement FindPageDiv(IPage page)
 		{
 			//review: could move to page
-			//page.GetMatchingDiv(_storage.Dom);
 			return _storage.Dom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv) as XmlElement;
 		}
-
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
 		{
@@ -398,6 +376,29 @@ namespace Bloom
 					destNode.InnerText = editNode.InnerText;
 				}
 			}
+			_storage.Save();
+		}
+
+		/// <summary>
+		/// Move a page to somewhere else in the book
+		/// </summary>
+		public void RelocatePage(IPage page, int indexOfItemAfterRelocation)
+		{
+			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+
+			var pages = _storage.Dom.SafeSelectNodes("/html/body/div");
+			var pageDiv = FindPageDiv(page);
+			var body = pageDiv.ParentNode;
+				body.RemoveChild(pageDiv);
+			if(indexOfItemAfterRelocation == 0)
+			{
+				body.InsertBefore(pageDiv, body.FirstChild);
+			}
+			else
+			{
+				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
+			}
+
 			_storage.Save();
 		}
 	}
