@@ -42,6 +42,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="Chorus, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="LibChorus, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
+    </Reference>
     <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
@@ -63,12 +71,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BookStorage.cs" />
     <Compile Include="Browser.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Browser.Designer.cs">
       <DependentUpon>Browser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProjectContext.cs" />
+    <Compile Include="ToPalaso\MostRecentPathsList.cs" />
+    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.designer.cs">
+      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\WelcomeControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\WelcomeControl.designer.cs">
+      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WelcomeDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WelcomeDialog.Designer.cs">
+      <DependentUpon>WelcomeDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlDomExtensions.cs" />
     <Compile Include="Edit\PageSelection.cs" />
@@ -189,6 +218,15 @@
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ChooseNewProjectLocationDialog.resx">
+      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
+      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WelcomeDialog.resx">
+      <DependentUpon>WelcomeDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -244,7 +282,11 @@
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\x-office-document.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WelcomeHeader.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
