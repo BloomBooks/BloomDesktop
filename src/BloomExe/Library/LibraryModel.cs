@@ -14,7 +14,8 @@ namespace Bloom.Library
 		private readonly TemplateCollectionList _templateCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 
-		public LibraryModel(BookSelection bookSelection, string pathToProject, TemplateCollectionList templateCollectionList,
+		public LibraryModel(string pathToProject, BookSelection bookSelection,
+			TemplateCollectionList templateCollectionList,
 			BookCollection.Factory bookFactory)
 		{
 			_bookSelection = bookSelection;

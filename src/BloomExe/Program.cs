@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,111 +8,152 @@ using System.Windows.Forms;
 using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
+using Bloom.Properties;
 using Palaso.IO;
 
 namespace Bloom
 {
 	static class Program
 	{
+		/// <summary>
+		/// We have one project open at a time, and this helps us bootstrap the project and
+		/// properly dispose of various things when the project is closed.
+		/// </summary>
+		private static ProjectContext _projectContext;
+
+		private static ApplicationContainer _applicationContainer;
+
+
 		[STAThread]
 		static void Main()
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
-			Skybound.Gecko.Xpcom.Initialize(Path.Combine(DirectoryOfTheApplicationExecutable, "xulrunner"));
+			_applicationContainer = new ApplicationContainer();
 
-			var projectDirectory = Path.Combine(GetTopAppDirectory(), "userProject");
-			var builder = new Autofac.ContainerBuilder();
+			Skybound.Gecko.Xpcom.Initialize(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"xulrunner"));
 
-			//default to InstancePerDependency, i.e., they it will make a new
-			//one each time someone asks for one
-			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly());
+#if !DEBUG
+			SetUpErrorHandling();
+#endif
 
-			//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
-			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-				.InstancePerLifetimeScope()
-				.Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
+//			var args = Environment.GetCommandLineArgs();
+//			var firstTimeArg = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
+//			if (firstTimeArg != null)
+//			{
+//				using (var dlg = new FirstTimeRunDialog("put filename here"))
+//					dlg.ShowDialog();
+//			}
 
-			//Other classes which are also  singletons
-			builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-				.InstancePerLifetimeScope()
-				.Where(t => new[]{
-					typeof(TemplateInsertionCommand),
-					typeof(BookSelection),
-					typeof(PageSelection)}.Contains(t));
+			StartUpShellBasedOnMostRecentUsedIfPossible();
 
+			Application.Run();
+			Settings.Default.Save();
 
-			//builder.Register<Project.ProjectModel>(c => new Project.ProjectModel(projectDirectory));
-			builder.Register<LibraryModel>(c => new LibraryModel(c.Resolve<BookSelection>(), projectDirectory, c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
-			builder.Register<IFileLocator>(c => new FileLocator( GetFileLocations())).InstancePerLifetimeScope();
-			builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
-
-			builder.Register<TemplateCollectionList>(c=>
-				 {
-					 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
-					 l.ReposistoryFolders = new string[] {FactoryCollectionsDirectory };
-					 return l;
-				 }).InstancePerLifetimeScope();
-
-			builder.Register<ITemplateFinder>(c =>
-				 {
-					 return c.Resolve<TemplateCollectionList>();
-				 }).InstancePerLifetimeScope();
-
-   //       didn't give me the same one  builder.RegisterType<TemplateCollectionList>().As<ITemplateFinder>().InstancePerLifetimeScope();
-
-			var container = builder.Build();
-			Application.Run(container.Resolve<Shell>());
+			if (_projectContext != null)
+				_projectContext.Dispose();
 		}
 
-		private static IEnumerable<string> GetFileLocations()
+		/// ------------------------------------------------------------------------------------
+		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
 		{
-			yield return FactoryCollectionsDirectory;
-			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
-			foreach (var templateDir in Directory.GetDirectories(templatesDir))
+//			if (MruFiles.Latest == null || !File.Exists(MruFiles.Latest) ||
+//				!OpenProjectWindow(MruFiles.Latest))
+//			{
+				//since the message pump hasn't started yet, show the UI for choosing when it is
+				Application.Idle += ChooseAnotherProject;
+//			}
+		}
+
+		/// ------------------------------------------------------------------------------------
+		private static bool OpenProjectWindow(string projectPath)
+		{
+			Debug.Assert(_projectContext == null);
+
+			try
 			{
-				yield return templateDir;
+				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
+				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
+				_projectContext.ProjectWindow.Show();
+				return true;
 			}
+			catch (Exception e)
+			{
+				HandleErrorOpeningProjectWindow(e, projectPath);
+			}
+
+			return false;
 		}
 
-
-		public static string DirectoryOfTheApplicationExecutable
+		/// ------------------------------------------------------------------------------------
+		private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)
 		{
-			get
+			if (_projectContext != null)
 			{
-				string path;
-				bool unitTesting = Assembly.GetEntryAssembly() == null;
-				if (unitTesting)
+				if (_projectContext.ProjectWindow != null)
 				{
-					path = new Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath;
-					path = Uri.UnescapeDataString(path);
+					_projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
+					_projectContext.ProjectWindow.Close();
 				}
-				else
-				{
-					path = Application.ExecutablePath;
-				}
-				return Directory.GetParent(path).FullName;
+
+				_projectContext.Dispose();
+				_projectContext = null;
 			}
-		}
-		private static string FactoryCollectionsDirectory
-		{
-			get { return Path.Combine(GetTopAppDirectory(), "factoryCollections"); }
+
+			Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+				new Palaso.Reporting.ShowAlwaysPolicy(), error,
+				"{0} had a problem loading the {1} project. Please report this problem to the developers by clicking 'Details' below.",
+				Application.ProductName, Path.GetFileNameWithoutExtension(projectPath));
 		}
 
-		private static string GetTopAppDirectory()
+		/// ------------------------------------------------------------------------------------
+		static void ChooseAnotherProject(object sender, EventArgs e)
 		{
-			string path = DirectoryOfTheApplicationExecutable;
-			char sep = Path.DirectorySeparatorChar;
-			int i = path.ToLower().LastIndexOf(sep + "output" + sep);
+			Application.Idle -= ChooseAnotherProject;
 
-			if (i > -1)
+			while (true)
 			{
-				path = path.Substring(0, i + 1);
+				using (var dlg = _applicationContainer.CreateWelcomeDialog())
+				{
+					if (dlg.ShowDialog() != DialogResult.OK)
+					{
+						Application.Exit();
+						return;
+					}
+
+					if (OpenProjectWindow(dlg.SelectedPath))
+					{
+						Settings.Default.MruProjects.AddNewPath(dlg.SelectedPath);
+						return;
+					}
+				}
 			}
-			return path;
 		}
 
+		/// ------------------------------------------------------------------------------------
+		static void HandleProjectWindowClosed(object sender, EventArgs e)
+		{
+			_projectContext.Dispose();
+			_projectContext = null;
+
+//			if (((Shell)sender).UserWantsToOpenADifferentProject)
+//			{
+//				Application.Idle += ChooseAnotherProject;
+//			}
+//			else
+			{
+				Application.Exit();
+			}
+		}
+
+		/// ------------------------------------------------------------------------------------
+		private static void SetUpErrorHandling()
+		{
+			Palaso.Reporting.ErrorReport.AddProperty("EmailAddress", "issues@bloom.palaso.org");
+			Palaso.Reporting.ErrorReport.AddStandardProperties();
+			Palaso.Reporting.ExceptionHandler.Init();
+		}
 	}
 
 
