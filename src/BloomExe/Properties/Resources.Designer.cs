@@ -81,6 +81,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap menuButton {
+            get {
+                object obj = ResourceManager.GetObject("menuButton", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap WelcomeHeader {
             get {
                 object obj = ResourceManager.GetObject("WelcomeHeader", resourceCulture);

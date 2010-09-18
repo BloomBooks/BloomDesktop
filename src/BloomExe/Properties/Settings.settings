@@ -5,7 +5,7 @@
     <Setting Name="FirstTimeRun" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MruProjects" Type="System.String" Scope="User">
+    <Setting Name="MruProjects" Type="Bloom.ToPalaso.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

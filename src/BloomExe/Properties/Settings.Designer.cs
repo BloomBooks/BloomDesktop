@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using Bloom.ToPalaso;
-
 namespace Bloom.Properties {
     
     
@@ -39,9 +37,9 @@ namespace Bloom.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public MostRecentPathsList MruProjects {
+        public global::Bloom.ToPalaso.MostRecentPathsList MruProjects {
             get {
-				return ((MostRecentPathsList)(this["MruProjects"]));
+                return ((global::Bloom.ToPalaso.MostRecentPathsList)(this["MruProjects"]));
             }
             set {
                 this["MruProjects"] = value;
