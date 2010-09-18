@@ -65,7 +65,7 @@ namespace Bloom.ToPalaso
 		{
 			foreach (string path in _paths)
 			{
-				if (File.Exists(path))
+				if (File.Exists(path) || Directory.Exists(path))
 				{
 					yield return path;
 				}
@@ -83,7 +83,7 @@ namespace Bloom.ToPalaso
 			{
 				throw new ArgumentNullException("path");
 			}
-			if (!File.Exists(path))
+			if (!File.Exists(path) && ! Directory.Exists(path))
 			{
 				return false;
 			}

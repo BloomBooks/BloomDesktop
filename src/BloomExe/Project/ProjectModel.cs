@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -8,14 +9,16 @@ namespace Bloom.Project
 	public class ProjectModel
 	{
 		private readonly BookSelection _bookSelection;
+		private readonly string _directoryPath;
 
-		public delegate ProjectModel Factory();//autofac uses this
+		public delegate ProjectModel Factory(string directoryPath);//autofac uses this
 		public event EventHandler UpdateDisplay;
 
 
-		public ProjectModel(BookSelection bookSelection)
+		public ProjectModel(BookSelection bookSelection, string directoryPath)
 		{
 			_bookSelection = bookSelection;
+			_directoryPath = directoryPath;
 			_bookSelection.SelectionChanged += new EventHandler(OnSelectionChanged);
 		}
 
@@ -27,6 +30,11 @@ namespace Bloom.Project
 		public bool ShowPublishPage
 		{
 			get { return _bookSelection.CurrentSelection.CanPublish; }
+		}
+
+		public string ProjectName
+		{
+			get { return Path.GetFileName(_directoryPath); }
 		}
 
 		void OnSelectionChanged(object sender, EventArgs e)
@@ -46,6 +54,11 @@ namespace Bloom.Project
 		public Book FindTemplate(string key)
 		{
 			return null;
+		}
+
+		public bool CloseRequested()
+		{
+			return true;
 		}
 	}
 

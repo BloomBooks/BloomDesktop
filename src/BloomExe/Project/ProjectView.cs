@@ -11,6 +11,7 @@ namespace Bloom.Project
 		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PdfView _pdfView;
+		public event EventHandler CloseCurrentProject;
 
 		public delegate ProjectView Factory();//autofac uses this
 
@@ -22,6 +23,8 @@ namespace Bloom.Project
 			_model = model;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
+
+			Text = _model.ProjectName;
 
 			//
 			// _libraryView
@@ -76,6 +79,14 @@ namespace Bloom.Project
 					var index = (int)page.Tag;
 					tabControl1.TabPages.Insert(index,page);
 				}
+			}
+		}
+
+		private void _openButton_Click(object sender, EventArgs e)
+		{
+			if(_model.CloseRequested())
+			{
+				Invoke(CloseCurrentProject);
 			}
 		}
 	}

@@ -3,6 +3,7 @@ using System.Reflection;
 using Autofac;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using System.Linq;
 
 namespace Bloom
 {
@@ -21,6 +22,9 @@ namespace Bloom
 				//default to InstancePerDependency, i.e., they it will make a new
 				//one each time someone asks for one
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly());
+
+				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 				if (Settings.Default.MruProjects==null)
 				{

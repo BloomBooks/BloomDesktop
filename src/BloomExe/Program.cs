@@ -58,12 +58,12 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
 		{
-//			if (MruFiles.Latest == null || !File.Exists(MruFiles.Latest) ||
-//				!OpenProjectWindow(MruFiles.Latest))
-//			{
+			if (Settings.Default.MruProjects.Latest == null  ||
+				!OpenProjectWindow(Settings.Default.MruProjects.Latest))
+			{
 				//since the message pump hasn't started yet, show the UI for choosing when it is
 				Application.Idle += ChooseAnotherProject;
-//			}
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -137,11 +137,11 @@ namespace Bloom
 			_projectContext.Dispose();
 			_projectContext = null;
 
-//			if (((Shell)sender).UserWantsToOpenADifferentProject)
-//			{
-//				Application.Idle += ChooseAnotherProject;
-//			}
-//			else
+			if (((Shell)sender).UserWantsToOpenADifferentProject)
+			{
+				Application.Idle += ChooseAnotherProject;
+			}
+			else
 			{
 				Application.Exit();
 			}

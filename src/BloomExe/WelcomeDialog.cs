@@ -9,10 +9,13 @@ namespace Bloom
 {
 	public partial class WelcomeDialog : Form
 	{
-		public WelcomeDialog(MostRecentPathsList MruLibraryPaths)
+		public WelcomeDialog(MostRecentPathsList mruLibraryPaths)
 		{
 			InitializeComponent();
-			_welcomeControl.Init(MruLibraryPaths, DefaultParentDirectoryForProjects(),
+			_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
+			_welcomeControl.TemplateButton.Image = this.Icon.ToBitmap();
+			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
+			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForProjects(),
 				"Create new library",
 				"Browse for other libraries on this computer...",
 				dir=>true,
@@ -23,7 +26,6 @@ namespace Bloom
 																	DialogResult = DialogResult.OK;
 																	Close();
 																};
-			_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
 		}
 
 		private string DefaultParentDirectoryForProjects()
@@ -34,10 +36,11 @@ namespace Bloom
 		private string CreateNewProject()
 		{
 			ChooseNewProjectLocationDialog dlg = new ChooseNewProjectLocationDialog(DefaultParentDirectoryForProjects());
-			if (DialogResult.OK != dlg.ShowDialog())
+			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewProjectDirectory))
 			{
 				return null;
 			}
+			Directory.CreateDirectory(dlg.PathToNewProjectDirectory);
 			return dlg.PathToNewProjectDirectory;
 		}
 

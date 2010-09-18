@@ -79,6 +79,7 @@
     <Compile Include="Browser.Designer.cs">
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Command.cs" />
     <Compile Include="ProjectContext.cs" />
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
     <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
@@ -287,6 +288,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\WelcomeHeader.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\menuButton.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

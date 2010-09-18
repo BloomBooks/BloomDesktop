@@ -46,6 +46,11 @@ namespace Bloom.ToPalaso
 		/// </summary>
 		public Label TemplateLabel { get { return _templateLabel;}}
 
+		/// <summary>
+		/// Client should use this, at least, to set the icon (the image) for mru items
+		/// </summary>
+		public Button TemplateButton { get { return _templateButton; } }
+
 
 		private void LoadButtons()
 		{
@@ -76,7 +81,7 @@ namespace Bloom.ToPalaso
 
 		private void AddFileChoice(string path, TableLayoutPanel panel)
 		{
-			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "wesayProject", true, openRecentProject_LinkClicked, panel);
+			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "template", true, openRecentProject_LinkClicked, panel);
 			button.Tag = path;
 		}
 
@@ -91,8 +96,15 @@ namespace Bloom.ToPalaso
 
 			button.Width = _templateButton.Width;//review
 			button.Font = new Font(StringCatalog.LabelFont.FontFamily, _templateButton.Font.Size, _templateButton.Font.Style);
-			button.ImageKey = imageKey;
-			button.ImageList = _imageList;
+			if (imageKey == "template") // this is used for the MRU list, the client can set it by changing the template
+			{
+				button.Image = _templateButton.Image;
+			}
+			else
+			{
+				button.ImageKey = imageKey;
+				button.ImageList = _imageList;
+			}
 			button.ImageAlign = ContentAlignment.MiddleLeft;
 			button.Click += clickHandler;
 			button.Text = "  "+localizedLabel;
@@ -195,7 +207,7 @@ namespace Bloom.ToPalaso
 			{
 				AddChoice("MRU list must be set at runtime", string.Empty, "blah blah", true, null, panel);
 			}
-			AddChoice(_browseLabel, string.Empty, "browse", true, OpenDifferentProject_LinkClicked, panel);
+			AddChoice(_browseLabel, string.Empty, "browse", true, OnBrowseForExistingProjectClick, panel);
 		}
 
 		private void openRecentProject_LinkClicked(object sender, EventArgs e)
@@ -208,11 +220,32 @@ namespace Bloom.ToPalaso
 			get; private set;
 		}
 
-		private void OpenDifferentProject_LinkClicked(object sender, EventArgs e)
+		private void OnBrowseForExistingProjectClick(object sender, EventArgs e)
 		{
-			if (DoneChoosingOrCreatingProject != null)
+			if(!Directory.Exists(_defaultParentDirectoryForProjects))
 			{
-				DoneChoosingOrCreatingProject.Invoke(this, null);
+				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
+			}
+
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.ShowNewFolderButton =false;
+
+				//dlg. = "Open Project";
+
+//				var prjFilterText = LocalizationManager.LocalizeString(
+//					"WelcomeDialog.ProjectFileType", "SayMore Project (*.sprj)",
+//					locExtender.LocalizationGroup);
+
+				//dlg.Filter = prjFilterText + "|*.sprj";
+				dlg.SelectedPath = _defaultParentDirectoryForProjects;
+				//dlg.InitialDirectory = _defaultParentDirectoryForProjects;
+				//dlg.CheckFileExists = true;
+				//dlg.CheckPathExists = true;
+				if (dlg.ShowDialog(this) == DialogResult.Cancel)
+					return;
+
+				SelectProjectAndClose(dlg.SelectedPath);
 			}
 		}
 
@@ -226,6 +259,7 @@ namespace Bloom.ToPalaso
 			SelectedPath = path;
 			if(!string.IsNullOrEmpty(path))
 			{
+				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingProject);
 			}
 		}

@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
+using Bloom.Project;
 using Palaso.IO;
 
 namespace Bloom
@@ -25,6 +26,8 @@ namespace Bloom
 		public ProjectContext(string rootDirectoryPath, IContainer parentContainer)
 		{
 			BuildSubContainerForThisProject(rootDirectoryPath, parentContainer);
+
+			ProjectWindow = _scope.Resolve <Shell>();
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -60,7 +63,14 @@ namespace Bloom
 					 {
 						 return c.Resolve<TemplateCollectionList>();
 					 }).InstancePerLifetimeScope();
+
+				//TODO: this gave a stackoverflow exception
+//				builder.Register<ProjectModel>(c => c.Resolve<ProjectModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
+				//so we're doing this
+				builder.Register(c=>rootDirectoryPath).InstancePerLifetimeScope();
+
 			});
+
 		}
 		private static IEnumerable<string> GetFileLocations()
 		{
