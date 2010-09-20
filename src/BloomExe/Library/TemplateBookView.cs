@@ -12,13 +12,15 @@ namespace Bloom
 	public partial class TemplateBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
+		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
 
 		public delegate TemplateBookView Factory();//autofac uses this
 
-		public TemplateBookView(BookSelection bookSelection)
+		public TemplateBookView(BookSelection bookSelection, CreateFromTemplateCommand createFromTemplateCommand)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
+			_createFromTemplateCommand = createFromTemplateCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 		}
 
@@ -38,7 +40,12 @@ namespace Bloom
 			if(_bookSelection.CurrentSelection==null)
 				return;
 			_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
-			button1.Visible = _bookSelection.CurrentSelection.Type == Book.BookType.Template;
+			_addToLibraryButton.Visible = _bookSelection.CurrentSelection.Type == Book.BookType.Template;
+		}
+
+		private void OnAddToLibraryClick(object sender, EventArgs e)
+		{
+			_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
 		}
 	}
 }

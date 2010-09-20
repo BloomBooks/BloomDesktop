@@ -348,5 +348,10 @@ namespace Bloom
 
 			_storage.Save();
 		}
+
+		public void CopyToFolder(string destinationPath)
+		{
+			_storage.CopyToFolder(destinationPath);
+		}
 	}
 }

@@ -23,6 +23,7 @@ namespace Bloom
 		string Title { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
+		void CopyToFolder(string destinationPath);
 	}
 
 	public class BookStorage : IBookStorage
@@ -183,6 +184,24 @@ namespace Bloom
 			}
 			image = null;
 			return false;
+		}
+
+		public void CopyToFolder(string destinationPath)
+		{
+			CopyToFolder(_folderPath, destinationPath);
+		}
+
+		private static void CopyToFolder(string sourcePath, string destinationPath)
+		{
+			Directory.CreateDirectory(destinationPath);
+			foreach (var filePath in Directory.GetFiles(sourcePath))
+			{
+				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+			}
+			foreach (var dirPath in Directory.GetDirectories(sourcePath))
+			{
+				CopyToFolder(dirPath,  Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+			}
 		}
 	}
 }

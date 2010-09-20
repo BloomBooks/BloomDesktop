@@ -55,7 +55,7 @@ namespace Bloom
 				builder.Register<TemplateCollectionList>(c =>
 					 {
 						 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
-						 l.ReposistoryFolders = new string[] { FactoryCollectionsDirectory };
+						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
 

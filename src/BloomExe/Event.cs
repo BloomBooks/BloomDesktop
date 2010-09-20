@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Bloom.Library;
 
 namespace Bloom
 {
@@ -27,10 +28,14 @@ namespace Bloom
 		}
 	}
 
-
+	public class CreateFromTemplateCommand: Event<Book>
+	{}
 
 	public class DeletePageCommand: Event<IPage>
 	{}
+
+//	public class BookCollectionChangedEvent : Event<BookCollection>
+//	{ }
 
 	public class PageListChangedEvent : Event<object>
 	{ }

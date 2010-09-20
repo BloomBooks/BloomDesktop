@@ -26,13 +26,13 @@ namespace Bloom.Library
 
 		public IEnumerable<BookCollection> GetBookCollections()
 		{
-			yield return _bookCollectionFactory(_pathToProject);
+			yield return _bookCollectionFactory(_pathToProject, BookCollection.CollectionType.TheOneEditableCollection);
 
-			foreach (var root in _templateCollectionList.ReposistoryFolders)
+			foreach (var root in _templateCollectionList.RepositoryFolders)
 			{
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-					yield return _bookCollectionFactory(dir);
+					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
 				}
 			}
 		}

@@ -36,18 +36,48 @@ namespace Bloom.Library
 				ListViewGroup group = new ListViewGroup(collection.Name);
 				listView1.Groups.Add(group);
 
-				foreach (Book book in collection.GetBooks())
+				LoadOneCollection(collection, group);
+			}
+		}
+
+		private void LoadOneCollection(BookCollection collection, ListViewGroup group)
+		{
+			if (group.Tag == collection)
+			{
+				group.Items.Clear(); //we are just updating this group
+			}
+			else
+			{
+				if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
 				{
-					ListViewItem item = new ListViewItem(book.Title, 0);
-					item.Tag=book;
-					item.Group = group;
-					var thumbnail = book.GetThumbNail();
-					if(thumbnail !=null)
-					{
-						_pageThumbnails.Images.Add(thumbnail);
-						item.ImageIndex = _pageThumbnails.Images.Count - 1;
-					}
-					listView1.Items.Add(item);
+					collection.CollectionChanged += OnCollectionChanged;
+				}
+				group.Tag = collection;
+			}
+			foreach (Book book in collection.GetBooks())
+			{
+				ListViewItem item = new ListViewItem(book.Title, 0);
+				item.Tag=book;
+				item.Group = group;
+
+				var thumbnail = book.GetThumbNail();
+				if(thumbnail !=null)
+				{
+					_pageThumbnails.Images.Add(thumbnail);
+					item.ImageIndex = _pageThumbnails.Images.Count - 1;
+				}
+				listView1.Items.Add(item);
+			}
+		}
+
+		private void OnCollectionChanged(object sender, EventArgs e)
+		{
+			foreach (ListViewGroup group in listView1.Groups)
+			{
+				if(group.Tag == sender)
+				{
+					LoadOneCollection((BookCollection) sender, group);
+					break;
 				}
 			}
 		}

@@ -8,17 +8,41 @@ namespace Bloom.Library
 {
 	public class BookCollection
 	{
-		public delegate BookCollection Factory(string path);//autofac uses this
+		public enum CollectionType
+		{
+			TheOneEditableCollection,
+			TemplateCollection
+		}
+		public delegate BookCollection Factory(string path, CollectionType collectionType);//autofac uses this
+
+		public EventHandler CollectionChanged;
 
 		private readonly string _path;
 		private readonly Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 
-		public BookCollection(string path, Book.Factory bookFactory, BookStorage.Factory storageFactory)
+		public BookCollection(string path, CollectionType collectionType,
+			Book.Factory bookFactory, BookStorage.Factory storageFactory,
+			CreateFromTemplateCommand createFromTemplateCommand)
 		{
 			_path = path;
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
+			Type = collectionType;
+
+			//we only pay attention if we are the editable collection 'round here.
+			if (collectionType == CollectionType.TheOneEditableCollection)
+			{
+				createFromTemplateCommand.Subscribe(CreateFromTemplate);
+			}
+		}
+
+		public CollectionType Type { get; private set; }
+
+		private void CreateFromTemplate(Book templateBook)
+		{
+			var bookFolder = BookFactory.CreateBookOnDiskFromTemplate(_path, templateBook);
+			CollectionChanged.Invoke(this, null);
 		}
 
 		public string Name

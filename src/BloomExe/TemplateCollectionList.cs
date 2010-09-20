@@ -20,7 +20,7 @@ namespace Bloom
 			_storageFactory = storageFactory;
 		}
 
-		public IEnumerable<string> ReposistoryFolders
+		public IEnumerable<string> RepositoryFolders
 		{
 			get;
 			set;
@@ -28,7 +28,7 @@ namespace Bloom
 
 		public Book FindTemplateBook(string key)
 		{
-			foreach (var root in ReposistoryFolders)
+			foreach (var root in RepositoryFolders)
 			{
 				foreach (var collection in Directory.GetDirectories(root))
 				{

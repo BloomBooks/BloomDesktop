@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
+    <Compile Include="BookFactory.cs" />
     <Compile Include="BookStorage.cs" />
     <Compile Include="Browser.cs">
       <SubType>UserControl</SubType>
