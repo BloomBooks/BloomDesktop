@@ -69,6 +69,7 @@ namespace Bloom
 				//so we're doing this
 				builder.Register(c=>rootDirectoryPath).InstancePerLifetimeScope();
 
+				builder.RegisterType<CreateFromTemplateCommand>().InstancePerLifetimeScope();
 			});
 
 		}
@@ -83,41 +84,9 @@ namespace Bloom
 		}
 		private static string FactoryCollectionsDirectory
 		{
-			get { return Path.Combine(GetTopAppDirectory(), "factoryCollections"); }
+			get { return FileLocator.GetDirectoryDistributedWithApplication("distfiles", "factoryCollections"); }
 		}
 
-		private static string GetTopAppDirectory()
-		{
-			string path = DirectoryOfTheApplicationExecutable;
-			char sep = Path.DirectorySeparatorChar;
-			int i = path.ToLower().LastIndexOf(sep + "output" + sep);
-
-			if (i > -1)
-			{
-				path = path.Substring(0, i + 1);
-			}
-			return path;
-		}
-
-
-		public static string DirectoryOfTheApplicationExecutable
-		{
-			get
-			{
-				string path;
-				bool unitTesting = Assembly.GetEntryAssembly() == null;
-				if (unitTesting)
-				{
-					path = new Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath;
-					path = Uri.UnescapeDataString(path);
-				}
-				else
-				{
-					path = Application.ExecutablePath;
-				}
-				return Directory.GetParent(path).FullName;
-			}
-		}
 
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()

@@ -29,12 +29,12 @@ namespace Bloom.Library
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			listView1.Items.Clear();
-			listView1.Groups.Clear();
+			_listView.Items.Clear();
+			_listView.Groups.Clear();
 			foreach (BookCollection collection in _model.GetBookCollections())
 			{
 				ListViewGroup group = new ListViewGroup(collection.Name);
-				listView1.Groups.Add(group);
+				_listView.Groups.Add(group);
 
 				LoadOneCollection(collection, group);
 			}
@@ -44,6 +44,20 @@ namespace Bloom.Library
 		{
 			if (group.Tag == collection)
 			{
+				//this code I wrote is so lame...
+				var x = new List<ListViewItem>();
+				foreach (ListViewItem item in _listView.Items)
+				{
+					x.Add(item);
+				}
+
+				foreach (var listViewItem in x)
+				{
+					if(listViewItem.Group == group)
+					{
+						_listView.Items.Remove(listViewItem);
+					}
+				}
 				group.Items.Clear(); //we are just updating this group
 			}
 			else
@@ -66,13 +80,21 @@ namespace Bloom.Library
 					_pageThumbnails.Images.Add(thumbnail);
 					item.ImageIndex = _pageThumbnails.Images.Count - 1;
 				}
-				listView1.Items.Add(item);
+				_listView.Items.Add(item);
+			}
+			if(group.Items.Count ==0)
+			{
+				ListViewItem item = new ListViewItem(" ", 0);
+				item.Tag=null;
+				item.ImageIndex = -1;
+				item.Group = group;
+				_listView.Items.Add(item);
 			}
 		}
 
 		private void OnCollectionChanged(object sender, EventArgs e)
 		{
-			foreach (ListViewGroup group in listView1.Groups)
+			foreach (ListViewGroup group in _listView.Groups)
 			{
 				if(group.Tag == sender)
 				{
@@ -84,14 +106,14 @@ namespace Bloom.Library
 
 		private void listView1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (listView1.SelectedItems.Count == 0)
+			if (_listView.SelectedItems.Count == 0)
 				return;
-			_model.SelectBook((Book) listView1.SelectedItems[0].Tag);
+			_model.SelectBook((Book) _listView.SelectedItems[0].Tag);
 		}
 
 		private void LibraryListView_BackColorChanged(object sender, EventArgs e)
 		{
-			listView1.BackColor = BackColor;
+			_listView.BackColor = BackColor;
 		}
 	}
 }

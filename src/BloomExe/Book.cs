@@ -9,6 +9,7 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Palaso.Code;
 using Palaso.IO;
+using Palaso.Xml;
 
 namespace Bloom
 {
@@ -177,6 +178,11 @@ namespace Bloom
 		public XmlDocument RawDom
 		{
 			get {return  _storage.Dom; }
+		}
+
+		public string FolderPath
+		{
+			get { return _storage.FolderPath; }
 		}
 
 
@@ -349,9 +355,7 @@ namespace Bloom
 			_storage.Save();
 		}
 
-		public void CopyToFolder(string destinationPath)
-		{
-			_storage.CopyToFolder(destinationPath);
-		}
+
+
 	}
 }

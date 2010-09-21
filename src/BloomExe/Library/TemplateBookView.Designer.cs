@@ -34,7 +34,6 @@
 			// 
 			// _addToLibraryButton
 			// 
-			this._addToLibraryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._addToLibraryButton.Location = new System.Drawing.Point(3, 3);
 			this._addToLibraryButton.Name = "_addToLibraryButton";
 			this._addToLibraryButton.Size = new System.Drawing.Size(259, 21);

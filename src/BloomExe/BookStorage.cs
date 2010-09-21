@@ -5,6 +5,7 @@ using System.Xml;
 
 using Palaso.Code;
 using Palaso.IO;
+using Palaso.Xml;
 
 namespace Bloom
 {
@@ -21,9 +22,9 @@ namespace Bloom
 		string Key { get; }
 		bool LooksOk { get; }
 		string Title { get; }
+		string FolderPath { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		void CopyToFolder(string destinationPath);
 	}
 
 	public class BookStorage : IBookStorage
@@ -35,6 +36,7 @@ namespace Bloom
 		{
 			_folderPath = folderPath;
 
+			RequireThat.Directory(folderPath).Exists();
 			if (File.Exists(PathToHtml))
 			{
 				Dom = new XmlDocument();
@@ -156,6 +158,11 @@ namespace Bloom
 			get { return Path.GetFileNameWithoutExtension(_folderPath); }
 		}
 
+		public string FolderPath
+		{
+			get { return _folderPath; }
+		}
+
 		public void Save()
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
@@ -186,22 +193,6 @@ namespace Bloom
 			return false;
 		}
 
-		public void CopyToFolder(string destinationPath)
-		{
-			CopyToFolder(_folderPath, destinationPath);
-		}
 
-		private static void CopyToFolder(string sourcePath, string destinationPath)
-		{
-			Directory.CreateDirectory(destinationPath);
-			foreach (var filePath in Directory.GetFiles(sourcePath))
-			{
-				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
-			}
-			foreach (var dirPath in Directory.GetDirectories(sourcePath))
-			{
-				CopyToFolder(dirPath,  Path.Combine(destinationPath, Path.GetFileName(dirPath)));
-			}
-		}
 	}
 }

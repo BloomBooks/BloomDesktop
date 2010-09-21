@@ -20,14 +20,17 @@ namespace Bloom.Library
 		private readonly string _path;
 		private readonly Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
+		private readonly BookStarter.Factory _bookStarterFactory;
 
 		public BookCollection(string path, CollectionType collectionType,
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
+			BookStarter.Factory bookStarterFactory,
 			CreateFromTemplateCommand createFromTemplateCommand)
 		{
 			_path = path;
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
+			_bookStarterFactory = bookStarterFactory;
 			Type = collectionType;
 
 			//we only pay attention if we are the editable collection 'round here.
@@ -41,7 +44,8 @@ namespace Bloom.Library
 
 		private void CreateFromTemplate(Book templateBook)
 		{
-			var bookFolder = BookFactory.CreateBookOnDiskFromTemplate(_path, templateBook);
+			var starter=_bookStarterFactory();
+			starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath,_path);
 			CollectionChanged.Invoke(this, null);
 		}
 

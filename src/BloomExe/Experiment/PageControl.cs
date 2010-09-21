@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
+using Palaso.Xml;
 using Skybound.Gecko;
 
 namespace Bloom
