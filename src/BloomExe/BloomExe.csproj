@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
-    <Compile Include="BookFactory.cs" />
+    <Compile Include="BookStarter.cs" />
     <Compile Include="BookStorage.cs" />
     <Compile Include="Browser.cs">
       <SubType>UserControl</SubType>
@@ -101,7 +101,6 @@
     <Compile Include="WelcomeDialog.Designer.cs">
       <DependentUpon>WelcomeDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="XmlDomExtensions.cs" />
     <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
     <Compile Include="Edit\EditingView.cs">
@@ -268,7 +267,6 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="XmlNodeExtensions.cs" />
     <Compile Include="XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>

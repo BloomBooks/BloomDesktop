@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Xml;
+using Palaso.Xml;
 
 namespace Bloom
 {

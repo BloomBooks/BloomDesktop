@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Publish;
+using Palaso.Xml;
 using Skybound.Gecko;
 
 namespace Bloom

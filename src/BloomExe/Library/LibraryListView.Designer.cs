@@ -35,39 +35,39 @@
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Edolo Ado Beba Agedu", 0);
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("A5 Booklet", 0);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LibraryListView));
-            this.listView1 = new System.Windows.Forms.ListView();
+            this._listView = new System.Windows.Forms.ListView();
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
             this.SuspendLayout();
             // 
             // listView1
             // 
-            this.listView1.BackColor = System.Drawing.Color.Lavender;
-            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._listView.BackColor = System.Drawing.Color.Lavender;
+            this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
             listViewGroup1.Header = "Our Books";
             listViewGroup1.Name = "Our Books";
             listViewGroup2.Header = "Blank Books";
             listViewGroup2.Name = "Blank Books";
             listViewGroup3.Header = "SIL Health Books";
             listViewGroup3.Name = "SIL Health Books";
-            this.listView1.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            this._listView.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2,
             listViewGroup3});
-            this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listView1.HideSelection = false;
+            this._listView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this._listView.HideSelection = false;
             listViewItem1.Group = listViewGroup1;
             listViewItem2.Group = listViewGroup2;
-            this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            this._listView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2});
-            this.listView1.LargeImageList = this._pageThumbnails;
-            this.listView1.Location = new System.Drawing.Point(0, 0);
-            this.listView1.MultiSelect = false;
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(167, 468);
-            this.listView1.TabIndex = 1;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
+            this._listView.LargeImageList = this._pageThumbnails;
+            this._listView.Location = new System.Drawing.Point(0, 0);
+            this._listView.MultiSelect = false;
+            this._listView.Name = "_listView";
+            this._listView.Size = new System.Drawing.Size(167, 468);
+            this._listView.TabIndex = 1;
+            this._listView.UseCompatibleStateImageBehavior = false;
+            this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
             // 
             // _pageThumbnails
             // 
@@ -80,7 +80,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(63)))), ((int)(((byte)(51)))));
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(this._listView);
             this.Name = "LibraryListView";
             this.Size = new System.Drawing.Size(167, 468);
             this.BackColorChanged += new System.EventHandler(this.LibraryListView_BackColorChanged);
@@ -90,7 +90,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView _listView;
         private System.Windows.Forms.ImageList _pageThumbnails;
     }
 }

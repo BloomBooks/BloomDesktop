@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
+using Palaso.Xml;
 
 namespace Bloom
 {

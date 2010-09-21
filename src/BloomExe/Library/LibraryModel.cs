@@ -30,9 +30,12 @@ namespace Bloom.Library
 
             foreach (var root in _templateCollectionList.RepositoryFolders)
             {
+
                 foreach (var dir in Directory.GetDirectories(root))
                 {
-                    yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
+					if(dir.Contains("SIL"))
+						continue;
+					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
                 }
             }
         }

@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using Palaso.IO;
 using Palaso.TestUtilities;
+using Palaso.Xml;
 
 namespace BloomTests
 {
