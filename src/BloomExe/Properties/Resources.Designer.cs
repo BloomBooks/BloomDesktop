@@ -60,6 +60,20 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap A5LandscapeBooklet70x70 {
+            get {
+                object obj = ResourceManager.GetObject("A5LandscapeBooklet70x70", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap A5PortraitBooklet70x70 {
+            get {
+                object obj = ResourceManager.GetObject("A5PortraitBooklet70x70", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon Bloom {
             get {
                 object obj = ResourceManager.GetObject("Bloom", resourceCulture);

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="AppSettings.xml" Guid="d3c74d27-0dcf-4493-93a9-974977092be3" />
+  <File Id="DiscourseTypes.xml" Guid="8cc156cb-e24e-4858-aa15-19ae231fd7bb" />
+  <File Id="SessionFileInfoTemplates.xml" Guid="79c9620d-5ae8-4fbb-bdcf-3a88a57c9ae0" />
+  <File Id="Sponge.exe.config" Guid="8ce714ee-790b-4f15-872c-ed5e2fb8a9e2" />
+  <File Id="releaseNotes.htm" Guid="7faa5799-f47a-4fb8-aebf-c7baae6aceb5" />
+</InstallerMetadata>

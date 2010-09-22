@@ -24,6 +24,12 @@ namespace Bloom
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private IBookStorage _storage;
 
+		public enum SizeAndShapeChoice
+		{
+			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,
+
+		}
+
 		public Book(IBookStorage storage, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
@@ -37,7 +43,27 @@ namespace Bloom
 			_pageListChangedEvent = pageListChangedEvent;
 		}
 
-
+		public SizeAndShapeChoice SizeAndShape
+		{
+			get
+			{
+				if(_storage.Dom ==null)//at least during early development, we're allowing books with no actual htm page
+				{
+					return SizeAndShapeChoice.Unknown;
+				}
+				var body = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//body");
+				var bodyClass = body.GetStringAttribute("class");
+				if (bodyClass.Contains("a5Portrait"))
+				{
+					return SizeAndShapeChoice.A5Portrait;
+				}
+				else if (bodyClass.Contains("a5Landscape"))
+				{
+					return SizeAndShapeChoice.A5Landscape;
+				}
+				else return SizeAndShapeChoice.Unknown;
+			}
+		}
 
 		public enum BookType { Unknown, Template, Shell, Publication }
 
@@ -46,7 +72,7 @@ namespace Bloom
 			get { return _storage.Title; }
 		}
 
-		public  Image GetThumbNail()
+		public  Image GetThumbNailOfBookCover()
 		{
 			Image thumb;
 			if(_storage.TryGetPremadeThumbnail(out thumb))
@@ -55,9 +81,9 @@ namespace Bloom
 			var dom = GetPreviewXmlDocumentForFirstPage();
 			if(dom == null)
 			{
-				return Resources.GenericPage32x32;
+				return null;
 			}
-			return _thumbnailProvider.GetThumbnail(_storage.Key, dom);
+			return _thumbnailProvider.GetThumbnail(_storage.Key, dom, Color.Transparent);
 		}
 
 		public XmlDocument GetEditableHtmlDomForPage(IPage page)
@@ -219,7 +245,7 @@ namespace Bloom
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)
 		{
 			return new Page(pageNode, caption,
-					(page => _thumbnailProvider.GetThumbnail(page.Id, GetPreviewXmlDocumentForPage(page))),
+					(page => _thumbnailProvider.GetThumbnail(page.Id, GetPreviewXmlDocumentForPage(page), Color.White)),
 					(page => FindPageDiv(page)));
 		}
 

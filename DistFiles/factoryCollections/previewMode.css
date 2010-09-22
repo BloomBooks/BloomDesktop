@@ -20,3 +20,7 @@ DIV.page
 	border: 1px solid #000000;
 	page-break-after: always;
 }
+IMG
+{
+	border: 1px none #000000;
+}

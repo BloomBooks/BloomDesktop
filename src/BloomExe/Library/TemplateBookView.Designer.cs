@@ -49,9 +49,9 @@
 						| System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
 			this._browser.BackColor = System.Drawing.Color.DarkGray;
-			this._browser.Location = new System.Drawing.Point(0, 30);
+			this._browser.Location = new System.Drawing.Point(0, 33);
 			this._browser.Name = "_browser";
-			this._browser.Size = new System.Drawing.Size(801, 417);
+			this._browser.Size = new System.Drawing.Size(897, 417);
 			this._browser.TabIndex = 1;
 			// 
 			// TemplateBookView

@@ -33,8 +33,8 @@ namespace Bloom.Library
 
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-					if(dir.Contains("SIL"))
-						continue;
+//					if(dir.Contains("SIL"))
+//						continue;
 					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
 				}
 			}

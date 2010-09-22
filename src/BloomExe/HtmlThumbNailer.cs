@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,14 +19,26 @@ namespace Bloom
 		private Image _pendingThumbnail;
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
 		private readonly int _sizeInPixels =60;
+		private Color _backgroundColorOfResult;
 
 		public HtmlThumbNailer(int sizeInPixels)
 		{
 			_sizeInPixels = sizeInPixels;
 		}
 
-		public Image GetThumbnail(string key, XmlDocument document)
+
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="key">whatever system you want... just used for caching</param>
+		/// <param name="document"></param>
+		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
+		/// <returns></returns>
+		public Image GetThumbnail(string key, XmlDocument document, Color backgroundColorOfResult)
 		{
+			_backgroundColorOfResult = backgroundColorOfResult;
+
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
 
 			Image image;
@@ -77,22 +90,10 @@ namespace Bloom
 				_browser.Width = width;
 
 				_browser.DrawToBitmap(docImage,
-												   new Rectangle(_browser.Location.X,
-																 _browser.Location.Y,
+												   new Rectangle(0,//_browser.Location.X,
+																 0,//_browser.Location.Y,
 																 width, height));
 
-//                int w = _sizeInPixels;
-//                int h = _sizeInPixels;
-//                if (height > width)
-//                {
-//                    w = (int)Math.Floor(((float)_sizeInPixels) * ((float)width / (float)height));
-//                }
-//                else
-//                {
-//                    h = (int) Math.Floor(((float)_sizeInPixels)*((float) height/(float) width));
-//                }
-//                _pendingThumbnail = new Bitmap(docImage, w, h);
-//                _pendingThumbnail.
 				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent);
 			}
 		}
@@ -137,20 +138,49 @@ namespace Bloom
 			return retBmp;
 #else
 
-			Bitmap retBmp = new Bitmap(destinationWidth, destinationHeight, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
-			Graphics grp = Graphics.FromImage(retBmp);
-			grp.PixelOffsetMode = PixelOffsetMode.None;
-			grp.InterpolationMode = InterpolationMode.HighQualityBicubic;
+			Bitmap thumbnail = new Bitmap(destinationWidth, destinationHeight, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
+			using (Graphics graphics = Graphics.FromImage(thumbnail))
+			{
+				graphics.PixelOffsetMode = PixelOffsetMode.None;
+				graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-			grp.DrawImage(bmp, horizontalOffset, verticalOffset, actualWidth, actualHeight);
-
-			Pen pn = new Pen(borderColor, 1); //Color.Wheat
+				var destRect = new Rectangle(horizontalOffset, verticalOffset, actualWidth,actualHeight);
 
 
-			grp.DrawRectangle(pn, 0, 0, retBmp.Width - 1, retBmp.Height - 1);
+				//leave out the grey boarder which is in the browser, and zoom in some
+				int skipMarginH = 30;
+				int skipMarginV = 30;
+				graphics.DrawImage(bmp, destRect, skipMarginH, skipMarginV,
+						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
+						GraphicsUnit.Pixel, WhiteToBackground);
 
-			return retBmp;
+				//grp.DrawImage(bmp, horizontalOffset, verticalOffset, actualWidth, actualHeight);
+
+				Pen pn = new Pen(borderColor, 1);
+				graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
+			}
+//			bmp.Save(@"c:\dev\temp\page.png", ImageFormat.Png);
+//			thumbnail.Save(@"c:\dev\temp\pagethum.png", ImageFormat.Png);
+			return thumbnail;
 #endif
+		}
+
+
+		/// <summary>
+		/// Make the result look like it's on a colored paper, or make it transparent for composing on top
+		/// of some other image.
+		/// </summary>
+		private ImageAttributes WhiteToBackground
+		{
+			get
+			{
+				ImageAttributes imageAttributes = new ImageAttributes();
+				ColorMap map = new ColorMap();
+				map.OldColor = Color.White;
+				map.NewColor = _backgroundColorOfResult;
+				imageAttributes.SetRemapTable(new ColorMap[] { map });
+				return imageAttributes;
+			}
 		}
 	}
 }
