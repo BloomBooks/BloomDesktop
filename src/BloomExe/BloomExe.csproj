@@ -297,6 +297,12 @@
   <ItemGroup>
     <None Include="Resources\bookletA5Horizontal70x70.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\A5Landscapel70Wide.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\A5Portraitl70Tall.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

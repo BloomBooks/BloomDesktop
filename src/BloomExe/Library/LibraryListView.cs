@@ -5,10 +5,12 @@ using System.Drawing;
 using System.Data;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Properties;
+using Palaso.IO;
 
 namespace Bloom.Library
 {
@@ -22,6 +24,7 @@ namespace Bloom.Library
 		{
 			_model = model;
 			InitializeComponent();
+			_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
 			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
 		}
 
@@ -38,6 +41,7 @@ namespace Bloom.Library
 			foreach (BookCollection collection in _model.GetBookCollections())
 			{
 				ListViewGroup group = new ListViewGroup(collection.Name);
+
 				_listView.Groups.Add(group);
 
 				LoadOneCollection(collection, group);
@@ -92,56 +96,105 @@ namespace Bloom.Library
 			item.Tag=book;
 			item.Group = group;
 
-			var thumbnail = book.GetThumbNailOfBookCover();
-			if(thumbnail == null)
-			{
-				item.ImageIndex = 0; //generic
+			Image thumbnail=null;
+			if (book.Type != Book.BookType.Template)
+			{ //for templates, let's just show a blank cover
+				thumbnail = book.GetThumbNailOfBookCover();
 			}
-			if(thumbnail !=null)
-			{
-				thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
-				_pageThumbnails.Images.Add(thumbnail);
-				item.ImageIndex = _pageThumbnails.Images.Count - 1;
-			}
+
+
+			thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
+			_pageThumbnails.Images.Add(thumbnail);
+			item.ImageIndex = _pageThumbnails.Images.Count - 1;
 			_listView.Items.Add(item);
 		}
 
-		private static Image GetBookletImage(Book book)
+		int _vernacularBookletColorIndex = 0;
+		int _templateBookletColorIndex = 0;
+
+		private Image GetBookletImage(Book book)
 		{
-			Image img;
+			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
+			var templateBookColors = new string[] { "blue","purple" };
+			string name;
 			switch (book.SizeAndShape)
 			{
 				case Book.SizeAndShapeChoice.A5Landscape:
-					img = Resources.A5LandscapeBooklet70x70;
+					name = "A5LandscapeBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A5Portrait:
-					img = Resources.A5PortraitBooklet70x70;
+					name = "A5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A4Landscape:
-					img = Resources.A5PortraitBooklet70x70;
+					name = "A5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A4Portrait:
-					img = Resources.A5PortraitBooklet70x70;
+					name = "A5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A3Landscape:
-					img = Resources.A5PortraitBooklet70x70;
+					name = "A5PortraitBooklet";
 					break;
 				default:
-					img = Resources.A5PortraitBooklet70x70; //could have an error one
+					name = "A5PortraitBooklet";
 					break;
 			}
-			return (Image) img.Clone();
+
+			string path;
+			do
+			{
+				string color;
+				if (book.Type == Book.BookType.Template)
+				{
+					color = templateBookColors[_templateBookletColorIndex++];
+					if (_templateBookletColorIndex == templateBookColors.Length)
+						_templateBookletColorIndex = 0;
+				}
+				else
+				{
+					color = vernacularBookColors[_vernacularBookletColorIndex++];
+					if (_vernacularBookletColorIndex == vernacularBookColors.Length)
+						_vernacularBookletColorIndex = 0;
+				}
+
+				var images = FileLocator.GetDirectoryDistributedWithApplication("DistFiles", "images");
+				path = Path.Combine(images, name + color + ".png");
+
+			} while (!File.Exists(path));
+			return Image.FromFile(path);
 		}
 
 		private Image ComposeCoverPageWithBooklet(Image thumbnail, Image booklet)
 		{
-			//thumbnail.Save(@"c:\dev\temp\thum.png", ImageFormat.Png);
-			using (var g = Graphics.FromImage(booklet))
+			Image book = new Bitmap(70, 70);
+			using (var g = Graphics.FromImage(book))
 			{
 				g.CompositingMode = CompositingMode.SourceOver;
-				g.DrawImage(thumbnail, -5, 10);
+				g.CompositingQuality = CompositingQuality.HighQuality;
+
+				Rectangle destRect = new Rectangle(0,0, booklet.Width, book.Height);
+				g.DrawImage(booklet, destRect, 0,0, booklet.Width, book.Height,
+					GraphicsUnit.Pixel,MagentaToPaperColor(Color.LightGreen));
+
+				if (thumbnail != null) //no cover page thumnail was available
+				{
+					g.DrawImage(thumbnail, -10, -5);
+				}
 			}
-			return booklet;
+			return book;
+		}
+
+		/// <summary>
+		/// Make the result look like it's on a colored paper, or make it transparent for composing on top
+		/// of some other image.
+		/// </summary>
+		private ImageAttributes MagentaToPaperColor(Color paperColor)
+		{
+			ImageAttributes imageAttributes = new ImageAttributes();
+			ColorMap map = new ColorMap();
+			map.OldColor =  Color.Magenta;
+			map.NewColor = paperColor;
+			imageAttributes.SetRemapTable(new ColorMap[] {map});
+			return imageAttributes;
 		}
 
 		private void OnCollectionChanged(object sender, EventArgs e)
@@ -167,5 +220,7 @@ namespace Bloom.Library
 		{
 			_listView.BackColor = BackColor;
 		}
+
+
 	}
 }

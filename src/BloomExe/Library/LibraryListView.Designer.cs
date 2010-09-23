@@ -43,6 +43,7 @@
 			// 
 			this._listView.BackColor = System.Drawing.Color.White;
 			this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._listView.ForeColor = System.Drawing.Color.Black;
 			listViewGroup1.Header = "Our Books";
 			listViewGroup1.Name = "Our Books";
 			listViewGroup2.Header = "Blank Books";
