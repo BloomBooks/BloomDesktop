@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skybound.Gecko", "..\lib\GeckoFX\Skybound.Gecko\Skybound.Gecko.csproj", "{877D1A24-2D5E-4C46-A933-FCF11EA0403B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug 1.8|Any CPU = Debug 1.8|Any CPU
+		Debug 1.9|Any CPU = Debug 1.9|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug 1.8|Any CPU.ActiveCfg = Debug 1.8|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug 1.8|Any CPU.Build.0 = Debug 1.8|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug 1.9|Any CPU.ActiveCfg = Debug 1.9|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug 1.9|Any CPU.Build.0 = Debug 1.9|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{877D1A24-2D5E-4C46-A933-FCF11EA0403B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug 1.8|Any CPU.ActiveCfg = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug 1.8|Any CPU.Build.0 = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug 1.9|Any CPU.ActiveCfg = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug 1.9|Any CPU.Build.0 = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{304D5612-167C-4725-AF27-B9F2BB788B57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug 1.8|Any CPU.ActiveCfg = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug 1.8|Any CPU.Build.0 = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug 1.9|Any CPU.ActiveCfg = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug 1.9|Any CPU.Build.0 = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
