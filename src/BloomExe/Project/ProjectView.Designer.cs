@@ -37,9 +37,9 @@ namespace Bloom.Project
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this._openButton = new System.Windows.Forms.PictureBox();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._openButton)).BeginInit();
             this.SuspendLayout();
@@ -62,35 +62,44 @@ namespace Bloom.Project
             // 
             // tabPage1
             // 
+            this.tabPage1.ImageIndex = 2;
             this.tabPage1.Location = new System.Drawing.Point(4, 44);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Size = new System.Drawing.Size(877, 492);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Library";
+            this.tabPage1.ToolTipText = "View Libaries";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
-            this.tabPage2.ImageIndex = 0;
+            this.tabPage2.ImageIndex = 1;
             this.tabPage2.Location = new System.Drawing.Point(4, 44);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Size = new System.Drawing.Size(877, 492);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Edit";
+            this.tabPage2.ToolTipText = "Edit Book";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // tabPage3
             // 
-            this.tabPage3.ImageIndex = 1;
+            this.tabPage3.ImageIndex = 0;
             this.tabPage3.Location = new System.Drawing.Point(4, 44);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage3.Size = new System.Drawing.Size(877, 492);
             this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Publish";
+            this.tabPage3.ToolTipText = "Publish Book";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "document-print.png");
+            this.imageList1.Images.SetKeyName(1, "accessories-text-editor.png");
+            this.imageList1.Images.SetKeyName(2, "emyller_books.png");
             // 
             // toolStripButton1
             // 
@@ -114,13 +123,6 @@ namespace Bloom.Project
             this._openButton.TabIndex = 11;
             this._openButton.TabStop = false;
             this._openButton.Click += new System.EventHandler(this._openButton_Click);
-            // 
-            // imageList1
-            // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "edit.png");
-            this.imageList1.Images.SetKeyName(1, "printer.png");
             // 
             // ProjectView
             // 
