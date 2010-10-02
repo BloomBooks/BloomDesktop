@@ -40,7 +40,7 @@
 	</Target>
 
   <Target Name="Compile" DependsOnTargets="SetAssemblyVersion">
-	<MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom.sln"
+	<MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom VS2010.sln"
 			 Targets="Rebuild"
 			 Properties="Configuration=Release" />
   </Target>
