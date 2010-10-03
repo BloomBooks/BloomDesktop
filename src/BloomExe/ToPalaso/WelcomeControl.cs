@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using Palaso.I8N;
+using Palaso.i18n;
 
 
 namespace Bloom.ToPalaso
@@ -160,12 +160,12 @@ namespace Bloom.ToPalaso
 				//e.g. mydocuments/wesay
 				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
 			}
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(_defaultParentDirectoryForProjects))
-			{
-				if (DialogResult.Cancel == dlg.ShowDialog())
-					return;
-				SelectProjectAndClose(dlg.PathToNewProject);
-			}
+//			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(_defaultParentDirectoryForProjects))
+//            {
+//                if (DialogResult.Cancel == dlg.ShowDialog())
+//                    return;
+//				SelectProjectAndClose(dlg.PathToNewProject);
+//            }
 		}
 
 		private void OnGetFromUsb(object sender, EventArgs e)
@@ -175,13 +175,13 @@ namespace Bloom.ToPalaso
 				//e.g. mydocuments/wesay
 				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
 			}
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(_defaultParentDirectoryForProjects))
-			{
-				dlg.Model.ProjectFilter = dir => _looksLikeValidProjectPredicate(dir);
-				if (DialogResult.Cancel == dlg.ShowDialog())
-					return;
-				SelectProjectAndClose(dlg.PathToNewProject);
-			}
+//			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(_defaultParentDirectoryForProjects))
+//            {
+//            	dlg.Model.ProjectFilter = dir => _looksLikeValidProjectPredicate(dir);
+//                if (DialogResult.Cancel == dlg.ShowDialog())
+//                    return;
+//				SelectProjectAndClose(dlg.PathToNewProject);
+//            }
 		}
 
 //        private static bool GetLooksLikeWeSayProject(string directoryPath)

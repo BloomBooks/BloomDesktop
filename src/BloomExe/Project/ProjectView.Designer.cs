@@ -31,13 +31,10 @@ namespace Bloom.Project
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectView));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this._openButton = new System.Windows.Forms.PictureBox();
             this.tabControl1.SuspendLayout();
@@ -50,7 +47,6 @@ namespace Bloom.Project
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.ImageList = this.imageList1;
             this.tabControl1.ItemSize = new System.Drawing.Size(43, 40);
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
@@ -92,14 +88,6 @@ namespace Bloom.Project
             this.tabPage3.TabIndex = 2;
             this.tabPage3.ToolTipText = "Publish Book";
             this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // imageList1
-            // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "document-print.png");
-            this.imageList1.Images.SetKeyName(1, "accessories-text-editor.png");
-            this.imageList1.Images.SetKeyName(2, "emyller_books.png");
             // 
             // toolStripButton1
             // 
@@ -146,8 +134,7 @@ namespace Bloom.Project
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
 		private System.Windows.Forms.ToolStripButton toolStripButton1;
-		private System.Windows.Forms.PictureBox _openButton;
-        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.PictureBox _openButton;
 
 
     }

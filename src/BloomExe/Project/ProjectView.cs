@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.Publish;
+using Palaso.IO;
 
 namespace Bloom.Project
 {
@@ -25,6 +27,8 @@ namespace Bloom.Project
 			InitializeComponent();
 
 			Text = _model.ProjectName;
+
+			SetupTabIcons();
 
 			//
 			// _libraryView
@@ -55,6 +59,23 @@ namespace Bloom.Project
 			this.tabPage2.Controls.Add(this._editingView);
 			this.tabPage3.Controls.Add(this._pdfView);
 
+		}
+
+		private void SetupTabIcons()
+		{
+			tabControl1.ImageList = new ImageList();
+			tabControl1.ImageList.ColorDepth = ColorDepth.Depth24Bit;
+			tabControl1.ImageList.ImageSize = new Size(32,32);
+			tabControl1.ImageList.Images.Add(
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("DistFiles", "Images", "library.png")));
+			tabControl1.ImageList.Images.Add(
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("DistFiles", "Images", "edit.png")));
+			tabControl1.ImageList.Images.Add(
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("DistFiles", "Images", "publish.png")));
+
+			tabPage1.ImageIndex = 0;
+			tabPage2.ImageIndex = 1;
+			tabPage3.ImageIndex = 2;
 		}
 
 		void OnUpdateDisplay(object sender, System.EventArgs e)
