@@ -38,15 +38,18 @@ namespace Bloom
 				//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.InstancePerLifetimeScope()
-					.Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
+					// Didn't work .Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
+					.Where(t => t is IEvent);
 
 				//Other classes which are also  singletons
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.InstancePerLifetimeScope()
 					.Where(t => new[]{
 					typeof(TemplateInsertionCommand),
+					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
 					typeof(PageSelection)}.Contains(t));
+
 
 				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
 				builder.Register<IFileLocator>(c => new FileLocator(GetFileLocations())).InstancePerLifetimeScope();
@@ -84,7 +87,7 @@ namespace Bloom
 		}
 		private static string FactoryCollectionsDirectory
 		{
-			get { return FileLocator.GetDirectoryDistributedWithApplication("distfiles", "factoryCollections"); }
+			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}
 
 
