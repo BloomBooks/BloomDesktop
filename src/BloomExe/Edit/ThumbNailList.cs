@@ -136,6 +136,8 @@ namespace Bloom.Edit
 		{
 			Capture = false;
 			Debug.WriteLine("MouseUp");
+			_mouseDidGoDown = false;
+
 			if (Control.MouseButtons == MouseButtons.Left)
 				return;
 
@@ -202,13 +204,6 @@ namespace Bloom.Edit
 				_currentTarget = target;
 			}
 		}
-
-		private void ThumbNailList_MouseUp(object sender, MouseEventArgs e)
-		{
-			Debug.WriteLine("thumb mouse up");
-		}
-
-
 	}
 
 	/// <summary>

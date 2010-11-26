@@ -68,7 +68,6 @@
 			this.ForeColor = System.Drawing.SystemColors.WindowText;
 			this.Name = "ThumbNailList";
 			this.BackColorChanged += new System.EventHandler(this.ThumbNailList_BackColorChanged);
-			this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ThumbNailList_MouseUp);
 			this.ResumeLayout(false);
 
         }
