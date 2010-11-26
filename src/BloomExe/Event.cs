@@ -4,7 +4,9 @@ using Bloom.Library;
 
 namespace Bloom
 {
-	public class Event<TPayload>
+	public interface IEvent {}//hack for our autofact registration because of the generic I don't know how to select by actual event<>
+
+	public class Event<TPayload> : IEvent
 	{
 		private readonly List<Action<TPayload>> _subscribers = new List<Action<TPayload>>();
 

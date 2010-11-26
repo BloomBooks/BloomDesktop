@@ -21,8 +21,8 @@ namespace BloomTests
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												FileLocator.GetDirectoryDistributedWithApplication("distfiles", "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication("distfiles", "factoryCollections", "Templates", "A5PortraitBooklet")
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5PortraitBooklet")
 											});
 			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator));
 		}
@@ -32,7 +32,7 @@ namespace BloomTests
 		{
 			using (var dest = new TemporaryFolder("DestBookStorage"))
 			{
-				var source = FileLocator.GetDirectoryDistributedWithApplication("distfiles","factoryCollections", "Templates", "A5PortraitBooklet");
+				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5PortraitBooklet");
 
 				var newFolder = _starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
 
