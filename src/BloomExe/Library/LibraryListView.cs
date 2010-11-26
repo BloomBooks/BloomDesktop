@@ -156,7 +156,7 @@ namespace Bloom.Library
 						_vernacularBookletColorIndex = 0;
 				}
 
-				var images = FileLocator.GetDirectoryDistributedWithApplication("DistFiles", "images");
+				var images = FileLocator.GetDirectoryDistributedWithApplication("images");
 				path = Path.Combine(images, name + color + ".png");
 
 			} while (!File.Exists(path));
