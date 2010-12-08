@@ -334,6 +334,15 @@ namespace Bloom
 			string pageSelector = Page.GetPageSelectorXPath(pageDom);
 			//review: does this belong down in the storage?
 
+
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
+			{
+				var id = editNode.GetAttribute("id");
+				var storageNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//img[@id='" + id + "']") as XmlElement;
+				Guard.AgainstNull(storageNode, id);
+				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
+			}
+
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//input"))
 			{
 				var id = editNode.GetAttribute("id");

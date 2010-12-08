@@ -81,6 +81,9 @@ namespace Bloom.Edit
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
 			var ge = e as GeckoDomEventArgs;
+			if (ge.Target.TagName != "IMG")
+				return;
+
 			using(var dlg = new ChangePictureDialog())
 			{
 				dlg.CurrentPicturePath = ge.Target.GetAttribute("src");

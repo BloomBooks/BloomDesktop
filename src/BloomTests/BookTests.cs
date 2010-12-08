@@ -30,7 +30,7 @@ namespace BloomTests
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.SetupGet(x => x.LooksOk).Returns(true);
-			XmlDocument storageDom = GetTheePageDom();
+			XmlDocument storageDom = GetThreePageDom();
 			_storage.SetupGet(x => x.Dom).Returns(storageDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.Title).Returns("testTitle");
@@ -105,6 +105,34 @@ namespace BloomTests
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			book.SavePage(dom);
 			_storage.Verify(s => s.Save(), Times.Once());
+		}
+
+		[Test]
+		public void SavePage_ChangeMadeToSrcOfImg_StorageUpdated()
+		{
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
+			var imgInEditingDom = dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as XmlElement;
+			imgInEditingDom.SetAttribute("src", "changed.png");
+
+			book.SavePage(dom);
+			var imgInStorage = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as XmlElement;
+
+			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
+		}
+
+		[Test, Ignore("Not yet handling upper case html")]
+		public void SavePage_UpperCaseIMGTagChangeMadeToSrcOfImg_StorageUpdated()
+		{
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
+			var imgInEditingDom = dom.SelectSingleNodeHonoringDefaultNS("//IMG[@id='img2UpperCase']") as XmlElement;
+			imgInEditingDom.SetAttribute("src", "changed.png");
+
+			book.SavePage(dom);
+			var imgInStorage = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//IMG[@id='img2UpperCase']") as XmlElement;
+
+			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
 		}
 
 		[Test]
@@ -274,13 +302,13 @@ namespace BloomTests
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
-		private XmlDocument GetTheePageDom()
+		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
 				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /></div>
-				<div class='page' id='guid2'><textarea id='testText'>original1</textarea></div>
-				<div class='page' id='guid3'><textarea id='testText'>original2</textarea></div>
+				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><img id='img1' src='original.png'/></div>
+				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><IMG id='img2UpperCase' src='original.png'/></div>
 				</body></html>");
 			return dom;
 		}
