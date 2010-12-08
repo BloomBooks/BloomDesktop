@@ -17,10 +17,13 @@ namespace Bloom
 		private XmlDocument _pageDom;
 		private TempFile _tempHtmlFile;
 
+		public event EventHandler OnBrowserClick;
+
+
+
 		public Browser()
 		{
 			InitializeComponent();
-
 		}
 
 		void OnValidating(object sender, CancelEventArgs e)
@@ -60,11 +63,31 @@ namespace Bloom
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
+			_browser.Navigating += new GeckoNavigatingEventHandler(_browser_Navigating);
+		   // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
+			//necessarily need).  When I comment this out, I get an error if the href had, for example,
+			//"bloom" for the protocol.  We could probably install that as a protocol, rather than
+			//using the click to just get a target and go from there, if we wanted.
+			_browser.DomClick += new GeckoDomEventHandler(OnBrowser_DomClick);
 
 			_browserIsReadyToNavigate = true;
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
+		}
+
+		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+		{
+			EventHandler handler = OnBrowserClick;
+			if (handler != null)
+				handler(this, e);
+		}
+
+
+		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
+		{
+			Debug.WriteLine("Navigating " + e.Uri);
+			//e.Cancel = true;
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)

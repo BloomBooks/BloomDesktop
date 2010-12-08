@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
+using Skybound.Gecko;
 
 namespace Bloom.Edit
 {
@@ -34,6 +35,8 @@ namespace Bloom.Edit
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			splitContainer2.Panel2.Controls.Add(_templatePagesView);
+
+
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -72,6 +75,19 @@ namespace Bloom.Edit
 			if (_model.HaveCurrentEditableBook)
 			{
 				_model.SaveNow();
+			}
+		}
+
+		private void _browser1_OnBrowserClick(object sender, EventArgs e)
+		{
+			var ge = e as GeckoDomEventArgs;
+			using(var dlg = new ChangePictureDialog())
+			{
+				dlg.CurrentPicturePath = ge.Target.GetAttribute("src");
+				if(DialogResult.OK == dlg.ShowDialog())
+				{
+					_model.ChangePicture(ge.Target.Id, dlg.NewPicturePath);
+				}
 			}
 		}
 	}

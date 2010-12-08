@@ -29,7 +29,7 @@ namespace Bloom.Edit
 	   private void InvokePageSelectedChanged(Page page)
 		{
 			EventHandler handler = PageSelectedChanged;
-			if (handler != null)
+			if (handler != null && /*REVIEW */ page!=null )
 			{
 				handler(page, null);
 			}

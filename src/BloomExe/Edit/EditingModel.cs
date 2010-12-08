@@ -67,6 +67,8 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection;  }
 		}
 
+		//public PageEditingModel PageEditor{ get; set;}
+
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
 			if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
@@ -113,6 +115,13 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
 		}
 
+		public void ChangePicture(string id, string newPicturePath)
+		{
+			var editor = new PageEditingModel();
+
+			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, newPicturePath);
+			SaveNow();
+		}
 	}
 
 
