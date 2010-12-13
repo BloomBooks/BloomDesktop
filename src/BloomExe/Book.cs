@@ -24,7 +24,9 @@ namespace Bloom
         private readonly PageListChangedEvent _pageListChangedEvent;
     	private IBookStorage _storage;
 
-		public enum SizeAndShapeChoice
+        public event EventHandler ContentsChanged;
+
+        public enum SizeAndShapeChoice
 		{
 			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,
 			
@@ -35,6 +37,7 @@ namespace Bloom
             PageSelection pageSelection,
             PageListChangedEvent pageListChangedEvent) 
         {
+            Id = Guid.NewGuid().ToString();
             _storage = storage;
             _templateFinder = templateFinder;
             _fileLocator = fileLocator;
@@ -43,7 +46,14 @@ namespace Bloom
             _pageListChangedEvent = pageListChangedEvent;
         }
 
-    	public SizeAndShapeChoice SizeAndShape
+
+        public void InvokeContentsChanged(EventArgs e)
+        {
+            EventHandler handler = ContentsChanged;
+            if (handler != null) handler(this, e);
+        }
+        
+        public SizeAndShapeChoice SizeAndShape
     	{
     		get
     		{
@@ -211,8 +221,10 @@ namespace Bloom
 			get { return _storage.FolderPath; }
     	}
 
+        public string Id { get; set; }
 
-    	public XmlDocument GetPreviewHtmlFileForWholeBook()
+
+        public XmlDocument GetPreviewHtmlFileForWholeBook()
         {
             if (!_storage.LooksOk)
             {
@@ -271,6 +283,8 @@ namespace Bloom
             _storage.Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
+
+            InvokeContentsChanged(null);
         }
 
     	private void ClearEditableValues(XmlElement newPageElement)
@@ -317,6 +331,8 @@ namespace Bloom
             _storage.Save();
             if(_pageListChangedEvent !=null)
 				_pageListChangedEvent.Raise(null);
+
+            InvokeContentsChanged(null);
         }
 
         private int GetPageCount()
@@ -365,7 +381,8 @@ namespace Bloom
 				}
 			}
     		_storage.Save();
-    	}
+            InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
+       	}
 
 		/// <summary>
 		/// Move a page to somewhere else in the book
@@ -388,9 +405,19 @@ namespace Bloom
 			}
 
 			_storage.Save();
+            InvokeContentsChanged(null);
 		}
 
-
-
+        public void UpdatePagePreview(IPage currentSelection)
+        {
+            _thumbnailProvider.PageChanged(currentSelection.Id);
+ 
+            //this is for the library view, so that, so long as it asks us, we'll give it a new
+            //thumbnail when it is shown again.
+            if(currentSelection.Id==FirstPage.Id)
+            {
+                _thumbnailProvider.PageChanged(_storage.Key);
+            }
+        }
     }
 }

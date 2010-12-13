@@ -49,6 +49,7 @@ namespace Bloom
             this.Controls.Add(this.splitContainer1);
             this.Name = "LibraryView";
             this.Size = new System.Drawing.Size(773, 518);
+            this.VisibleChanged += new System.EventHandler(this.LibraryView_VisibleChanged);
             this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
 
