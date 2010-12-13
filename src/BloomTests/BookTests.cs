@@ -121,19 +121,7 @@ namespace BloomTests
 			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
 		}
 
-		[Test, Ignore("Not yet handling upper case html")]
-		public void SavePage_UpperCaseIMGTagChangeMadeToSrcOfImg_StorageUpdated()
-		{
-			var book = CreateBook();
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
-			var imgInEditingDom = dom.SelectSingleNodeHonoringDefaultNS("//IMG[@id='img2UpperCase']") as XmlElement;
-			imgInEditingDom.SetAttribute("src", "changed.png");
 
-			book.SavePage(dom);
-			var imgInStorage = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//IMG[@id='img2UpperCase']") as XmlElement;
-
-			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
-		}
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
@@ -308,7 +296,7 @@ namespace BloomTests
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
 				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /></div>
 				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><img id='img1' src='original.png'/></div>
-				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><IMG id='img2UpperCase' src='original.png'/></div>
+				<div class='page' id='guid3'><textarea id='testText'>original2</textarea></div>
 				</body></html>");
 			return dom;
 		}

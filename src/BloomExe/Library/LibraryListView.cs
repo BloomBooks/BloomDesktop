@@ -19,6 +19,7 @@ namespace Bloom.Library
 		public delegate LibraryListView Factory();//autofac uses this
 
 		private readonly LibraryModel _model;
+		private bool _reshowPending = false;
 
 		public LibraryListView(LibraryModel model)
 		{
@@ -96,17 +97,22 @@ namespace Bloom.Library
 			item.Tag=book;
 			item.Group = group;
 
+			Image thumbnail = GetThumbnail(book);
+			_pageThumbnails.Images.Add(book.Id,thumbnail);
+			item.ImageIndex = _pageThumbnails.Images.Count - 1;
+			_listView.Items.Add(item);
+		}
+
+		private Image GetThumbnail(Book book)
+		{
 			Image thumbnail=null;
 			if (book.Type != Book.BookType.Template)
 			{ //for templates, let's just show a blank cover
 				thumbnail = book.GetThumbNailOfBookCover();
 			}
 
-
 			thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
-			_pageThumbnails.Images.Add(thumbnail);
-			item.ImageIndex = _pageThumbnails.Images.Count - 1;
-			_listView.Items.Add(item);
+			return thumbnail;
 		}
 
 		int _vernacularBookletColorIndex = 0;
@@ -213,12 +219,47 @@ namespace Bloom.Library
 		{
 			if (_listView.SelectedItems.Count == 0)
 				return;
-			_model.SelectBook((Book) _listView.SelectedItems[0].Tag);
+			Book book = SelectedBook();
+			if (book == null)
+				return;
+			_model.SelectBook(book);
+			book.ContentsChanged -= new EventHandler(OnSelectedBookChanged);//in case we're already subscribed
+			book.ContentsChanged += new EventHandler(OnSelectedBookChanged);
+		}
+
+		private Book SelectedBook()
+		{
+			if (_listView.SelectedItems.Count == 0)
+				return null;
+			return (Book) _listView.SelectedItems[0].Tag;
+		}
+
+		private void OnSelectedBookChanged(object sender, EventArgs e)
+		{
+			_reshowPending = true;
 		}
 
 		private void LibraryListView_BackColorChanged(object sender, EventArgs e)
 		{
 			_listView.BackColor = BackColor;
+		}
+
+		private void LibraryListView_VisibleChanged(object sender, EventArgs e)
+		{
+			if(Visible && _reshowPending)
+			{
+				_reshowPending = false;
+				Book book = SelectedBook();
+				if (book == null)
+					return;
+
+				var imageIndex = _pageThumbnails.Images.IndexOfKey(book.Id);
+				if (imageIndex > -1)
+				{
+					_pageThumbnails.Images[imageIndex]= GetThumbnail(book);
+					_listView.Refresh();
+				}
+			}
 		}
 
 

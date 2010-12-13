@@ -227,8 +227,8 @@
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\TemplateBookView.resx">
-      <DependentUpon>TemplateBookView.cs</DependentUpon>
+    <EmbeddedResource Include="Library\LibraryBookView.resx">
+      <DependentUpon>LibraryBookView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
@@ -269,11 +269,11 @@
       <DependentUpon>Shell.cs</DependentUpon>
     </Compile>
     <Compile Include="StyleSheetService.cs" />
-    <Compile Include="Library\TemplateBookView.cs">
+    <Compile Include="Library\LibraryBookView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\TemplateBookView.Designer.cs">
-      <DependentUpon>TemplateBookView.cs</DependentUpon>
+    <Compile Include="Library\LibraryBookView.Designer.cs">
+      <DependentUpon>LibraryBookView.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\TemplatePagesView.cs">
       <SubType>UserControl</SubType>

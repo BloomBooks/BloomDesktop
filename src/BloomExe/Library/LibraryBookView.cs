@@ -9,14 +9,18 @@ using System.Windows.Forms;
 
 namespace Bloom
 {
-	public partial class TemplateBookView : UserControl
+	/// <summary>
+	/// this is an un-editable preview of a book in the library; either vernacular or template
+	/// </summary>
+	public partial class LibraryBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
+		private bool _reshowPending = false;
 
-		public delegate TemplateBookView Factory();//autofac uses this
+		public delegate LibraryBookView Factory();//autofac uses this
 
-		public TemplateBookView(BookSelection bookSelection, CreateFromTemplateCommand createFromTemplateCommand)
+		public LibraryBookView(BookSelection bookSelection, CreateFromTemplateCommand createFromTemplateCommand)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
@@ -39,13 +43,36 @@ namespace Bloom
 		{
 			if(_bookSelection.CurrentSelection==null)
 				return;
+			ShowBook();
+			_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
+		}
+
+		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
+		{
+			if( Visible)
+				ShowBook();
+			else
+			{
+				_reshowPending = true;
+			}
+		}
+
+		private void ShowBook()
+		{
 			_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 			_addToLibraryButton.Visible = _bookSelection.CurrentSelection.Type == Book.BookType.Template;
+			_reshowPending = false;
 		}
 
 		private void OnAddToLibraryClick(object sender, EventArgs e)
 		{
 			_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+		}
+
+		private void LibraryBookView_VisibleChanged(object sender, EventArgs e)
+		{
+			if(Visible && _reshowPending)
+				ShowBook();// changed while we were hidden
 		}
 	}
 }

@@ -34,6 +34,7 @@ namespace Bloom.Edit
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
 			_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+
 		}
 
 
@@ -121,6 +122,12 @@ namespace Bloom.Edit
 
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, newPicturePath);
 			SaveNow();
+
+			//review: this is spagetti
+			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
+
+			UpdateDisplay(this, null);
+			InvokeUpdatePageList();
 		}
 	}
 

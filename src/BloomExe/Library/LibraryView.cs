@@ -16,9 +16,9 @@ namespace Bloom
 
 		private readonly LibraryModel _model;
 		private LibraryListView libraryListView1;
-		private TemplateBookView _bookView;
+		private LibraryBookView _bookView;
 
-		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, TemplateBookView.Factory templateBookViewFactory)
+		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, LibraryBookView.Factory templateBookViewFactory)
 		{
 			_model = model;
 			InitializeComponent();
@@ -32,6 +32,11 @@ namespace Bloom
 			splitContainer1.Panel2.Controls.Add(_bookView);
 
 			splitContainer1.SplitterDistance = libraryListView1.PreferredWidth;
+		}
+
+		private void LibraryView_VisibleChanged(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

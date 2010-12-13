@@ -5,7 +5,6 @@
 	width: 5cm;
 	position: relative;
 	top: 2cm;
-	left: 5cm;
 	/*[empty]word-break:;*/
 }
 .titlePage .languageName
@@ -15,7 +14,6 @@
 	width: 9.5cm;
 	position: relative;
 	top: 4.5cm;
-	left: 2cm;
 }
 .titlePage .title
 {
@@ -24,7 +22,6 @@
 	width: 12cm;
 	position: relative;
 	top: 1cm;
-	left: 1.25cm;
 	height: 2cm;
 	/*[empty]word-break:;*/
 }
@@ -32,19 +29,17 @@
 {
 	text-align: center;
 	font: 3em verdana;
-	width: 12cm;
-	position: absolute;
 	top: 1cm;
-	left: 7cm;
 	height: 4cm;
 	/*[empty]word-break:;*/
+	position: relative;
 }
 .cover .picture
 {
-	width: 12cm;
-	position: absolute;
 	top: 5.5cm;
-	left: 6cm;
+	max-height: 9cm;
+	max-width: 9cm;
+	padding: 1cm 0 0;
 }
 .cover .BookLabel
 {
@@ -79,7 +74,6 @@ DIV.page
 	width: 10cm;
 	top: 3cm;
 	position: relative;
-	left: 2cm;
 }
 .titlePage .printingHistory
 {
@@ -88,19 +82,16 @@ DIV.page
 	width: 10cm;
 	top: 4cm;
 	position: relative;
-	left: 2cm;
 }
 .imageOnTop .picture
 {
-	height: 7cm;
+	height: 10.8cm;
 }
 .imageOnTop .text
 {
-	margin-left: 2cm;
 	position: relative;
 	width: 25cm;
-	height: 9cm;
-	top: 3cm;
+	height: 10cm;
 }
 TEXTAREA
 {
@@ -108,11 +99,44 @@ TEXTAREA
 	overflow: hidden;
 	border: inherit solid #000000;
 }
-.fred
-{
-	height: 6cm;
-}
 INPUT
 {
 	border: none;
+}
+.centered
+{
+	text-align: center;
+}
+.imageInMiddle .picture
+{
+	max-height: 7cm;
+}
+.imageInMiddle .text
+{
+	position: relative;
+	width: 25cm;
+	height: 5cm;
+}
+.imageOnLeft .picture
+{
+	max-height: 7cm;
+	/*[empty]position:;*/
+	/*+placement:float-left 22px 197px;*/
+	float: left;
+	position: relative;
+	left: 22px;
+	top: 197px;
+	width: 316px;
+	height: 330px;
+}
+.imageOnLeft .text
+{
+	padding: 61px;
+	margin: 10px;
+	width: 718px;
+	height: 742px;
+	/*+placement:shift 56px 9px;*/
+	position: relative;
+	left: 56px;
+	top: 9px;
 }

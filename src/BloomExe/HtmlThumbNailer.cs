@@ -182,5 +182,14 @@ namespace Bloom
 				return imageAttributes;
 			}
 		}
+
+		//just remove from our cache
+		public void PageChanged(string id)
+		{
+			if(_images.ContainsKey(id))
+			{
+				_images.Remove(id);
+			}
+		}
 	}
 }

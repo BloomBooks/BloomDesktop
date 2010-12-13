@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using Skybound.Gecko;
@@ -78,18 +79,41 @@ namespace Bloom.Edit
 			}
 		}
 
+		static string _sLastPictureDirectory = string.Empty;
+
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
 			var ge = e as GeckoDomEventArgs;
 			if (ge.Target.TagName != "IMG")
 				return;
 
+			/*
 			using(var dlg = new ChangePictureDialog())
 			{
 				dlg.CurrentPicturePath = ge.Target.GetAttribute("src");
 				if(DialogResult.OK == dlg.ShowDialog())
 				{
 					_model.ChangePicture(ge.Target.Id, dlg.NewPicturePath);
+				}
+			}*/
+
+			using(var dlg = new OpenFileDialog())
+			{
+				dlg.AutoUpgradeEnabled = true;
+				if (string.IsNullOrEmpty(_sLastPictureDirectory))
+				{
+					dlg.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+				}
+				else
+				{
+					dlg.InitialDirectory = _sLastPictureDirectory;
+				}
+				dlg.Filter = "Image files (*.png;*.gif;*.bmp;*.jpg;*.tif;*.tiff;*.jpeg)|*.png;*.gif;*.bmp;*.jpg;*.tif;*.tiff;*.jpeg|All files (*.*)|*.*";
+
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					_sLastPictureDirectory = Path.GetDirectoryName(dlg.FileName);
+					_model.ChangePicture(ge.Target.Id, dlg.FileName);
 				}
 			}
 		}

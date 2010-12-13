@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -54,5 +56,30 @@ namespace BloomTests
 			}
 		}
 
+		/// <summary>
+		/// Some (or maybe all?) browsers can't show tiff, so we might as well convert it
+		/// </summary>
+		[Test]
+		public void ChangePicture_PictureIsTiff_ConvertedToPng()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
+			var model = new PageEditingModel();
+			using (var src = new TemporaryFolder("bloom pictures test source"))
+			using (var dest = new TemporaryFolder("bloom picture tests dest"))
+			{
+				var tiff = new Bitmap(5, 5);
+				var newImagePath = src.Combine("new.tif");
+				tiff.Save(newImagePath, ImageFormat.Tiff);
+				model.ChangePicture(dest.Path, dom, "two", newImagePath);
+				Assert.IsTrue(File.Exists(dest.Combine("new.png")));
+				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
+				using (var converted = Image.FromFile(dest.Combine("new.png")))
+				{
+					Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
+				}
+			}
+
+		}
 	}
 }
