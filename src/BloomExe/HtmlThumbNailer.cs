@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,16 +11,18 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
 using Palaso.Xml;
+using Skybound.Gecko;
 
 namespace Bloom
 {
 	public class HtmlThumbNailer
 	{
-		WebBrowser _browser ;
+		GeckoWebBrowser _browser;
 		private Image _pendingThumbnail;
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
 		private readonly int _sizeInPixels =60;
 		private Color _backgroundColorOfResult;
+		private bool _browserHandleCreated;
 
 		public HtmlThumbNailer(int sizeInPixels)
 		{
@@ -47,16 +50,46 @@ namespace Bloom
 				return image;
 			}
 			_pendingThumbnail = null;
-			using (_browser = new WebBrowser())
+			if(_browser==null)
 			{
+				_browser = new GeckoWebBrowser();
+				_browser.HandleCreated += new EventHandler(_browser_HandleCreated);
+				_browser.CreateControl();
+				while (!_browserHandleCreated)
+				{
+					//TODO: could lead to hard to reproduce bugs
+					Application.DoEvents();
+					//TODO:  could be stuck here forever
+					Thread.Sleep(100);
+				}
+			}
 
-				_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
+
+				//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
 
 				using (var temp = TempFile.CreateHtm(document))
 				{
+
+					// this is firing before it looks ready (no active element), so we'll just poll for
+					//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
+
+					//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
 					_browser.Navigate(temp.Path);
 					while (_pendingThumbnail == null)
 					{
+						//_browser.Document.ActiveElement!=null
+						if( _browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
+						{
+							try
+							{
+								var x = _browser.Document.ActiveElement;
+								OnThumbNailBrowser_DocumentCompleted(null, null);
+							}
+							catch (Exception)
+							{
+							}
+
+						}
 						//TODO: could lead to hard to reproduce bugs
 						Application.DoEvents();
 						//TODO:  could be stuck here forever
@@ -64,9 +97,23 @@ namespace Bloom
 					}
 				}
 				_images.Add(key, _pendingThumbnail);
-			}
-			_browser = null;
+
 			return _pendingThumbnail;
+		}
+
+		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
+		{
+
+		}
+
+		/// <summary>
+		/// we need to wait for this to happen before we can proceed to navigate to the page
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void _browser_HandleCreated(object sender, EventArgs e)
+		{
+			_browserHandleCreated =true;
 		}
 
 		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
@@ -79,10 +126,10 @@ namespace Bloom
 				}
 			}
 		}
-		private void OnThumbNailBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+		private void OnThumbNailBrowser_DocumentCompleted(object sender, EventArgs e)
 		{
-			var width = _browser.Document.ActiveElement.ScrollRectangle.Width;
-			var height = _browser.Document.ActiveElement.ScrollRectangle.Height;
+			var width = _browser.Document.ActiveElement.ScrollWidth;
+			var height = _browser.Document.ActiveElement.ScrollHeight;
 
 			using (Bitmap docImage = new Bitmap(width, height))
 			{
