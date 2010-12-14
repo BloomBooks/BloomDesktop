@@ -2,10 +2,9 @@
 {
 	text-align: center;
 	font: 1em verdana;
-	width: 10cm;
+	width: 5cm;
 	position: relative;
-	top: 1.6cm;
-	left: 2.1cm;
+	top: 2cm;
 	/*[empty]word-break:;*/
 }
 .titlePage .languageName
@@ -14,8 +13,7 @@
 	font: 1em verdana;
 	width: 9.5cm;
 	position: relative;
-	top: 4.5cm;
-	left: 2cm;
+	top: 3.6cm;
 }
 .titlePage .title
 {
@@ -24,7 +22,6 @@
 	width: 12cm;
 	position: relative;
 	top: 1cm;
-	left: 1.25cm;
 	height: 2cm;
 	/*[empty]word-break:;*/
 }
@@ -32,29 +29,29 @@
 {
 	text-align: center;
 	font: 3em verdana;
-	width: 12cm;
-	position: absolute;
 	top: 1cm;
-	left: 1.25cm;
 	height: 4cm;
 	/*[empty]word-break:;*/
+	position: relative;
+	width: 423px;
 }
 .cover .picture
 {
-	width: 12cm;
-	position: absolute;
 	top: 5.5cm;
-	left: 1.25cm;
+	max-height: 9cm;
+	max-width: 9cm;
+	padding: 1cm 0 0;
 }
 .cover .BookLabel
 {
 	text-align: right;
 	font: 1em verdana;
-	width: 5cm;
+	width: 5.3cm;
 	position: absolute;
 	top: 19cm;
 	left: 8.5cm;
 	/*[empty]word-break:;*/
+	height: 37px;
 }
 .cover .LanguageName
 {
@@ -79,7 +76,6 @@ DIV.page
 	width: 10cm;
 	top: 3cm;
 	position: relative;
-	left: 2cm;
 }
 .titlePage .printingHistory
 {
@@ -88,48 +84,57 @@ DIV.page
 	width: 10cm;
 	top: 4cm;
 	position: relative;
-	left: 2cm;
 }
 .imageOnTop .picture
 {
-	height: 7cm;
+	max-height: 9.7cm;
 }
 .imageOnTop .text
 {
-	margin-left: 1cm;
 	position: relative;
-	width: 13cm;
-	height: 9cm;
-	top: 3cm;
-}
-.justText .text
-{
-	margin-left: 1cm;
-	position: relative;
-	width: 13cm;
-	height: 16cm;
-	top: 3cm;
+	height: 7.7cm;
 }
 TEXTAREA
 {
 	font: 25px sans-serif;
 	overflow: hidden;
 	border: inherit solid #000000;
-}
-.imageOnTop H1
-{
-	height: 6cm;
+	width: 453px;
 }
 INPUT
 {
 	border: none;
 }
-.justImage .picture
+.centered
 {
-	height: 10cm;
+	text-align: center;
 }
-.justImage H1
+.imageInMiddle .picture
 {
-	top: 5cm;
+	max-height: 7cm;
+}
+.imageInMiddle .text
+{
 	position: relative;
+	height: 5.5cm;
+}
+.imageWholePage .picture
+{
+	max-width: 11.7cm;
+	/*+placement:shift -6px 128px;*/
+	position: relative;
+	left: -6px;
+	top: 128px;
+}
+.imageOnBottom .picture
+{
+	max-height: 7cm;
+	/*+placement:displace -160px -49px;*/
+	position: absolute;
+	margin-left: -160px;
+	margin-top: -49px;
+}
+.imageOnBottom .text
+{
+	height: 483px;
 }
