@@ -33,7 +33,7 @@ namespace BloomTests
 			XmlDocument storageDom = GetThreePageDom();
 			_storage.SetupGet(x => x.Dom).Returns(storageDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
-			_storage.SetupGet(x => x.Title).Returns("testTitle");
+			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Book.BookType.Publication);
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
@@ -94,9 +94,23 @@ namespace BloomTests
 			book.SavePage(dom);
 			var inputBoxInStorageDom = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
 
-			Assert.AreEqual("two", inputBoxInStorageDom.Attributes["value"].Value, "the value didn't get copied to  the storage dom");
-			_storage.Verify(s=>s.Save(), Times.Once());
+			Assert.AreEqual("two", inputBoxInStorageDom.Attributes["value"].Value,
+							"the value didn't get copied to  the storage dom");
+			_storage.Verify(s => s.Save(), Times.Once());
 		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToAnotherPage()
+		{
+			var book = CreateBook();
+			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='vtitle']");
+			textarea1.InnerText = "peace";
+			book.MakeAllFieldsConsistent();
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle']");
+			Assert.AreEqual("peace", textarea2.InnerText);
+		}
+
 
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
@@ -294,9 +308,9 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /></div>
+				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /><textarea id='vtitle' class='vernacularBookTitle'>war</textarea></div>
 				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><img id='img1' src='original.png'/></div>
-				<div class='page' id='guid3'><textarea id='testText'>original2</textarea></div>
+				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><textarea id='copyOfVTitle' class='vernacularBookTitle'>war</textarea></div>
 				</body></html>");
 			return dom;
 		}

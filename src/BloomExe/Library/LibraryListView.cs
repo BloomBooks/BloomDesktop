@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Data;
 using System.Drawing.Drawing2D;
@@ -239,25 +240,35 @@ namespace Bloom.Library
 			_reshowPending = true;
 		}
 
-		private void LibraryListView_BackColorChanged(object sender, EventArgs e)
+		private void OnBackColorChanged(object sender, EventArgs e)
 		{
 			_listView.BackColor = BackColor;
 		}
 
-		private void LibraryListView_VisibleChanged(object sender, EventArgs e)
+		private void OnVisibleChanged(object sender, EventArgs e)
 		{
-			if(Visible && _reshowPending)
+			if(Visible )
 			{
-				_reshowPending = false;
 				Book book = SelectedBook();
 				if (book == null)
 					return;
 
-				var imageIndex = _pageThumbnails.Images.IndexOfKey(book.Id);
-				if (imageIndex > -1)
+				//we don't currently have a "reshow" flag for just updating the title
+				//update the label from the title
+				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
+				Debug.Assert(listItem!=null);
+				if (listItem!=null)
+					listItem.Text = book.Title;
+
+				if (_reshowPending)
 				{
-					_pageThumbnails.Images[imageIndex]= GetThumbnail(book);
-					_listView.Refresh();
+					_reshowPending = false;
+					var imageIndex = _pageThumbnails.Images.IndexOfKey(book.Id);
+					if (imageIndex > -1)
+					{
+						_pageThumbnails.Images[imageIndex] = GetThumbnail(book);
+						_listView.Refresh();
+					}
 				}
 			}
 		}

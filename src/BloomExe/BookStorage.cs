@@ -21,7 +21,7 @@ namespace Bloom
 		string GetTemplateKey();
 		string Key { get; }
 		bool LooksOk { get; }
-		string Title { get; }
+		string FileName { get; }
 		string FolderPath { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
@@ -153,7 +153,7 @@ namespace Bloom
 			get { return File.Exists(PathToHtml); }
 		}
 
-		public string Title
+		public string FileName
 		{
 			get { return Path.GetFileNameWithoutExtension(_folderPath); }
 		}

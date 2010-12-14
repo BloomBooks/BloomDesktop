@@ -79,7 +79,14 @@ namespace Bloom
 
 		public string Title
 		{
-			get { return _storage.Title; }
+			get
+			{
+				var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
+				if (node == null)
+					return "unknown";
+				return (node.InnerText);
+				//return _storage.FileName;
+			}
 		}
 
 		public  Image GetThumbNailOfBookCover()
@@ -380,8 +387,44 @@ namespace Bloom
 					destNode.InnerText = editNode.InnerText;
 				}
 			}
+
+			MakeAllFieldsConsistent();
 			_storage.Save();
 			InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
+		}
+
+
+		/// <summary>
+		/// The first encountered one wins... so the rest better be read only to the user, or they're in for some frustration!
+		/// If we don't like that, we'd need to create an event to notice when field are changed.
+		/// </summary>
+		public void MakeAllFieldsConsistent()
+		{
+			string[] fieldClasses = new string[] { "vernacularBookTitle", "natLangBookLabel", "natLangBookName" };
+
+			foreach (var name in fieldClasses)
+			{
+				string value=string.Empty;
+				foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class,'"+name+"')]"))
+				{
+					if (value == string.Empty)
+						value = node.InnerText;
+					else
+						node.InnerText = value;
+				}
+			}
+
+			foreach (var name in fieldClasses)
+			{
+				string value = string.Empty;
+				foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class,'" + name + "')]"))
+				{
+					if (value == string.Empty)
+						value = node.GetAttribute("value");
+					else
+						node.SetAttribute("value",value);
+				}
+			}
 		}
 
 		/// <summary>

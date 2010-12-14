@@ -84,8 +84,8 @@
             this.Controls.Add(this._listView);
             this.Name = "LibraryListView";
             this.Size = new System.Drawing.Size(167, 468);
-            this.BackColorChanged += new System.EventHandler(this.LibraryListView_BackColorChanged);
-            this.VisibleChanged += new System.EventHandler(this.LibraryListView_VisibleChanged);
+            this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
+            this.VisibleChanged += new System.EventHandler(this.OnVisibleChanged);
             this.ResumeLayout(false);
 
         }
