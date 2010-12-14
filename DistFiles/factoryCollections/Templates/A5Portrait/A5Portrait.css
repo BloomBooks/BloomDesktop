@@ -1,31 +1,10 @@
-.titlePage .bookLabel
+DIV.page
 {
-	text-align: center;
-	font: 1em verdana;
-	width: 5cm;
-	position: relative;
-	top: 2cm;
-	/*[empty]word-break:;*/
+	width: 14.5cm;
+	height: 21cm;
+	border: 1px solid #000000;
 }
-.titlePage .languageName
-{
-	text-align: center;
-	font: 1em verdana;
-	width: 9.5cm;
-	position: relative;
-	top: 3.6cm;
-}
-.titlePage .title
-{
-	text-align: center;
-	font: 2em verdana;
-	width: 12cm;
-	position: relative;
-	top: 1cm;
-	height: 2cm;
-	/*[empty]word-break:;*/
-}
-.cover .title
+.cover .vernacularBookTitle
 {
 	text-align: center;
 	font: 3em verdana;
@@ -42,7 +21,7 @@
 	max-width: 9cm;
 	padding: 1cm 0 0;
 }
-.cover .BookLabel
+.cover .natLangBookLabel
 {
 	text-align: right;
 	font: 1em verdana;
@@ -53,7 +32,7 @@
 	/*[empty]word-break:;*/
 	height: 37px;
 }
-.cover .LanguageName
+.cover .natLangBookName
 {
 	text-align: left;
 	font: 1em verdana;
@@ -63,11 +42,32 @@
 	left: 1.25cm;
 	/*[empty]word-break:;*/
 }
-DIV.page
+.titlePage .natLangBookLabel
 {
-	width: 14.5cm;
-	height: 21cm;
-	border: 1px solid #000000;
+	text-align: center;
+	font: 1em verdana;
+	width: 5cm;
+	position: relative;
+	top: 2cm;
+	/*[empty]word-break:;*/
+}
+.titlePage .natLangBookName
+{
+	text-align: center;
+	font: 1em verdana;
+	width: 9.5cm;
+	position: relative;
+	top: 3.6cm;
+}
+.titlePage .vernacularBookTitle
+{
+	text-align: center;
+	font: 2em verdana;
+	width: 12cm;
+	position: relative;
+	top: 1cm;
+	height: 2cm;
+	/*[empty]word-break:;*/
 }
 .titlePage .credits
 {
