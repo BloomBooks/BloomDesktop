@@ -133,7 +133,7 @@ namespace Bloom
 
 		public string GetTemplateKey()
 		{
-			//for now, we're just using the name of the first css we find
+			//for now, we're just using the name of the first css we find. See htmlthumnailer for code which extracts it.
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
 				return Path.GetFileNameWithoutExtension(path);

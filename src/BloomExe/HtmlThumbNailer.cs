@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -9,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Properties;
 using Palaso.Xml;
 using Skybound.Gecko;
 
@@ -23,6 +23,13 @@ namespace Bloom
 		private readonly int _sizeInPixels =60;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
+
+		/// <summary>
+		///This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give us the size it was on the first page we navigated to,
+		//so that if the book size changes, our thumbnails are all wrong.
+		/// </summary>
+		private Dictionary<string, GeckoWebBrowser> _browserCacheForDifferentPaperSizes = new Dictionary<string, GeckoWebBrowser>();
+
 
 		public HtmlThumbNailer(int sizeInPixels)
 		{
@@ -50,22 +57,10 @@ namespace Bloom
 				return image;
 			}
 			_pendingThumbnail = null;
-			if(_browser==null)
-			{
-				_browser = new GeckoWebBrowser();
-				_browser.HandleCreated += new EventHandler(_browser_HandleCreated);
-				_browser.CreateControl();
-				while (!_browserHandleCreated)
-				{
-					//TODO: could lead to hard to reproduce bugs
-					Application.DoEvents();
-					//TODO:  could be stuck here forever
-					Thread.Sleep(100);
-				}
-			}
 
+			ConfigureBrowserForPaperSize(document);
 
-				//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
+			//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
 
 				using (var temp = TempFile.CreateHtm(document))
 				{
@@ -74,6 +69,7 @@ namespace Bloom
 					//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
 
 					//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
+
 					_browser.Navigate(temp.Path);
 					while (_pendingThumbnail == null)
 					{
@@ -101,17 +97,54 @@ namespace Bloom
 			return _pendingThumbnail;
 		}
 
-		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
-		{
 
+		private void ConfigureBrowserForPaperSize(XmlDocument document)
+		{
+//            string paperSizeTemplate=string.Empty;
+//            string[] paperSizeTemplateNames = new string[]{"A5Portrait", "A4Landscape", "A5LandScape", "A4Portrait"};
+//            foreach (var name in paperSizeTemplateNames)
+//            {
+				var paperStyleSheets = document.SafeSelectNodes(
+						"html/head/link[contains(@href, 'Landscape') or contains(@href, 'Portrait')]");
+				if(paperStyleSheets.Count ==0)
+				{
+					Debug.Fail(
+						"THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
+
+					_browser = MakeNewBrowser();
+					return;
+				}
+				string paperSizeName = Path.GetFileNameWithoutExtension(paperStyleSheets[0].GetStringAttribute("href"));
+				if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out _browser))
+				{
+					_browser = MakeNewBrowser();
+					_browserCacheForDifferentPaperSizes.Add(paperSizeName, _browser);
+				}
+				return;
 		}
+
+		private GeckoWebBrowser MakeNewBrowser()
+		{
+			var browser = new GeckoWebBrowser();
+			browser.HandleCreated += new EventHandler(OnBrowser_HandleCreated);
+			browser.CreateControl();
+			while (!_browserHandleCreated)
+			{
+				//TODO: could lead to hard to reproduce bugs
+				Application.DoEvents();
+				//TODO:  could be stuck here forever
+				Thread.Sleep(100);
+			}
+			return browser;
+		}
+
 
 		/// <summary>
 		/// we need to wait for this to happen before we can proceed to navigate to the page
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void _browser_HandleCreated(object sender, EventArgs e)
+		void OnBrowser_HandleCreated(object sender, EventArgs e)
 		{
 			_browserHandleCreated =true;
 		}
@@ -128,6 +161,9 @@ namespace Bloom
 		}
 		private void OnThumbNailBrowser_DocumentCompleted(object sender, EventArgs e)
 		{
+			//NB: this will always give us the size it was on the first page we navigated to,
+			//so that if the book size changes, our thumbnails are all wrong. I don't know
+			//how to fix it, so I'm using different browsers at the moment.
 			var width = _browser.Document.ActiveElement.ScrollWidth;
 			var height = _browser.Document.ActiveElement.ScrollHeight;
 
