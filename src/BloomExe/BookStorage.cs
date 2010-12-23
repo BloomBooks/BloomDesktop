@@ -32,7 +32,7 @@ namespace Bloom
 		private readonly string _folderPath;
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
-		public BookStorage(string folderPath, IFileLocator fileLocator)
+		public BookStorage(string folderPath, Palaso.IO.IFileLocator fileLocator)
 		{
 			_folderPath = folderPath;
 
@@ -53,7 +53,7 @@ namespace Bloom
 			}
 		}
 
-		private void UpdateStyleSheetLinkPaths(IFileLocator fileLocator)
+		private void UpdateStyleSheetLinkPaths(Palaso.IO.IFileLocator fileLocator)
 		{
 			foreach(XmlElement linkNode in Dom.SafeSelectNodes("/html/head/link"))
 			{

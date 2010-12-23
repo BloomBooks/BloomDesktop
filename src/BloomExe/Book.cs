@@ -18,7 +18,7 @@ namespace Bloom
 		public delegate Book Factory(BookStorage storage);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
-		private readonly IFileLocator _fileLocator;
+		private readonly Palaso.IO.IFileLocator _fileLocator;
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -33,7 +33,7 @@ namespace Bloom
 		}
 
 		public Book(IBookStorage storage, ITemplateFinder templateFinder,
-			IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
+			Palaso.IO.IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
+using System.Linq;
 using System.Xml;
+using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
 namespace Bloom.Edit
@@ -79,43 +82,42 @@ namespace Bloom.Edit
 			}
 		}
 
-		static string _sLastPictureDirectory = string.Empty;
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
 			var ge = e as GeckoDomEventArgs;
 			if (ge.Target.TagName != "IMG")
 				return;
-
-			/*
-			using(var dlg = new ChangePictureDialog())
+			string currentPath = ge.Target.GetAttribute("src");
+			var imageInfo = new PalasoImage() { Image = Image.FromFile(Path.Combine(_model.CurrentBook.FolderPath, currentPath)) };
+			using(var dlg = new ImageToolboxDialog(imageInfo))
 			{
-				dlg.CurrentPicturePath = ge.Target.GetAttribute("src");
-				if(DialogResult.OK == dlg.ShowDialog())
+				if(DialogResult.OK== dlg.ShowDialog())
 				{
-					_model.ChangePicture(ge.Target.Id, dlg.NewPicturePath);
-				}
-			}*/
-
-			using(var dlg = new OpenFileDialog())
-			{
-				dlg.AutoUpgradeEnabled = true;
-				if (string.IsNullOrEmpty(_sLastPictureDirectory))
-				{
-					dlg.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-				}
-				else
-				{
-					dlg.InitialDirectory = _sLastPictureDirectory;
-				}
-				dlg.Filter = "Image files (*.png;*.gif;*.bmp;*.jpg;*.tif;*.tiff;*.jpeg)|*.png;*.gif;*.bmp;*.jpg;*.tif;*.tiff;*.jpeg|All files (*.*)|*.*";
-
-				if (DialogResult.OK == dlg.ShowDialog())
-				{
-					_sLastPictureDirectory = Path.GetDirectoryName(dlg.FileName);
-					_model.ChangePicture(ge.Target.Id, dlg.FileName);
+					var path = MakeTempFileForImage(dlg.ImageInfo.Image);
+					_model.ChangePicture(ge.Target.Id, path);
+					File.Delete(path);
 				}
 			}
+		}
+
+		private string MakeTempFileForImage(Image image)
+		{
+			var path = Path.GetTempFileName();
+			File.Delete(path);
+			if (new[] { ImageFormat.Png, ImageFormat.Bmp, ImageFormat.Gif,ImageFormat.Tiff, ImageFormat.MemoryBmp}.Contains(image.RawFormat))
+			{
+				string filename = path + ".png";
+				image.Save(filename, ImageFormat.Png);
+				return filename;
+			}
+			if (new[] { ImageFormat.Jpeg }.Contains(image.RawFormat))
+			{
+				string filename = path + ".jpg";
+				image.Save(filename, ImageFormat.Jpeg);
+				return filename;
+			}
+			throw new ApplicationException("That image format is not supported by the Palaso Image Library: "+image.RawFormat.ToString());
 		}
 	}
 }
