@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crop", "Crop\Crop.csproj", "{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug 1.8|Any CPU = Debug 1.8|Any CPU
@@ -85,26 +83,6 @@ Global
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|x86.ActiveCfg = Release|Any CPU
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.8|Any CPU.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.8|Mixed Platforms.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.8|Mixed Platforms.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.8|x86.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.8|x86.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.9|Any CPU.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.9|Mixed Platforms.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.9|Mixed Platforms.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.9|x86.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug 1.9|x86.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug|x86.ActiveCfg = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Debug|x86.Build.0 = Debug|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Release|Any CPU.ActiveCfg = Release|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Release|Mixed Platforms.Build.0 = Release|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Release|x86.ActiveCfg = Release|x86
-		{5CAFEA69-635B-4F50-A89E-DFCAF2FBC863}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
