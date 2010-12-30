@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Edit;
@@ -81,11 +82,18 @@ namespace Bloom
 		{
 			get
 			{
-				var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
-				if (node == null)
-					return "unknown";
-				return (node.InnerText);
-				//return _storage.FileName;
+				//TODO: we need to rename the books when the title changes; until then, we use this:
+				if (Type == BookType.Publication)
+				{
+					var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
+					if (node == null)
+						return "unknown";
+					return (node.InnerText);
+				}
+				else //for templates and such, we can already just use the folder name
+				{
+					return Path.GetFileName(_storage.FolderPath);
+				}
 			}
 		}
 

@@ -14,21 +14,20 @@ namespace Bloom
 	{
 		public delegate LibraryView Factory();//autofac uses this
 
-		private readonly LibraryModel _model;
+
 		private LibraryListView libraryListView1;
 		private LibraryBookView _bookView;
 
-		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, LibraryBookView.Factory templateBookViewFactory)
+		public LibraryView(LibraryModel unused, LibraryListView.Factory libraryListViewFactory, LibraryBookView.Factory templateBookViewFactory)
 		{
-			_model = model;
 			InitializeComponent();
 
-			this.libraryListView1 = libraryListViewFactory();
-			this.libraryListView1.Dock = System.Windows.Forms.DockStyle.Fill;
+			libraryListView1 = libraryListViewFactory();
+			libraryListView1.Dock = DockStyle.Fill;
 			splitContainer1.Panel1.Controls.Add(libraryListView1);
 
 			_bookView = templateBookViewFactory();
-			_bookView.Dock = System.Windows.Forms.DockStyle.Fill;
+			_bookView.Dock = DockStyle.Fill;
 			splitContainer1.Panel2.Controls.Add(_bookView);
 
 			splitContainer1.SplitterDistance = libraryListView1.PreferredWidth;
