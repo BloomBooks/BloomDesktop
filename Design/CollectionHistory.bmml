@@ -1,0 +1,210 @@
+<mockup version="1.0" skin="sketch" measuredW="1196" measuredH="680" mockupW="1025" mockupH="637">
+  <controls>
+	<control controlID="193" controlTypeID="com.balsamiq.mockups::Canvas" x="1106" y="621" w="63" h="49" measuredW="100" measuredH="70" zOrder="20" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<color>16777215</color>
+		<backgroundAlpha>0.25</backgroundAlpha>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="261" controlTypeID="com.balsamiq.mockups::Paragraph" x="161" y="586" w="652" h="60" measuredW="200" measuredH="140" zOrder="21" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>ToDo%3A%20It%27s%20not%20clear%20how%20much%20to%20spend%20on%20functions%20in%20this%20area...%20there%27s%20a%20ton%20of%20things%20which%20are%20possible...</text>
+		<size>12</size>
+		<bold>false</bold>
+		<color>128</color>
+	  </controlProperties>
+	</control>
+	<control controlID="8" controlTypeID="com.balsamiq.mockups::TitleWindow" x="161" y="33" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<close>true</close>
+		<maximizeRestore>false</maximizeRestore>
+		<topheight>26</topheight>
+		<dragger>true</dragger>
+		<minimize>false</minimize>
+		<text>BLOOM%3A%20Edolo</text>
+		<bottomheight>0</bottomheight>
+	  </controlProperties>
+	</control>
+	<control controlID="266" controlTypeID="com.balsamiq.mockups::HRule" x="171" y="431" w="-1" h="-1" measuredW="100" measuredH="5" zOrder="22" locked="false" isInGroup="-1"/>
+	<control controlID="267" controlTypeID="com.balsamiq.mockups::IconLabel" x="171" y="454" w="94" h="-1" measuredW="91" measuredH="44" zOrder="23" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>CalendarIcon%7Csmall</icon>
+		<text>Collection%20History</text>
+		<size>10</size>
+		<labelPosition>bottom</labelPosition>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2210%2C421%2C104%2C465%22%20href%3D%22CollectionHistory.bmml%22%20alt%3D%22CollectionHistory%22%20id%3D%22267%22/%3E</map>
+		<href>CollectionHistory%26bm%3BCollectionHistory.bmml%26bm%3BCollectionHistory.bmml%26bm%3BCollectionHistory.bmml</href>
+	  </controlProperties>
+	</control>
+	<control controlID="268" controlTypeID="com.balsamiq.mockups::IconLabel" x="186" y="509" w="56" h="-1" measuredW="51" measuredH="44" zOrder="24" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>BaloonIcon%7Csmall</icon>
+		<text>All%20Notes</text>
+		<size>10</size>
+		<labelPosition>bottom</labelPosition>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2225%2C476%2C81%2C520%22%20href%3D%22AllNotes.bmml%22%20alt%3D%22AllNotes%22%20id%3D%22268%22/%3E</map>
+		<href>AllNotes%26bm%3BAllNotes.bmml%26bm%3BAllNotes.bmml%26bm%3BAllNotes.bmml</href>
+	  </controlProperties>
+	</control>
+	<control controlID="141" controlTypeID="com.balsamiq.mockups::Label" x="170" y="274" w="95" h="20" measuredW="84" measuredH="22" zOrder="7" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Lucy%27s%20Big%20Day</text>
+		<align>center</align>
+		<size>11</size>
+		<color>0</color>
+	  </controlProperties>
+	</control>
+	<control controlID="142" controlTypeID="com.balsamiq.mockups::Image" x="182" y="223" w="70" h="55" measuredW="127" measuredH="92" zOrder="8" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<src>./assets/TitleThumb.png</src>
+		<text/>
+		<href>page1-Preview%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml%26bm%3Bpage1-Preview.bmml</href>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2221%2C190%2C91%2C245%22%20href%3D%22page1-Preview.bmml%22%20alt%3D%22page1-Preview%22%20id%3D%22142%22/%3E</map>
+	  </controlProperties>
+	</control>
+	<control controlID="271" controlTypeID="com.balsamiq.mockups::DataGrid" x="330" y="161" w="344" h="379" measuredW="310" measuredH="178" zOrder="25" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<hLines>false</hLines>
+		<selectedIndex>1</selectedIndex>
+		<text>Date%2C%20Book%2C%20Who%2C%20What%0A6/6/2010%2C%20Baby%20Nutrition%2C%20Joe%2C%20Created%0A8/6/2010%2C%20Baby%20Nutrition%2C%20Joe%2C%20Editted%0A8/7/2010%2C%20Lucy%27s%20Big%20Day%2C%20Kim%2C%20Created%0A9/6/2010%2C%20Baby%20Nutrition%2C%20Joe%2C%20Ediitted%0A%20</text>
+		<alternateRowColor>16777215</alternateRowColor>
+		<verticalScrollbar>true</verticalScrollbar>
+		<vLines>false</vLines>
+		<borderStyle>square</borderStyle>
+		<bold>true</bold>
+	  </controlProperties>
+	</control>
+	<control controlID="144" controlTypeID="com.balsamiq.mockups::Canvas" x="189" y="111" w="63" h="74" measuredW="100" measuredH="70" zOrder="9" locked="false" isInGroup="-1"/>
+	<control controlID="145" controlTypeID="com.balsamiq.mockups::Image" x="191" y="116" w="49" h="13" measuredW="64" measuredH="15" zOrder="10" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<src>./assets/TitleTextThumb.png</src>
+		<text/>
+	  </controlProperties>
+	</control>
+	<control controlID="146" controlTypeID="com.balsamiq.mockups::Label" x="180" y="185" w="83" h="19" measuredW="83" measuredH="19" zOrder="11" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Picture%20Dictionary</text>
+		<align>center</align>
+		<size>9</size>
+	  </controlProperties>
+	</control>
+	<control controlID="147" controlTypeID="com.balsamiq.mockups::Icon" x="193" y="136" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="12" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>LightBulbIcon%7Cxsmall</icon>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="148" controlTypeID="com.balsamiq.mockups::Icon" x="224" y="137" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="13" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>StarIcon%7Cxsmall</icon>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="149" controlTypeID="com.balsamiq.mockups::Icon" x="208" y="157" w="-1" h="-1" measuredW="16" measuredH="16" zOrder="14" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>CutIcon%7Cxsmall</icon>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="272" controlTypeID="com.balsamiq.mockups::IconLabel" x="330" y="120" w="235" h="-1" measuredW="195" measuredH="32" zOrder="26" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>CalendarIcon%7Cmedium</icon>
+		<text>Collection%20History</text>
+		<size>18</size>
+		<labelPosition>right</labelPosition>
+	  </controlProperties>
+	</control>
+	<control controlID="273" controlTypeID="com.balsamiq.mockups::Canvas" x="681" y="161" w="473" h="379" measuredW="100" measuredH="70" zOrder="27" locked="false" isInGroup="-1"/>
+	<control controlID="274" controlTypeID="com.balsamiq.mockups::Paragraph" x="701" y="175" w="438" h="348" measuredW="200" measuredH="140" zOrder="28" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Changes%3A%0A%20%0A%28Some%20kind%20of%20change%20description%29</text>
+	  </controlProperties>
+	</control>
+	<control controlID="155" controlTypeID="com.balsamiq.mockups::Canvas" x="184" y="320" w="63" h="49" measuredW="100" measuredH="70" zOrder="15" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<backgroundAlpha>1</backgroundAlpha>
+		<color>16777215</color>
+	  </controlProperties>
+	</control>
+	<control controlID="156" controlTypeID="com.balsamiq.mockups::Label" x="180" y="365" w="-1" h="-1" measuredW="69" measuredH="19" zOrder="16" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Baby%20Nutrition</text>
+		<align>center</align>
+		<size>9</size>
+	  </controlProperties>
+	</control>
+	<control controlID="157" controlTypeID="com.balsamiq.mockups::Icon" x="209" y="336" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="17" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>EmoticonIcon%7Csmall</icon>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="153" controlTypeID="com.balsamiq.mockups::Canvas" x="171" y="446" w="95" h="63" measuredW="100" measuredH="70" zOrder="3" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+		<color>65535</color>
+		<backgroundAlpha>0.25</backgroundAlpha>
+	  </controlProperties>
+	</control>
+	<control controlID="98" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="274" y="94" w="-1" h="466" measuredW="16" measuredH="100" zOrder="5" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<value>100</value>
+	  </controlProperties>
+	</control>
+	<control controlID="163" controlTypeID="com.balsamiq.mockups::Canvas" x="171" y="446" w="95" h="63" measuredW="100" measuredH="70" zOrder="2" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+		<color>10066329</color>
+	  </controlProperties>
+	</control>
+	<control controlID="92" controlTypeID="com.balsamiq.mockups::TabBar" x="161" y="70" w="1025" h="40" measuredW="278" measuredH="100" zOrder="4" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<size>12</size>
+		<hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
+		<selectedIndex>0</selectedIndex>
+		<text>Edolo%20Books%2C%20Template%20Books</text>
+		<borderStyle>none</borderStyle>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C37%2C101%2C64%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2292_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22101%2C37%2C204%2C64%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2292_1%22/%3E%0A</map>
+	  </controlProperties>
+	</control>
+	<control controlID="275" controlTypeID="__group__" x="969" y="60" w="-1" h="-1" measuredW="100" measuredH="32" zOrder="29" locked="false" isInGroup="-1">
+	  <groupChildrenDescriptors>
+		<control controlID="184" controlTypeID="com.balsamiq.mockups::Label" x="23" y="9" w="77" h="22" measuredW="77" measuredH="22" zOrder="0" locked="false" isInGroup="191">
+		  <controlProperties>
+			<text>Send/Receive</text>
+			<size>11</size>
+		  </controlProperties>
+		</control>
+		<control controlID="190" controlTypeID="com.balsamiq.mockups::Image" x="0" y="0" w="24" h="32" measuredW="24" measuredH="32" zOrder="1" locked="false" isInGroup="191">
+		  <controlProperties>
+			<src>./assets/SendReceive.png</src>
+			<text/>
+		  </controlProperties>
+		</control>
+	  </groupChildrenDescriptors>
+	</control>
+	<control controlID="112" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="1168" y="101" w="-1" h="462" measuredW="16" measuredH="100" zOrder="6" locked="false" isInGroup="-1"/>
+	<control controlID="180" controlTypeID="com.balsamiq.mockups::IconLabel" x="1091" y="64" w="-1" h="-1" measuredW="84" measuredH="25" zOrder="18" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>GearIcon%7Csmall</icon>
+		<text>Settings</text>
+		<labelPosition>right</labelPosition>
+		<color>8421504</color>
+	  </controlProperties>
+	</control>
+	<control controlID="181" controlTypeID="com.balsamiq.mockups::Icon" x="1084" y="69" w="-1" h="-1" measuredW="24" measuredH="24" zOrder="19" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>LockIcon%7Csmall</icon>
+		<borderStyle>none</borderStyle>
+		<color>8355711</color>
+	  </controlProperties>
+	</control>
+	<control controlID="62" controlTypeID="com.balsamiq.mockups::Canvas" x="161" y="94" w="1021" h="469" measuredW="100" measuredH="70" zOrder="1" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+		<color>15790322</color>
+	  </controlProperties>
+	</control>
+  </controls>
+</mockup>
