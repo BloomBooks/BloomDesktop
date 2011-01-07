@@ -1,84 +1,48 @@
-<mockup version="1.0" skin="sketch" measuredW="1196" measuredH="573" mockupW="1025" mockupH="530">
+<mockup version="1.0" skin="sketch" measuredW="1186" measuredH="563" mockupW="1025" mockupH="530">
   <controls>
-	<control controlID="224" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="309" w="-1" h="-1" measuredW="208" measuredH="22" zOrder="12" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>Creative%20Commons%20Attribution</text>
-		<state>selected</state>
-	  </controlProperties>
-	</control>
-	<control controlID="225" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="243" w="-1" h="-1" measuredW="108" measuredH="22" zOrder="13" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>Public%20Domain</text>
-	  </controlProperties>
-	</control>
-	<control controlID="226" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="387" w="-1" h="-1" measuredW="305" measuredH="22" zOrder="14" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>Creative%20Commons%20Attribution-NonCommercial</text>
-	  </controlProperties>
-	</control>
-	<control controlID="227" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="457" w="-1" h="-1" measuredW="71" measuredH="22" zOrder="15" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>Other%3A</text>
-	  </controlProperties>
-	</control>
-	<control controlID="228" controlTypeID="com.balsamiq.mockups::TextArea" x="552" y="485" w="307" h="33" measuredW="200" measuredH="140" zOrder="16" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>http%3A//</text>
-		<bold>false</bold>
-	  </controlProperties>
-	</control>
-	<control controlID="229" controlTypeID="com.balsamiq.mockups::IconLabel" x="305" y="314" w="70" h="-1" measuredW="94" measuredH="73" zOrder="17" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<icon>LockIcon%7Clarge</icon>
-		<text>Safe%20%26%20Simple</text>
-		<href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22144%2C281%2C214%2C354%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22229%22/%3E</map>
-		<borderStyle>square</borderStyle>
-	  </controlProperties>
-	</control>
-	<control controlID="230" controlTypeID="com.balsamiq.mockups::TextArea" x="552" y="451" w="307" h="33" measuredW="200" measuredH="140" zOrder="18" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text/>
-		<bold>false</bold>
-	  </controlProperties>
-	</control>
-	<control controlID="231" controlTypeID="com.balsamiq.mockups::Label" x="511" y="486" w="-1" h="-1" measuredW="37" measuredH="25" zOrder="19" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<text>URL%3A</text>
-	  </controlProperties>
-	</control>
 	<control controlID="8" controlTypeID="com.balsamiq.mockups::TitleWindow" x="161" y="33" w="1025" h="530" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
 	  <controlProperties>
+		<bottomheight>0</bottomheight>
 		<close>true</close>
-		<maximizeRestore>false</maximizeRestore>
-		<topheight>26</topheight>
 		<dragger>true</dragger>
+		<maximizeRestore>false</maximizeRestore>
 		<minimize>false</minimize>
 		<text>BLOOM%3A%20Edolo</text>
-		<bottomheight>0</bottomheight>
+		<topheight>26</topheight>
 	  </controlProperties>
 	</control>
-	<control controlID="180" controlTypeID="com.balsamiq.mockups::IconLabel" x="1091" y="64" w="-1" h="-1" measuredW="84" measuredH="25" zOrder="5" locked="false" isInGroup="-1">
+	<control controlID="92" controlTypeID="com.balsamiq.mockups::TabBar" x="161" y="70" w="1025" h="40" measuredW="278" measuredH="100" zOrder="1" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<icon>GearIcon%7Csmall</icon>
-		<text>Settings</text>
-		<labelPosition>right</labelPosition>
-		<color>0</color>
+		<borderStyle>none</borderStyle>
+		<color>11776947</color>
+		<hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C37%2C102%2C62%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2292_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22102%2C37%2C204%2C62%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2292_1%22/%3E%0A</map>
+		<selectedIndex>0</selectedIndex>
+		<size>12</size>
+		<text>Edolo%20Books%2C%20Template%20Books</text>
 	  </controlProperties>
 	</control>
-	<control controlID="214" controlTypeID="__group__" x="1072" y="59" w="-1" h="-1" measuredW="109" measuredH="33" zOrder="4" locked="false" isInGroup="-1">
+	<control controlID="180" controlTypeID="com.balsamiq.mockups::IconLabel" x="1091" y="64" w="-1" h="-1" measuredW="80" measuredH="24" zOrder="5" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<color>0</color>
+		<icon>GearIcon%7Csmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>Settings</text>
+	  </controlProperties>
+	</control>
+	<control controlID="214" controlTypeID="__group__" x="1072" y="59" w="109" h="33" measuredW="109" measuredH="33" zOrder="4" locked="false" isInGroup="-1">
 	  <groupChildrenDescriptors>
-		<control controlID="179" controlTypeID="com.balsamiq.mockups::Canvas" x="0" y="0" w="109" h="33" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="190">
+		<control controlID="162" controlTypeID="com.balsamiq.mockups::Canvas" x="1" y="1" w="106" h="32" measuredW="100" measuredH="70" zOrder="1" locked="false" isInGroup="214">
+		  <controlProperties>
+			<backgroundAlpha>0.25</backgroundAlpha>
+			<borderStyle>none</borderStyle>
+			<color>65535</color>
+		  </controlProperties>
+		</control>
+		<control controlID="179" controlTypeID="com.balsamiq.mockups::Canvas" x="0" y="0" w="109" h="33" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="214">
 		  <controlProperties>
 			<borderStyle>none</borderStyle>
 			<color>11776947</color>
-		  </controlProperties>
-		</control>
-		<control controlID="162" controlTypeID="com.balsamiq.mockups::Canvas" x="1" y="1" w="106" h="32" measuredW="100" measuredH="70" zOrder="1" locked="false" isInGroup="190">
-		  <controlProperties>
-			<borderStyle>none</borderStyle>
-			<color>65535</color>
-			<backgroundAlpha>0.25</backgroundAlpha>
 		  </controlProperties>
 		</control>
 	  </groupChildrenDescriptors>
@@ -90,58 +54,111 @@
 	</control>
 	<control controlID="216" controlTypeID="com.balsamiq.mockups::Canvas" x="161" y="57" w="1014" h="497" measuredW="100" measuredH="70" zOrder="2" locked="false" isInGroup="-1">
 	  <controlProperties>
+		<backgroundAlpha>0.5</backgroundAlpha>
 		<borderStyle>none</borderStyle>
 		<color>15132390</color>
-		<backgroundAlpha>0.5</backgroundAlpha>
 	  </controlProperties>
 	</control>
 	<control controlID="217" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="412" y="103" w="-1" h="449" measuredW="16" measuredH="100" zOrder="6" locked="false" isInGroup="-1"/>
-	<control controlID="218" controlTypeID="com.balsamiq.mockups::IconLabel" x="316" y="116" w="69" h="-1" measuredW="107" measuredH="73" zOrder="7" locked="false" isInGroup="-1">
+	<control controlID="218" controlTypeID="com.balsamiq.mockups::IconLabel" x="316" y="116" w="69" h="-1" measuredW="102" measuredH="70" zOrder="7" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<text>Writing%20Systems</text>
-		<icon>WriteIcon%7Clarge</icon>
 		<href>Settings-WritingSystems%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml%26bm%3BSettings-WritingSystems.bmml</href>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22155%2C83%2C224%2C156%22%20href%3D%22Settings-WritingSystems.bmml%22%20alt%3D%22Settings-WritingSystems%22%20id%3D%22218%22/%3E</map>
+		<icon>WriteIcon%7Clarge</icon>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22155%2C83%2C224%2C153%22%20href%3D%22Settings-WritingSystems.bmml%22%20alt%3D%22Settings-WritingSystems%22%20id%3D%22218%22/%3E</map>
+		<text>Writing%20Systems</text>
 	  </controlProperties>
 	</control>
-	<control controlID="219" controlTypeID="com.balsamiq.mockups::IconLabel" x="305" y="222" w="-1" h="-1" measuredW="90" measuredH="73" zOrder="8" locked="false" isInGroup="-1">
+	<control controlID="219" controlTypeID="com.balsamiq.mockups::IconLabel" x="305" y="222" w="-1" h="-1" measuredW="84" measuredH="70" zOrder="8" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<text>Send/Receive</text>
-		<icon>UpRightArrowIcon%7Clarge</icon>
 		<href>Settings-Collaboration%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml%26bm%3BSettings-Collaboration.bmml</href>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22144%2C189%2C234%2C262%22%20href%3D%22Settings-Collaboration.bmml%22%20alt%3D%22Settings-Collaboration%22%20id%3D%22219%22/%3E</map>
+		<icon>UpRightArrowIcon%7Clarge</icon>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22144%2C189%2C228%2C259%22%20href%3D%22Settings-Collaboration.bmml%22%20alt%3D%22Settings-Collaboration%22%20id%3D%22219%22/%3E</map>
+		<text>Send/Receive</text>
 	  </controlProperties>
 	</control>
-	<control controlID="92" controlTypeID="com.balsamiq.mockups::TabBar" x="161" y="70" w="1025" h="40" measuredW="278" measuredH="100" zOrder="1" locked="false" isInGroup="-1">
+	<control controlID="221" controlTypeID="com.balsamiq.mockups::IconLabel" x="305" y="415" w="81" h="-1" measuredW="129" measuredH="70" zOrder="9" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<size>12</size>
-		<hrefs>EdoloBooks%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%26bm%3BEdoloBooks.bmml%2CTemplateBooks-Baby%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml%26bm%3BTemplateBooks-Baby.bmml</hrefs>
-		<borderStyle>none</borderStyle>
-		<selectedIndex>0</selectedIndex>
-		<text>Edolo%20Books%2C%20Template%20Books</text>
-		<color>11776947</color>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%2220%2C37%2C101%2C64%22%20href%3D%22EdoloBooks.bmml%22%20alt%3D%22EdoloBooks%22%20id%3D%2292_0%22/%3E%0A%3Carea%20shape%3D%22rect%22%20coords%3D%22101%2C37%2C204%2C64%22%20href%3D%22TemplateBooks-Baby.bmml%22%20alt%3D%22TemplateBooks-Baby%22%20id%3D%2292_1%22/%3E%0A</map>
-	  </controlProperties>
-	</control>
-	<control controlID="221" controlTypeID="com.balsamiq.mockups::IconLabel" x="319" y="412" w="-1" h="-1" measuredW="56" measuredH="73" zOrder="9" locked="false" isInGroup="-1">
-	  <controlProperties>
-		<icon>CreativeCommonsIcon%7Clarge</icon>
-		<href>Settings-Licenses%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml</href>
-		<color>128</color>
-		<text>Licenses</text>
-		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22158%2C379%2C214%2C452%22%20href%3D%22Settings-Licenses.bmml%22%20alt%3D%22Settings-Licenses%22%20id%3D%22221%22/%3E</map>
 		<borderStyle>square</borderStyle>
+		<color>128</color>
+		<href>Settings-Licenses%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml%26bm%3BSettings-Licenses.bmml</href>
+		<icon>CreativeCommonsIcon%7Clarge</icon>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22144%2C382%2C225%2C452%22%20href%3D%22Settings-Licenses.bmml%22%20alt%3D%22Settings-Licenses%22%20id%3D%22221%22/%3E</map>
+		<text>Licenses%20%26%20Copyright</text>
 	  </controlProperties>
 	</control>
-	<control controlID="222" controlTypeID="com.balsamiq.mockups::Label" x="481" y="115" w="-1" h="-1" measuredW="144" measuredH="25" zOrder="10" locked="false" isInGroup="-1">
+	<control controlID="222" controlTypeID="com.balsamiq.mockups::Label" x="481" y="237" w="-1" h="-1" measuredW="101" measuredH="22" zOrder="10" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<text>Setup%20License%20Choices</text>
+		<text>License%20Choices</text>
 	  </controlProperties>
 	</control>
-	<control controlID="223" controlTypeID="com.balsamiq.mockups::Label" x="479" y="148" w="352" h="71" measuredW="866" measuredH="25" zOrder="11" locked="false" isInGroup="-1">
+	<control controlID="223" controlTypeID="com.balsamiq.mockups::Label" x="479" y="270" w="352" h="71" measuredW="831" measuredH="22" zOrder="11" locked="false" isInGroup="-1">
 	  <controlProperties>
-		<text>The%20selected%20choices%20will%20be%20available%20on%20Page%202%20of%20each%20document.%20%20Ideally%2C%20the%20team%20would%20select%20a%20single%2C%20very%20open%20license%20for%20all%20their%20work.</text>
 		<bold>false</bold>
+		<text>The%20selected%20choices%20will%20be%20available%20on%20Page%202%20of%20each%20document.%20%20Ideally%2C%20the%20team%20would%20select%20a%20single%2C%20very%20open%20license%20for%20all%20their%20work.</text>
+	  </controlProperties>
+	</control>
+	<control controlID="224" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="379" w="-1" h="-1" measuredW="197" measuredH="22" zOrder="12" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<state>selected</state>
+		<text>Creative%20Commons%20Attribution</text>
+	  </controlProperties>
+	</control>
+	<control controlID="225" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="347" w="-1" h="-1" measuredW="109" measuredH="22" zOrder="13" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Public%20Domain</text>
+	  </controlProperties>
+	</control>
+	<control controlID="226" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="415" w="-1" h="-1" measuredW="293" measuredH="22" zOrder="14" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Creative%20Commons%20Attribution-NonCommercial</text>
+	  </controlProperties>
+	</control>
+	<control controlID="227" controlTypeID="com.balsamiq.mockups::CheckBox" x="481" y="457" w="-1" h="-1" measuredW="61" measuredH="22" zOrder="15" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Other%3A</text>
+	  </controlProperties>
+	</control>
+	<control controlID="228" controlTypeID="com.balsamiq.mockups::TextArea" x="552" y="485" w="307" h="33" measuredW="200" measuredH="140" zOrder="16" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>false</bold>
+		<text>http%3A//</text>
+	  </controlProperties>
+	</control>
+	<control controlID="229" controlTypeID="com.balsamiq.mockups::IconLabel" x="305" y="314" w="70" h="-1" measuredW="88" measuredH="70" zOrder="17" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>square</borderStyle>
+		<href>Settings-Safety%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml%26bm%3BSettings-Safety.bmml</href>
+		<icon>LockIcon%7Clarge</icon>
+		<map>%3Carea%20shape%3D%22rect%22%20coords%3D%22144%2C281%2C214%2C351%22%20href%3D%22Settings-Safety.bmml%22%20alt%3D%22Settings-Safety%22%20id%3D%22229%22/%3E</map>
+		<text>Safe%20%26%20Simple</text>
+	  </controlProperties>
+	</control>
+	<control controlID="230" controlTypeID="com.balsamiq.mockups::TextArea" x="552" y="451" w="307" h="33" measuredW="200" measuredH="140" zOrder="18" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>false</bold>
+		<text/>
+	  </controlProperties>
+	</control>
+	<control controlID="231" controlTypeID="com.balsamiq.mockups::Label" x="511" y="486" w="-1" h="-1" measuredW="34" measuredH="22" zOrder="19" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>URL%3A</text>
+	  </controlProperties>
+	</control>
+	<control controlID="232" controlTypeID="com.balsamiq.mockups::Label" x="481" y="140" w="-1" h="-1" measuredW="145" measuredH="22" zOrder="20" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Default%20Copyright%20Notice</text>
+	  </controlProperties>
+	</control>
+	<control controlID="233" controlTypeID="com.balsamiq.mockups::TextArea" x="635" y="134" w="224" h="33" measuredW="200" measuredH="140" zOrder="21" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>false</bold>
+		<text/>
+	  </controlProperties>
+	</control>
+	<control controlID="234" controlTypeID="com.balsamiq.mockups::Label" x="597" y="167" w="502" h="34" measuredW="488" measuredH="22" zOrder="22" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>false</bold>
+		<text>Note%3A%20the%20year%20will%20be%20added%20automatically%20according%20to%20the%20history%20of%20the%20document.</text>
 	  </controlProperties>
 	</control>
   </controls>
