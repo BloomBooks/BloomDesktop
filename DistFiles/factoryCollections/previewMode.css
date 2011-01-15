@@ -24,3 +24,15 @@ IMG
 {
 	border: 1px none #000000;
 }
+DIV.page.cover
+{
+	background-color: #D8ADAD;
+}
+TEXTAREA.coverColor
+{
+	background-color: #D8ADAD;
+}
+INPUT.coverColor
+{
+	background-color: #D8ADAD;
+}
