@@ -5,7 +5,12 @@ BODY
 }
 DIV.page
 {
-	background-color: #657789;
+	background-color: #F8F8F8;
+	border: medium outset #000000;
+}
+DIV.page.coverColor
+{
+	background-color: #D5D5E4;
 	border: medium outset #000000;
 }
 INPUT

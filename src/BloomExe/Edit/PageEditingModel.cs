@@ -19,22 +19,31 @@ namespace Bloom.Edit
 			var matches = dom.SafeSelectNodes("//img[@id='" + id + "']");
 			XmlElement img = matches[0] as XmlElement;
 
-			if(Path.GetExtension(imageFullPath).ToLower().StartsWith(".tif"))
-			{
-				using (var image = Image.FromFile(imageFullPath))
-				{
-					imageFileName = Path.GetFileNameWithoutExtension(imageFileName) + ".png";
-					var dest = Path.Combine(bookFolderPath, imageFileName);
-					image.Save(dest, ImageFormat.Png);
-				}
-			}
-			else
-			{
-				var dest = Path.Combine(bookFolderPath, imageFileName);
-				File.Copy(imageFullPath, dest, true);
-			}
+//            if(Path.GetExtension(imageFullPath).ToLower().StartsWith(".tif"))
+//            {
+				imageFileName = MakeImagePngAndTranparent(imageFullPath, imageFileName, bookFolderPath);
+//            }
+//            else
+//            {
+//                var dest = Path.Combine(bookFolderPath, imageFileName);
+//                File.Copy(imageFullPath, dest, true);
+//            }
 			img.SetAttribute("src", imageFileName);
 
+		}
+
+		private string MakeImagePngAndTranparent(string imageFullPath, string imageFileName, string bookFolderPath)
+		{
+			using (Bitmap image = ((Bitmap)Bitmap.FromFile(imageFullPath)))
+			{
+				imageFileName = Path.GetFileNameWithoutExtension(imageFileName) + ".png";
+				var dest = Path.Combine(bookFolderPath, imageFileName);
+				image.MakeTransparent(Color.White);//make white look realistic against background
+				if(File.Exists(dest))
+					File.Delete(dest);
+				image.Save(dest, ImageFormat.Png);
+			}
+			return imageFileName;
 		}
 	}
 }
