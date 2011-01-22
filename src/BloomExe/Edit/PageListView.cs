@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Edit;
 
 namespace Bloom
@@ -43,7 +45,8 @@ namespace Bloom
 			}
 			else
 			{
-				_thumbNailList.SetItems(book.GetPages());
+				_thumbNailList.SetItems(new IPage[] { new PlaceHolderPage() }.Concat(book.GetPages()));
+			  //  _thumbNailList.SetItems(book.GetPages());
 			}
 		}
 
@@ -53,5 +56,34 @@ namespace Bloom
 		}
 	}
 
+	/// <summary>
+	/// This is just so the first (top-left) thumbnail is empty, so that the cover page appears in the second column.
+	/// </summary>
+	public class PlaceHolderPage     : IPage
+	{
+		public string Id
+		{
+			get { return null; }
+		}
 
+		public string Caption
+		{
+			get { return null; }
+		}
+
+		public Image Thumbnail
+		{
+			get { return new Bitmap(32,32); }
+		}
+
+		public string XPathToDiv
+		{
+			get { return null; }
+		}
+
+		public XmlNode GetDivNodeForThisPage()
+		{
+			return null;
+		}
+	}
 }

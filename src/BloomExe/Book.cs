@@ -119,9 +119,9 @@ namespace Bloom
 			}
 
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
+			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
 			return dom;
-
 		}
 
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)

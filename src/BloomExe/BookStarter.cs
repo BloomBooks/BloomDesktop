@@ -43,6 +43,7 @@ namespace Bloom
 		private void SetupDocumentContents(string destinationPath)
 		{
 			var storage = _bookStorageFactory(destinationPath);
+
 			foreach (XmlElement optionalNode in storage.Dom.SafeSelectNodes("/html/body/div[not(contains(@class,'required'))]"))
 			{
 				optionalNode.ParentNode.RemoveChild(optionalNode);

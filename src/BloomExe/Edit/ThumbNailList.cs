@@ -41,7 +41,7 @@ namespace Bloom.Edit
 			_listView.Items.Clear();
 			_thumbnailImageList.Images.Clear();
 
-			foreach (Page page in items)
+			foreach (IPage page in items)
 			{
 				var item = new ListViewItem(page.Caption);
 				item.Tag = page;

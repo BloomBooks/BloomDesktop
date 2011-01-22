@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
-using TemporaryFolder = Bloom.TemporaryFolder;
+
 
 namespace BloomTests
 {
@@ -22,7 +22,7 @@ namespace BloomTests
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5PortraitBooklet")
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
 			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator));
 		}
@@ -32,14 +32,31 @@ namespace BloomTests
 		{
 			using (var dest = new TemporaryFolder("DestBookStorage"))
 			{
-				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5PortraitBooklet");
+				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
 
-				var newFolder = _starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
+				_starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
 
-				AssertThatXmlIn.File(dest.Combine("new", "new.htm")).HasSpecifiedNumberOfMatchesForXpath("//div", 2);
+				string path = dest.Combine("new", "new.htm");
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover')]", 1);
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
 			}
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryA5Portrait_CreatesWithCorrectStylesheets()
+		{
+			using (var dest = new TemporaryFolder("DestBookStorage"))
+			{
+				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
+
+				_starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
+
+				string path = dest.Combine("new", "new.htm");
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link", 2);
+			}
+		}
 
 //		[Test]
 //		public void CopyToFolder_HasSubfolders_AllCopied()

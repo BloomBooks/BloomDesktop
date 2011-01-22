@@ -6,7 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 
-namespace Bloom
+namespace BloomTemp
 {
 	public class TempLiftFile : TempFile
 	{

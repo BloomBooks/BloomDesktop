@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using BloomTemp;
 using Palaso.Xml;
 using Skybound.Gecko;
 
