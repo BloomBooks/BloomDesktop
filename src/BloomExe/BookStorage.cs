@@ -81,7 +81,7 @@ namespace Bloom
 		private void MakeCssLinksAppropriateForStoredFile()
 		{
 			RemoveModeStyleSheets(Dom);
-			Dom.AddStyleSheet("previewMode.css");
+			//not needed. Dom.AddStyleSheet("previewMode.css");
 		}
 
 		public static void RemoveModeStyleSheets(XmlDocument dom)

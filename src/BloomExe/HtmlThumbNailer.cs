@@ -21,7 +21,7 @@ namespace Bloom
 		GeckoWebBrowser _browser;
 		private Image _pendingThumbnail;
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
-		private readonly int _sizeInPixels =60;
+		private readonly int _sizeInPixels =70;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
 
@@ -38,25 +38,25 @@ namespace Bloom
 		}
 
 
-
 		/// <summary>
 		///
 		/// </summary>
 		/// <param name="key">whatever system you want... just used for caching</param>
 		/// <param name="document"></param>
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
+		/// <param name="drawBorder"></param>
 		/// <returns></returns>
-		public Image GetThumbnail(string key, XmlDocument document, Color backgroundColorOfResult)
+		public Image GetThumbnail(string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorder)
 		{
-			_backgroundColorOfResult = backgroundColorOfResult;
-
-			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
-
-			Image image;
+			 Image image;
 			if(_images.TryGetValue(key, out image))
 			{
 				return image;
 			}
+		_backgroundColorOfResult = backgroundColorOfResult;
+
+			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
+
 			_pendingThumbnail = null;
 
 			ConfigureBrowserForPaperSize(document);
@@ -79,8 +79,8 @@ namespace Bloom
 						{
 							try
 							{
-								var x = _browser.Document.ActiveElement;
-								OnThumbNailBrowser_DocumentCompleted(null, null);
+							  //  var x = _browser.Document.ActiveElement;
+								OnThumbNailBrowser_DocumentCompleted(drawBorder, null);
 							}
 							catch (Exception)
 							{
@@ -105,18 +105,28 @@ namespace Bloom
 //            string[] paperSizeTemplateNames = new string[]{"A5Portrait", "A4Landscape", "A5LandScape", "A4Portrait"};
 //            foreach (var name in paperSizeTemplateNames)
 //            {
-				var paperStyleSheets = document.SafeSelectNodes(
-						"html/head/link[contains(@href, 'Landscape') or contains(@href, 'Portrait')]");
-				if(paperStyleSheets.Count ==0)
+				 string paperSizeName;
+				XmlNodeList safeSelectNodes = document.SafeSelectNodes("html/body/img");
+				if (safeSelectNodes.Count == 1)
 				{
-					Debug.Fail(
-						"THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
-
-					_browser = MakeNewBrowser();
-					return;
+					paperSizeName = safeSelectNodes[0].GetStringAttribute("src");
 				}
-				string paperSizeName = Path.GetFileNameWithoutExtension(paperStyleSheets[0].GetStringAttribute("href"));
-				if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out _browser))
+				else
+				{
+					var paperStyleSheets = document.SafeSelectNodes(
+						"html/head/link[contains(@href, 'Landscape') or contains(@href, 'Portrait')]");
+					if (paperStyleSheets.Count == 0)
+					{
+						Debug.Fail(
+							"THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
+
+						_browser = MakeNewBrowser();
+						return;
+					}
+
+					paperSizeName = Path.GetFileNameWithoutExtension(paperStyleSheets[0].GetStringAttribute("href"));
+				}
+			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out _browser))
 				{
 					_browser = MakeNewBrowser();
 					_browserCacheForDifferentPaperSizes.Add(paperSizeName, _browser);
@@ -160,7 +170,7 @@ namespace Bloom
 				}
 			}
 		}
-		private void OnThumbNailBrowser_DocumentCompleted(object sender, EventArgs e)
+		private void OnThumbNailBrowser_DocumentCompleted(object drawBorder, EventArgs e)
 		{
 			//NB: this will always give us the size it was on the first page we navigated to,
 			//so that if the book size changes, our thumbnails are all wrong. I don't know
@@ -177,13 +187,12 @@ namespace Bloom
 												   new Rectangle(0,//_browser.Location.X,
 																 0,//_browser.Location.Y,
 																 width, height));
-
-				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent);
+				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,(bool)drawBorder);
 			}
 		}
 
 
-		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor)
+		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorder)
 		{
 			//get the lesser of the desired and original size
 			destinationWidth = bmp.Width > destinationWidth ? destinationWidth : bmp.Width;
@@ -238,10 +247,19 @@ namespace Bloom
 						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
 						GraphicsUnit.Pixel, WhiteToBackground);
 
+				if (drawBorder)
+				{
+					Pen pn = new Pen(Color.Black, 1);
+					destRect.Height--;//hack, we were losing the bottom
+					graphics.DrawRectangle(pn, destRect);
+				}
 				//grp.DrawImage(bmp, horizontalOffset, verticalOffset, actualWidth, actualHeight);
+				else
+				{
 
-				Pen pn = new Pen(borderColor, 1);
-				graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
+					Pen pn = new Pen(borderColor, 1);
+					graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
+				}
 			}
 //			bmp.Save(@"c:\dev\temp\page.png", ImageFormat.Png);
 //			thumbnail.Save(@"c:\dev\temp\pagethum.png", ImageFormat.Png);

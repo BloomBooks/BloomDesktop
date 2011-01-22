@@ -53,7 +53,8 @@ namespace Bloom
 
 				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
 				builder.Register<IFileLocator>(c => new FileLocator(GetFileLocations())).InstancePerLifetimeScope();
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(60)).InstancePerLifetimeScope();
+				const int kListViewIconHeightAndSize = 70;
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {

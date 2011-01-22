@@ -10,8 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Properties;
 using Palaso.IO;
+using Svg;
 
 namespace Bloom.Library
 {
@@ -20,11 +22,13 @@ namespace Bloom.Library
 		public delegate LibraryListView Factory();//autofac uses this
 
 		private readonly LibraryModel _model;
+		private readonly HtmlThumbNailer _thumbnailProvider;
 		private bool _reshowPending = false;
 
-		public LibraryListView(LibraryModel model)
+		public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider)
 		{
 			_model = model;
+			_thumbnailProvider = thumbnailProvider;
 			InitializeComponent();
 			_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
 			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
@@ -106,14 +110,17 @@ namespace Bloom.Library
 
 		private Image GetThumbnail(Book book)
 		{
-			Image thumbnail=null;
 			if (book.Type != Book.BookType.Template)
-			{ //for templates, let's just show a blank cover
-				thumbnail = book.GetThumbNailOfBookCover();
+			{
+				return book.GetThumbNailOfBookCover(true);
+			}
+			else
+			{
+				return ComposeCoverPageWithBooklet(null, GetBookletImage(book));//for templates, let's just show a blank cover
 			}
 
-			thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
-			return thumbnail;
+			//thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
+			//return thumbnail;
 		}
 
 		int _vernacularBookletColorIndex = 0;
@@ -121,6 +128,7 @@ namespace Bloom.Library
 
 		private Image GetBookletImage(Book book)
 		{
+			var imagesDirectory = FileLocator.GetDirectoryDistributedWithApplication("images");
 			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
 			var templateBookColors = new string[] { "blue","purple" };
 			string name;
@@ -163,11 +171,56 @@ namespace Bloom.Library
 						_vernacularBookletColorIndex = 0;
 				}
 
-				var images = FileLocator.GetDirectoryDistributedWithApplication("images");
-				path = Path.Combine(images, name + color + ".png");
+
+				path = Path.Combine(imagesDirectory, name + color + ".png");
 
 			} while (!File.Exists(path));
-			return Image.FromFile(path);
+			Bitmap image= (Bitmap) Image.FromFile(path);
+			return image;
+#if SkipTHis
+
+//            Bitmap coloredImage = new Bitmap(image);
+//		    var newColor = Color.Pink;
+//
+			//svg.
+//		    using(var g = Graphics.FromImage(coloredImage))
+//		    {
+//		       g.DrawImage(image, 0,0);
+//               for (int x = 0; x < coloredImage.Width; x++)
+//               {
+//                   for (int y = 0; y < coloredImage.Height; y++)
+//                   {
+//                       Color bitColor = image.GetPixel(x, y);
+					   //compare without respect to transparency
+//                       if (bitColor.R == 255 && bitColor.G == 0) // && bitColor.G==Color.Red.G && bitColor.B == Color.Red.B)
+//                       {
+						   //Sets all the pixels to white but with the original alpha value
+//                           coloredImage.SetPixel(x, y, Color.FromArgb(bitColor.A, newColor.R, newColor.G,newColor.B));
+//                       }
+//                   }
+//               }
+//
+//		    }
+		  //  return coloredImage;
+
+
+			What this is all about: I was trying to get gecko to make the booklet bitmap for me via svg. I was
+			then going to change the svg at runtime to have the color I wanted, because it's not a simple mater
+			of replacing a color (as I attempted in the code above). Where the black lines come near the color,
+			the svg renderer blurs them, making color replacement impossible. Anyhow, xulrunner 1.9.1 would just
+			give me a broken image icon.  Could try again someday with a newer xulrunner, because firefox 3.6
+			did show it, when I fed that same page in.
+
+			var dom = new XmlDocument();
+			dom.LoadXml(
+				string.Format(
+					@"<html xmlns='http://www.w3.org/1999/xhtml'>
+  <body><img src='file://{0}' />
+  </body>
+</html>",
+					@"C:\dev\Bloom\DistFiles\images\a5Portrait.svg"));// Path.Combine(imagesDirectory,"a5Portrait.svg")));
+			return _thumbnailProvider.GetThumbnail("pink", dom, Color.Transparent);
+#endif
 		}
 
 		private Image ComposeCoverPageWithBooklet(Image thumbnail, Image booklet)
@@ -178,10 +231,12 @@ namespace Bloom.Library
 				g.CompositingMode = CompositingMode.SourceOver;
 				g.CompositingQuality = CompositingQuality.HighQuality;
 
-				Rectangle destRect = new Rectangle(0,0, booklet.Width, book.Height);
-				g.DrawImage(booklet, destRect, 0,0, booklet.Width, book.Height,
-					GraphicsUnit.Pixel,MagentaToPaperColor(Color.LightGreen));
-
+				if (booklet != null)
+				{
+					Rectangle destRect = new Rectangle(0, 0, booklet.Width, book.Height);
+					g.DrawImage(booklet, destRect, 0, 0, booklet.Width, book.Height,
+								GraphicsUnit.Pixel, MagentaToPaperColor(Color.LightGreen));
+				}
 				if (thumbnail != null) //no cover page thumnail was available
 				{
 					g.DrawImage(thumbnail, -10, -5);

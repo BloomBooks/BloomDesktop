@@ -33,12 +33,16 @@ namespace Bloom
 
 		}
 
+		static private int _coverColorIndex = 0;
+		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
+
 		public Book(IBookStorage storage, ITemplateFinder templateFinder,
 			Palaso.IO.IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
 			Id = Guid.NewGuid().ToString();
+			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
@@ -97,7 +101,7 @@ namespace Bloom
 			}
 		}
 
-		public  Image GetThumbNailOfBookCover()
+		public  Image GetThumbNailOfBookCover(bool drawBorder)
 		{
 			Image thumb;
 			if(_storage.TryGetPremadeThumbnail(out thumb))
@@ -108,7 +112,7 @@ namespace Bloom
 			{
 				return null;
 			}
-			return _thumbnailProvider.GetThumbnail(_storage.Key, dom, Color.Transparent);
+			return _thumbnailProvider.GetThumbnail(_storage.Key, dom, Color.Transparent, drawBorder);
 		}
 
 		public XmlDocument GetEditableHtmlDomForPage(IPage page)
@@ -121,6 +125,7 @@ namespace Bloom
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
+			AddCoverColor(dom);
 			return dom;
 		}
 
@@ -143,6 +148,7 @@ namespace Bloom
 			}
 			var dom = GetHtmlDomWithJustOnePage(page);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
+			AddCoverColor(dom);
 			return dom;
 		}
 
@@ -154,6 +160,7 @@ namespace Bloom
 			}
 
 			XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
+			AddCoverColor(bookDom);
 			HideEverythingButFirstPage(bookDom);
 			return bookDom;
 		}
@@ -245,7 +252,29 @@ namespace Bloom
 			{
 				return GetPageSayingCantShowBook();
 			}
-			return GetBookDomWithStyleSheet("previewMode.css");
+			var dom= GetBookDomWithStyleSheet("previewMode.css");
+
+			AddCoverColor(dom);
+			return dom;
+		}
+
+		public Color CoverColor { get; set; }
+
+		private void AddCoverColor(XmlDocument dom)
+		{
+
+			var colorValue = string.Format("{0:X}{1:X}{2:X}", CoverColor.R, CoverColor.G, CoverColor.B);
+			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
+
+			XmlElement colorStyle = dom.CreateElement("style");
+			colorStyle.SetAttribute("type","text/css");
+			colorStyle.InnerXml = @"<!--
+				DIV.page.cover	{		background-color: #colorValue;	}
+				TEXTAREA.coverColor	{		background-color: #colorValue;	}
+				INPUT.coverColor	{		background-color: #colorValue;	}
+				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
+
+			header.AppendChild(colorStyle);
 		}
 
 
@@ -272,7 +301,7 @@ namespace Bloom
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)
 		{
 			return new Page(pageNode, caption,
-					(page => _thumbnailProvider.GetThumbnail(page.Id, GetPreviewXmlDocumentForPage(page), Color.White)),
+					(page => _thumbnailProvider.GetThumbnail(page.Id, GetPreviewXmlDocumentForPage(page), Color.White, false)),
 					(page => FindPageDiv(page)));
 		}
 
