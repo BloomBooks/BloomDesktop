@@ -51,7 +51,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Size = new System.Drawing.Size(686, 497);
-            this.splitContainer1.SplitterDistance = 127;
+            this.splitContainer1.SplitterDistance = 229;
             this.splitContainer1.SplitterWidth = 1;
             this.splitContainer1.TabIndex = 0;
             // 
@@ -68,8 +68,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
-            this.splitContainer2.Size = new System.Drawing.Size(558, 497);
-            this.splitContainer2.SplitterDistance = 459;
+            this.splitContainer2.Size = new System.Drawing.Size(456, 497);
+            this.splitContainer2.SplitterDistance = 375;
             this.splitContainer2.SplitterWidth = 1;
             this.splitContainer2.TabIndex = 0;
             // 
@@ -79,7 +79,7 @@
             this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
             this._browser1.Location = new System.Drawing.Point(0, 0);
             this._browser1.Name = "_browser1";
-            this._browser1.Size = new System.Drawing.Size(459, 497);
+            this._browser1.Size = new System.Drawing.Size(375, 497);
             this._browser1.TabIndex = 1;
             this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
             this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);

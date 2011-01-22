@@ -1,28 +1,9 @@
-INPUT
-{
-	border: 0 none #000000;
-}
 @media screen
 {
 	BODY
 	{
 		background-color: #363333;
 	}
-}
-TEXTAREA
-{
-	border: 0px hidden #FFFFFF;
-	background: #FFFFFF;
-}
-DIV.page
-{
-	background-color: #FFFFFF;
-	border: 1px solid #000000;
-	page-break-after: always;
-}
-IMG
-{
-	border: 1px none #000000;
 }
 DIV.page.cover
 {

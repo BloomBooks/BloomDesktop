@@ -76,7 +76,33 @@ namespace Bloom
     	}
 
 
-    	private void SetBaseForRelativePaths(string folderPath)
+        //while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
+        //we want to make sure it's ready to be opened in a browser.
+        private void MakeCssLinksAppropriateForStoredFile()
+        {
+            RemoveModeStyleSheets(Dom);
+            Dom.AddStyleSheet("previewMode.css");
+        }
+
+        public static void RemoveModeStyleSheets(XmlDocument dom)
+        {
+            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+            {
+                var href = linkNode.GetAttribute("href");
+                if (href == null)
+                {
+                    continue;
+                }
+
+                var fileName = Path.GetFileName(href);
+                if (fileName.Contains("edit") || fileName.Contains("preview"))
+                {
+                    linkNode.ParentNode.RemoveChild(linkNode);
+                }
+            }
+        }
+
+        private void SetBaseForRelativePaths(string folderPath)
         {
             var head = Dom.SelectSingleNodeHonoringDefaultNS("//head");
         	foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
@@ -167,11 +193,12 @@ namespace Bloom
         {
             Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
             string tempPath = Path.GetTempFileName();
+    	    MakeCssLinksAppropriateForStoredFile();
+
         	XmlWriterSettings settings = new XmlWriterSettings();
         	settings.Indent = true;
         	settings.CheckCharacters = true;
-
-
+            
         	using (var writer = XmlWriter.Create(tempPath, settings))
             {
                 Dom.WriteContentTo(writer);
@@ -181,7 +208,7 @@ namespace Bloom
         }
 
 
-    	public bool TryGetPremadeThumbnail(out Image image)
+        public bool TryGetPremadeThumbnail(out Image image)
         {
             string path = Path.Combine(_folderPath, "thumbnail.png");
             if(File.Exists(path))
