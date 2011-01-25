@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Xml;
-
+using BloomTemp;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Xml;
@@ -25,6 +25,7 @@ namespace Bloom
 		string FolderPath { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
+		TempFile GetHtmlTempFileForPrintingWithWkHtmlToPdf();
 	}
 
 	public class BookStorage : IBookStorage
@@ -41,7 +42,9 @@ namespace Bloom
 			{
 				Dom = new XmlDocument();
 				Dom.Load(PathToHtml);
-				SetBaseForRelativePaths(folderPath);
+
+				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
+				SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
 				UpdateStyleSheetLinkPaths(fileLocator);
 
@@ -75,6 +78,22 @@ namespace Bloom
 			}
 		}
 
+		/// <summary>
+		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
+		/// </summary>
+		/// <param name="dom"></param>
+		private void StripStyleSheetLinkPaths(XmlDocument dom)
+		{
+			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if (href == null)
+				{
+					continue;
+				}
+				linkNode.SetAttribute("href", Path.GetFileName(href));
+			}
+		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
@@ -102,16 +121,20 @@ namespace Bloom
 			}
 		}
 
-		private void SetBaseForRelativePaths(string folderPath)
+
+		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
 		{
-			var head = Dom.SelectSingleNodeHonoringDefaultNS("//head");
+			var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
 				head.RemoveChild(baseNode);
 			}
-			var baseElement = Dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
-			baseElement.SetAttribute("href", "file://"+folderPath+Path.DirectorySeparatorChar);
-			head.AppendChild(baseElement);
+			if (!string.IsNullOrEmpty(folderPath))
+			{
+				var baseElement = dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
+				baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+				head.AppendChild(baseElement);
+			}
 		}
 
 		public XmlDocument Dom
@@ -194,6 +217,7 @@ namespace Bloom
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			string tempPath = Path.GetTempFileName();
 			MakeCssLinksAppropriateForStoredFile();
+			SetBaseForRelativePaths(Dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
@@ -220,6 +244,18 @@ namespace Bloom
 			return false;
 		}
 
+		public TempFile GetHtmlTempFileForPrintingWithWkHtmlToPdf()
+		{
+			XmlDocument dom = (XmlDocument) Dom.Clone();
 
+			//remove the <base>, which messes up the webkit printing
+			SetBaseForRelativePaths(dom, string.Empty);
+			StripStyleSheetLinkPaths(dom);
+
+			//need a base to find the pictures and style sheets
+
+			return TempFile.CreateHtm(dom);
+		}
 	}
+
 }

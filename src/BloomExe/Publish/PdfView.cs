@@ -8,14 +8,17 @@ namespace Bloom.Publish
 {
 	public partial class PdfView : UserControl
 	{
+		public BookSelection BookSelection { get; set; }
 		private readonly BookSelection _bookSelection;
 
 		public delegate PdfView Factory();//autofac uses this
 
 		private bool _selectionChangedWhileWeWereInvisible;
+		private Book _currentlyLoadedBook;
 
 		public PdfView(BookSelection bookSelection)
 		{
+			BookSelection = bookSelection;
 			InitializeComponent();
 			if(this.DesignMode)
 				return;
@@ -27,22 +30,28 @@ namespace Bloom.Publish
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			LoadBook();
+			_loadTimer.Enabled = true;
 		}
+
 
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			LoadBook();
+			if(_currentlyLoadedBook != BookSelection.CurrentSelection)
+			{
+				LoadBook();
+			}
 		}
 
 
 		private void LoadBook()
 		{
-			if(!Visible)
+			if (!Visible)
 			{
 				_selectionChangedWhileWeWereInvisible = true;
 				return;
 			}
+
+			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
 			var pleaseWaitNotice = new PleaseWait();
 			pleaseWaitNotice.Show(this);
@@ -57,9 +66,9 @@ namespace Bloom.Publish
 					_browser.Navigate("about:blank", false);
 					return;
 				}
-				var dom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
 
-				using (var tempHtml = TempFile.CreateHtm(dom))
+
+				using (var tempHtml = _bookSelection.CurrentSelection.GetHtmlTempFileForPrintingWholeBook())
 				{
 
 					ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe",
@@ -112,6 +121,15 @@ namespace Bloom.Publish
 		{
 			if(Visible && _selectionChangedWhileWeWereInvisible)
 				LoadBook();
+		}
+
+		private void _loadTimer_Tick(object sender, EventArgs e)
+		{
+			_loadTimer.Enabled = false;
+			if (_currentlyLoadedBook != BookSelection.CurrentSelection)
+			{
+				LoadBook();
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Edit;
 using Bloom.Properties;
+using BloomTemp;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Xml;
@@ -152,6 +153,21 @@ namespace Bloom
 			return dom;
 		}
 
+		private static void AddSheet(XmlDocument dom, XmlNode head, string cssFilePath, bool useFullFilePath)
+		{
+			var link = dom.CreateElement("link", "http://www.w3.org/1999/xhtml");
+			link.SetAttribute("rel", "stylesheet");
+			if (useFullFilePath)
+			{
+				link.SetAttribute("href", "file://" + cssFilePath);
+			}
+			else
+			{
+				link.SetAttribute("href", Path.GetFileName(cssFilePath));
+			}
+			link.SetAttribute("type", "text/css");
+			head.AppendChild(link);
+		}
 		public XmlDocument GetPreviewXmlDocumentForFirstPage()
 		{
 			if (!_storage.LooksOk)
@@ -160,10 +176,12 @@ namespace Bloom
 			}
 
 			XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
+
 			AddCoverColor(bookDom);
 			HideEverythingButFirstPage(bookDom);
 			return bookDom;
 		}
+
 
 		private static void HideEverythingButFirstPage(XmlDocument bookDom)
 		{
@@ -257,6 +275,16 @@ namespace Bloom
 			AddCoverColor(dom);
 			return dom;
 		}
+
+		public TempFile GetHtmlTempFileForPrintingWholeBook()
+		{
+//            if (!_storage.LooksOk)
+//            {
+//                return GetPageSayingCantShowBook();
+//            }
+			//var dom = GetBookDomWithStyleSheet("previewMode.css");
+			return _storage.GetHtmlTempFileForPrintingWithWkHtmlToPdf();
+	   }
 
 		public Color CoverColor { get; set; }
 
