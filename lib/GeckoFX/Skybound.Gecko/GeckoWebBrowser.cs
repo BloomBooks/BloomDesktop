@@ -78,8 +78,12 @@ namespace Skybound.Gecko
 		//}
 
 		#region protected override void Dispose(bool disposing)
+
 		protected override void Dispose(bool disposing)
 		{
+			if (BaseWindow == null)
+				return;
+
 			if (!Environment.HasShutdownStarted && !AppDomain.CurrentDomain.IsFinalizingForUnload())
 			{
 				// make sure the object is still alove before we call a method on it
@@ -94,6 +98,7 @@ namespace Skybound.Gecko
 					BaseWindow.Destroy();
 				}
 				BaseWindow = null;
+
 			}
 
 			base.Dispose(disposing);

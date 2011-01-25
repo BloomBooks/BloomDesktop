@@ -1,11 +1,18 @@
-DIV.page
+   DIV.page
+	{
+		width: 14.5cm;
+		height: 21cm;
+		page-break-after: always;
+		background-color: #FFFFFF;
+	}
+@media screen
 {
-	width: 14.5cm;
-	height: 21cm;
-	page-break-after: always;
-	background-color: #FFFFFF;
-	border: 1px solid #000000;
+	DIV.page
+	{
+		border: 1px solid #000000;
+	}
 }
+
 .cover .vernacularBookTitle
 {
 	text-align: center;

@@ -93,6 +93,7 @@ namespace Bloom
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
+
 			if(_tempHtmlFile!=null)
 			{
 				_tempHtmlFile.Dispose();
@@ -102,8 +103,8 @@ namespace Bloom
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
-			_url=url;
-			if(cleanupFileAfterNavigating)
+			_url=url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
+			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
 				SetNewTempFile(TempFile.TrackExisting(url));
 			}
@@ -159,6 +160,8 @@ namespace Bloom
 		/// </summary>
 		private void UpdateDomWithNewEditsCopiedOver()
 		{
+			if (_pageDom == null)
+				return;
 			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
 			{
 				var id = node.GetAttribute("id");

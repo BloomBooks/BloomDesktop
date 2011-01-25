@@ -68,14 +68,14 @@ namespace Bloom.Publish
 				}
 
 
-				using (var tempHtml = _bookSelection.CurrentSelection.GetHtmlTempFileForPrintingWholeBook())
+				var path = _bookSelection.CurrentSelection.GetHtmlFileForPrintingWholeBook();
 				{
 
 					ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe",
 																 string.Format(
 																	 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-																	 Path.GetFileName(tempHtml.Path), tempFile));
-					info.WorkingDirectory = Path.GetDirectoryName(tempHtml.Path);
+																	 Path.GetFileName(path), tempFile));
+					info.WorkingDirectory = Path.GetDirectoryName(path);
 					info.ErrorDialog = true;
 					info.WindowStyle = ProcessWindowStyle.Hidden;
 

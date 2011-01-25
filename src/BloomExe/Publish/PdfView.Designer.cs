@@ -28,18 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this._browser = new Bloom.Browser();
+            this._loadTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // _browser
             // 
-            this._browser.BackColor = System.Drawing.Color.Blue;
+            this._browser.BackColor = System.Drawing.Color.DarkGray;
             this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
             this._browser.Location = new System.Drawing.Point(0, 0);
             this._browser.Name = "_browser";
             this._browser.Size = new System.Drawing.Size(150, 150);
             this._browser.TabIndex = 0;
             this._browser.VisibleChanged += new System.EventHandler(this._browser_VisibleChanged);
+            // 
+            // _loadTimer
+            // 
+            this._loadTimer.Tick += new System.EventHandler(this._loadTimer_Tick);
             // 
             // PdfView
             // 
@@ -54,5 +60,6 @@
         #endregion
 
         private Browser _browser;
+        private System.Windows.Forms.Timer _loadTimer;
     }
 }

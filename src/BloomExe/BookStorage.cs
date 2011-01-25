@@ -25,17 +25,21 @@ namespace Bloom
 		string FolderPath { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		TempFile GetHtmlTempFileForPrintingWithWkHtmlToPdf();
+		string GetHtmlFileForPrintingWithWkHtmlToPdf();
+		XmlDocument GetRelocatableCopyOfDom();
 	}
 
 	public class BookStorage : IBookStorage
 	{
 		private readonly string _folderPath;
+		private readonly IFileLocator _fileLocator;
+
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
 		public BookStorage(string folderPath, Palaso.IO.IFileLocator fileLocator)
 		{
 			_folderPath = folderPath;
+			_fileLocator = fileLocator;
 
 			RequireThat.Directory(folderPath).Exists();
 			if (File.Exists(PathToHtml))
@@ -44,9 +48,9 @@ namespace Bloom
 				Dom.Load(PathToHtml);
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
-				SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
+				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
-				UpdateStyleSheetLinkPaths(fileLocator);
+				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				//add a unique id for our use
 				foreach(XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
@@ -56,9 +60,9 @@ namespace Bloom
 			}
 		}
 
-		private void UpdateStyleSheetLinkPaths(Palaso.IO.IFileLocator fileLocator)
+		private void UpdateStyleSheetLinkPaths(XmlDocument dom, Palaso.IO.IFileLocator fileLocator)
 		{
-			foreach(XmlElement linkNode in Dom.SafeSelectNodes("/html/head/link"))
+			foreach(XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
 				if(href==null)
@@ -244,17 +248,25 @@ namespace Bloom
 			return false;
 		}
 
-		public TempFile GetHtmlTempFileForPrintingWithWkHtmlToPdf()
+		/// <summary>
+		/// Get a path to a file that has whatever it needs (in terms of the links, base, etc) to
+		/// come out right for WkHtmlToPdf.  It turns out that this means no file:\\, so no <base>,
+		/// etc.  Which is fine as long as the way we save the file is without this stuff, as
+		/// it really should be, because that way you can take it to another location or computer
+		/// and it will still look right in a browser.
+		/// </summary>
+		public string GetHtmlFileForPrintingWithWkHtmlToPdf()
 		{
-			XmlDocument dom = (XmlDocument) Dom.Clone();
+			return PathToHtml;
+		}
 
-			//remove the <base>, which messes up the webkit printing
-			SetBaseForRelativePaths(dom, string.Empty);
-			StripStyleSheetLinkPaths(dom);
+		public XmlDocument GetRelocatableCopyOfDom()
+		{
+			XmlDocument dom = (XmlDocument)Dom.Clone();
 
-			//need a base to find the pictures and style sheets
-
-			return TempFile.CreateHtm(dom);
+			SetBaseForRelativePaths(dom, _folderPath);
+			UpdateStyleSheetLinkPaths(dom, _fileLocator);
+			return dom;
 		}
 	}
 

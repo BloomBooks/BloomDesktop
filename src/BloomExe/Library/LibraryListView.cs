@@ -84,7 +84,15 @@ namespace Bloom.Library
 			}
 			foreach (Book book in collection.GetBooks())
 			{
-				AddOneBook(group, book);
+				try
+				{
+					AddOneBook(group, book);
+				}
+				catch (Exception error)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+book.FolderPath);
+				}
+
 			}
 			if(group.Items.Count ==0)
 			{
@@ -278,7 +286,10 @@ namespace Bloom.Library
 			Book book = SelectedBook();
 			if (book == null)
 				return;
+			Debug.WriteLine("before selecting "+book.Title);
 			_model.SelectBook(book);
+			Debug.WriteLine("after selecting "+book.Title);
+			//didn't help: _listView.Focus();//hack we were losing clicks
 			book.ContentsChanged -= new EventHandler(OnSelectedBookChanged);//in case we're already subscribed
 			book.ContentsChanged += new EventHandler(OnSelectedBookChanged);
 		}

@@ -133,7 +133,7 @@ namespace Bloom
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)
 		{
 			var dom = new XmlDocument();
-			var head = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
+			var head = _storage.GetRelocatableCopyOfDom().SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			dom.LoadXml(@"<html xmlns='http://www.w3.org/1999/xhtml'>"+head+"<body></body></html>");
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
@@ -199,7 +199,7 @@ namespace Bloom
 
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
-			XmlDocument dom = (XmlDocument)_storage.Dom.Clone();
+			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom();
 			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
 			return dom;
 		}
@@ -276,14 +276,14 @@ namespace Bloom
 			return dom;
 		}
 
-		public TempFile GetHtmlTempFileForPrintingWholeBook()
+		public string GetHtmlFileForPrintingWholeBook()
 		{
 //            if (!_storage.LooksOk)
 //            {
 //                return GetPageSayingCantShowBook();
 //            }
 			//var dom = GetBookDomWithStyleSheet("previewMode.css");
-			return _storage.GetHtmlTempFileForPrintingWithWkHtmlToPdf();
+			return _storage.GetHtmlFileForPrintingWithWkHtmlToPdf();
 	   }
 
 		public Color CoverColor { get; set; }
