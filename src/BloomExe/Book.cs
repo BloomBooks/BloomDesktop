@@ -422,40 +422,65 @@ namespace Bloom
 			string pageSelector = Page.GetPageSelectorXPath(pageDom);
 			//review: does this belong down in the storage?
 
+			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'page')]");
+			string pageDivId = divElement.GetAttribute("id");
 
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
 			{
-				var id = editNode.GetAttribute("id");
-				var storageNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//img[@id='" + id + "']") as XmlElement;
-				Guard.AgainstNull(storageNode, id);
+				var imgId = editNode.GetAttribute("id");
+				var storageNode = GetStorageNode(pageDivId, "img", imgId);
+				Guard.AgainstNull(storageNode, imgId);
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//input"))
 			{
-				var id = editNode.GetAttribute("id");
-				var storageNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='"+id+"']") as XmlElement;
-				Guard.AgainstNull(storageNode,id);
+				var inputElementId = editNode.GetAttribute("id");
+				var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
+				Guard.AgainstNull(storageNode,inputElementId);
 				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes("//textarea"))
 			{
-				var id = editNode.GetAttribute("id");
-				if (string.IsNullOrEmpty(id))
+				var textareaElementId = editNode.GetAttribute("id");
+				if (string.IsNullOrEmpty(textareaElementId))
 				{
-					Debug.Fail(id);
+					Debug.Fail(textareaElementId);
 				}
 				else
 				{
-					var destNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + id + "']") as XmlElement;
-					Guard.AgainstNull(destNode, id);
+					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
+					Guard.AgainstNull(destNode, textareaElementId);
 					destNode.InnerText = editNode.InnerText;
 				}
 			}
 
 			MakeAllFieldsConsistent();
-			_storage.Save();
+			try
+			{
+				_storage.Save();
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
+			}
+
 			InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
+		}
+
+		/// <summary>
+		/// Gets the first element with the given tag & id, within the page-div with the given id.
+		/// </summary>
+		private XmlElement GetStorageNode(string pageDivId, string tag, string imgId)
+		{
+			var query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, imgId);
+			var matches = _storage.Dom.SafeSelectNodes(query);
+			if(matches.Count != 1)
+			{
+				throw new ApplicationException("Expected one match for this query, but got "+matches.Count+": "+query);
+			}
+			return (XmlElement) matches[0];
+//            return _storage.Dom.SelectSingleNodeHonoringDefaultNS(string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, imgId)) as XmlElement;
 		}
 
 

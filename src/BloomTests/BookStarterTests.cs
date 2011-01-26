@@ -53,8 +53,8 @@ namespace BloomTests
 
 				string path = dest.Combine("new", "new.htm");
 				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
-				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
-				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link", 2);
+				//AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
+				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link", 1);
 			}
 		}
 

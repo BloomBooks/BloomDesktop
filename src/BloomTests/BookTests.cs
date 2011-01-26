@@ -35,6 +35,7 @@ namespace BloomTests
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Book.BookType.Publication);
+			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns((XmlDocument)storageDom.Clone());// review: the real thing does more than just clone
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();

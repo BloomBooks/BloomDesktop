@@ -81,7 +81,7 @@ namespace Skybound.Gecko
 
 		protected override void Dispose(bool disposing)
 		{
-			if (BaseWindow == null)
+			if (BaseWindow == null) //hatton added jan 2011 because when showing pdfs, this was getting called twice somehow...
 				return;
 
 			if (!Environment.HasShutdownStarted && !AppDomain.CurrentDomain.IsFinalizingForUnload())

@@ -89,35 +89,47 @@ namespace Bloom.Edit
 			if (ge.Target.TagName != "IMG")
 				return;
 			string currentPath = ge.Target.GetAttribute("src");
-			var imageInfo = new PalasoImage() { Image = Image.FromFile(Path.Combine(_model.CurrentBook.FolderPath, currentPath)) };
+			var imageInfo = new PalasoImage();
+			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+			if (File.Exists(existingImagePath))
+			{
+				try
+				{
+					imageInfo.Image = Image.FromFile(existingImagePath);
+				}
+				catch (Exception)
+				{
+					//todo: log this
+				}
+			};
 			using(var dlg = new ImageToolboxDialog(imageInfo))
 			{
 				if(DialogResult.OK== dlg.ShowDialog())
 				{
-					var path = MakeTempFileForImage(dlg.ImageInfo.Image);
-					_model.ChangePicture(ge.Target.Id, path);
-					File.Delete(path);
+				   // var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
+					_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
 				}
 			}
 		}
 
-		private string MakeTempFileForImage(Image image)
-		{
-			var path = Path.GetTempFileName();
-			File.Delete(path);
-			if (new[] { ImageFormat.Png, ImageFormat.Bmp, ImageFormat.Gif,ImageFormat.Tiff, ImageFormat.MemoryBmp}.Contains(image.RawFormat))
-			{
-				string filename = path + ".png";
-				image.Save(filename, ImageFormat.Png);
-				return filename;
-			}
-			if (new[] { ImageFormat.Jpeg }.Contains(image.RawFormat))
-			{
-				string filename = path + ".jpg";
-				image.Save(filename, ImageFormat.Jpeg);
-				return filename;
-			}
-			throw new ApplicationException("That image format is not supported by the Palaso Image Library: "+image.RawFormat.ToString());
-		}
+//        private string MakePngOrJpgTempFileForImage(Image image)
+//        {
+//            var path = Path.GetTempFileName();
+//            File.Delete(path);
+//            string pathWithoutExtension = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+//            if (new[] { ImageFormat.Png, ImageFormat.Bmp, ImageFormat.Gif,ImageFormat.Tiff, ImageFormat.MemoryBmp}.Contains(image.RawFormat))
+//            {
+//                string filename = pathWithoutExtension + ".png";
+//                image.Save(filename, ImageFormat.Png);
+//                return filename;
+//            }
+//            if (new[] { ImageFormat.Jpeg }.Contains(image.RawFormat))
+//            {
+//                string filename = pathWithoutExtension + ".jpg";
+//                image.Save(filename, ImageFormat.Jpeg);
+//                return filename;
+//            }
+//            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
+//        }
 	}
 }

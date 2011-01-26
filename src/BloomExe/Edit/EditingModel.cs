@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Edit
 {
@@ -116,11 +117,11 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
 		}
 
-		public void ChangePicture(string id, string newPicturePath)
+		public void ChangePicture(string id, PalasoImage imageInfo)
 		{
 			var editor = new PageEditingModel();
 
-			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, newPicturePath);
+			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, imageInfo);
 			SaveNow();
 
 			//review: this is spagetti

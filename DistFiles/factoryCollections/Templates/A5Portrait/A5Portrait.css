@@ -1,18 +1,18 @@
-   DIV.page
-	{
-		width: 14.5cm;
-		height: 21cm;
-		page-break-after: always;
-		background-color: #FFFFFF;
-	}
+DIV.page
+{
+	width: 14.5cm;
+	height: 21cm;
+	page-break-after: always;
+	background-color: #FFFFFF;
+	/*[ph]0*/
+}
 @media screen
 {
 	DIV.page
 	{
-		border: 1px solid #000000;
+		/*[id]0*/border: 1px solid #000000;
 	}
 }
-
 .cover .vernacularBookTitle
 {
 	text-align: center;
@@ -26,14 +26,14 @@
 .cover .picture
 {
 	top: 5.5cm;
-	max-height: 9cm;
-	max-width: 9cm;
+	max-height: 12cm;
+	max-width: 13.2cm;
 	padding: 1cm 0 0;
 }
 .cover .natLangBookLabel
 {
 	text-align: right;
-	font: 1em verdana;
+	font: 12pt sans-serif;
 	width: 5.3cm;
 	position: absolute;
 	top: 19cm;
@@ -44,7 +44,7 @@
 .cover .natLangBookName
 {
 	text-align: left;
-	font: 1em verdana;
+	font: 12pt sans-serif;
 	width: 5cm;
 	position: absolute;
 	top: 19cm;
@@ -54,10 +54,10 @@
 .titlePage .natLangBookLabel
 {
 	text-align: center;
-	font: 1em verdana;
-	width: 5cm;
+	font: 12pt verdana;
+	width: 12cm;
 	position: relative;
-	top: 2cm;
+	top: 1.3cm;
 	/*[empty]word-break:;*/
 }
 .titlePage .natLangBookName
@@ -82,32 +82,35 @@
 {
 	text-align: center;
 	height: 5cm;
-	width: 10cm;
-	top: 3cm;
+	width: 12.7cm;
+	top: 1.8cm;
 	position: relative;
+	font: 12pt sans-serif;
 }
 .titlePage .printingHistory
 {
 	text-align: center;
 	height: 6cm;
-	width: 10cm;
-	top: 4cm;
+	width: 12.5cm;
+	top: 2.1cm;
 	position: relative;
+	font: 12pt sans-serif;
 }
 .imageOnTop .picture
 {
 	max-height: 9.7cm;
+	max-width: 478px;
 }
 .imageOnTop .text
 {
 	position: relative;
-	height: 7.7cm;
+	height: 9cm;
+	margin-top: 31px;
 }
 TEXTAREA
 {
 	font: 25px sans-serif;
 	overflow: hidden;
-	border: none;
 	width: 453px;
 }
 IMG
