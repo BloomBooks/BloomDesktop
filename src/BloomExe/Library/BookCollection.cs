@@ -59,7 +59,8 @@ namespace Bloom.Library
 			foreach(string path in Directory.GetDirectories(_path))
 			{
 //                yield return _bookFactory(_storageFactory(path));
-				var book = _bookFactory(_storageFactory(path));
+
+				var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
 				Debug.WriteLine(book.Title);
 				yield return book;
 			}

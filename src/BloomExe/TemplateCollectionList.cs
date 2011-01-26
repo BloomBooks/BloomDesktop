@@ -35,7 +35,7 @@ namespace Bloom
 					foreach (var templateDir in Directory.GetDirectories(collection))
 					{
 						if (Path.GetFileName(templateDir) == key)
-							return _bookFactory(_storageFactory(templateDir));
+							return _bookFactory(_storageFactory(templateDir), false);
 								//review: this is loading the book both in the librarymodel, and here
 					}
 				}

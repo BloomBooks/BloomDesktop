@@ -43,10 +43,27 @@ namespace Bloom.Edit
 					var imageFileName = Path.GetFileNameWithoutExtension(imageInfo.FileName) + (isJpeg ? ".jpg" : ".png");
 					var dest = Path.Combine(bookFolderPath, imageFileName);
 					if (File.Exists(dest))
-						File.Delete(dest);
+					{
+						try
+						{
+							File.Delete(dest);
+						}
+						catch (System.IO.IOException error)
+						{
+							throw new ApplicationException("Bloom could not replace the image "+imageFileName+", probably because Bloom itself has it locked.");
+						}
+					}
 					image.Save(dest, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 					return imageFileName;
 				}
+			}
+			catch (System.IO.IOException)
+			{
+				throw; //these are informative on their own
+			}
+			catch (ApplicationException)
+			{
+				throw; //these are informative on their own
 			}
 			catch (Exception error)
 			{

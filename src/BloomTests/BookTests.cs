@@ -112,6 +112,17 @@ namespace BloomTests
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 
+		[Test]
+		public void MakeAllFieldsConsistent_InputWithUnderscoreClass_CopiedToAnotherInputWithSameClass()
+		{
+			var book = CreateBook();
+			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
+			XmlElement input = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo1']");
+			input.SetAttribute("value","blue");
+			book.MakeAllFieldsConsistent();
+			XmlElement input2 = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo2']");
+			Assert.AreEqual("blue", input2.GetAttribute("value"));
+		}
 
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
@@ -301,7 +312,7 @@ namespace BloomTests
 
 		private Book CreateBook()
 		{
-			return new Book(_storage.Object, _templateFinder.Object, _fileLocator.Object,
+			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
@@ -309,9 +320,9 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /><textarea id='vtitle' class='vernacularBookTitle'>war</textarea></div>
-				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><img id='img1' src='original.png'/></div>
-				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><textarea id='copyOfVTitle' class='vernacularBookTitle'>war</textarea></div>
+				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /><textarea id='vtitle' class='_vernacularBookTitle'>war</textarea></div>
+				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><input id='foo1' class='_copyMe' value='red'/><img id='img1' src='original.png'/></div>
+				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><input id='foo2' class='somethingInTheWay _copyMe' value='red'/><textarea id='copyOfVTitle' class='_vernacularBookTitle'>war</textarea></div>
 				</body></html>");
 			return dom;
 		}

@@ -107,7 +107,22 @@ namespace Bloom.Edit
 				if(DialogResult.OK== dlg.ShowDialog())
 				{
 				   // var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-					_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
+					try
+					{
+						_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
+					}
+					catch(System.IO.IOException error)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
+					catch (ApplicationException error)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
+					catch (Exception error)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom had a problem including that image");
+					}
 				}
 			}
 		}

@@ -13,12 +13,12 @@ DIV.page
 		/*[id]0*/border: 1px solid #000000;
 	}
 }
-.cover .vernacularBookTitle
+.cover ._vernacularBookTitle
 {
 	text-align: center;
-	font: 3em verdana;
+	font: 30pt sans-serif;
 	top: 1cm;
-	height: 4cm;
+	height: 4.6cm;
 	/*[empty]word-break:;*/
 	position: relative;
 	width: 423px;
@@ -30,7 +30,7 @@ DIV.page
 	max-width: 13.2cm;
 	padding: 1cm 0 0;
 }
-.cover .natLangBookLabel
+.cover ._natLangBookLabel
 {
 	text-align: right;
 	font: 12pt sans-serif;
@@ -41,7 +41,7 @@ DIV.page
 	/*[empty]word-break:;*/
 	height: 37px;
 }
-.cover .natLangBookName
+.cover ._natLangBookName
 {
 	text-align: left;
 	font: 12pt sans-serif;
@@ -51,7 +51,7 @@ DIV.page
 	left: 1.25cm;
 	/*[empty]word-break:;*/
 }
-.titlePage .natLangBookLabel
+.titlePage ._natLangBookLabel
 {
 	text-align: center;
 	font: 12pt verdana;
@@ -60,7 +60,7 @@ DIV.page
 	top: 1.3cm;
 	/*[empty]word-break:;*/
 }
-.titlePage .natLangBookName
+.titlePage ._natLangBookName
 {
 	text-align: center;
 	font: 1em verdana;
@@ -68,7 +68,7 @@ DIV.page
 	position: relative;
 	top: 3.6cm;
 }
-.titlePage .vernacularBookTitle
+.titlePage ._vernacularBookTitle
 {
 	text-align: center;
 	font: 2em verdana;
@@ -112,10 +112,11 @@ TEXTAREA
 	font: 25px sans-serif;
 	overflow: hidden;
 	width: 453px;
+	border: none;
 }
 IMG
 {
-	border: 1px none #000000;
+	border: 1px none #E51B1B;
 }
 INPUT
 {
@@ -153,4 +154,13 @@ INPUT
 .imageOnBottom .text
 {
 	height: 483px;
+}
+.textWholePage TEXTAREA
+{
+	height: 18.9cm;
+	margin-top: 27px;
+}
+.centerJustify
+{
+	text-align: center;
 }

@@ -73,10 +73,21 @@ namespace Bloom
 				var fileName = Path.GetFileName(href);
 				if(!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
-					var path = fileLocator.LocateFile(fileName, string.Format("Stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+					var path = fileLocator.LocateOptionalFile(fileName);
+					if (string.IsNullOrEmpty(path))
+					{
+						//look in the same directory as the book
+						var local = Path.Combine(_folderPath, fileName);
+						if (File.Exists(local))
+							path = local;
+					}
 					if(!string.IsNullOrEmpty(path))
 					{
 						linkNode.SetAttribute("href", "file://"+path);
+					}
+					else
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
 					}
 				}
 			}

@@ -17,7 +17,9 @@ namespace Bloom
 {
 	public class Book
 	{
-		public delegate Book Factory(BookStorage storage);//autofac uses this
+
+
+		public delegate Book Factory(BookStorage storage, bool editable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly Palaso.IO.IFileLocator _fileLocator;
@@ -37,11 +39,12 @@ namespace Bloom
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
-		public Book(IBookStorage storage, ITemplateFinder templateFinder,
+		public Book(IBookStorage storage, bool editable, ITemplateFinder templateFinder,
 			Palaso.IO.IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
+			CanEdit = editable;
 			Id = Guid.NewGuid().ToString();
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
@@ -225,10 +228,7 @@ namespace Bloom
 			get { return CanEdit; }
 		}
 
-		public bool CanEdit
-		{
-			get {return _storage.BookType == BookType.Publication;  }
-		}
+		public bool CanEdit  { get; private set;}
 
 		public IPage FirstPage
 		{
@@ -287,6 +287,15 @@ namespace Bloom
 	   }
 
 		public Color CoverColor { get; set; }
+
+		public bool IsShellOrTemplate
+		{
+			get
+			{
+				//hack. Eventually we might be able to lock books so that you can't edit them.
+				return !CanEdit;
+			}
+		}
 
 		private void AddCoverColor(XmlDocument dom)
 		{
@@ -485,34 +494,70 @@ namespace Bloom
 
 
 		/// <summary>
-		/// The first encountered one wins... so the rest better be read only to the user, or they're in for some frustration!
+		/// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
 		/// If we don't like that, we'd need to create an event to notice when field are changed.
 		/// </summary>
 		public void MakeAllFieldsConsistent()
 		{
-			string[] fieldClasses = new string[] { "vernacularBookTitle", "natLangBookLabel", "natLangBookName" };
+//            string[] fieldClasses = new string[] { "vernacularBookTitle", "natLangBookLabel", "natLangBookName" };
+//
+//            foreach (var name in fieldClasses)
+//            {
+//                string value=string.Empty;
+//                foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class,'"+name+"')]"))
+//                {
+//                    if (value == string.Empty)
+//                        value = node.InnerText;
+//                    else
+//                        node.InnerText = value;
+//                }
+//            }
+//
+//            foreach (var name in fieldClasses)
+//            {
+//                string value = string.Empty;
+//                foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class,'" + name + "')]"))
+//                {
+//                    if (value == string.Empty)
+//                        value = node.GetAttribute("value");
+//                    else
+//                        node.SetAttribute("value",value);
+//                }
+//            }
 
-			foreach (var name in fieldClasses)
+			Dictionary<string,string> classes = new Dictionary<string, string>();
+			//can't use starts-with becuase it could be the second or third word in the class attribute
+			foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class, '_')]"))
 			{
-				string value=string.Empty;
-				foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class,'"+name+"')]"))
+				var theseClasses = node.GetAttribute("class").Split(new char[] {' '},StringSplitOptions.RemoveEmptyEntries);
+				foreach (var key in theseClasses)
 				{
-					if (value == string.Empty)
-						value = node.InnerText;
+					if (!key.StartsWith("_"))
+						continue;
+
+					if(!classes.ContainsKey(key))
+						classes.Add(key, node.GetAttribute("value"));
 					else
-						node.InnerText = value;
+						node.SetAttribute("value", classes[key]);
+
+					break;//only one variable name per item, of course.
 				}
 			}
 
-			foreach (var name in fieldClasses)
+			foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class, '_')]"))
 			{
-				string value = string.Empty;
-				foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class,'" + name + "')]"))
+				var theseClasses = node.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				foreach (var key in theseClasses)
 				{
-					if (value == string.Empty)
-						value = node.GetAttribute("value");
+					if (!key.StartsWith("_"))
+						continue;
+
+					if (!classes.ContainsKey(key))
+						classes.Add(key, node.InnerText);
 					else
-						node.SetAttribute("value",value);
+						node.InnerText= classes[key];
+
+					break;//only one variable name per item, of course.
 				}
 			}
 		}

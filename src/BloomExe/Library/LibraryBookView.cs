@@ -60,7 +60,7 @@ namespace Bloom
 		private void ShowBook()
 		{
 			_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
-			_addToLibraryButton.Visible = _bookSelection.CurrentSelection.Type == Book.BookType.Template;
+			_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate;
 			_reshowPending = false;
 		}
 
