@@ -186,6 +186,11 @@ namespace Bloom
 				if (File.Exists(p))
 					return p;
 
+				//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
+				var candidates = Directory.GetFiles(_folderPath, "*.htm");
+				if (candidates.Length == 1)
+					return candidates[0];
+
 				//template
 				p = Path.Combine(_folderPath, "templatePages.htm");
 				if (File.Exists(p))
@@ -197,6 +202,7 @@ namespace Bloom
 
 		public string GetTemplateKey()
 		{
+			//TODO it's not clear what we want to do, eventually.
 			//for now, we're just using the name of the first css we find. See htmlthumnailer for code which extracts it.
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{

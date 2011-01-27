@@ -114,7 +114,7 @@ namespace Bloom
 			var dom = GetPreviewXmlDocumentForFirstPage();
 			if(dom == null)
 			{
-				return null;
+				return Resources.GenericPage32x32;//todo: make an error icon
 			}
 			return _thumbnailProvider.GetThumbnail(_storage.Key, dom, Color.Transparent, drawBorder);
 		}
@@ -242,7 +242,20 @@ namespace Bloom
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
 				if(_storage.BookType!=BookType.Publication)
 					return null;
-				return _templateFinder.FindTemplateBook(_storage.GetTemplateKey());
+				string templateKey = _storage.GetTemplateKey();
+				Book book=null;
+				if (!string.IsNullOrEmpty(templateKey))
+				{
+					book = _templateFinder.FindTemplateBook(templateKey);
+				}
+				if(book==null)
+				{
+					//re-use the pages in the document itself. This is useful when building
+					//a new, complicated shell, which often have repeating pages but
+					//don't make sense as a new kind of template.
+					return this;
+				}
+				return book;
 			}
 		}
 
