@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
 using Palaso.IO;
-using Svg;
+
 
 namespace Bloom.Library
 {
