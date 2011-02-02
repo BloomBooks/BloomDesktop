@@ -67,11 +67,11 @@ namespace Bloom.Project
 			tabControl1.ImageList.ColorDepth = ColorDepth.Depth24Bit;
 			tabControl1.ImageList.ImageSize = new Size(32,32);
 			tabControl1.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("images", "library.png")));
 			tabControl1.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication( "Images", "edit.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication( "images", "edit.png")));
 			tabControl1.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("images", "publish.png")));
 
 			tabPage1.ImageIndex = 0;
 			tabPage2.ImageIndex = 1;
