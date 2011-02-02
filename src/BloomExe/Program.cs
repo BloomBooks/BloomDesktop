@@ -10,6 +10,7 @@ using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Properties;
 using Palaso.IO;
+using Skybound.Gecko;
 
 namespace Bloom
 {
@@ -32,7 +33,11 @@ namespace Bloom
 
 			_applicationContainer = new ApplicationContainer();
 
+#if !__MonoCS__
 			Skybound.Gecko.Xpcom.Initialize(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"xulrunner"));
+#else
+			Skybound.Gecko.Xpcom.Initialize(XULRunnerLocator.GetXULRunnerLocation());
+#endif
 
 #if !DEBUG
 			SetUpErrorHandling();
