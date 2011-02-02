@@ -13,7 +13,6 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
 using Palaso.IO;
-using Svg;
 
 namespace Bloom.Library
 {
@@ -137,28 +136,28 @@ namespace Bloom.Library
 		private Image GetBookletImage(Book book)
 		{
 			var imagesDirectory = FileLocator.GetDirectoryDistributedWithApplication("images");
-			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
-			var templateBookColors = new string[] { "blue","purple" };
+			var vernacularBookColors = new string[] {"Green", "Yellow", "Pink"};
+			var templateBookColors = new string[] { "Blue","Purple" };
 			string name;
 			switch (book.SizeAndShape)
 			{
 				case Book.SizeAndShapeChoice.A5Landscape:
-					name = "A5LandscapeBooklet";
+					name = "a5LandscapeBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A5Portrait:
-					name = "A5PortraitBooklet";
+					name = "a5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A4Landscape:
-					name = "A5PortraitBooklet";
+					name = "a5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A4Portrait:
-					name = "A5PortraitBooklet";
+					name = "a5PortraitBooklet";
 					break;
 				case Book.SizeAndShapeChoice.A3Landscape:
-					name = "A5PortraitBooklet";
+					name = "a5PortraitBooklet";
 					break;
 				default:
-					name = "A5PortraitBooklet";
+					name = "a5PortraitBooklet";
 					break;
 			}
 
