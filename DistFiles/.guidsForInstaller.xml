@@ -6,4 +6,6 @@
   <File Id="SessionFileInfoTemplates.xml" Guid="79c9620d-5ae8-4fbb-bdcf-3a88a57c9ae0" />
   <File Id="Sponge.exe.config" Guid="8ce714ee-790b-4f15-872c-ed5e2fb8a9e2" />
   <File Id="releaseNotes.htm" Guid="7faa5799-f47a-4fb8-aebf-c7baae6aceb5" />
+  <File Id="ArtOfReadingIndexV3_en.txt" Guid="e8573384-6b06-4744-9a3d-c5c283953b93" />
+  <File Id="test.pdf" Guid="986df7b4-ce8f-45fb-9909-f7f88fb27dec" />
 </InstallerMetadata>

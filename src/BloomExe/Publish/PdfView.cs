@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using BloomTemp;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
@@ -70,8 +71,21 @@ namespace Bloom.Publish
 
 				var path = _bookSelection.CurrentSelection.GetHtmlFileForPrintingWholeBook();
 				{
-
-					ProcessStartInfo info = new ProcessStartInfo("wkhtmltopdf.exe",
+					var exePath=Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable,"wkhtmltopdf");
+					exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
+					if(!File.Exists(exePath))
+					{
+						//if this is a programmer, it should be in the lib directory
+						exePath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, Path.Combine("lib","wkhtmltopdf"));
+						exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
+						if (!File.Exists(exePath))
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+								"Could not find a file that should have been installed with Bloom: " + exePath);
+							return;
+						}
+					}
+					ProcessStartInfo info = new ProcessStartInfo(exePath,
 																 string.Format(
 																	 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
 																	 Path.GetFileName(path), tempFile));
@@ -94,14 +108,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception e)
 			{
-				if(e.Message.Contains("not find"))
-				{
-					MessageBox.Show("To get pdfs, wkhtmltopdf must be installed and in the PATH environment variable.");
-				}
-				else
-				{
-					MessageBox.Show("There was a problem generating the pdf: "+Environment.NewLine+e.Message);
-				}
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
 				return;
 			}
 			finally

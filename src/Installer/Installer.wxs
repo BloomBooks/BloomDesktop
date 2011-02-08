@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.                                                                 -->
-<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
+<?define Property_ProductVersion = "0.3.6" ?>
 <!--this is replaced at build time by the msbuild 'package' target -->
 <?define Property_ProductCode = "*" ?>
 <!-- auto-generate a new guid each time -->
@@ -61,7 +61,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <Directory Id="ProgramFilesFolder" Name="PFiles">
 
 		<Directory Id="ProgramDir" Name="Bloom">
-
+		  <Directory Id="XulRunnerDir" Name="XulRunner"/>
 		  <Component Id="Bloom.exe" Guid="{A3493982-C68A-4f01-93BC-5F92B380CF89}">
 			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
 
@@ -93,10 +93,14 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="PalasoUIWindowsForms.dll" Guid="{A7046B6E-668C-4a4d-A866-719922C142B5}">
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
 		  </Component>
-		  <Component Id="Palaso.Media.dll" Guid="{A42F2F76-3978-4d83-BC98-C7585B6F69D8}">
-			<File Id="Palaso.Media.dll" Name="Palaso.Media.dll" KeyPath="yes" Source="..\..\output\release\Palaso.Media.dll" />
+		  <!-- used by PalasoUIWindowsForms for talking to scanner-->
+		  <Component Id="Interop.WIA.dll" Guid="{47038218-2646-4F83-BE95-4F83A8D41811}">
+			<File Id="Interop.WIA.dll" Name="Interop.WIA.dll" KeyPath="yes" Source="..\..\output\release\Interop.WIA.dll" />
 		  </Component>
-
+		  <!-- web browser-->
+		  <Component Id="Skybound.Gecko.dll" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
+			<File Id="Skybound.Gecko.dll" Name="Skybound.Gecko.dll" KeyPath="yes" Source="..\..\output\release\Skybound.Gecko.dll" />
+		  </Component>
 		</Directory>
 	  </Directory>
 	</Directory>
@@ -108,11 +112,12 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="autofac.dll"/>
 	  <ComponentRef Id="Palaso.dll"/>
 	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
-	  <ComponentRef Id="Palaso.Media.dll" />
+	  <ComponentRef Id="Interop.WIA.dll" />
+	  <ComponentRef Id="Skybound.Gecko.dll" />
 	  <ComponentRef Id="Bloom.exe" />
-
 	  <ComponentGroupRef Id ="DistFiles"/>
-	  <ComponentGroupRef Id ="SampleData"/>
+	  <ComponentGroupRef Id="wkhtmltopdf" />
+	  <ComponentGroupRef Id="XulRunner" />
 
 	</Feature>
 	<Media Id="1" Cabinet="product.cab" EmbedCab="yes" />

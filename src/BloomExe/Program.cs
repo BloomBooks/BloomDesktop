@@ -32,7 +32,15 @@ namespace Bloom
 
 			_applicationContainer = new ApplicationContainer();
 
-			Skybound.Gecko.Xpcom.Initialize(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"xulrunner"));
+			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"xulrunner");
+			if(!Directory.Exists(xulRunnerPath))
+			{
+#if DEBUG
+				//if this is a programmer, go look in the lib directory
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,  Path.Combine("lib","xulrunner"));
+#endif
+			}
+			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
 
 #if !DEBUG
 			SetUpErrorHandling();
