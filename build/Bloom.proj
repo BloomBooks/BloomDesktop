@@ -77,7 +77,7 @@
   </Target>
 
    
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForSampleData; MakeWixForDistFiles; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
   
     <!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
@@ -102,15 +102,13 @@
 
   </Target>
 
-  <Target Name="MakeWixForSampleData">
-    <MakeDir ContinueOnError ="true" Directories ="$(teamcity_build_checkoutDir)\output\Installer\"/>
-    
+  
+  <Target Name="MakeWixForDistFiles">
     <MakeWixForDirTree
-                DirectoryReferenceId="SampleDataDir" 
-                GiveAllPermissions="true"
-				ComponentGroupId="SampleData"
-				RootDirectory="$(teamcity_build_checkoutDir)\SampleData"
-                OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedSampleDataFiles.wxs"
+                DirectoryReferenceId="ProgramDir"
+            		ComponentGroupId="DistFiles"
+				        RootDirectory="$(teamcity_build_checkoutDir)\DistFiles"
+                OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedDistFiles.wxs"
                 MatchRegExPattern=".*"
 				>
       <!--what does this do?-->
@@ -118,12 +116,12 @@
     </MakeWixForDirTree>
   </Target>
 
-  <Target Name="MakeWixForDistFiles">
+  <Target Name="MakeWixForXulRunner">
     <MakeWixForDirTree
-                DirectoryReferenceId="ProgramDir"
-            		ComponentGroupId="DistFiles"
-				        RootDirectory="$(teamcity_build_checkoutDir)\DistFiles"
-                OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedDistFiles.wxs"
+                DirectoryReferenceId="XulRunnerDir"
+            		ComponentGroupId="XulRunner"
+				        RootDirectory="$(teamcity_build_checkoutDir)\lib\XulRunner"
+                OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedXulRunner.wxs"
                 MatchRegExPattern=".*"
 				>
       <!--what does this do?-->
