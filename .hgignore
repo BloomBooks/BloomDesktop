@@ -10,3 +10,5 @@ glob:templates/A4LandscapeBooklet/starter.pdf
 glob:src/_ReSharper.Bloom/*
 
 glob:*\_ReSharper*
+glob:Bloom VS2010.suo
+relre:_ReSharper.Bloom VS2010/*
