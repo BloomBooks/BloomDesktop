@@ -32,9 +32,11 @@
 	</Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
+
 	<MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom VS2010.sln"
 			 Targets="Rebuild"
 			 Properties="Configuration=Release" />
+	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFiles="../output/release"/>
   </Target>
 
 
@@ -77,7 +79,7 @@
   </Target>
 
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; GetWkhtmlToXIntoLib; Build ">
 
 	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
@@ -122,6 +124,13 @@
 	<RemoveDir
 		   Directories="..\lib\XulRunner" />
 	<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-1.9.2.13.en-US.win32.zip"
+		   TargetDirectory="..\lib\"/>
+  </Target>
+
+  <Target Name="GetWkhtmlToXIntoLib">
+	<RemoveDir
+		   Directories="..\lib\wkhtmltopdf" />
+	<Unzip ZipFileName="$(XulRunnerZipLocation)\wkhtmltopdf-0.10.0_rc2.zip"
 		   TargetDirectory="..\lib\"/>
   </Target>
 
