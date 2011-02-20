@@ -17,7 +17,7 @@
 	<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="0.3.$(BuildCounter)">
+	<CreateProperty Value="0.1.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
 
@@ -49,11 +49,11 @@
 
 	<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
 	<Copy SourceFiles ="$(teamcity_build_checkoutDir)\src\Installer\DownloadPointers.htm"
-		   DestinationFolder ="$(teamcity_build_checkoutDir)\output\Installer"/>
+		   DestinationFolder ="$(teamcity_build_checkoutDir)\output\installer"/>
 
 	<!-- replace some parts of the file with the version number & date -->
 
-	<FileUpdate File="$(teamcity_build_checkoutDir)\output\Installer\DownloadPointers.htm"
+	<FileUpdate File="$(teamcity_build_checkoutDir)\output\installer\DownloadPointers.htm"
 				 DatePlaceholder='DEV_RELEASE_DATE'
 				Regex='DEV_VERSION_NUMBER'
 				 ReplacementText ="$(Version)" />
@@ -104,11 +104,13 @@
 
 
   <Target Name="MakeWixForDistFiles">
+	<MakeDir Directories ="$(teamcity_build_checkoutDir)\output\installer" ContinueOnError ="true"/>
+
 	<MakeWixForDirTree
 				DirectoryReferenceId="ProgramDir"
 					ComponentGroupId="DistFiles"
 						RootDirectory="$(teamcity_build_checkoutDir)\DistFiles"
-				OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedDistFiles.wxs"
+				OutputFilePath="$(teamcity_build_checkoutDir)\output\installer\GeneratedDistFiles.wxs"
 				MatchRegExPattern=".*"
 				>
 	  <!--what does this do?-->
@@ -128,7 +130,7 @@
 				DirectoryReferenceId="XulRunnerDir"
 					ComponentGroupId="XulRunner"
 						RootDirectory="..\lib\XulRunner"
-				OutputFilePath="..\output\Installer\GeneratedXulRunner.wxs"
+				OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
 				MatchRegExPattern=".*"
 				>
 	  <!--what does this do?-->
