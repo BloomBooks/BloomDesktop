@@ -36,7 +36,8 @@
 	<MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom VS2010.sln"
 			 Targets="Rebuild"
 			 Properties="Configuration=Release" />
-	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFiles="../output/release"/>
+	<!-- palaso image toolbox uses this for accessing scanners and cameras -->
+	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFolder ="../output/release"/>
   </Target>
 
 
