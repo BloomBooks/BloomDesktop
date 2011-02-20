@@ -4,7 +4,7 @@
   <UsingTask TaskName="Split" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
   <UsingTask TaskName="FileUpdate" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
   <UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
-
+  <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 
 
   <Target Name="VersionNumbers">
@@ -116,12 +116,19 @@
 	</MakeWixForDirTree>
   </Target>
 
-  <Target Name="MakeWixForXulRunner">
+  <Target Name="GetXulRunnerIntoLib">
+	<RemoveDir
+		   Directories="..\lib\XulRunner" />
+	<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-1.9.2.13.en-US.win32.zip"
+		   TargetDirectory="..\lib\"/>
+  </Target>
+
+  <Target Name="MakeWixForXulRunner" DependsOnTargets="GetXulRunnerIntoLib">
 	<MakeWixForDirTree
 				DirectoryReferenceId="XulRunnerDir"
 					ComponentGroupId="XulRunner"
-						RootDirectory="$(teamcity_build_checkoutDir)\lib\XulRunner"
-				OutputFilePath="$(teamcity_build_checkoutDir)\output\Installer\GeneratedXulRunner.wxs"
+						RootDirectory="..\lib\XulRunner"
+				OutputFilePath="..\output\Installer\GeneratedXulRunner.wxs"
 				MatchRegExPattern=".*"
 				>
 	  <!--what does this do?-->
