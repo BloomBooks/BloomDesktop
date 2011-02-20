@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+		<DirectoryRef Id="ProgramDir">
+		  <Directory Id='wkhtmltopdfDir' Name='wkhtmltopdf'>
+			<Component Id="wkhtmltopdf.exe" Guid="88B995AF-E137-4776-B7A0-A091E4E72C76">
+			  <File Id="wkhtmltopdf.exe" Name="wkhtmltopdf.exe" Source="..\..\lib\wkhtmltopdf\wkhtmltopdf.exe" />
+			</Component>
+			<Component Id="libeay32.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C77">
+			  <File Id="libeay32.dll" Name="libeay32.dll" Source="..\..\lib\wkhtmltopdf\libeay32.dll" />
+			</Component>
+			<Component Id="libgcc_s_dw21.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C78">
+			  <File Id="libgcc_s_dw21.dll" Name="libgcc_s_dw2-1.dll" Source="..\..\lib\wkhtmltopdf\libgcc_s_dw2-1.dll" />
+			</Component>
+			<Component Id="ssleay32.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C79">
+			  <File Id="ssleay32.dll" Name="ssleay32.dll" Source="..\..\lib\wkhtmltopdf\ssleay32.dll" />
+			</Component>
+			<!-- todo other dlls -->
+		  </Directory>
+		</DirectoryRef>
+		<ComponentGroup Id="wkhtmltopdf">
+		  <ComponentRef Id="wkhtmltopdf.exe" />
+		  <ComponentRef Id="libeay32.dll" />
+		  <ComponentRef Id="libgcc_s_dw21.dll" />
+		  <ComponentRef Id="ssleay32.dll" />
+		 </ComponentGroup>
+	</Fragment>
+</Wix>
