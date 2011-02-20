@@ -59,7 +59,7 @@ namespace Bloom
 				builder.Register<TemplateCollectionList>(c =>
 					 {
 						 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
-						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory };
+						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
 
@@ -91,6 +91,10 @@ namespace Bloom
 			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}
 
+		private static string InstalledCollectionsDirectory
+		{
+			get { return Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Bloom"), "Collections"); }
+		}
 
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()

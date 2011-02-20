@@ -30,8 +30,12 @@ namespace Bloom
 		{
 			foreach (var root in RepositoryFolders)
 			{
+				if (!Directory.Exists(root))
+					continue;
 				foreach (var collection in Directory.GetDirectories(root))
 				{
+					//TODO: dereference shortcuts to folders living elsewhere
+
 					foreach (var templateDir in Directory.GetDirectories(collection))
 					{
 						if (Path.GetFileName(templateDir) == key)

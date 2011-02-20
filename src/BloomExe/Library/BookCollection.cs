@@ -58,7 +58,9 @@ namespace Bloom.Library
 		{
 			foreach(string path in Directory.GetDirectories(_path))
 			{
-//                yield return _bookFactory(_storageFactory(path));
+				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
+					continue;
+
 
 				var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
 				Debug.WriteLine(book.Title);

@@ -31,11 +31,22 @@ namespace Bloom.Library
 			foreach (var root in _templateCollectionList.RepositoryFolders)
 			{
 
+				if (!Directory.Exists(root))
+					continue;
+
+
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-//					if(dir.Contains("SIL"))
-//						continue;
+
 					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
+				}
+
+				//follow shortcuts
+				foreach (var shortcut in Directory.GetFiles(root,"*.lnk",SearchOption.TopDirectoryOnly))
+				{
+					var path = ResolveShortcut.Resolve(shortcut);
+					if(Directory.Exists(path))
+						yield return _bookCollectionFactory(path,BookCollection.CollectionType.TemplateCollection);
 				}
 			}
 		}
