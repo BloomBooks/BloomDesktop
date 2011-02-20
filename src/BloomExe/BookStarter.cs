@@ -26,18 +26,31 @@ namespace Bloom
 
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
 		{
-			string initialBookName = GetInitialName(parentCollectionPath);
+			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceTemplateFolder, newBookFolder);
 
-			var oldNamedFile = Path.Combine(newBookFolder,"templatePages.htm");
-			RequireThat.File(oldNamedFile).Exists();
+			var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceTemplateFolder)));
 			var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
 			File.Move(oldNamedFile, newNamedFile);
 
 			SetupDocumentContents(newBookFolder);
 
 			return newBookFolder;
+		}
+
+		private string GetPathToHtmlFile(string folder)
+		{
+			var candidates = Directory.GetFiles(folder, "*.htm");
+			if (candidates.Length == 1)
+				return candidates[0];
+			else
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					"There should only be a single htm file in each folder ({0}).", folder);
+				throw new ApplicationException();
+			}
+
 		}
 
 		private void SetupDocumentContents(string destinationPath)
@@ -51,7 +64,7 @@ namespace Bloom
 			storage.Save();
 		}
 
-		private static string GetInitialName(string parentCollectionPath)
+		private static string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 			//todo: get a name from the template
 			string name = "new";

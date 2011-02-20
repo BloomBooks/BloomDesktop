@@ -41,8 +41,10 @@ namespace Bloom
 
 		private void LoadBook()
 		{
+			_addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
 			if(_bookSelection.CurrentSelection==null)
 				return;
+			_addToLibraryButton.Image = _bookSelection.CurrentSelection.GetThumbNailOfBookCover(true);
 			ShowBook();
 			_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
 		}
@@ -66,7 +68,10 @@ namespace Bloom
 
 		private void OnAddToLibraryClick(object sender, EventArgs e)
 		{
-			_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+			if (_bookSelection.CurrentSelection != null)
+			{
+				_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+			}
 		}
 
 		private void LibraryBookView_VisibleChanged(object sender, EventArgs e)

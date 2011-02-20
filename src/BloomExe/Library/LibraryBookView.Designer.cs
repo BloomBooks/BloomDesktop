@@ -28,18 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this._addToLibraryButton = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._browser = new Bloom.Browser();
             this.SuspendLayout();
             // 
             // _addToLibraryButton
             // 
-            this._addToLibraryButton.Location = new System.Drawing.Point(3, 3);
+            this._addToLibraryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._addToLibraryButton.Image = global::Bloom.Properties.Resources.GenericPage32x32;
+            this._addToLibraryButton.Location = new System.Drawing.Point(12, 3);
             this._addToLibraryButton.Name = "_addToLibraryButton";
-            this._addToLibraryButton.Size = new System.Drawing.Size(259, 21);
+            this._addToLibraryButton.Size = new System.Drawing.Size(110, 77);
             this._addToLibraryButton.TabIndex = 0;
-            this._addToLibraryButton.Text = "Create a book in my language using this template";
-            this._addToLibraryButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._addToLibraryButton.Text = "+";
+            this._addToLibraryButton.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
+            this.toolTip1.SetToolTip(this._addToLibraryButton, "Create a book in my language using this template");
             this._addToLibraryButton.UseVisualStyleBackColor = true;
             this._addToLibraryButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
             // 
@@ -49,9 +54,9 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._browser.BackColor = System.Drawing.Color.DarkGray;
-            this._browser.Location = new System.Drawing.Point(0, 33);
+            this._browser.Location = new System.Drawing.Point(0, 86);
             this._browser.Name = "_browser";
-            this._browser.Size = new System.Drawing.Size(897, 417);
+            this._browser.Size = new System.Drawing.Size(897, 364);
             this._browser.TabIndex = 1;
             // 
             // LibraryBookView
@@ -71,5 +76,6 @@
 
         private System.Windows.Forms.Button _addToLibraryButton;
         private Browser _browser;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

@@ -89,7 +89,11 @@
     </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
+    <Compile Include="Library\FlyingImage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ProjectContext.cs" />
+    <Compile Include="ResolveShortcut.cs" />
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
     <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
       <SubType>Form</SubType>
