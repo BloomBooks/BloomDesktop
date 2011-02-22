@@ -42,7 +42,14 @@ namespace Bloom.Library
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			_listView.Items.Clear();
+
+			Application.Idle += new EventHandler(Application_Idle);
+
+		}
+
+		void Application_Idle(object sender, EventArgs e)
+		{
+			Application.Idle -= new EventHandler(Application_Idle);
 			_listView.Groups.Clear();
 			foreach (BookCollection collection in _model.GetBookCollections())
 			{

@@ -30,14 +30,16 @@ namespace Bloom
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
+			Splasher.Show();
 			_applicationContainer = new ApplicationContainer();
 
-			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"xulrunner");
-			if(!Directory.Exists(xulRunnerPath))
+			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (!Directory.Exists(xulRunnerPath))
 			{
 #if DEBUG
 				//if this is a programmer, go look in the lib directory
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,  Path.Combine("lib","xulrunner"));
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+											 Path.Combine("lib", "xulrunner"));
 #endif
 			}
 			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
@@ -46,21 +48,28 @@ namespace Bloom
 			SetUpErrorHandling();
 #endif
 
-//			var args = Environment.GetCommandLineArgs();
-//			var firstTimeArg = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
-//			if (firstTimeArg != null)
-//			{
-//				using (var dlg = new FirstTimeRunDialog("put filename here"))
-//					dlg.ShowDialog();
-//			}
+			//			var args = Environment.GetCommandLineArgs();
+			//			var firstTimeArg = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
+			//			if (firstTimeArg != null)
+			//			{
+			//				using (var dlg = new FirstTimeRunDialog("put filename here"))
+			//					dlg.ShowDialog();
+			//			}
 
 			StartUpShellBasedOnMostRecentUsedIfPossible();
-
+			Application.Idle += new EventHandler(Application_Idle);
 			Application.Run();
+
 			Settings.Default.Save();
 
 			if (_projectContext != null)
 				_projectContext.Dispose();
+		}
+
+		private static void Application_Idle(object sender, EventArgs e)
+		{
+			Application.Idle -= new EventHandler(Application_Idle);
+			Splasher.Close();
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -83,6 +92,7 @@ namespace Bloom
 			{
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
+				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 				_projectContext.ProjectWindow.Show();
 				return true;
 			}
@@ -93,6 +103,17 @@ namespace Bloom
 
 			return false;
 		}
+
+		private static void HandleProjectWindowActivated(object sender, EventArgs e)
+		{
+			_projectContext.ProjectWindow.Activated -= HandleProjectWindowActivated;
+
+			// Sometimes after closing the splash screen the project window
+			// looses focus, so do this.
+			_projectContext.ProjectWindow.Activate();
+		}
+
+
 
 		/// ------------------------------------------------------------------------------------
 		private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)

@@ -79,5 +79,6 @@ namespace Bloom
 			if(Visible && _reshowPending)
 				ShowBook();// changed while we were hidden
 		}
+
 	}
 }

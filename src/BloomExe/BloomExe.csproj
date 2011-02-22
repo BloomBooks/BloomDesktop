@@ -57,7 +57,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="Skybound.Gecko, Version=1.9.1.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Skybound.Gecko, Version=1.9.2.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Skybound.Gecko.dll</HintPath>
     </Reference>
@@ -94,6 +94,12 @@
     </Compile>
     <Compile Include="ProjectContext.cs" />
     <Compile Include="ResolveShortcut.cs" />
+    <Compile Include="SplashScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SplashScreen.Designer.cs">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
     <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
       <SubType>Form</SubType>
@@ -174,12 +180,6 @@
       <DependentUpon>PdfView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Library\ProjectBooksListView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Library\ProjectBooksListView.Designer.cs">
-      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Project\ProjectView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -187,6 +187,10 @@
       <DependentUpon>ProjectView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Browser.resx">
+      <DependentUpon>Browser.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\EditingView.resx">
       <DependentUpon>EditingView.cs</DependentUpon>
     </EmbeddedResource>
@@ -208,9 +212,6 @@
     <EmbeddedResource Include="Publish\PdfView.resx">
       <DependentUpon>PdfView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\ProjectBooksListView.resx">
-      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Project\ProjectView.resx">
       <DependentUpon>ProjectView.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -231,6 +232,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SplashScreen.resx">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\ChooseNewProjectLocationDialog.resx">
       <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>

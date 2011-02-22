@@ -25,7 +25,9 @@ namespace Bloom
 		public Browser()
 		{
 			InitializeComponent();
+
 		}
+
 
 		void OnValidating(object sender, CancelEventArgs e)
 		{
@@ -61,6 +63,9 @@ namespace Bloom
 			}
 
 			_browser = new GeckoWebBrowser();
+
+
+
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
@@ -72,9 +77,12 @@ namespace Bloom
 			_browser.DomClick += new GeckoDomEventHandler(OnBrowser_DomClick);
 
 			_browserIsReadyToNavigate = true;
+
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
+
+			timer1.Enabled = true;//hack
 		}
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
@@ -150,7 +158,9 @@ namespace Bloom
 
 			if (_url!=null)
 			{
+				_browser.Visible = true;
 				_browser.Navigate(_url);
+
 			}
 		}
 
@@ -201,6 +211,12 @@ namespace Bloom
 			{
 				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
 			}
+		}
+
+		private void timer1_Tick(object sender, EventArgs e)
+		{
+			timer1.Enabled = false;
+			//UpdateDisplay();
 		}
 	}
 }
