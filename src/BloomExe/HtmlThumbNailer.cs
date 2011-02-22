@@ -149,11 +149,11 @@ namespace Bloom
 			var browser = new GeckoWebBrowser();
 			browser.HandleCreated += new EventHandler(OnBrowser_HandleCreated);
 			browser.CreateControl();
-			while (!_browserHandleCreated)
+			var giveUpTime = DateTime.Now.AddSeconds(2);
+			while (!_browserHandleCreated && DateTime.Now < giveUpTime)
 			{
 				//TODO: could lead to hard to reproduce bugs
 				Application.DoEvents();
-				//TODO:  could be stuck here forever
 				Thread.Sleep(100);
 			}
 			return browser;

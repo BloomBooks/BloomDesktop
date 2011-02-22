@@ -46,6 +46,7 @@ namespace Bloom.Edit
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
+			_model.StartOfLoad();
 			OnUpdateDisplay(this,null);
 		}
 
@@ -125,6 +126,11 @@ namespace Bloom.Edit
 					}
 				}
 			}
+		}
+
+		private void EditingView_VisibleChanged(object sender, EventArgs e)
+		{
+			_model.VisibilityChanged(Visible);
 		}
 
 //        private string MakePngOrJpgTempFileForImage(Image image)

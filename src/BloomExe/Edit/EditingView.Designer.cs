@@ -91,6 +91,7 @@
             this.Controls.Add(this.splitContainer1);
             this.Name = "EditingView";
             this.Size = new System.Drawing.Size(686, 497);
+            this.VisibleChanged += new System.EventHandler(this.EditingView_VisibleChanged);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);

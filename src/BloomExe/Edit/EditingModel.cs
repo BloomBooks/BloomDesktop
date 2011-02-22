@@ -10,6 +10,8 @@ namespace Bloom.Edit
 		private readonly PageSelection _pageSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private XmlDocument _domForCurrentPage;
+		private bool _visible;
+		private bool _bookSelectionChangedPending;
 
 		public event EventHandler UpdateDisplay;
 		public event EventHandler UpdatePageList;
@@ -73,6 +75,14 @@ namespace Bloom.Edit
 
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
+			//we don't want to spend time setting up our thumnails and such when actually the
+			//user is on another tab right now
+			if (!_visible)
+			{
+				_bookSelectionChangedPending = true;
+				return;
+			}
+
 			if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
 			{
 				var page = _bookSelection.CurrentSelection.FirstPage;
@@ -87,6 +97,21 @@ namespace Bloom.Edit
 			}
 
 			InvokeUpdatePageList();
+		}
+
+		public void StartOfLoad()
+		{
+			VisibilityChanged(true);//hack
+		}
+
+		public void VisibilityChanged(bool visible)
+		{
+			_visible = visible;
+			if(_bookSelectionChangedPending)
+			{
+				_bookSelectionChangedPending = false;
+				OnBookSelectionChanged(this, null);
+			}
 		}
 
 		private void InvokeUpdatePageList()

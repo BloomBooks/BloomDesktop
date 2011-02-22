@@ -9,6 +9,7 @@ namespace Bloom
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
+		private bool _bookSelectionChangedPending;
 
 		public delegate TemplatePagesView Factory();//autofac uses this
 
@@ -31,6 +32,13 @@ namespace Bloom
 
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
+			//we don't want to spend time setting up our thumnails and such when actually the
+			//user is on another tab right now
+			if (!Visible)
+			{
+				_bookSelectionChangedPending = true;
+				return;
+			}
 			if (_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.TemplateBook==null)
 			{
 				_thumbNailList.SetItems(new Page[] { });
@@ -44,6 +52,15 @@ namespace Bloom
 		private void TemplatePagesView_BackColorChanged(object sender, EventArgs e)
 		{
 			_thumbNailList.BackColor = BackColor;
+		}
+
+		private void TemplatePagesView_VisibleChanged(object sender, EventArgs e)
+		{
+			if(_bookSelectionChangedPending)
+			{
+				_bookSelectionChangedPending = false;
+				OnBookSelectionChanged(this, null);
+			}
 		}
 
 
