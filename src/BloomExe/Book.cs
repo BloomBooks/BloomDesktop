@@ -8,9 +8,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Edit;
 using Bloom.Properties;
-using BloomTemp;
 using Palaso.Code;
-using Palaso.IO;
 using Palaso.Xml;
 
 namespace Bloom

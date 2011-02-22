@@ -54,17 +54,17 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._browser.BackColor = System.Drawing.Color.DarkGray;
-            this._browser.Location = new System.Drawing.Point(0, 86);
+            this._browser.Location = new System.Drawing.Point(0, 3);
             this._browser.Name = "_browser";
-            this._browser.Size = new System.Drawing.Size(897, 364);
+            this._browser.Size = new System.Drawing.Size(897, 447);
             this._browser.TabIndex = 1;
             // 
             // LibraryBookView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this._browser);
             this.Controls.Add(this._addToLibraryButton);
+            this.Controls.Add(this._browser);
             this.Name = "LibraryBookView";
             this.Size = new System.Drawing.Size(900, 450);
             this.VisibleChanged += new System.EventHandler(this.LibraryBookView_VisibleChanged);
