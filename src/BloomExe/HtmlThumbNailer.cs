@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Properties;
 using BloomTemp;
 using Palaso.Xml;
 using Skybound.Gecko;
@@ -48,12 +49,12 @@ namespace Bloom
 		/// <returns></returns>
 		public Image GetThumbnail(string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorder)
 		{
-			 Image image;
-			if(_images.TryGetValue(key, out image))
+			Image image;
+			if (_images.TryGetValue(key, out image))
 			{
 				return image;
 			}
-		_backgroundColorOfResult = backgroundColorOfResult;
+			_backgroundColorOfResult = backgroundColorOfResult;
 
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
 
@@ -63,37 +64,46 @@ namespace Bloom
 
 			//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
 
-				using (var temp = TempFile.CreateHtm(document))
+			using (var temp = TempFile.CreateHtm(document))
+			{
+
+				// this is firing before it looks ready (no active element), so we'll just poll for
+				//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
+
+				//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
+
+				_browser.Navigate(temp.Path);
+				var giveUpTime = DateTime.Now.AddSeconds(2);
+
+				while (_pendingThumbnail == null && DateTime.Now < giveUpTime)
 				{
-
-					// this is firing before it looks ready (no active element), so we'll just poll for
-					//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
-
-					//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
-
-					_browser.Navigate(temp.Path);
-					while (_pendingThumbnail == null)
+					//_browser.Document.ActiveElement!=null
+					if (_browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
 					{
-						//_browser.Document.ActiveElement!=null
-						if( _browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
+						try
 						{
-							try
-							{
-							  //  var x = _browser.Document.ActiveElement;
-								OnThumbNailBrowser_DocumentCompleted(drawBorder, null);
-							}
-							catch (Exception)
-							{
-							}
-
+							 OnThumbNailBrowser_DocumentCompleted(drawBorder, null);
 						}
-						//TODO: could lead to hard to reproduce bugs
-						Application.DoEvents();
-						//TODO:  could be stuck here forever
-						Thread.Sleep(100);
+						catch (Exception)
+						{
+							//we often land here, but I've tested and the second time through the try, we succeed.
+							//so this suggests that the AbsolutePath changes, but it's not quit ready to get
+							//at the document.
+						}
+
 					}
+					//TODO: could lead to hard to reproduce bugs
+					Application.DoEvents();
+
+					Thread.Sleep(100);
 				}
-				_images.Add(key, _pendingThumbnail);
+			}
+			if (_pendingThumbnail == null)
+			{
+				_pendingThumbnail = Resources.GenericPage32x32;
+			}
+
+			_images.Add(key, _pendingThumbnail);
 
 			return _pendingThumbnail;
 		}

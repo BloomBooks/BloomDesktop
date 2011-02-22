@@ -223,6 +223,11 @@ namespace Bloom
 		}
 
 
+		public bool CanDelete
+		{
+			get { return CanEdit; }
+		}
+
 		public bool CanPublish
 		{
 			get { return CanEdit; }

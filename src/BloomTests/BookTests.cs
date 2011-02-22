@@ -60,13 +60,13 @@ namespace BloomTests
 		[Test]
 		public void GetPreviewHtmlFileForWholeBook_what_UsesPreviewCss()
 		{
-			Assert.IsTrue(CreateBook().GetPreviewHtmlFileForWholeBook().InnerXml.Contains("previewMode.css"));
+			Assert.IsTrue(CreateBook(true).GetPreviewHtmlFileForWholeBook().InnerXml.Contains("previewMode.css"));
 		}
 
 		[Test]
 		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
-			var result = CreateBook().GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
+			var result = CreateBook(true).GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]",3);
 		}
 
@@ -84,7 +84,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToInputBox_StorageUpdatedAndToldToSave()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
 			//nb: we dont' have to simulate the business wehre the browser actually puts
@@ -103,7 +103,7 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToAnotherPage()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='vtitle']");
 			textarea1.InnerText = "peace";
@@ -115,7 +115,7 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_InputWithUnderscoreClass_CopiedToAnotherInputWithSameClass()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			XmlElement input = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo1']");
 			input.SetAttribute("value","blue");
@@ -127,7 +127,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			book.SavePage(dom);
 			_storage.Verify(s => s.Save(), Times.Once());
@@ -136,7 +136,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToSrcOfImg_StorageUpdated()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
 			var imgInEditingDom = dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as XmlElement;
 			imgInEditingDom.SetAttribute("src", "changed.png");
@@ -152,7 +152,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
 			Assert.AreEqual("original1", textArea.InnerText, "the test conditions aren't correct");
@@ -167,7 +167,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
 			Assert.AreEqual("original2", textArea.InnerText, "the test conditions aren't correct");
@@ -182,14 +182,14 @@ namespace BloomTests
 		[Test]
 		public void InsertPageAfter_OnFirstPage_NewPageInsertedAsSecond()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var existingPage=book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
 		[Test]
 		public void InsertPageAfter_OnLastPage_NewPageInsertedAtEnd()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var existingPage = book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
@@ -232,7 +232,7 @@ namespace BloomTests
 		[Test]
 		public void DeletePage_OnLastPage_Deletes()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var original= book.GetPages().Count();
 			var existingPage = book.GetPages().Last();
 			book.DeletePage(existingPage);
@@ -242,7 +242,7 @@ namespace BloomTests
 		[Test]
 		public void DeletePage_AttemptDeleteLastRemaingPage_DoesntDelete()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			foreach (var page in book.GetPages())
 			{
 				book.DeletePage(page);
@@ -252,7 +252,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_FirstPageToSecond_DoesRelocate()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[0], 1);
 			var newPages = book.GetPages().ToArray();
@@ -265,7 +265,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_FirstPageToLast_DoesRelocate()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[0], 2);
 			var newPages = book.GetPages().ToArray();
@@ -278,7 +278,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_LastPageToSecond_DoesRelocate()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[2], 1);
 			var newPages = book.GetPages().ToArray();
@@ -291,7 +291,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_LastPageToFirst_DoesRelocate()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[2], 0);
 			var newPages = book.GetPages().ToArray();
@@ -300,6 +300,28 @@ namespace BloomTests
 			Assert.AreEqual(pages[1].Id, newPages[2].Id);
 			Assert.AreEqual(3, pages.Length);
 		}
+
+		[Test]
+		public void CanDelete_VernacularBook_True()
+		{
+			var book = CreateBook(true);
+			Assert.IsTrue(book.CanDelete);
+		}
+
+		[Test]
+		public void CanDelete_TemplateBook_False()
+		{
+			var book = CreateBook(false);
+			Assert.IsFalse(book.CanDelete);
+		}
+
+		[Test]
+		public void Delete_IsDeleted()
+		{
+			var book = CreateBook(false);
+			Assert.IsTrue(false);
+		}
+
 
 		private Mock<IPage> CreateTemplatePage()
 		{
@@ -310,7 +332,7 @@ namespace BloomTests
 			return templatePage;
 		}
 
-		private Book CreateBook()
+		private Book CreateBook(bool b)
 		{
 			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
@@ -326,5 +348,7 @@ namespace BloomTests
 				</body></html>");
 			return dom;
 		}
+
+
 	}
 }
