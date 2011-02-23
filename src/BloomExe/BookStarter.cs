@@ -64,16 +64,27 @@ namespace Bloom
 			storage.Save();
 		}
 
-		private static string GetInitialName(string sourcePath, string parentCollectionPath)
+		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
-			//todo: get a name from the template
-			string name = "new";
 
-			while (Directory.Exists(Path.Combine(parentCollectionPath, name)))
+			string name = Path.GetFileName(sourcePath);
+
+			var storage = _bookStorageFactory(sourcePath);
+			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@id='defaultNameForDerivedBooks']");
+			if(nameSuggestion.Count>0)
 			{
-				name += "_"; //todo: use number suffix
+				name = ((XmlElement) nameSuggestion[0]).GetAttribute("content");
 			}
-			return name;
+
+			int i = 0;
+			string suffix = "";
+
+			while (Directory.Exists(Path.Combine(parentCollectionPath, name+suffix)))
+			{
+				++i;
+				suffix = i.ToString();
+			}
+			return name+suffix;
 		}
 
 

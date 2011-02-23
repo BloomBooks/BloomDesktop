@@ -94,6 +94,62 @@ namespace BloomTests
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(text(), '_required_')]", 1);
 		}
 
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_NameSameAsShell()
+		{
+			string folderPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
+			Assert.AreEqual("guitar", Path.GetFileName(folderPath));
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_BookWithDefaultNameAlreadyExists_NameGetsNumberSuffix()
+		{
+			string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
+			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
+			Assert.AreEqual("guitar1", Path.GetFileName(secondPath));
+			Assert.IsTrue(File.Exists(Path.Combine(secondPath, "guitar1.htm")));
+
+
+			Assert.IsTrue(Directory.Exists(firstPath));
+			Assert.IsTrue(File.Exists(Path.Combine(firstPath, "guitar.htm")));
+
+			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryA5_GetsExpectedName()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"A5Portrait");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var path = GetPathToHtml(bookFolderPath);
+
+			Assert.AreEqual("book.htm", Path.GetFileName(path));
+			Assert.IsTrue(Directory.Exists(bookFolderPath));
+			Assert.IsTrue(File.Exists(path));
+		}
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
+		{
+			Directory.CreateDirectory(_projectFolder.Combine("book"));
+			Directory.CreateDirectory(_projectFolder.Combine("book1"));
+			Directory.CreateDirectory(_projectFolder.Combine("book3"));
+
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"A5Portrait");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			Assert.AreEqual("book2", Path.GetFileName(path));
+			Assert.IsTrue(Directory.Exists(path));
+			Assert.IsTrue(File.Exists(Path.Combine(path, "book2.htm")));
+		}
+
 		private string GetShellBookFolder()
 		{
 			var content = @"<?xml version='1.0' encoding='utf-8' ?>
@@ -117,9 +173,9 @@ namespace BloomTests
 				</body>
 				</html>
 		";
-			string folder = _shellCollectionFolder.Combine("shell1");
+			string folder = _shellCollectionFolder.Combine("guitar");
 			Directory.CreateDirectory(folder);
-			string shellFolderPath = Path.Combine(folder, "shell1.htm");
+			string shellFolderPath = Path.Combine(folder, "guitar.htm");
 			File.WriteAllText(shellFolderPath, content);
 			return folder;
 		}

@@ -360,5 +360,10 @@ namespace Bloom.Library
 				//_listView.SelectedItems.Clear();
 			}
 		}
+
+		private void _listView_MouseEnter(object sender, EventArgs e)
+		{
+
+		}
 	}
 }
