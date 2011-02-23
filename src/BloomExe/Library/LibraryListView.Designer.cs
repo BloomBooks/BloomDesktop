@@ -39,6 +39,7 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,6 +74,7 @@
             this._listView.TabIndex = 1;
             this._listView.UseCompatibleStateImageBehavior = false;
             this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
+            this._listView.MouseEnter += new System.EventHandler(this._listView_MouseEnter);
             // 
             // contextMenuStrip1
             // 
@@ -116,5 +118,6 @@
         private System.Windows.Forms.ImageList _pageThumbnails;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem deleteMenuItem;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
