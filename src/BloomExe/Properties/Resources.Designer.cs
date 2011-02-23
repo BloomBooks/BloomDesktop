@@ -67,6 +67,20 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap DeleteMessageBoxButtonImage {
+            get {
+                object obj = ResourceManager.GetObject("DeleteMessageBoxButtonImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap DeleteMessageBoxImage {
+            get {
+                object obj = ResourceManager.GetObject("DeleteMessageBoxImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap GenericPage32x32 {
             get {
                 object obj = ResourceManager.GetObject("GenericPage32x32", resourceCulture);
@@ -84,6 +98,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap menuButton {
             get {
                 object obj = ResourceManager.GetObject("menuButton", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap RecycleBin {
+            get {
+                object obj = ResourceManager.GetObject("RecycleBin", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

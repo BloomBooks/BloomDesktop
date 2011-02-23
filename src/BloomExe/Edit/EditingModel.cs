@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Xml;
 using Palaso.UI.WindowsForms.ImageToolbox;
 
@@ -107,6 +108,7 @@ namespace Bloom.Edit
 		public void VisibilityChanged(bool visible)
 		{
 			_visible = visible;
+			Debug.WriteLine("EditingModel._visible ="+_visible);
 			if(_bookSelectionChangedPending)
 			{
 				_bookSelectionChangedPending = false;

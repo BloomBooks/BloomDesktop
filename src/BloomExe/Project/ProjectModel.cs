@@ -24,12 +24,12 @@ namespace Bloom.Project
 
 		public bool ShowEditPage
 		{
-			get { return _bookSelection.CurrentSelection.CanEdit; }
+			get { return _bookSelection.CurrentSelection!=null && _bookSelection.CurrentSelection.CanEdit; }
 		}
 
 		public bool ShowPublishPage
 		{
-			get { return _bookSelection.CurrentSelection.CanPublish; }
+			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanPublish; }
 		}
 
 		public string ProjectName

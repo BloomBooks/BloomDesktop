@@ -1,4 +1,4 @@
-﻿namespace Bloom
+﻿namespace Bloom.Library
 {
     partial class LibraryBookView
     {

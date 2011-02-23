@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Edit;
+using Bloom.Library;
 using Bloom.Publish;
 using Palaso.IO;
 
@@ -26,6 +27,8 @@ namespace Bloom.Project
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
+			//Cursor = Cursors.AppStarting;
+			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
 
 			SetupTabIcons();
@@ -59,6 +62,13 @@ namespace Bloom.Project
 			this.tabPage2.Controls.Add(this._editingView);
 			this.tabPage3.Controls.Add(this._pdfView);
 
+		}
+
+		void Application_Idle(object sender, EventArgs e)
+		{
+			//this didn't work... we got to idle when the lists were still populating
+		   Application.Idle -= new EventHandler(Application_Idle);
+//            Cursor = Cursors.Default;
 		}
 
 		private void SetupTabIcons()

@@ -613,5 +613,10 @@ namespace Bloom
 				_thumbnailProvider.PageChanged(_storage.Key);
 			}
 		}
+
+		public bool Delete()
+		{
+			return _storage.DeleteBook();
+		}
 	}
 }

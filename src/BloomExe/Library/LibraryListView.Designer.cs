@@ -36,12 +36,16 @@
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("A5 Booklet", 0);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LibraryListView));
             this._listView = new System.Windows.Forms.ListView();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // _listView
             // 
             this._listView.BackColor = System.Drawing.Color.White;
+            this._listView.ContextMenuStrip = this.contextMenuStrip1;
             this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
             this._listView.ForeColor = System.Drawing.Color.Black;
             listViewGroup1.Header = "Our Books";
@@ -70,6 +74,21 @@
             this._listView.UseCompatibleStateImageBehavior = false;
             this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deleteMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
+            // 
+            // deleteMenuItem
+            // 
+            this.deleteMenuItem.Image = global::Bloom.Properties.Resources.DeleteMessageBoxButtonImage;
+            this.deleteMenuItem.Name = "deleteMenuItem";
+            this.deleteMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteMenuItem.Text = "Delete";
+            this.deleteMenuItem.Click += new System.EventHandler(this.deleteMenuItem_Click);
+            // 
             // _pageThumbnails
             // 
             this._pageThumbnails.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_pageThumbnails.ImageStream")));
@@ -86,6 +105,7 @@
             this.Size = new System.Drawing.Size(167, 468);
             this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
             this.VisibleChanged += new System.EventHandler(this.OnVisibleChanged);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -94,5 +114,7 @@
 
         private System.Windows.Forms.ListView _listView;
         private System.Windows.Forms.ImageList _pageThumbnails;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem deleteMenuItem;
     }
 }

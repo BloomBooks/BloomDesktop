@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml;
 using BloomTemp;
 using Palaso.Code;
@@ -27,6 +28,7 @@ namespace Bloom
 		bool TryGetPremadeThumbnail(out Image image);
 		string GetHtmlFileForPrintingWithWkHtmlToPdf();
 		XmlDocument GetRelocatableCopyOfDom();
+		bool DeleteBook();
 	}
 
 	public class BookStorage : IBookStorage
@@ -53,7 +55,7 @@ namespace Bloom
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				//add a unique id for our use
-				foreach(XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
+				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
 					node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
@@ -62,16 +64,16 @@ namespace Bloom
 
 		private void UpdateStyleSheetLinkPaths(XmlDocument dom, Palaso.IO.IFileLocator fileLocator)
 		{
-			foreach(XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if(href==null)
+				if (href == null)
 				{
 					continue;
 				}
 
 				var fileName = Path.GetFileName(href);
-				if(!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
+				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
 					var path = fileLocator.LocateOptionalFile(fileName);
 					if (string.IsNullOrEmpty(path))
@@ -81,9 +83,9 @@ namespace Bloom
 						if (File.Exists(local))
 							path = local;
 					}
-					if(!string.IsNullOrEmpty(path))
+					if (!string.IsNullOrEmpty(path))
 					{
-						linkNode.SetAttribute("href", "file://"+path);
+						linkNode.SetAttribute("href", "file://" + path);
 					}
 					else
 					{
@@ -213,7 +215,8 @@ namespace Bloom
 
 		public string Key
 		{
-			get {
+			get
+			{
 				return _folderPath;
 			}
 		}
@@ -256,9 +259,9 @@ namespace Bloom
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(_folderPath, "thumbnail.png");
-			if(File.Exists(path))
+			if (File.Exists(path))
 			{
-				image= Image.FromFile(path);
+				image = Image.FromFile(path);
 				return true;
 			}
 			image = null;
@@ -285,6 +288,56 @@ namespace Bloom
 			UpdateStyleSheetLinkPaths(dom, _fileLocator);
 			return dom;
 		}
-	}
 
+		public bool DeleteBook()
+		{
+			try
+			{
+				#if MONO
+					return false;//TODO implement the appropriate thing in Linux
+				#else
+
+				//moves it to the recyle bin
+				var shf = new SHFILEOPSTRUCT();
+				shf.wFunc = FO_DELETE;
+				shf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION ;
+				string pathWith2Nulls = _folderPath + "\0\0";
+				shf.pFrom = pathWith2Nulls;
+
+				SHFileOperation(ref shf);
+				return !shf.fAnyOperationsAborted;
+				#endif
+			}
+			catch (Exception exception)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(exception, "Could not delete that book.");
+				return false;
+			}
+		}
+
+		#if !MONO
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]
+		public struct SHFILEOPSTRUCT
+		{
+			public IntPtr hwnd;
+			[MarshalAs(UnmanagedType.U4)]
+			public int wFunc;
+			public string pFrom;
+			public string pTo;
+			public short fFlags;
+			[MarshalAs(UnmanagedType.Bool)]
+			public bool fAnyOperationsAborted;
+			public IntPtr hNameMappings;
+			public string lpszProgressTitle;
+		}
+
+		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
+		public static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
+
+		public const int FO_DELETE = 3;
+		public const int FOF_ALLOWUNDO = 0x40;
+		public const int FOF_NOCONFIRMATION = 0x10; // Don't prompt the user
+		public const int FOF_SIMPLEPROGRESS = 0x0100;
+		#endif
+	}
 }

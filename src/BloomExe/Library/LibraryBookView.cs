@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
-namespace Bloom
+namespace Bloom.Library
 {
 	/// <summary>
 	/// this is an un-editable preview of a book in the library; either vernacular or template

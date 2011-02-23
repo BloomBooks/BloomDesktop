@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using Bloom;
 using Bloom.Edit;
@@ -54,6 +55,19 @@ namespace BloomTests
 			//AssertThatXmlIn.File(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
 			//AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link", 0);
+		}
+
+
+		[Test]
+		public void Delete_IsDeleted()
+		{
+			File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body/></html>");
+			var storage = new BookStorage(_folder.Path, _fileLocator);
+			storage.Save();
+			Assert.IsTrue(Directory.Exists(_folder.Path));
+			Assert.IsTrue(storage.DeleteBook());
+			Thread.Sleep(2000);
+			Assert.IsFalse(Directory.Exists(_folder.Path));
 		}
 
 	}

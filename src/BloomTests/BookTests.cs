@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -315,12 +316,7 @@ namespace BloomTests
 			Assert.IsFalse(book.CanDelete);
 		}
 
-		[Test]
-		public void Delete_IsDeleted()
-		{
-			var book = CreateBook(false);
-			Assert.IsTrue(false);
-		}
+
 
 
 		private Mock<IPage> CreateTemplatePage()

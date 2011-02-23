@@ -290,7 +290,7 @@ namespace Bloom.Library
 		{
 			if (_listView.SelectedItems.Count == 0)
 				return;
-			Book book = SelectedBook();
+			Book book = SelectedBook;
 			if (book == null)
 				return;
 			Debug.WriteLine("before selecting "+book.Title);
@@ -299,13 +299,18 @@ namespace Bloom.Library
 			//didn't help: _listView.Focus();//hack we were losing clicks
 			book.ContentsChanged -= new EventHandler(OnSelectedBookChanged);//in case we're already subscribed
 			book.ContentsChanged += new EventHandler(OnSelectedBookChanged);
+
+			deleteMenuItem.Enabled = _model.CanDeleteSelection;
 		}
 
-		private Book SelectedBook()
+		private Book SelectedBook
 		{
-			if (_listView.SelectedItems.Count == 0)
-				return null;
-			return (Book) _listView.SelectedItems[0].Tag;
+			get
+			{
+				if (_listView.SelectedItems.Count == 0)
+					return null;
+				return (Book) _listView.SelectedItems[0].Tag;
+			}
 		}
 
 		private void OnSelectedBookChanged(object sender, EventArgs e)
@@ -322,7 +327,7 @@ namespace Bloom.Library
 		{
 			if(Visible )
 			{
-				Book book = SelectedBook();
+				Book book = SelectedBook;
 				if (book == null)
 					return;
 
@@ -346,6 +351,14 @@ namespace Bloom.Library
 			}
 		}
 
-
+		private void deleteMenuItem_Click(object sender, EventArgs e)
+		{
+			BookCollection collection = _listView.SelectedItems[0].Group.Tag as BookCollection;
+			if (collection != null)
+			{
+				_model.DeleteBook((Book) _listView.SelectedItems[0].Tag, collection);
+				//_listView.SelectedItems.Clear();
+			}
+		}
 	}
 }
