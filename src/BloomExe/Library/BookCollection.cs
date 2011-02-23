@@ -46,7 +46,8 @@ namespace Bloom.Library
     	{
     		var starter=_bookStarterFactory();
 			starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath,_path);
-    		CollectionChanged.Invoke(this, null);
+    		if(CollectionChanged!=null)
+                CollectionChanged.Invoke(this, null);
     	}
 
     	public string Name  
@@ -68,6 +69,12 @@ namespace Bloom.Library
             }
         }
 
-      
+
+        public void DeleteBook(Book book)
+        {
+            book.Delete();
+            if (CollectionChanged != null)
+                CollectionChanged.Invoke(this, null);
+        }
     }
 }

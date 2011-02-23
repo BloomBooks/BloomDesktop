@@ -40,7 +40,7 @@ namespace Bloom.Edit
             _templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             splitContainer2.Panel2.Controls.Add(_templatePagesView);
 
-            
+
         }
 
         protected override void OnLoad(EventArgs e)
@@ -131,6 +131,15 @@ namespace Bloom.Edit
         private void EditingView_VisibleChanged(object sender, EventArgs e)
         {
             _model.VisibilityChanged(Visible);
+        }
+
+        private void EditingView_ParentChanged(object sender, EventArgs e)
+        {
+            
+            //when the tab changes, we aren't actually notified that our visibility changed.  So 
+            //get this event from our parent page
+            if (Parent != null) 
+                this.Parent.VisibleChanged += new System.EventHandler(this.EditingView_VisibleChanged);
         }
 
 //        private string MakePngOrJpgTempFileForImage(Image image)

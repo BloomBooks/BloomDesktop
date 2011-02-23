@@ -13,6 +13,7 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            this.VisibleChanged -= new System.EventHandler(this.TemplatePagesView_VisibleChanged);
             if (disposing && (components != null))
             {
                 components.Dispose();

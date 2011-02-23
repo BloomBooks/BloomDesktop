@@ -1,6 +1,4 @@
-﻿using Bloom.Library;
-
-namespace Bloom
+﻿namespace Bloom.Library
 {
     partial class LibraryView
     {

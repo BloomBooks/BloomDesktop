@@ -18,6 +18,7 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            _listView = null;
         }
 
         #region Component Designer generated code

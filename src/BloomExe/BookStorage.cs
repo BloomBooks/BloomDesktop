@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml;
 using BloomTemp;
 using Palaso.Code;
@@ -22,11 +23,12 @@ namespace Bloom
         string Key { get; }
         bool LooksOk { get; }
         string FileName { get; }
-    	string FolderPath { get; }
-    	void Save();
+        string FolderPath { get; }
+        void Save();
         bool TryGetPremadeThumbnail(out Image image);
         string GetHtmlFileForPrintingWithWkHtmlToPdf();
         XmlDocument GetRelocatableCopyOfDom();
+        bool DeleteBook();
     }
 
     public class BookStorage : IBookStorage
@@ -46,34 +48,34 @@ namespace Bloom
             {
                 Dom = new XmlDocument();
                 Dom.Load(PathToHtml);
-               
+
                 //todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
                 //SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
-				//UpdateStyleSheetLinkPaths(fileLocator);
+                //UpdateStyleSheetLinkPaths(fileLocator);
 
-				//add a unique id for our use
-				foreach(XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
-				{
-					node.SetAttribute("id", Guid.NewGuid().ToString());
-				}
+                //add a unique id for our use
+                foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
+                {
+                    node.SetAttribute("id", Guid.NewGuid().ToString());
+                }
             }
         }
 
         private void UpdateStyleSheetLinkPaths(XmlDocument dom, Palaso.IO.IFileLocator fileLocator)
-    	{
-    		foreach(XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-    		{
-    			var href = linkNode.GetAttribute("href");
-    			if(href==null)
-    			{
-    				continue;
-    			}
+        {
+            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+            {
+                var href = linkNode.GetAttribute("href");
+                if (href == null)
+                {
+                    continue;
+                }
 
-    			var fileName = Path.GetFileName(href);
-				if(!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
-				{
-				    var path = fileLocator.LocateOptionalFile(fileName);
+                var fileName = Path.GetFileName(href);
+                if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
+                {
+                    var path = fileLocator.LocateOptionalFile(fileName);
                     if (string.IsNullOrEmpty(path))
                     {
                         //look in the same directory as the book
@@ -81,17 +83,17 @@ namespace Bloom
                         if (File.Exists(local))
                             path = local;
                     }
-				    if(!string.IsNullOrEmpty(path))
-					{
-						linkNode.SetAttribute("href", "file://"+path);
-					}
-					else
-					{
-					    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
-					}
-				}
-    		}
-    	}
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        linkNode.SetAttribute("href", "file://" + path);
+                    }
+                    else
+                    {
+                        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
@@ -140,10 +142,10 @@ namespace Bloom
         public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
         {
             var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
-        	foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
-        	{
-        		head.RemoveChild(baseNode);
-        	}
+            foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+            {
+                head.RemoveChild(baseNode);
+            }
             if (!string.IsNullOrEmpty(folderPath))
             {
                 var baseElement = dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
@@ -177,7 +179,7 @@ namespace Bloom
             }
         }
 
-       
+
         protected string PathToHtml
         {
             get
@@ -213,12 +215,13 @@ namespace Bloom
 
         public string Key
         {
-            get {
+            get
+            {
                 return _folderPath;
             }
         }
 
-        public bool LooksOk 
+        public bool LooksOk
         {
             get { return File.Exists(PathToHtml); }
         }
@@ -228,23 +231,23 @@ namespace Bloom
             get { return Path.GetFileNameWithoutExtension(_folderPath); }
         }
 
-    	public string FolderPath
-    	{
-			get { return _folderPath; }
-    	}
+        public string FolderPath
+        {
+            get { return _folderPath; }
+        }
 
-    	public void Save()
+        public void Save()
         {
             Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
             string tempPath = Path.GetTempFileName();
-    	    MakeCssLinksAppropriateForStoredFile();
-    	    SetBaseForRelativePaths(Dom, string.Empty);// remove any dependency on this computer, and where files are on it.
+            MakeCssLinksAppropriateForStoredFile();
+            SetBaseForRelativePaths(Dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
-        	XmlWriterSettings settings = new XmlWriterSettings();
-        	settings.Indent = true;
-        	settings.CheckCharacters = true;
-            
-        	using (var writer = XmlWriter.Create(tempPath, settings))
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.CheckCharacters = true;
+
+            using (var writer = XmlWriter.Create(tempPath, settings))
             {
                 Dom.WriteContentTo(writer);
                 writer.Close();
@@ -256,9 +259,9 @@ namespace Bloom
         public bool TryGetPremadeThumbnail(out Image image)
         {
             string path = Path.Combine(_folderPath, "thumbnail.png");
-            if(File.Exists(path))
+            if (File.Exists(path))
             {
-                image= Image.FromFile(path);
+                image = Image.FromFile(path);
                 return true;
             }
             image = null;
@@ -285,6 +288,56 @@ namespace Bloom
             UpdateStyleSheetLinkPaths(dom, _fileLocator);
             return dom;
         }
-    }
 
+        public bool DeleteBook()
+        {
+            try
+            {
+                #if MONO
+                    return false;//TODO implement the appropriate thing in Linux
+                #else
+
+                //moves it to the recyle bin
+                var shf = new SHFILEOPSTRUCT();
+                shf.wFunc = FO_DELETE;
+                shf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION ;
+                string pathWith2Nulls = _folderPath + "\0\0";
+                shf.pFrom = pathWith2Nulls;
+                
+                SHFileOperation(ref shf);
+                return !shf.fAnyOperationsAborted;
+                #endif
+            }
+            catch (Exception exception)
+            {
+                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(exception, "Could not delete that book.");
+                return false;
+            }
+        }
+
+        #if !MONO
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]
+        public struct SHFILEOPSTRUCT
+        {
+            public IntPtr hwnd;
+            [MarshalAs(UnmanagedType.U4)]
+            public int wFunc;
+            public string pFrom;
+            public string pTo;
+            public short fFlags;
+            [MarshalAs(UnmanagedType.Bool)]
+            public bool fAnyOperationsAborted;
+            public IntPtr hNameMappings;
+            public string lpszProgressTitle;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        public static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
+
+        public const int FO_DELETE = 3;
+        public const int FOF_ALLOWUNDO = 0x40;
+        public const int FOF_NOCONFIRMATION = 0x10; // Don't prompt the user
+        public const int FOF_SIMPLEPROGRESS = 0x0100;
+        #endif
+    }
 }

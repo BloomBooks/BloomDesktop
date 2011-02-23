@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BookCollectionTests.cs" />
     <Compile Include="BookTests.cs" />
     <Compile Include="BookStorageTests.cs" />
     <Compile Include="BookStarterTests.cs" />
