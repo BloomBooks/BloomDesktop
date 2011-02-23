@@ -24,11 +24,11 @@ namespace Bloom
 
 		private void _fadeOutTimer_Tick(object sender, EventArgs e)
 		{
-			Opacity -= 0.10;
-			if (Opacity <= 0.01)
+			if (Opacity <= 0)
 			{
 				Close();
 			}
+			Opacity -= 0.20;
 		}
 	}
 

@@ -47,13 +47,26 @@ namespace Bloom
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
 		/// <param name="drawBorder"></param>
 		/// <returns></returns>
-		public Image GetThumbnail(string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorder)
+		public Image GetThumbnail(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorder)
 		{
 			Image image;
 			if (_images.TryGetValue(key, out image))
 			{
 				return image;
 			}
+
+			string thumbNailFilePath=null;
+			if (!string.IsNullOrEmpty(folderForThumbNailCache))
+			{
+				//var folderName = Path.GetFileName(folderForThumbNailCache);
+				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+				if (File.Exists(thumbNailFilePath))
+				{
+				   return Image.FromFile(thumbNailFilePath);
+				}
+			}
+
+
 			_backgroundColorOfResult = backgroundColorOfResult;
 
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
@@ -73,7 +86,7 @@ namespace Bloom
 				//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
 
 				_browser.Navigate(temp.Path);
-				var giveUpTime = DateTime.Now.AddSeconds(2);
+				var giveUpTime = DateTime.Now.AddSeconds(4);// this can take a long time if the image on the front page is big.
 
 				while (_pendingThumbnail == null && DateTime.Now < giveUpTime)
 				{
@@ -102,8 +115,24 @@ namespace Bloom
 			{
 				_pendingThumbnail = Resources.GenericPage32x32;
 			}
+			else if (!string.IsNullOrEmpty(thumbNailFilePath))
+			{
+				try
+				{
+					//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
+
+					//review: is what is saved out here really png?
+					Bitmap b = new Bitmap(_pendingThumbnail);
+					b.Save(thumbNailFilePath);
+				}
+				catch(Exception)
+				{
+					//this is going to fail if we don't have write permission
+				}
+			}
 
 			_images.Add(key, _pendingThumbnail);
+
 
 			return _pendingThumbnail;
 		}
@@ -303,5 +332,6 @@ namespace Bloom
 				_images.Remove(id);
 			}
 		}
+
 	}
 }

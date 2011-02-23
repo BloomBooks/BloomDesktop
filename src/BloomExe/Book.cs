@@ -114,8 +114,22 @@ namespace Bloom
 			{
 				return Resources.GenericPage32x32;//todo: make an error icon
 			}
-			return _thumbnailProvider.GetThumbnail(_storage.Key, dom, Color.Transparent, drawBorder);
+			string folderForCachingThumbnail = null;
+
+			//eventually, we need to cache the thumbnails of vernacular books, too. But then we need
+			//to refresh them when the cover image should change.  Until then, only cache shells/templates
+			if(this.IsShellOrTemplate)
+			{
+				folderForCachingThumbnail = _storage.FolderPath;
+			}
+			return _thumbnailProvider.GetThumbnail(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorder);
 		}
+
+//        protected string PathToThumbnailCache
+//        {
+//            get {return Path.Combine(_storage.FolderPath, "thumbnail.") }
+//
+//        }
 
 		public XmlDocument GetEditableHtmlDomForPage(IPage page)
 		{
@@ -354,7 +368,7 @@ namespace Bloom
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)
 		{
 			return new Page(pageNode, caption,
-					(page => _thumbnailProvider.GetThumbnail(page.Id, GetPreviewXmlDocumentForPage(page), Color.White, false)),
+					(page => _thumbnailProvider.GetThumbnail(string.Empty, page.Id, GetPreviewXmlDocumentForPage(page), Color.White, false)),
 					(page => FindPageDiv(page)));
 		}
 
