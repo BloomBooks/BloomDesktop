@@ -57,9 +57,9 @@ namespace Bloom
 		{
 			var storage = _bookStorageFactory(destinationPath);
 
-			foreach (XmlElement optionalNode in storage.Dom.SafeSelectNodes("/html/body/div[not(contains(@class,'required'))]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[(contains(@class,'extraPage'))]"))
 			{
-				optionalNode.ParentNode.RemoveChild(optionalNode);
+				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
 			storage.Save();
 		}

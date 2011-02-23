@@ -14,6 +14,8 @@ namespace BloomTests
 	{
 		private FileLocator _fileLocator;
 		private BookStarter _starter;
+		private TemporaryFolder _shellCollectionFolder;
+		private TemporaryFolder _projectFolder;
 
 		[SetUp]
 		public void Setup()
@@ -25,37 +27,101 @@ namespace BloomTests
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
 			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator));
+			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
+			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			_shellCollectionFolder.Dispose();
+			_projectFolder.Dispose();
+		}
+
+		private string GetPathToHtml(string bookFolderPath)
+		{
+			return Path.Combine(bookFolderPath, Path.GetFileName(bookFolderPath))+".htm";
 		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
 		{
-			using (var dest = new TemporaryFolder("DestBookStorage"))
-			{
-				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"A5Portrait");
 
-				_starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
-				string path = dest.Combine("new", "new.htm");
-				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover')]", 1);
-				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
-			}
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover')]", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
+
+			//should only get these two pages
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]", 2);
 		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5Portrait_CreatesWithCorrectStylesheets()
 		{
-			using (var dest = new TemporaryFolder("DestBookStorage"))
-			{
-				var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
+				 var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
 
-				_starter.CreateBookOnDiskFromTemplate(source, dest.FolderPath);
-
-				string path = dest.Combine("new", "new.htm");
+				 var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
 				//AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 				AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//link", 1);
-			}
+		 }
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_PagesLabeledExtraAreNotAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+		   AssertThatXmlIn.File(path).HasNoMatchForXpath("//div[contains(text(), '_extra_')]");
+		}
+
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_PagesNotLabeledExtraAreAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(text(), '_normal_')]", 1);
+		}
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_PagesLabeledRequiredIsAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(text(), '_required_')]", 1);
+		}
+
+		private string GetShellBookFolder()
+		{
+			var content = @"<?xml version='1.0' encoding='utf-8' ?>
+				<html xmlns='http://www.w3.org/1999/xhtml'>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
+				</head>
+				<body class='a5Portrait'>
+					  <div class='page required' id='1'>
+						_required_ The user will not be allowed to remove this page.
+					  </div>
+					<div class='page' id='2'>
+						_normal_ It would be ok for the user to remove this page.
+					</div>
+					<div class='page extraPage' id='3'>
+						_extra_
+					</div>
+				</body>
+				</html>
+		";
+			string folder = _shellCollectionFolder.Combine("shell1");
+			Directory.CreateDirectory(folder);
+			string shellFolderPath = Path.Combine(folder, "shell1.htm");
+			File.WriteAllText(shellFolderPath, content);
+			return folder;
 		}
 
 //		[Test]
