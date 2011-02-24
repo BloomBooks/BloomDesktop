@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="A5Landscape.css" Guid="1b3d34df-2124-49ec-9af9-fe34af2c0dfa" />
+  <File Id="placeHolder.png" Guid="745cbcda-2865-4f3e-95af-8fe93aee7893" />
+  <File Id="templatePages.htm" Guid="180af5e6-afbb-426d-8ae4-5d766ae19041" />
+</InstallerMetadata>

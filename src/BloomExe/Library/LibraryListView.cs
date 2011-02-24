@@ -125,14 +125,14 @@ namespace Bloom.Library
 
 		private Image GetThumbnail(Book book)
 		{
-			if (book.Type != Book.BookType.Template)
-			{
+//            if (book.Type != Book.BookType.Template)
+//            {
 				return book.GetThumbNailOfBookCover(true);
-			}
-			else
-			{
-				return ComposeCoverPageWithBooklet(null, GetBookletImage(book));//for templates, let's just show a blank cover
-			}
+//            }
+//            else
+//            {
+//                return ComposeCoverPageWithBooklet(null, GetBookletImage(book));//for templates, let's just show a blank cover
+//            }
 
 			//thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
 			//return thumbnail;

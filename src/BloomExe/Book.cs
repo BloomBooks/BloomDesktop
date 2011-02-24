@@ -116,12 +116,8 @@ namespace Bloom
 			}
 			string folderForCachingThumbnail = null;
 
-			//eventually, we need to cache the thumbnails of vernacular books, too. But then we need
-			//to refresh them when the cover image should change.  Until then, only cache shells/templates
-			//if(this.IsShellOrTemplate)
-			{
-				folderForCachingThumbnail = _storage.FolderPath;
-			}
+			folderForCachingThumbnail = _storage.FolderPath;
+
 			return _thumbnailProvider.GetThumbnail(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorder);
 		}
 
