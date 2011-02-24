@@ -62,7 +62,11 @@ namespace Bloom
 				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
 				if (File.Exists(thumbNailFilePath))
 				{
-				   return Image.FromFile(thumbNailFilePath);
+					//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
+					using (image = Image.FromFile(thumbNailFilePath))
+					{
+					   return new Bitmap(image);
+					}
 				}
 			}
 
@@ -120,10 +124,10 @@ namespace Bloom
 				try
 				{
 					//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
-
-					//review: is what is saved out here really png?
-					Bitmap b = new Bitmap(_pendingThumbnail);
-					b.Save(thumbNailFilePath);
+					using (Bitmap b = new Bitmap(_pendingThumbnail))
+					{
+						b.Save(thumbNailFilePath);
+					}
 				}
 				catch(Exception)
 				{
@@ -131,6 +135,7 @@ namespace Bloom
 				}
 			}
 
+			_pendingThumbnail.Tag = thumbNailFilePath;//usefull if we later know we need to clear out that file
 			_images.Add(key, _pendingThumbnail);
 
 
@@ -300,8 +305,6 @@ namespace Bloom
 					graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
 				}
 			}
-//			bmp.Save(@"c:\dev\temp\page.png", ImageFormat.Png);
-//			thumbnail.Save(@"c:\dev\temp\pagethum.png", ImageFormat.Png);
 			return thumbnail;
 #endif
 		}
@@ -324,14 +327,39 @@ namespace Bloom
 			}
 		}
 
-		//just remove from our cache
+
+
+		/// <summary>
+		/// How this page looks has changed, so remove from our cache
+		/// </summary>
+		/// <param name="id"></param>
 		public void PageChanged(string id)
 		{
-			if(_images.ContainsKey(id))
+			Image image;
+			if(_images.TryGetValue(id,out image))
 			{
 				_images.Remove(id);
+				if(image.Tag!=null)
+				{
+					string thumbnailPath = image.Tag as string;
+					if(!string.IsNullOrEmpty(thumbnailPath))
+					{
+						if(File.Exists(thumbnailPath))
+						{
+							try
+							{
+								File.Delete(thumbnailPath);
+							}
+							catch (Exception)
+							{
+								Debug.Fail("Could not delete path (would not see this in release version)");
+								//oh well, couldn't delet it);
+								throw;
+							}
+						}
+					}
+				}
 			}
 		}
-
 	}
 }

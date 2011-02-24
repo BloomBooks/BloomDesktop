@@ -297,8 +297,8 @@ namespace Bloom.Library
 			_model.SelectBook(book);
 			Debug.WriteLine("after selecting "+book.Title);
 			//didn't help: _listView.Focus();//hack we were losing clicks
-			book.ContentsChanged -= new EventHandler(OnSelectedBookChanged);//in case we're already subscribed
-			book.ContentsChanged += new EventHandler(OnSelectedBookChanged);
+			book.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged);//in case we're already subscribed
+			book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
 			deleteMenuItem.Enabled = _model.CanDeleteSelection;
 		}
@@ -313,7 +313,10 @@ namespace Bloom.Library
 			}
 		}
 
-		private void OnSelectedBookChanged(object sender, EventArgs e)
+		/// <summary>
+		/// The image to show on the cover might have changed. Just make a note ot re-show it next time we're visible
+		/// </summary>
+		private void OnContentsOfSelectedBookChanged(object sender, EventArgs e)
 		{
 			_reshowPending = true;
 		}

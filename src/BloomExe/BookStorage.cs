@@ -261,7 +261,11 @@ namespace Bloom
 			string path = Path.Combine(_folderPath, "thumbnail.png");
 			if (File.Exists(path))
 			{
-				image = Image.FromFile(path);
+				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
+				using (var tempImage = Image.FromFile(path))
+				{
+					image = new Bitmap(tempImage);
+				}
 				return true;
 			}
 			image = null;
