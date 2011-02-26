@@ -47,15 +47,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="962.07051"
-     inkscape:cy="433.78712"
+     inkscape:zoom="1"
+     inkscape:cx="580.80137"
+     inkscape:cy="805.23689"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="1002"
-     inkscape:window-x="1672"
+     inkscape:window-width="1486"
+     inkscape:window-height="878"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="true"
@@ -73,7 +73,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -286,6 +286,6 @@
          sodipodi:role="line"
          id="tspan5282"
          x="259.6904"
-         y="68.362183">Books for everyone</tspan></text>
+         y="68.362183">Sowing the seeds of literacy</tspan></text>
   </g>
 </svg>

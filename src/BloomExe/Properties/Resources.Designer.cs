@@ -102,6 +102,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap newBook {
+            get {
+                object obj = ResourceManager.GetObject("newBook", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap RecycleBin {
             get {
                 object obj = ResourceManager.GetObject("RecycleBin", resourceCulture);
