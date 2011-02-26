@@ -20,6 +20,8 @@ namespace Bloom.Library
 			_bookSelection = bookSelection;
 			_createFromTemplateCommand = createFromTemplateCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+
+			_addToLibraryButton_MouseLeave(this, null);
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -35,10 +37,10 @@ namespace Bloom.Library
 
 		private void LoadBook()
 		{
-			_addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
+			_addToLibraryButton.Visible =  _addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
 			if(_bookSelection.CurrentSelection==null)
 				return;
-			_addToLibraryButton.Image = _bookSelection.CurrentSelection.GetThumbNailOfBookCover(true);
+			//_addToLibraryButton.Image = _bookSelection.CurrentSelection.GetThumbNailOfBookCover(true);
 			ShowBook();
 			_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
 		}
@@ -64,7 +66,14 @@ namespace Bloom.Library
 		{
 			if (_bookSelection.CurrentSelection != null)
 			{
-				_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+				try
+				{
+					_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+				}
+				catch(Exception)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom could not add that template to the library.");
+				}
 			}
 		}
 
@@ -72,6 +81,18 @@ namespace Bloom.Library
 		{
 			if(Visible && _reshowPending)
 				ShowBook();// changed while we were hidden
+		}
+
+		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
+		{
+			_addToLibraryButton.Text = "Make a book using this template";
+			_addToLibraryButton.Width = 250;
+		}
+
+		private void _addToLibraryButton_MouseLeave(object sender, EventArgs e)
+		{
+			_addToLibraryButton.Text="";
+			_addToLibraryButton.Width = 50;
 		}
 
 	}

@@ -36,17 +36,21 @@
             // 
             // _addToLibraryButton
             // 
-            this._addToLibraryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._addToLibraryButton.Image = global::Bloom.Properties.Resources.GenericPage32x32;
+            this._addToLibraryButton.BackColor = System.Drawing.Color.Transparent;
+            this._addToLibraryButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this._addToLibraryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._addToLibraryButton.Image = global::Bloom.Properties.Resources.newBook;
             this._addToLibraryButton.Location = new System.Drawing.Point(12, 3);
             this._addToLibraryButton.Name = "_addToLibraryButton";
-            this._addToLibraryButton.Size = new System.Drawing.Size(110, 77);
+            this._addToLibraryButton.Size = new System.Drawing.Size(250, 42);
             this._addToLibraryButton.TabIndex = 0;
-            this._addToLibraryButton.Text = "+";
-            this._addToLibraryButton.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
+            this._addToLibraryButton.Text = "Make a book using this template";
+            this._addToLibraryButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.toolTip1.SetToolTip(this._addToLibraryButton, "Create a book in my language using this template");
-            this._addToLibraryButton.UseVisualStyleBackColor = true;
+            this._addToLibraryButton.UseVisualStyleBackColor = false;
             this._addToLibraryButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
+            this._addToLibraryButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
+            this._addToLibraryButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
             // 
             // _browser
             // 
