@@ -1,0 +1,35 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul")
+
+/* Add these to A5Portrait.css or elsewhere */
+DIV
+{
+	display: inline-block;
+}
+
+DIV.page
+{
+	display: block;
+	-moz-binding:url("chrome://behavior.xml#Welcomer");
+}
+
+
+TEXTAREA
+{
+	min-width: 100%; max-width: 100%;
+	min-height: 100%; max-height: 100%;
+	font: inherit;
+	text-align: inherit;
+
+	/*would eventually instead point to the overflow signal*/
+	-moz-binding : url("behavior.xml#do-something");
+	/*-moz-binding:url("chrome://behavior.xml#KeyListener");	*/
+}
+
+.text
+{
+font: 25px sans-serif;
+}
+
+.singleLine {height: 1.2em; line-height: 1em;}
+
+.overflowing {background-color: #ff0000;}

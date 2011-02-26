@@ -1,0 +1,103 @@
+
+DIV.page
+{
+	display: block;
+	page-break-after: always;
+	background-color: #FFFFFF;
+}
+@media screen
+{
+	DIV.page
+	{
+		border: 1px solid #000000;
+	}
+}
+.cover ._vernacularBookTitle
+{
+	text-align: center;
+	font: 30pt sans-serif;
+	position: relative;
+}
+.cover ._natLangBookLabel
+{
+	text-align: right;
+	font: 12pt sans-serif;
+	position: absolute;
+}
+.cover ._natLangBookName
+{
+	text-align: left;
+	font: 12pt sans-serif;
+	width: 5cm;
+	position: absolute;
+}
+.titlePage ._natLangBookLabel
+{
+	text-align: center;
+	font: 12pt verdana;
+	position: relative;
+}
+.titlePage ._natLangBookName
+{
+	text-align: center;
+	font: 1em verdana;
+	position: relative;
+}
+.titlePage ._vernacularBookTitle
+{
+	text-align: center;
+	font: 2em verdana;
+	position: relative;
+}
+.titlePage .credits
+{
+	text-align: center;
+	position: relative;
+	font: 12pt sans-serif;
+}
+.titlePage .printingHistory
+{
+	text-align: center;
+	position: relative;
+	font: 12pt sans-serif;
+}
+.imageOnTop .text
+{
+	position: relative;
+}
+TEXTAREA
+{
+	font: 25px sans-serif;
+	overflow: hidden;
+	border: none;
+}
+IMG
+{
+	border: 1px none #E51B1B;
+}
+INPUT
+{
+	border: none;
+}
+.centered
+{
+	text-align: center;
+}
+.imageInMiddle .text
+{
+	position: relative;
+}
+.imageWholePage .picture
+{
+	position: relative;
+}
+.imageOnBottom .picture
+{
+	/*+placement:displace -160px -49px;*/
+	position: absolute;
+}
+
+.centerJustify
+{
+	text-align: center;
+}

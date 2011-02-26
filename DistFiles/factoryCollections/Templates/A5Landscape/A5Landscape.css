@@ -1,72 +1,52 @@
+@import url("../BasePage.css");
+DIV.page
+{
+	min-width: 29.7cm;
+	max-width: 29.7cm;
+	min-height: 21cm;
+	max-height: 21cm;
+}
 .titlePage .bookLabel
 {
-	text-align: center;
-	font: 1em verdana;
 	width: 5cm;
-	position: relative;
 	top: 2cm;
-	/*[empty]word-break:;*/
 }
 .titlePage .languageName
 {
-	text-align: center;
-	font: 1em verdana;
 	width: 9.5cm;
-	position: relative;
 	top: 4.5cm;
 }
 .titlePage .title
 {
-	text-align: center;
-	font: 2em verdana;
 	width: 12cm;
 	position: relative;
 	top: 1cm;
 	height: 2cm;
-	/*[empty]word-break:;*/
 }
 .cover .title
 {
-	text-align: center;
-	font: 3em verdana;
 	top: 1cm;
 	height: 4cm;
-	/*[empty]word-break:;*/
-	position: relative;
 }
 .cover .picture
 {
 	top: 5.5cm;
 	max-height: 9cm;
 	max-width: 9cm;
-	padding: 1cm 0 0;
 }
 .cover .BookLabel
 {
-	text-align: right;
-	font: 1em verdana;
 	width: 5cm;
-	position: absolute;
 	top: 19cm;
 	left: 20cm;
-	/*[empty]word-break:;*/
 }
 .cover .LanguageName
 {
-	text-align: left;
-	font: 1em verdana;
 	width: 5cm;
-	position: absolute;
 	top: 19cm;
 	left: 1.25cm;
-	/*[empty]word-break:;*/
 }
-DIV.page
-{
-	width: 29.7cm;
-	height: 21cm;
-	border: 1px solid #000000;
-}
+
 .titlePage .credits
 {
 	text-align: center;
