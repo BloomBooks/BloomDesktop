@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="editMode.css" Guid="546c9cb7-ff7e-4e1d-8f98-2410d5d7ec88" />
+  <File Id="previewMode.css" Guid="8734df32-5d0f-47d1-a274-2c3bd10c35f1" />
+</InstallerMetadata>
