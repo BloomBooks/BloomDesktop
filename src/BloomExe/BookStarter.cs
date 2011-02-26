@@ -29,13 +29,20 @@ namespace Bloom
 			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceTemplateFolder, newBookFolder);
+			//if something bad happens from here on out, we need to delete that folder we just made
+			try
+			{
+				var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceTemplateFolder)));
+				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
+				File.Move(oldNamedFile, newNamedFile);
 
-			var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceTemplateFolder)));
-			var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
-			File.Move(oldNamedFile, newNamedFile);
-
-			SetupDocumentContents(newBookFolder);
-
+				SetupDocumentContents(newBookFolder);
+			}
+			catch (Exception)
+			{
+				Directory.Delete(newBookFolder,true);
+				throw;
+			}
 			return newBookFolder;
 		}
 
@@ -93,6 +100,9 @@ namespace Bloom
 			Directory.CreateDirectory(destinationPath);
 			foreach (var filePath in Directory.GetFiles(sourcePath))
 			{
+				//better to not just copy the old thumbnail, as the on in the library may well need to look different
+				if (Path.GetFileNameWithoutExtension(filePath).ToLower() == "thumbnail")
+					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
