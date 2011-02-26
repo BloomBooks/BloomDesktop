@@ -35,25 +35,27 @@ namespace Bloom.Project
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this._openButton = new System.Windows.Forms.PictureBox();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.tabControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._openButton)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.ItemSize = new System.Drawing.Size(43, 40);
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Location = new System.Drawing.Point(0, 2);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.Padding = new System.Drawing.Point(0, 0);
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(885, 540);
+            this.tabControl1.Size = new System.Drawing.Size(885, 538);
             this.tabControl1.TabIndex = 10;
             // 
             // tabPage1
@@ -62,7 +64,7 @@ namespace Bloom.Project
             this.tabPage1.Location = new System.Drawing.Point(4, 44);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(877, 492);
+            this.tabPage1.Size = new System.Drawing.Size(877, 490);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.ToolTipText = "View Libaries";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -73,7 +75,7 @@ namespace Bloom.Project
             this.tabPage2.Location = new System.Drawing.Point(4, 44);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(877, 492);
+            this.tabPage2.Size = new System.Drawing.Size(877, 490);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.ToolTipText = "Edit Book";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -84,10 +86,23 @@ namespace Bloom.Project
             this.tabPage3.Location = new System.Drawing.Point(4, 44);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(877, 492);
+            this.tabPage3.Size = new System.Drawing.Size(877, 490);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.ToolTipText = "Publish Book";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // _openButton
+            // 
+            this._openButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this._openButton.BackColor = System.Drawing.Color.Transparent;
+            this._openButton.Image = global::Bloom.Properties.Resources.menuButton;
+            this._openButton.Location = new System.Drawing.Point(863, 2);
+            this._openButton.Name = "_openButton";
+            this._openButton.Size = new System.Drawing.Size(16, 16);
+            this._openButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this._openButton.TabIndex = 11;
+            this._openButton.TabStop = false;
+            this._openButton.Click += new System.EventHandler(this._openButton_Click);
             // 
             // toolStripButton1
             // 
@@ -99,18 +114,6 @@ namespace Bloom.Project
             this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
             this.toolStripButton1.Text = "toolStripButton1";
             this.toolStripButton1.ToolTipText = "Open a library for a different language, or create a new library.";
-            // 
-            // _openButton
-            // 
-            this._openButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this._openButton.Image = global::Bloom.Properties.Resources.menuButton;
-            this._openButton.Location = new System.Drawing.Point(863, 2);
-            this._openButton.Name = "_openButton";
-            this._openButton.Size = new System.Drawing.Size(16, 16);
-            this._openButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-            this._openButton.TabIndex = 11;
-            this._openButton.TabStop = false;
-            this._openButton.Click += new System.EventHandler(this._openButton_Click);
             // 
             // ProjectView
             // 
