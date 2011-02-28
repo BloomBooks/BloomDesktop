@@ -58,7 +58,7 @@ namespace Bloom.ToPalaso
 			var createAndGetGroup = new TableLayoutPanel();
 			createAndGetGroup.AutoSize = true;
 			AddCreateChoices(createAndGetGroup);
-			AddGetChoices(createAndGetGroup);
+		  //  AddGetChoices(createAndGetGroup);
 
 			var openChoices = new TableLayoutPanel();
 			openChoices.AutoSize = true;

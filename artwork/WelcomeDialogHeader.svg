@@ -73,7 +73,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -81,16 +81,22 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <rect
-       style="fill:url(#linearGradient6065);fill-opacity:1;stroke:none"
-       id="rect5191"
-       width="1854.3301"
-       height="80.812202"
-       x="-0.99999714"
-       y="-0.20661163"
+    <g
+       id="g3022"
        inkscape:export-filename="C:\dev\Bloom\artwork\WelcomeHeader.png"
-       inkscape:export-xdpi="72.361687"
-       inkscape:export-ydpi="72.361687" />
+       inkscape:export-xdpi="72.390007"
+       inkscape:export-ydpi="72.390007">
+      <rect
+         inkscape:export-ydpi="72.361687"
+         inkscape:export-xdpi="72.361687"
+         inkscape:export-filename="C:\dev\Bloom\artwork\WelcomeHeader.png"
+         y="-0.20661163"
+         x="-0.99999714"
+         height="80.812202"
+         width="1854.3301"
+         id="rect5191"
+         style="fill:url(#linearGradient6065);fill-opacity:1;stroke:none" />
+    </g>
     <g
        id="g4625"
        transform="matrix(0.5120278,0,0,0.47007664,1395.9287,252.30452)"
