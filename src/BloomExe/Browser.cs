@@ -4,9 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
-using BloomTemp;
+using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
+using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
@@ -25,11 +26,10 @@ namespace Bloom
         public Browser()
         {
             InitializeComponent();
- 
         }
 
 
-		void OnValidating(object sender, CancelEventArgs e)
+        void OnValidating(object sender, CancelEventArgs e)
 		{
 			UpdateDomWithNewEditsCopiedOver();
 		}
@@ -149,7 +149,15 @@ namespace Bloom
 					node.InnerText = " ";
 				}
 			}
-		}
+
+            foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+            {
+                if (string.IsNullOrEmpty(node.InnerText))
+                {
+                    node.InnerText = " ";
+                }
+            }
+        }
 
         private void UpdateDisplay()
         {
@@ -202,7 +210,7 @@ namespace Bloom
 		/// </summary>
 		private void AddJavaScriptForEditing(XmlDocument dom)
 		{
-			//ref: http://dev-answers.blogspot.com/2007/08/firefox-does-not-reflect-input-form.html
+		    //ref: http://dev-answers.blogspot.com/2007/08/firefox-does-not-reflect-input-form.html
 			foreach (XmlElement node in dom.SafeSelectNodes("//input"))
 			{
 				node.SetAttribute("onblur", "", "this.setAttribute('Value',this.value);");
@@ -212,6 +220,8 @@ namespace Bloom
 				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
 			}
 		}
+
+
 
         private void timer1_Tick(object sender, EventArgs e)
         {
