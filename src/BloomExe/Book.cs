@@ -137,8 +137,24 @@ namespace Bloom
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
+			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom);
 			return dom;
+		}
+
+		private void AddJavaScriptForEditing(XmlDocument dom)
+		{
+			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
+		   // AddJavascriptFile(dom, head, _fileLocator.LocateFile("jquery-1.4.4.min.js"));
+			AddJavascriptFile(dom, head, _fileLocator.LocateFile("Edit-TimeScripts.js"));
+		}
+
+		private void AddJavascriptFile(XmlDocument dom, XmlElement node, string pathToJavascript)
+		{
+			XmlElement element = node.AppendChild(dom.CreateElement("script", "http://www.w3.org/1999/xhtml")) as XmlElement;
+			element.SetAttribute("type", "text/javascript");
+			element.SetAttribute("src", "file://"+ pathToJavascript);
+			node.AppendChild(element);
 		}
 
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)

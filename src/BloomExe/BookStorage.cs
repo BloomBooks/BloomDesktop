@@ -141,7 +141,7 @@ namespace Bloom
 
 		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
 		{
-			var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
+		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
 				head.RemoveChild(baseNode);
@@ -152,6 +152,7 @@ namespace Bloom
 				baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
 				head.AppendChild(baseElement);
 			}
+
 		}
 
 		public XmlDocument Dom

@@ -41,6 +41,8 @@ namespace BloomTests
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
+			_fileLocator.Setup(x => x.LocateFile("Edit-TimeScripts.js")).Returns("../notareallocation/Edit-TimeScripts.js");
+
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
@@ -178,6 +180,18 @@ namespace BloomTests
 
 			Assert.AreEqual("original1", textNodesInStorage.Item(0).InnerText, "the first copy of this page should not have been changed");
 			Assert.AreEqual("changed", textNodesInStorage.Item(1).InnerText, "the value didn't get copied to  the storage dom");
+		}
+
+
+		[Test]
+		public void GetEditableHtmlDomForPage_HasInjectedElementForEditTimeScript()
+		{
+			var book = CreateBook(true);
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
+			var scriptNodes = dom.SelectNodes("//script");
+			Assert.AreEqual(1, scriptNodes.Count);
+			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
+			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
 		}
 
 		[Test]

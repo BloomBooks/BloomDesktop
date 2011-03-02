@@ -4,9 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
-using BloomTemp;
+using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
+using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
@@ -25,7 +26,6 @@ namespace Bloom
 		public Browser()
 		{
 			InitializeComponent();
-
 		}
 
 
@@ -149,6 +149,14 @@ namespace Bloom
 					node.InnerText = " ";
 				}
 			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText))
+				{
+					node.InnerText = " ";
+				}
+			}
 		}
 
 		private void UpdateDisplay()
@@ -212,6 +220,8 @@ namespace Bloom
 				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
 			}
 		}
+
+
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
