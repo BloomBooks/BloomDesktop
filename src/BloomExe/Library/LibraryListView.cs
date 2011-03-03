@@ -127,7 +127,7 @@ namespace Bloom.Library
 		{
 //            if (book.Type != Book.BookType.Template)
 //            {
-				return book.GetThumbNailOfBookCover(true);
+			return book.GetThumbNailOfBookCover(book.Type != Book.BookType.Publication);
 //            }
 //            else
 //            {

@@ -45,9 +45,9 @@ namespace Bloom
 		/// <param name="key">whatever system you want... just used for caching</param>
 		/// <param name="document"></param>
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
-		/// <param name="drawBorder"></param>
+		/// <param name="drawBorderDashed"></param>
 		/// <returns></returns>
-		public Image GetThumbnail(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorder)
+		public Image GetThumbnail(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed)
 		{
 			Image image;
 			if (_images.TryGetValue(key, out image))
@@ -99,7 +99,7 @@ namespace Bloom
 					{
 						try
 						{
-							 OnThumbNailBrowser_DocumentCompleted(drawBorder, null);
+							 OnThumbNailBrowser_DocumentCompleted(drawBorderDashed, null);
 						}
 						catch (Exception)
 						{
@@ -214,7 +214,7 @@ namespace Bloom
 				}
 			}
 		}
-		private void OnThumbNailBrowser_DocumentCompleted(object drawBorder, EventArgs e)
+		private void OnThumbNailBrowser_DocumentCompleted(object drawBorderDashed, EventArgs e)
 		{
 			//NB: this will always give us the size it was on the first page we navigated to,
 			//so that if the book size changes, our thumbnails are all wrong. I don't know
@@ -231,12 +231,12 @@ namespace Bloom
 												   new Rectangle(0,//_browser.Location.X,
 																 0,//_browser.Location.Y,
 																 width, height));
-				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,(bool)drawBorder);
+				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,(bool)drawBorderDashed);
 			}
 		}
 
 
-		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorder)
+		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
 		{
 			//get the lesser of the desired and original size
 			destinationWidth = bmp.Width > destinationWidth ? destinationWidth : bmp.Width;
@@ -291,19 +291,20 @@ namespace Bloom
 						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
 						GraphicsUnit.Pixel, WhiteToBackground);
 
-				if (drawBorder)
-				{
 					Pen pn = new Pen(Color.Black, 1);
-					destRect.Height--;//hack, we were losing the bottom
-					graphics.DrawRectangle(pn, destRect);
-				}
-				//grp.DrawImage(bmp, horizontalOffset, verticalOffset, actualWidth, actualHeight);
-				else
+				if (drawBorderDashed)
 				{
-
-					Pen pn = new Pen(borderColor, 1);
-					graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
+					pn.DashStyle = DashStyle.Dash;
+					pn.Width = 2;
 				}
+				destRect.Height--;//hack, we were losing the bottom
+				graphics.DrawRectangle(pn, destRect);
+//                else
+//                {
+//
+//                    Pen pn = new Pen(borderColor, 1);
+//                    graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
+//                }
 			}
 			return thumbnail;
 #endif

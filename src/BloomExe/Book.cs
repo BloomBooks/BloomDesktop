@@ -103,7 +103,7 @@ namespace Bloom
 			}
 		}
 
-		public  Image GetThumbNailOfBookCover(bool drawBorder)
+		public  Image GetThumbNailOfBookCover(bool drawBorderDashed)
 		{
 			Image thumb;
 			if(_storage.TryGetPremadeThumbnail(out thumb))
@@ -118,7 +118,7 @@ namespace Bloom
 
 			folderForCachingThumbnail = _storage.FolderPath;
 
-			return _thumbnailProvider.GetThumbnail(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorder);
+			return _thumbnailProvider.GetThumbnail(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed);
 		}
 
 //        protected string PathToThumbnailCache
@@ -269,7 +269,7 @@ namespace Bloom
 			get
 			{
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
-				if(_storage.BookType!=BookType.Publication)
+				if(Type!=BookType.Publication)
 					return null;
 				string templateKey = _storage.GetTemplateKey();
 				Book book=null;
@@ -290,7 +290,11 @@ namespace Bloom
 
 		public BookType Type
 		{
-			get { return _storage.BookType; }
+			get
+			{
+				return CanEdit ? BookType.Publication : BookType.Template; //TODO
+				//return _storage.BookType;
+			}
 		}
 
 		public XmlDocument RawDom
