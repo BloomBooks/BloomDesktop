@@ -9,6 +9,7 @@ using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Project;
+using Bloom.Publish;
 using Palaso.IO;
 
 namespace Bloom
@@ -52,6 +53,8 @@ namespace Bloom
 
 
 				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
+				builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
+
 				builder.Register<IFileLocator>(c => new FileLocator(GetFileLocations())).InstancePerLifetimeScope();
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();

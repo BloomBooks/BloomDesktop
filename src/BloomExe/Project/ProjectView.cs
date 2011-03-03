@@ -13,7 +13,7 @@ namespace Bloom.Project
 		private readonly ProjectModel _model;
 		private LibraryView _libraryView;
 		private EditingView _editingView;
-		private PdfView _pdfView;
+		private PublishView _publishView;
 		public event EventHandler CloseCurrentProject;
 
 		public delegate ProjectView Factory();//autofac uses this
@@ -21,7 +21,7 @@ namespace Bloom.Project
 		public ProjectView(ProjectModel model,
 			LibraryView.Factory libraryViewFactory,
 			EditingView.Factory editingViewFactory,
-			PdfView.Factory pdfViewFactory)
+			PublishView.Factory pdfViewFactory)
 		{
 			_model = model;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
@@ -49,9 +49,9 @@ namespace Bloom.Project
 			//
 			// _pdfView
 			//
-			this._pdfView = pdfViewFactory();
-			this._pdfView.Dock = System.Windows.Forms.DockStyle.Fill;
-			tabPage3.Controls.Add(_pdfView);
+			this._publishView = pdfViewFactory();
+			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
+			tabPage3.Controls.Add(_publishView);
 
 			tabPage2.Tag = this.tabControl1.TabPages.IndexOf(tabPage2); //remember initial location
 			tabPage3.Tag = this.tabControl1.TabPages.IndexOf(tabPage3); //remember initial location
@@ -60,7 +60,7 @@ namespace Bloom.Project
 
 			this.tabPage1.Controls.Add(_libraryView);
 			this.tabPage2.Controls.Add(this._editingView);
-			this.tabPage3.Controls.Add(this._pdfView);
+			this.tabPage3.Controls.Add(this._publishView);
 
 		}
 

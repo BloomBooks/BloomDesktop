@@ -99,6 +99,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ProjectContext.cs" />
+    <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
     <Compile Include="SplashScreen.cs">
       <SubType>Form</SubType>
@@ -179,11 +180,11 @@
     <Compile Include="TempFiles.cs" />
     <Compile Include="TemplateCollectionList.cs" />
     <Compile Include="Project\ProjectModel.cs" />
-    <Compile Include="Publish\PdfView.cs">
+    <Compile Include="Publish\PublishView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\PdfView.Designer.cs">
-      <DependentUpon>PdfView.cs</DependentUpon>
+    <Compile Include="Publish\PublishView.Designer.cs">
+      <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Project\ProjectView.cs">
@@ -218,8 +219,8 @@
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PdfView.resx">
-      <DependentUpon>PdfView.cs</DependentUpon>
+    <EmbeddedResource Include="Publish\PublishView.resx">
+      <DependentUpon>PublishView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\ProjectView.resx">
       <DependentUpon>ProjectView.cs</DependentUpon>
