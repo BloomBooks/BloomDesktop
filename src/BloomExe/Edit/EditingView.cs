@@ -96,7 +96,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					imageInfo.Image = Image.FromFile(existingImagePath);
+					imageInfo = PalasoImage.FromFile(existingImagePath);
 				}
 				catch (Exception)
 				{
