@@ -61,6 +61,7 @@
             this._bookletRadio.TabStop = true;
             this._bookletRadio.Text = "Booklet";
             this._bookletRadio.UseVisualStyleBackColor = true;
+            this._bookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
             // 
             // _noBookletRadio
             // 
@@ -72,8 +73,9 @@
             this._noBookletRadio.TabStop = true;
             this._noBookletRadio.Text = "One page per piece of paper";
             this._noBookletRadio.UseVisualStyleBackColor = true;
+            this._noBookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
             // 
-            // PdfView
+            // PublishView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
