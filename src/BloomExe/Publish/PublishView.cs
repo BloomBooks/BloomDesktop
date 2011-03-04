@@ -34,8 +34,14 @@ namespace Bloom.Publish
 		{
 			base.OnLoad(e);
 			_loadTimer.Enabled = true;
+			UpdateDisplay();
 		}
 
+		private void UpdateDisplay()
+		{
+			_bookletRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.Booklet;
+			_noBookletRadio.Checked = ! _bookletRadio.Checked;
+		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
@@ -57,8 +63,6 @@ namespace Bloom.Publish
 					}
 
 					break;
-
-
 			}
 		}
 
@@ -84,6 +88,13 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.LoadBook();
+			UpdateDisplay();
+		}
+
+		private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
+		{
+			_model.SetBookletStyle(_bookletRadio.Checked ? PublishModel.BookletStyleChoices.Booklet : PublishModel.BookletStyleChoices.None);
+			UpdateDisplay();
 		}
 	}
 }

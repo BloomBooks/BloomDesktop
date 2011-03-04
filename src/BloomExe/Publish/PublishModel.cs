@@ -1,66 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using Palaso.IO;
 
 namespace Bloom.Publish
 {
+	/// <summary>
+	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and
+	/// letting you print it.
+	/// </summary>
 	public class PublishModel : IDisposable
 	{
 		public BookSelection BookSelection { get; set; }
 
 		public string PdfFilePath{ get; private set;}
-
+		public enum DisplayModes
+		{
+			NoBook, Working, ShowPdf
+		}
 		private readonly BookSelection _bookSelection;
 		private Book _currentlyLoadedBook;
+		private PdfMaker _pdfMaker;
 
-		public PublishModel(BookSelection bookSelection)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker)
 		{
 			BookSelection = bookSelection;
 			_bookSelection = bookSelection;
+			_pdfMaker = pdfMaker;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 		}
 
-		private PublishView _view;
-		public PublishView View
-		{
-			get { return _view; }
-			set
-			{
-				_view = value;
-				//_view.VisibleChanged +=new EventHandler(OnVisibleChanged);
-			}
-		}
+		public PublishView View { get; set; }
 
-		private void OnVisibleChanged(object sender, EventArgs e)
-		{
-
-		}
 
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			if (_currentlyLoadedBook != BookSelection.CurrentSelection && _view.Visible)
+			if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
 				LoadBook();
 			}
 		}
 
-		public enum DisplayModes
-		{
-			NoBook, Working, ShowPdf
-		}
+
 		public void LoadBook()
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
-			PdfFilePath =  GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 			try
 			{
-				//_selectionChangedWhileWeWereInvisible = false;
-
 				if (_bookSelection.CurrentSelection == null)
 				{
 					SetDisplayMode(DisplayModes.NoBook);
@@ -68,54 +53,22 @@ namespace Bloom.Publish
 				}
 
 				SetDisplayMode(DisplayModes.Working);
+				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 				var path = _bookSelection.CurrentSelection.GetHtmlFileForPrintingWholeBook();
-				{
-					var exePath = Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, "wkhtmltopdf");
-					exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-					if (!File.Exists(exePath))
-					{
-						//if this is a programmer, it should be in the lib directory
-						exePath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, Path.Combine("lib", "wkhtmltopdf"));
-						exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-						if (!File.Exists(exePath))
-						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-								"Could not find a file that should have been installed with Bloom: " + exePath);
-							return;
-						}
-					}
-					ProcessStartInfo info = new ProcessStartInfo(exePath,
-																 string.Format(
-																	 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-																	 Path.GetFileName(path), PdfFilePath));
-					info.WorkingDirectory = Path.GetDirectoryName(path);
-					info.ErrorDialog = true;
-					info.WindowStyle = ProcessWindowStyle.Hidden;
 
-
-
-					//_browser.Visible = false;
-					var proc = System.Diagnostics.Process.Start(info);
-					proc.WaitForExit(20 * 1000);
-					if (!proc.HasExited)
-					{
-						proc.Kill();
-						PdfFilePath = Path.GetTempFileName(); //change it so we aren't competing
-						File.WriteAllText(PdfFilePath, "<html><body>Making the PDF took too long</body></html>");
-					}
-				}
+				_pdfMaker.MakePdf(path, PdfFilePath, BookletStyle);
 			}
 			catch (Exception e)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
+				SetDisplayMode(DisplayModes.NoBook);
 				return;
-			}
-			finally
-			{
 			}
 			SetDisplayMode(DisplayModes.ShowPdf);
 		}
+
+
 
 		private string GetPdfPath(string fileName)
 		{
@@ -159,6 +112,24 @@ namespace Bloom.Publish
 
 				}
 			}
+		}
+
+		public enum BookletStyleChoices
+		{
+			None,
+			Booklet
+		}
+
+		public BookletStyleChoices BookletStyle
+		{ get; private set; }
+
+		public void SetBookletStyle(BookletStyleChoices booklet)
+		{
+			if (BookletStyle == booklet)
+				return;
+
+			BookletStyle = booklet;
+			LoadBook();
 		}
 	}
 }
