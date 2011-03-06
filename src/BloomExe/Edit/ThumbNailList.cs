@@ -25,11 +25,34 @@ namespace Bloom.Edit
 			_listView.LargeImageList = _thumbnailImageList;
 			_listView.Sorting = SortOrder.Ascending;
 			_listView.ListViewItemSorter = new SortListViewItemByIndex();
+			  _listView.OwnerDraw = true;
+			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
+			 _boundsPen = new Pen(Brushes.DarkGray, 2);
+
+		}
+
+		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
+		{
+			e.DrawDefault = true;
+			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
+			{
+				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Top, e.Bounds.Right, e.Bounds.Top);
+			}
+			//indicate selection in a more obvious way than just the grey screen we get by default
+			if(e.Item.Selected )
+			{
+				var r = e.Bounds;
+				r.Inflate(-1,-1);
+				e.Graphics.DrawRectangle(_boundsPen,r);
+			}
 		}
 
 		public bool KeepShowingSelection
 		{
-			set { _listView.HideSelection = !value; }
+			set
+			{
+				//_listView.HideSelection = !value;
+			}
 		}
 
 	   private void InvokePageSelectedChanged(Page page)
@@ -129,14 +152,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
-		{
-			e.DrawDefault = true;
-			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
-			{
-				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Top, e.Bounds.Right, e.Bounds.Top);
-			}
-		}
 
 		private void _listView_MouseUp(object sender, MouseEventArgs e)
 		{
@@ -179,6 +194,7 @@ namespace Bloom.Edit
 
 		private ListViewItem _currentDraggingItem;
 		private ListViewItem _currentTarget;
+		private Pen _boundsPen;
 
 		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{

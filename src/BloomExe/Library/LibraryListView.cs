@@ -29,9 +29,22 @@ namespace Bloom.Library
 			InitializeComponent();
 			_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
 			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
-
+			_listView.OwnerDraw = true;
+			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
+			_boundsPen = new Pen(Brushes.DarkGray, 2);
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+		}
+
+		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
+		{
+			if(e.Item.Selected )
+			{
+				var r = e.Bounds;
+				r.Inflate(-1,-1);
+				e.Graphics.DrawRectangle(_boundsPen,r);
+			}
+			e.DrawDefault = true;
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -152,6 +165,7 @@ namespace Bloom.Library
 
 		int _vernacularBookletColorIndex = 0;
 		int _templateBookletColorIndex = 0;
+		private Pen _boundsPen;
 
 		private Image GetBookletImage(Book book)
 		{
