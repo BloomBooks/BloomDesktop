@@ -21,17 +21,19 @@ namespace Bloom.Library
         private readonly Book.Factory _bookFactory;
     	private readonly BookStorage.Factory _storageFactory;
     	private readonly BookStarter.Factory _bookStarterFactory;
+        private readonly BookSelection _bookSelection;
 
-    	public BookCollection(string path, CollectionType collectionType, 
+        public BookCollection(string path, CollectionType collectionType, 
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
-			BookStarter.Factory bookStarterFactory,
+			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
 			CreateFromTemplateCommand createFromTemplateCommand)
         {
             _path = path;
             _bookFactory = bookFactory;
         	_storageFactory = storageFactory;
     		_bookStarterFactory = bookStarterFactory;
-    		Type = collectionType;
+    	    _bookSelection = bookSelection;
+    	    Type = collectionType;
 
 			//we only pay attention if we are the editable collection 'round here.
 			if (collectionType == CollectionType.TheOneEditableCollection)
@@ -42,39 +44,66 @@ namespace Bloom.Library
 
 		public CollectionType Type { get; private set; }
 
-    	private void CreateFromTemplate(Book templateBook)
-    	{
-    		var starter=_bookStarterFactory();
-			starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath,_path);
-    		if(CollectionChanged!=null)
+        private void CreateFromTemplate(Book templateBook)
+        {
+            var starter = _bookStarterFactory();
+            var path = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+            ListOfBooksIsOutOfDate();
+            if (CollectionChanged != null)
                 CollectionChanged.Invoke(this, null);
-    	}
-
-    	public string Name  
-        {
-            get { return Path.GetFileName(_path); }
-        }
-
-        public IEnumerable<Book> GetBooks()
-        {
-            foreach(string path in Directory.GetDirectories(_path))
+            var newBook = _books.Find(b => b.FolderPath == path);
+            if (_bookSelection != null)
             {
-                if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
-                    continue;
-
-
-                var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
-				Debug.WriteLine(book.Title);
-            	yield return book;
+                 _bookSelection.SelectBook(newBook);
             }
         }
-
 
         public void DeleteBook(Book book)
         {
             book.Delete();
+            ListOfBooksIsOutOfDate();
             if (CollectionChanged != null)
                 CollectionChanged.Invoke(this, null);
+            if (_bookSelection != null)
+            {
+                _bookSelection.SelectBook(null);
+            }
         }
+
+        public string Name  
+        {
+            get { return Path.GetFileName(_path); }
+        }
+
+        private List<Book> _books;
+        private void ListOfBooksIsOutOfDate()
+        {
+            _books = null;
+        }
+
+        public IEnumerable<Book> GetBooks()
+        {
+            if (_books == null)
+            {
+                LoadBooks();
+            }
+
+            return _books;
+        }
+
+        private void LoadBooks()
+        {
+            _books = new List<Book>();
+            foreach(string path in Directory.GetDirectories(_path))
+            {
+                if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
+                    continue;
+                var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
+                Debug.WriteLine(book.Title);
+                _books.Add(book);
+            }
+        }
+        
+
     }
 }
