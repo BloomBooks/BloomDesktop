@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Data;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Xml;
-using Bloom.Properties;
 using Palaso.IO;
 
 
@@ -23,15 +18,32 @@ namespace Bloom.Library
 
 		private readonly LibraryModel _model;
 		private readonly HtmlThumbNailer _thumbnailProvider;
+		private readonly BookSelection _bookSelection;
 		private bool _reshowPending = false;
 
-		public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider)
+		public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider, BookSelection bookSelection)
 		{
 			_model = model;
 			_thumbnailProvider = thumbnailProvider;
+			_bookSelection = bookSelection;
 			InitializeComponent();
 			_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
 			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
+
+			//enhance: move to model
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+		}
+
+		private void OnBookSelectionChanged(object sender, EventArgs e)
+		{
+			foreach (ListViewItem item in _listView.Items)
+			{
+				if(item.Tag == _bookSelection.CurrentSelection)
+				{
+					item.Selected = true;
+					break;
+				}
+			}
 		}
 
 		public int PreferredWidth

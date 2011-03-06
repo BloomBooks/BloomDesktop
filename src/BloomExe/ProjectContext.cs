@@ -47,6 +47,7 @@ namespace Bloom
 					.InstancePerLifetimeScope()
 					.Where(t => new[]{
 					typeof(TemplateInsertionCommand),
+					typeof(DeletePageCommand),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
 					typeof(PageSelection)}.Contains(t));

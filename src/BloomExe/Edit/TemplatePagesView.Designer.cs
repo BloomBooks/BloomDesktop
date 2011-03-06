@@ -13,7 +13,7 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            this.VisibleChanged -= new System.EventHandler(this.TemplatePagesView_VisibleChanged);
+           // this.VisibleChanged -= new System.EventHandler(this.TemplatePagesView_VisibleChanged);
             if (disposing && (components != null))
             {
                 components.Dispose();
@@ -68,7 +68,6 @@
             this.Name = "TemplatePagesView";
             this.Size = new System.Drawing.Size(155, 179);
             this.BackColorChanged += new System.EventHandler(this.TemplatePagesView_BackColorChanged);
-            this.VisibleChanged += new System.EventHandler(this.TemplatePagesView_VisibleChanged);
             this.ResumeLayout(false);
             this.PerformLayout();
 

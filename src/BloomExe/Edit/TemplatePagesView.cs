@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Edit;
@@ -9,7 +10,6 @@ namespace Bloom
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
-		private bool _bookSelectionChangedPending;
 
 		public delegate TemplatePagesView Factory();//autofac uses this
 
@@ -20,28 +20,24 @@ namespace Bloom
 
 			this.Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			_thumbNailList.PageSelectedChanged += new EventHandler(OnPageClicked);
 		 }
 
 		void OnPageClicked(object sender, EventArgs e)
 		{
-
 			_templateInsertionCommand.Insert(sender as Page);
 		}
 
-		void OnBookSelectionChanged(object sender, EventArgs e)
+
+		public void Update()
 		{
 			//we don't want to spend time setting up our thumnails and such when actually the
 			//user is on another tab right now
-			if (!Visible)
-			{
-				_bookSelectionChangedPending = true;
-				return;
-			}
+			Debug.Assert(Visible, "Shouldn't be slowing things down by calling this when it isn't visible");
+
 			if (_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.TemplateBook==null)
 			{
-				_thumbNailList.SetItems(new Page[] { });
+			   Clear();
 			}
 			else
 			{
@@ -54,16 +50,10 @@ namespace Bloom
 			_thumbNailList.BackColor = BackColor;
 		}
 
-		private void TemplatePagesView_VisibleChanged(object sender, EventArgs e)
+		public void Clear()
 		{
-			if(_bookSelectionChangedPending)
-			{
-				_bookSelectionChangedPending = false;
-				OnBookSelectionChanged(this, null);
-			}
+			_thumbNailList.SetItems(new IPage[] { });
 		}
-
-
 
 	}
 }

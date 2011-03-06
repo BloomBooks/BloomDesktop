@@ -59,9 +59,9 @@ namespace Bloom.Library
 			}
 		}
 
-		public bool SelectBook(Book book)
+		public  void SelectBook(Book book)
 		{
-			return _bookSelection.SelectBook(book);
+			 _bookSelection.SelectBook(book);
 		}
 
 		public void DeleteBook(Book book, BookCollection collection)

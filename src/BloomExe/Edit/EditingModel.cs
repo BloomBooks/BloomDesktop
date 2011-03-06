@@ -9,12 +9,12 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
-		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
-		private bool _bookSelectionChangedPending;
+		private Book _currentlyDisplayedBook;
+		private EditingView _view;
 
-		public event EventHandler UpdateDisplay;
+
 		public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -22,17 +22,24 @@ namespace Bloom.Edit
 		public EditingModel(BookSelection bookSelection, PageSelection pageSelection,
 			TemplateInsertionCommand templateInsertionCommand,
 			PageListChangedEvent pageListChangedEvent,
-			RelocatePageEvent relocatePageEvent)
+			RelocatePageEvent relocatePageEvent,
+			DeletePageCommand deletePageCommand)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
-			_templateInsertionCommand = templateInsertionCommand;
 
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			//bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			deletePageCommand.Subscribe(OnDeletePage);
 			pageListChangedEvent.Subscribe(x=>  InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
+		}
+
+		private void OnDeletePage(IPage page)
+		{
+			_currentlyDisplayedBook.DeletePage(page);
+			_view.UpdatePageList();
 		}
 
 		private void OnRelocatePage(RelocatePageInfo info)
@@ -45,10 +52,7 @@ namespace Bloom.Edit
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
 			_bookSelection.CurrentSelection.InsertPageAfter(_pageSelection.CurrentSelection, sender as Page);
-			if(UpdatePageList!=null)
-			{
-				UpdatePageList(this, null);
-			}
+			_view.UpdatePageList();
 			//_pageSelection.SelectPage(newPage);
 		}
 
@@ -72,65 +76,35 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection;  }
 		}
 
-		//public PageEditingModel PageEditor{ get; set;}
-
-		void OnBookSelectionChanged(object sender, EventArgs e)
+		public bool GetBookHasChanged()
 		{
-			//we don't want to spend time setting up our thumnails and such when actually the
-			//user is on another tab right now
-			if (!_visible)
-			{
-				_bookSelectionChangedPending = true;
-				return;
-			}
-
-			if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
-			{
-				var page = _bookSelection.CurrentSelection.FirstPage;
-				if(page!=null)
-					_pageSelection.SelectPage(page);
-			}
-
-
-			if (UpdateDisplay != null)
-			{
-				UpdateDisplay(this, null);
-			}
-
-			InvokeUpdatePageList();
+			return _currentlyDisplayedBook != CurrentBook;
 		}
 
-		public void StartOfLoad()
-		{
-			VisibilityChanged(true);//hack
-		}
-
-		public void VisibilityChanged(bool visible)
+		public void ActualVisibiltyChanged(bool visible)
 		{
 			_visible = visible;
-			Debug.WriteLine("EditingModel._visible ="+_visible);
-			if(_bookSelectionChangedPending)
-			{
-				_bookSelectionChangedPending = false;
-				OnBookSelectionChanged(this, null);
-			}
-		}
+			Debug.WriteLine("EditingModel._visible =" + _visible);
+			if (!visible || _currentlyDisplayedBook == CurrentBook)
+				return;
 
-		private void InvokeUpdatePageList()
-		{
-			if (UpdatePageList != null)
+			_currentlyDisplayedBook = CurrentBook;
+			//if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
 			{
-				UpdatePageList(this, null);
+				var page = _bookSelection.CurrentSelection.FirstPage;
+				if (page != null)
+					_pageSelection.SelectPage(page);
+			}
+			if (_view != null)
+			{
+				_view.UpdateTemplateList();
+				_view.UpdatePageList();
 			}
 		}
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
-			EventHandler handler = UpdateDisplay;
-			if (handler != null)
-			{
-				handler(this, null);
-			}
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
 		public XmlDocument GetXmlDocumentForCurrentPage()
@@ -154,11 +128,24 @@ namespace Bloom.Edit
 			//review: this is spagetti
 			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
 
-			UpdateDisplay(this, null);
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			InvokeUpdatePageList();
 		}
-	}
 
+		private void InvokeUpdatePageList()
+		{
+			if (UpdatePageList != null)
+			{
+				UpdatePageList(this, null);
+			}
+		}
+
+		public void SetView(EditingView view)
+		{
+			_view = view;
+		}
+	}
+			//_book.DeletePage(_pageSelection.CurrentSelection);
 
 	public class TemplateInsertionCommand
 	{

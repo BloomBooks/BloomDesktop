@@ -34,7 +34,9 @@ namespace Bloom
 	{}
 
 	public class DeletePageCommand: Event<IPage>
-	{}
+	{
+
+	}
 
 //	public class BookCollectionChangedEvent : Event<BookCollection>
 //	{ }

@@ -5,13 +5,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace Bloom.Edit
 {
 	public partial class ThumbNailList : UserControl
 	{
 		private bool _inSelectionAlready;
-		private bool _mouseDidGoDown;
+		private bool _intentionallyChangingSelection;
 
 
 		//public Action<Page> PageSelectedMethod { get; set; }
@@ -24,6 +25,11 @@ namespace Bloom.Edit
 			_listView.LargeImageList = _thumbnailImageList;
 			_listView.Sorting = SortOrder.Ascending;
 			_listView.ListViewItemSorter = new SortListViewItemByIndex();
+		}
+
+		public bool KeepShowingSelection
+		{
+			set { _listView.HideSelection = !value; }
 		}
 
 	   private void InvokePageSelectedChanged(Page page)
@@ -77,7 +83,7 @@ namespace Bloom.Edit
 		{
 			if (_inSelectionAlready)
 				return;
-			if (!_mouseDidGoDown)//yes, having painful phantom selections when the cursor leaves this control
+			if (!_intentionallyChangingSelection)//yes, having painful phantom selections when the cursor leaves this control
 			{
 				_listView.SelectedIndices.Clear();
 			}
@@ -113,7 +119,7 @@ namespace Bloom.Edit
 
 		private void _listView_MouseDown(object sender, MouseEventArgs e)
 		{
-			_mouseDidGoDown = true;
+			_intentionallyChangingSelection = true;
 
 			if (this.RelocatePageEvent !=null)
 			{
@@ -136,7 +142,7 @@ namespace Bloom.Edit
 		{
 			Capture = false;
 			Debug.WriteLine("MouseUp");
-			_mouseDidGoDown = false;
+			_intentionallyChangingSelection = false;
 
 			if (Control.MouseButtons == MouseButtons.Left)
 				return;
@@ -204,12 +210,37 @@ namespace Bloom.Edit
 				_currentTarget = target;
 			}
 		}
+
+		public void SelectPage(IPage page)
+		{
+			foreach (ListViewItem listViewItem in _listView.Items)
+			{
+				var itemPage = listViewItem.Tag as IPage;
+				if (itemPage == null)
+					continue;
+
+				if(itemPage.Id == page.Id) //actual page object may change between book loads, but the id is consistent
+				{
+					try
+					{
+						_intentionallyChangingSelection = true;
+						listViewItem.Selected = true;
+					}
+					finally
+					{
+						_intentionallyChangingSelection = false;
+					}
+					return;
+				}
+			}
+// actually, this is common because we might not yet have been told to update our list   Debug.Fail("Did not find item to select");
+		}
 	}
 
 	/// <summary>
 	/// This makes a list view act, well, like one would expect; the items
 	/// are ordered according to their index, so that inserting an item actually
-	/// doesn't something other than always whowing it at the end!
+	/// does something other than always throwing it at the end!
 	/// </summary>
 	class SortListViewItemByIndex : IComparer
 	{

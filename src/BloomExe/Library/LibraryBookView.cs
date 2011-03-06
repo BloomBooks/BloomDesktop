@@ -38,11 +38,11 @@ namespace Bloom.Library
 		private void LoadBook()
 		{
 			_addToLibraryButton.Visible =  _addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
-			if(_bookSelection.CurrentSelection==null)
-				return;
-			//_addToLibraryButton.Image = _bookSelection.CurrentSelection.GetThumbNailOfBookCover(true);
 			ShowBook();
-			_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
+			if (_bookSelection.CurrentSelection != null)
+			{
+				_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
+			}
 		}
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
@@ -57,9 +57,16 @@ namespace Bloom.Library
 
 		private void ShowBook()
 		{
-			_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
-			_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate;
-			_reshowPending = false;
+			if (_bookSelection.CurrentSelection == null)
+			{
+				_browser.Navigate("about:blank", false);
+			}
+			else
+			{
+				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
+				_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate;
+				_reshowPending = false;
+			}
 		}
 
 		private void OnAddToLibraryClick(object sender, EventArgs e)

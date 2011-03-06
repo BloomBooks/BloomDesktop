@@ -8,14 +8,16 @@ namespace Bloom
 		public event EventHandler SelectionChanged;
 
 
-		public bool SelectBook(Book book)
+		public void SelectBook(Book book)
 		{
+			if (_currentSelection == book)
+				return;
+
 			//enhance... send out cancellable pre-change event
 
 		   _currentSelection = book;
 
 			InvokeSelectionChanged();
-			return true;
 		}
 
 

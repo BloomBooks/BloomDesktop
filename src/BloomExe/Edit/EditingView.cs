@@ -13,7 +13,6 @@ namespace Bloom.Edit
 	public partial class EditingView : UserControl
 	{
 		private readonly EditingModel _model;
-		private bool _updatePending;
 		private PageListView _pageListView;
 		private TemplatePagesView _templatePagesView;
 		public delegate EditingView Factory();//autofac uses this
@@ -25,55 +24,81 @@ namespace Bloom.Edit
 			_pageListView = pageListView;
 			_templatePagesView = templatePagesView;
 			InitializeComponent();
-			model.UpdateDisplay += new EventHandler(OnUpdateDisplay);
-			model.UpdatePageList += new EventHandler((s,e)=>_pageListView.SetBook(_model.CurrentBook));
-			splitContainer1.Tag = splitContainer1.SplitterDistance;//save it
+			_splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
 			//don't let it grow automatically
-			splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => splitContainer1.SplitterDistance = (int)splitContainer1.Tag);
+			_splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
+			SetupThumnailLists();
+			_model.SetView(this);
+		}
 
+		private void SetupThumnailLists()
+		{
 			_pageListView.Dock=DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-		   _templatePagesView.BackColor = _pageListView.BackColor = splitContainer1.Panel1.BackColor;
-			splitContainer1.Panel1.Controls.Add(_pageListView);
+			_templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
+			_splitContainer1.Panel1.Controls.Add(_pageListView);
 
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			splitContainer2.Panel2.Controls.Add(_templatePagesView);
+			_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 
 
 		}
 
-		protected override void OnLoad(EventArgs e)
+		void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
-			base.OnLoad(e);
-			_model.StartOfLoad();
-			OnUpdateDisplay(this,null);
+			Application.Idle -=new EventHandler(VisibleNowAddSlowContents);
+
+			Cursor = Cursors.WaitCursor;
+			_model.ActualVisibiltyChanged(true);
+			Cursor = Cursors.Default;
 		}
 
 		protected override void OnVisibleChanged(EventArgs e)
 		{
 			base.OnVisibleChanged(e);
-			if(_updatePending)
+
+			if (Visible)
 			{
-				OnUpdateDisplay(this,null);
+				if(_model.GetBookHasChanged())
+				{
+					//even before showing, we need to clear some things so the user doesn't see the old stuff
+					_pageListView.Clear();
+					_templatePagesView.Clear();
+				}
+				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
+				Cursor = Cursors.WaitCursor;
+			}
+			else
+			{
+				_browser1.Navigate("about:blank", false);//so we don't see the old one for moment, the next time we open this tab
 			}
 		}
-		void OnUpdateDisplay(object sender, EventArgs e)
+
+		public void UpdateSingleDisplayedPage(IPage page)
 		{
 		   if(!Visible)
 		   {
-			   _updatePending = true;
 			   return;
 		   }
-		   _updatePending = false;
+
 		   if (_model.HaveCurrentEditableBook)
 		   {
-			var dom = _model.GetXmlDocumentForCurrentPage();
-			_browser1.Navigate(dom);
+			   _pageListView.SelectThumbnailWithoutSendingEvent(page);
+				var dom = _model.GetXmlDocumentForCurrentPage();
+				_browser1.Navigate(dom);
+
 		   }
 		}
 
-
+		public void UpdateTemplateList()
+		{
+			_templatePagesView.Update();
+		}
+		public void UpdatePageList()
+		{
+			_pageListView.SetBook(_model.CurrentBook);
+		}
 
 		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
 		{
@@ -128,19 +153,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void EditingView_VisibleChanged(object sender, EventArgs e)
-		{
-			_model.VisibilityChanged(Visible);
-		}
-
-		private void EditingView_ParentChanged(object sender, EventArgs e)
-		{
-
-			//when the tab changes, we aren't actually notified that our visibility changed.  So
-			//get this event from our parent page
-			if (Parent != null)
-				this.Parent.VisibleChanged += new System.EventHandler(this.EditingView_VisibleChanged);
-		}
 
 //        private string MakePngOrJpgTempFileForImage(Image image)
 //        {
@@ -161,5 +173,6 @@ namespace Bloom.Edit
 //            }
 //            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
 //        }
+
 	}
 }
