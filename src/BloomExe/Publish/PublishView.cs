@@ -52,6 +52,7 @@ namespace Bloom.Publish
 					_browser.Navigate("about:blank", false);
 					break;
 				case PublishModel.DisplayModes.Working:
+					_browser.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_browser.Navigate(_pleaseWaitPage);
 					break;

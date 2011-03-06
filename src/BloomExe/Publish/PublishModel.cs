@@ -26,6 +26,7 @@ namespace Bloom.Publish
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			BookletStyle = BookletStyleChoices.Booklet;
 		}
 
 		public PublishView View { get; set; }

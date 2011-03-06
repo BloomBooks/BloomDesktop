@@ -27,6 +27,26 @@ namespace Bloom.Publish
 
 		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath)
 		{
+			string exePath = FindWkhtmlToPdf();
+			ProcessStartInfo info = new ProcessStartInfo(exePath,
+														 string.Format(
+															 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking \"{0}\" \"{1}\"",
+															 Path.GetFileName(inputHtmlPath), outputPdfPath));
+			info.WorkingDirectory = Path.GetDirectoryName(inputHtmlPath);
+			info.ErrorDialog = true;
+			info.WindowStyle = ProcessWindowStyle.Hidden;
+
+			var proc = System.Diagnostics.Process.Start(info);
+			proc.WaitForExit(20 * 1000);
+			if (!proc.HasExited)
+			{
+				proc.Kill();
+				throw new ApplicationException("Making the PDF took too long.");
+			}
+		}
+
+		private string FindWkhtmlToPdf()
+		{
 			var exePath = Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, "wkhtmltopdf");
 			exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
 			if (!File.Exists(exePath))
@@ -39,22 +59,7 @@ namespace Bloom.Publish
 					throw new ApplicationException("Could not find a file that should have been installed with Bloom: " + exePath);
 				}
 			}
-			ProcessStartInfo info = new ProcessStartInfo(exePath,
-														 string.Format(
-															 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking {0} {1}",
-															 Path.GetFileName(inputHtmlPath), outputPdfPath));
-			info.WorkingDirectory = Path.GetDirectoryName(inputHtmlPath);
-			info.ErrorDialog = true;
-			info.WindowStyle = ProcessWindowStyle.Hidden;
-
-			//_browser.Visible = false;
-			var proc = System.Diagnostics.Process.Start(info);
-			proc.WaitForExit(20 * 1000);
-			if (!proc.HasExited)
-			{
-				proc.Kill();
-				throw new ApplicationException("Making the PDF took too long.");
-			}
+			return exePath;
 		}
 
 		private void MakeBooklet(string inAndOutPath)
