@@ -14,7 +14,7 @@
    inkscape:version="0.48.0 r9654"
    width="595.27559pt"
    height="841.88976pt"
-   sodipodi:docname="PeterM_Flower.svg"
+   sodipodi:docname="placeholder.svg"
    version="1.1">
   <metadata
      id="metadata7">
@@ -31,8 +31,8 @@
   <defs
      id="defs5" />
   <sodipodi:namedview
-     inkscape:window-height="721"
-     inkscape:window-width="1270"
+     inkscape:window-height="826"
+     inkscape:window-width="1092"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -42,7 +42,7 @@
      inkscape:zoom="0.37724655"
      inkscape:cx="177.49681"
      inkscape:cy="628.13303"
-     inkscape:window-x="0"
+     inkscape:window-x="1600"
      inkscape:window-y="0"
      inkscape:current-layer="svg2"
      showgrid="false"
@@ -52,45 +52,39 @@
      id="rect2985"
      width="935.7276"
      height="1129.235"
-     x="1068.2668"
-     y="352.5546"
+     x="885.36261"
+     y="26.507877"
      ry="1.1490486" />
-  <g
-     id="g5840"
-     transform="matrix(1.340218,0.000000,0.000000,1.340218,-653.5452,7.795854)"
+  <path
+     sodipodi:type="star"
+     style="fill:#888a85;stroke:#888a85;stroke-width:4.02476977999999970;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0"
+     id="path1549"
+     sodipodi:sides="5"
+     sodipodi:cx="495.56927"
+     sodipodi:cy="257.0004"
+     sodipodi:r1="32.004192"
+     sodipodi:r2="22.067102"
+     sodipodi:arg1="0.60613533"
+     sodipodi:arg2="2.801306"
+     inkscape:flatsided="false"
+     inkscape:rounded="1.08"
+     inkscape:randomized="0"
+     d="m 521.87211,275.23304 c -43.01606,-29.58772 2.17555,-28.10945 -47.10459,-10.86759 -26.51418,9.27664 3.60143,50.21506 11.5895,23.28462 14.8469,-50.05381 27.40597,-6.61722 -4.22043,-48.15739 -17.01594,-22.34985 -46.64446,18.94247 -18.56363,18.21761 52.19194,-1.34723 14.76226,24.01979 44.49622,-18.89531 15.99775,-23.08961 -32.42929,-38.50798 -23.06246,-12.02552 17.40949,49.22117 -18.28239,21.46227 31.7206,36.47944 26.9031,8.07969 26.60206,-42.7417 4.31025,-25.64979 -41.43228,31.7676 -26.0614,-10.75537 -24.8918,41.44086 0.62927,28.08312 48.87026,12.09215 25.72634,-3.82693 z"
+     transform="matrix(5.6624103,0,0,5.6624103,-2378.899,-1143.7704)"
      inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\A5Portrait\placeHolder.png"
-     inkscape:export-xdpi="36.000000"
-     inkscape:export-ydpi="36.000000"
-     style="fill:none;stroke:#888a85">
-    <path
-       id="path2195"
-       d="M 796.81250,295.50000 C 795.93675,295.58953 795.02004,295.90048 794.06250,296.43750 C 787.79894,299.95034 792.94621,401.31416 766.96875,492.87500 C 757.99251,468.07073 723.97814,435.17912 677.18750,408.96875 C 613.94367,373.54191 551.37941,363.73074 537.53125,387.06250 C 523.68311,410.39425 563.75619,458.07317 627.00000,493.50000 C 680.29990,523.35661 733.01238,534.94166 756.59375,523.90625 C 749.80980,541.56721 741.74050,558.44776 731.68750,573.43750 C 665.85161,671.60343 558.43455,646.62022 555.53125,652.12500 C 524.93426,710.13598 682.00788,693.04094 747.84375,594.87500 C 763.56137,571.43891 776.13295,541.18734 785.78125,508.96875 C 786.01584,509.37937 786.14083,509.85743 786.40625,510.25000 C 801.60278,532.72680 861.82618,516.81112 920.84375,474.71875 C 979.86133,432.62637 1015.4153,380.22680 1000.2188,357.75000 C 985.02229,335.27319 924.79883,351.18887 865.78125,393.28125 C 836.21031,414.37178 812.51619,438.04363 798.15625,459.25000 C 815.30406,375.03383 813.89002,293.75407 796.81250,295.50000 z "
-       style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#888a85;stroke-width:17.00499900000000200;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <path
-       transform="matrix(4.224992,0.000000,0.000000,4.224992,-1287.368,-859.2380)"
-       d="m 521.87211,275.23304 c -43.01606,-29.58772 2.17555,-28.10945 -47.10459,-10.86759 -26.51418,9.27664 3.60143,50.21506 11.5895,23.28462 14.8469,-50.05381 27.40597,-6.61722 -4.22043,-48.15739 -17.01594,-22.34985 -46.64446,18.94247 -18.56363,18.21761 52.19194,-1.34723 14.76226,24.01979 44.49622,-18.89531 15.99775,-23.08961 -32.42929,-38.50798 -23.06246,-12.02552 17.40949,49.22117 -18.28239,21.46227 31.7206,36.47944 26.9031,8.07969 26.60206,-42.7417 4.31025,-25.64979 -41.43228,31.7676 -26.0614,-10.75537 -24.8918,41.44086 0.62927,28.08312 48.87026,12.09215 25.72634,-3.82693 z"
-       inkscape:randomized="0.0000000"
-       inkscape:rounded="1.0800000"
-       inkscape:flatsided="false"
-       sodipodi:arg2="2.8013060"
-       sodipodi:arg1="0.60613533"
-       sodipodi:r2="22.067102"
-       sodipodi:r1="32.004192"
-       sodipodi:cy="257.00040"
-       sodipodi:cx="495.56927"
-       sodipodi:sides="5"
-       id="path1549"
-       style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#888a85;stroke-width:4.02476979999999960;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
-       sodipodi:type="star" />
-    <path
-       transform="matrix(4.224992,0.000000,0.000000,4.224992,-1440.171,-885.7572)"
-       d="m 539.80589,261.93216 c 0,4.86973 -3.9477,8.81743 -8.81743,8.81743 -4.86973,0 -8.81742,-3.9477 -8.81742,-8.81743 0,-4.86973 3.94769,-8.81743 8.81742,-8.81743 4.86973,0 8.81743,3.9477 8.81743,8.81743 z"
-       sodipodi:ry="8.8174267"
-       sodipodi:rx="8.8174267"
-       sodipodi:cy="261.93216"
-       sodipodi:cx="530.98846"
-       id="path1551"
-       style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#888a85;stroke-width:4.02476979999999960;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
-       sodipodi:type="arc" />
-  </g>
+     inkscape:export-xdpi="60.563259"
+     inkscape:export-ydpi="60.563259" />
+  <path
+     sodipodi:type="arc"
+     style="fill:#babdb6;stroke:#babdb6;stroke-width:4.02476977999999970;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0"
+     id="path1551"
+     sodipodi:cx="530.98846"
+     sodipodi:cy="261.93216"
+     sodipodi:rx="8.8174267"
+     sodipodi:ry="8.8174267"
+     d="m 539.80589,261.93216 a 8.8174267,8.8174267 0 1 1 -17.63485,0 8.8174267,8.8174267 0 1 1 17.63485,0 z"
+     transform="matrix(5.6624103,0,0,5.6624103,-2583.6883,-1179.3119)"
+     inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\A5Portrait\placeHolder.png"
+     inkscape:export-xdpi="60.563259"
+     inkscape:export-ydpi="60.563259" />
 </svg>

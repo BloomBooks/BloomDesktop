@@ -29,8 +29,8 @@ namespace BloomTests
         }
 
          Book BookFactory(BookStorage storage, bool editable)
-         { 
-             return new Book(storage, true, null, null, null,
+         {
+             return new Book(storage, true, null, null, new LanguageSettings("xyz", new string[0]), null,
                                                       new PageSelection(),
                                                       new PageListChangedEvent());
          }
