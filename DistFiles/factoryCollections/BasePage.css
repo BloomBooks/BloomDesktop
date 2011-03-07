@@ -12,6 +12,7 @@ DIV.page
 		border: 1px solid #000000;
 	}
 }
+
 .cover ._vernacularBookTitle
 {
 	text-align: center;
@@ -65,20 +66,7 @@ DIV.page
 {
 	position: relative;
 }
-TEXTAREA
-{
-	font: 25px sans-serif;
-	overflow: hidden;
-	border: none;
-}
-IMG
-{
-	border: 1px none #E51B1B;
-}
-INPUT
-{
-	border: none;
-}
+
 .centered
 {
 	text-align: center;
