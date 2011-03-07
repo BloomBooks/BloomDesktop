@@ -15,7 +15,7 @@ namespace Bloom
 {
 	public class Book
 	{
-
+		public const string StyleOfHiddenElements = "visibility:hidden !important; position:fixed  !important;";
 
 		public delegate Book Factory(BookStorage storage, bool editable);//autofac uses this
 
@@ -138,6 +138,7 @@ namespace Bloom
 
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
 			BookStorage.RemoveModeStyleSheets(dom);
+			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom);
@@ -167,6 +168,7 @@ namespace Bloom
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
 			body.AppendChild(pageDom);
+			BookStorage.HideAllTextAreasExceptVernacular(dom, _languageSettings.VernacularIso639Code, Page.GetPageSelectorXPath(dom));
 			return dom;
 		}
 
@@ -177,8 +179,10 @@ namespace Bloom
 				return GetErrorDom();
 			}
 			var dom = GetHtmlDomWithJustOnePage(page);
+			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
 			AddCoverColor(dom);
+
 			return dom;
 		}
 
@@ -319,6 +323,7 @@ namespace Bloom
 				return GetPageSayingCantShowBook();
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
+			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
 			AddCoverColor(dom);
 			return dom;
@@ -500,6 +505,8 @@ namespace Bloom
 				Guard.AgainstNull(storageNode,inputElementId);
 				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
+
+
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}']", _languageSettings.VernacularIso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
@@ -519,6 +526,9 @@ namespace Bloom
 			}
 
 			MakeAllFieldsConsistent();
+
+			_storage.HideAllTextAreasExceptVernacular(_languageSettings.VernacularIso639Code, pageSelector);
+
 			try
 			{
 				_storage.Save();
@@ -530,6 +540,7 @@ namespace Bloom
 
 			InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
 		}
+
 
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.

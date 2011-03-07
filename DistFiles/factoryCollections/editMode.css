@@ -22,6 +22,16 @@ TEXTAREA
 {
 	border: thin solid #000000;
 }
+TEXTAREA.en
+{
+background-color: #D5D5E4;
+
+	visibility: collapse;/*this by itself just leaves a gap*/
+	position: absolute; /* this removes the gap*/
+	left: 0px;
+	top: 0px;
+}
+
 IMG
 {
 }

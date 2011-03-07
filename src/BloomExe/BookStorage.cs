@@ -29,6 +29,7 @@ namespace Bloom
 		string GetHtmlFileForPrintingWithWkHtmlToPdf();
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
+		void HideAllTextAreasExceptVernacular(string vernacularIso639Code, string optionalPageSelector);
 	}
 
 	public class BookStorage : IBookStorage
@@ -344,5 +345,26 @@ namespace Bloom
 		public const int FOF_NOCONFIRMATION = 0x10; // Don't prompt the user
 		public const int FOF_SIMPLEPROGRESS = 0x0100;
 		#endif
+
+		public void HideAllTextAreasExceptVernacular(string vernacularIso639Code, string optionalPageSelector)
+		{
+			HideAllTextAreasExceptVernacular(Dom, vernacularIso639Code,optionalPageSelector);
+		}
+		public static void HideAllTextAreasExceptVernacular(XmlDocument rootElement, string vernacularIso639Code, string optionalPageSelector)
+		{
+			if (optionalPageSelector == null)
+				optionalPageSelector = string.Empty;
+
+			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
+			{
+				if (storageNode.HasAttribute("style"))
+					storageNode.RemoveAttribute("style");
+				if (storageNode.GetAttribute("lang") != vernacularIso639Code)
+				{
+					storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
+				}
+			}
+		}
+
 	}
 }

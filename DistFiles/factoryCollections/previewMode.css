@@ -5,6 +5,31 @@
 		background-color: #363333;
 	}
 }
+
+
+p.pagefooter {
+			display: block;
+			position: running(footer);
+}
+
+input
+{
+	border:none;
+}
+
+textarea
+{
+	border:none;
+}
+body
+{
+	counter-reset: pageNumber;
+}
+DIV.page
+{
+	counter-increment: pageNumber;
+}
+
 DIV.page.cover
 {
 	background-color: #D8ADAD;

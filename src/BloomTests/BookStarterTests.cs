@@ -98,6 +98,21 @@ namespace BloomTests
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi']", 1);
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='xyz']", 1);
 		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasTokPisinTextArea_StyleAddedToHide()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi' and @style]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_ExistingEnglishHasHideStyle_NewVernacularHasNoStyle()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']//textarea[@lang='xyz' and not(@style)]", 1);
+		}
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_AlreadyHasVernacular_LeavesUntouched()
 		{
@@ -218,7 +233,7 @@ namespace BloomTests
 						</p>
 					</div>
 					<div class='page' testid='pageWithJustEnglish'>
-						 <textarea lang='en' id='text1' class='text'>This is some English</textarea>
+						 <textarea lang='en' style='pretend to hide' id='text1' class='text'>This is some English</textarea>
 					</div>
 					<div class='page' testid='pageAlreadyHasVernacular'>
 						 <p>

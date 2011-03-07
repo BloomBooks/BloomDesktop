@@ -77,8 +77,10 @@ namespace Bloom
 			{
 				MakeVernacularTextAreasForPage(div);
 			}
+			storage.HideAllTextAreasExceptVernacular(_languageSettings.VernacularIso639Code, string.Empty);
 			storage.Save();
 		}
+
 
 		/// <summary>
 		/// For each group of textareas in the div which have lang attributes, make a new text area
