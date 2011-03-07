@@ -60,6 +60,51 @@ namespace Bloom
 				{
 					node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
+
+				UpdateSupportFiles();
+			}
+		}
+
+		/// <summary>
+		/// we update these so that the file continues to look the same when you just open it in firefox
+		/// </summary>
+		private void UpdateSupportFiles()
+		{
+			UpdateIfNewer("placeHolder.png");
+			UpdateIfNewer("basePage.css");
+			UpdateIfNewer("previewMode.css");
+
+			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Portrait.css"))
+			{
+				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
+			}
+			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Landscape.css"))
+			{
+				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
+			}
+		}
+		private void UpdateIfNewer(string fileName)
+		{
+			try
+			{
+				var factoryPath = _fileLocator.LocateFile(fileName);
+				var factoryTime = File.GetLastWriteTimeUtc(factoryPath);
+				var documentPath = Path.Combine(_folderPath, fileName);
+				if(!File.Exists(documentPath))
+				{
+					File.Copy(factoryPath, documentPath);
+					return;
+				}
+				var documentTime = File.GetLastWriteTimeUtc(documentPath);
+				if(factoryTime> documentTime)
+				{
+					File.Copy(factoryPath, documentPath,true);
+				}
+			}
+			catch (Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Could not update one of the support files in this document ({0}). This may or not be a problem, but is sure unusual.", fileName);
 			}
 		}
 

@@ -107,6 +107,7 @@
             // _sourceText
             // 
             this._sourceText.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._sourceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._sourceText.Location = new System.Drawing.Point(0, 0);
             this._sourceText.Multiline = true;
             this._sourceText.Name = "_sourceText";
