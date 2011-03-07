@@ -112,8 +112,20 @@ namespace Bloom.Edit
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
 			var ge = e as GeckoDomEventArgs;
-			if (ge.Target.TagName != "IMG")
-				return;
+			if (ge.Target.TagName == "IMG")
+				OnClickOnImage(ge);
+			if (ge.Target.TagName.ToLower() == "textarea")
+				OnClickTextArea(ge.Target);
+		}
+
+		private void OnClickTextArea(GeckoElement element)
+		{
+			//todo: what about if they tab to it? Is that possible?
+			_model.HandleUserEnteredArea(element);
+		}
+
+		private void OnClickOnImage(GeckoDomEventArgs ge)
+		{
 			string currentPath = ge.Target.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
@@ -132,7 +144,7 @@ namespace Bloom.Edit
 			{
 				if(DialogResult.OK== dlg.ShowDialog())
 				{
-				   // var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
+					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
 						_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
@@ -174,5 +186,9 @@ namespace Bloom.Edit
 //            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
 //        }
 
+		public void SetSourceText(string text)
+		{
+			_sourceText.Text = text;
+		}
 	}
 }

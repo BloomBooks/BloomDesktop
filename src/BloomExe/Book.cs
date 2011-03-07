@@ -21,6 +21,7 @@ namespace Bloom
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly Palaso.IO.IFileLocator _fileLocator;
+		private readonly LanguageSettings _languageSettings;
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -38,7 +39,7 @@ namespace Bloom
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
 		public Book(IBookStorage storage, bool editable, ITemplateFinder templateFinder,
-			Palaso.IO.IFileLocator fileLocator, HtmlThumbNailer thumbnailProvider,
+			Palaso.IO.IFileLocator fileLocator, LanguageSettings languageSettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
@@ -48,6 +49,7 @@ namespace Bloom
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
+			_languageSettings = languageSettings;
 			_thumbnailProvider = thumbnailProvider;
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
@@ -483,28 +485,34 @@ namespace Bloom
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
 			{
 				var imgId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "img", imgId);
+				var storageNode = GetStorageNode(pageDivId, "img", imgId, null);
 				Guard.AgainstNull(storageNode, imgId);
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//input"))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}']", _languageSettings.VernacularIso639Code)))
 			{
+				var languageCode = editNode.GetAttribute("lang");
+				Debug.Assert(languageCode == _languageSettings.VernacularIso639Code);
+
 				var inputElementId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
+				var storageNode = GetStorageNode(pageDivId, "input", inputElementId, _languageSettings.VernacularIso639Code);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
 				Guard.AgainstNull(storageNode,inputElementId);
 				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes("//textarea"))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}']", _languageSettings.VernacularIso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
+				var languageCode = editNode.GetAttribute("lang");
+				Debug.Assert(languageCode == _languageSettings.VernacularIso639Code);
+
 				if (string.IsNullOrEmpty(textareaElementId))
 				{
 					Debug.Fail(textareaElementId);
 				}
 				else
 				{
-					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
+					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId, _languageSettings.VernacularIso639Code);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
 					Guard.AgainstNull(destNode, textareaElementId);
 					destNode.InnerText = editNode.InnerText;
 				}
@@ -526,15 +534,36 @@ namespace Bloom
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
 		/// </summary>
-		private XmlElement GetStorageNode(string pageDivId, string tag, string imgId)
+		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId, string languageCode)
 		{
-			var query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, imgId);
-			var matches = _storage.Dom.SafeSelectNodes(query);
-			if(matches.Count != 1)
+			string query;
+			if (string.IsNullOrEmpty(languageCode))
 			{
-				throw new ApplicationException("Expected one match for this query, but got "+matches.Count+": "+query);
+				query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
 			}
-			return (XmlElement) matches[0];
+			else
+			{
+				query = string.Format("//div[@id='{0}']//{1}[@id='{2}' and @lang='{3}']", pageDivId, tag, elementId,languageCode);
+			}
+			var matches = _storage.Dom.SafeSelectNodes(query);
+
+			//multiple hits? Look for one that matches our current language
+//            if (matches.Count > 1)
+//            {
+//                foreach (XmlElement match in matches)
+//                {
+//                    if (match.HasAttribute("lang") &&
+//                        match.GetAttribute("lang") == _languageSettings.VernacularIso639Code)
+//                    {
+//                        return match;
+//                    }
+//                }
+//            }
+			if (matches.Count != 1)
+			{
+				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
+			}
+			return (XmlElement)matches[0];
 //            return _storage.Dom.SelectSingleNodeHonoringDefaultNS(string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, imgId)) as XmlElement;
 		}
 

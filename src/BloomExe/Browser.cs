@@ -195,7 +195,12 @@ namespace Bloom
 				}
 				else
 				{
-					node.InnerText = _browser.Document.GetElementById(id).InnerHtml;
+					foreach(var element in _browser.Document.GetElementsByTagName("textarea"))
+					{
+						if (element.Id == id && element.GetAttribute("lang") == node.GetAttribute("lang"))
+							node.InnerText = element.InnerHtml;
+					}
+
 				}
 			}
 		}

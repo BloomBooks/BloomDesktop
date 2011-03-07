@@ -26,7 +26,7 @@ namespace BloomTests
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator));
+			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]));
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 		}
@@ -78,7 +78,48 @@ namespace BloomTests
 		}
 
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasEnglishTextArea_VernacularTextAreaAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 
+			//nb: testid is used rather than id because id is replaced with a guid when the copy is made
+
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='en']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='xyz']", 1);
+			//the new text should also have been emptied of English
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='xyz' and not(text())]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasTokPisinTextAreaSurroundedByParagraph_VernacularTextAreaAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='xyz']", 1);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_AlreadyHasVernacular_LeavesUntouched()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='en']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz' and text()='original']", 1);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithTokPisinAndEnglish']/textarea[@lang='xyz']", 1);
+		}
+
+	   [Test]
+		public void CreateBookOnDiskFromTemplate_TextAreaHasNoText_VernacularLangAttrSet()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea[@lang='xyz']", 1);
+		}
 		[Test]
 		public void CreateBookOnDiskFromTemplate_PagesNotLabeledExtraAreAdded()
 		{
@@ -167,8 +208,32 @@ namespace BloomTests
 					<div class='page' id='2'>
 						_normal_ It would be ok for the user to remove this page.
 					</div>
+
 					<div class='page extraPage' id='3'>
 						_extra_
+					</div>
+					<div class='page' testid='pageWithNoLanguageTags'>
+						<p>
+							<textarea id='text1' class='text'>Text of a simple template</textarea>
+						</p>
+					</div>
+					<div class='page' testid='pageWithJustEnglish'>
+						 <textarea lang='en' id='text1' class='text'>This is some English</textarea>
+					</div>
+					<div class='page' testid='pageAlreadyHasVernacular'>
+						 <p>
+							<textarea lang='en' id='text1' class='text'>This is some English</textarea>
+							<textarea lang='xyz' id='text1' class='text'>original</textarea>
+						</p>
+					</div>
+					<div class='page' testid='pageWithJustTokPisin'>
+						 <p>
+							<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
+						</p>
+					</div>
+					<div class='page' testid='pageWithTokPisinAndEnglish'>
+						 <textarea lang='en' id='text1' class='text'> When you plant a garden you always make a fence.</textarea>
+						<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
 					</div>
 				</body>
 				</html>

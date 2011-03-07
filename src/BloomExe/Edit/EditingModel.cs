@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Xml;
 using Palaso.UI.WindowsForms.ImageToolbox;
+using Skybound.Gecko;
 
 namespace Bloom.Edit
 {
@@ -9,6 +10,7 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
+		private readonly LanguageSettings _languageSettings;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
 		private Book _currentlyDisplayedBook;
@@ -20,6 +22,7 @@ namespace Bloom.Edit
 		public delegate EditingModel Factory();//autofac uses this
 
 		public EditingModel(BookSelection bookSelection, PageSelection pageSelection,
+			LanguageSettings languageSettings,
 			TemplateInsertionCommand templateInsertionCommand,
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
@@ -27,6 +30,7 @@ namespace Bloom.Edit
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
+			_languageSettings = languageSettings;
 
 			//bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -143,6 +147,19 @@ namespace Bloom.Edit
 		public void SetView(EditingView view)
 		{
 			_view = view;
+		}
+
+		public void HandleUserEnteredArea(GeckoElement element)
+		{
+			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
+			if (sourceTexts.Count == 0)
+			{
+				_view.SetSourceText("No Source");
+			}
+			else
+			{
+				_view.SetSourceText(_languageSettings.ChooseBestSource(sourceTexts, "No Source"));
+			}
 		}
 	}
 			//_book.DeletePage(_pageSelection.CurrentSelection);

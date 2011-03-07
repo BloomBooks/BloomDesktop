@@ -25,18 +25,19 @@ namespace BloomTests
 		private DeletePageCommand _deletePageCommand;
 		private PageListChangedEvent _pageListChangedEvent;
 		private RelocatePageEvent _relocatePageEvent;
+		private XmlDocument _documentDom;
 
 		[SetUp]
 		public void Setup()
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.SetupGet(x => x.LooksOk).Returns(true);
-			XmlDocument storageDom = GetThreePageDom();
-			_storage.SetupGet(x => x.Dom).Returns(storageDom);
+			_documentDom = GetThreePageDom();
+			_storage.SetupGet(x => x.Dom).Returns(()=>_documentDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Book.BookType.Publication);
-			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns((XmlDocument)storageDom.Clone());// review: the real thing does more than just clone
+			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns((XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
@@ -155,32 +156,82 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
 		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='en' id='testText'>english</textarea>
+							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
+						</p>
+					</div>
+					<div class='page' id='guid3'>
+						<p>
+							<textarea  lang='xyz' id='testText'>original2</textarea>
+						</p>
+					</div>
+			");
 			var book = CreateBook(true);
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
-			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
-			Assert.AreEqual("original1", textArea.InnerText, "the test conditions aren't correct");
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
+			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
 			textArea.InnerText = "changed";
 			book.SavePage(dom);
-			var textNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText']");
+			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText' and @lang='xyz']");
 
-			Assert.AreEqual("changed", textNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
-			Assert.AreEqual("original2", textNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
+			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
+			Assert.AreEqual("original2", vernacularTextNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
 		}
+
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
 		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='en' id='testText'>english</textarea>
+							<textarea lang='xyz' id='testText'>original1</textarea>
+						</p>
+					</div>
+					<div class='page' id='guid3'>
+						<p>
+							<textarea  lang='xyz' id='testText'>original2</textarea>
+						</p>
+					</div>
+			");
 			var book = CreateBook(true);
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
-			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText']");
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
 			Assert.AreEqual("original2", textArea.InnerText, "the test conditions aren't correct");
 			textArea.InnerText = "changed";
 			book.SavePage(dom);
-			var textNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText']");
+			var textNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText' and @lang='xyz']");
 
 			Assert.AreEqual("original1", textNodesInStorage.Item(0).InnerText, "the first copy of this page should not have been changed");
 			Assert.AreEqual("changed", textNodesInStorage.Item(1).InnerText, "the value didn't get copied to  the storage dom");
 		}
+
+		[Test]
+		public void SavePage_ChangeMadeToTextAreaWithMultipleLanguages_CorrectOneInStorageUpdated()
+		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='en' id='testText'>english</textarea>
+							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
+							<textarea lang='tpi' id='testText'>tokpsin</textarea>
+						</p>
+					</div>
+			");
+			var book = CreateBook(true);
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
+			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
+			textArea.InnerText = "changed";
+			book.SavePage(dom);
+			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText' and @lang='xyz']");
+
+			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
+		 }
+
+
+
 
 
 		[Test]
@@ -188,7 +239,7 @@ namespace BloomTests
 		{
 			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
-			var scriptNodes = dom.SelectNodes("//script");
+			var scriptNodes = dom.SafeSelectNodes("//script");
 			Assert.AreEqual(1, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
@@ -345,6 +396,7 @@ namespace BloomTests
 		private Book CreateBook(bool b)
 		{
 			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
+				new LanguageSettings("xyz", new string[0]),
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
@@ -352,13 +404,35 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div class='page' id='guid1'><input id='testInput' class='Blah' value='one' /><textarea id='vtitle' class='_vernacularBookTitle'>war</textarea></div>
-				<div class='page' id='guid2'><textarea id='testText'>original1</textarea><input id='foo1' class='_copyMe' value='red'/><img id='img1' src='original.png'/></div>
-				<div class='page' id='guid3'><textarea id='testText'>original2</textarea><input id='foo2' class='somethingInTheWay _copyMe' value='red'/><textarea id='copyOfVTitle' class='_vernacularBookTitle'>war</textarea></div>
+				<div class='page' id='guid1'>
+					<input lang='xyz' id='testInput' class='Blah' value='one' />
+					<textarea lang='xyz' id='vtitle' class='_vernacularBookTitle'>tree</textarea></div>
+				<div class='page' id='guid2'>
+					<p>
+						<textarea lang='en' id='testText'>english</textarea>
+						<textarea lang='xyz' id='testText'>originalVernacular</textarea>
+						<textarea lang='tpi' id='testText'>tokpsin</textarea>
+					</p>
+					<input lang='xyz' id='foo1' class='_copyMe' value='red'/>
+					<img id='img1' src='original.png'/>
+				</div>
+				<div class='page' id='guid3'>
+					<p>
+						<textarea  lang='xyz' id='testText'>original2</textarea>
+					</p>
+					<input  lang='xyz' id='foo2' class='somethingInTheWay _copyMe' value='red'/>
+					<p>
+						<textarea  lang='xyz' id='copyOfVTitle' class='_vernacularBookTitle'>tree</textarea>
+					</p>
+				</div>
 				</body></html>");
 			return dom;
 		}
 
-
+		private void SetDom(string bodyContents)
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>" + bodyContents + "</body></html>");
+		}
 	}
 }
