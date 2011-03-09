@@ -90,6 +90,9 @@ namespace Bloom
 			try
 			{
 				var factoryPath = _fileLocator.LocateFile(fileName);
+				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
+					return;
+
 				var factoryTime = File.GetLastWriteTimeUtc(factoryPath);
 				var documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))

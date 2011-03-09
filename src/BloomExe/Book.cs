@@ -244,7 +244,7 @@ namespace Bloom
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
 			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom();
-			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
+			dom.AddStyleSheet("file://"+_fileLocator.LocateFile(cssFileName));
 			return dom;
 		}
 

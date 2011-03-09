@@ -41,20 +41,17 @@ namespace BloomTests
 			File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head><link rel='stylesheet' href='A5Portrait.css' type='text/css' /></head><body/></html>");
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
 			storage.Save();
-			//AssertThatXmlIn.File(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
-			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
-			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link", 1);
+			 AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
 		}
 
 		[Test]
-		public void Save_BookHadEditStyleSheet_NowHasNone()
+		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
 		{
 			File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body/></html>");
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
 			storage.Save();
-			//AssertThatXmlIn.File(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
-			//AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
-			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link", 0);
+			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
+			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
 
