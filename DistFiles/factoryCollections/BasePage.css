@@ -1,18 +1,27 @@
-
+BODY
+{
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+}
+TEXTAREA
+{
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	margin-left: 1cm;
+	margin-top: 0;
+}
 DIV.page
 {
 	display: block;
 	page-break-after: always;
 	background-color: #FFFFFF;
+	/*[ph]0*/
 }
 @media screen
 {
 	DIV.page
 	{
-		border: 1px solid #000000;
+		/*[id]0*/border: 1px solid #000000;
 	}
 }
-
 .cover ._vernacularBookTitle
 {
 	text-align: center;
@@ -25,7 +34,7 @@ DIV.page
 	font: 12pt sans-serif;
 	position: absolute;
 }
-.cover ._natLangBookName
+.cover ._nameOfLanguage
 {
 	text-align: left;
 	font: 12pt sans-serif;
@@ -35,19 +44,19 @@ DIV.page
 .titlePage ._natLangBookLabel
 {
 	text-align: center;
-	font: 12pt verdana;
+	font: 12pt sans-serif;
 	position: relative;
 }
-.titlePage ._natLangBookName
+.titlePage ._nameOfLanguage
 {
 	text-align: center;
-	font: 1em verdana;
+	font: 1em sans-serif;
 	position: relative;
 }
 .titlePage ._vernacularBookTitle
 {
 	text-align: center;
-	font: 2em verdana;
+	font: 2em sans-serif;
 	position: relative;
 }
 .titlePage .credits
@@ -66,7 +75,6 @@ DIV.page
 {
 	position: relative;
 }
-
 .centered
 {
 	text-align: center;
@@ -83,8 +91,9 @@ DIV.page
 {
 	/*+placement:displace -160px -49px;*/
 	position: absolute;
+	margin-left: -160px;
+	margin-top: -49px;
 }
-
 .centerJustify
 {
 	text-align: center;

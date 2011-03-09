@@ -1,4 +1,4 @@
-@import url("../../BasePage.css");
+@import url(../../BasePage.css);
 DIV.page
 {
 	min-width: 14.5cm;
@@ -26,18 +26,19 @@ DIV.page
 	left: 8.5cm;
 	height: 37px;
 }
-.cover ._natLangBookName
+.cover ._nameOfLanguage
 {
 	width: 5cm;
 	top: 19cm;
 	left: 1.25cm;
+	height: 37px;
 }
 .titlePage ._natLangBookLabel
 {
 	width: 12cm;
 	top: 1.3cm;
 }
-.titlePage ._natLangBookName
+.titlePage ._nameOfLanguage
 {
 	width: 9.5cm;
 	top: 3.6cm;
@@ -54,14 +55,12 @@ DIV.page
 	height: 5cm;
 	width: 12.7cm;
 	top: 1.8cm;
-
 }
 .titlePage .printingHistory
 {
 	height: 6cm;
 	width: 12.5cm;
 	top: 2.1cm;
-
 }
 .imageOnTop .picture
 {
