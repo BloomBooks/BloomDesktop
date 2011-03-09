@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.Publish;
 using Palaso.Code;
 using Palaso.Xml;
 
@@ -229,6 +230,16 @@ namespace Bloom
 			}
 		}
 
+		private static void HidePages(XmlDocument bookDom, Func<XmlElement,bool> hidePredicate)
+		{
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'page')]"))
+			{
+				if (hidePredicate(node))
+				{
+					node.SetAttribute("style", "", "display:none");
+				}
+			}
+		}
 
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
@@ -323,21 +334,13 @@ namespace Bloom
 				return GetPageSayingCantShowBook();
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
-			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
+			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
 			AddCoverColor(dom);
 			return dom;
 		}
 
-		public string GetHtmlFileForPrintingWholeBook()
-		{
-//            if (!_storage.LooksOk)
-//            {
-//                return GetPageSayingCantShowBook();
-//            }
-			//var dom = GetBookDomWithStyleSheet("previewMode.css");
-			return _storage.GetHtmlFileForPrintingWithWkHtmlToPdf();
-	   }
+
 
 		public Color CoverColor { get; set; }
 
@@ -348,6 +351,16 @@ namespace Bloom
 				//hack. Eventually we might be able to lock books so that you can't edit them.
 				return !CanEdit;
 			}
+		}
+
+		public bool HasSourceTranslations
+		{
+			get
+			{
+				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}']", _languageSettings.VernacularIso639Code));
+				return x.Count > 0;
+			}
+
 		}
 
 		private void AddCoverColor(XmlDocument dom)
@@ -687,6 +700,27 @@ namespace Bloom
 		public bool Delete()
 		{
 			return _storage.DeleteBook();
+		}
+
+
+		public XmlDocument GetDomForPrinting(PublishModel.BookletStyleChoices bookletStyle)
+		{
+			var dom = GetBookDomWithStyleSheet("previewMode.css");
+			//dom.LoadXml(_storage.Dom.OuterXml);
+
+			switch (bookletStyle)
+			{
+				case PublishModel.BookletStyleChoices.None:
+					return dom;
+				case PublishModel.BookletStyleChoices.BookletCover:
+					HidePages(dom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					return dom;
+				 case PublishModel.BookletStyleChoices.BookletPages:
+					HidePages(dom, p=>p.GetAttribute("class").ToLower().Contains("cover"));
+					return dom;
+				default:
+					throw new ArgumentOutOfRangeException("bookletStyle");
+			}
 		}
 	}
 }

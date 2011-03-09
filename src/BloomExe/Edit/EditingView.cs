@@ -40,9 +40,23 @@ namespace Bloom.Edit
 
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 
 
+
+		}
+
+		private void ShowOrHideSourcePane()
+		{
+			_splitContainer2.Panel2.Controls.Remove(_splitTemplateAndSource);
+			if (_model.ShowTranslationPanel)
+			{
+				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
+				_splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
+			}
+			else
+			{
+				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
+			}
 		}
 
 		void VisibleNowAddSlowContents(object sender, EventArgs e)
@@ -62,6 +76,7 @@ namespace Bloom.Edit
 			{
 				if(_model.GetBookHasChanged())
 				{
+					ShowOrHideSourcePane();
 					//even before showing, we need to clear some things so the user doesn't see the old stuff
 					_pageListView.Clear();
 					_templatePagesView.Clear();

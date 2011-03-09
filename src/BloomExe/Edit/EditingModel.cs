@@ -80,6 +80,14 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection;  }
 		}
 
+		public bool ShowTranslationPanel
+		{
+			get
+			{
+				return _bookSelection.CurrentSelection.HasSourceTranslations;
+			}
+		}
+
 		public bool GetBookHasChanged()
 		{
 			return _currentlyDisplayedBook != CurrentBook;

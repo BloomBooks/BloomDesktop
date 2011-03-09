@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Xml;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
@@ -16,6 +18,14 @@ namespace Bloom.Publish
 		{
 			NoBook, Working, ShowPdf
 		}
+
+		public enum BookletStyleChoices
+		{
+			None,
+			BookletCover,
+			BookletPages
+		}
+
 		private readonly BookSelection _bookSelection;
 		private Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
@@ -26,7 +36,7 @@ namespace Bloom.Publish
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletStyle = BookletStyleChoices.Booklet;
+			BookletStyle = BookletStyleChoices.BookletPages;
 		}
 
 		public PublishView View { get; set; }
@@ -56,9 +66,20 @@ namespace Bloom.Publish
 				SetDisplayMode(DisplayModes.Working);
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-				var path = _bookSelection.CurrentSelection.GetHtmlFileForPrintingWholeBook();
+				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletStyle);
+				using(var tempHtml = TempFile.WithExtension(".htm"))
+				{
+					XmlWriterSettings settings = new XmlWriterSettings();
+					settings.Indent = true;
+					settings.CheckCharacters = true;
 
-				_pdfMaker.MakePdf(path, PdfFilePath, BookletStyle);
+					using (var writer = XmlWriter.Create(tempHtml.Path, settings))
+					{
+						dom.WriteContentTo(writer);
+						writer.Close();
+					}
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, BookletStyle);
+				}
 			}
 			catch (Exception e)
 			{
@@ -113,12 +134,6 @@ namespace Bloom.Publish
 
 				}
 			}
-		}
-
-		public enum BookletStyleChoices
-		{
-			None,
-			Booklet
 		}
 
 		public BookletStyleChoices BookletStyle

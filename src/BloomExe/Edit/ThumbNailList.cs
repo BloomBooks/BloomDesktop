@@ -70,8 +70,15 @@ namespace Bloom.Edit
 			_listView.Items.Clear();
 			_thumbnailImageList.Images.Clear();
 
+			_numberofEmptyListItemsAtStart = 0;
 			foreach (IPage page in items)
 			{
+				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
+					return;
+
+				if (page is PlaceHolderPage)
+					++_numberofEmptyListItemsAtStart;
+
 				var item = new ListViewItem(page.Caption);
 				item.Tag = page;
 				//nb IndexOf is not supported, throws exception
@@ -91,6 +98,9 @@ namespace Bloom.Edit
 					_thumbnailImageList.Images.Add(page.Thumbnail);
 					item.ImageIndex = _thumbnailImageList.Images.Count - 1;
 				}
+				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
+					return;
+
 				_listView.Items.Add(item);
 			}
 			_listView.EndUpdate();
@@ -175,7 +185,7 @@ namespace Bloom.Edit
 					return;
 				}
 
-				RelocatePageEvent.Raise(new RelocatePageInfo((IPage)_currentDraggingItem.Tag, _currentTarget.Index));
+				RelocatePageEvent.Raise(new RelocatePageInfo((IPage)_currentDraggingItem.Tag, _currentTarget.Index-_numberofEmptyListItemsAtStart));
 
 				_listView.BeginUpdate();
 				_listView.Items.Remove(_currentDraggingItem);
@@ -195,6 +205,7 @@ namespace Bloom.Edit
 		private ListViewItem _currentDraggingItem;
 		private ListViewItem _currentTarget;
 		private Pen _boundsPen;
+		private int _numberofEmptyListItemsAtStart;
 
 		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{

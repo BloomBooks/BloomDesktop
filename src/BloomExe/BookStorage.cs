@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml;
+using Bloom.Publish;
 using BloomTemp;
 using Palaso.Code;
 using Palaso.IO;
@@ -24,12 +25,13 @@ namespace Bloom
 		bool LooksOk { get; }
 		string FileName { get; }
 		string FolderPath { get; }
+		string PathToHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		string GetHtmlFileForPrintingWithWkHtmlToPdf();
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
 		void HideAllTextAreasExceptVernacular(string vernacularIso639Code, string optionalPageSelector);
+		string SaveHtml(XmlDocument bookDom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -160,10 +162,11 @@ namespace Bloom
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private void MakeCssLinksAppropriateForStoredFile()
+		private static void MakeCssLinksAppropriateForStoredFile(XmlDocument dom)
 		{
-			RemoveModeStyleSheets(Dom);
-			//not needed. Dom.AddStyleSheet("previewMode.css");
+			RemoveModeStyleSheets(dom);
+			dom.AddStyleSheet("previewMode.css");
+			dom.AddStyleSheet("basePage.css");
 		}
 
 		public static void RemoveModeStyleSheets(XmlDocument dom)
@@ -227,7 +230,7 @@ namespace Bloom
 		}
 
 
-		protected string PathToHtml
+		public string PathToHtml
 		{
 			get
 			{
@@ -286,9 +289,15 @@ namespace Bloom
 		public void Save()
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
+			string tempPath = SaveHtml(Dom);
+			File.Replace(tempPath, PathToHtml, PathToHtml + ".bak");
+		}
+
+		public string SaveHtml(XmlDocument dom)
+		{
 			string tempPath = Path.GetTempFileName();
-			MakeCssLinksAppropriateForStoredFile();
-			SetBaseForRelativePaths(Dom, string.Empty);// remove any dependency on this computer, and where files are on it.
+			MakeCssLinksAppropriateForStoredFile(dom);
+			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
@@ -296,10 +305,10 @@ namespace Bloom
 
 			using (var writer = XmlWriter.Create(tempPath, settings))
 			{
-				Dom.WriteContentTo(writer);
+				dom.WriteContentTo(writer);
 				writer.Close();
 			}
-			File.Replace(tempPath, PathToHtml, PathToHtml + ".bak");
+			return tempPath;
 		}
 
 
@@ -326,10 +335,21 @@ namespace Bloom
 		/// it really should be, because that way you can take it to another location or computer
 		/// and it will still look right in a browser.
 		/// </summary>
-		public string GetHtmlFileForPrintingWithWkHtmlToPdf()
-		{
-			return PathToHtml;
-		}
+		/// <param name="bookletStyle"></param>
+//        public string GetHtmlFileForPrintingWithWkHtmlToPdf(PublishModel.BookletStyleChoices bookletStyle)
+//        {
+//            switch (bookletStyle)
+//            {
+//                case PublishModel.BookletStyleChoices.None:
+//                    return PathToHtml;
+//                case PublishModel.BookletStyleChoices.BookletCover:
+//                    break;
+//                case PublishModel.BookletStyleChoices.BookletPages:
+//                    break;
+//                default:
+//                    throw new ArgumentOutOfRangeException("bookletStyle");
+//            }
+//        }
 
 		public XmlDocument GetRelocatableCopyOfDom()
 		{

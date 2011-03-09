@@ -39,8 +39,9 @@ namespace Bloom.Publish
 
 		private void UpdateDisplay()
 		{
-			_bookletRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.Booklet;
-			_noBookletRadio.Checked = ! _bookletRadio.Checked;
+			_coverRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.BookletCover;
+			_bodyRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.BookletPages;
+			_noBookletRadio.Checked = _model.BookletStyle== PublishModel.BookletStyleChoices.None;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -94,7 +95,12 @@ namespace Bloom.Publish
 
 		private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
 		{
-			_model.SetBookletStyle(_bookletRadio.Checked ? PublishModel.BookletStyleChoices.Booklet : PublishModel.BookletStyleChoices.None);
+			if (_noBookletRadio.Checked)
+				_model.SetBookletStyle(PublishModel.BookletStyleChoices.None);
+			else if (_coverRadio.Checked)
+				_model.SetBookletStyle(PublishModel.BookletStyleChoices.BookletCover);
+			else
+				_model.SetBookletStyle(PublishModel.BookletStyleChoices.BookletPages);
 			UpdateDisplay();
 		}
 	}

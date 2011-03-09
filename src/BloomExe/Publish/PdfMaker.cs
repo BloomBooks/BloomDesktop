@@ -19,7 +19,7 @@ namespace Bloom.Publish
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 			MakeSimplePdf(inputHtmlPath,  outputPdfPath);
-			if (bookletStyle == PublishModel.BookletStyleChoices.Booklet)
+			if (bookletStyle != PublishModel.BookletStyleChoices.None)
 			{
 				MakeBooklet(outputPdfPath);
 			}

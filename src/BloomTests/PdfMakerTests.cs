@@ -36,7 +36,7 @@ namespace BloomTests
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				maker.MakePdf(input.Path, output.Path, PublishModel.BookletStyleChoices.Booklet);
+				maker.MakePdf(input.Path, output.Path, PublishModel.BookletStyleChoices.BookletPages);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path));
 			}

@@ -50,6 +50,7 @@ namespace Bloom
 					typeof(DeletePageCommand),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
+					typeof(RelocatePageEvent),
 					typeof(PageSelection)}.Contains(t));
 
 
