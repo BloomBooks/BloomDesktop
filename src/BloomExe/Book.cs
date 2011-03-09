@@ -711,16 +711,18 @@ namespace Bloom
 			switch (bookletStyle)
 			{
 				case PublishModel.BookletStyleChoices.None:
-					return dom;
+					break;
 				case PublishModel.BookletStyleChoices.BookletCover:
 					HidePages(dom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
-					return dom;
+					break;
 				 case PublishModel.BookletStyleChoices.BookletPages:
 					HidePages(dom, p=>p.GetAttribute("class").ToLower().Contains("cover"));
-					return dom;
+					break;
 				default:
 					throw new ArgumentOutOfRangeException("bookletStyle");
 			}
+
+			return dom;
 		}
 	}
 }

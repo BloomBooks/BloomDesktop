@@ -67,6 +67,11 @@ namespace Bloom.Publish
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletStyle);
+
+				//wkhtmltopdf can't handle file://
+				dom.InnerXml = dom.InnerXml.Replace("file://", "");
+
+
 				using(var tempHtml = TempFile.WithExtension(".htm"))
 				{
 					XmlWriterSettings settings = new XmlWriterSettings();
