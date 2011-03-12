@@ -26,7 +26,7 @@ namespace Bloom.Edit
 			InitializeComponent();
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
 			//don't let it grow automatically
-			_splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
+//            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
 		}
@@ -45,13 +45,19 @@ namespace Bloom.Edit
 
 		}
 
-		private void ShowOrHideSourcePane()
+
+		private void ShowOrHideSourcePane(bool showTranslationPanel)
 		{
 			_splitContainer2.Panel2.Controls.Remove(_splitTemplateAndSource);
-			if (_model.ShowTranslationPanel)
+			if (showTranslationPanel)
 			{
+			   //eventually, we'll add in the option of templates, even for shells.  Temporarily, let's hide that.
+//#if TemplatesAndSourceText
 				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
 				_splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
+//#else
+//                _splitContainer2.Panel2.Controls.Add(_sourceText);
+//#endif
 			}
 			else
 			{
@@ -76,7 +82,8 @@ namespace Bloom.Edit
 			{
 				if(_model.GetBookHasChanged())
 				{
-					ShowOrHideSourcePane();
+					//now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
+					ShowOrHideSourcePane(false);
 					//even before showing, we need to clear some things so the user doesn't see the old stuff
 					_pageListView.Clear();
 					_templatePagesView.Clear();
@@ -203,7 +210,8 @@ namespace Bloom.Edit
 
 		public void SetSourceText(string text)
 		{
-			_sourceText.Text = text;
+			ShowOrHideSourcePane(!string.IsNullOrEmpty(text));
+			_sourceText.Text = string.IsNullOrEmpty(text)?"----":text;
 		}
 	}
 }

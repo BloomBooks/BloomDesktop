@@ -19,29 +19,34 @@ DIV.page
 	max-width: 13.2cm;
 	padding: 1cm 0 0;
 }
+/*e.g. "Health" or "Math"*/
 .cover ._natLangBookLabel
 {
-	width: 5.3cm;
+	width: 5.8cm;
 	top: 19cm;
-	left: 8.5cm;
+	left: 6.8cm;
 	height: 37px;
+	text-align: right;
 }
 .cover ._nameOfLanguage
 {
 	width: 5cm;
 	top: 19cm;
-	left: 1.25cm;
+	left: 1cm;
 	height: 37px;
 }
+/*e.g. "Health" or "Math"*/
 .titlePage ._natLangBookLabel
 {
 	width: 12cm;
 	top: 1.3cm;
+	text-align: center;
 }
 .titlePage ._nameOfLanguage
 {
-	width: 9.5cm;
-	top: 3.6cm;
+	width: 12cm;
+	margin-top: 1.6cm;
+	text-align: center;
 }
 .titlePage ._vernacularBookTitle
 {
@@ -49,58 +54,88 @@ DIV.page
 	top: 1cm;
 	height: 2cm;
 	/*[empty]word-break:;*/
+	text-align: center;
 }
 .titlePage .credits
 {
-	height: 5cm;
-	width: 12.7cm;
+	height: 6.1cm;
+	width: 12cm;
 	top: 1.8cm;
+	margin-left: 1cm;
+}
+.titlePage .shellCredits
+{
+	height: 6.8cm;
+	width: 12cm;
+	margin-left: 1cm;
+	position: relative;
+	top: 1.5cm;
+	text-align: center;
 }
 .titlePage .printingHistory
 {
-	height: 6cm;
-	width: 12.5cm;
-	top: 2.1cm;
+	height: 3.7cm;
+	top: 1.2cm;
+	margin-top: 11px;
 }
 .imageOnTop .picture
 {
 	max-height: 9.7cm;
 	max-width: 478px;
+	margin-top: 1cm;
 }
 .imageOnTop .text
 {
-	height: 9cm;
+	height: 8cm;
+	margin-top: 1cm;
 }
 TEXTAREA
 {
-	width: 453px;
+	width: 12cm;
+	/*+placement:shift -46px 1px;*/
+	position: relative;
+	left: -46px;
+	top: 1px;
 }
 .imageInMiddle .picture
 {
-	max-height: 7cm;
+	max-height: 6.3cm;
 }
 .imageInMiddle .text
 {
-	height: 5.5cm;
+	height: 5cm;
+	margin-top: 1cm;
 }
 .imageWholePage .picture
 {
 	max-width: 11.7cm;
-	left: -6px;
 	top: 128px;
+	max-height: 12.9cm;
 }
 .imageOnBottom .picture
 {
-	max-height: 7cm;
+	max-height: 8.1cm;
 	margin-left: -160px;
 	margin-top: -49px;
 }
 .imageOnBottom .text
 {
-	height: 483px;
+	height: 8.9cm;
+	margin-top: 1cm;
 }
 .textWholePage TEXTAREA
 {
 	height: 18.9cm;
-	margin-top: 27px;
+	margin-top: 1cm;
+}
+.translators
+{
+	text-align: center;
+	height: 1.6cm;
+	margin-top: 1cm;
+	position: relative;
+}
+P
+{
+	margin-left: 1cm;
 }

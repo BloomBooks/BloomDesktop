@@ -59,7 +59,9 @@ namespace Bloom
 				if (string.IsNullOrEmpty(lang))
 					continue;
 				Debug.Assert(!d.ContainsKey(lang), "There is more than one textarea with "+lang);
-				d.Add(lang, textarea.InnerText);
+
+				var hint = textarea.GetAttribute("title");
+				d.Add(lang, !string.IsNullOrEmpty(hint) ? hint : textarea.InnerText);
 			}
 
 			return d;

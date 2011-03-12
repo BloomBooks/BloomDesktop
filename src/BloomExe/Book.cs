@@ -169,7 +169,7 @@ namespace Bloom
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
 			body.AppendChild(pageDom);
-			BookStorage.HideAllTextAreasExceptVernacular(dom, _languageSettings.VernacularIso639Code, Page.GetPageSelectorXPath(dom));
+			BookStorage.HideAllTextAreasThatShouldNotShow(dom, _languageSettings.VernacularIso639Code, Page.GetPageSelectorXPath(dom));
 			return dom;
 		}
 
@@ -244,7 +244,8 @@ namespace Bloom
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
 			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom();
-			dom.AddStyleSheet("file://"+_fileLocator.LocateFile(cssFileName));
+			//dom.AddStyleSheet("file://"+_fileLocator.LocateFile(cssFileName));
+			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
 			return dom;
 		}
 
@@ -401,6 +402,19 @@ namespace Bloom
 			}
 		}
 
+
+		public IEnumerable<IPage> GetTemplatePages()
+		{
+			if (!_storage.LooksOk)
+				yield break;
+
+			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page') and not(contains(@class, 'singleton'))]"))
+			{
+				var caption = pageNode.GetAttribute("title");
+				yield return CreatePageDecriptor(pageNode, caption);
+			}
+		}
+
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)
 		{
 			return new Page(pageNode, caption,
@@ -421,6 +435,9 @@ namespace Bloom
 			XmlDocument dom = _storage.Dom;
 			var newPageElement = dom.ImportNode(templatePage.GetDivNodeForThisPage(), true) as XmlElement;
 			newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
+
+
+			BookStarter.SetupPages(newPageElement, _languageSettings.VernacularIso639Code);
 			ClearEditableValues(newPageElement);
 			newPageElement.RemoveAttribute("title"); //titles are just for templates
 
@@ -443,7 +460,7 @@ namespace Bloom
 					editNode.SetAttribute("value", string.Empty);
 				}
 			}
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes("//textarea"))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _languageSettings.VernacularIso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{
@@ -508,23 +525,21 @@ namespace Bloom
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}']", _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'showNational')]", _languageSettings.VernacularIso639Code)))
 			{
 				var languageCode = editNode.GetAttribute("lang");
-				Debug.Assert(languageCode == _languageSettings.VernacularIso639Code);
 
 				var inputElementId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "input", inputElementId, _languageSettings.VernacularIso639Code);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
+				var storageNode = GetStorageNode(pageDivId, "input", inputElementId, languageCode);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
 				Guard.AgainstNull(storageNode,inputElementId);
 				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
 
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}']", _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'showNational')]", _languageSettings.VernacularIso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
 				var languageCode = editNode.GetAttribute("lang");
-				Debug.Assert(languageCode == _languageSettings.VernacularIso639Code);
 
 				if (string.IsNullOrEmpty(textareaElementId))
 				{
@@ -532,7 +547,7 @@ namespace Bloom
 				}
 				else
 				{
-					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId, _languageSettings.VernacularIso639Code);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
+					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId, languageCode);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
 					Guard.AgainstNull(destNode, textareaElementId);
 					destNode.InnerText = editNode.InnerText;
 				}
@@ -540,7 +555,7 @@ namespace Bloom
 
 			MakeAllFieldsConsistent();
 
-			_storage.HideAllTextAreasExceptVernacular(_languageSettings.VernacularIso639Code, pageSelector);
+			_storage.HideAllTextAreasThatShouldNotShow(_languageSettings.VernacularIso639Code, pageSelector);
 
 			try
 			{
@@ -626,7 +641,7 @@ namespace Bloom
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
 			//can't use starts-with becuase it could be the second or third word in the class attribute
-			foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class, '_')]"))
+			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//input[contains(@class, '_') and (@lang='{0}' or contains(@class,'showNational'))]", _languageSettings.VernacularIso639Code)))
 			{
 				var theseClasses = node.GetAttribute("class").Split(new char[] {' '},StringSplitOptions.RemoveEmptyEntries);
 				foreach (var key in theseClasses)
@@ -643,7 +658,17 @@ namespace Bloom
 				}
 			}
 
-			foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class, '_')]"))
+			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
+			//nb: we intentionally go through twice, in case the value is not in the first occurrence
+			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
+
+			MakeAllFieldsOfElementTypeConsistent(classes, "p");
+			MakeAllFieldsOfElementTypeConsistent(classes, "span");
+		}
+
+		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
+		{
+			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[contains(@class, '_') and (@lang='{1}' or contains(@class,'showNational'))]", elementName, _languageSettings.VernacularIso639Code)))
 			{
 				var theseClasses = node.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 				foreach (var key in theseClasses)
@@ -652,9 +677,12 @@ namespace Bloom
 						continue;
 
 					if (!classes.ContainsKey(key))
-						classes.Add(key, node.InnerText);
+					{
+						if (!string.IsNullOrEmpty(node.InnerText))
+							classes.Add(key, node.InnerText);
+					}
 					else
-						node.InnerText= classes[key];
+						node.InnerText = classes[key];
 
 					break;//only one variable name per item, of course.
 				}
@@ -724,5 +752,6 @@ namespace Bloom
 
 			return dom;
 		}
+
 	}
 }

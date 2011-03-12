@@ -1,4 +1,4 @@
-@import url("../BasePage.css");
+@import url(../BasePage.css);
 DIV.page
 {
 	min-width: 29.7cm;
@@ -6,60 +6,66 @@ DIV.page
 	min-height: 21cm;
 	max-height: 21cm;
 }
-.titlePage .bookLabel
+.titlePage ._natLangBookLabel
 {
-	width: 5cm;
+	width: 12cm;
 	top: 2cm;
+	text-align: center;
 }
-.titlePage .languageName
+.titlePage ._nameOfLanguage
 {
-	width: 9.5cm;
-	top: 4.5cm;
+	width: 12cm;
+	top: 3.8cm;
+	position: relative;
+	text-align: center;
 }
-.titlePage .title
+.titlePage ._vernacularBookTitle
 {
 	width: 12cm;
 	position: relative;
 	top: 1cm;
 	height: 2cm;
 }
-.cover .title
+.cover ._vernacularBookTitle
 {
 	top: 1cm;
-	height: 4cm;
+	height: 3.5cm;
 }
 .cover .picture
 {
-	top: 5.5cm;
+	top: 2.5cm;
 	max-height: 9cm;
 	max-width: 9cm;
+	/*+placement:shift 0px 26px;*/
+	position: relative;
+	left: 0px;
+	top: 26px;
 }
-.cover .BookLabel
+.cover ._natLangBookLabel
 {
 	width: 5cm;
 	top: 19cm;
 	left: 20cm;
 }
-.cover .LanguageName
+.cover ._nameOfLanguage
 {
 	width: 5cm;
 	top: 19cm;
 	left: 1.25cm;
 }
-
 .titlePage .credits
 {
 	text-align: center;
 	height: 5cm;
-	width: 10cm;
+	width: 12cm;
 	top: 3cm;
 	position: relative;
 }
 .titlePage .printingHistory
 {
 	text-align: center;
-	height: 6cm;
-	width: 10cm;
+	height: 5.1cm;
+	width: 12cm;
 	top: 4cm;
 	position: relative;
 }
@@ -71,7 +77,17 @@ DIV.page
 {
 	position: relative;
 	width: 25cm;
-	height: 10cm;
+	height: 8.4cm;
+}
+.imageOnBottom .picture
+{
+	max-height: 8.5cm;
+	max-width: 9cm;
+}
+.imageOnBottom .text
+{
+	height: 11.5cm;
+	width: 23.6cm;
 }
 TEXTAREA
 {
@@ -95,7 +111,7 @@ INPUT
 {
 	position: relative;
 	width: 25cm;
-	height: 5cm;
+	height: 4.6cm;
 }
 .imageOnLeft .picture
 {
@@ -119,4 +135,10 @@ INPUT
 	position: relative;
 	left: 56px;
 	top: 9px;
+}
+.textWholePage TEXTAREA
+{
+	height: 19cm;
+	margin-top: 1cm;
+	width: 26.4cm;
 }

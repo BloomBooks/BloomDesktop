@@ -98,9 +98,20 @@ namespace Bloom.Library
 			{
 				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
 					continue;
-				var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
-				Debug.WriteLine(book.Title);
-				_books.Add(book);
+				try
+				{
+					var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
+					Debug.WriteLine(book.Title);
+					_books.Add(book);
+				}
+				catch(Exception e)
+				{
+					if (e.InnerException != null)
+					{
+						e = e.InnerException;
+					}
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not load " + path);
+				}
 			}
 		}
 

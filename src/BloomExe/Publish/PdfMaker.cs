@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Palaso.Code;
 using Palaso.IO;
+using Palaso.Xml;
 
 namespace Bloom.Publish
 {
@@ -75,5 +77,7 @@ namespace Bloom.Publish
 				converter.Convert(incoming.Path, inAndOutPath, paperTarget, rightToLeft);
 			}
 		}
+
+
 	}
 }

@@ -113,6 +113,22 @@ namespace BloomTests
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']//textarea[@lang='xyz' and not(@style)]", 1);
 		}
 
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_NationalLanguageField_LeavesUntouched()
+		{
+			var body = @"<div class='page' testid='pageWithNoLanguageTags'>
+						<p>
+							<textarea lang='en' id='text1' class='showNational'>LanguageName</textarea>
+						</p>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//textarea", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
+		}
+
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_AlreadyHasVernacular_LeavesUntouched()
 		{
@@ -208,16 +224,9 @@ namespace BloomTests
 
 		private string GetShellBookFolder()
 		{
-			var content = @"<?xml version='1.0' encoding='utf-8' ?>
-				<html xmlns='http://www.w3.org/1999/xhtml'>
-				<head>
-					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-					<title>Test Shell</title>
-					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
-				</head>
-				<body class='a5Portrait'>
-					  <div class='page required' id='1'>
+			return
+				GetShellBookFolder(
+					@"<div class='page required' id='1'>
 						_required_ The user will not be allowed to remove this page.
 					  </div>
 					<div class='page' id='2'>
@@ -249,10 +258,21 @@ namespace BloomTests
 					<div class='page' testid='pageWithTokPisinAndEnglish'>
 						 <textarea lang='en' id='text1' class='text'> When you plant a garden you always make a fence.</textarea>
 						<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
-					</div>
-				</body>
-				</html>
-		";
+					</div>");
+		}
+		private string GetShellBookFolder(string bodyContents)
+		{
+			var content =
+				@"<?xml version='1.0' encoding='utf-8' ?>
+				<html xmlns='http://www.w3.org/1999/xhtml'>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
+				</head>
+				<body class='a5Portrait'>" +
+				bodyContents + "</body></html>";
 			string folder = _shellCollectionFolder.Combine("guitar");
 			Directory.CreateDirectory(folder);
 			string shellFolderPath = Path.Combine(folder, "guitar.htm");

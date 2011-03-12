@@ -4,23 +4,27 @@
 	<meta content="text/html; charset=utf-8" http-equiv="content-type" />
 	<title>A5Portrait Template</title>
 	<link rel="stylesheet" href="A5Portrait.css" type="text/css" />
-	<link rel="stylesheet" href="../../previewMode.css" type="text/css" />
+	<link rel="stylesheet" href="previewMode.css" type="text/css" />
+	<link rel="stylesheet" href="basePage.css" type="text/css" />
 	<meta id="defaultNameForDerivedBooks" content="book"/>
 </head>
 <body class="a5Portrait">
-	<div class="page centered cover required coverColor" id="cover">
+	<div class="page centered cover required coverColor singleton" id="cover">
 		<p class="centered"><textarea id="coverPageTitle" class="_vernacularBookTitle  coverColor">My Book</textarea></p>
 		<img id="coverPageImage"
 			alt="missing" class="picture  coverColor" src="placeHolder.png" />
-			<input id="coverPageLanguageName"
-				class="_natLangBookName  coverColor" value="Language Name Here" /><input id="coverPageBookLabel" class="_natLangBookLabel coverColor"
-					value="National language book label" /></div>
-	<div class="page titlePage required" id="titlePage">
-		<p class="centered"><textarea id="titlePageTitle" class="_vernacularBookTitle">My Book</textarea></p>
-		<p class="centered"><input id="titlePageBookLabel" class="_natLangBookLabel" value="National language book label" /></p>
-		<p class="centered"><textarea id="titlePageCredits" class="credits">Written by:</textarea></p>
-		<p class="centered"><textarea id="titlePagePrintingHistory" class="printingHistory">Printing History</textarea></p>
-		<p class="centered"><input    id="titlePageLanguageName" class="_natLangBookName" value="language name" /></p>
+		<textarea lang='en' id="coverPageLanguageName" class="_nameOfLanguage showNational singleLine coverColor" title="Enter the name of the language">Language Name Here</textarea>
+		<textarea lang='en' id="coverPageBookLabel" class="_natLangBookLabel  showNational singleLine coverColor" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</textarea>
+	</div>
+	<div class="page titlePage required singleton" id="titlePage">
+		<p class="centered _vernacularBookTitle" lang="en"  id="P1">My Book</p>
+		<p class="centered _natLangBookLabel singleLine showNational" lang='en' id="titlePageBookLabel" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</p>
+		<p class="centered">
+				<textarea lang='en' id="titlePageCredits"  title="Enter the contributions made by writers, illustrators, editors, etc." class="credits">Written by:</textarea>
+				<textarea lang='tpi'  style="visibility:hidden !important; position:fixed  !important;" id="titlePageCredits"  title="Putim nem bilong olgeta manmeri husat is workim dispela buk. Husat workim piksa, raitim stori, na kain olsem." class="credits">Written by:</textarea>
+		 </p>
+		<p class="centered"><textarea lang='en' id="titlePagePrintingHistory" class="printingHistory showNational">Printing History</textarea></p>
+		<p class="centered _nameOfLanguage singleLine showNational" lang='en'>Language Name</p>
 
 	</div>
 	<div class="page imageOnTop extraPage" id="page1">

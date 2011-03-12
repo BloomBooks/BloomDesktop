@@ -1,9 +1,13 @@
-@import url('SignalOverflow.css');
-BODY
-{
-	text-align: center;
-	background-color: #363333;
-}
+/*@import url('SignalOverflow.css');*/
+
+
+	BODY
+	{
+		text-align: center;
+			background-color: #363333;
+	}
+
+
 DIV.page
 {
 	background-color: #F8F8F8;

@@ -30,7 +30,7 @@ namespace Bloom
 		bool TryGetPremadeThumbnail(out Image image);
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
-		void HideAllTextAreasExceptVernacular(string vernacularIso639Code, string optionalPageSelector);
+		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
 	}
 
@@ -414,11 +414,13 @@ namespace Bloom
 		public const int FOF_SIMPLEPROGRESS = 0x0100;
 		#endif
 
-		public void HideAllTextAreasExceptVernacular(string vernacularIso639Code, string optionalPageSelector)
+		public void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector)
 		{
-			HideAllTextAreasExceptVernacular(Dom, vernacularIso639Code,optionalPageSelector);
+			HideAllTextAreasThatShouldNotShow(Dom, vernacularIso639Code,optionalPageSelector);
 		}
-		public static void HideAllTextAreasExceptVernacular(XmlDocument rootElement, string vernacularIso639Code, string optionalPageSelector)
+
+
+		public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string vernacularIso639Code, string optionalPageSelector)
 		{
 			if (optionalPageSelector == null)
 				optionalPageSelector = string.Empty;
@@ -427,11 +429,16 @@ namespace Bloom
 			{
 				if (storageNode.HasAttribute("style"))
 					storageNode.RemoveAttribute("style");
-				if (storageNode.GetAttribute("lang") != vernacularIso639Code)
+				if (storageNode.GetAttribute("lang") != vernacularIso639Code && !ContainsClass(storageNode,"showNational"))
 				{
 					storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
 				}
 			}
+		}
+
+		private static bool ContainsClass(XmlNode element, string className)
+		{
+			return ((XmlElement)element).GetAttribute("class").Contains(className);
 		}
 
 	}

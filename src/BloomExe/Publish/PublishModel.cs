@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using Palaso.IO;
+using Palaso.Xml;
 
 namespace Bloom.Publish
 {
@@ -70,9 +71,9 @@ namespace Bloom.Publish
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
+				MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
 
-
-				using(var tempHtml = TempFile.WithExtension(".htm"))
+				 using (var tempHtml = TempFile.WithExtension(".htm"))
 				{
 					XmlWriterSettings settings = new XmlWriterSettings();
 					settings.Indent = true;
@@ -95,7 +96,24 @@ namespace Bloom.Publish
 			SetDisplayMode(DisplayModes.ShowPdf);
 		}
 
+		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText))
+				{
+					node.InnerText = " ";
+				}
+			}
 
+			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText))
+				{
+					node.InnerText = " ";
+				}
+			}
+		}
 
 		private string GetPdfPath(string fileName)
 		{

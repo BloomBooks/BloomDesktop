@@ -162,11 +162,11 @@ namespace Bloom.Edit
 			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
 			if (sourceTexts.Count == 0)
 			{
-				_view.SetSourceText("No Source");
+				_view.SetSourceText(string.Empty);
 			}
 			else
 			{
-				_view.SetSourceText(_languageSettings.ChooseBestSource(sourceTexts, "No Source"));
+				_view.SetSourceText(_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
 			}
 		}
 	}

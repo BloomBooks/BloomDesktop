@@ -41,7 +41,7 @@ namespace Bloom
 			}
 			else
 			{
-				_thumbNailList.SetItems(((Book) _bookSelection.CurrentSelection.TemplateBook).GetPages());
+				_thumbNailList.SetItems(((Book) _bookSelection.CurrentSelection.TemplateBook).GetTemplatePages());
 			}
 		}
 

@@ -87,12 +87,16 @@ namespace BloomTests
 //            Assert.IsTrue(gotEvent);
 //        }
 
+		/// <summary>
+		/// What we're testing here is that boxes that are supposed to show in the national language
+		/// are saved when changed.
+		/// </summary>
 		[Test]
-		public void SavePage_ChangeMadeToInputBox_StorageUpdatedAndToldToSave()
+		public void SavePage_ChangeMadeToInputBoxWhichIsLabelledShowNational_StorageUpdatedAndToldToSave()
 		{
 			var book = CreateBook(true);
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
+			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput' and contains(@class,'showNational')]");
 			//nb: we dont' have to simulate the business wehre the browser actually puts
 			//new values into a "newValue" attribute, since it is required to pull those back
 			//into 'value' before the Book's SavePage is called.
@@ -111,11 +115,40 @@ namespace BloomTests
 		{
 			var book = CreateBook(true);
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='vtitle']");
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='vtitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle']");
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
+		}
+		[Test]
+		public void MakeAllFieldsConsistent_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
+		{
+			var book = CreateBook(true);
+			var dom = book.RawDom;
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='vtitle' and text()='tree']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='vtitle' and text()='dog']", 1);
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='vtitle']");
+			textarea1.InnerText = "peace";
+			book.MakeAllFieldsConsistent();
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
+			Assert.AreEqual("peace", textarea2.InnerText);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']",1);
+		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_ElementIsNationalLanguage_UpdatesOthers()
+		{
+			var book = CreateBook(true);
+			var dom = book.RawDom;
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='vtitle' and text()='tree']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='vtitle' and text()='dog']", 1);
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='vtitle']");
+			textarea1.InnerText = "peace";
+			book.MakeAllFieldsConsistent();
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
+			Assert.AreEqual("peace", textarea2.InnerText);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']", 1);
 		}
 
 		[Test]
@@ -407,8 +440,14 @@ namespace BloomTests
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
 				<div class='page' id='guid1'>
-					<input lang='xyz' id='testInput' class='Blah' value='one' />
-					<textarea lang='xyz' id='vtitle' class='_vernacularBookTitle'>tree</textarea></div>
+					<p>
+						<input lang='en' id='testInput' class='showNational' value='one' />
+					</p>
+					<p>
+						<textarea lang='en' id='vtitle' class='_vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='vtitle' class='_vernacularBookTitle'>dog</textarea>
+					</p>
+				</div>
 				<div class='page' id='guid2'>
 					<p>
 						<textarea lang='en' id='testText'>english</textarea>
