@@ -240,6 +240,9 @@ namespace Bloom.Edit
 
 		public void SelectPage(IPage page)
 		{
+			if (_listView == null)
+				return;
+
 			foreach (ListViewItem listViewItem in _listView.Items)
 			{
 				var itemPage = listViewItem.Tag as IPage;

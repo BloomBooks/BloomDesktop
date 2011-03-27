@@ -8,5 +8,11 @@
     <Setting Name="MruProjects" Type="Bloom.ToPalaso.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Reporting" Type="Palaso.Reporting.ReportingSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

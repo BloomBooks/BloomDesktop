@@ -51,10 +51,10 @@
             this.label1.Location = new System.Drawing.Point(12, 134);
             this.label1.MaximumSize = new System.Drawing.Size(300, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(299, 72);
+            this.label1.Size = new System.Drawing.Size(299, 96);
             this.label1.TabIndex = 1;
-            this.label1.Text = "This is a development version. Not only should you not use it, you shouldn\'t even" +
-                " report bugs.";
+            this.label1.Text = "This is a development version. Not only should you not use it, to do work, it\'s n" +
+                "ot worth the effort to report bugs.";
             // 
             // _fadeOutTimer
             // 

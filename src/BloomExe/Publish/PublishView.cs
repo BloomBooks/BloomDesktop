@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
+using Palaso.Reporting;
 
 
 namespace Bloom.Publish
@@ -74,6 +75,7 @@ namespace Bloom.Publish
 			{
 				_browser.Navigate(_pleaseWaitPage);
 				_loadTimer.Enabled = true;
+				UsageReporter.SendNavigationNotice("Publish");
 			}
 		}
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Palaso.IO;
+using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -23,8 +24,22 @@ namespace Bloom
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+			//bring in settings from any previous version
+			if (Settings.Default.NeedUpgrade)
+			{
+				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+				Settings.Default.Upgrade();
+				Settings.Default.NeedUpgrade = false;
+				Settings.Default.Save();
+			}
 
+
+			SetUpErrorHandling();
 			Splasher.Show();
+			SetUpReporting();
+			Settings.Default.Save();
+
+
 			_applicationContainer = new ApplicationContainer();
 
 			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
@@ -176,6 +191,17 @@ namespace Bloom
 			Palaso.Reporting.ErrorReport.AddProperty("EmailAddress", "issues@bloom.palaso.org");
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
+		}
+
+
+		private static void SetUpReporting()
+		{
+			if (Settings.Default.Reporting == null)
+			{
+				Settings.Default.Reporting = new ReportingSettings();
+				Settings.Default.Save();
+			}
+			UsageReporter.Init(Settings.Default.Reporting, "bloom.palaso.org", "UA-22170471-2");
 		}
 	}
 

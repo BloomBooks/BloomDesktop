@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Palaso.Reporting;
 
 namespace Bloom.Library
 {
@@ -28,7 +29,10 @@ namespace Bloom.Library
 
 		private void LibraryView_VisibleChanged(object sender, EventArgs e)
 		{
-
+			if(Visible)
+			{
+				UsageReporter.SendNavigationNotice("Library");
+			}
 		}
 	}
 }

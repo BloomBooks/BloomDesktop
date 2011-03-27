@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -90,6 +91,7 @@ namespace Bloom.Edit
 				}
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
+				UsageReporter.SendNavigationNotice("Editing");
 			}
 			else
 			{
