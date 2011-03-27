@@ -47,13 +47,13 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="580.80137"
-     inkscape:cy="805.23689"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="311.31161"
+     inkscape:cy="955.39093"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1486"
+     inkscape:window-width="1485"
      inkscape:window-height="878"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
@@ -275,7 +275,7 @@
     </g>
     <path
        style="fill:#619438;fill-rule:evenodd;stroke:none"
-       d="m 304.17713,270.97919 c 5.89696,11.22895 0.33829,30.28324 28.77714,26.11384 16.69199,-18.55164 -22.42449,-12.15372 -28.77714,-26.11384 z"
+       d="m 499.3386,265.32234 c 5.89696,11.22895 0.33829,30.28324 28.77714,26.11384 16.69199,-18.55164 -22.42449,-12.15372 -28.77714,-26.11384 z"
        id="path6504-1"
        sodipodi:nodetypes="ccc"
        inkscape:connector-curvature="0" />
@@ -293,5 +293,255 @@
          id="tspan5282"
          x="259.6904"
          y="68.362183">Sowing the seeds of literacy</tspan></text>
+    <g
+       inkscape:export-ydpi="72.361687"
+       inkscape:export-xdpi="72.361687"
+       inkscape:export-filename="C:\dev\Bloom\artwork\WelcomeHeader.png"
+       transform="matrix(0.5120278,0,0,0.47007664,1390.9287,350.30452)"
+       id="g3023">
+      <g
+         id="g3025"
+         transform="matrix(0.3288947,-0.06951393,0.07581862,0.3303872,-3002.1886,-595.39264)"
+         style="fill:#a03c50;stroke:none">
+        <g
+           transform="matrix(1.0210512,-0.04179311,0.03696198,1.2011094,866.53467,490.27351)"
+           style="fill:#a03c50;stroke:none;display:inline"
+           id="g3027"
+           inkscape:label="Cover">
+          <path
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3029"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3031"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           transform="matrix(0.97643591,0.02595745,0.03696591,1.2012371,869.32522,488.15242)"
+           style="fill:#ffffff;stroke:none;display:inline"
+           id="g3033"
+           inkscape:label="Cover">
+          <path
+             style="fill:#ffffff;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3035"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3037"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#ffffff;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           inkscape:label="Cover"
+           id="g3039"
+           style="fill:#a03c50;stroke:none;display:inline"
+           transform="matrix(0.88863903,0.11893676,0.03697373,1.2014913,871.37198,484.88525)">
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3041"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+          <path
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3043"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         style="fill:#a03c50"
+         id="g3045"
+         transform="matrix(0.31814287,-0.10857725,0.11501571,0.31886604,-3014.9428,-548.62598)">
+        <g
+           id="g3047"
+           transform="matrix(0.72967772,0.0775787,-0.10487095,0.8369169,789.35543,215.2678)"
+           style="fill:#619438;stroke:none">
+          <path
+             sodipodi:nodetypes="ccc"
+             id="path3049"
+             d="M 518.32029,560.81503 C 477.98081,622.69149 488.29269,735.41726 348.28364,697.23465 281.16437,581.88194 473.12118,638.22734 518.32029,560.81503 z"
+             style="fill:#619438;fill-rule:evenodd;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:#619438;stroke:none"
+           transform="matrix(-0.98622272,-0.10485436,-0.107168,0.85524832,1393.1133,263.61687)"
+           id="g3051">
+          <path
+             style="fill:#619438;fill-rule:evenodd;stroke:none"
+             d="M 496.1038,505.4177 C 479.43351,576.85791 528.39806,678.07534 382.57435,690.92123 278.91731,606.87407 480.23583,592.97604 496.1038,505.4177 z"
+             id="path3053"
+             sodipodi:nodetypes="ccc"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+    </g>
+    <flowRoot
+       inkscape:transform-center-y="12.456701"
+       inkscape:transform-center-x="-256.99964"
+       inkscape:export-ydpi="72.361687"
+       inkscape:export-xdpi="72.361687"
+       inkscape:export-filename="C:\dev\Bloom\artwork\WelcomeHeader.png"
+       xml:space="preserve"
+       id="flowRoot3055"
+       style="font-size:61.01354599px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#a03c50;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold"
+       transform="matrix(0.91834616,0,0,1.20868,-986.4461,-2172.1268)"><flowRegion
+         id="flowRegion3057"><rect
+           id="rect3059"
+           width="891.42859"
+           height="280"
+           x="1165.7144"
+           y="1886.6479"
+           style="font-size:61.01354599px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#a03c50;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold" /></flowRegion><flowPara
+         id="flowPara3061"
+         style="font-size:61.01354599px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#a03c50;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold">Bloom</flowPara></flowRoot>    <text
+       inkscape:export-ydpi="72.361687"
+       inkscape:export-xdpi="72.361687"
+       inkscape:export-filename="C:\dev\Bloom\artwork\WelcomeHeader.png"
+       sodipodi:linespacing="125%"
+       id="text3063"
+       y="188.86218"
+       x="86.940399"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#a03c50;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       xml:space="preserve"><tspan
+         y="188.86218"
+         x="86.940399"
+         id="tspan3065"
+         sodipodi:role="line">Sowing the seeds of literacy</tspan></text>
+    <g
+       inkscape:export-ydpi="144.05"
+       inkscape:export-xdpi="144.05"
+       inkscape:export-filename="C:\dev\Bloom\artwork\NameAndTagGreen.png"
+       transform="matrix(0.5120278,0,0,0.47007664,1393.6482,440.59901)"
+       id="g3023-1">
+      <g
+         id="g3025-7"
+         transform="matrix(0.3288947,-0.06951393,0.07581862,0.3303872,-3002.1886,-595.39264)"
+         style="fill:#a03c50;stroke:none">
+        <g
+           transform="matrix(1.0210512,-0.04179311,0.03696198,1.2011094,866.53467,490.27351)"
+           style="fill:#a03c50;stroke:none;display:inline"
+           id="g3027-4"
+           inkscape:label="Cover">
+          <path
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3029-0"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3031-9"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           transform="matrix(0.97643591,0.02595745,0.03696591,1.2012371,869.32522,488.15242)"
+           style="fill:#ffffff;stroke:none;display:inline"
+           id="g3033-4"
+           inkscape:label="Cover">
+          <path
+             style="fill:#ffffff;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3035-8"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3037-8"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#ffffff;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           inkscape:label="Cover"
+           id="g3039-2"
+           style="fill:#a03c50;stroke:none;display:inline"
+           transform="matrix(0.88863903,0.11893676,0.03697373,1.2014913,871.37198,484.88525)">
+          <path
+             sodipodi:nodetypes="ccccccc"
+             id="path3041-4"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             inkscape:connector-curvature="0" />
+          <path
+             style="fill:#a03c50;fill-opacity:1;stroke:none"
+             d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+             id="path3043-5"
+             sodipodi:nodetypes="ccccccc"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         style="fill:#a03c50"
+         id="g3045-5"
+         transform="matrix(0.31814287,-0.10857725,0.11501571,0.31886604,-3014.9428,-548.62598)">
+        <g
+           id="g3047-1"
+           transform="matrix(0.72967772,0.0775787,-0.10487095,0.8369169,789.35543,215.2678)"
+           style="fill:#619438;stroke:none">
+          <path
+             sodipodi:nodetypes="ccc"
+             id="path3049-7"
+             d="M 518.32029,560.81503 C 477.98081,622.69149 488.29269,735.41726 348.28364,697.23465 281.16437,581.88194 473.12118,638.22734 518.32029,560.81503 z"
+             style="fill:#619438;fill-rule:evenodd;stroke:none"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:#619438;stroke:none"
+           transform="matrix(-0.98622272,-0.10485436,-0.107168,0.85524832,1393.1133,263.61687)"
+           id="g3051-1">
+          <path
+             style="fill:#619438;fill-rule:evenodd;stroke:none"
+             d="M 496.1038,505.4177 C 479.43351,576.85791 528.39806,678.07534 382.57435,690.92123 278.91731,606.87407 480.23583,592.97604 496.1038,505.4177 z"
+             id="path3053-1"
+             sodipodi:nodetypes="ccc"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+    </g>
+    <flowRoot
+       inkscape:transform-center-y="12.456701"
+       inkscape:transform-center-x="-256.99964"
+       inkscape:export-ydpi="144.05"
+       inkscape:export-xdpi="144.05"
+       inkscape:export-filename="C:\dev\Bloom\artwork\NameAndTagGreen.png"
+       xml:space="preserve"
+       id="flowRoot3055-5"
+       style="font-size:61.01354598999999700px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#619438;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold"
+       transform="matrix(0.91834616,0,0,1.20868,-983.7266,-2081.8323)"><flowRegion
+         id="flowRegion3057-2"><rect
+           id="rect3059-7"
+           width="891.42859"
+           height="280"
+           x="1165.7144"
+           y="1886.6479"
+           style="font-size:61.01354598999999700px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#619438;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold" /></flowRegion><flowPara
+         id="flowPara3061-6"
+         style="font-size:61.01354598999999700px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#619438;fill-opacity:1;stroke:none;font-family:Maiandra GD;-inkscape-font-specification:Maiandra GD Bold">Bloom</flowPara></flowRoot>    <text
+       inkscape:export-ydpi="144.05"
+       inkscape:export-xdpi="144.05"
+       inkscape:export-filename="C:\dev\Bloom\artwork\NameAndTagGreen.png"
+       sodipodi:linespacing="125%"
+       id="text3063-1"
+       y="279.15665"
+       x="89.659943"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#619438;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       xml:space="preserve"><tspan
+         y="279.15665"
+         x="89.659943"
+         id="tspan3065-4"
+         sodipodi:role="line">Sowing the seeds of literacy</tspan></text>
   </g>
 </svg>
