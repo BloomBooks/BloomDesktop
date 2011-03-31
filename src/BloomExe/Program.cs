@@ -24,6 +24,11 @@ namespace Bloom
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+
+			if(Settings.Default.Reporting == null)
+			{
+				Settings.Default.Reporting = new ReportingSettings();
+			}
 			//bring in settings from any previous version
 			if (Settings.Default.NeedUpgrade)
 			{
