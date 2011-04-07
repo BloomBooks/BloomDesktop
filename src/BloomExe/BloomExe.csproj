@@ -103,6 +103,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ProjectContext.cs" />
+    <Compile Include="ProjectSettings.cs" />
     <Compile Include="Publish\Converter.cs" />
     <Compile Include="Publish\PaperTarget.cs" />
     <Compile Include="Publish\PdfMaker.cs" />

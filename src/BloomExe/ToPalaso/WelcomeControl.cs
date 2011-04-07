@@ -14,8 +14,9 @@ namespace Bloom.ToPalaso
 		private  MostRecentPathsList _mruList;
 		private Func<string, bool> _looksLikeValidProjectPredicate;
 		private string _createNewProjectButtonLabel;
-		private Func<string> _createNewProjectAndReturnPath;
+		private Func<NewProjectInfo> _createNewProjectAndReturnPath;
 		private string _browseLabel;
+		private string _filterString;
 
 		public event EventHandler DoneChoosingOrCreatingProject;
 
@@ -29,9 +30,11 @@ namespace Bloom.ToPalaso
 			string defaultParentDirectoryForProjects,
 			string createNewProjectButtonLabel,
 			string browseForOtherProjectsLabel,
+			string filterString,
 			Func<string, bool> looksLikeValidProjectPredicate,
-			Func<string> createNewProjectAndReturnPath)
+			Func<NewProjectInfo> createNewProjectAndReturnPath)
 		 {
+			_filterString = filterString;
 			_createNewProjectAndReturnPath = createNewProjectAndReturnPath;
 			_browseLabel = browseForOtherProjectsLabel;
 			_defaultParentDirectoryForProjects = defaultParentDirectoryForProjects;
@@ -227,31 +230,25 @@ namespace Bloom.ToPalaso
 				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
 			}
 
-			using (var dlg = new FolderBrowserDialog())
+			using (var dlg = new OpenFileDialog())
 			{
-				dlg.ShowNewFolderButton =false;
+				dlg.Title = "Open Project";
 
-				//dlg. = "Open Project";
-
-//				var prjFilterText = LocalizationManager.LocalizeString(
-//					"WelcomeDialog.ProjectFileType", "SayMore Project (*.sprj)",
-//					locExtender.LocalizationGroup);
-
-				//dlg.Filter = prjFilterText + "|*.sprj";
-				dlg.SelectedPath = _defaultParentDirectoryForProjects;
+				dlg.Filter = _filterString;
 				//dlg.InitialDirectory = _defaultParentDirectoryForProjects;
-				//dlg.CheckFileExists = true;
-				//dlg.CheckPathExists = true;
+				dlg.CheckFileExists = true;
+				dlg.CheckPathExists = true;
 				if (dlg.ShowDialog(this) == DialogResult.Cancel)
 					return;
 
-				SelectProjectAndClose(dlg.SelectedPath);
+				SelectProjectAndClose(dlg.FileName);
 			}
 		}
 
 		private void CreateNewProject_LinkClicked(object sender, EventArgs e)
 		{
-			SelectProjectAndClose(_createNewProjectAndReturnPath());
+			var settings = new ProjectSettings(_createNewProjectAndReturnPath());
+			SelectProjectAndClose(settings.SettingsFilePath);
 		}
 
 		public void SelectProjectAndClose(string path)
@@ -288,4 +285,6 @@ namespace Bloom.ToPalaso
 				ver.Revision, bldDate.ToString("dd-MMM-yyyy"));
 		}
 	}
+
+
 }

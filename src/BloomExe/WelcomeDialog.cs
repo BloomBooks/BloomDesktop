@@ -18,6 +18,7 @@ namespace Bloom
 			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForProjects(),
 				"Create new library",
 				"Browse for other libraries on this computer...",
+				"Bloom Libraries|*.bloomLibrary",
 				dir=>true,
 				CreateNewProject);
 
@@ -33,15 +34,19 @@ namespace Bloom
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
-		private string CreateNewProject()
+		private NewProjectInfo CreateNewProject()
 		{
 			ChooseNewProjectLocationDialog dlg = new ChooseNewProjectLocationDialog(DefaultParentDirectoryForProjects());
 			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewProjectDirectory))
 			{
 				return null;
 			}
-			Directory.CreateDirectory(dlg.PathToNewProjectDirectory);
-			return dlg.PathToNewProjectDirectory;
+			return new NewProjectInfo()
+					   {
+						   PathToSettingsFile =
+							   ProjectSettings.GetPathForNewSettings(dlg.PathToNewProjectDirectory, dlg.ProjectName),
+						   Iso639Code = dlg.Iso639Code
+					   };
 		}
 
 		public string SelectedPath

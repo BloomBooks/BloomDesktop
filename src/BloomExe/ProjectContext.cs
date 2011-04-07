@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
 using Autofac;
 using Bloom.Edit;
 using Bloom.Library;
-using Bloom.Project;
-using Bloom.Publish;
 using Palaso.IO;
 
 namespace Bloom
@@ -21,19 +17,20 @@ namespace Bloom
 		/// and disposed of along with this ProjectContext class
 		/// </summary>
 		private ILifetimeScope _scope;
-
 		public Shell ProjectWindow { get; private set; }
 
-		public ProjectContext(string rootDirectoryPath, IContainer parentContainer)
+		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
-			BuildSubContainerForThisProject(rootDirectoryPath, parentContainer);
+
+			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
 		}
 
 		/// ------------------------------------------------------------------------------------
-		protected void BuildSubContainerForThisProject(string rootDirectoryPath, IContainer parentContainer)
+		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
+			var rootDirectoryPath = Path.GetDirectoryName(projectSettingsPath);
 			_scope = parentContainer.BeginLifetimeScope(builder =>
 			{
 				//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
@@ -46,12 +43,18 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.InstancePerLifetimeScope()
 					.Where(t => new[]{
+					typeof(ProjectSettings),
 					typeof(TemplateInsertionCommand),
 					typeof(DeletePageCommand),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
 					typeof(RelocatePageEvent),
 					typeof(PageSelection)}.Contains(t));
+
+
+				///ProjectSettings = _scope.Resolve<Func<string, ProjectSettings>>()(projectSettingsPath);
+			  //  ProjectSettings = new ProjectSettings(projectSettingsPath);
+				builder.Register<ProjectSettings>(c => new ProjectSettings(projectSettingsPath));
 
 
 				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
@@ -62,7 +65,7 @@ namespace Bloom
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
-				builder.Register<LanguageSettings>(c => new LanguageSettings("v", new []{"tpi","en"}));//todo
+				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<ProjectSettings>().Iso639Code, new []{"tpi","en"}));//todo
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {

@@ -2,12 +2,14 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using Palaso.UI.WindowsForms.WritingSystems;
 
 namespace Bloom.ToPalaso
 {
 	public partial class ChooseNewProjectLocationDialog: Form
 	{
 		private readonly string _destinationDirectory;
+		public string Iso639Code;
 
 		public ChooseNewProjectLocationDialog(string destinationDirectory)
 		{
@@ -20,7 +22,7 @@ namespace Bloom.ToPalaso
 
 		protected virtual bool EnableOK
 		{
-			get { return NameLooksOk; }
+			get { return NameLooksOk && !string.IsNullOrEmpty(Iso639Code); }
 		}
 
 		protected void _textProjectName_TextChanged(object sender, EventArgs e)
@@ -90,14 +92,38 @@ namespace Bloom.ToPalaso
 
 		protected void btnOK_Click(object sender, EventArgs e)
 		{
+			ProjectName = _textProjectName.Text.Trim();
 			DialogResult = DialogResult.OK;
 			Close();
+		}
+
+		public string ProjectName
+		{
+			get; private set;
 		}
 
 		protected void btnCancel_Click(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.Cancel;
 			Close();
+		}
+
+		private void _chooseLanguageButton_Click(object sender, EventArgs e)
+		{
+			using(var dlg = new LookupISOCodeDialog())
+			{
+				if(DialogResult.OK != dlg.ShowDialog())
+				{
+					return;
+				}
+				_languageInfoLabel.Text = string.Format("{0} ({1})", dlg.ISOCodeAndName.Name, dlg.ISOCode);
+				Iso639Code = dlg.ISOCodeAndName.Code;
+
+				if(_textProjectName.Text.Trim().Length==0)
+				{
+					_textProjectName.Text = dlg.ISOCodeAndName.Name + " Books";
+				}
+			}
 		}
 	}
 }
