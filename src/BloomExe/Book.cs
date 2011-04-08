@@ -87,11 +87,14 @@ namespace Bloom
 
 		public enum BookType { Unknown, Template, Shell, Publication }
 
+		/// <summary>
+		/// we could get the title from the <title/> element, the name of the html, or the name of the folder...
+		/// for now, we're going with the folder.
+		/// </summary>
 		public string Title
 		{
 			get
 			{
-				//TODO: we need to rename the books when the title changes; until then, we use this:
 				if (Type == BookType.Publication)
 				{
 					var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
@@ -640,6 +643,10 @@ namespace Bloom
 //            }
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
+
+
+			//REVIEW: it looks like we're going to stop using input altogether, so this can be removed.
+
 			//can't use starts-with becuase it could be the second or third word in the class attribute
 			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//input[contains(@class, '_') and (@lang='{0}' or contains(@class,'showNational'))]", _languageSettings.VernacularIso639Code)))
 			{
@@ -650,7 +657,7 @@ namespace Bloom
 						continue;
 
 					if(!classes.ContainsKey(key))
-						classes.Add(key, node.GetAttribute("value"));
+						classes.Add(key, node.GetAttribute("value").Trim());
 					else
 						node.SetAttribute("value", classes[key]);
 
@@ -664,6 +671,27 @@ namespace Bloom
 
 			MakeAllFieldsOfElementTypeConsistent(classes, "p");
 			MakeAllFieldsOfElementTypeConsistent(classes, "span");
+
+			string title;
+			if (classes.TryGetValue("_vernacularBookTitle", out title))
+			{
+				_storage.SetBookName(title);
+				GetOrCreateElement("//html", "head");
+				GetOrCreateElement("//head","title").InnerText = title;
+			}
+		}
+		private XmlElement GetOrCreateElement(string parentPath, string name)
+		{
+			XmlElement element = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath+"/"+name);
+			if(element == null)
+			{
+				XmlElement parent = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath);
+				if (parent == null)
+					return null;
+				element = parent.OwnerDocument.CreateElement(name, parent.NamespaceURI);
+				parent.AppendChild(element);
+			}
+			return element;
 		}
 
 		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
@@ -678,8 +706,8 @@ namespace Bloom
 
 					if (!classes.ContainsKey(key))
 					{
-						if (!string.IsNullOrEmpty(node.InnerText))
-							classes.Add(key, node.InnerText);
+						if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+							classes.Add(key, node.InnerText.Trim());
 					}
 					else
 						node.InnerText = classes[key];

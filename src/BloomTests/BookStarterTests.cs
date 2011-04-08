@@ -114,6 +114,22 @@ namespace BloomTests
 		}
 
 
+		/// <summary>
+		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
+		/// But for now, this gives us the behavior we want on the title page
+		/// </summary>
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasEnglishParagraph_ConvertsToVernacular()//??????????????
+		{
+			var body = @"<div class='page'>
+						<p id='bookTitle' lang='en' class='_vernacularBookTitle'>Book Title</p>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
+		}
+
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_NationalLanguageField_LeavesUntouched()
 		{

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -25,18 +26,19 @@ namespace Bloom
 		bool LooksOk { get; }
 		string FileName { get; }
 		string FolderPath { get; }
-		string PathToHtml { get; }
+		string PathToExistingHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
 		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
+		void SetBookName(string name);
 	}
 
 	public class BookStorage : IBookStorage
 	{
-		private readonly string _folderPath;
+		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
@@ -47,10 +49,10 @@ namespace Bloom
 			_fileLocator = fileLocator;
 
 			RequireThat.Directory(folderPath).Exists();
-			if (File.Exists(PathToHtml))
+			if (File.Exists(PathToExistingHtml))
 			{
 				Dom = new XmlDocument();
-				Dom.Load(PathToHtml);
+				Dom.Load(PathToExistingHtml);
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
@@ -217,23 +219,23 @@ namespace Bloom
 		{
 			get
 			{
-				var pathToHtml = PathToHtml;
+				var pathToHtml = PathToExistingHtml;
 				if (pathToHtml.EndsWith("templatePages.htm"))
 					return Book.BookType.Template;
 				if (pathToHtml.EndsWith("shellPages.htm"))
 					return Book.BookType.Shell;
 
 				//directory name matches htm name
-				if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
-				{
-					return Book.BookType.Publication;
-				}
-				return Book.BookType.Unknown;
+//                if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
+//                {
+//                    return Book.BookType.Publication;
+//                }
+				return Book.BookType.Publication;
 			}
 		}
 
 
-		public string PathToHtml
+		public string PathToExistingHtml
 		{
 			get
 			{
@@ -276,7 +278,7 @@ namespace Bloom
 
 		public bool LooksOk
 		{
-			get { return File.Exists(PathToHtml); }
+			get { return File.Exists(PathToExistingHtml); }
 		}
 
 		public string FileName
@@ -293,7 +295,7 @@ namespace Bloom
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			string tempPath = SaveHtml(Dom);
-			File.Replace(tempPath, PathToHtml, PathToHtml + ".bak");
+			File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
 		}
 
 		public string SaveHtml(XmlDocument dom)
@@ -441,5 +443,59 @@ namespace Bloom
 			return ((XmlElement)element).GetAttribute("class").Contains(className);
 		}
 
+		public void SetBookName(string name)
+		{
+			name = SanitizeNameForFileSystem(name);
+
+			var currentFilePath =PathToExistingHtml;
+			if (name == Path.GetFileNameWithoutExtension(currentFilePath))
+				return;
+
+			//figure out what name we're really going to use (might need to add a number suffix)
+			var newFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
+			newFolderPath = GetUniqueFolderPath(newFolderPath);
+
+			//next, rename the file
+			File.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
+
+			 //next, rename the enclosing folder
+			try
+			{
+				Directory.Move(FolderPath, newFolderPath);
+				_folderPath = newFolderPath;
+			}
+			catch (Exception)
+			{
+				Debug.Fail("(debug mode only): could not rename the folder");
+			}
+		}
+
+		private string SanitizeNameForFileSystem(string name)
+		{
+			foreach(char c in Path.GetInvalidFileNameChars())
+			{
+				name = name.Replace(c, ' ');
+			}
+			return name.Trim();
+		}
+
+		/// <summary>
+		/// if necessary, append a number to make the folder path unique
+		/// </summary>
+		/// <param name="folderPath"></param>
+		/// <returns></returns>
+		private string GetUniqueFolderPath(string folderPath)
+		{
+			int i = 0;
+			string suffix = "";
+			var parent = Directory.GetParent(folderPath).FullName;
+			var name = Path.GetFileName(folderPath);
+			while (Directory.Exists(Path.Combine(parent, name + suffix)))
+			{
+				++i;
+				suffix = i.ToString();
+			}
+			return Path.Combine(parent, name + suffix);
+		}
 	}
 }

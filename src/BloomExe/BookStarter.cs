@@ -81,13 +81,13 @@ namespace Bloom
 		{
 			foreach (XmlElement div in rootElement.SafeSelectNodes("//div[contains(@class,'page')]"))
 			{
-				MakeVernacularTextAreasForPage(div,isoCode);
+				MakeVernacularElementsForPage(div,isoCode);
 			}
 			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
 			//this is needed when we're actually setting up a single page that was just inserted from a template
 			if(rootElement is XmlElement && ContainsClass(rootElement, "page"))
 			{
-				MakeVernacularTextAreasForPage((XmlElement) rootElement,isoCode);
+				MakeVernacularElementsForPage((XmlElement) rootElement,isoCode);
 			}
 
 			BookStorage.HideAllTextAreasThatShouldNotShow(rootElement, isoCode, string.Empty);
@@ -103,60 +103,78 @@ namespace Bloom
 		/// with the lang code of the vernacular
 		/// </summary>
 		/// <param name="pageDiv"></param>
-		private static void MakeVernacularTextAreasForPage(XmlElement pageDiv, string isoCode)
+		private static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
 		{
 			foreach (var groupId in GetIdsOfTextAreaGroupsInSinglePageDiv(pageDiv))
 			{
+				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "textarea");
+			}
+			foreach (var groupId in GetIdsOfParagraphsWithIdsAndTextInSinglePageDiv(pageDiv))
+			{
+				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "p");
+			}
+			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages)
+			XmlNodeList textareasWithoutLang =
+				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[not(@lang)]", pageDiv.GetAttribute("id")));
+			if (textareasWithoutLang.Count == 0)
+			{
+				//TODO: this is a repeat of the problem described above
+				//hack, which should only bear fruit when we're being called with a single page during template page insertion
+				textareasWithoutLang = pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]"));
+			}
+			foreach (XmlElement textarea in textareasWithoutLang)
+			{
+				textarea.SetAttribute("lang", isoCode);
+			}
+		}
+
+		private static void MakeVernacularElementForOneGroup(XmlElement pageDiv, string groupId, string isoCode, string elementName)
+		{
 				//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
 				//for the vernacular
-			   //could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
+				//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
 
 				//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
+				XmlNodeList elements =
+				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//{1}[@id='{2}']",
+													  pageDiv.GetAttribute("id"), elementName,groupId));
+			if (elements.Count == 0)
+			{
+				//hack, which should only bear fruit when we're being called with a single page during template page insertion
 
-				XmlNodeList textareas = pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[@id='{1}']", pageDiv.GetAttribute("id"), groupId));
-				 if(textareas.Count==0)
-				 {
-					 //hack, which should only bear fruit when we're being called with a single page during template page insertion
+				elements = pageDiv.SafeSelectNodes(string.Format("//{0}[@id='{1}']",elementName, groupId));
 
-					 textareas = pageDiv.SafeSelectNodes(string.Format("//textarea[@id='{0}']", groupId));
+				if (elements.Count == 0)
+					return;
+			}
+			var alreadyInVernacular = from XmlElement x in elements
+									  where x.GetAttribute("lang") == isoCode
+									  select x;
+			if (alreadyInVernacular.Count() > 0)
+				return;
+			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-					 if (textareas.Count == 0)
-						 continue;
-				  }
-				var alreadyInVernacular = from XmlElement x in textareas
-							where x.GetAttribute("lang") == isoCode
-							select x;
-				if(alreadyInVernacular.Count()>0)
-						continue;//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
+			if (ContainsClass(elements[0], "showNational"))
+				return;
 
-				if (ContainsClass(textareas[0], "showNational"))
-					continue;//don't mess with it, this one is not supposed to be translated
-
-				XmlElement prototype = textareas[0] as XmlElement;
-				//no... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
-				if (prototype.HasAttribute("lang"))
+			XmlElement prototype = elements[0] as XmlElement;
+			//no... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
+			if (prototype.HasAttribute("lang"))
+			{
+				if (elementName == "p") // don't leave copies around from the template language
+				{
+					prototype.SetAttribute("lang", isoCode);
+				}
+				else // for textareas, we *do* want copies around, because they are used for prompting in shellbooks
 				{
 					var vernacularCopy = prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 					vernacularCopy.Attributes["lang"].Value = isoCode;
 					vernacularCopy.InnerText = string.Empty;
 				}
 			}
-
-			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages)
-			XmlNodeList textareasWithoutLang = pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[not(@lang)]", pageDiv.GetAttribute("id")));
-			if (textareasWithoutLang.Count == 0)
-				{
-				   //TODO: this is a repeat of the problem described above
-				//hack, which should only bear fruit when we're being called with a single page during template page insertion
-					textareasWithoutLang = pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]"));
-				}
-		   foreach (XmlElement textarea in textareasWithoutLang)
-			{
-				textarea.SetAttribute("lang", isoCode);
-			}
 		}
 
-	   /// <summary>
+		/// <summary>
 		/// All textareas which are just the same thing in different languages must share the same @id.
 		/// </summary>
 		/// <param name="pageDiv"></param>
@@ -178,6 +196,25 @@ namespace Bloom
 			return groups;
 		}
 
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>maybe the "AndText" part won't be desirable...</remarks>
+		/// <param name="pageDiv"></param>
+		/// <returns></returns>
+		private static List<string> GetIdsOfParagraphsWithIdsAndTextInSinglePageDiv(XmlElement pageDiv)
+		{
+			List<string> groups = new List<string>();
+			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@id]"))
+			{
+			   var id = paragraph.GetAttribute("id");
+			   var text = paragraph.InnerText.Trim();
+			   if (!string.IsNullOrEmpty(text))
+					groups.Add(id);
+			}
+			return groups;
+		}
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 

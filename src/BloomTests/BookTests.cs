@@ -111,7 +111,7 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToAnotherPage()
+		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
 		{
 			var book = CreateBook(true);
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
@@ -121,6 +121,29 @@ namespace BloomTests
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
+		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='xyz' class='_vernacularBookTitle'>original</textarea>
+						</p>
+					</div>
+				<div class='page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
+						<p class='centered _vernacularBookTitle' lang='xyz' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
+				</div>
+			");
+			var book = CreateBook(true);
+			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'_vernacularBookTitle') and @lang='xyz']");
+			textarea1.InnerText = "peace";
+			book.MakeAllFieldsConsistent();
+			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[contains(@class,'_vernacularBookTitle')  and @lang='xyz']");
+			Assert.AreEqual("peace", paragraph.InnerText);
+		}
+
+
 		[Test]
 		public void MakeAllFieldsConsistent_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
 		{
@@ -161,6 +184,58 @@ namespace BloomTests
 			book.MakeAllFieldsConsistent();
 			XmlElement input2 = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo2']");
 			Assert.AreEqual("blue", input2.GetAttribute("value"));
+		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_HadNoTitleChangeVernacularTitle_SetTitleElement()
+		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='xyz' class='_vernacularBookTitle'>original</textarea>
+						</p>
+					</div>
+			");
+			var book = CreateBook(true);
+			var dom = book.RawDom;
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+			textArea.InnerText ="blue";
+			book.MakeAllFieldsConsistent();
+			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
+			Assert.AreEqual("blue", title.InnerText);
+		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_HadTitleChangeVernacularTitle_ChangesTitleElement()
+		{
+			var book = CreateBook(true);
+			var dom = book.RawDom;
+			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
+			head.AppendChild(dom.CreateElement("title", "http://www.w3.org/1999/xhtml")).InnerText = "original";
+		   // node.SetAttribute("class", "_vernacularBookTitle");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+			textArea.InnerText = "blue";
+			book.MakeAllFieldsConsistent();
+			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
+			Assert.AreEqual("dog", title.InnerText);
+		}
+
+		[Test]
+		public void MakeAllFieldsConsistent_ChangeVernacularTitle_TellsStorageToChangeName()
+		{
+			SetDom(@"<div class='page' id='guid2'>
+						<p>
+							<textarea lang='xyz' class='_vernacularBookTitle'>red</textarea>
+						</p>
+					</div>
+			");
+
+			var book = CreateBook(true);
+			var dom = book.RawDom;
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+			textArea.InnerText = "blue";
+			_storage.Setup(s => s.SetBookName("blue"));
+			book.MakeAllFieldsConsistent();
+			_storage.Verify(s=>s.SetBookName("blue"));
 		}
 
 		[Test]
