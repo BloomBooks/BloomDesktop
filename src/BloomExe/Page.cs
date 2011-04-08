@@ -36,7 +36,8 @@ namespace Bloom
 		public string Id{get { return _id; }}
 
 		public string Caption { get; private set; }
-		public Image Thumbnail { get { return _getThumbnail(this); } }
+		public Image Thumbnail { get
+		{ return _getThumbnail(this); } }
 
 		public string XPathToDiv
 		{

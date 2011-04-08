@@ -140,7 +140,7 @@ namespace Bloom
 				return GetErrorDom();
 			}
 
-			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
+			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _languageSettings.VernacularIso639Code);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
@@ -164,7 +164,7 @@ namespace Bloom
 			node.AppendChild(element);
 		}
 
-		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)
+		private XmlDocument GetHtmlDomWithJustOnePage(IPage page,string iso639CodeToLeaveVisible)
 		{
 			var dom = new XmlDocument();
 			var head = _storage.GetRelocatableCopyOfDom().SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
@@ -172,17 +172,25 @@ namespace Bloom
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
 			body.AppendChild(pageDom);
-			BookStorage.HideAllTextAreasThatShouldNotShow(dom, _languageSettings.VernacularIso639Code, Page.GetPageSelectorXPath(dom));
+
+				BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
+
 			return dom;
 		}
 
-		public XmlDocument GetPreviewXmlDocumentForPage(IPage page)
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="iso639CodeToShow">NB: this isn't always the vernacular. If we're showing template pages, it will be, um, English?</param>
+		/// <returns></returns>
+		public XmlDocument GetPreviewXmlDocumentForPage(IPage page, string iso639CodeToShow)
 		{
 			if(!_storage.LooksOk)
 			{
 				return GetErrorDom();
 			}
-			var dom = GetHtmlDomWithJustOnePage(page);
+			var dom = GetHtmlDomWithJustOnePage(page, iso639CodeToShow);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
 			AddCoverColor(dom);
@@ -400,7 +408,7 @@ namespace Bloom
 				{
 					caption = (pageNumber + 1).ToString();
 				}
-				yield return CreatePageDecriptor(pageNode, caption);
+				yield return CreatePageDecriptor(pageNode, caption, _languageSettings.VernacularIso639Code);
 				++pageNumber;
 			}
 		}
@@ -414,14 +422,15 @@ namespace Bloom
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page') and not(contains(@class, 'singleton'))]"))
 			{
 				var caption = pageNode.GetAttribute("title");
-				yield return CreatePageDecriptor(pageNode, caption);
+				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
+				yield return CreatePageDecriptor(pageNode, caption, iso639CodeToShow);
 			}
 		}
 
-		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)
+		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)
 		{
 			return new Page(pageNode, caption,
-					(page => _thumbnailProvider.GetThumbnail(string.Empty, page.Id, GetPreviewXmlDocumentForPage(page), Color.White, false)),
+					(page => _thumbnailProvider.GetThumbnail(string.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false)),
 					(page => FindPageDiv(page)));
 		}
 
@@ -446,7 +455,7 @@ namespace Bloom
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageElement, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageElement, "should not show"));
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageElement, "should not show", _languageSettings.VernacularIso639Code));
 			_storage.Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);

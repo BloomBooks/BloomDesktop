@@ -422,7 +422,7 @@ namespace Bloom
 		}
 
 
-		public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string vernacularIso639Code, string optionalPageSelector)
+		public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string iso639CodeToKeepShowing, string optionalPageSelector)
 		{
 			if (optionalPageSelector == null)
 				optionalPageSelector = string.Empty;
@@ -431,7 +431,7 @@ namespace Bloom
 			{
 				if (storageNode.HasAttribute("style"))
 					storageNode.RemoveAttribute("style");
-				if (storageNode.GetAttribute("lang") != vernacularIso639Code && !ContainsClass(storageNode,"showNational"))
+				if (storageNode.GetAttribute("lang") != iso639CodeToKeepShowing && !ContainsClass(storageNode,"showNational"))
 				{
 					storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
 				}
