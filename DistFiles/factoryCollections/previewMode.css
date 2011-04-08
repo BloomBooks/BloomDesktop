@@ -5,22 +5,19 @@
 		background-color: #363333;
 	}
 }
-
-
-p.pagefooter {
-			display: block;
-}
-
-input
+P.pagefooter
 {
-	border:none;
+	display: block;
 }
-
-textarea
+INPUT
 {
-	border:none;
+	border: none;
 }
-body
+TEXTAREA
+{
+	border: none;
+}
+BODY
 {
 	counter-reset: pageNumber;
 }
@@ -28,7 +25,6 @@ DIV.page
 {
 	counter-increment: pageNumber;
 }
-
 DIV.page.cover
 {
 	background-color: #D8ADAD;
@@ -40,4 +36,24 @@ TEXTAREA.coverColor
 INPUT.coverColor
 {
 	background-color: #D8ADAD;
+}
+DIV.page:after
+{
+	content: counter(pageNumber);
+	/*+placement:displace 268px -19px;*/
+	position: absolute;
+	margin-left: 268px;
+	margin-top: -19px;
+}
+DIV.page.cover:after
+{
+	visibility: hidden;
+}
+DIV.titlePage.page:after
+{
+	content: counter(pageNumber);
+	/*+placement:displace 265px 75px;*/
+	position: absolute;
+	margin-left: 265px;
+	margin-top: 75px;
 }
