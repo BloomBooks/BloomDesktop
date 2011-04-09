@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Library
 {
@@ -67,15 +68,14 @@ namespace Bloom.Library
 		public void DeleteBook(Book book, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
-			using(var dlg = new ConfirmDelete())
-			{
-				if (DialogResult.OK != dlg.ShowDialog())
-					return;
-			}
+
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
-				collection.DeleteBook(book);
-				_bookSelection.SelectBook(null);
+				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",_bookSelection.CurrentSelection.Title )))
+				{
+					collection.DeleteBook(book);
+					_bookSelection.SelectBook(null);
+				}
 			}
 		}
 	}
