@@ -42,8 +42,12 @@ namespace Bloom.Publish
 			int allpages = 4 * sheets;
 			int vacats = allpages - inputPages;
 
+
+			bool lastPageBlank = false;
 			for (int idx = 1; idx <= sheets; idx++)
 			{
+				lastPageBlank = true;
+
 				// Front page of a sheet:
 				using (gfx = GetGraphicsForNewPage(outputDocument))
 				{
@@ -66,6 +70,7 @@ namespace Bloom.Publish
 					{
 						//Left side of back
 						DrawSuperiorSide( gfx, 2*idx);
+						lastPageBlank = false;
 					}
 
 					//Right side of the Back
@@ -74,8 +79,13 @@ namespace Bloom.Publish
 					else
 					{
 						DrawInferiorSide(gfx, allpages + 1 - 2 * idx);
+						lastPageBlank = false;
 					}
 				}
+			}
+			if(lastPageBlank && outputDocument.PageCount>1)
+			{
+				outputDocument.Pages.RemoveAt(outputDocument.PageCount-1);
 			}
 
 			outputDocument.Save(outputPath);

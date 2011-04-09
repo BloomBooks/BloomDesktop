@@ -145,7 +145,7 @@ namespace Bloom
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
 			AddJavaScriptForEditing(dom);
-			AddCoverColor(dom);
+			AddCoverColor(dom, CoverColor);
 			return dom;
 		}
 
@@ -193,7 +193,7 @@ namespace Bloom
 			var dom = GetHtmlDomWithJustOnePage(page, iso639CodeToShow);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
-			AddCoverColor(dom);
+			AddCoverColor(dom, CoverColor);
 
 			return dom;
 		}
@@ -222,7 +222,7 @@ namespace Bloom
 
 			XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
 
-			AddCoverColor(bookDom);
+			AddCoverColor(bookDom, CoverColor);
 			HideEverythingButFirstPage(bookDom);
 			return bookDom;
 		}
@@ -348,7 +348,7 @@ namespace Bloom
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
 			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
-			AddCoverColor(dom);
+			AddCoverColor(dom, CoverColor);
 			return dom;
 		}
 
@@ -375,10 +375,10 @@ namespace Bloom
 
 		}
 
-		private void AddCoverColor(XmlDocument dom)
+		private void AddCoverColor(XmlDocument dom, Color coverColor)
 		{
 
-			var colorValue = string.Format("{0:X}{1:X}{2:X}", CoverColor.R, CoverColor.G, CoverColor.B);
+			var colorValue = string.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
 			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
 
 			XmlElement colorStyle = dom.CreateElement("style");
@@ -786,7 +786,7 @@ namespace Bloom
 				default:
 					throw new ArgumentOutOfRangeException("bookletStyle");
 			}
-
+			AddCoverColor(dom, Color.White);
 			return dom;
 		}
 

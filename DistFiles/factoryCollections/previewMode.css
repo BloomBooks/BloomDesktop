@@ -47,7 +47,12 @@ DIV.page:after
 }
 DIV.page.cover:after
 {
-	visibility: hidden;
+		/*+placement:shift 0px 0px;*/
+	position: relative;
+	left: 0px;
+	top: 0px;
+
+	visibility: hidden;/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!
 }
 DIV.titlePage.page:after
 {
