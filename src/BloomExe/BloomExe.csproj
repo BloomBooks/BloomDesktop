@@ -93,12 +93,6 @@
     <Compile Include="Command.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
     <Compile Include="LanguageSettings.cs" />
-    <Compile Include="Library\ConfirmDelete.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Library\ConfirmDelete.designer.cs">
-      <DependentUpon>ConfirmDelete.cs</DependentUpon>
-    </Compile>
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -214,9 +208,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Experiment\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Library\ConfirmDelete.resx">
-      <DependentUpon>ConfirmDelete.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
