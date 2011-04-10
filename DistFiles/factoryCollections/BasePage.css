@@ -11,7 +11,7 @@ TEXTAREA
 DIV.page
 {
 	display: block;
-	page-break-after: always;
+	page-break-after: auto;
 	background-color: #FFFFFF;
 	/*[ph]0*/
 }
