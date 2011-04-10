@@ -49,7 +49,8 @@ namespace Bloom
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
 					typeof(RelocatePageEvent),
-					typeof(PageSelection)}.Contains(t));
+					typeof(PageSelection),
+					typeof(EditingModel)}.Contains(t));
 
 
 				///ProjectSettings = _scope.Resolve<Func<string, ProjectSettings>>()(projectSettingsPath);

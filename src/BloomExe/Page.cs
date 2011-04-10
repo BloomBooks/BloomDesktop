@@ -15,6 +15,8 @@ namespace Bloom
 		string XPathToDiv { get; }
 		XmlNode GetDivNodeForThisPage();
 		Dictionary<string,string> GetSourceTexts(string textAreaId);
+		bool Required { get; }
+		bool CanRelocate { get;}
 	}
 
 	public class Page : IPage
@@ -23,6 +25,7 @@ namespace Bloom
 		private readonly XmlElement _sourcePage;
 		private readonly Func<IPage, Image> _getThumbnail;
 		private readonly Func<IPage, XmlNode> _getDivNodeForThisPageMethod;
+		private List<string> _classes;
 
 		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlNode> getDivNodeForThisPageMethod)
 		{
@@ -31,6 +34,25 @@ namespace Bloom
 			_getThumbnail = getThumbnail;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
+			ReadClasses(sourcePage);
+		}
+
+		private void ReadClasses(XmlElement sourcePage)
+		{
+			_classes = new List<string>();
+			var classesString = sourcePage.GetAttribute("class");
+			if (!string.IsNullOrEmpty(classesString))
+			{
+				_classes.AddRange(classesString.Split(new char[]{' '},StringSplitOptions.RemoveEmptyEntries));
+			}
+		}
+
+		public bool Required { get { return _classes.Contains("required"); } }
+
+		public bool CanRelocate
+		{
+			//review: for now, we're conflating "required" with "can't move"
+			get { return !Required; }
 		}
 
 		public string Id{get { return _id; }}

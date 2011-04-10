@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Edit;
 
 namespace Bloom
@@ -12,15 +10,15 @@ namespace Bloom
 	{
 		private readonly PageSelection _pageSelection;
 		private readonly DeletePageCommand _deletePageCommand;
-		private Book _book;
-		private bool _dontForwardSelectionEventtry;
+		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent)
+		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent, EditingModel model)
 		{
 			_pageSelection = pageSelection;
 			_deletePageCommand = deletePageCommand;
+			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
 			_thumbNailList.CanSelect = true;
@@ -48,7 +46,6 @@ namespace Bloom
 		{
 		  //  return;
 
-			_book = book;
 			if (book == null)
 			{
 				_thumbNailList.SetItems(new Page[] { });
@@ -91,42 +88,19 @@ namespace Bloom
 			{
 				_dontForwardSelectionEvent = false;
 			}
-		}
-	}
 
-	/// <summary>
-	/// This is just so the first (top-left) thumbnail is empty, so that the cover page appears in the second column.
-	/// </summary>
-	public class PlaceHolderPage     : IPage
-	{
-		public string Id
-		{
-			get { return null; }
+			_thumbNailList.SetPageInsertionPoint(_model.DeterminePageWhichWouldPrecedeNextInsertion());
 		}
 
-		public string Caption
+
+		private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			get { return null; }
+			deletePageToolStripMenuItem.Enabled = !SelectedPage.Required;
 		}
 
-		public Image Thumbnail
+		protected IPage SelectedPage
 		{
-			get { return new Bitmap(32,32); }
-		}
-
-		public string XPathToDiv
-		{
-			get { return null; }
-		}
-
-		public XmlNode GetDivNodeForThisPage()
-		{
-			return null;
-		}
-
-		public Dictionary<string, string> GetSourceTexts(string textAreaId)
-		{
-			return new Dictionary<string, string>();
+			get { return _pageWeThinkShouldBeSelected; }
 		}
 	}
 }

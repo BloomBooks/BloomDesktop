@@ -29,6 +29,7 @@ namespace Bloom.Edit
 			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
 			 _boundsPen = new Pen(Brushes.DarkGray, 2);
 
+
 		}
 
 		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
@@ -36,7 +37,7 @@ namespace Bloom.Edit
 			e.DrawDefault = true;
 			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
 			{
-				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Top, e.Bounds.Right, e.Bounds.Top);
+				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Bottom, e.Bounds.Left, e.Bounds.Top);
 			}
 			//indicate selection in a more obvious way than just the grey screen we get by default
 			if(e.Item.Selected )
@@ -44,6 +45,13 @@ namespace Bloom.Edit
 				var r = e.Bounds;
 				r.Inflate(-1,-1);
 				e.Graphics.DrawRectangle(_boundsPen,r);
+			}
+
+
+			if (e.Item == ItemWhichWouldPrecedeANewPageInsertion)
+			{
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right-10, e.Bounds.Bottom-2, e.Bounds.Right-6, e.Bounds.Bottom-9);
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 6, e.Bounds.Bottom - 9);
 			}
 		}
 
@@ -154,12 +162,27 @@ namespace Bloom.Edit
 
 			if (this.RelocatePageEvent !=null)
 			{
+				var listItem = _listView.GetItemAt(e.X, e.Y);
+				if (listItem == null)
+					return;
+				if (!((IPage)listItem.Tag).CanRelocate)
+				{
+					return;
+				}
 				Capture = true;
-				_currentDraggingItem = _listView.GetItemAt(e.X, e.Y);
+
+				_currentDraggingItem = listItem;
 				Cursor = Cursors.Hand;
 			}
 		}
 
+		/// <summary>
+		/// used to visually indicate where the page would show up, if we add a new one
+		/// </summary>
+		public ListViewItem ItemWhichWouldPrecedeANewPageInsertion
+		{
+			get; set;
+		}
 
 		private void _listView_MouseUp(object sender, MouseEventArgs e)
 		{
@@ -210,20 +233,29 @@ namespace Bloom.Edit
 			if (this.RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				if (Control.MouseButtons != MouseButtons.Left)
-				{//hack trying to get a correct notion of when the mouse is up
+				{
+//hack trying to get a correct notion of when the mouse is up
 					_listView_MouseUp(null, e);
 					return;
 				}
 				Debug.WriteLine("Dragging");
 				Cursor = Cursors.Hand;
 				var target = _listView.GetItemAt(e.X, e.Y);
-				if(target == null)
+				if (target == null)
 				{
 					Debug.WriteLine("null target");
 				}
 				else
-					Debug.WriteLine("target: "+target.Text);
+				{
+					Debug.WriteLine("target: " + target.Text);
 
+					//if we're pointing to the right of some item, we want to insert *after* it.
+					var middle = target.Position.X + (_thumbnailImageList.ImageSize.Width/2);
+					if (e.X > middle && _listView.Items.Count - 1 > target.Index)
+					{
+						target = _listView.Items[target.Index + 1]; //choose the next item
+					}
+				}
 				if (_currentDraggingItem == target)//doesn't count to drag on yourself
 				{
 					return;
@@ -253,6 +285,7 @@ namespace Bloom.Edit
 					{
 						_intentionallyChangingSelection = true;
 						listViewItem.Selected = true;
+						ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
 					}
 					finally
 					{
@@ -262,6 +295,11 @@ namespace Bloom.Edit
 				}
 			}
 // actually, this is common because we might not yet have been told to update our list   Debug.Fail("Did not find item to select");
+		}
+
+		public void SetPageInsertionPoint(IPage pageBeforeInsertion)
+		{
+			ItemWhichWouldPrecedeANewPageInsertion = _listView.Items.OfType<ListViewItem>().FirstOrDefault(i => i.Tag == pageBeforeInsertion);
 		}
 	}
 

@@ -27,6 +27,7 @@ namespace Bloom
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private IBookStorage _storage;
+		private List<IPage> _pagesCache;
 
 		public event EventHandler ContentsChanged;
 
@@ -398,18 +399,28 @@ namespace Bloom
 			if (!_storage.LooksOk)
 				yield break;
 
-			int pageNumber = 0;
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page')]"))
+			if (_pagesCache == null)
 			{
-				//review: we want to show titles for template books, numbers for other books.
-				//this here requires that titles be removed when the page is inserted, kind of a hack.
-				var caption = pageNode.GetAttribute("title");
-				if(string.IsNullOrEmpty(caption))
+				_pagesCache = new List<IPage>();
+
+				int pageNumber = 0;
+				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page')]"))
 				{
-					caption = (pageNumber + 1).ToString();
+					//review: we want to show titles for template books, numbers for other books.
+					//this here requires that titles be removed when the page is inserted, kind of a hack.
+					var caption = pageNode.GetAttribute("title");
+					if (string.IsNullOrEmpty(caption))
+					{
+						caption = (pageNumber + 1).ToString();
+					}
+					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _languageSettings.VernacularIso639Code));
+					++pageNumber;
 				}
-				yield return CreatePageDecriptor(pageNode, caption, _languageSettings.VernacularIso639Code);
-				++pageNumber;
+			}
+
+			foreach (var page in _pagesCache)
+			{
+				yield return page;
 			}
 		}
 
@@ -443,6 +454,8 @@ namespace Bloom
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+
+			ClearPagesCache();
 
 			XmlDocument dom = _storage.Dom;
 			var newPageElement = dom.ImportNode(templatePage.GetDivNodeForThisPage(), true) as XmlElement;
@@ -488,6 +501,8 @@ namespace Bloom
 			if(GetPageCount() <2)
 				return;
 
+			ClearPagesCache();
+
 			var pageNode = FindPageDiv(page);
 		   pageNode.ParentNode.RemoveChild(pageNode);
 	//        InvokePageDeleted(page);
@@ -509,6 +524,11 @@ namespace Bloom
 				_pageListChangedEvent.Raise(null);
 
 			InvokeContentsChanged(null);
+		}
+
+		private void ClearPagesCache()
+		{
+			_pagesCache = null;
 		}
 
 		private int GetPageCount()
@@ -732,6 +752,8 @@ namespace Bloom
 		public void RelocatePage(IPage page, int indexOfItemAfterRelocation)
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+
+			ClearPagesCache();
 
 			var pages = _storage.Dom.SafeSelectNodes("/html/body/div");
 			var pageDiv = FindPageDiv(page);

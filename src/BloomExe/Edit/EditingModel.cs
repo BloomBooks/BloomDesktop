@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Xml;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
@@ -36,7 +37,7 @@ namespace Bloom.Edit
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 			deletePageCommand.Subscribe(OnDeletePage);
-			pageListChangedEvent.Subscribe(x=>  InvokeUpdatePageList());
+			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
 		}
 
@@ -55,10 +56,18 @@ namespace Bloom.Edit
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
-			_bookSelection.CurrentSelection.InsertPageAfter(_pageSelection.CurrentSelection, sender as Page);
+			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList();
 			//_pageSelection.SelectPage(newPage);
 		}
+
+		/// <summary>
+		/// if we were add a template page right now, what would be its initial location?
+		/// </summary>
+		//        public int CurrentInsertPoint
+		//        {
+		//
+		//        }
 
 		public string CurrentBookName
 		{
@@ -77,7 +86,7 @@ namespace Bloom.Edit
 
 		public Book CurrentBook
 		{
-			get { return _bookSelection.CurrentSelection;  }
+			get { return _bookSelection.CurrentSelection; }
 		}
 
 		public bool ShowTranslationPanel
@@ -116,7 +125,10 @@ namespace Bloom.Edit
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			if (_view != null)
+			{
+				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			}
 		}
 
 		public XmlDocument GetXmlDocumentForCurrentPage()
@@ -169,8 +181,28 @@ namespace Bloom.Edit
 				_view.SetSourceText(_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
 			}
 		}
+
+		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
+		{
+			if (_view != null)
+			{
+				var pagesStartingWithCurrentSelection =
+					_bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
+				var candidates = pagesStartingWithCurrentSelection.ToArray();
+				for (int i = 0; i < candidates.Length - 1; i++)
+				{
+					if (!candidates[i + 1].Required)
+					{
+						return candidates[i];
+					}
+				}
+				return _bookSelection.CurrentSelection.GetPages().LastOrDefault();
+			}
+			return null;
+		}
 	}
-			//_book.DeletePage(_pageSelection.CurrentSelection);
+
+		//_book.DeletePage(_pageSelection.CurrentSelection);
 
 	public class TemplateInsertionCommand
 	{
