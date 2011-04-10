@@ -92,6 +92,7 @@
     </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
+    <Compile Include="Edit\PlaceHolderPage.cs" />
     <Compile Include="LanguageSettings.cs" />
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
