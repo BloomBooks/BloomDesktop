@@ -263,9 +263,21 @@ namespace Bloom.Edit
 
 				Debug.WriteLine("Dragging");
 				Cursor = Cursors.Hand;
-				var target = _listView.GetItemAt(e.X, e.Y);
+				ListViewItem  target=null;
+				if (null == _listView.GetItemAt(e.X, e.Y))
+				{
+					target = _listView.GetItemAt(e.X+20, e.Y);
+				}
+				else
+				{
+					target = _listView.GetItemAt(e.X, e.Y);
+				}
+
 				if (target == null)
 				{
+					//when we point right in the middle, we'll get a null target, but we sure want one,
+					//so try looking to one side
+
 					Debug.WriteLine("null target");
 				}
 				else
