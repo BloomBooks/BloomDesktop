@@ -32,7 +32,10 @@ namespace Bloom.Publish
 			string exePath = FindWkhtmlToPdf();
 			ProcessStartInfo info = new ProcessStartInfo(exePath,
 														 string.Format(
-															 "--print-media-type --page-width 14.5cm --page-height 21cm  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm --disable-smart-shrinking \"{0}\" \"{1}\"",
+															"--print-media-type "+
+															"--page-size A5"+ //this works too " --page-width 14.8cm --page-height 21cm"
+															"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm "+
+															"--disable-smart-shrinking \"{0}\" \"{1}\"",
 															 Path.GetFileName(inputHtmlPath), outputPdfPath));
 			info.WorkingDirectory = Path.GetDirectoryName(inputHtmlPath);
 			info.ErrorDialog = true;

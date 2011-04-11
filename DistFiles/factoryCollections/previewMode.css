@@ -40,25 +40,23 @@ INPUT.coverColor
 DIV.page:after
 {
 	content: counter(pageNumber);
-	/*+placement:displace 268px -19px;*/
 	position: absolute;
-	margin-left: 268px;
-	margin-top: -19px;
+	margin: 0.4cm 0 0 7cm;
 }
 DIV.page.cover:after
 {
-		/*+placement:shift 0px 0px;*/
+	/*+placement:shift 0px 0px;*/
 	position: relative;
 	left: 0px;
 	top: 0px;
-
-	visibility: hidden;/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!
+	visibility: hidden;
+/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
 }
 DIV.titlePage.page:after
 {
 	content: counter(pageNumber);
-	/*+placement:displace 265px 75px;*/
+	/*+placement:displace 265px 37px;*/
 	position: absolute;
 	margin-left: 265px;
-	margin-top: 75px;
+	margin-top: 37px;
 }

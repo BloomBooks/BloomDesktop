@@ -1,8 +1,8 @@
 @import url(../../BasePage.css);
 DIV.page
 {
-	min-width: 14.5cm;
-	max-width: 14.5cm;
+	min-width: 14.8cm;
+	max-width: 14.8cm;
 	min-height: 21cm;
 	max-height: 21cm;
 }
@@ -74,19 +74,18 @@ DIV.page
 }
 .titlePage .printingHistory
 {
-	height: 3.7cm;
+	height: 2.4cm;
 	top: 1.2cm;
-	margin-top: 11px;
 }
 .imageOnTop .picture
 {
 	max-height: 9.7cm;
-	max-width: 478px;
 	margin-top: 1cm;
+	max-width: 10.4cm;
 }
 .imageOnTop .text
 {
-	height: 8cm;
+	height: 8.1cm;
 	margin-top: 1cm;
 }
 TEXTAREA
@@ -132,10 +131,13 @@ TEXTAREA
 {
 	text-align: center;
 	height: 1.6cm;
-	margin-top: 1cm;
 	position: relative;
 }
 P
 {
 	margin-left: 1cm;
+}
+.imageOnTop P.imageHolder
+{
+	height: 9.5cm;
 }
