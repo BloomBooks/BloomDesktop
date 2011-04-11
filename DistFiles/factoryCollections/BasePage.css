@@ -9,6 +9,11 @@ TEXTAREA
 	margin-top: 0;
 	font-size: 12pt;
 }
+/*used with shellbooks where we want to hide all but one language*/
+TEXTAREA.hideMe
+{
+	visibility:hidden !important; position:fixed  !important;
+}
 DIV.page
 {
 	display: block;

@@ -385,12 +385,23 @@ namespace Bloom
 
 			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
 			{
-				if (storageNode.HasAttribute("style"))
-					storageNode.RemoveAttribute("style");
-				if (storageNode.GetAttribute("lang") != iso639CodeToKeepShowing && !ContainsClass(storageNode,"showNational"))
+//                if (storageNode.HasAttribute("style"))
+//                    storageNode.RemoveAttribute("style");
+//                if (storageNode.GetAttribute("lang") != iso639CodeToKeepShowing && !ContainsClass(storageNode,"showNational"))
+//                {
+//                    storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
+//                }
+
+				string cssClass = storageNode.GetAttribute("class");
+				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing)
 				{
-					storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
+					cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
 				}
+				else if (!ContainsClass(storageNode, Book.ClassOfHiddenElements))
+				{
+					cssClass += (" " + Book.ClassOfHiddenElements);
+				}
+				storageNode.SetAttribute("class", cssClass.Trim());
 			}
 		}
 

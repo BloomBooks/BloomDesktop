@@ -16,7 +16,7 @@ namespace Bloom
 {
 	public class Book
 	{
-		public const string StyleOfHiddenElements = "visibility:hidden !important; position:fixed  !important;";
+		public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
 
 		public delegate Book Factory(BookStorage storage, bool editable);//autofac uses this
 
@@ -349,11 +349,32 @@ namespace Bloom
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
 			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
+			//todo: choose a language... right now we just get the first one.
+			string languageIsoToShow;
+
+			if (Type == BookType.Shell || Type== BookType.Template)
+			{
+				languageIsoToShow= GetTheLanguagesUsedInTextAreasOfDom(dom).FirstOrDefault();
+			}
+			else
+			{
+				languageIsoToShow = _languageSettings.VernacularIso639Code;
+			}
+			BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
+
 			AddCoverColor(dom, CoverColor);
 			return dom;
 		}
 
-
+		private IEnumerable<string> GetTheLanguagesUsedInTextAreasOfDom(XmlDocument dom)
+		{
+			var langs = new Dictionary<string, int>();
+			foreach (XmlElement element in dom.SafeSelectNodes(string.Format("//textarea[@lang]")))
+			{
+				langs[element.GetAttribute("lang").Trim()] = 1;
+			}
+			return langs.Keys;
+		}
 
 		public Color CoverColor { get; set; }
 
