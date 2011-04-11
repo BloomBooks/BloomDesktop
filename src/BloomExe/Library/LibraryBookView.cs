@@ -77,9 +77,9 @@ namespace Bloom.Library
 				{
 					_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
 				}
-				catch(Exception)
+				catch(Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom could not add that template to the library.");
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that template to the library.");
 				}
 			}
 		}

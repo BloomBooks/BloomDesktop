@@ -105,7 +105,7 @@ namespace Bloom
 		/// <param name="pageDiv"></param>
 		private static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
 		{
-			foreach (var groupId in GetIdsOfTextAreaGroupsInSinglePageDiv(pageDiv))
+			foreach (var groupId in GetParagraphIdTextAreaGroupsInSinglePageDiv(pageDiv))
 			{
 				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "textarea");
 			}
@@ -130,34 +130,44 @@ namespace Bloom
 
 		private static void MakeVernacularElementForOneGroup(XmlElement pageDiv, string groupId, string isoCode, string elementName)
 		{
-				//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
-				//for the vernacular
-				//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
+			//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
+			//for the vernacular
+			//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
 
-				//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
-				XmlNodeList elements =
-				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//{1}[@id='{2}']",
-													  pageDiv.GetAttribute("id"), elementName,groupId));
-			if (elements.Count == 0)
+			string nonParagraphElementSelector = "/" + elementName;
+
+			/* we aren't fishing for something underneath the paragraph level,
+			 * we're actuallylooking for simple paragraphs that are in a
+			 * language (e.g. they'd be non-editable areas where we're repeating
+			 * the value of some variable you can edit elsewhere)
+			 */
+			if (elementName.ToLower() == "p")
+				nonParagraphElementSelector = "";
+
+			//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
+			XmlNodeList editableElementsWithinTheIndicatedParagraph =
+				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//p[@id='{1}']" + nonParagraphElementSelector,
+													  pageDiv.GetAttribute("id"), groupId));
+			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
 			{
 				//hack, which should only bear fruit when we're being called with a single page during template page insertion
 
-				elements = pageDiv.SafeSelectNodes(string.Format("//{0}[@id='{1}']",elementName, groupId));
+				editableElementsWithinTheIndicatedParagraph = pageDiv.SafeSelectNodes(string.Format("//p[@id='{0}']"+nonParagraphElementSelector, groupId));
 
-				if (elements.Count == 0)
+				if (editableElementsWithinTheIndicatedParagraph.Count == 0)
 					return;
 			}
-			var alreadyInVernacular = from XmlElement x in elements
+			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
 									  where x.GetAttribute("lang") == isoCode
 									  select x;
 			if (alreadyInVernacular.Count() > 0)
 				return;
 			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-			if (ContainsClass(elements[0], "showNational"))
+			if (ContainsClass(editableElementsWithinTheIndicatedParagraph[0], "showNational"))
 				return;
 
-			XmlElement prototype = elements[0] as XmlElement;
+			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
 			//no... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
 			if (prototype.HasAttribute("lang"))
 			{
@@ -167,8 +177,9 @@ namespace Bloom
 				}
 				else // for textareas, we *do* want copies around, because they are used for prompting in shellbooks
 				{
-					var vernacularCopy = prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-					vernacularCopy.Attributes["lang"].Value = isoCode;
+					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
+					vernacularCopy.SetAttribute("lang",isoCode);
+					vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
 					vernacularCopy.InnerText = string.Empty;
 				}
 			}
@@ -179,19 +190,26 @@ namespace Bloom
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetIdsOfTextAreaGroupsInSinglePageDiv(XmlElement pageDiv)
+		private static List<string> GetParagraphIdTextAreaGroupsInSinglePageDiv(XmlElement pageDiv)
 		{
 			List<string> groups = new List<string>();
 			foreach (XmlElement textArea in pageDiv.SafeSelectNodes("//textarea"))
 			{
-				var id = textArea.GetAttribute("id");
-				if (string.IsNullOrEmpty(id))
+				if (textArea.ParentNode.Name.ToLower() != "p")
 				{
-					Debug.Fail("all textareas need ids");
-					continue;
+					//maybe not... if we don't want it to be editable but stay in the national language....
+					//Debug.Faile("All textareas need to be wrapped in a paragaraph");
+					continue;//ignore it
 				}
-				if (!groups.Contains(id))
-					groups.Add(id);
+
+				var groupId = ((XmlElement)textArea.ParentNode).GetAttribute("id");
+				if (string.IsNullOrEmpty(groupId))
+				{   //we're happy to create the guid id's for incoming documents
+					groupId = Guid.NewGuid().ToString();
+					((XmlElement) textArea.ParentNode).SetAttribute("id", groupId);
+				}
+				if (!groups.Contains(groupId))
+					groups.Add(groupId);
 			}
 			return groups;
 		}

@@ -81,14 +81,19 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_HasEnglishTextArea_VernacularTextAreaAdded()
 		{
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-
+			var body = @"<div class='page'>
+						<p>
+						 <textarea lang='en' id='text1' class='hideMe'>This is some English</textarea>
+						</p>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			//nb: testid is used rather than id because id is replaced with a guid when the copy is made
 
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='en']", 1);
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='xyz']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='en']", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 			//the new text should also have been emptied of English
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']/textarea[@lang='xyz' and not(text())]", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz' and not(text())]", 1);
 		}
 
 		[Test]
@@ -103,14 +108,20 @@ namespace BloomTests
 		public void CreateBookOnDiskFromTemplate_HasTokPisinTextArea_StyleAddedToHide()
 		{
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi' and @style]", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi' and contains(@class,'hideMe')]", 1);
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_ExistingEnglishHasHideStyle_NewVernacularHasNoStyle()
+		public void CreateBookOnDiskFromTemplate_ExistingEnglishHasHideClass_NewVernacularHasNoClass()
 		{
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustEnglish']//textarea[@lang='xyz' and not(@style)]", 1);
+			var body = @"<div class='page'>
+<p>
+						<textarea lang='en' class='hideMe'>blah</textarea>
+</p>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz' and not(@class)]", 1);
 		}
 
 
@@ -156,8 +167,15 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
 		{
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithTokPisinAndEnglish']/textarea[@lang='xyz']", 1);
+			var body = @"<div class='page'>
+							<p>
+								<textarea lang='en'  class='text'> When you plant a garden you always make a fence.</textarea>
+								<textarea lang='tpi' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
+							</p>
+						</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 		}
 
 	   [Test]
@@ -257,9 +275,6 @@ namespace BloomTests
 							<textarea id='text1' class='text'>Text of a simple template</textarea>
 						</p>
 					</div>
-					<div class='page' testid='pageWithJustEnglish'>
-						 <textarea lang='en' style='pretend to hide' id='text1' class='text'>This is some English</textarea>
-					</div>
 					<div class='page' testid='pageAlreadyHasVernacular'>
 						 <p>
 							<textarea lang='en' id='text1' class='text'>This is some English</textarea>
@@ -270,10 +285,6 @@ namespace BloomTests
 						 <p>
 							<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
-					</div>
-					<div class='page' testid='pageWithTokPisinAndEnglish'>
-						 <textarea lang='en' id='text1' class='text'> When you plant a garden you always make a fence.</textarea>
-						<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
 					</div>");
 		}
 		private string GetShellBookFolder(string bodyContents)

@@ -63,7 +63,14 @@ namespace Bloom
 				//add a unique id for our use
 				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
-					node.SetAttribute("id", Guid.NewGuid().ToString());
+					if(string.IsNullOrEmpty(node.GetAttribute("id")))
+						node.SetAttribute("id", Guid.NewGuid().ToString());
+				}
+
+				foreach (XmlElement node in Dom.SafeSelectNodes("//textarea"))
+				{
+					if (string.IsNullOrEmpty(node.GetAttribute("id")))
+						node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
 
 				UpdateSupportFiles();
@@ -385,15 +392,8 @@ namespace Bloom
 
 			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
 			{
-//                if (storageNode.HasAttribute("style"))
-//                    storageNode.RemoveAttribute("style");
-//                if (storageNode.GetAttribute("lang") != iso639CodeToKeepShowing && !ContainsClass(storageNode,"showNational"))
-//                {
-//                    storageNode.SetAttribute("style", Book.StyleOfHiddenElements);
-//                }
-
 				string cssClass = storageNode.GetAttribute("class");
-				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing)
+				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"showNational"))
 				{
 					cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
 				}
@@ -401,7 +401,15 @@ namespace Bloom
 				{
 					cssClass += (" " + Book.ClassOfHiddenElements);
 				}
-				storageNode.SetAttribute("class", cssClass.Trim());
+				cssClass = cssClass.Trim();
+				if (string.IsNullOrEmpty(cssClass))
+				{
+					storageNode.RemoveAttribute("class");
+				}
+				else
+				{
+					storageNode.SetAttribute("class", cssClass);
+				}
 			}
 		}
 
