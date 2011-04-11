@@ -159,7 +159,7 @@ namespace Bloom.Edit
 		private void _listView_MouseDown(object sender, MouseEventArgs e)
 		{
 			_intentionallyChangingSelection = true;
-
+			//_mouseDownLocation = e.Location;
 			if (this.RelocatePageEvent !=null)
 			{
 				var listItem = _listView.GetItemAt(e.X, e.Y);
@@ -186,6 +186,16 @@ namespace Bloom.Edit
 
 		private void _listView_MouseUp(object sender, MouseEventArgs e)
 		{
+//            if (_mouseDownLocation == default(Point))
+//            {
+//                _currentTarget = null;
+//                _currentDraggingItem = null;
+//                return;
+//            }
+//
+//		    var mouseDownLocation = _mouseDownLocation;
+//		    _mouseDownLocation = default(Point);
+
 			Capture = false;
 			Debug.WriteLine("MouseUp");
 			_intentionallyChangingSelection = false;
@@ -195,7 +205,14 @@ namespace Bloom.Edit
 
 			Cursor = Cursors.Default;
 
-			if (RelocatePageEvent != null && _currentDraggingItem != null)
+			bool notPointingAtOriginalLocation= _listView.GetItemAt(e.X, e.Y) != _currentDraggingItem;
+
+//		    var horizontalMovement = Math.Abs(mouseDownLocation.X - e.X);
+//            var verticalMovement = Math.Abs(mouseDownLocation.Y - e.Y);
+//		    bool sufficientDistance = horizontalMovement > _thumbnailImageList.ImageSize.Width
+//                || verticalMovement > _thumbnailImageList.ImageSize.Height;
+
+			if (notPointingAtOriginalLocation &&  RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				Debug.WriteLine("Re-ordering");
 				if (_currentTarget == null ||
@@ -227,9 +244,14 @@ namespace Bloom.Edit
 		private ListViewItem _currentTarget;
 		private Pen _boundsPen;
 		private int _numberofEmptyListItemsAtStart;
+		//private Point _mouseDownLocation;
 
 		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{
+
+			if (_listView.GetItemAt(e.X, e.Y) == _currentDraggingItem)
+				return; //not really a "move" if we're still pointing at the original item
+
 			if (this.RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				if (Control.MouseButtons != MouseButtons.Left)
@@ -238,6 +260,7 @@ namespace Bloom.Edit
 					_listView_MouseUp(null, e);
 					return;
 				}
+
 				Debug.WriteLine("Dragging");
 				Cursor = Cursors.Hand;
 				var target = _listView.GetItemAt(e.X, e.Y);
