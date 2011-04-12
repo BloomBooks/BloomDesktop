@@ -432,7 +432,7 @@ namespace Bloom
 					var caption = pageNode.GetAttribute("title");
 					if (string.IsNullOrEmpty(caption))
 					{
-						caption = (pageNumber + 1).ToString();
+						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 					}
 					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _languageSettings.VernacularIso639Code));
 					++pageNumber;

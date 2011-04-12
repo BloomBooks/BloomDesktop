@@ -1,0 +1,106 @@
+BODY
+{
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+}
+TEXTAREA
+{
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	margin-left: 1cm;
+	margin-top: 0;
+	font-size: 12pt;
+}
+/*used with shellbooks where we want to hide all but one language*/
+TEXTAREA.hideMe
+{
+	visibility:hidden !important; position:fixed  !important;
+}
+DIV.page
+{
+	display: block;
+	page-break-after: auto;
+	background-color: #FFFFFF;
+	/*[ph]0*/
+}
+@media screen
+{
+	DIV.page
+	{
+		/*[id]0*/border: 1px solid #000000;
+	}
+}
+.cover ._vernacularBookTitle
+{
+	text-align: center;
+	font: 30pt sans-serif;
+	position: relative;
+}
+.cover ._natLangBookLabel
+{
+	text-align: right;
+	font: 12pt sans-serif;
+	position: absolute;
+}
+.cover ._nameOfLanguage
+{
+	text-align: left;
+	font: 12pt sans-serif;
+	width: 5cm;
+	position: absolute;
+}
+.titlePage ._natLangBookLabel
+{
+	text-align: center;
+	font: 12pt sans-serif;
+	position: relative;
+}
+.titlePage ._nameOfLanguage
+{
+	text-align: center;
+	font: 1em sans-serif;
+	position: relative;
+}
+.titlePage ._vernacularBookTitle
+{
+	text-align: center;
+	font: 2em sans-serif;
+	position: relative;
+}
+.titlePage .credits
+{
+	text-align: center;
+	position: relative;
+	font: 12pt sans-serif;
+}
+.titlePage .printingHistory
+{
+	text-align: center;
+	position: relative;
+	font: 12pt sans-serif;
+}
+.imageOnTop .text
+{
+	position: relative;
+}
+.centered
+{
+	text-align: center;
+}
+.imageInMiddle .text
+{
+	position: relative;
+}
+.imageWholePage .picture
+{
+	position: relative;
+}
+.imageOnBottom .picture
+{
+	/*+placement:displace -160px -49px;*/
+	position: absolute;
+	margin-left: -160px;
+	margin-top: -49px;
+}
+.centerJustify
+{
+	text-align: center;
+}

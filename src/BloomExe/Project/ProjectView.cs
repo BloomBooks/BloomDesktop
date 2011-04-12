@@ -14,6 +14,8 @@ namespace Bloom.Project
 		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
+		private InfoView _infoView;
+
 		public event EventHandler CloseCurrentProject;
 
 		public delegate ProjectView Factory();//autofac uses this
@@ -21,7 +23,8 @@ namespace Bloom.Project
 		public ProjectView(ProjectModel model,
 			LibraryView.Factory libraryViewFactory,
 			EditingView.Factory editingViewFactory,
-			PublishView.Factory pdfViewFactory)
+			PublishView.Factory pdfViewFactory,
+			InfoView.Factory infoViewFactory)
 		{
 			_model = model;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
@@ -53,14 +56,25 @@ namespace Bloom.Project
 			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
 			tabPage3.Controls.Add(_publishView);
 
-			tabPage2.Tag = this.tabControl1.TabPages.IndexOf(tabPage2); //remember initial location
-			tabPage3.Tag = this.tabControl1.TabPages.IndexOf(tabPage3); //remember initial location
+			//
+			// info view
+			//
+			this._infoView = infoViewFactory();
+			this._infoView.Dock = System.Windows.Forms.DockStyle.Fill;
+			_infoTab.Controls.Add(_infoView);
+
+			tabPage2.Tag = this._tabControl.TabPages.IndexOf(tabPage2); //remember initial location
+			tabPage3.Tag = this._tabControl.TabPages.IndexOf(tabPage3); //remember initial location
+			_infoTab.Tag = this._tabControl.TabPages.IndexOf(_infoTab); //remember initial location
+
+			SetTabVisibility(_infoTab, false);
 			SetTabVisibility(tabPage3, false);
 			SetTabVisibility(tabPage2, false);
 
 			this.tabPage1.Controls.Add(_libraryView);
 			this.tabPage2.Controls.Add(this._editingView);
 			this.tabPage3.Controls.Add(this._publishView);
+			this._infoTab.Controls.Add(this._infoView);
 
 		}
 
@@ -73,19 +87,21 @@ namespace Bloom.Project
 
 		private void SetupTabIcons()
 		{
-			tabControl1.ImageList = new ImageList();
-			tabControl1.ImageList.ColorDepth = ColorDepth.Depth24Bit;
-			tabControl1.ImageList.ImageSize = new Size(32,32);
-			tabControl1.ImageList.Images.Add(
+			_tabControl.ImageList = new ImageList();
+			_tabControl.ImageList.ColorDepth = ColorDepth.Depth24Bit;
+			_tabControl.ImageList.ImageSize = new Size(32,32);
+			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library.png")));
-			tabControl1.ImageList.Images.Add(
+			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication( "Images", "edit.png")));
-			tabControl1.ImageList.Images.Add(
+			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish.png")));
-
+			_tabControl.ImageList.Images.Add(
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "info.png")));
 			tabPage1.ImageIndex = 0;
 			tabPage2.ImageIndex = 1;
 			tabPage3.ImageIndex = 2;
+			_infoTab.ImageIndex = 3;
 		}
 
 		void OnUpdateDisplay(object sender, System.EventArgs e)
@@ -98,27 +114,41 @@ namespace Bloom.Project
 		{
 			if (!visible)
 			{
-				if(tabControl1.TabPages.Contains(page))
+				if(_tabControl.TabPages.Contains(page))
 				{
-					tabControl1.TabPages.Remove(page);
+					_tabControl.TabPages.Remove(page);
 				}
 			}
 			else
 			{
-				if (!tabControl1.TabPages.Contains(page))
+				if (!_tabControl.TabPages.Contains(page))
 				{
-					var index = (int)page.Tag;
-					tabControl1.TabPages.Insert(index,page);
+					var index = _tabControl.TabCount;//(int)page.Tag;
+					_tabControl.TabPages.Insert(index,page);
 				}
 			}
 		}
 
-		private void _openButton_Click(object sender, EventArgs e)
+		private void _openButton1_Click(object sender, EventArgs e)
 		{
 			if(_model.CloseRequested())
 			{
 				Invoke(CloseCurrentProject);
 			}
 		}
+
+		private void _infoButton_Click(object sender, EventArgs e)
+		{
+			SetTabVisibility(_infoTab, true);
+			_tabControl.SelectedTab = _infoTab;
+		}
+
+		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if(_tabControl.SelectedTab !=_infoTab)
+				SetTabVisibility(_infoTab, false);//we always hide this after it is used
+
+		}
+
 	}
 }

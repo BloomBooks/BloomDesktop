@@ -93,6 +93,12 @@
     <Compile Include="Command.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
     <Compile Include="Edit\PlaceHolderPage.cs" />
+    <Compile Include="InfoView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InfoView.Designer.cs">
+      <DependentUpon>InfoView.cs</DependentUpon>
+    </Compile>
     <Compile Include="LanguageSettings.cs" />
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
@@ -209,6 +215,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Experiment\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InfoView.resx">
+      <DependentUpon>InfoView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
@@ -335,6 +344,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\newBook.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\info16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\open.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

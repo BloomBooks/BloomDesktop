@@ -50,8 +50,8 @@ namespace Bloom.Edit
 
 			if (e.Item == ItemWhichWouldPrecedeANewPageInsertion)
 			{
-				e.Graphics.DrawLine(Pens.White, e.Bounds.Right-10, e.Bounds.Bottom-2, e.Bounds.Right-6, e.Bounds.Bottom-9);
-				e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 6, e.Bounds.Bottom - 9);
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right-8, e.Bounds.Bottom-2, e.Bounds.Right-5, e.Bounds.Bottom-6);
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 5, e.Bounds.Bottom - 6);
 			}
 		}
 

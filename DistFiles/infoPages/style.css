@@ -1,0 +1,29 @@
+BODY
+{
+	font-family: Tahoma;
+	margin-left: 53px;
+}
+HTML
+{
+}
+P
+{
+	width: 458px;
+	text-align: left;
+	margin-top: 4px;
+}
+P.indent
+{
+	/*+placement:shift 67px 1px;*/
+	position: relative;
+	left: 67px;
+	top: 1px;
+}
+IMG
+{
+	/*+placement:anchor-top-left 50px 117px;*/
+	position: absolute;
+	left: 50px;
+	top: 117px;
+	margin-top: -48px;
+}
