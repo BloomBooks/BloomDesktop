@@ -14,4 +14,8 @@
   <File Id="edit.png" Guid="0f994e63-90c1-4f7c-8f59-e6d0e8699047" />
   <File Id="library.png" Guid="37ce2017-5e22-4f7b-b2a1-d369f38ab207" />
   <File Id="publish.png" Guid="d17611be-1146-422c-9ebb-05f1916ae13d" />
+  <File Id="info.png" Guid="ce094a0e-ef67-4686-b091-f75936d18615" />
+  <File Id="info16x16.png" Guid="a5cc52a3-a2a9-4594-b40d-163dde7775b3" />
+  <File Id="open.png" Guid="c7c67a19-e007-43a9-87ee-23fe5f944688" />
+  <File Id="wait30transparent.gif" Guid="46a22562-e187-440b-9c00-8c6e903d121e" />
 </InstallerMetadata>
