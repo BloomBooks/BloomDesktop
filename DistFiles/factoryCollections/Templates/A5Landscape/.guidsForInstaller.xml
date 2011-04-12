@@ -4,4 +4,7 @@
   <File Id="A5Landscape.css" Guid="1b3d34df-2124-49ec-9af9-fe34af2c0dfa" />
   <File Id="placeHolder.png" Guid="745cbcda-2865-4f3e-95af-8fe93aee7893" />
   <File Id="templatePages.htm" Guid="180af5e6-afbb-426d-8ae4-5d766ae19041" />
+  <File Id="basePage.css1" Guid="708946df-c32b-437e-96e3-faefc871b511" />
+  <File Id="previewMode.css1" Guid="0a0c2acb-bb2b-493a-80d4-e30a04b2c09e" />
+  <File Id="thumbnail.png" Guid="159e8452-ad5a-4745-82b7-13b079a53584" />
 </InstallerMetadata>
