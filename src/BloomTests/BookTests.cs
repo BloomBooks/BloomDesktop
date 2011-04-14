@@ -506,7 +506,7 @@ namespace BloomTests
 		private Book CreateBook(bool b)
 		{
 			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
-				new LanguageSettings("xyz", new string[0]),
+				new ProjectSettings(new NewProjectInfo() { Iso639Code = "xyz" }),
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 

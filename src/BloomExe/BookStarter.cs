@@ -109,7 +109,7 @@ namespace Bloom
 			{
 				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "textarea");
 			}
-			foreach (var groupId in GetIdsOfParagraphsWithIdsAndTextInSinglePageDiv(pageDiv))
+			foreach (var groupId in GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(pageDiv))
 			{
 				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "p");
 			}
@@ -216,18 +216,24 @@ namespace Bloom
 
 
 		/// <summary>
-		///
+		/// Get those paragraphs which look like we're supposed to localize them via variables (not via editing)
 		/// </summary>
 		/// <remarks>maybe the "AndText" part won't be desirable...</remarks>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetIdsOfParagraphsWithIdsAndTextInSinglePageDiv(XmlElement pageDiv)
+		private static List<string> GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(XmlElement pageDiv)
 		{
 			List<string> groups = new List<string>();
-			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@id]"))
+			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[contains(@class,'_')]"))
 			{
 			   var id = paragraph.GetAttribute("id");
-			   var text = paragraph.InnerText.Trim();
+				//we're happy to add guids if they're missing.
+				if(string.IsNullOrEmpty(id))
+				{
+					id = Guid.NewGuid().ToString();
+					paragraph.SetAttribute("id", id);
+				}
+				var text = paragraph.InnerText.Trim();
 			   if (!string.IsNullOrEmpty(text))
 					groups.Add(id);
 			}

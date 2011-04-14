@@ -14,7 +14,7 @@ namespace Bloom
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
 		XmlNode GetDivNodeForThisPage();
-		Dictionary<string,string> GetSourceTexts(string textAreaId);
+		Dictionary<string,string> GetSourceTexts(string idOfOneTextAreaInTheGroup);
 		bool Required { get; }
 		bool CanRelocate { get;}
 	}
@@ -71,11 +71,11 @@ namespace Bloom
 			return _getDivNodeForThisPageMethod(this);
 		}
 
-		public Dictionary<string, string> GetSourceTexts(string textAreaId)
+		public Dictionary<string, string> GetSourceTexts(string idOfOneTextAreaInTheGroup)
 		{
 			var d = new Dictionary<string, string>();
 
-			var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[@id='{1}']", _sourcePage.GetAttribute("id"), textAreaId));
+			var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//p/textarea[@id='{1}']/parent::node()/textarea", _sourcePage.GetAttribute("id"), idOfOneTextAreaInTheGroup));
 			foreach (XmlElement textarea in textareas)
 			{
 				var lang = textarea.GetAttribute("lang");

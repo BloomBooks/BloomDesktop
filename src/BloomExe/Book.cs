@@ -22,7 +22,8 @@ namespace Bloom
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly Palaso.IO.IFileLocator _fileLocator;
-		private readonly LanguageSettings _languageSettings;
+		private readonly ProjectSettings _projectSettings;
+
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -41,7 +42,7 @@ namespace Bloom
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
 		public Book(IBookStorage storage, bool editable, ITemplateFinder templateFinder,
-			Palaso.IO.IFileLocator fileLocator, LanguageSettings languageSettings, HtmlThumbNailer thumbnailProvider,
+			Palaso.IO.IFileLocator fileLocator, ProjectSettings projectSettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
@@ -51,7 +52,8 @@ namespace Bloom
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
-			_languageSettings = languageSettings;
+			_projectSettings = projectSettings;
+
 			_thumbnailProvider = thumbnailProvider;
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
@@ -141,7 +143,7 @@ namespace Bloom
 				return GetErrorDom();
 			}
 
-			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _languageSettings.VernacularIso639Code);
+			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _projectSettings.Iso639Code);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
@@ -358,7 +360,7 @@ namespace Bloom
 			}
 			else
 			{
-				languageIsoToShow = _languageSettings.VernacularIso639Code;
+				languageIsoToShow = _projectSettings.Iso639Code;
 			}
 			BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
 
@@ -391,7 +393,7 @@ namespace Bloom
 		{
 			get
 			{
-				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}']", _languageSettings.VernacularIso639Code));
+				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}']", _projectSettings.Iso639Code));
 				return x.Count > 0;
 			}
 
@@ -434,7 +436,7 @@ namespace Bloom
 					{
 						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 					}
-					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _languageSettings.VernacularIso639Code));
+					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _projectSettings.Iso639Code));
 					++pageNumber;
 				}
 			}
@@ -483,13 +485,13 @@ namespace Bloom
 			newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
 
 
-			BookStarter.SetupPages(newPageElement, _languageSettings.VernacularIso639Code);
+			BookStarter.SetupPages(newPageElement, _projectSettings.Iso639Code);
 			ClearEditableValues(newPageElement);
 			newPageElement.RemoveAttribute("title"); //titles are just for templates
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageElement, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageElement, "should not show", _languageSettings.VernacularIso639Code));
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageElement, "should not show", _projectSettings.Iso639Code));
 			_storage.Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
@@ -506,7 +508,7 @@ namespace Bloom
 					editNode.SetAttribute("value", string.Empty);
 				}
 			}
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _projectSettings.Iso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{
@@ -578,7 +580,7 @@ namespace Bloom
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'showNational')]", _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'showNational')]", _projectSettings.Iso639Code)))
 			{
 				var languageCode = editNode.GetAttribute("lang");
 
@@ -589,7 +591,7 @@ namespace Bloom
 			}
 
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'showNational')]", _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'showNational')]", _projectSettings.Iso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
 				var languageCode = editNode.GetAttribute("lang");
@@ -608,7 +610,7 @@ namespace Bloom
 
 			MakeAllFieldsConsistent();
 
-			_storage.HideAllTextAreasThatShouldNotShow(_languageSettings.VernacularIso639Code, pageSelector);
+			_storage.HideAllTextAreasThatShouldNotShow(_projectSettings.Iso639Code, pageSelector);
 
 			try
 			{
@@ -645,7 +647,7 @@ namespace Bloom
 //                foreach (XmlElement match in matches)
 //                {
 //                    if (match.HasAttribute("lang") &&
-//                        match.GetAttribute("lang") == _languageSettings.VernacularIso639Code)
+//                        match.GetAttribute("lang") == _projectSettings.Iso639Code)
 //                    {
 //                        return match;
 //                    }
@@ -693,12 +695,13 @@ namespace Bloom
 //            }
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
+			classes.Add("_nameOfLanguage", _projectSettings.Name);
 
 
 			//REVIEW: it looks like we're going to stop using input altogether, so this can be removed.
 
-			//can't use starts-with becuase it could be the second or third word in the class attribute
-			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//input[contains(@class, '_') and (@lang='{0}' or contains(@class,'showNational'))]", _languageSettings.VernacularIso639Code)))
+			//can't use starts-with becuase it could be the second or third word in the class attribute);
+			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//input[contains(@class, '_') and (@lang='{0}' or contains(@class,'showNational'))]", _projectSettings.Iso639Code)))
 			{
 				var theseClasses = node.GetAttribute("class").Split(new char[] {' '},StringSplitOptions.RemoveEmptyEntries);
 				foreach (var key in theseClasses)
@@ -746,7 +749,7 @@ namespace Bloom
 
 		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
 		{
-			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[contains(@class, '_') and (@lang='{1}' or contains(@class,'showNational'))]", elementName, _languageSettings.VernacularIso639Code)))
+			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[contains(@class, '_') and (@lang='{1}' or contains(@class,'showNational'))]", elementName, _projectSettings.Iso639Code)))
 			{
 				var theseClasses = node.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 				foreach (var key in theseClasses)

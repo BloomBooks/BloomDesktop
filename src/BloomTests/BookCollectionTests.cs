@@ -30,7 +30,7 @@ namespace BloomTests
 
 		 Book BookFactory(BookStorage storage, bool editable)
 		 {
-			 return new Book(storage, true, null, null, new LanguageSettings("xyz", new string[0]), null,
+			 return new Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){Iso639Code = "xyz"}), null,
 													  new PageSelection(),
 													  new PageListChangedEvent());
 		 }

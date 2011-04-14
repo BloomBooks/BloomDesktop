@@ -34,7 +34,7 @@ namespace Bloom
 			return null;
 		}
 
-		public Dictionary<string, string> GetSourceTexts(string textAreaId)
+		public Dictionary<string, string> GetSourceTexts(string idOfOneTextAreaInTheGroup)
 		{
 			return new Dictionary<string, string>();
 		}

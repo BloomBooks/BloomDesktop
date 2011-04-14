@@ -10,9 +10,10 @@ namespace Bloom
 		private IEnumerable<string> _preferredSourceLanguages =new List<string>();
 		public string VernacularIso639Code { get; set; }
 
-		public LanguageSettings(string vernacularIso639Code, IEnumerable<string> PreferredSourcLanguagesInOrder)
+
+		public LanguageSettings(string vernacularIso639Code, IEnumerable<string> preferredSourceLanguagesInOrder)
 		{
-			_preferredSourceLanguages = PreferredSourcLanguagesInOrder;
+			_preferredSourceLanguages = preferredSourceLanguagesInOrder;
 			VernacularIso639Code = vernacularIso639Code;
 		}
 

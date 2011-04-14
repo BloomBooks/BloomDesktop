@@ -171,6 +171,7 @@ namespace Bloom.Edit
 
 		public void HandleUserEnteredArea(GeckoElement element)
 		{
+			//the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
 			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
 			if (sourceTexts.Count == 0)
 			{
