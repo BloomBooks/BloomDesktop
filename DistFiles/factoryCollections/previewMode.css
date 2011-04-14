@@ -24,6 +24,7 @@ BODY
 DIV.page
 {
 	counter-increment: pageNumber;
+	border: 1px solid #FFFFFF; /* This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly */
 }
 DIV.page.cover
 {
@@ -40,8 +41,6 @@ INPUT.coverColor
 DIV.page:after
 {
 	content: counter(pageNumber);
-	position: absolute;
-	margin: 0.4cm 0 0 7cm;
 }
 DIV.page.cover:after
 {
@@ -51,12 +50,4 @@ DIV.page.cover:after
 	top: 0px;
 	visibility: hidden;
 /*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
-}
-DIV.titlePage.page:after
-{
-	content: counter(pageNumber);
-	/*+placement:displace 265px 37px;*/
-	position: absolute;
-	margin-left: 265px;
-	margin-top: 37px;
 }

@@ -9,41 +9,61 @@
 	<meta id="defaultNameForDerivedBooks" content="book"/>
 </head>
 <body class="a5Portrait">
-	<div class="page centered cover required coverColor singleton" id="cover">
-		<p class="centered"><textarea id="coverPageTitle" class="_vernacularBookTitle  coverColor">My Book</textarea></p>
+	<div class="page cover required coverColor singleton" id="cover">
+		<p class="centered"><textarea class="_vernacularBookTitle  coverColor">My Book</textarea></p>
+		<p class="imageHolder">
 		<img id="coverPageImage"
 			alt="missing" class="picture  coverColor" src="placeHolder.png" />
-		<textarea lang='en' id="coverPageLanguageName" class="_nameOfLanguage showNational singleLine coverColor" title="Enter the name of the language">Language Name Here</textarea>
-		<textarea lang='en' id="coverPageBookLabel" class="_natLangBookLabel  showNational singleLine coverColor" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</textarea>
+		</p>
+		<div class="coverBottomRow" ><textarea lang='en' rows="1" class="_nameOfLanguage showNational singleLine coverColor" title="Enter the name of the language">Language Name Here</textarea>
+		<textarea lang='en' rows="1" class="_natLangBookLabel  showNational singleLine coverColor" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</textarea>
+		</div>
 	</div>
 	<div class="page titlePage required singleton" id="titlePage">
-		<p class="centered _vernacularBookTitle" lang="en"  id="P1">My Book</p>
-		<p class="centered _natLangBookLabel singleLine showNational" lang='en' id="titlePageBookLabel" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</p>
-		<p class="centered">
-				<textarea lang='en' id="titlePageCredits"  title="Enter the contributions made by writers, illustrators, editors, etc." class="credits">Written by:</textarea>
-				<textarea lang='tpi'  style="visibility:hidden !important; position:fixed  !important;" id="titlePageCredits"  title="Putim nem bilong olgeta manmeri husat is workim dispela buk. Husat workim piksa, raitim stori, na kain olsem." class="credits">Written by:</textarea>
+		<p class="centered _vernacularBookTitle" lang="en">My Book</p>
+		<p class="centered _natLangBookTitle showNational" lang='en'>Book Title In National Language </p>
+		<p class="centered creditsHeading showNational">Written by:</p>
+		<p class="foo">
+			<textarea lang='en' class="credits showNational" title="Enter the contributions made by writers, illustrators, editors, etc."></textarea>
 		 </p>
-		<p class="centered"><textarea lang='en' id="titlePagePrintingHistory" class="printingHistory showNational">Printing History</textarea></p>
+		<p class="centered showNational">Printing History</p>
+		<p>
+			<textarea lang='en' class="printingHistory showNational"></textarea>
+		</p>
 		<p class="centered _nameOfLanguage singleLine showNational" lang='en'>Language Name</p>
 
 	</div>
 	<div class="page imageOnTop extraPage" id="page1">
-		<p class="centered"><img id="img1" alt="missing" class="picture" src="placeHolder.png" /></p>
-		 <p class="centered"><textarea id="text1" class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
+		<p class="centered  imageHolder">
+			  <img id="img1" alt="missing" class="picture" src="placeHolder.png" />
+		</p>
+		<p class="centered">
+			<textarea>lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea>
+		</p>
 	</div>
 	<div class="page imageInMiddle extraPage" id="page2">
-		 <p class="centered"><textarea id="Textarea1" class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
-		<p class="centered"><img id="img2" alt="missing" class="picture" src="placeHolder.png" /></p>
-		 <p class="centered"><textarea id="Textarea2" class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
+		 <p class="centered">
+			<textarea>lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea>
+			</p>
+		 <p class="centered  imageHolder">
+			  <img id="img2" alt="missing" class="picture" src="placeHolder.png" />
+		 </p>
+		 <p class="centered">
+			<textarea>lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea>
+		 </p>
 	</div>
 	<div class="page imageOnBottom extraPage" id="page3">
-		 <p class="centered"><textarea id="Textarea3" class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
-		<p class="centered"><img id="img3" alt="missing" class="picture" src="placeHolder.png" /></p>
+		 <p class="centered"><textarea  class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
+		 <p class="centered  imageHolder">
+			<img id="img3" alt="missing" class="picture" src="placeHolder.png" />
+		 </p>
 	</div>
 	<div class="page imageWholePage extraPage" id="page4">
-		<p class="centered"><img id="img4" alt="missing" class="picture" src="placeHolder.png" /></p>
+	   <p class="centered  imageHolder">
+		  <img id="img4" alt="missing" class="picture" src="placeHolder.png" />
+	  </p>
 	</div>
 		<div class="page textWholePage extraPage" id="textPage">
-		 <p class="centered"><textarea id="TextArea" class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
+		 <p class="centered"><textarea class="text">lorem ipsum dolor sit amet, consectetuer adipiscg elit. Ut nec lacus a neque pulvinar pulvinar. A100liquam sagittis, purus in fermentum ornare, orci igula vulputate sapien, a rutrum nisl mi eu mi. Suspendisse potenti. Aliquam eros. Nullam eros neque, cursus eu, commodo in, vulputate nec, ipsum. Duis et est a ante convallis consequat. Sed et nisl. 350Praesent vulputate erat quis magna. </textarea></p>
 	</div>     </body>
 </html>
