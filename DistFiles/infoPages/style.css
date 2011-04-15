@@ -19,11 +19,3 @@ P.indent
 	left: 67px;
 	top: 1px;
 }
-IMG
-{
-	/*+placement:anchor-top-left 50px 117px;*/
-	position: absolute;
-	left: 50px;
-	top: 117px;
-	margin-top: -48px;
-}

@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="construction.png" Guid="b505b7a2-9a4b-48a4-a358-5eaaba46bc61" />
+  <File Id="Release_Notes.htm" Guid="f1580fda-4283-4c56-8783-5c24dd8ec70f" />
+  <File Id="style.css" Guid="30384a4f-2c30-4c42-95a8-253ec1b9ad0e" />
+</InstallerMetadata>
