@@ -4,10 +4,10 @@
 	{
 		background-color: #363333;
 	}
-	DIV.page
+	DIV.-bloom-page
 	{
 		counter-increment: pageNumber;
-		border: 1px solid #000000;
+		border: 1px solid #000000 !important;
 	}
 }
 @media print
@@ -33,13 +33,14 @@ BODY
 {
 	counter-reset: pageNumber;
 }
-DIV.page
+DIV.-bloom-page
 {
 	counter-increment: pageNumber;
 	/* this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
 	border: 1px solid #FFFFFF; /* This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly */
+	background-color: #FFFFFF;
 }
-DIV.page.cover
+DIV.-bloom-page.cover
 {
 	background-color: #D8ADAD;
 }
@@ -51,11 +52,11 @@ INPUT.coverColor
 {
 	background-color: #D8ADAD;
 }
-DIV.page:after
+DIV.-bloom-page:after
 {
 	content: counter(pageNumber);
 }
-DIV.page.cover:after
+DIV.-bloom-page.cover:after
 {
 	/*+placement:shift 0px 0px;*/
 	position: relative;

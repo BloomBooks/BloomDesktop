@@ -55,7 +55,7 @@ TEXTAREA.hideMe
 	visibility: hidden !important;
 	position: fixed !important;
 }
-DIV.page
+DIV.-bloom-page
 {
 	display: block;
 	page-break-after: auto;
@@ -64,7 +64,7 @@ DIV.page
 }
 @media screen
 {
-	DIV.page
+	DIV.-bloom-page
 	{
 		/*[id]0*/border: 1px solid #000000;
 	}

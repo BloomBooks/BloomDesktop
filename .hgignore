@@ -13,3 +13,7 @@ glob:*\_ReSharper*
 glob:Bloom VS2010.suo
 relre:_ReSharper.Bloom VS2010/*
 glob:Bloom VS2010.sln.orig
+glob:HL - Health
+glob:Stuff to convert
+glob:_ReSharper
+glob:_ReSharper*

@@ -409,7 +409,7 @@ namespace Bloom
 			XmlElement colorStyle = dom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
-				DIV.page.cover	{		background-color: #colorValue;	}
+				DIV.-bloom-page.cover	{		background-color: #colorValue;	}
 				TEXTAREA.coverColor	{		background-color: #colorValue;	}
 				INPUT.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s

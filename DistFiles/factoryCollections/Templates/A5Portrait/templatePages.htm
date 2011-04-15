@@ -9,28 +9,28 @@
 	<meta id="defaultNameForDerivedBooks" content="book"/>
 </head>
 <body class="a5Portrait">
-	<div class="-bloom-page cover required coverColor singleton" id="cover">
+	<div class="-bloom-page cover -bloom-required coverColor -bloom-singleton" id="cover">
 		<p class="centered"><textarea class="-bloom-vernacularBookTitle  coverColor">My Book</textarea></p>
 		<p class="imageHolder">
 		<img id="coverPageImage"
 			alt="missing" class="picture  coverColor" src="placeHolder.png" />
 		</p>
-		<div class="coverBottomRow" ><textarea lang='en' rows="1" class="_nameOfLanguage showNational singleLine coverColor" title="Enter the name of the language">Language Name Here</textarea>
-		<textarea lang='en' rows="1" class="_natLangBookLabel  showNational singleLine coverColor" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</textarea>
+		<div class="coverBottomRow" ><textarea lang='en' rows="1" class="-bloom-nameOfLanguage showNational singleLine coverColor" title="Enter the name of the language">Language Name Here</textarea>
+		<textarea lang='en' rows="1" class="-bloom-topicInNationalLanguage  -bloom-showNational singleLine coverColor" title="Enter the kind of book this is. E.g. Health, Maths">National language book label</textarea>
 		</div>
 	</div>
-	<div class="-bloom-page titlePage required singleton" id="titlePage">
+	<div class="-bloom-page titlePage -bloom-required -bloom-singleton" id="titlePage">
 		<p class="centered -bloom-vernacularBookTitle" lang="en">My Book</p>
-		<p class="centered _natLangBookTitle showNational" lang='en'>Book Title In National Language </p>
-		<p class="centered creditsHeading showNational">Written by:</p>
+		<p class="centered -bloom-topicInNationalLanguage -bloom-showNational" lang='en'>Book Title In National Language </p>
+		<p class="centered creditsHeading -bloom-showNational">Written by:</p>
 		<p class="foo">
-			<textarea lang='en' class="credits showNational" title="Enter the contributions made by writers, illustrators, editors, etc."></textarea>
+			<textarea lang='en' class="credits -bloom-showNational" title="Enter the contributions made by writers, illustrators, editors, etc."></textarea>
 		 </p>
-		<p class="centered showNational">Printing History</p>
+		<p class="centered -bloom-showNational">Printing History</p>
 		<p>
-			<textarea lang='en' class="printingHistory showNational"></textarea>
+			<textarea lang='en' class="printingHistory -bloom-showNational"></textarea>
 		</p>
-		<p class="centered _nameOfLanguage singleLine showNational" lang='en'>Language Name</p>
+		<p class="centered -bloom-nameOfLanguage singleLine -bloom-showNational" lang='en'>Language Name</p>
 
 	</div>
 	<div class="-bloom-page imageOnTop -bloom-extraPage" id="page1">
