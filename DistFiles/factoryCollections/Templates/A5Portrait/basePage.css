@@ -1,3 +1,50 @@
+/*+init {*/
+*
+{
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 1em;
+}
+H1, H2, H3, H4, H5, H6, TH
+{
+	font-weight: inherit;
+}
+ADDRESS, CITE, DFN, VAR
+{
+	font-style: inherit;
+}
+CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON
+{
+	font-family: inherit;
+}
+TABLE
+{
+	border-spacing: 0;
+}
+TH
+{
+	text-align: left;
+}
+HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR
+{
+	position: static;
+}
+INPUT[type=hidden]
+{
+	display: none !important;
+}
+FIELDSET, A IMG
+{
+	border: 0;
+}
+BODY
+{
+	font-size: 100%;
+	font-family: sans-serif;
+	line-height: 1.5;
+}
+/*+}*/
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
