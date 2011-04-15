@@ -45,7 +45,7 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-DIV.page
+DIV.-bloom-page
 {
 /*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
@@ -238,7 +238,7 @@ in a <p> which has a fixed height.*/
 	text-align: center;
 	margin-top: 1cm;
 }
-DIV.page:after
+DIV.-bloom-page:after
 {
 	position: static;
 	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
