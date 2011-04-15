@@ -51,11 +51,11 @@ namespace BloomTests
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover')]", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover ')]", 1);
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
 
 			//should only get these two pages
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]", 2);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]", 2);
 		}
 
 		[Test]
@@ -81,9 +81,9 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_HasEnglishTextArea_VernacularTextAreaAdded()
 		{
-			var body = @"<div class='page'>
+			var body = @"<div class='-bloom-page'>
 						<p>
-						 <textarea lang='en' id='text1' class='hideMe'>This is some English</textarea>
+						 <textarea lang='en' class='hideMe'>This is some English</textarea>
 						</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
@@ -114,7 +114,7 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_ExistingEnglishHasHideClass_NewVernacularHasNoClass()
 		{
-			var body = @"<div class='page'>
+			var body = @"<div class='-bloom-page'>
 <p>
 						<textarea lang='en' class='hideMe'>blah</textarea>
 </p>
@@ -132,8 +132,8 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_HasEnglishParagraph_ConvertsToVernacular()//??????????????
 		{
-			var body = @"<div class='page'>
-						<p id='bookTitle' lang='en' class='_vernacularBookTitle'>Book Title</p>
+			var body = @"<div class='-bloom-page'>
+						<p id='bookTitle' lang='en' class='-bloom-vernacularBookTitle'>Book Title</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
@@ -144,9 +144,9 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_NationalLanguageField_LeavesUntouched()
 		{
-			var body = @"<div class='page' testid='pageWithNoLanguageTags'>
+			var body = @"<div class='-bloom-page' testid='pageWithNoLanguageTags'>
 						<p>
-							<textarea lang='en' id='text1' class='showNational'>LanguageName</textarea>
+							<textarea lang='en' class='-bloom-showNational'>LanguageName</textarea>
 						</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
@@ -167,10 +167,10 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
 		{
-			var body = @"<div class='page'>
+			var body = @"<div class='-bloom-page'>
 							<p>
-								<textarea lang='en'  class='text'> When you plant a garden you always make a fence.</textarea>
-								<textarea lang='tpi' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
+								<textarea lang='en'> When you plant a garden you always make a fence.</textarea>
+								<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 							</p>
 						</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
@@ -260,30 +260,30 @@ namespace BloomTests
 		{
 			return
 				GetShellBookFolder(
-					@"<div class='page required' id='1'>
+					@"<div class='-bloom-page -bloom-required' id='1'>
 						_required_ The user will not be allowed to remove this page.
 					  </div>
-					<div class='page' id='2'>
+					<div class='-bloom-page' id='2'>
 						_normal_ It would be ok for the user to remove this page.
 					</div>
 
-					<div class='page extraPage' id='3'>
+					<div class='-bloom-page -bloom-extraPage' id='3'>
 						_extra_
 					</div>
-					<div class='page' testid='pageWithNoLanguageTags'>
+					<div class='-bloom-page' testid='pageWithNoLanguageTags'>
 						<p>
-							<textarea id='text1' class='text'>Text of a simple template</textarea>
+							<textarea>Text of a simple template</textarea>
 						</p>
 					</div>
-					<div class='page' testid='pageAlreadyHasVernacular'>
+					<div class='-bloom-page' testid='pageAlreadyHasVernacular'>
 						 <p>
-							<textarea lang='en' id='text1' class='text'>This is some English</textarea>
-							<textarea lang='xyz' id='text1' class='text'>original</textarea>
+							<textarea lang='en'>This is some English</textarea>
+							<textarea lang='xyz'>original</textarea>
 						</p>
 					</div>
-					<div class='page' testid='pageWithJustTokPisin'>
+					<div class='-bloom-page' testid='pageWithJustTokPisin'>
 						 <p>
-							<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
+							<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
 					</div>");
 		}

@@ -47,11 +47,11 @@ namespace Bloom
 			}
 		}
 
-		public bool Required { get { return _classes.Contains("required"); } }
+		public bool Required { get { return _classes.Contains("-bloom-required"); } }
 
 		public bool CanRelocate
 		{
-			//review: for now, we're conflating "required" with "can't move"
+			//review: for now, we're conflating "-bloom-required" with "can't move"
 			get { return !Required; }
 		}
 

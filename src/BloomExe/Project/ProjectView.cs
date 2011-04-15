@@ -67,7 +67,9 @@ namespace Bloom.Project
 			tabPage3.Tag = this._tabControl.TabPages.IndexOf(tabPage3); //remember initial location
 			_infoTab.Tag = this._tabControl.TabPages.IndexOf(_infoTab); //remember initial location
 
-			SetTabVisibility(_infoTab, false);
+		   //NB: don't optimize this without testing... it's something of a hack to get it to display correctly
+			if(!Program.StartUpWithFirstOrNewVersionBehavior)
+			   SetTabVisibility(_infoTab, false);
 			SetTabVisibility(tabPage3, false);
 			SetTabVisibility(tabPage2, false);
 
@@ -76,6 +78,10 @@ namespace Bloom.Project
 			this.tabPage3.Controls.Add(this._publishView);
 			this._infoTab.Controls.Add(this._infoView);
 
+			if (Program.StartUpWithFirstOrNewVersionBehavior)
+			{
+				_tabControl.SelectedTab = _infoTab;
+			}
 		}
 
 		void Application_Idle(object sender, EventArgs e)

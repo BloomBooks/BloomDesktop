@@ -30,12 +30,12 @@ namespace BloomTests
 			var content = @"<?xml version='1.0' encoding='utf-8' ?>
 				<html xmlns='http://www.w3.org/1999/xhtml'>
 					<body class='a5Portrait'>
-					<div class='page' testid='pageWithJustTokPisin'>
+					<div class='-bloom-page' testid='pageWithJustTokPisin'>
 						 <p>
 							<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
 					</div>
-				<div class='page' id='pageWithTokPisinAndEnglish'>
+				<div class='-bloom-page' id='pageWithTokPisinAndEnglish'>
 							<p>
 								<textarea lang='en' id='text1' class='text'>1en</textarea>
 								<textarea lang='tpi' id='text1' class='text'>1tpi</textarea>

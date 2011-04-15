@@ -24,6 +24,7 @@ namespace Bloom
 		private readonly Palaso.IO.IFileLocator _fileLocator;
 		private readonly ProjectSettings _projectSettings;
 
+		private  List<string> _builtInConstants = new List<string>(new[] { "-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -234,7 +235,7 @@ namespace Bloom
 		private static void HideEverythingButFirstPage(XmlDocument bookDom)
 		{
 			bool onFirst = true;
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'page')]"))
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
 			{
 				if (!onFirst)
 				{
@@ -246,7 +247,7 @@ namespace Bloom
 
 		private static void HidePages(XmlDocument bookDom, Func<XmlElement,bool> hidePredicate)
 		{
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'page')]"))
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
 			{
 				if (hidePredicate(node))
 				{
@@ -427,7 +428,7 @@ namespace Bloom
 				_pagesCache = new List<IPage>();
 
 				int pageNumber = 0;
-				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page')]"))
+				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 				{
 					//review: we want to show titles for template books, numbers for other books.
 					//this here requires that titles be removed when the page is inserted, kind of a hack.
@@ -453,7 +454,7 @@ namespace Bloom
 			if (!_storage.LooksOk)
 				yield break;
 
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'page') and not(contains(@class, 'singleton'))]"))
+			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@class, '-bloom-singleton'))]"))
 			{
 				var caption = pageNode.GetAttribute("title");
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
@@ -487,7 +488,7 @@ namespace Bloom
 
 			BookStarter.SetupPages(newPageElement, _projectSettings.Iso639Code);
 			ClearEditableValues(newPageElement);
-			newPageElement.RemoveAttribute("title"); //titles are just for templates
+			newPageElement.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageElement, elementOfPageBefore);
@@ -569,7 +570,7 @@ namespace Bloom
 			string pageSelector = Page.GetPageSelectorXPath(pageDom);
 			//review: does this belong down in the storage?
 
-			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'page')]");
+			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, '-bloom-page')]");
 			string pageDivId = divElement.GetAttribute("id");
 
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
@@ -580,7 +581,7 @@ namespace Bloom
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'showNational')]", _projectSettings.Iso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _projectSettings.Iso639Code)))
 			{
 				var languageCode = editNode.GetAttribute("lang");
 
@@ -591,7 +592,7 @@ namespace Bloom
 			}
 
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'showNational')]", _projectSettings.Iso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _projectSettings.Iso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
 				var languageCode = editNode.GetAttribute("lang");
@@ -695,28 +696,7 @@ namespace Bloom
 //            }
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
-			classes.Add("_nameOfLanguage", _projectSettings.Name);
-
-
-			//REVIEW: it looks like we're going to stop using input altogether, so this can be removed.
-
-			//can't use starts-with becuase it could be the second or third word in the class attribute);
-			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//input[contains(@class, '_') and (@lang='{0}' or contains(@class,'showNational'))]", _projectSettings.Iso639Code)))
-			{
-				var theseClasses = node.GetAttribute("class").Split(new char[] {' '},StringSplitOptions.RemoveEmptyEntries);
-				foreach (var key in theseClasses)
-				{
-					if (!key.StartsWith("_"))
-						continue;
-
-					if(!classes.ContainsKey(key))
-						classes.Add(key, node.GetAttribute("value").Trim());
-					else
-						node.SetAttribute("value", classes[key]);
-
-					break;//only one variable name per item, of course.
-				}
-			}
+			classes.Add("-bloom-nameOfLanguage", _projectSettings.Name);
 
 			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
 			//nb: we intentionally go through twice, in case the value is not in the first occurrence
@@ -726,7 +706,7 @@ namespace Bloom
 			MakeAllFieldsOfElementTypeConsistent(classes, "span");
 
 			string title;
-			if (classes.TryGetValue("_vernacularBookTitle", out title))
+			if (classes.TryGetValue("-bloom-vernacularBookTitle", out title))
 			{
 				_storage.SetBookName(title);
 				GetOrCreateElement("//html", "head");
@@ -749,12 +729,12 @@ namespace Bloom
 
 		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
 		{
-			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[contains(@class, '_') and (@lang='{1}' or contains(@class,'showNational'))]", elementName, _projectSettings.Iso639Code)))
+			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[(contains(@class, '_')  or contains(@class, '-bloom-')) and (@lang='{1}' or contains(@class,'-bloom-showNational'))]", elementName, _projectSettings.Iso639Code)))
 			{
 				var theseClasses = node.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 				foreach (var key in theseClasses)
 				{
-					if (!key.StartsWith("_"))
+					if (!(key.StartsWith("_") || _builtInConstants.Contains(key)))
 						continue;
 
 					if (!classes.ContainsKey(key))

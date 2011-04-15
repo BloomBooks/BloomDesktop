@@ -30,7 +30,7 @@ namespace BloomTests
 
 		 Book BookFactory(BookStorage storage, bool editable)
 		 {
-			 return new Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){Iso639Code = "xyz"}), null,
+			 return new Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_folder.Path,"test"), Iso639Code = "xyz"}), null,
 													  new PageSelection(),
 													  new PageListChangedEvent());
 		 }

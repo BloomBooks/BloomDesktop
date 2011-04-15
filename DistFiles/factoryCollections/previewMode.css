@@ -4,6 +4,18 @@
 	{
 		background-color: #363333;
 	}
+	DIV.page
+	{
+		counter-increment: pageNumber;
+		border: 1px solid #000000;
+	}
+}
+@media print
+{
+	BODY
+	{
+		background-color: #363333;
+	}
 }
 P.pagefooter
 {
@@ -24,6 +36,7 @@ BODY
 DIV.page
 {
 	counter-increment: pageNumber;
+	/* this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
 	border: 1px solid #FFFFFF; /* This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly */
 }
 DIV.page.cover

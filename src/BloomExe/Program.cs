@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Palaso.IO;
@@ -17,7 +18,7 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 
 		private static ApplicationContainer _applicationContainer;
-
+		public static bool StartUpWithFirstOrNewVersionBehavior;
 
 		[STAThread]
 		static void Main()
@@ -33,6 +34,7 @@ namespace Bloom
 				Settings.Default.Upgrade();
 				Settings.Default.NeedUpgrade = false;
 				Settings.Default.Save();
+				StartUpWithFirstOrNewVersionBehavior = true;
 			}
 
 
@@ -58,6 +60,10 @@ namespace Bloom
 #if !DEBUG
 			SetUpErrorHandling();
 #endif
+//            var args = Environment.GetCommandLineArgs();
+//            _commandLineRequestedFirstTimeAfterInstallationBehavior = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
+
+
 
 			//			var args = Environment.GetCommandLineArgs();
 			//			var firstTimeArg = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));

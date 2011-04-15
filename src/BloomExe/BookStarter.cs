@@ -68,7 +68,7 @@ namespace Bloom
 			var storage = _bookStorageFactory(destinationPath);
 
 			//Remove from the new book an div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'extraPage')]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'-bloom-extraPage')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
@@ -79,13 +79,13 @@ namespace Bloom
 
 		public static void SetupPages(XmlNode rootElement, string isoCode)
 		{
-			foreach (XmlElement div in rootElement.SafeSelectNodes("//div[contains(@class,'page')]"))
+			foreach (XmlElement div in rootElement.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
 				MakeVernacularElementsForPage(div,isoCode);
 			}
 			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
 			//this is needed when we're actually setting up a single page that was just inserted from a template
-			if(rootElement is XmlElement && ContainsClass(rootElement, "page"))
+			if(rootElement is XmlElement && ContainsClass(rootElement, "-bloom-page"))
 			{
 				MakeVernacularElementsForPage((XmlElement) rootElement,isoCode);
 			}
@@ -164,7 +164,7 @@ namespace Bloom
 				return;
 			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-			if (ContainsClass(editableElementsWithinTheIndicatedParagraph[0], "showNational"))
+			if (ContainsClass(editableElementsWithinTheIndicatedParagraph[0], "-bloom-showNational"))
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
@@ -224,7 +224,7 @@ namespace Bloom
 		private static List<string> GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(XmlElement pageDiv)
 		{
 			List<string> groups = new List<string>();
-			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[contains(@class,'_')]"))
+			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[contains(@class,'_') or contains(@class, '-bloom-')]"))
 			{
 			   var id = paragraph.GetAttribute("id");
 				//we're happy to add guids if they're missing.

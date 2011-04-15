@@ -393,7 +393,7 @@ namespace Bloom
 			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
 			{
 				string cssClass = storageNode.GetAttribute("class");
-				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"showNational"))
+				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"-bloom-showNational"))
 				{
 					cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
 				}

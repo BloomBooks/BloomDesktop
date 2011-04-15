@@ -60,7 +60,7 @@ namespace Bloom
 			_documentThumnails.Items.Clear();
 
 			int pageNumber = 0;
-			foreach (XmlNode page in GetElementsFromFile(path, "//x:div[contains(@class,'page')]"))
+			foreach (XmlNode page in GetElementsFromFile(path, "//x:div[contains(@class,'-bloom-page')]"))
 			{
 				var id = page.GetStringAttribute("id");
 				var item = new ListViewItem(string.Format("Page {0} [{1}]", pageNumber, id));

@@ -58,7 +58,7 @@ namespace Bloom
 				node.SetAttribute("onblur", "", "this.setAttribute('newValue',this.value);");
 			}
 
-			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, 'page')]", namespaceManager))
+			foreach (XmlElement node in dom.SafeSelectNodes("//x:div[contains(@class, '-bloom-page')]", namespaceManager))
 			{
 				if(string.IsNullOrEmpty(_currentPageId))
 				{

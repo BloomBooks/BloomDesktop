@@ -22,10 +22,9 @@ namespace BloomTests
 		private Mock<IFileLocator> _fileLocator;
 		private Mock<HtmlThumbNailer> _thumbnailer;
 		private Mock<PageSelection> _pageSelection;
-		private DeletePageCommand _deletePageCommand;
 		private PageListChangedEvent _pageListChangedEvent;
-		private RelocatePageEvent _relocatePageEvent;
 		private XmlDocument _documentDom;
+		private TemporaryFolder _testFolder;
 
 		[SetUp]
 		public void Setup()
@@ -49,10 +48,17 @@ namespace BloomTests
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
-			_deletePageCommand=new DeletePageCommand();
 			_pageListChangedEvent = new PageListChangedEvent();
-			_relocatePageEvent = new RelocatePageEvent();
+			_testFolder = new TemporaryFolder("BookTests");
+
 	  }
+
+		private Book CreateBook()
+		{
+			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
+				new ProjectSettings(new NewProjectInfo() {PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_testFolder.Path,"test"), Iso639Code = "xyz" }),
+				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
+		}
 
 //        [Test]
 //        public void InsertPage_PageInMiddle_IsInserted()
@@ -66,14 +72,14 @@ namespace BloomTests
 		[Test]
 		public void GetPreviewHtmlFileForWholeBook_what_UsesPreviewCss()
 		{
-			Assert.IsTrue(CreateBook(true).GetPreviewHtmlFileForWholeBook().InnerXml.Contains("previewMode.css"));
+			Assert.IsTrue(CreateBook().GetPreviewHtmlFileForWholeBook().InnerXml.Contains("previewMode.css"));
 		}
 
 		[Test]
 		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
-			var result = CreateBook(true).GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
-			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]",3);
+			var result = CreateBook().GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
+			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]",3);
 		}
 
 //        [Test]
@@ -92,20 +98,24 @@ namespace BloomTests
 		/// are saved when changed.
 		/// </summary>
 		[Test]
-		public void SavePage_ChangeMadeToInputBoxWhichIsLabelledShowNational_StorageUpdatedAndToldToSave()
+		public void SavePage_ChangeMadeToTexAreaWhichIsLabelledShowNational_StorageUpdatedAndToldToSave()
 		{
-			var book = CreateBook(true);
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var inputBox = dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput' and contains(@class,'showNational')]");
-			//nb: we dont' have to simulate the business wehre the browser actually puts
-			//new values into a "newValue" attribute, since it is required to pull those back
-			//into 'value' before the Book's SavePage is called.
-			Assert.AreEqual("one", inputBox.Attributes["value"].Value, "the test conditions aren't correct");
-			inputBox.Attributes["value"].Value = "two";
-			book.SavePage(dom);
-			var inputBoxInStorageDom = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='testInput']");
+			SetDom(@"<div class='-bloom-page' id='guid2'>
+						<p>
+							<textarea lang='en' id='testsNeedIds' class='-bloom-showNational'>one</textarea>
+						</p>
+					</div>
+			");
 
-			Assert.AreEqual("two", inputBoxInStorageDom.Attributes["value"].Value,
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea");
+			Assert.AreEqual("one", textArea.InnerText, "the test conditions aren't correct");
+			textArea.InnerText = "two";
+			book.SavePage(dom);
+			var textAreaInStorageDom = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//textarea");
+
+			Assert.AreEqual("two", textAreaInStorageDom.InnerText,
 							"the value didn't get copied to  the storage dom");
 			_storage.Verify(s => s.Save(), Times.Once());
 		}
@@ -113,9 +123,9 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='vtitle' and @lang='xyz']");
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
@@ -125,21 +135,21 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' class='_vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>original</textarea>
 						</p>
 					</div>
-				<div class='page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
-						<p class='centered _vernacularBookTitle' lang='xyz' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
+				<div class='-bloom-page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
+						<p class='centered -bloom-vernacularBookTitle' lang='xyz' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
 				</div>
 			");
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'_vernacularBookTitle') and @lang='xyz']");
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
-			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[contains(@class,'_vernacularBookTitle')  and @lang='xyz']");
+			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[contains(@class,'-bloom-vernacularBookTitle')  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
 		}
 
@@ -147,11 +157,11 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='vtitle' and text()='tree']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='vtitle' and text()='dog']", 1);
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='vtitle']");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='1' and text()='tree']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
@@ -162,11 +172,11 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_ElementIsNationalLanguage_UpdatesOthers()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='vtitle' and text()='tree']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='vtitle' and text()='dog']", 1);
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='vtitle']");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='1' and text()='tree']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
@@ -174,30 +184,19 @@ namespace BloomTests
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']", 1);
 		}
 
-		[Test]
-		public void MakeAllFieldsConsistent_InputWithUnderscoreClass_CopiedToAnotherInputWithSameClass()
-		{
-			var book = CreateBook(true);
-			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			XmlElement input = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo1']");
-			input.SetAttribute("value","blue");
-			book.MakeAllFieldsConsistent();
-			XmlElement input2 = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//input[@id='foo2']");
-			Assert.AreEqual("blue", input2.GetAttribute("value"));
-		}
 
 		[Test]
 		public void MakeAllFieldsConsistent_HadNoTitleChangeVernacularTitle_SetTitleElement()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' class='_vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>original</textarea>
 						</p>
 					</div>
 			");
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
 			textArea.InnerText ="blue";
 			book.MakeAllFieldsConsistent();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -207,12 +206,12 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_HadTitleChangeVernacularTitle_ChangesTitleElement()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;
 			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 			head.AppendChild(dom.CreateElement("title", "http://www.w3.org/1999/xhtml")).InnerText = "original";
-		   // node.SetAttribute("class", "_vernacularBookTitle");
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+		   // node.SetAttribute("class", "-bloom-vernacularBookTitle");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
 			textArea.InnerText = "blue";
 			book.MakeAllFieldsConsistent();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -222,16 +221,16 @@ namespace BloomTests
 		[Test]
 		public void MakeAllFieldsConsistent_ChangeVernacularTitle_TellsStorageToChangeName()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' class='_vernacularBookTitle'>red</textarea>
+							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>red</textarea>
 						</p>
 					</div>
 			");
 
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='_vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
 			textArea.InnerText = "blue";
 			_storage.Setup(s => s.SetBookName("blue"));
 			book.MakeAllFieldsConsistent();
@@ -241,7 +240,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			book.SavePage(dom);
 			_storage.Verify(s => s.Save(), Times.Once());
@@ -250,7 +249,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToSrcOfImg_StorageUpdated()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
 			var imgInEditingDom = dom.SelectSingleNodeHonoringDefaultNS("//img[@id='img1']") as XmlElement;
 			imgInEditingDom.SetAttribute("src", "changed.png");
@@ -266,19 +265,19 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
 							<textarea lang='en' id='testText'>english</textarea>
 							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
 						</p>
 					</div>
-					<div class='page' id='guid3'>
+					<div class='-bloom-page' id='guid3'>
 						<p>
 							<textarea  lang='xyz' id='testText'>original2</textarea>
 						</p>
 					</div>
 			");
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
 			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
@@ -294,19 +293,19 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
 							<textarea lang='en' id='testText'>english</textarea>
 							<textarea lang='xyz' id='testText'>original1</textarea>
 						</p>
 					</div>
-					<div class='page' id='guid3'>
+					<div class='-bloom-page' id='guid3'>
 						<p>
 							<textarea  lang='xyz' id='testText'>original2</textarea>
 						</p>
 					</div>
 			");
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
 			Assert.AreEqual("original2", textArea.InnerText, "the test conditions aren't correct");
@@ -321,7 +320,7 @@ namespace BloomTests
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaWithMultipleLanguages_CorrectOneInStorageUpdated()
 		{
-			SetDom(@"<div class='page' id='guid2'>
+			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
 							<textarea lang='en' id='testText'>english</textarea>
 							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
@@ -329,7 +328,7 @@ namespace BloomTests
 						</p>
 					</div>
 			");
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
 			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
 			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
@@ -347,7 +346,7 @@ namespace BloomTests
 		[Test]
 		public void GetEditableHtmlDomForPage_HasInjectedElementForEditTimeScript()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
 			Assert.AreEqual(1, scriptNodes.Count);
@@ -358,14 +357,14 @@ namespace BloomTests
 		[Test]
 		public void InsertPageAfter_OnFirstPage_NewPageInsertedAsSecond()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var existingPage=book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
 		[Test]
 		public void InsertPageAfter_OnLastPage_NewPageInsertedAtEnd()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var existingPage = book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, 1);
 		}
@@ -376,19 +375,19 @@ namespace BloomTests
 
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			AssertPageCount(book, 4);
-			Assert.AreEqual("page somekind", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+			Assert.AreEqual("-bloom-page somekind", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
 
 		private XmlNode GetPageFromBookDom(Book book, int pageNumber0Based)
 		{
 			var result = book.RawDom.StripXHtmlNameSpace();
-			return result.SafeSelectNodes("//div[contains(@class, 'page')]", null)[pageNumber0Based];
+			return result.SafeSelectNodes("//div[contains(@class, '-bloom-page')]", null)[pageNumber0Based];
 		}
 
 		private void AssertPageCount(Book book, int expectedCount)
 		{
 			var result = book.RawDom.StripXHtmlNameSpace();
-			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'page')]", expectedCount);
+			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]", expectedCount);
 		}
 
 //
@@ -408,7 +407,7 @@ namespace BloomTests
 		[Test]
 		public void DeletePage_OnLastPage_Deletes()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var original= book.GetPages().Count();
 			var existingPage = book.GetPages().Last();
 			book.DeletePage(existingPage);
@@ -418,7 +417,7 @@ namespace BloomTests
 		[Test]
 		public void DeletePage_AttemptDeleteLastRemaingPage_DoesntDelete()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			foreach (var page in book.GetPages())
 			{
 				book.DeletePage(page);
@@ -428,7 +427,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_FirstPageToSecond_DoesRelocate()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[0], 1);
 			var newPages = book.GetPages().ToArray();
@@ -441,7 +440,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_FirstPageToLast_DoesRelocate()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[0], 2);
 			var newPages = book.GetPages().ToArray();
@@ -454,7 +453,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_LastPageToSecond_DoesRelocate()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[2], 1);
 			var newPages = book.GetPages().ToArray();
@@ -467,7 +466,7 @@ namespace BloomTests
 		[Test]
 		public void RelocatePage_LastPageToFirst_DoesRelocate()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			var pages = book.GetPages().ToArray();
 			book.RelocatePage(pages[2], 0);
 			var newPages = book.GetPages().ToArray();
@@ -480,14 +479,14 @@ namespace BloomTests
 		[Test]
 		public void CanDelete_VernacularBook_True()
 		{
-			var book = CreateBook(true);
+			var book = CreateBook();
 			Assert.IsTrue(book.CanDelete);
 		}
 
 		[Test, Ignore("broken")]
 		public void CanDelete_TemplateBook_False()
 		{
-			var book = CreateBook(false);
+			var book = CreateBook();
 			Assert.IsFalse(book.CanDelete);
 		}
 
@@ -498,47 +497,37 @@ namespace BloomTests
 		{
 			var templatePage = new Moq.Mock<IPage>();
 			XmlDocument d = new XmlDocument();
-			d.LoadXml("<wrapper><div class='page somekind'>hello</div></wrapper>");
+			d.LoadXml("<wrapper><div class='-bloom-page somekind'>hello</div></wrapper>");
 			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(d.FirstChild);
 			return templatePage;
 		}
 
-		private Book CreateBook(bool b)
-		{
-			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
-				new ProjectSettings(new NewProjectInfo() { Iso639Code = "xyz" }),
-				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
-		}
+
 
 		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
-				<div class='page' id='guid1'>
+				<div class='-bloom-page' id='guid1'>
 					<p>
-						<input lang='en' id='testInput' class='showNational' value='one' />
-					</p>
-					<p>
-						<textarea lang='en' id='vtitle' class='_vernacularBookTitle'>tree</textarea>
-						<textarea lang='xyz' id='vtitle' class='_vernacularBookTitle'>dog</textarea>
+						<textarea lang='en' id='1' class='-bloom-vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='2' class='-bloom-vernacularBookTitle'>dog</textarea>
 					</p>
 				</div>
-				<div class='page' id='guid2'>
+				<div class='-bloom-page' id='guid2'>
 					<p>
-						<textarea lang='en' id='testText'>english</textarea>
-						<textarea lang='xyz' id='testText'>originalVernacular</textarea>
-						<textarea lang='tpi' id='testText'>tokpsin</textarea>
+						<textarea lang='en' id='3'>english</textarea>
+						<textarea lang='xyz' id='4'>originalVernacular</textarea>
+						<textarea lang='tpi' id='5'>tokpsin</textarea>
 					</p>
-					<input lang='xyz' id='foo1' class='_copyMe' value='red'/>
 					<img id='img1' src='original.png'/>
 				</div>
-				<div class='page' id='guid3'>
+				<div class='-bloom-page' id='guid3'>
 					<p>
-						<textarea  lang='xyz' id='testText'>original2</textarea>
+						<textarea id='6' lang='xyz'>original2</textarea>
 					</p>
-					<input  lang='xyz' id='foo2' class='somethingInTheWay _copyMe' value='red'/>
 					<p>
-						<textarea  lang='xyz' id='copyOfVTitle' class='_vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='copyOfVTitle' class='-bloom-vernacularBookTitle'>tree</textarea>
 					</p>
 				</div>
 				</body></html>");
