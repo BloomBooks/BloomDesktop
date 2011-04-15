@@ -1,0 +1,51 @@
+﻿<html>
+<head>
+<link  rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<h1>Bloom Format</h1>
+<p>The following information is for advanced primer or shell developers.  If you're just making shells for other people to use, you probably don't need to know any of the following.</p>
+<p>
+Bloom documents are XHTML with certain conventions and pre-defined class names, as
+	described below.</p>
+<h2>StyleSheets</h2>
+<p>basePage.css: always applied. Used for styles which always apply, regardless of mode or paper size.</p>
+<p>papersize/orientation. E.g. a5portrait.css</p>
+<p>editMode.css is applied during editing</p>
+<p>previewMode.css is applied during viewing and printing</p>
+
+<h2>"Variables"</h2>
+<p>If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.</p>
+<h2>Built-in Classes</h2>
+<p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
+<li>-bloom-vernacularBookTitle</li>
+<li>-blo-bloom-nationalLanguageBookTopic: e.g. "Health", "Math"</li>
+<li>-bloom-nameOfLanguage: this is automatically filled in, so it should only appear in uneditable elements.</li>
+<li>-bloom-requiredPage: Page Divs with this class are always added to a new book, and the user is not allowed to remove them. </li>
+<li>-bloom-singleton: Only a single copy of this page may be added to a book.</li>
+&nbsp;<h2>Shell Books and Languages</h2>
+<p>Shell books may come with source texts in multiple languages, so that users in different countries or with different language strengths can use the source language which works best for them.</p>
+<p>So, how do we get all those languages in the same document? This area is still maturing. Currently, the approach is to surround each textarea
+	in a p, then have one textarea for each source language. Each textarea must have
+	its lang attibute set to a proper ISO639 (Ethnologue) code:</p>
+	<p>&lt;p&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot;&gt; &quot;Taim yu planim gaden yu save wokim
+		banis.&lt;/textarea&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt; When you plant a garden,
+		you always build a fence.&lt;/textarea&gt;<br />
+		&lt;/p&gt; </p>
+	<p>
+		Note: the &#39;hideMe&#39; is currently used by Bloom to hide all but one language.&nbsp;
+		In the future, we may instead use a dynamically-created css to turn languages on
+		an off.</p>
+	<p>
+		Now, if Bloom makes a book using the above paragraph, it will make a new
+		textarea for the vernacular; the resulting book will then have 3 textareas in
+		this paragraph, with all but the vernacular containing the class &#39;hideMe&#39;.</p>
+	<p>
+		That &#39;hideMe&#39; class is just to keep the source texts out of the page in the
+		browser. In <em>edit mode</em> the Bloom application still reads these
+		textareas, and shows the contents source-text pane, to help the user do his
+		translation.</p>
+</body>
+</html>
