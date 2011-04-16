@@ -13,7 +13,7 @@ namespace Bloom
 		string Caption { get; }
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
-		XmlNode GetDivNodeForThisPage();
+		XmlElement GetDivNodeForThisPage();
 		Dictionary<string,string> GetSourceTexts(string idOfOneTextAreaInTheGroup);
 		bool Required { get; }
 		bool CanRelocate { get;}
@@ -24,10 +24,10 @@ namespace Bloom
 		private readonly string _id;
 		private readonly XmlElement _sourcePage;
 		private readonly Func<IPage, Image> _getThumbnail;
-		private readonly Func<IPage, XmlNode> _getDivNodeForThisPageMethod;
+		private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
 		private List<string> _classes;
 
-		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlNode> getDivNodeForThisPageMethod)
+		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			_id = sourcePage.Attributes["id"].Value;
 			_sourcePage = sourcePage;
@@ -66,7 +66,7 @@ namespace Bloom
 			get { return "/html/body/div[@id='"+_id+"']";}
 		}
 
-		public XmlNode GetDivNodeForThisPage()
+		public XmlElement GetDivNodeForThisPage()
 		{
 			return _getDivNodeForThisPageMethod(this);
 		}

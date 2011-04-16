@@ -48,19 +48,32 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 <li>-bloom-singleton: Only a single copy of this page may be added to a book.</li>
 <li>-bloom-extraPage: When a book is created, any pages marked with this class will not be initially added to the new book. If the user wants one of these pages, he has to add it explicitly (by clicking on its icon in the list of template pages).</li>
 <li>-bloom-showNational: indicates that it shouldn't be translated (the need for this one is under review)</li>
-<h2>"Variables"</h2>
-<p>If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.</p>
-&nbsp;<h2>Shell Books and Languages</h2>
-<p>Shell books may come with source texts in multiple languages, so that users in different countries or with different language strengths can use the source language which works best for them.</p>
-<p>So, how do we get all those languages in the same document? This area is still maturing. Currently, the approach is to surround each textarea
+<li>-bloom-guidOfTemplateBook.  See the section below on Lineage.</li>
+<li>-bloom-pageLineage.  See the section below on Lineage.</li>
+<h2>Lineage</h2>
+<p>(This area is especially immature)</p>
+<p>While Bloom doesn't yet provide it, we may some day need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.  Here's how it works at the moment:</p>
+
+	&lt;a href=&quot;0151a8d0-8718-41f0-a7fb-71c6995fa80a;bfc0737c-f76a-4a34-93ba-d28cb483823a&quot; class=&#39;-bloom-pageLineage&#39;
+	style=&#39;visibility:hidden&#39;&gt;&lt;/a&gt;<br />
+	<p>Notic that the href above has 2 guids, separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
+	<h2>
+		"Constants"</h2>
+	<p>
+		If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.</p>
+&nbsp;<h2>
+		Shell Books and Languages</h2>
+	<p>
+		Shell books may come with source texts in multiple languages, so that users in different countries or with different language strengths can use the source language which works best for them.</p>
+	<p>
+		So, how do we get all those languages in the same document? This area is still maturing. Currently, the approach is to surround each textarea
 	in a p, then have one textarea for each source language. Each textarea must have
 	its lang attibute set to a proper ISO639 (Ethnologue) code:</p>
-	<p>&lt;p&gt;<br />
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot;&gt; &quot;Taim yu planim gaden yu save wokim
-		banis.&lt;/textarea&gt;<br />
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt; When you plant a garden,
-		you always build a fence.&lt;/textarea&gt;<br />
-		&lt;/p&gt; </p>
+	<p>
+		&lt;p&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot;&gt; &quot;Taim yu planim gaden yu save wokim
+		banis.&lt;/textarea&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt; When you plant a garden,
+		you always build a fence.&lt;/textarea&gt;<br />&lt;/p&gt;
+	</p>
 	<p>
 		Note: the &#39;hideMe&#39; is currently used by Bloom to hide all but one language.&nbsp;
 		In the future, we may instead use a dynamically-created css to turn languages on
@@ -74,7 +87,10 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		browser. In <em>edit mode</em> the Bloom application still reads these
 		textareas, and shows the contents source-text pane, to help the user do his
 		translation.</p>
-		<h2>Mailing List</h2>
-	   <p>Have more questions? We have a special <a href="https://groups.google.com/group/bloom-file">mailing list</a> for discussing the Bloom format.</p>
+	<h2>
+		Mailing List</h2>
+	<p>
+		Have more questions? We have a special
+		<a href="https://groups.google.com/group/bloom-file">mailing list</a> for discussing the Bloom format.</p>
 </body>
 </html>

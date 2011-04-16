@@ -359,21 +359,76 @@ namespace BloomTests
 		{
 			var book = CreateBook();
 			var existingPage=book.GetPages().First();
-			TestTemplateInsertion(book, existingPage, 1);
+			TestTemplateInsertion(book, existingPage, "<div class='-bloom-page somekind'>hello</div>");
 		}
 		[Test]
 		public void InsertPageAfter_OnLastPage_NewPageInsertedAtEnd()
 		{
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			TestTemplateInsertion(book, existingPage, 1);
+			TestTemplateInsertion(book, existingPage,"<div class='-bloom-page somekind'>hello</div>");
 		}
 
-		private void TestTemplateInsertion(Book book, IPage existingPage, int expectedLocation)
+		/// <summary>
+		/// a page might be "extra" as far as the template is concerned, but
+		/// once a page is inserted into book (which may become a shell), it's
+		/// just a normal page
+		/// </summary>
+		[Test]
+		public void InsertPageAfter_PageWasMarkedExtra_NewPageIsNotMarkedExtra()
 		{
-			Mock<IPage> templatePage = CreateTemplatePage();
-
+			//enhance: move to book starter tests, since that's what implements the actual behavior
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
+			Assert.AreEqual("-bloom-page", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+		}
+
+
+		[Test]
+		public void InsertPageAfter_SourcePageHasLineage_GetsLineageOfSourcePlusItsAncestor()
+		{
+			//enhance: move to book starter tests, since that's what implements the actual behavior
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' id='ma'><a href='grandma' class='-bloom-pageLineage'></a>hello</div>");
+			book.InsertPageAfter(existingPage, templatePage.Object);
+			XmlElement page = (XmlElement) GetPageFromBookDom(book, 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div/a[@class='-bloom-pageLineage']", 1);
+			string[] guids = GetLineageGuids(page);
+			Assert.AreEqual("grandma",guids[0]);
+			Assert.AreEqual("ma", guids[1]);
+			Assert.AreEqual(2, guids.Length);
+		}
+
+		private string[] GetLineageGuids(XmlElement page)
+		{
+			XmlElement node = (XmlElement) page.SelectSingleNodeHonoringDefaultNS("//div/a[@class='-bloom-pageLineage']");
+			var href = node.GetAttribute("href");
+			return href.Split(new char[]{';'});
+		}
+
+		[Test]
+		public void InsertPageAfter_SourcePageHasNoLineage_IdOfSourceBecomesLineageOfNewPage()
+		{
+			//enhance: move to book starter tests, since that's what implements the actual behavior
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' id='ma'>hello</div>");
+			book.InsertPageAfter(existingPage, templatePage.Object);
+			XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div/a[@class='-bloom-pageLineage']", 1);
+			string[] guids = GetLineageGuids(page);
+			Assert.AreEqual("ma", guids[0]);
+			Assert.AreEqual(1, guids.Length);
+		}
+
+		private void TestTemplateInsertion(Book book, IPage existingPage, string divContent)
+		{
+			Mock<IPage> templatePage = CreateTemplatePage(divContent);
+
+		   book.InsertPageAfter(existingPage, templatePage.Object);
 			AssertPageCount(book, 4);
 			Assert.AreEqual("-bloom-page somekind", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
@@ -493,12 +548,13 @@ namespace BloomTests
 
 
 
-		private Mock<IPage> CreateTemplatePage()
+		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
 			var templatePage = new Moq.Mock<IPage>();
 			XmlDocument d = new XmlDocument();
-			d.LoadXml("<wrapper><div class='-bloom-page somekind'>hello</div></wrapper>");
-			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(d.FirstChild);
+			d.LoadXml("<wrapper>"+divContent+"</wrapper>");
+			XmlElement x1 = (XmlElement) d.SelectSingleNode("//div");
+			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(x1);
 			return templatePage;
 		}
 

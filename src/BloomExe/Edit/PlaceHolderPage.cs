@@ -29,7 +29,7 @@ namespace Bloom
 			get { return null; }
 		}
 
-		public XmlNode GetDivNodeForThisPage()
+		public XmlElement GetDivNodeForThisPage()
 		{
 			return null;
 		}

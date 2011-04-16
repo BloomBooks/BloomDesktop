@@ -73,24 +73,65 @@ namespace Bloom
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
 			//If this is a shell book, make elements to hold the vernacular
-			SetupPages(storage.Dom, _languageSettings.VernacularIso639Code);
+			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			{
+				SetupIdAndLineage(div, div);
+				SetupPage(div, _languageSettings.VernacularIso639Code);
+			}
 			storage.Save();
 		}
 
-		public static void SetupPages(XmlNode rootElement, string isoCode)
+		public static void SetupPage(XmlElement pageDiv, string isoCode)
 		{
-			foreach (XmlElement div in rootElement.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
-			{
-				MakeVernacularElementsForPage(div,isoCode);
-			}
+			MakeVernacularElementsForPage(pageDiv, isoCode);
+
+			// a page might be "extra" as far as the template is concerned, but
+			// once a page is inserted into book (which may become a shell), it's
+			// just a normal page
+			pageDiv.SetAttribute("class", pageDiv.GetAttribute("class").Replace("-bloom-extraPage", "").Trim());
+
+
 			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
 			//this is needed when we're actually setting up a single page that was just inserted from a template
-			if(rootElement is XmlElement && ContainsClass(rootElement, "-bloom-page"))
+		   //     MakeVernacularElementsForPage((XmlElement)pageDiv,isoCode);
+
+			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
+		}
+
+		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
+		{
+			//NB: this works even if the parent and child are the same, which is the case when making a new book
+			//but not when we're adding an individual template page.
+
+			string parentId = parentPageDiv.GetAttribute("id");
+			childPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
+
+			string parentLineage = GetParentLineage(parentPageDiv);
+
+			XmlElement childLineageElement = (XmlElement) childPageDiv.SelectSingleNodeHonoringDefaultNS("a[@class='-bloom-pageLineage']");
+
+			if (childLineageElement == null)
 			{
-				MakeVernacularElementsForPage((XmlElement) rootElement,isoCode);
+				//stick an <a> in there, with an empty lineage
+				childLineageElement = childPageDiv.OwnerDocument.CreateElement("a");
+
+				var doc = new XmlDocument(childPageDiv.OwnerDocument.NameTable);
+
+				doc.LoadXml("<a href='' class='-bloom-pageLineage' style='visibility:hidden'/>");
+				childLineageElement = (XmlElement)childPageDiv.OwnerDocument.ImportNode(doc.SelectSingleNodeHonoringDefaultNS("//a"), true);
+				childPageDiv.AppendChild(childLineageElement);
 			}
 
-			BookStorage.HideAllTextAreasThatShouldNotShow(rootElement, isoCode, string.Empty);
+			childLineageElement.SetAttribute("href", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+		}
+
+		private static string GetParentLineage(XmlElement parentPageDiv)
+		{
+			string parentLineage = string.Empty;
+			XmlElement parentLineageElement = (XmlElement)parentPageDiv.SelectSingleNodeHonoringDefaultNS("a[@class='-bloom-pageLineage']");
+			if(parentLineageElement!=null)
+				parentLineage=parentLineageElement.GetAttribute("href");
+			return parentLineage;
 		}
 
 		private static bool ContainsClass(XmlNode element, string className)

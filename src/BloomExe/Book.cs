@@ -482,17 +482,18 @@ namespace Bloom
 			ClearPagesCache();
 
 			XmlDocument dom = _storage.Dom;
-			var newPageElement = dom.ImportNode(templatePage.GetDivNodeForThisPage(), true) as XmlElement;
-			newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
+			var templatePageDiv = templatePage.GetDivNodeForThisPage();
+			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
+			//newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
 
-
-			BookStarter.SetupPages(newPageElement, _projectSettings.Iso639Code);
-			ClearEditableValues(newPageElement);
-			newPageElement.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
+			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
+			BookStarter.SetupPage(newPageDiv, _projectSettings.Iso639Code);
+			ClearEditableValues(newPageDiv);
+			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
-			elementOfPageBefore.ParentNode.InsertAfter(newPageElement, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageElement, "should not show", _projectSettings.Iso639Code));
+			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _projectSettings.Iso639Code));
 			_storage.Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
