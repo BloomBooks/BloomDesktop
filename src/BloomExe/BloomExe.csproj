@@ -93,6 +93,12 @@
     <Compile Include="Command.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
     <Compile Include="Edit\PlaceHolderPage.cs" />
+    <Compile Include="Edit\SourceTextControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\SourceTextControl.Designer.cs">
+      <DependentUpon>SourceTextControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="InfoView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -209,6 +215,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\EditingView.resx">
       <DependentUpon>EditingView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\SourceTextControl.resx">
+      <DependentUpon>SourceTextControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
