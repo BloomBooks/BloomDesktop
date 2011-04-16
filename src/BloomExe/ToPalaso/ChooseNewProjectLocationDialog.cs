@@ -10,6 +10,7 @@ namespace Bloom.ToPalaso
 	{
 		private readonly string _destinationDirectory;
 		public string Iso639Code;
+		public string LanguageName;
 
 		public ChooseNewProjectLocationDialog(string destinationDirectory)
 		{
@@ -118,7 +119,7 @@ namespace Bloom.ToPalaso
 				}
 				_languageInfoLabel.Text = string.Format("{0} ({1})", dlg.ISOCodeAndName.Name, dlg.ISOCode);
 				Iso639Code = dlg.ISOCodeAndName.Code;
-
+				LanguageName= dlg.ISOCodeAndName.Name;
 				if(_textProjectName.Text.Trim().Length==0)
 				{
 					_textProjectName.Text = dlg.ISOCodeAndName.Name + " Books";

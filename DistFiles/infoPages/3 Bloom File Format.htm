@@ -1,6 +1,16 @@
 ﻿<html>
 <head>
 <link  rel="stylesheet" href="style.css" type="text/css" />
+	<style type="text/css">
+		.style1
+		{
+			background-color: #FFFF66;
+		}
+		.style2
+		{
+			color: #0099FF;
+		}
+	</style>
 </head>
 <body>
 <h1>Bloom Format</h1>
@@ -37,8 +47,13 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		replace the stylesheets in that folder with the versions in the Bloom program
 		directory.&nbsp; So if you&#39;re working on one of the standard stylesheets, be
 		careful to not let Bloom over-write your work.</p>
-
-<h2>Built-in Classes</h2>
+<h2>Document Data</h2>
+(TODO)<p>
+		&lt;meta id=&quot;bookLineage&quot;
+		content=&quot;name=A5Portrait;id=056B6F11-4A6C-4942-B2BC-8861E62B03B3&quot;/&gt;
+		<br />
+		&lt;meta id=&quot;bloomBookId&quot; content=&quot;056B6F11-4A6C-4942-B2BC-8861E62B03B4&quot;/&gt;</p>
+&nbsp;<h2>Built-in Classes</h2>
 <p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
 <li>-bloom-page: Each page is indicated by a &lt;div&gt; which has this class.</li>
 <li>-bloom-vernacularBookTitle: This is shown on the cover, sets the &lt;title&gt; element of the html, sets the name of the book's folder, and finally, the book's html file.</li>
@@ -47,7 +62,8 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 <li>-bloom-requiredPage: Page &lt;div&gt;s with this class are always added to a new book, and the user is not allowed to remove them. </li>
 <li>-bloom-singleton: Only a single copy of this page may be added to a book.</li>
 <li>-bloom-extraPage: When a book is created, any pages marked with this class will not be initially added to the new book. If the user wants one of these pages, he has to add it explicitly (by clicking on its icon in the list of template pages).</li>
-<li>-bloom-showNational: indicates that it shouldn't be translated (the need for this one is under review)</li>
+<li>-bloom-showNational: indicates that it shouldn&#39;t be translated. See the section
+	&quot;other language-related things&quot; below.</li>
 <li>-bloom-guidOfTemplateBook.  See the section below on Lineage.</li>
 <li>-bloom-pageLineage.  See the section below on Lineage.</li>
 <h2>Lineage</h2>
@@ -56,11 +72,17 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 
 	&lt;a href=&quot;0151a8d0-8718-41f0-a7fb-71c6995fa80a;bfc0737c-f76a-4a34-93ba-d28cb483823a&quot; class=&#39;-bloom-pageLineage&#39;
 	style=&#39;visibility:hidden&#39;&gt;&lt;/a&gt;<br />
-	<p>Notic that the href above has 2 guids, separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
+	<p>Notice that the href above has 2 guids, separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
+	<p>Careful: if that closing tag is missing, everything following this will be
+		invisble.</p>
 	<h2>
 		"Constants"</h2>
 	<p>
-		If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.</p>
+		If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.
+		For example, the following textarea is used in a study book, where many of the
+		pages have a heading which, in English, just says &quot;Questions&quot;.</p>
+	<p>
+		&lt;textarea lang=&quot;en&quot; class=&quot;Heading2 <span class="style1">_</span>questionsHeading&quot;&gt;Questions&lt;/textarea&gt;</p>
 &nbsp;<h2>
 		Shell Books and Languages</h2>
 	<p>
@@ -70,8 +92,10 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 	in a p, then have one textarea for each source language. Each textarea must have
 	its lang attibute set to a proper ISO639 (Ethnologue) code:</p>
 	<p>
-		&lt;p&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot;&gt; &quot;Taim yu planim gaden yu save wokim
-		banis.&lt;/textarea&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt; When you plant a garden,
+		&lt;p&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea<span class="style2"> lang=&quot;tpi&quot;</span>&gt; &quot;Taim yu planim gaden yu save wokim
+		banis.&lt;/textarea&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea
+		<span class="style2">lang=&quot;en&quot; </span>class=&quot;<span
+			class="style2">hideMe</span>&quot;&gt; When you plant a garden,
 		you always build a fence.&lt;/textarea&gt;<br />&lt;/p&gt;
 	</p>
 	<p>
@@ -87,6 +111,16 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		browser. In <em>edit mode</em> the Bloom application still reads these
 		textareas, and shows the contents source-text pane, to help the user do his
 		translation.</p>
+		<h2>Other language-related things</h2>
+		<p>Books in minority languages normally have some text that is in a language of wider communication. For example, the title of the book is often printed in the national language, below the vernacular one.&nbsp;
+			To tell Bloom that we don&#39;t want to translate a text, we use the
+			-bloom-showNational tag (REVIEW: this currently just means &quot;don&#39;t mess with this
+			element&quot;; it does&#39;nt do something smart like set the language to the local
+			national language. This is fine if the shell was designed for this country.)</p>
+	<p>&lt;textarea <span class="style1">lang=&quot;en&quot;</span> class=&quot;credits
+		<span class="style1">-bloom-showNational</span>&quot;
+		title=&quot;Enter the contributions made by writers, illustrators, editors, etc.&quot;
+		id=&quot;df9d7385-8cfe-43d0-bfc2-6b3423a79954&quot;&gt; &lt;/textarea&gt;</p>
 	<h2>
 		Mailing List</h2>
 	<p>

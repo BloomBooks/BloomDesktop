@@ -45,7 +45,8 @@ namespace Bloom
 					   {
 						   PathToSettingsFile =
 							   ProjectSettings.GetPathForNewSettings(dlg.PathToNewProjectDirectory, dlg.ProjectName),
-						   Iso639Code = dlg.Iso639Code
+						   Iso639Code = dlg.Iso639Code,
+						   LanguageName = dlg.LanguageName
 					   };
 		}
 

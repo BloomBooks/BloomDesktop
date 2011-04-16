@@ -24,7 +24,7 @@ namespace Bloom
 		private readonly Palaso.IO.IFileLocator _fileLocator;
 		private readonly ProjectSettings _projectSettings;
 
-		private  List<string> _builtInConstants = new List<string>(new[] { "-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage" });
+		private  List<string> _builtInConstants = new List<string>(new[] { "-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage", "-bloom-nameOfLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -58,6 +58,8 @@ namespace Bloom
 			_thumbnailProvider = thumbnailProvider;
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
+
+			MakeAllFieldsConsistent();
 		}
 
 
@@ -697,7 +699,7 @@ namespace Bloom
 //            }
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
-			classes.Add("-bloom-nameOfLanguage", _projectSettings.Name);
+			classes.Add("-bloom-nameOfLanguage", _projectSettings.LanguageName);
 
 			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
 			//nb: we intentionally go through twice, in case the value is not in the first occurrence

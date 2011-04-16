@@ -117,7 +117,7 @@ namespace Bloom
 
 				var doc = new XmlDocument(childPageDiv.OwnerDocument.NameTable);
 
-				doc.LoadXml("<a href='' class='-bloom-pageLineage' style='visibility:hidden'/>");
+				doc.LoadXml("<a href='' class='-bloom-pageLineage' style='visibility:hidden'>.</a>");//the "." there is just to prevent the xmlwriter from condensing this into a single tag, which then makes everthing below invisible!!!!
 				childLineageElement = (XmlElement)childPageDiv.OwnerDocument.ImportNode(doc.SelectSingleNodeHonoringDefaultNS("//a"), true);
 				childPageDiv.AppendChild(childLineageElement);
 			}
