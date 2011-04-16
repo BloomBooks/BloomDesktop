@@ -396,7 +396,8 @@ namespace Bloom
 		{
 			get
 			{
-				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}']", _projectSettings.Iso639Code));
+				//review
+				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _projectSettings.Iso639Code));
 				return x.Count > 0;
 			}
 

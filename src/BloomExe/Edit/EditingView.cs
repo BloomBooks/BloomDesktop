@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -47,18 +48,18 @@ namespace Bloom.Edit
 		}
 
 
-		private void ShowOrHideSourcePane(bool showTranslationPanel)
+		private void SetTranslationPanelVisibility(bool showTranslationPanel)
 		{
-			_splitContainer2.Panel2.Controls.Remove(_splitTemplateAndSource);
+			_splitContainer2.Panel2.Controls.Clear();
 			if (showTranslationPanel)
 			{
 			   //eventually, we'll add in the option of templates, even for shells.  Temporarily, let's hide that.
-//#if TemplatesAndSourceText
+#if TemplatesAndSourceText
 				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
 				_splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
-//#else
-//                _splitContainer2.Panel2.Controls.Add(_sourceText);
-//#endif
+#else
+				_splitContainer2.Panel2.Controls.Add(_sourceText);
+#endif
 			}
 			else
 			{
@@ -84,7 +85,7 @@ namespace Bloom.Edit
 				if(_model.GetBookHasChanged())
 				{
 					//now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
-					ShowOrHideSourcePane(false);
+					SetTranslationPanelVisibility(_model.ShowTranslationPanel);
 					//even before showing, we need to clear some things so the user doesn't see the old stuff
 					_pageListView.Clear();
 					_templatePagesView.Clear();
@@ -110,7 +111,8 @@ namespace Bloom.Edit
 		   {
 			   _pageListView.SelectThumbnailWithoutSendingEvent(page);
 				var dom = _model.GetXmlDocumentForCurrentPage();
-				_browser1.Navigate(dom);
+			   _browser1.Focus();
+			   _browser1.Navigate(dom);
 
 		   }
 		}
@@ -210,10 +212,16 @@ namespace Bloom.Edit
 //            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
 //        }
 
-		public void SetSourceText(string text)
+		public void SetSourceText(Dictionary<string, string> sourceTexts)
 		{
-			ShowOrHideSourcePane(!string.IsNullOrEmpty(text));
-			_sourceText.Text = string.IsNullOrEmpty(text)?"----":text;
+			//null means hide it, empty list means just empty it
+		  //  SetTranslationPanelVisibility(sourceTexts!=null);
+
+			if (sourceTexts == null)
+			{
+				return;
+			}
+			_sourceText.SetTexts(sourceTexts);
 		}
 	}
 }

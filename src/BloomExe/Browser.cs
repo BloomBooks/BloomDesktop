@@ -107,6 +107,7 @@ namespace Bloom
 				_tempHtmlFile.Dispose();
 				_tempHtmlFile = null;
 			}
+			//didn't seem to do anything:  _browser.WebBrowserFocus.SetFocusAtFirstElement();
 		}
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
@@ -230,7 +231,7 @@ namespace Bloom
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			timer1.Enabled = false;
+			//timer1.Enabled = false;
 			//UpdateDisplay();
 		}
 	}

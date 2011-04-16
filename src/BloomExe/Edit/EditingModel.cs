@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
@@ -128,6 +129,7 @@ namespace Bloom.Edit
 			if (_view != null)
 			{
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				_view.SetSourceText(new Dictionary<string, string>());
 			}
 		}
 
@@ -175,12 +177,24 @@ namespace Bloom.Edit
 			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
 			if (sourceTexts.Count == 0)
 			{
-				_view.SetSourceText(string.Empty);
+				_view.SetSourceText(null);
 			}
 			else
 			{
-				_view.SetSourceText(_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
+				sourceTexts = RemoveVernacularFromSourceTexts(sourceTexts);
+				_view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
 			}
+		}
+
+		private Dictionary<string, string> RemoveVernacularFromSourceTexts(Dictionary<string, string> sourceTexts)
+		{
+			var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
+			sourceTexts = new Dictionary<string, string>();
+			foreach (var keyValuePair in x)
+			{
+				sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
+			}
+			return sourceTexts;
 		}
 
 		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
