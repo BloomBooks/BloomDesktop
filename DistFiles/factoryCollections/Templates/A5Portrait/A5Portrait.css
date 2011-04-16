@@ -136,6 +136,7 @@ TEXTAREA
 {
 	height: 5cm;
 	margin-left: 1cm;
+	text-align: center;
 }
 .titlePage .shellCredits
 {
@@ -150,6 +151,7 @@ TEXTAREA
 {
 	height: 7.5cm;
 	margin-left: 1cm;
+	text-align: center;
 }
 .titlePage .-bloom-nameOfLanguage
 {
