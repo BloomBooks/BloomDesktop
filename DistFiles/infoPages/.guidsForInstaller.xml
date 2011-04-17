@@ -4,4 +4,9 @@
   <File Id="construction.png" Guid="b505b7a2-9a4b-48a4-a358-5eaaba46bc61" />
   <File Id="Release_Notes.htm" Guid="f1580fda-4283-4c56-8783-5c24dd8ec70f" />
   <File Id="style.css" Guid="30384a4f-2c30-4c42-95a8-253ec1b9ad0e" />
+  <File Id="_0_About.htm" Guid="38de1449-7292-4b41-8eca-dccc6b7e48af" />
+  <File Id="_1_Release_Notes.htm" Guid="89accfd0-5c41-4545-bc60-321304b5b68f" />
+  <File Id="_2_Making_New_Shells.htm" Guid="cdc0df6e-5c78-415d-adfd-edc77cf0b9ed" />
+  <File Id="_3_Bloom_File_Format.htm" Guid="4274149a-a865-41bf-a571-67a72e2accac" />
+  <File Id="MakingNewShellsCollectionsFolder.png" Guid="6d6d38b4-827d-4769-8b8f-000cbec3b05f" />
 </InstallerMetadata>
