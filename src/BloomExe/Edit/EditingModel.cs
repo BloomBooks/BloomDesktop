@@ -167,7 +167,13 @@ namespace Bloom.Edit
 			var editor = new PageEditingModel();
 
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, imageInfo);
-			SaveNow();
+
+			//We have a problem where if we save at this point, any text changes are lost.
+			//The hypothesis is that the "onblur" javascript has not run, so the value of the textareas have not yet changed.
+
+			_view.ReadEditableAreasNow();
+
+			SaveNow();//have to save now because we're going to reload the page to show the new picture
 
 			//review: this is spagetti
 			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);

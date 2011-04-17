@@ -223,5 +223,14 @@ namespace Bloom.Edit
 			}
 			_translationSourcesControl.SetTexts(sourceTexts);
 		}
+
+		/// <summary>
+		/// this started as an experiment, where our textareas were not being read when we saved because of the need
+		/// to change the picture
+		/// </summary>
+		public void ReadEditableAreasNow()
+		{
+			_browser1.ReadEditableAreasNow();
+		}
 	}
 }

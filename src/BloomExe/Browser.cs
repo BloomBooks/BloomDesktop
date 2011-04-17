@@ -234,5 +234,13 @@ namespace Bloom
 			//timer1.Enabled = false;
 			//UpdateDisplay();
 		}
+
+		/// <summary>
+		/// This is needed if we want to save before getting a natural Validating event.
+		/// </summary>
+		public void ReadEditableAreasNow()
+		{
+			UpdateDomWithNewEditsCopiedOver();
+		}
 	}
 }
