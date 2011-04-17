@@ -13,10 +13,12 @@ namespace Bloom
 {
 	public partial class Shell : Form
 	{
+		private readonly ProjectSettings _projectSettings;
 		private readonly ProjectView _projectView;
 
-		public Shell(ProjectView.Factory projectViewFactory)
+		public Shell(ProjectView.Factory projectViewFactory, ProjectSettings projectSettings)
 		{
+			_projectSettings = projectSettings;
 			InitializeComponent();
 
 			_projectView = projectViewFactory();
@@ -41,6 +43,10 @@ namespace Bloom
 		{
 			var ver = Assembly.GetExecutingAssembly().GetName().Version;
 			Text = string.Format("{0} - Bloom {1}.{2}.{3}", _projectView.Text, ver.Major, ver.Minor, ver.Build);
+			if(_projectSettings.IsShellMakingProject)
+			{
+				Text += " SHELL MAKING PROJECT";
+			}
 		}
 
 		public bool UserWantsToOpenADifferentProject { get; set; }

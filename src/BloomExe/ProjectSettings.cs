@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -16,6 +17,7 @@ namespace Bloom
 
 		public string Iso639Code { get; set; }
 		public string LanguageName { get; set; }
+		public bool IsShellMakingProject { get; set; }
 
 		#endregion
 
@@ -24,6 +26,7 @@ namespace Bloom
 		{
 			Iso639Code = projectInfo.Iso639Code;
 			LanguageName = projectInfo.LanguageName;
+			IsShellMakingProject = projectInfo.IsShellMakingProject;
 			Save();
 		}
 		/// <summary>
@@ -59,16 +62,34 @@ namespace Bloom
 			project.Add(new XAttribute("version", "0.1"));
 			project.Add(new XElement("Iso639Code", Iso639Code));
 			project.Add(new XElement("LanguageName", LanguageName));
+			project.Add(new XElement("IsShellMakingProject", IsShellMakingProject.ToString()));
 			project.Save(SettingsFilePath);
 		}
 
 		/// ------------------------------------------------------------------------------------
 		public void Load()
 		{
-			XElement project = XElement.Load(SettingsFilePath);
-			Iso639Code = project.Descendants("Iso639Code").First().Value;
-			LanguageName  = project.Descendants("LanguageName").First().Value;
+			try
+			{
 
+				XElement project = XElement.Load(SettingsFilePath);
+				Iso639Code = project.Descendants("Iso639Code").First().Value;
+				LanguageName = project.Descendants("LanguageName").First().Value;
+				bool isShellMakingProject;
+				var isShellMakingElement = project.Descendants("IsShellMakingProject");
+				if (isShellMakingElement != null && isShellMakingElement.Count() > 0)
+				{
+					bool.TryParse(isShellMakingElement.First().Value, out isShellMakingProject);
+					IsShellMakingProject = isShellMakingProject;
+				}
+			}
+			catch (Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+																 "Ouch! There was an error reading the project settings file.  Please report this error to the developers; consider emailing them the offending file, {0}. To get access to your books, you should make a new project, then copy your book folders from this broken project into the new one, then run Bloom again.",
+																 SettingsFilePath);
+				throw;
+			}
 		}
 
 
@@ -95,5 +116,6 @@ namespace Bloom
 		public string PathToSettingsFile;
 		public string Iso639Code;
 		public string LanguageName;
+		public bool IsShellMakingProject;
 	}
 }

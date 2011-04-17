@@ -66,6 +66,7 @@ namespace Bloom
 		private void SetupDocumentContents(string destinationPath)
 		{
 			var storage = _bookStorageFactory(destinationPath);
+			//SetMetaDataElement(storage, "")
 
 			//Remove from the new book an div-pages labelled as "extraPage"
 			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'-bloom-extraPage')]"))

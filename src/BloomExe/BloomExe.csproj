@@ -123,11 +123,11 @@
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
+    <Compile Include="ToPalaso\NewProjectDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.designer.cs">
-      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
+    <Compile Include="ToPalaso\NewProjectDialog.designer.cs">
+      <DependentUpon>NewProjectDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\WelcomeControl.cs">
       <SubType>UserControl</SubType>
@@ -264,8 +264,8 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\ChooseNewProjectLocationDialog.resx">
-      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
+    <EmbeddedResource Include="ToPalaso\NewProjectDialog.resx">
+      <DependentUpon>NewProjectDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>

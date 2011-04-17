@@ -13,6 +13,7 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private readonly LanguageSettings _languageSettings;
+		private readonly ProjectSettings _projectSettings;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
 		private Book _currentlyDisplayedBook;
@@ -28,11 +29,13 @@ namespace Bloom.Edit
 			TemplateInsertionCommand templateInsertionCommand,
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
-			DeletePageCommand deletePageCommand)
+			DeletePageCommand deletePageCommand,
+			ProjectSettings projectSettings)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_languageSettings = languageSettings;
+			_projectSettings = projectSettings;
 
 			//bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -95,6 +98,21 @@ namespace Bloom.Edit
 			get
 			{
 				return _bookSelection.CurrentSelection.HasSourceTranslations;
+			}
+		}
+
+		public bool ShowTemplatePanel
+		{
+			get
+			{
+				if (_projectSettings.IsShellMakingProject)
+				{
+					return true;
+				}
+				else
+				{
+					return !ShowTranslationPanel;
+				}
 			}
 		}
 

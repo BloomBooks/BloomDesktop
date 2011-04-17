@@ -36,7 +36,7 @@ namespace Bloom
 
 		private NewProjectInfo CreateNewProject()
 		{
-			ChooseNewProjectLocationDialog dlg = new ChooseNewProjectLocationDialog(DefaultParentDirectoryForProjects());
+			NewProjectDialog dlg = new NewProjectDialog(DefaultParentDirectoryForProjects());
 			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewProjectDirectory))
 			{
 				return null;
@@ -46,7 +46,8 @@ namespace Bloom
 						   PathToSettingsFile =
 							   ProjectSettings.GetPathForNewSettings(dlg.PathToNewProjectDirectory, dlg.ProjectName),
 						   Iso639Code = dlg.Iso639Code,
-						   LanguageName = dlg.LanguageName
+						   LanguageName = dlg.LanguageName,
+						   IsShellMakingProject = dlg.IsShellMakingProject
 					   };
 		}
 

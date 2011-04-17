@@ -6,13 +6,13 @@ using Palaso.UI.WindowsForms.WritingSystems;
 
 namespace Bloom.ToPalaso
 {
-	public partial class ChooseNewProjectLocationDialog: Form
+	public partial class NewProjectDialog: Form
 	{
 		private readonly string _destinationDirectory;
 		public string Iso639Code;
 		public string LanguageName;
 
-		public ChooseNewProjectLocationDialog(string destinationDirectory)
+		public NewProjectDialog(string destinationDirectory)
 		{
 			_destinationDirectory = destinationDirectory;
 			InitializeComponent();
@@ -101,6 +101,12 @@ namespace Bloom.ToPalaso
 		public string ProjectName
 		{
 			get; private set;
+		}
+
+		public bool IsShellMakingProject
+		{
+			get { return _shellMakingProjectCheckbox.Checked; }
+
 		}
 
 		protected void btnCancel_Click(object sender, EventArgs e)

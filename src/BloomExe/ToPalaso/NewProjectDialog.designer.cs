@@ -1,6 +1,6 @@
 namespace Bloom.ToPalaso
 {
-	partial class ChooseNewProjectLocationDialog
+	partial class NewProjectDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@ namespace Bloom.ToPalaso
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChooseNewProjectLocationDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewProjectDialog));
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
@@ -37,13 +37,14 @@ namespace Bloom.ToPalaso
 			this.label2 = new System.Windows.Forms.Label();
 			this._chooseLanguageButton = new System.Windows.Forms.Button();
 			this._languageInfoLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._shellMakingProjectCheckbox = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			//
 			// label1
 			//
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(25, 129);
+			this.label1.Location = new System.Drawing.Point(25, 113);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(238, 16);
 			this.label1.TabIndex = 1;
@@ -52,7 +53,7 @@ namespace Bloom.ToPalaso
 			// btnOK
 			//
 			this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnOK.Location = new System.Drawing.Point(220, 207);
+			this.btnOK.Location = new System.Drawing.Point(220, 254);
 			this.btnOK.Name = "btnOK";
 			this.btnOK.Size = new System.Drawing.Size(91, 29);
 			this.btnOK.TabIndex = 2;
@@ -64,7 +65,7 @@ namespace Bloom.ToPalaso
 			//
 			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.btnCancel.Location = new System.Drawing.Point(330, 207);
+			this.btnCancel.Location = new System.Drawing.Point(330, 254);
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(88, 27);
 			this.btnCancel.TabIndex = 3;
@@ -74,7 +75,7 @@ namespace Bloom.ToPalaso
 			//
 			// _textProjectName
 			//
-			this._textProjectName.Location = new System.Drawing.Point(28, 153);
+			this._textProjectName.Location = new System.Drawing.Point(28, 137);
 			this._textProjectName.Name = "_textProjectName";
 			this._textProjectName.Size = new System.Drawing.Size(146, 20);
 			this._textProjectName.TabIndex = 1;
@@ -84,7 +85,7 @@ namespace Bloom.ToPalaso
 			//
 			this._pathLabel.AutoSize = true;
 			this._pathLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
-			this._pathLabel.Location = new System.Drawing.Point(29, 179);
+			this._pathLabel.Location = new System.Drawing.Point(29, 163);
 			this._pathLabel.Name = "_pathLabel";
 			this._pathLabel.Size = new System.Drawing.Size(46, 13);
 			this._pathLabel.TabIndex = 4;
@@ -124,14 +125,25 @@ namespace Bloom.ToPalaso
 			this._languageInfoLabel.TabIndex = 8;
 			this._languageInfoLabel.TabStop = false;
 			//
-			// ChooseNewProjectLocationDialog
+			// _shellMakingProjectCheckbox
+			//
+			this._shellMakingProjectCheckbox.AutoSize = true;
+			this._shellMakingProjectCheckbox.Location = new System.Drawing.Point(32, 209);
+			this._shellMakingProjectCheckbox.Name = "_shellMakingProjectCheckbox";
+			this._shellMakingProjectCheckbox.Size = new System.Drawing.Size(298, 17);
+			this._shellMakingProjectCheckbox.TabIndex = 9;
+			this._shellMakingProjectCheckbox.Text = "This is a project for making national language shell books.";
+			this._shellMakingProjectCheckbox.UseVisualStyleBackColor = true;
+			//
+			// NewProjectDialog
 			//
 			this.AcceptButton = this.btnOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.AutoScroll = true;
 			this.CancelButton = this.btnCancel;
-			this.ClientSize = new System.Drawing.Size(438, 246);
+			this.ClientSize = new System.Drawing.Size(438, 293);
+			this.Controls.Add(this._shellMakingProjectCheckbox);
 			this.Controls.Add(this._languageInfoLabel);
 			this.Controls.Add(this._chooseLanguageButton);
 			this.Controls.Add(this.label2);
@@ -143,7 +155,7 @@ namespace Bloom.ToPalaso
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "ChooseNewProjectLocationDialog";
+			this.Name = "NewProjectDialog";
 			this.Text = "New Project";
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -160,5 +172,6 @@ namespace Bloom.ToPalaso
 		protected System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _chooseLanguageButton;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _languageInfoLabel;
+		private System.Windows.Forms.CheckBox _shellMakingProjectCheckbox;
 	}
 }

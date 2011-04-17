@@ -97,14 +97,16 @@ namespace Bloom
 		}
 		private void UpdateIfNewer(string fileName)
 		{
+			string factoryPath="notSet";
+			string documentPath="notSet";
 			try
 			{
-				var factoryPath = _fileLocator.LocateFile(fileName);
+				factoryPath = _fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
 				var factoryTime = File.GetLastWriteTimeUtc(factoryPath);
-				var documentPath = Path.Combine(_folderPath, fileName);
+				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
 					File.Copy(factoryPath, documentPath);
@@ -113,13 +115,20 @@ namespace Bloom
 				var documentTime = File.GetLastWriteTimeUtc(documentPath);
 				if(factoryTime> documentTime)
 				{
+					if((File.GetAttributes(documentPath) & FileAttributes.ReadOnly) != 0)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+						return;
+					}
 					File.Copy(factoryPath, documentPath,true);
+					//if the source was locked, don't copy the lock over
+					File.SetAttributes(documentPath,FileAttributes.Normal);
 				}
 			}
 			catch (Exception e)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Could not update one of the support files in this document ({0}). This may or not be a problem, but is sure unusual.", fileName);
+					"Could not update one of the support files in this document ({0} to {1}). This may or not cause problems, but it is unusual. Please click 'Details' and report it", factoryPath,documentPath);
 			}
 		}
 

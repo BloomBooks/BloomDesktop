@@ -42,26 +42,26 @@ namespace Bloom.Edit
 
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-
-
-
 		}
 
 
-		private void SetTranslationPanelVisibility(bool showTranslationPanel)
+		private void SetTranslationPanelVisibility()
 		{
 			_splitContainer2.Panel2.Controls.Clear();
-			if (showTranslationPanel)
+			_splitTemplateAndSource.Panel1.Controls.Clear();
+			_splitTemplateAndSource.Panel2.Controls.Clear();
+
+			if (_model.ShowTemplatePanel && _model.ShowTranslationPanel)    //BOTH
 			{
-			   //eventually, we'll add in the option of templates, even for shells.  Temporarily, let's hide that.
-#if TemplatesAndSourceText
-				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
 				_splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
-#else
-				_splitContainer2.Panel2.Controls.Add(_sourceText);
-#endif
+				_splitTemplateAndSource.Panel2.Controls.Add(_translationSourcesControl);
+				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
 			}
-			else
+			if (_model.ShowTranslationPanel)    //Translation only
+			{
+				_splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
+			}
+			else                //Templates only
 			{
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 			}
@@ -85,7 +85,7 @@ namespace Bloom.Edit
 				if(_model.GetBookHasChanged())
 				{
 					//now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
-					SetTranslationPanelVisibility(_model.ShowTranslationPanel);
+					SetTranslationPanelVisibility();
 					//even before showing, we need to clear some things so the user doesn't see the old stuff
 					_pageListView.Clear();
 					_templatePagesView.Clear();
@@ -221,7 +221,7 @@ namespace Bloom.Edit
 			{
 				return;
 			}
-			_sourceText.SetTexts(sourceTexts);
+			_translationSourcesControl.SetTexts(sourceTexts);
 		}
 	}
 }
