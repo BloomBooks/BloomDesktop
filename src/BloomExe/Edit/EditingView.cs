@@ -57,7 +57,7 @@ namespace Bloom.Edit
 				_splitTemplateAndSource.Panel2.Controls.Add(_translationSourcesControl);
 				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
 			}
-			if (_model.ShowTranslationPanel)    //Translation only
+			else if (_model.ShowTranslationPanel)    //Translation only
 			{
 				_splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
 			}
