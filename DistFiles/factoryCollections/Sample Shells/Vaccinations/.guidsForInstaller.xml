@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="A5Portrait.css" Guid="c3ee5030-f7bf-4ee5-92fe-2d6497e65d00" />
+  <File Id="BasePage.css1" Guid="3fe45d8e-84dc-44c2-825c-042a75a2a98f" />
+  <File Id="HL0014_1.png" Guid="ca94c349-f527-4033-979a-255c9b0bbc81" />
+  <File Id="HL0014_2.png" Guid="18c0ad0e-e17e-41ac-a176-04980230abc3" />
+  <File Id="HL0014_3.png" Guid="02bdafa1-179d-4fcb-99f1-d48f17e0ece2" />
+  <File Id="HL0014_4.png" Guid="51eb1527-ce20-446b-8eac-5c8456579848" />
+  <File Id="HL0014_5.png" Guid="d1ed3826-c83b-41b7-8bdf-f50efa3c9191" />
+  <File Id="HL0014_6.png" Guid="8561383f-4545-4981-a223-72b0a43ea74f" />
+  <File Id="HL0014_7.png" Guid="d971b96d-86c9-4bfd-9aee-275572af7d5a" />
+  <File Id="HL0014_8.png" Guid="565e8399-eeb7-49d7-9e76-2f16a0de3ef1" />
+  <File Id="placeHolder.png" Guid="9c8d5d1b-e836-4e4d-b08e-f2e76ab2ed8d" />
+  <File Id="previewMode.css1" Guid="14005e2b-cafa-49b0-a678-b2399effde5a" />
+  <File Id="thumbnail.png" Guid="55dd4787-2edb-42af-a843-235da844c553" />
+  <File Id="Vaccinations.htm" Guid="8bd5853e-5d71-43e4-b245-74d757e942f3" />
+</InstallerMetadata>

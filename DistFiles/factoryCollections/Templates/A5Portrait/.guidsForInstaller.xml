@@ -7,4 +7,6 @@
   <File Id="basePage.css2" Guid="a741e984-1cf2-4614-9ab3-dd3c63ef9369" />
   <File Id="previewMode.css2" Guid="395e8909-8201-4a22-89f8-94d45b995e64" />
   <File Id="thumbnail.png1" Guid="16b4c918-880a-40f7-b957-d29745ff42c3" />
+  <File Id="A5Portrait.css1" Guid="da0181f5-0921-45b6-a34e-06ea872275c6" />
+  <File Id="templatePages.htm" Guid="5c1f1874-f1d5-4fd8-a8c1-ad8f04a561b2" />
 </InstallerMetadata>
