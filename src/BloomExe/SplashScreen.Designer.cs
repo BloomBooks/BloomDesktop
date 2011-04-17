@@ -51,10 +51,11 @@
             this.label1.Location = new System.Drawing.Point(12, 102);
             this.label1.MaximumSize = new System.Drawing.Size(400, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(386, 168);
+            this.label1.Size = new System.Drawing.Size(400, 144);
             this.label1.TabIndex = 1;
-            this.label1.Text = "This is an experimental version of Bloom.\r\n\r\nPlease click the ? icon and read the" +
-                " Release Notes.\r\n\r\nThanks for reporting any positive or negative results.";
+            this.label1.Text = "This is an experimental version of Bloom.\r\n\r\nPlease let us how know things go for" +
+                " you: what works? What gives you problems? \r\n\r\nBe sure to read the Release Notes" +
+                ".";
             // 
             // _fadeOutTimer
             // 
