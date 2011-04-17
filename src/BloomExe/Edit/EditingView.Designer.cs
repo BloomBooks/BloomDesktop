@@ -32,7 +32,7 @@
             this._splitContainer2 = new System.Windows.Forms.SplitContainer();
             this._browser1 = new Bloom.Browser();
             this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
-            this._sourceText = new SourceTextControl();
+            this._translationSourcesControl = new SourceTextControl();
             this._splitContainer1.Panel2.SuspendLayout();
             this._splitContainer1.SuspendLayout();
             this._splitContainer2.Panel1.SuspendLayout();
@@ -99,19 +99,19 @@
             // 
             // _splitTemplateAndSource.Panel2
             // 
-            this._splitTemplateAndSource.Panel2.Controls.Add(this._sourceText);
+            this._splitTemplateAndSource.Panel2.Controls.Add(this._translationSourcesControl);
             this._splitTemplateAndSource.Size = new System.Drawing.Size(122, 600);
             this._splitTemplateAndSource.SplitterDistance = 247;
             this._splitTemplateAndSource.TabIndex = 0;
             // 
             // _sourceText
             // 
-            this._sourceText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._sourceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._sourceText.Location = new System.Drawing.Point(0, 0);
-            this._sourceText.Name = "_sourceText";
-            this._sourceText.Size = new System.Drawing.Size(122, 349);
-            this._sourceText.TabIndex = 3;
+            this._translationSourcesControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._translationSourcesControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._translationSourcesControl.Location = new System.Drawing.Point(0, 0);
+            this._translationSourcesControl.Name = "_translationSourcesControl";
+            this._translationSourcesControl.Size = new System.Drawing.Size(122, 349);
+            this._translationSourcesControl.TabIndex = 3;
             // 
             // EditingView
             // 
@@ -138,7 +138,7 @@
         private System.Windows.Forms.SplitContainer _splitContainer2;
         private Browser _browser1;
         private System.Windows.Forms.SplitContainer _splitTemplateAndSource;
-        private SourceTextControl _sourceText;
+        private SourceTextControl _translationSourcesControl;
 
 
     }

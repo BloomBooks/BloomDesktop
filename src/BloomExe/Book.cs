@@ -59,7 +59,10 @@ namespace Bloom
             _pageSelection = pageSelection;
             _pageListChangedEvent = pageListChangedEvent;
 
-            MakeAllFieldsConsistent();
+            if (editable)
+            {
+                MakeAllFieldsConsistent();
+            }
         }
 
 
@@ -570,7 +573,9 @@ namespace Bloom
 		/// so we now we need to fold changes back in
 		/// </summary>
     	public void SavePage(XmlDocument pageDom)
-    	{       
+    	{
+            Debug.Assert(CanEdit);
+
             string pageSelector = Page.GetPageSelectorXPath(pageDom);
 			//review: does this belong down in the storage?
 
@@ -712,6 +717,7 @@ namespace Bloom
             string title;
             if (classes.TryGetValue("-bloom-vernacularBookTitle", out title))
             {
+                Debug.Assert(CanEdit);
                 _storage.SetBookName(title);
                 GetOrCreateElement("//html", "head");
                 GetOrCreateElement("//head","title").InnerText = title;

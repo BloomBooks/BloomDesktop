@@ -43,7 +43,6 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.InstancePerLifetimeScope()
 					.Where(t => new[]{
-					typeof(ProjectSettings),
                     typeof(TemplateInsertionCommand),
                     typeof(DeletePageCommand),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
@@ -55,10 +54,17 @@ namespace Bloom
 
                 ///ProjectSettings = _scope.Resolve<Func<string, ProjectSettings>>()(projectSettingsPath);
               //  ProjectSettings = new ProjectSettings(projectSettingsPath);
-			    builder.Register<ProjectSettings>(c => new ProjectSettings(projectSettingsPath));
+			    try
+			    {
+			        builder.Register<ProjectSettings>(c => new ProjectSettings(projectSettingsPath)).InstancePerLifetimeScope();
+			    }
+                catch(Exception)
+                {
+                    return;
+                }
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
+			    builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>())).InstancePerLifetimeScope();
                 //builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
 
 
