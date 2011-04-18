@@ -61,7 +61,7 @@ namespace Bloom
 											 Path.Combine("lib", "xulrunner"));
 #endif
 			}
-			//Review: and early tester found that xpcom wasn't found. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
+			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
 			SetDllDirectory(xulRunnerPath);
 
 			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);

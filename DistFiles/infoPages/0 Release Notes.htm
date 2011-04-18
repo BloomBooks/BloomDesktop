@@ -22,6 +22,7 @@ Thanks for checking out this pre-release version of Bloom, which has been made a
 <li>Diglots are not supported. </li>
 <li>Right-To-Left languages are not supported (but I haven't seen what works and what doesn't)</li>
 <li>If you have a pdf reader other than Adobe Acrobat set up to display PDFs in Firefox, that will also show up in the Publish tab of Bloom, and it might or might not work. PDF-XChange, for exmample, can make the screen quite complicated with toolbars, and doesn't auto-shrink to fit in the page.</li>
+<li>You can't tweak the picture size, the text location, etc.</li>
 
 <h2>Things that don't work yet</h2>
 <li>When you open a page, the cursor should already be in the first editable box.</li>
@@ -29,9 +30,14 @@ Thanks for checking out this pre-release version of Bloom, which has been made a
 <li>When you change a picture, the thumbnail for the page should update.</li>
 <li>When you're just filling out a shell, you shouldn't be able to change the pictures.</li>
 <li>There should be an obvious button for deleting books and pages. Currently, you have to right-click to see a menu.</li>
-</p>
 <h2>Known problems</h2>
-<li>Some things are a lot slower than they need to be.  These will be spead up in future versions.</li>
+<li>Some things are a lot slower than they need to be.  These will be spead up in future versions.</li><li>
+	Sometimes the thumbnails for books and pages aren&#39;t drawn correctly.&nbsp; Pages
+	thumbnails will be recreated the next time you show the book, but book
+	thumbnails are cached. So if you get a bad thumbnail, you currently have to
+	delete the &quot;thumbnail.png&quot; that you&#39;ll find sitting in the book&#39;s file folder.<li>
+		The Title Page and completely missing verso/copyright page are, well, they can
+		only improve.
 <h2>Reporting new problems</h2>
 Please email problems to Bloom's issue tracking system at <a href="mailto:issues@bloom.palaso.org">issues@bloom.palaso.org</a>
 <h2>Got Art Of Reading?</h2>
