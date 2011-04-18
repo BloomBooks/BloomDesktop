@@ -18,30 +18,34 @@
 <p>
 	Bloom is in experimental mode, and the Bloom format is still evolving in
 	response to needs we discover. Take that into account before converting hundreds
-	of books. The plan is to cease any breaking changes by early 2012.</p>
+	of books. The wise thing at this point it to convert one book of each type, so that we can find any missing file-format elements that you will need. The plan is to cease any breaking changes by early 2012.</p>
 	<p>
 Bloom documents are XHTML with certain conventions and pre-defined class names, as
 	described below. Of course, you&#39;ll want to open up a bloom html file and see for
 		yourself how it is structured.&nbsp; Two simple examples are the
-		A5Portrait/templatePages.htm, and the Vaccinations.htm, which is part of the
-		<a href="http://public.languagedepot.org/projects/show/bs-health-silpng">SIL PNG
-		Health</a> library. You can look at the originals or create a book using them,
+		A5Portrait/templatePages.htm, and the Vaccinations.htm, which comes in the Sample Shells project. You can look at the originals or create a book using them,
 		and look at what Bloom does.</p>
 <h2>Structure</h2>
-<p>Each page is indicated by &lt;div class="-bloom-page"&gt;. Within that, the structure is largely up to you. For editable text, make a
-	&lt;p&gt; and inside that have &lt;textareas&gt;, each with their own lang attribute.  Bloom will take care of only showing the user the correct one.
-	Formatting within these pages is typically done by adding a unique class to the
+<p>Each page is indicated by &lt;div class="-bloom-page"&gt;. The only things that
+	the user can edit are images and &lt;textarea&gt;s.&nbsp; There can be multiple
+	&lt;textarea&gt;s together inside a &lt;p&gt;, each marked with a distinct <em>lang</em>
+	attribute. Bloom will take care of only showing the user the correct &lt;textarea&gt;
+	which matches the language the user is currently working in.</p>
+	<h2>Formatting</h2>
+	<p>Formatting within these pages is typically done by adding a unique class to the
 	div for a particular page layout. That class then triggers the CSS style rules
 	you&#39;ve made for the page.&nbsp; Using <a href="http://www.skybound.ca">Stylizer</a>,
 	this can be much less painful that it sounds.&nbsp; It bears repeating: all of
-	this is only for making new page templates, or for jobs (like fancy literacy
-	primer templates) that can&#39;t use the standard page templates.</p>
+	this is only for making <strong>new page templates</strong>, or for jobs (like fancy literacy
+	primer templates) that can&#39;t use the standard page templates found in the
+		A5Portrait Template.&nbsp; </p>
 <h2>StyleSheets</h2>
-<p>basePage.css: always applied. Used for styles which always apply, regardless of mode or paper size.</p>
-<p>papersize/orientation. E.g. a5portrait.css</p>
-<p>editMode.css is applied during editing</p>
-<p>previewMode.css is applied during viewing and printing</p>
-	<p>Note: when a new book is creted, each of these pages is copied in to the folder
+<li>papersize/orientation. E.g. a5portrait.css. Currently, this is the only size/portrait available.</li><br/>
+<p>The next three stylesheets are part of Bloom and are not available for customization under any circumstances.</p>
+<li>basePage.css: always applied. Used for styles which always apply, regardless of mode or paper size.</li>
+<li>editMode.css is applied during editing</li>
+<li>previewMode.css is applied during viewing and printing</li>
+	<p>Note: when a new book is created, each of these pages is copied in to the folder
 		with the book, so that if it is moved to a computer which doesn&#39;t have bloom, it
 		will be still viewable.&nbsp; However, each time the book is opened, Bloom will
 		replace the stylesheets in that folder with the versions in the Bloom program
@@ -57,7 +61,7 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 <p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
 <li>-bloom-page: Each page is indicated by a &lt;div&gt; which has this class.</li>
 <li>-bloom-vernacularBookTitle: This is shown on the cover, sets the &lt;title&gt; element of the html, sets the name of the book's folder, and finally, the book's html file.</li>
-<li>-bloom-topicInNationalLanguage: e.g. "Health", "Math". Currently only used by stylesheets, but reserved for furture c# code use.</li>
+<li>-bloom-topicInNationalLanguage: e.g. "Health", "Math". Currently only used by stylesheets, but reserved for future c# code use.</li>
 <li>-bloom-nameOfLanguage: this is automatically filled in, so it should only appear in uneditable elements.</li>
 <li>-bloom-requiredPage: Page &lt;div&gt;s with this class are always added to a new book, and the user is not allowed to remove them. </li>
 <li>-bloom-singleton: Only a single copy of this page may be added to a book.</li>
@@ -68,17 +72,17 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 <li>-bloom-pageLineage.  See the section below on Lineage.</li>
 <h2>Lineage</h2>
 <p>(This area is especially immature)</p>
-<p>While Bloom doesn't yet provide it, we may some day need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.  Here's how it works at the moment:</p>
+<p>While Bloom doesn't yet provide it, we may someday need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.  Here's how it works at the moment:</p>
 
 	&lt;a href=&quot;0151a8d0-8718-41f0-a7fb-71c6995fa80a;bfc0737c-f76a-4a34-93ba-d28cb483823a&quot; class=&#39;-bloom-pageLineage&#39;
 	style=&#39;visibility:hidden&#39;&gt;&lt;/a&gt;<br />
-	<p>Notice that the href above has 2 guids, separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
+	<p>Notice that the href above has 2 guids (Globally Unique Identifiers), separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
 	<p>Careful: if that closing tag is missing, everything following this will be
-		invisble.</p>
+		invisible.</p>
 	<h2>
 		"Constants"</h2>
 	<p>
-		If a textarea has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This alows the user to translate something once, and have it show up all over.
+		If a &lt;textarea&gt; has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This allows the user to translate something once, and have it show up all over.
 		For example, the following textarea is used in a study book, where many of the
 		pages have a heading which, in English, just says &quot;Questions&quot;.</p>
 	<p>
@@ -89,7 +93,7 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		Shell books may come with source texts in multiple languages, so that users in different countries or with different language strengths can use the source language which works best for them.</p>
 	<p>
 		So, how do we get all those languages in the same document? This area is still maturing. Currently, the approach is to surround each textarea
-	in a p, then have one textarea for each source language. Each textarea must have
+	in a p, then have one &lt;textarea&gt; for each source language. Each textarea must have
 	its lang attibute set to a proper ISO639 (Ethnologue) code:</p>
 	<p>
 		&lt;p&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea<span class="style2"> lang=&quot;tpi&quot;</span>&gt; &quot;Taim yu planim gaden yu save wokim
@@ -104,18 +108,18 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		and off.</p>
 	<p>
 		Now, if Bloom makes a book using the above paragraph, it will make a new
-		textarea for the vernacular; the resulting book will then have 3 textareas in
+		&lt;textarea&gt; for the vernacular; the resulting book will then have 3 textareas in
 		this paragraph, with all but the vernacular containing the class &#39;hideMe&#39;.</p>
 	<p>
 		That &#39;hideMe&#39; class is just to keep the source texts out of the page in the
 		browser. In <em>edit mode</em> the Bloom application still reads these
-		textareas, and shows the contents source-text pane, to help the user do his
+		&lt;textarea&gt;s, and shows the contents source-text pane, to help the user do his
 		translation.</p>
 		<h2>Other language-related things</h2>
 		<p>Books in minority languages normally have some text that is in a language of wider communication. For example, the title of the book is often printed in the national language, below the vernacular one.&nbsp;
 			To tell Bloom that we don&#39;t want to translate a text, we use the
 			-bloom-showNational tag (REVIEW: this currently just means &quot;don&#39;t mess with this
-			element&quot;; it does&#39;nt do something smart like set the language to the local
+			element&quot;; it doesn&#39;t do something smart like set the language to the local
 			national language. This is fine if the shell was designed for this country.)</p>
 	<p>&lt;textarea <span class="style1">lang=&quot;en&quot;</span> class=&quot;credits
 		<span class="style1">-bloom-showNational</span>&quot;

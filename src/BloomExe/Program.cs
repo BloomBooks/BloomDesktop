@@ -209,7 +209,13 @@ namespace Bloom
 				Settings.Default.Reporting = new ReportingSettings();
 				Settings.Default.Save();
 			}
-			UsageReporter.Init(Settings.Default.Reporting, "bloom.palaso.org", "UA-22170471-2");
+			UsageReporter.Init(Settings.Default.Reporting, "bloom.palaso.org", "UA-22170471-2",
+#if DEBUG
+				true
+#else
+				false
+#endif
+				);
 		}
 	}
 
