@@ -45,7 +45,8 @@ namespace Bloom
 					.Where(t => new[]{
                     typeof(TemplateInsertionCommand),
                     typeof(DeletePageCommand),
-					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
+                    typeof(EditBookCommand),
+                    typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
                     typeof(RelocatePageEvent),
 					typeof(PageSelection),
