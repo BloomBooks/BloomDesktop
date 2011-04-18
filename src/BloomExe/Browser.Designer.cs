@@ -18,12 +18,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this._updateCommandsTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
-            // timer1
+            // _updateCommandsTimer
             // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this._updateCommandsTimer.Enabled = true;
+            this._updateCommandsTimer.Tick += new System.EventHandler(this.OnUpdateDisplayTick);
             // 
             // Browser
             // 
@@ -36,6 +37,6 @@
 
         #endregion
 
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer _updateCommandsTimer;
     }
 }
