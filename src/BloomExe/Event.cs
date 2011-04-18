@@ -33,6 +33,10 @@ namespace Bloom
 	public class CreateFromTemplateCommand: Event<Book>
 	{}
 
+
+	public class EditBookCommand : Event<Book>
+	{ }
+
 	public class DeletePageCommand: Event<IPage>
 	{
 

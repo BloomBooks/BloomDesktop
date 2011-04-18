@@ -10,18 +10,24 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
+		private readonly EditBookCommand _editBookCommand;
 		private bool _reshowPending = false;
 
 		public delegate LibraryBookView Factory();//autofac uses this
 
-		public LibraryBookView(BookSelection bookSelection, CreateFromTemplateCommand createFromTemplateCommand)
+		public LibraryBookView(BookSelection bookSelection,
+			CreateFromTemplateCommand createFromTemplateCommand,
+			EditBookCommand editBookCommand)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
 			_createFromTemplateCommand = createFromTemplateCommand;
+			_editBookCommand = editBookCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
 			_addToLibraryButton_MouseLeave(this, null);
+
+			_editBookButton.Visible = false;
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -65,6 +71,7 @@ namespace Bloom.Library
 			{
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate;
+				_editBookButton.Visible = _bookSelection.CurrentSelection.CanEdit;
 				_reshowPending = false;
 			}
 		}
@@ -100,6 +107,11 @@ namespace Bloom.Library
 		{
 			_addToLibraryButton.Text="";
 			_addToLibraryButton.Width = 50;
+		}
+
+		private void _editBookButton_Click(object sender, EventArgs e)
+		{
+			_editBookCommand.Raise(_bookSelection.CurrentSelection);
 		}
 
 	}

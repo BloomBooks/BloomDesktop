@@ -33,10 +33,10 @@ namespace Bloom.Project
         {
             this.components = new System.ComponentModel.Container();
             this._tabControl = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this._infoTab = new System.Windows.Forms.TabPage();
+            this._libraryTabPage = new System.Windows.Forms.TabPage();
+            this._editTabPage = new System.Windows.Forms.TabPage();
+            this._publishTabPage = new System.Windows.Forms.TabPage();
+            this._infoTabPage = new System.Windows.Forms.TabPage();
             this._infoButton = new System.Windows.Forms.Button();
             this._openButton1 = new System.Windows.Forms.Button();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
@@ -49,10 +49,10 @@ namespace Bloom.Project
             this._tabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this._tabControl.Controls.Add(this.tabPage1);
-            this._tabControl.Controls.Add(this.tabPage2);
-            this._tabControl.Controls.Add(this.tabPage3);
-            this._tabControl.Controls.Add(this._infoTab);
+            this._tabControl.Controls.Add(this._libraryTabPage);
+            this._tabControl.Controls.Add(this._editTabPage);
+            this._tabControl.Controls.Add(this._publishTabPage);
+            this._tabControl.Controls.Add(this._infoTabPage);
             this._tabControl.ItemSize = new System.Drawing.Size(43, 40);
             this._tabControl.Location = new System.Drawing.Point(0, 2);
             this._tabControl.Margin = new System.Windows.Forms.Padding(0);
@@ -65,45 +65,45 @@ namespace Bloom.Project
             // 
             // tabPage1
             // 
-            this.tabPage1.ImageIndex = 2;
-            this.tabPage1.Location = new System.Drawing.Point(4, 44);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(877, 490);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.ToolTipText = "View Libaries";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this._libraryTabPage.ImageIndex = 2;
+            this._libraryTabPage.Location = new System.Drawing.Point(4, 44);
+            this._libraryTabPage.Margin = new System.Windows.Forms.Padding(0);
+            this._libraryTabPage.Name = "_libraryTabPage";
+            this._libraryTabPage.Size = new System.Drawing.Size(877, 490);
+            this._libraryTabPage.TabIndex = 0;
+            this._libraryTabPage.ToolTipText = "View Libaries";
+            this._libraryTabPage.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
-            this.tabPage2.ImageIndex = 1;
-            this.tabPage2.Location = new System.Drawing.Point(4, 44);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(877, 490);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.ToolTipText = "Edit Book";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this._editTabPage.ImageIndex = 1;
+            this._editTabPage.Location = new System.Drawing.Point(4, 44);
+            this._editTabPage.Margin = new System.Windows.Forms.Padding(0);
+            this._editTabPage.Name = "_editTabPage";
+            this._editTabPage.Size = new System.Drawing.Size(877, 490);
+            this._editTabPage.TabIndex = 1;
+            this._editTabPage.ToolTipText = "Edit Book";
+            this._editTabPage.UseVisualStyleBackColor = true;
             // 
             // tabPage3
             // 
-            this.tabPage3.ImageIndex = 0;
-            this.tabPage3.Location = new System.Drawing.Point(4, 44);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(877, 490);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.ToolTipText = "Publish Book";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this._publishTabPage.ImageIndex = 0;
+            this._publishTabPage.Location = new System.Drawing.Point(4, 44);
+            this._publishTabPage.Name = "_publishTabPage";
+            this._publishTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this._publishTabPage.Size = new System.Drawing.Size(877, 490);
+            this._publishTabPage.TabIndex = 2;
+            this._publishTabPage.ToolTipText = "Publish Book";
+            this._publishTabPage.UseVisualStyleBackColor = true;
             // 
             // _infoTab
             // 
-            this._infoTab.Location = new System.Drawing.Point(4, 44);
-            this._infoTab.Name = "_infoTab";
-            this._infoTab.Padding = new System.Windows.Forms.Padding(3);
-            this._infoTab.Size = new System.Drawing.Size(877, 490);
-            this._infoTab.TabIndex = 3;
-            this._infoTab.UseVisualStyleBackColor = true;
+            this._infoTabPage.Location = new System.Drawing.Point(4, 44);
+            this._infoTabPage.Name = "_infoTabPage";
+            this._infoTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this._infoTabPage.Size = new System.Drawing.Size(877, 490);
+            this._infoTabPage.TabIndex = 3;
+            this._infoTabPage.UseVisualStyleBackColor = true;
             // 
             // _infoButton
             // 
@@ -163,11 +163,11 @@ namespace Bloom.Project
         #endregion
 
         private System.Windows.Forms.TabControl _tabControl;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TabPage _libraryTabPage;
+        private System.Windows.Forms.TabPage _editTabPage;
+        private System.Windows.Forms.TabPage _publishTabPage;
 		private System.Windows.Forms.ToolStripButton toolStripButton1;
-        private System.Windows.Forms.TabPage _infoTab;
+        private System.Windows.Forms.TabPage _infoTabPage;
         private System.Windows.Forms.Button _infoButton;
         private System.Windows.Forms.Button _openButton1;
         private System.Windows.Forms.ToolTip toolTip1;
