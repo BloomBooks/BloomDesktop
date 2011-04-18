@@ -13,12 +13,16 @@ namespace Bloom
 {
 	public partial class Browser : UserControl
 	{
+
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
 		private string _url;
 		private XmlDocument _pageDom;
 		private TempFile _tempHtmlFile;
-
+		private PasteCommand _pasteCommand;
+		private CopyCommand _copyCommand;
+	  private  UndoCommand _undoCommand;
+		private  CutCommand _cutCommand;
 		public event EventHandler OnBrowserClick;
 
 
@@ -28,6 +32,34 @@ namespace Bloom
 			InitializeComponent();
 		}
 
+		public void SetEditingCommands( CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		{
+			_cutCommand = cutCommand;
+			_copyCommand = copyCommand;
+			_pasteCommand = pasteCommand;
+			_undoCommand = undoCommand;
+
+			_cutCommand.Implementer = () => _browser.CutSelection();
+			_copyCommand.Implementer = () => _browser.CopySelection();
+			_pasteCommand.Implementer = () => _browser.Paste();
+			_undoCommand.Implementer = () => _browser.Undo();
+
+			//none of these worked
+/*            _browser.DomKeyPress+=new GeckoDomKeyEventHandler((sender, args) => UpdateEditButtons());
+			_browser.DomClick += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
+			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
+  */      }
+
+		private void UpdateEditButtons()
+		{
+			if (_copyCommand == null)
+				return;
+
+			_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
+			_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
+			_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
+			_undoCommand.Enabled = _browser != null && _browser.CanUndo;
+		}
 
 		void OnValidating(object sender, CancelEventArgs e)
 		{
@@ -82,7 +114,7 @@ namespace Bloom
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 
-			timer1.Enabled = true;//hack
+			_updateCommandsTimer.Enabled = true;//hack
 		}
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
@@ -229,10 +261,9 @@ namespace Bloom
 
 
 
-		private void timer1_Tick(object sender, EventArgs e)
+		private void OnUpdateDisplayTick(object sender, EventArgs e)
 		{
-			//timer1.Enabled = false;
-			//UpdateDisplay();
+			UpdateEditButtons();
 		}
 
 		/// <summary>
@@ -241,6 +272,11 @@ namespace Bloom
 		public void ReadEditableAreasNow()
 		{
 			UpdateDomWithNewEditsCopiedOver();
+		}
+
+		public void Copy()
+		{
+			_browser.CopySelection();
 		}
 	}
 }

@@ -247,7 +247,10 @@ namespace Bloom.ToPalaso
 
 		private void CreateNewProject_LinkClicked(object sender, EventArgs e)
 		{
-			var settings = new ProjectSettings(_createNewProjectAndReturnPath());
+			var desiredOrExistingSettingsFilePath = _createNewProjectAndReturnPath();
+			if (desiredOrExistingSettingsFilePath == null)
+				;// return;
+			var settings = new ProjectSettings(desiredOrExistingSettingsFilePath);
 			SelectProjectAndClose(settings.SettingsFilePath);
 		}
 

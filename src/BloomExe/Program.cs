@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Palaso.IO;
@@ -11,6 +12,11 @@ namespace Bloom
 {
 	static class Program
 	{
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool SetDllDirectory(string lpPathName);
+
 		/// <summary>
 		/// We have one project open at a time, and this helps us bootstrap the project and
 		/// properly dispose of various things when the project is closed.
@@ -55,6 +61,9 @@ namespace Bloom
 											 Path.Combine("lib", "xulrunner"));
 #endif
 			}
+			//Review: and early tester found that xpcom wasn't found. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
+			SetDllDirectory(xulRunnerPath);
+
 			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
 
 #if !DEBUG

@@ -37,10 +37,6 @@ namespace Bloom
 	public class EditBookCommand : Event<Book>
 	{ }
 
-	public class DeletePageCommand: Event<IPage>
-	{
-
-	}
 
 //	public class BookCollectionChangedEvent : Event<BookCollection>
 //	{ }

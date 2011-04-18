@@ -40,14 +40,14 @@ namespace Bloom.Edit
 			//bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
-			deletePageCommand.Subscribe(OnDeletePage);
+			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
 		}
 
-		private void OnDeletePage(IPage page)
+		private void OnDeletePage()
 		{
-			_currentlyDisplayedBook.DeletePage(page);
+			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList();
 		}
 
@@ -114,6 +114,16 @@ namespace Bloom.Edit
 					return !ShowTranslationPanel;
 				}
 			}
+		}
+
+		public bool CanDeletePage
+		{
+			get
+			{
+				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
+					   !_pageSelection.CurrentSelection.Required;
+			}
+
 		}
 
 		public bool GetBookHasChanged()

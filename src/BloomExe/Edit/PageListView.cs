@@ -67,7 +67,7 @@ namespace Bloom
 
 		private void deletePageToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_deletePageCommand.Raise(_pageSelection.CurrentSelection);
+			_deletePageCommand.Execute();
 		}
 
 

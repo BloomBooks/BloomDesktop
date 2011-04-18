@@ -17,20 +17,33 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
 		private TemplatePagesView _templatePagesView;
+		private readonly CutCommand _cutCommand;
+		private readonly CopyCommand _copyCommand;
+		private readonly PasteCommand _pasteCommand;
+		private readonly UndoCommand _undoCommand;
+		private readonly DeletePageCommand _deletePageCommand;
+
 		public delegate EditingView Factory();//autofac uses this
 
 
-		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView)
+		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
+			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand)
 		{
 			_model = model;
 			_pageListView = pageListView;
 			_templatePagesView = templatePagesView;
+			_cutCommand = cutCommand;
+			_copyCommand = copyCommand;
+			_pasteCommand = pasteCommand;
+			_undoCommand = undoCommand;
+			_deletePageCommand = deletePageCommand;
 			InitializeComponent();
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
 			//don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
+			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
 		}
 
 		private void SetupThumnailLists()
@@ -137,6 +150,7 @@ namespace Bloom.Edit
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
+		   // UpdateDisplay();
 			var ge = e as GeckoDomEventArgs;
 			if (ge.Target.TagName == "IMG")
 				OnClickOnImage(ge);
@@ -231,6 +245,46 @@ namespace Bloom.Edit
 		public void ReadEditableAreasNow()
 		{
 			_browser1.ReadEditableAreasNow();
+		}
+
+		private void _copyButton_Click(object sender, EventArgs e)
+		{
+			_copyCommand.Execute();
+		}
+
+		private void _pasteButton_Click(object sender, EventArgs e)
+		{
+			_pasteCommand.Execute();
+		}
+
+		public void UpdateDisplay()
+		{
+			_cutButton.Enabled = _cutCommand != null && _cutCommand.Enabled;
+			_copyButton.Enabled = _copyCommand != null && _copyCommand.Enabled;
+			_pasteButton.Enabled = _pasteCommand != null && _pasteCommand.Enabled;
+			_undoButton.Enabled = _undoCommand != null && _undoCommand.Enabled;
+
+			_deletePageButton.Enabled = _deletePageCommand.Enabled = _model.CanDeletePage;
+		}
+
+		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
+		{
+			UpdateDisplay();
+		}
+
+		private void _cutButton_Click(object sender, EventArgs e)
+		{
+			_cutCommand.Execute();
+		}
+
+		private void _undoButton_Click(object sender, EventArgs e)
+		{
+			_undoCommand.Execute();
+		}
+
+		private void _deletePageButton_Click(object sender, EventArgs e)
+		{
+			_deletePageCommand.Execute();
 		}
 	}
 }
