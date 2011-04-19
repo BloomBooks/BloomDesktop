@@ -1,21 +1,33 @@
+BODY
+{
+	/*[ph]0*/
+	/*[ph]1*/
+}
+@media print
+{
+	BODY
+	{
+		/*[id]1*/background-color: #363333;
+	}
+}
 @media screen
 {
 	BODY
 	{
-		background-color: #363333;
+		/*[id]0*/background-color: #363333;
 	}
+}
+@media screen
+{
 	DIV.-bloom-page
 	{
 		counter-increment: pageNumber;
 		border: 1px solid #000000 !important;
 	}
 }
-@media print
+DIV.-bloom-page.coverColor
 {
-	BODY
-	{
-		background-color: #363333;
-	}
+	background-color: #D8ADAD;
 }
 P.pagefooter
 {
@@ -36,13 +48,10 @@ BODY
 DIV.-bloom-page
 {
 	counter-increment: pageNumber;
-	/* this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
-	border: 1px solid #FFFFFF; /* This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly */
+/*this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
+	border: 1px solid #FFFFFF;
+/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
-}
-DIV.-bloom-page.cover
-{
-	background-color: #D8ADAD;
 }
 TEXTAREA.coverColor
 {

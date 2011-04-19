@@ -83,6 +83,14 @@ TEXTAREA
 	font-size: 12pt;
 	width: 11.9cm;
 }
+.simpleBigVersoContents
+{
+	height: 18.1cm;
+	/*+placement:shift 0px 61px;*/
+	position: relative;
+	left: 0px;
+	top: 61px;
+}
 .imageOnTop TEXTAREA
 {
 	height: 7.7cm;
@@ -110,6 +118,7 @@ TEXTAREA
 	right: -14.1cm;
 	bottom: 0px;
 	text-align: right;
+	height: 23px;
 }
 .cover .-bloom-nameOfLanguage
 {
@@ -124,9 +133,9 @@ TEXTAREA
 .titlePage .-bloom-vernacularBookTitle
 {
 	top: 1cm;
-	height: 3.4cm;
+	height: 4.4cm;
 	text-align: center;
-	font-size: 30.6pt;
+	font-size: 25pt;
 }
 .titlePage .creditsHeading
 {
