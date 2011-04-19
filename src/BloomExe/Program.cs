@@ -48,7 +48,7 @@ namespace Bloom
             Splasher.Show();
             SetUpReporting();
             Settings.Default.Save();
-
+ 
 
             _applicationContainer = new ApplicationContainer();
 
