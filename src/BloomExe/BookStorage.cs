@@ -89,6 +89,12 @@ namespace Bloom
 						node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
 
+				foreach (XmlElement node in Dom.SafeSelectNodes("//img"))
+				{
+					if (string.IsNullOrEmpty(node.GetAttribute("id")))
+						node.SetAttribute("id", Guid.NewGuid().ToString());
+				}
+
 				UpdateSupportFiles();
 			}
 		}

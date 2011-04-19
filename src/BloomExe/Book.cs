@@ -588,7 +588,7 @@ namespace Bloom
 			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
 			{
 				var imgId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "img", imgId, null);
+				var storageNode = GetStorageNode(pageDivId, "img", imgId);
 				Guard.AgainstNull(storageNode, imgId);
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
@@ -598,7 +598,7 @@ namespace Bloom
 				var languageCode = editNode.GetAttribute("lang");
 
 				var inputElementId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "input", inputElementId, languageCode);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
+				var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
 				Guard.AgainstNull(storageNode,inputElementId);
 				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
 			}
@@ -615,7 +615,7 @@ namespace Bloom
 				}
 				else
 				{
-					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId, languageCode);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
+					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
 					Guard.AgainstNull(destNode, textareaElementId);
 					destNode.InnerText = editNode.InnerText;
 				}
@@ -641,39 +641,15 @@ namespace Bloom
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
 		/// </summary>
-		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId, string languageCode)
+		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId)
 		{
-			//TODO: Remove languageCode, now that ids are unique
-
-			string query;
-			if (string.IsNullOrEmpty(languageCode))
-			{
-				query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
-			}
-			else
-			{
-				query = string.Format("//div[@id='{0}']//{1}[@id='{2}' and @lang='{3}']", pageDivId, tag, elementId,languageCode);
-			}
+			var query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
 			var matches = _storage.Dom.SafeSelectNodes(query);
-
-			//multiple hits? Look for one that matches our current language
-//            if (matches.Count > 1)
-//            {
-//                foreach (XmlElement match in matches)
-//                {
-//                    if (match.HasAttribute("lang") &&
-//                        match.GetAttribute("lang") == _projectSettings.Iso639Code)
-//                    {
-//                        return match;
-//                    }
-//                }
-//            }
 			if (matches.Count != 1)
 			{
 				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
 			}
 			return (XmlElement)matches[0];
-//            return _storage.Dom.SelectSingleNodeHonoringDefaultNS(string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, imgId)) as XmlElement;
 		}
 
 

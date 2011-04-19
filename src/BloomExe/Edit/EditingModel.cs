@@ -37,12 +37,18 @@ namespace Bloom.Edit
 			_languageSettings = languageSettings;
 			_projectSettings = projectSettings;
 
-			//bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
+		}
+
+		private void OnBookSelectionChanged(object sender, EventArgs e)
+		{
+			//prevent trying to save this page in whatever comes next
+			_domForCurrentPage = null;
 		}
 
 		private void OnDeletePage()
@@ -172,8 +178,11 @@ namespace Bloom.Edit
 
 		public void SaveNow()
 		{
-			_view.ReadEditableAreasNow();
-			_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+			if (_domForCurrentPage != null)
+			{
+				_view.ReadEditableAreasNow();
+				_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+			}
 		}
 
 		public void ChangePicture(string id, PalasoImage imageInfo)
