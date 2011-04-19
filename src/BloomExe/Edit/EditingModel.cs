@@ -156,6 +156,8 @@ namespace Bloom.Edit
 		{
 			if (_view != null)
 			{
+				if(_domForCurrentPage!=null)
+					SaveNow();
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_view.SetSourceText(new Dictionary<string, string>());
 			}
@@ -163,12 +165,14 @@ namespace Bloom.Edit
 
 		public XmlDocument GetXmlDocumentForCurrentPage()
 		{
+
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			return _domForCurrentPage;
 		}
 
 		public void SaveNow()
 		{
+			_view.ReadEditableAreasNow();
 			_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
 		}
 

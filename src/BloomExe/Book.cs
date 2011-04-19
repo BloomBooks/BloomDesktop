@@ -500,12 +500,15 @@ namespace Bloom
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _projectSettings.Iso639Code));
+
 			_storage.Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
 
 			InvokeContentsChanged(null);
 		}
+
+
 
 		private void ClearEditableValues(XmlElement newPageElement)
 		{
@@ -640,6 +643,8 @@ namespace Bloom
 		/// </summary>
 		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId, string languageCode)
 		{
+			//TODO: Remove languageCode, now that ids are unique
+
 			string query;
 			if (string.IsNullOrEmpty(languageCode))
 			{

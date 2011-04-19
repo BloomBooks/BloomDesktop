@@ -84,6 +84,8 @@ namespace Bloom
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)
 		{
+			MakeNewIdsForAllRepeatableElements(pageDiv);
+
 			MakeVernacularElementsForPage(pageDiv, isoCode);
 
 			// a page might be "extra" as far as the template is concerned, but
@@ -97,6 +99,33 @@ namespace Bloom
 		   //     MakeVernacularElementsForPage((XmlElement)pageDiv,isoCode);
 
 			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
+		}
+
+		/// <summary>
+		/// This is to keep us from ending up with two things with the same id, caused by making two or more pages from the same template page
+		/// </summary>
+		/// <param name="pageDiv"></param>
+		private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
+		{
+			foreach (XmlElement node in pageDiv.SafeSelectNodes("/html/body/div"))
+			{
+					node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
+
+			foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
+			{
+					node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
+
+			foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
+			{
+				node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
+
+			foreach (XmlElement node in pageDiv.SafeSelectNodes("//img"))
+			{
+				node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
 		}
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)

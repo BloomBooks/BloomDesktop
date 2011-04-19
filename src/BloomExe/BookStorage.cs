@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
+using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Publish;
 using BloomTemp;
@@ -41,6 +45,7 @@ namespace Bloom
 	{
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
+		private string _errorMessages;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
@@ -48,12 +53,23 @@ namespace Bloom
 		{
 			_folderPath = folderPath;
 			_fileLocator = fileLocator;
+			Dom = new XmlDocument();
 
 			RequireThat.Directory(folderPath).Exists();
 			if (File.Exists(PathToExistingHtml))
 			{
-				Dom = new XmlDocument();
-				Dom.Load(PathToExistingHtml);
+				_errorMessages = ValidateBook(PathToExistingHtml);
+				if (!string.IsNullOrEmpty(_errorMessages))
+				{
+					//hack so we can package this for palaso reporting
+					var ex = new XmlSyntaxException(_errorMessages);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
+					Dom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
+				}
+				else
+				{
+					Dom.Load(PathToExistingHtml);
+				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
@@ -213,6 +229,9 @@ namespace Bloom
 		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
 		{
 		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
+		   if (head == null)
+			   return;
+
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
 				head.RemoveChild(baseNode);
@@ -295,7 +314,7 @@ namespace Bloom
 
 		public bool LooksOk
 		{
-			get { return File.Exists(PathToExistingHtml); }
+			get { return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(_errorMessages); }
 		}
 
 		public string FileName
@@ -312,8 +331,25 @@ namespace Bloom
 		{
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			string tempPath = SaveHtml(Dom);
-			File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
+
+			string errors = ValidateBook(tempPath);
+			if (!string.IsNullOrEmpty(errors))
+			{
+				var badFilePath = PathToExistingHtml + ".bad";
+				File.Copy(tempPath, badFilePath,true);
+				//hack so we can package this for palaso reporting
+				var ex = new XmlSyntaxException(errors);
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "This is so embarrasing. Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will hopefully not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				Process.GetCurrentProcess().Kill();
+			}
+			else
+			{
+				if (!string.IsNullOrEmpty(tempPath))
+					File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
+			}
 		}
+
+
 
 		public string SaveHtml(XmlDocument dom)
 		{
@@ -333,6 +369,33 @@ namespace Bloom
 			return tempPath;
 		}
 
+		private string ValidateBook(string path)
+		{
+			XmlDocument dom = new XmlDocument();
+			dom.Load(path);
+			var ids = new List<string>();
+			StringBuilder builder = new StringBuilder();
+
+			EnsureIdsAreUnique(dom, "textarea", ids, builder);
+			EnsureIdsAreUnique(dom, "p", ids, builder);
+			EnsureIdsAreUnique(dom, "img", ids, builder);
+
+			//TODO: validate other things, including html
+
+			return builder.ToString();
+		}
+
+		private void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
+		{
+			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
+			{
+				var id = element.GetAttribute("id");
+				if (ids.Contains(id))
+					builder.Append("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
+				else
+					ids.Add(id);
+			}
+		}
 
 		public bool TryGetPremadeThumbnail(out Image image)
 		{

@@ -213,6 +213,10 @@ namespace Bloom
 		{
 			if (_pageDom == null)
 				return;
+
+			//this is to force an onblur so that we can get at the actual user-edited value
+			_browser.WebBrowserFocus.Deactivate();
+
 			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
 			{
 				var id = node.GetAttribute("id");
@@ -230,10 +234,14 @@ namespace Bloom
 				{
 					foreach(var element in _browser.Document.GetElementsByTagName("textarea"))
 					{
-						if (element.Id == id && element.GetAttribute("lang") == node.GetAttribute("lang"))
+						if (element.Id == id)
+						{
 							node.InnerText = element.InnerHtml;
+						   // Debug.WriteLine(element.InnerHtml);
+							break;
+						}
 					}
-
+					//todo: notice if this should fail to find a match... that'd be awfully bad!
 				}
 			}
 		}
