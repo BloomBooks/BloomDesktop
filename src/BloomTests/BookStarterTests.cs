@@ -55,7 +55,7 @@ namespace BloomTests
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
 
 			//should only get these two pages
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]", 2);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]", 3);
 		}
 
 		[Test]

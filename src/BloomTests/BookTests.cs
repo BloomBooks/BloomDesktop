@@ -267,23 +267,23 @@ namespace BloomTests
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='en' id='testText'>english</textarea>
-							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
+							<textarea lang='en' id='1'>english</textarea>
+							<textarea lang='xyz' id='2'>originalVernacular</textarea>
 						</p>
 					</div>
 					<div class='-bloom-page' id='guid3'>
 						<p>
-							<textarea  lang='xyz' id='testText'>original2</textarea>
+							<textarea  lang='xyz' id='3'>original2</textarea>
 						</p>
 					</div>
 			");
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
-			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
 			textArea.InnerText = "changed";
 			book.SavePage(dom);
-			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText' and @lang='xyz']");
+			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@lang='xyz']");
 
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 			Assert.AreEqual("original2", vernacularTextNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
@@ -322,19 +322,19 @@ namespace BloomTests
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='en' id='testText'>english</textarea>
-							<textarea lang='xyz' id='testText'>originalVernacular</textarea>
-							<textarea lang='tpi' id='testText'>tokpsin</textarea>
+							<textarea lang='en' id='1'>english</textarea>
+							<textarea lang='xyz' id='2'>originalVernacular</textarea>
+							<textarea lang='tpi' id='3'>tokpsin</textarea>
 						</p>
 					</div>
 			");
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
-			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='testText' and @lang='xyz']");
+			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea[ @lang='xyz']");
 			Assert.AreEqual("originalVernacular", textArea.InnerText, "the test conditions aren't correct");
 			textArea.InnerText = "changed";
 			book.SavePage(dom);
-			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='testText' and @lang='xyz']");
+			var vernacularTextNodesInStorage = _storage.Object.Dom.SafeSelectNodes("//textarea[@id='2' and @lang='xyz']");
 
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 		 }
