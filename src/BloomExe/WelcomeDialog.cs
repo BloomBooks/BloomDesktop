@@ -12,6 +12,7 @@ namespace Bloom
 		public WelcomeDialog(MostRecentPathsList mruLibraryPaths)
 		{
 			InitializeComponent();
+			_versionInfo.Text = Shell.GetVersionInfo();
 			_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
 			_welcomeControl.TemplateButton.Image = this.Icon.ToBitmap();
 			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
@@ -54,6 +55,11 @@ namespace Bloom
 		public string SelectedPath
 		{
 			get { return _welcomeControl.SelectedPath; }
+		}
+
+		private void _broughtToYouBy_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("http://bloom.palaso.org");
 		}
 
 	}

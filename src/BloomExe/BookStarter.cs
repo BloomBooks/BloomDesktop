@@ -7,6 +7,7 @@ using System.Text;
 using System.Xml;
 using Palaso.Code;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 
 namespace Bloom
@@ -29,6 +30,7 @@ namespace Bloom
 
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
 		{
+			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
 			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceTemplateFolder, newBookFolder);

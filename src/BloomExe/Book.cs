@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Web;
 using System.Xml;
 using Bloom.Edit;
 using Bloom.Properties;
@@ -47,7 +49,7 @@ namespace Bloom
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
-			CanEdit = editable;
+			CanEdit = editable && storage.LooksOk;
 			Id = Guid.NewGuid().ToString();
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
@@ -59,7 +61,7 @@ namespace Bloom
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 
-			if (editable)
+			if (CanEdit)
 			{
 				MakeAllFieldsConsistent();
 			}
@@ -120,6 +122,10 @@ namespace Bloom
 
 		public  Image GetThumbNailOfBookCover(bool drawBorderDashed)
 		{
+			if(HasFatalError)
+			{
+				return Resources.Error70x70;
+			}
 			Image thumb;
 			if(_storage.TryGetPremadeThumbnail(out thumb))
 				return thumb;
@@ -127,7 +133,7 @@ namespace Bloom
 			var dom = GetPreviewXmlDocumentForFirstPage();
 			if(dom == null)
 			{
-				return Resources.GenericPage32x32;//todo: make an error icon
+				return Resources.Error70x70;
 			}
 			string folderForCachingThumbnail = null;
 
@@ -270,10 +276,21 @@ namespace Bloom
 		}
 
 
-		private XmlDocument GetPageSayingCantShowBook()
+		private XmlDocument GetPageListingErrorsWithBook(string contents)
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml("<html><body>Could not display that book.</body></html>");
+			var builder = new StringBuilder();
+			builder.Append("<html><body>");
+			builder.AppendLine("<p>This book ("+_storage.FolderPath+") has errors.");
+			builder.AppendLine(
+				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and the someone needs to find and fix the problem (and your book).</p>");
+
+			foreach (var line in contents.Split(new []{'\n'}))
+			{
+				builder.AppendFormat("<li>{0}</li>\n", HttpUtility.HtmlEncode(line));
+			}
+			builder.Append("</body></html>");
+			dom.LoadXml(builder.ToString());
 			return dom;
 		}
 
@@ -352,7 +369,7 @@ namespace Bloom
 		{
 			if (!_storage.LooksOk)
 			{
-				return GetPageSayingCantShowBook();
+				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
 			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
@@ -406,6 +423,11 @@ namespace Bloom
 
 		}
 
+		public bool HasFatalError
+		{
+			get { return !_storage.LooksOk; }
+		}
+
 		private void AddCoverColor(XmlDocument dom, Color coverColor)
 		{
 
@@ -415,9 +437,9 @@ namespace Bloom
 			XmlElement colorStyle = dom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
-				DIV.-bloom-page.cover	{		background-color: #colorValue;	}
+
 				TEXTAREA.coverColor	{		background-color: #colorValue;	}
-				INPUT.coverColor	{		background-color: #colorValue;	}
+				DIV.-bloom-page.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			header.AppendChild(colorStyle);
@@ -720,24 +742,37 @@ namespace Bloom
 
 		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
 		{
-			foreach (XmlElement node in RawDom.SafeSelectNodes(string.Format("//{0}[(contains(@class, '_')  or contains(@class, '-bloom-')) and (@lang='{1}' or contains(@class,'-bloom-showNational'))]", elementName, _projectSettings.Iso639Code)))
+			try
 			{
-				var theseClasses = node.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-				foreach (var key in theseClasses)
+				foreach (
+					XmlElement node in
+						RawDom.SafeSelectNodes(
+							string.Format(
+								"//{0}[(contains(@class, '_')  or contains(@class, '-bloom-')) and (@lang='{1}' or contains(@class,'-bloom-showNational'))]",
+								elementName, _projectSettings.Iso639Code)))
 				{
-					if (!(key.StartsWith("_") || _builtInConstants.Contains(key)))
-						continue;
-
-					if (!classes.ContainsKey(key))
+					var theseClasses = node.GetAttribute("class").Split(new char[] {' '},
+																		StringSplitOptions.RemoveEmptyEntries);
+					foreach (var key in theseClasses)
 					{
-						if (!string.IsNullOrEmpty(node.InnerText.Trim()))
-							classes.Add(key, node.InnerText.Trim());
-					}
-					else
-						node.InnerText = classes[key];
+						if (!(key.StartsWith("_") || _builtInConstants.Contains(key)))
+							continue;
 
-					break;//only one variable name per item, of course.
+						if (!classes.ContainsKey(key))
+						{
+							if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+								classes.Add(key, node.InnerText.Trim());
+						}
+						else
+							node.InnerText = classes[key];
+
+						break; //only one variable name per item, of course.
+					}
 				}
+			}
+			catch (Exception error)
+			{
+				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(,"+elementName+"). RawDom was:\r\n"+RawDom.OuterXml,error);
 			}
 		}
 

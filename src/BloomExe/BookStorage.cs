@@ -12,6 +12,7 @@ using Bloom.Publish;
 using BloomTemp;
 using Palaso.Code;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
@@ -39,13 +40,14 @@ namespace Bloom
 		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
 		void SetBookName(string name);
+		string GetValidateErrors();
 	}
 
 	public class BookStorage : IBookStorage
 	{
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
-		private string _errorMessages;
+		public string ErrorMessages;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
@@ -58,16 +60,17 @@ namespace Bloom
 			RequireThat.Directory(folderPath).Exists();
 			if (File.Exists(PathToExistingHtml))
 			{
-				_errorMessages = ValidateBook(PathToExistingHtml);
-				if (!string.IsNullOrEmpty(_errorMessages))
+				ErrorMessages = ValidateBook(PathToExistingHtml);
+				if (!string.IsNullOrEmpty(ErrorMessages))
 				{
 					//hack so we can package this for palaso reporting
-					var ex = new XmlSyntaxException(_errorMessages);
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
+//                    var ex = new XmlSyntaxException(ErrorMessages);
+//                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
 					Dom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
-				}
+			   }
 				else
 				{
+					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 					Dom.Load(PathToExistingHtml);
 				}
 
@@ -131,6 +134,7 @@ namespace Bloom
 				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
+					Logger.WriteEvent("BookStorage.UpdateIfNewer() Copying mising file {0} to {1}", factoryPath, documentPath);
 					File.Copy(factoryPath, documentPath);
 					return;
 				}
@@ -142,6 +146,8 @@ namespace Bloom
 						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
 						return;
 					}
+					Logger.WriteEvent("BookStorage.UpdateIfNewer() Updating file {0} to {1}", factoryPath, documentPath);
+
 					File.Copy(factoryPath, documentPath,true);
 					//if the source was locked, don't copy the lock over
 					File.SetAttributes(documentPath,FileAttributes.Normal);
@@ -320,7 +326,7 @@ namespace Bloom
 
 		public bool LooksOk
 		{
-			get { return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(_errorMessages); }
+			get { return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessages); }
 		}
 
 		public string FileName
@@ -335,6 +341,7 @@ namespace Bloom
 
 		public void Save()
 		{
+			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			string tempPath = SaveHtml(Dom);
 
@@ -345,13 +352,14 @@ namespace Bloom
 				File.Copy(tempPath, badFilePath,true);
 				//hack so we can package this for palaso reporting
 				var ex = new XmlSyntaxException(errors);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "This is so embarrasing. Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will hopefully not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Oops. Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
 			{
+				Logger.WriteMinorEvent("File.Replace({0},{1})", tempPath,PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-					File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
+						File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
 			}
 		}
 
@@ -382,13 +390,27 @@ namespace Bloom
 			var ids = new List<string>();
 			StringBuilder builder = new StringBuilder();
 
+			Ensure(dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]").Count >0, "Must have at least one page", builder);
 			EnsureIdsAreUnique(dom, "textarea", ids, builder);
 			EnsureIdsAreUnique(dom, "p", ids, builder);
 			EnsureIdsAreUnique(dom, "img", ids, builder);
 
 			//TODO: validate other things, including html
+			var x = builder.ToString().Trim();
+			if (x.Length == 0)
+				Logger.WriteEvent("BookStorage.ValidateBook({0}): No Errors", path);
+			else
+			{
+				Logger.WriteEvent("BookStorage.ValidateBook({0}): {1}", path, x);
+			}
 
 			return builder.ToString();
+		}
+
+		private void Ensure(bool passes, string message, StringBuilder builder)
+		{
+			if (!passes)
+				builder.AppendLine(message);
 		}
 
 		private void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
@@ -397,7 +419,7 @@ namespace Bloom
 			{
 				var id = element.GetAttribute("id");
 				if (ids.Contains(id))
-					builder.Append("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
+					builder.AppendLine("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
 				else
 					ids.Add(id);
 			}
@@ -453,7 +475,10 @@ namespace Bloom
 
 		public bool DeleteBook()
 		{
-			return ConfirmRecycleDialog.Recycle(_folderPath);
+			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+			if(didDelete)
+				Logger.WriteEvent("After BookStorage.DeleteBook({0})", _folderPath);
+			return didDelete;
 		}
 
 
@@ -521,6 +546,19 @@ namespace Bloom
 			{
 				Debug.Fail("(debug mode only): could not rename the folder");
 			}
+		}
+
+		public string GetValidateErrors()
+		{
+			if(!Directory.Exists(_folderPath))
+			{
+				return "The directory (" + _folderPath + ") could not be found.";
+			}
+			if(!File.Exists(PathToExistingHtml))
+			{
+				return "Could not find an html file to use.";
+			}
+			return ValidateBook(PathToExistingHtml);
 		}
 
 		private string SanitizeNameForFileSystem(string name)

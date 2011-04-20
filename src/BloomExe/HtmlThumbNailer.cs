@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
 using BloomTemp;
+using Palaso.Reporting;
 using Palaso.Xml;
 using Skybound.Gecko;
 
@@ -49,96 +50,108 @@ namespace Bloom
 		/// <returns></returns>
 		public Image GetThumbnail(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed)
 		{
-			Image image;
-			if (_images.TryGetValue(key, out image))
+			lock (this)
 			{
-				return image;
-			}
-
-			string thumbNailFilePath=null;
-			if (!string.IsNullOrEmpty(folderForThumbNailCache))
-			{
-				//var folderName = Path.GetFileName(folderForThumbNailCache);
-				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
-				if (File.Exists(thumbNailFilePath))
+				Image image;
+				if (_images.TryGetValue(key, out image))
 				{
-					//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-					using (image = Image.FromFile(thumbNailFilePath))
+					return image;
+				}
+
+				string thumbNailFilePath = null;
+				if (!string.IsNullOrEmpty(folderForThumbNailCache))
+				{
+					//var folderName = Path.GetFileName(folderForThumbNailCache);
+					thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+					if (File.Exists(thumbNailFilePath))
 					{
-					   return new Bitmap(image);
+						//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
+						using (image = Image.FromFile(thumbNailFilePath))
+						{
+							return new Bitmap(image);
+						}
 					}
 				}
-			}
 
 
-			_backgroundColorOfResult = backgroundColorOfResult;
+				_backgroundColorOfResult = backgroundColorOfResult;
 
-			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
+				MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
 
-			_pendingThumbnail = null;
+				_pendingThumbnail = null;
 
-			ConfigureBrowserForPaperSize(document);
+				ConfigureBrowserForPaperSize(document);
 
-			//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
+				//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
 
-			using (var temp = TempFile.CreateHtm(document))
-			{
-
-				// this is firing before it looks ready (no active element), so we'll just poll for
-				//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
-
-				//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
-
-				_browser.Navigate(temp.Path);
-				var giveUpTime = DateTime.Now.AddSeconds(4);// this can take a long time if the image on the front page is big.
-
-				while (_pendingThumbnail == null && DateTime.Now < giveUpTime)
+				using (var temp = TempFile.CreateHtm(document))
 				{
-					//_browser.Document.ActiveElement!=null
-					if (_browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
+
+					// this is firing before it looks ready (no active element), so we'll just poll for
+					//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
+
+					//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
+
+					_browser.Navigate(temp.Path);
+					var giveUpTime = DateTime.Now.AddSeconds(4);
+						// this can take a long time if the image on the front page is big.
+
+					while (_pendingThumbnail == null && DateTime.Now < giveUpTime)
 					{
-						try
+						//_browser.Document.ActiveElement!=null
+						if (_browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
 						{
-							 OnThumbNailBrowser_DocumentCompleted(drawBorderDashed, null);
-						}
-						catch (Exception)
-						{
-							//we often land here, but I've tested and the second time through the try, we succeed.
-							//so this suggests that the AbsolutePath changes, but it's not quit ready to get
-							//at the document.
-						}
+							try
+							{
+								OnThumbNailBrowser_DocumentCompleted(drawBorderDashed, null);
+							}
+							catch (Exception)
+							{
+								//we often land here, but I've tested and the second time through the try, we succeed.
+								//so this suggests that the AbsolutePath changes, but it's not quit ready to get
+								//at the document.
+							}
 
+						}
+						//TODO: could lead to hard to reproduce bugs
+						Application.DoEvents();
+
+						Thread.Sleep(100);
 					}
-					//TODO: could lead to hard to reproduce bugs
-					Application.DoEvents();
-
-					Thread.Sleep(100);
 				}
-			}
-			if (_pendingThumbnail == null)
-			{
-				_pendingThumbnail = Resources.GenericPage32x32;
-			}
-			else if (!string.IsNullOrEmpty(thumbNailFilePath))
-			{
+				if (_pendingThumbnail == null)
+				{
+					_pendingThumbnail = Resources.GenericPage32x32;
+				}
+				else if (!string.IsNullOrEmpty(thumbNailFilePath))
+				{
+					try
+					{
+						//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
+						using (Bitmap b = new Bitmap(_pendingThumbnail))
+						{
+							b.Save(thumbNailFilePath);
+						}
+					}
+					catch (Exception)
+					{
+						//this is going to fail if we don't have write permission
+					}
+				}
+
+				_pendingThumbnail.Tag = thumbNailFilePath; //usefull if we later know we need to clear out that file
+
 				try
+					//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
 				{
-					//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
-					using (Bitmap b = new Bitmap(_pendingThumbnail))
-					{
-						b.Save(thumbNailFilePath);
-					}
+					_images.Add(key, _pendingThumbnail);
 				}
-				catch(Exception)
+				catch (Exception error)
 				{
-					//this is going to fail if we don't have write permission
+					Logger.WriteMinorEvent("Skipping minor error: " + error.Message);
+					//not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
 				}
 			}
-
-			_pendingThumbnail.Tag = thumbNailFilePath;//usefull if we later know we need to clear out that file
-			_images.Add(key, _pendingThumbnail);
-
-
 			return _pendingThumbnail;
 		}
 

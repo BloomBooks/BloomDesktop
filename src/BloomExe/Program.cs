@@ -45,6 +45,7 @@ namespace Bloom
 
 
 			SetUpErrorHandling();
+			Logger.Init();
 			Splasher.Show();
 			SetUpReporting();
 			Settings.Default.Save();
@@ -87,6 +88,8 @@ namespace Bloom
 			Application.Run();
 
 			Settings.Default.Save();
+
+			Logger.ShutDown();
 
 			if (_projectContext != null)
 				_projectContext.Dispose();

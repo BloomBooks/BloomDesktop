@@ -60,7 +60,8 @@ namespace Bloom.Library
 
 		public void DeleteBook(Book book)
 		{
-			book.Delete();
+			if(!book.Delete())
+				return;
 			ListOfBooksIsOutOfDate();
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
