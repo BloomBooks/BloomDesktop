@@ -233,7 +233,7 @@ namespace BloomTests
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
 
-			Assert.AreEqual("book.htm", Path.GetFileName(path));
+			Assert.AreEqual("My Book.htm", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(bookFolderPath));
 			Assert.IsTrue(File.Exists(path));
 		}
@@ -242,18 +242,20 @@ namespace BloomTests
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
-			Directory.CreateDirectory(_projectFolder.Combine("book"));
-			Directory.CreateDirectory(_projectFolder.Combine("book1"));
-			Directory.CreateDirectory(_projectFolder.Combine("book3"));
+			Directory.CreateDirectory(_projectFolder.Combine("My Book"));
+			Directory.CreateDirectory(_projectFolder.Combine("My Book1"));
+			Directory.CreateDirectory(_projectFolder.Combine("My Book3"));
+
+			//note: the actual folder file name here are set by the -bloom-vernacularBookTitle textarea i the a5portrait.
 
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
 																			"A5Portrait");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			Assert.AreEqual("book2", Path.GetFileName(path));
+			Assert.AreEqual("My Book2", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(path));
-			Assert.IsTrue(File.Exists(Path.Combine(path, "book2.htm")));
+			Assert.IsTrue(File.Exists(Path.Combine(path, "My Book2.htm")));
 		}
 
 		private string GetShellBookFolder()

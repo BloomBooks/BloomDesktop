@@ -218,24 +218,7 @@ namespace BloomTests
 			Assert.AreEqual("dog", title.InnerText);
 		}
 
-		[Test]
-		public void MakeAllFieldsConsistent_ChangeVernacularTitle_TellsStorageToChangeName()
-		{
-			SetDom(@"<div class='-bloom-page' id='guid2'>
-						<p>
-							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>red</textarea>
-						</p>
-					</div>
-			");
 
-			var book = CreateBook();
-			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
-			textArea.InnerText = "blue";
-			_storage.Setup(s => s.SetBookName("blue"));
-			book.MakeAllFieldsConsistent();
-			_storage.Verify(s=>s.SetBookName("blue"));
-		}
 
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()

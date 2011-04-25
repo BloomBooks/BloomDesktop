@@ -41,7 +41,8 @@ namespace Bloom
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
 				File.Move(oldNamedFile, newNamedFile);
 
-				SetupDocumentContents(newBookFolder);
+				//the destination may change here...
+				newBookFolder = SetupDocumentContents(newBookFolder);
 			}
 			catch (Exception)
 			{
@@ -65,9 +66,9 @@ namespace Bloom
 
 		}
 
-		private void SetupDocumentContents(string destinationPath)
+		private string SetupDocumentContents(string initialPath)
 		{
-			var storage = _bookStorageFactory(destinationPath);
+			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
 			//Remove from the new book an div-pages labelled as "extraPage"
@@ -82,6 +83,9 @@ namespace Bloom
 				SetupPage(div, _languageSettings.VernacularIso639Code);
 			}
 			storage.Save();
+
+			storage.UpdateBookFileAndFolderName();
+			return storage.FolderPath;
 		}
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)

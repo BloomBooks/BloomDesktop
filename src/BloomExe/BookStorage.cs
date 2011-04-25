@@ -41,6 +41,7 @@ namespace Bloom
 		string SaveHtml(XmlDocument bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
+		void UpdateBookFileAndFolderName();
 	}
 
 	public class BookStorage : IBookStorage
@@ -560,6 +561,24 @@ namespace Bloom
 			}
 			return ValidateBook(PathToExistingHtml);
 		}
+
+		public void UpdateBookFileAndFolderName()
+		{
+			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'-bloom-vernacularBookTitle')]");
+			if (textWithTitle == null)
+			{
+				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
+				return;
+			}
+			string title = textWithTitle.InnerText.Trim();
+			if (string.IsNullOrEmpty(title))
+			{
+				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
+				return;
+			}
+			SetBookName(title);
+		 }
+
 
 		private string SanitizeNameForFileSystem(string name)
 		{

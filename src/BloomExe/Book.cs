@@ -720,16 +720,16 @@ namespace Bloom
 			string title;
 			if (classes.TryGetValue("-bloom-vernacularBookTitle", out title))
 			{
-				Debug.Assert(CanEdit);
-				_storage.SetBookName(title);
 				GetOrCreateElement("//html", "head");
-				GetOrCreateElement("//head","title").InnerText = title;
+				GetOrCreateElement("//head", "title").InnerText = title;
 			}
+			_storage.UpdateBookFileAndFolderName();
 		}
+
 		private XmlElement GetOrCreateElement(string parentPath, string name)
 		{
-			XmlElement element = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath+"/"+name);
-			if(element == null)
+			XmlElement element = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath + "/" + name);
+			if (element == null)
 			{
 				XmlElement parent = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath);
 				if (parent == null)
