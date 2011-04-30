@@ -34,6 +34,7 @@ INPUT[type=hidden]
 {
 	display: none !important;
 }
+
 FIELDSET, A IMG
 {
 	border: 0;
@@ -48,6 +49,7 @@ BODY
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+
 }
 /*used with shellbooks where we want to hide all but one language*/
 TEXTAREA.hideMe
