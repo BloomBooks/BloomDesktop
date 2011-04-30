@@ -107,6 +107,8 @@ namespace Bloom.Edit
 					item.ImageIndex = _thumbnailImageList.Images.Count - 1;
 				}
 
+				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
+					return;
 				_listView.Items.Add(item);
 			}
 			_listView.EndUpdate();

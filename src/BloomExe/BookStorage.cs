@@ -49,6 +49,7 @@ namespace Bloom
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
 		public string ErrorMessages;
+		private static bool _alreadyNotifiedAboutOneFailedCopy;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
@@ -156,8 +157,17 @@ namespace Bloom
 			}
 			catch (Exception e)
 			{
+				if(documentPath.Contains(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles))
+					|| documentPath.ToLower().Contains("program"))//english only
+				{
+					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
+					return;
+				}
+				if(_alreadyNotifiedAboutOneFailedCopy)
+					return;//don't keep bugging them
+				_alreadyNotifiedAboutOneFailedCopy = true;
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Could not update one of the support files in this document ({0} to {1}). This may or not cause problems, but it is unusual. Please click 'Details' and report it", factoryPath,documentPath);
+					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", factoryPath,documentPath);
 			}
 		}
 
