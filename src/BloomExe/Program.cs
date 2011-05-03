@@ -183,6 +183,7 @@ namespace Bloom
 					if (OpenProjectWindow(dlg.SelectedPath))
 					{
 						Settings.Default.MruProjects.AddNewPath(dlg.SelectedPath);
+						Settings.Default.Save();
 						return;
 					}
 				}
