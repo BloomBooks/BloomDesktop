@@ -11,37 +11,54 @@ namespace Bloom.Edit
 {
 	public partial class SourceTextControl : UserControl
 	{
+		private string _previouslySelectedLangCode;
+
 		public SourceTextControl()
 		{
 			InitializeComponent();
 			_tabControl.Font = SystemFonts.MenuFont;
+			_tabControl.TabPages.Clear();
 		}
 
 		public void SetTexts(Dictionary<string, string> texts)
 		{
-			string previouslySelected = string.Empty;
-			if(_tabControl.SelectedTab!=null)
+			//_tabControl.TabPages.Clear();//this (starting fresh each time), though simple, lead to all maner of focus problems
+
+			foreach (var pair in texts)
 			{
-				previouslySelected = _tabControl.SelectedTab.Tag as string;
+				TabPage tab = GetOrCreateTab(pair.Key);
+				((TextBox)tab.Tag).Text = pair.Value;
 			}
-			_tabControl.TabPages.Clear();
-			foreach (var text in texts)
+		}
+
+		private TabPage GetOrCreateTab(string languageCode)
+		{
+			if (_tabControl.TabPages.ContainsKey(languageCode))
+				return _tabControl.TabPages[languageCode];
+
+			_tabControl.TabPages.Add(languageCode, languageCode);
+			var tab = _tabControl.TabPages[languageCode];
+
+			var textBox = new TextBox
+							  {
+								  ReadOnly = true,
+								  Dock = DockStyle.Fill,
+								  WordWrap = true,
+								  Multiline = true,
+								  Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 12)
+							  };
+
+			tab.Controls.Add(textBox);
+			tab.Tag = textBox;
+			return tab;
+		}
+
+		public void ClearTextContents()
+		{
+
+			foreach (TabPage tabPage in _tabControl.TabPages)
 			{
-				var tab = new TabPage(text.Key);
-				tab.Tag = text.Key;
-				var textBox = new TextBox();
-				textBox.ReadOnly = true;
-				textBox.Text = text.Value;
-				textBox.Dock = DockStyle.Fill;
-				textBox.WordWrap = true;
-				textBox.Multiline = true;
-				textBox.Font = SystemFonts.MessageBoxFont;
-				tab.Controls.Add(textBox);
-				_tabControl.TabPages.Add(tab);
-				if(text.Key == previouslySelected)
-				{
-					_tabControl.SelectedTab = tab;
-				}
+				((TextBox) tabPage.Tag).Text = string.Empty;
 			}
 		}
 	}

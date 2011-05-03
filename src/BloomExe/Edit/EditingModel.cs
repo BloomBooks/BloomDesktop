@@ -166,7 +166,7 @@ namespace Bloom.Edit
 				if(_domForCurrentPage!=null)
 					SaveNow();
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-				_view.SetSourceText(new Dictionary<string, string>());
+				_view.ClearSourceText();
 			}
 		}
 

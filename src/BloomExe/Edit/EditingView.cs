@@ -241,13 +241,13 @@ namespace Bloom.Edit
 			//null means hide it, empty list means just empty it
 		  //  SetTranslationPanelVisibility(sourceTexts!=null);
 
-			if (sourceTexts == null)
-			{
-				return;
-			}
-			_translationSourcesControl.SetTexts(sourceTexts);
+		   _translationSourcesControl.SetTexts(sourceTexts);
 		}
 
+		public void ClearSourceText()
+		{
+			_translationSourcesControl.ClearTextContents();
+		}
 		/// <summary>
 		/// this started as an experiment, where our textareas were not being read when we saved because of the need
 		/// to change the picture
@@ -296,5 +296,6 @@ namespace Bloom.Edit
 		{
 			_deletePageCommand.Execute();
 		}
+
 	}
 }
