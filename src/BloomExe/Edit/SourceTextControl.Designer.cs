@@ -47,6 +47,7 @@
             this._tabControl.SelectedIndex = 0;
             this._tabControl.Size = new System.Drawing.Size(150, 150);
             this._tabControl.TabIndex = 0;
+            
             // 
             // tabPage1
             // 
