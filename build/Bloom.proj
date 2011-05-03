@@ -25,11 +25,11 @@
   </Target>
 
   <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
-	  <ItemGroup>
-		<AssemblyInfoFiles Include="$(teamcity_build_checkoutDir)/src/**/assemblyinfo.cs"/>
-	  </ItemGroup>
-	  <StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
-	</Target>
+	<ItemGroup>
+	  <AssemblyInfoFiles Include="$(teamcity_build_checkoutDir)/src/**/assemblyinfo.cs"/>
+	</ItemGroup>
+	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+  </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
 

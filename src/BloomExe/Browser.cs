@@ -127,7 +127,17 @@ namespace Bloom
 		void _browser_DocumentCompleted(object sender, EventArgs e)
 		{
 		  _browser.Focus();
-		  _setInitialFocusTimer.Enabled = true;
+		  //_setInitialFocusTimer.Enabled = true;
+		  var textareas = _browser.Document.GetElementsByTagName("textarea");
+		  if (textareas.Count > 0)
+		  {
+//              textareas[0].Focus();//doesn't work
+
+		/* will work in geckofx 2
+		 *  var area = (textareas[0].DomObject as nsIDOMHTMLTextAreaElement);
+			  area.focus();
+		 */
+		  }
 		}
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
