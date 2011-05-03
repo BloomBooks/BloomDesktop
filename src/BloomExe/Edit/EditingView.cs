@@ -22,6 +22,7 @@ namespace Bloom.Edit
 		private readonly PasteCommand _pasteCommand;
 		private readonly UndoCommand _undoCommand;
 		private readonly DeletePageCommand _deletePageCommand;
+		private string _previousClickElementId;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -160,8 +161,17 @@ namespace Bloom.Edit
 
 		private void OnClickTextArea(GeckoElement element)
 		{
-			//todo: what about if they tab to it? Is that possible?
-			_model.HandleUserEnteredArea(element);
+			//this might be too heavy-handed, but I added it to fix a bug
+			//where two clicks would actually take the focus out of the text area:
+
+			// was always true... as if gecko was making a new element each time
+			//if(element!=_previousClickElement)
+				if (element.Id != _previousClickElementId)
+				{
+				//todo: what about if they tab to it?
+				_model.HandleUserEnteredArea(element);
+			}
+			_previousClickElementId = element.Id;
 		}
 
 		private void OnClickOnImage(GeckoDomEventArgs ge)
