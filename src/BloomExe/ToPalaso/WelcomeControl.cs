@@ -249,7 +249,7 @@ namespace Bloom.ToPalaso
 		{
 			var desiredOrExistingSettingsFilePath = _createNewProjectAndReturnPath();
 			if (desiredOrExistingSettingsFilePath == null)
-				;// return;
+				return;
 			var settings = new ProjectSettings(desiredOrExistingSettingsFilePath);
 			SelectProjectAndClose(settings.SettingsFilePath);
 		}
