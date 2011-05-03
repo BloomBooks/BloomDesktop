@@ -19,12 +19,18 @@
         {
             this.components = new System.ComponentModel.Container();
             this._updateCommandsTimer = new System.Windows.Forms.Timer(this.components);
+            this._setInitialFocusTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // _updateCommandsTimer
             // 
             this._updateCommandsTimer.Enabled = true;
             this._updateCommandsTimer.Tick += new System.EventHandler(this.OnUpdateDisplayTick);
+            // 
+            // _setInitialFocusTimer
+            // 
+            this._setInitialFocusTimer.Interval = 500;
+            this._setInitialFocusTimer.Tick += new System.EventHandler(this._setInitialFocusTimer_Tick);
             // 
             // Browser
             // 
@@ -38,5 +44,6 @@
         #endregion
 
         private System.Windows.Forms.Timer _updateCommandsTimer;
+        private System.Windows.Forms.Timer _setInitialFocusTimer;
     }
 }
