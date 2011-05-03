@@ -53,6 +53,7 @@ namespace Bloom.Edit
 
 		private void OnDeletePage()
 		{
+			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
 			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList();
 		}
