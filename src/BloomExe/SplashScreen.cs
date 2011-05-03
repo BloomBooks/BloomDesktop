@@ -15,6 +15,7 @@ namespace Bloom
 		public SplashScreen()
 		{
 			InitializeComponent();
+			_versionInfo.Text = Shell.GetVersionInfo();
 		}
 
 		public void FadeAndClose()

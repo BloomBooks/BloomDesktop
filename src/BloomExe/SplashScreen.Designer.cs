@@ -32,6 +32,7 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this._fadeOutTimer = new System.Windows.Forms.Timer(this.components);
+            this._versionInfo = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -61,6 +62,18 @@
             // 
             this._fadeOutTimer.Tick += new System.EventHandler(this._fadeOutTimer_Tick);
             // 
+            // _versionInfo
+            // 
+            this._versionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._versionInfo.AutoSize = true;
+            this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 8.25F);
+            this._versionInfo.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this._versionInfo.Location = new System.Drawing.Point(13, 287);
+            this._versionInfo.Name = "_versionInfo";
+            this._versionInfo.Size = new System.Drawing.Size(70, 13);
+            this._versionInfo.TabIndex = 13;
+            this._versionInfo.Text = "Version Info";
+            // 
             // SplashScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -68,6 +81,7 @@
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(548, 309);
             this.ControlBox = false;
+            this.Controls.Add(this._versionInfo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
             this.Cursor = System.Windows.Forms.Cursors.AppStarting;
@@ -90,5 +104,6 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Timer _fadeOutTimer;
+        private System.Windows.Forms.Label _versionInfo;
     }
 }

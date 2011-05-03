@@ -302,7 +302,7 @@ namespace Bloom
 
 		private void _setInitialFocusTimer_Tick(object sender, EventArgs e)
 		{
-			if (_browser.Focused || _browser.ContainsFocus)
+			if (_browser.Focused )
 			{
 				_setInitialFocusTimer.Enabled = false;
 				var textareas = _browser.Document.GetElementsByTagName("textarea");
