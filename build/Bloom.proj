@@ -23,14 +23,14 @@
    
     <Message Text="Version: $(Version)" Importance="high"/>
   </Target>
-  
-  <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
-      <ItemGroup>
-        <AssemblyInfoFiles Include="$(teamcity_build_checkoutDir)/src/**/assemblyinfo.cs"/>
-      </ItemGroup>
-      <StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
-    </Target>
 
+  <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
+    <ItemGroup>
+      <AssemblyInfoFiles Include="$(teamcity_build_checkoutDir)/src/**/assemblyinfo.cs"/>
+    </ItemGroup>
+    <StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+  </Target>
+  
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
     
     <MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom VS2010.sln"
