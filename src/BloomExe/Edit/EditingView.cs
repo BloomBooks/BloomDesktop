@@ -176,6 +176,9 @@ namespace Bloom.Edit
 
 		private void OnClickOnImage(GeckoDomEventArgs ge)
 		{
+			if (!_model.CanChangeImages())
+				return;
+
 			string currentPath = ge.Target.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);

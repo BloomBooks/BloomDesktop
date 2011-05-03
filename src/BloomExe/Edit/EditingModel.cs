@@ -128,7 +128,7 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-					   !_pageSelection.CurrentSelection.Required;
+					   !_pageSelection.CurrentSelection.Required && !_currentlyDisplayedBook.LockedExceptForTranslation;
 			}
 
 		}
@@ -262,6 +262,11 @@ namespace Bloom.Edit
 				return _bookSelection.CurrentSelection.GetPages().LastOrDefault();
 			}
 			return null;
+		}
+
+		public bool CanChangeImages()
+		{
+			return !_currentlyDisplayedBook.LockedExceptForTranslation;
 		}
 	}
 

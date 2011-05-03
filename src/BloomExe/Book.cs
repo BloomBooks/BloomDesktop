@@ -65,6 +65,9 @@ namespace Bloom
 			{
 				MakeAllFieldsConsistent();
 			}
+
+			LockedExceptForTranslation = HasSourceTranslations && !_projectSettings.IsShellMakingProject;
+
 		}
 
 
@@ -422,6 +425,15 @@ namespace Bloom
 			}
 
 		}
+
+		/// <summary>
+		/// Is this a shell we're translating?
+		/// </summary>
+		public bool LockedExceptForTranslation
+		{
+			get; private set;
+		}
+
 
 		public bool HasFatalError
 		{
