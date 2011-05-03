@@ -60,6 +60,8 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 &nbsp;<h2>Built-in Classes</h2>
 <p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
 <li>-bloom-page: Each page is indicated by a &lt;div&gt; which has this class.</li>
+	<li>numberedPage: (not actually know to the code, therefore not a "-bloom" one). Pages that should be part of the page numbering; i.e. all pages
+		except front matter</li>
 <li>-bloom-vernacularBookTitle: This is shown on the cover, sets the &lt;title&gt; element of the html, sets the name of the book's folder, and finally, the book's html file.</li>
 <li>-bloom-topicInNationalLanguage: e.g. "Health", "Math". Currently only used by stylesheets, but reserved for future c# code use.</li>
 <li>-bloom-nameOfLanguage: this is automatically filled in, so it should only appear in uneditable elements.</li>
