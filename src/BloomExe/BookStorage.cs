@@ -39,9 +39,10 @@ namespace Bloom
 		bool DeleteBook();
 		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
+		string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
-		void UpdateBookFileAndFolderName();
+		void UpdateBookFileAndFolderName(LanguageSettings settings);
 	}
 
 	public class BookStorage : IBookStorage
@@ -537,7 +538,7 @@ namespace Bloom
 			name = SanitizeNameForFileSystem(name);
 
 			var currentFilePath =PathToExistingHtml;
-			if (name == Path.GetFileNameWithoutExtension(currentFilePath))
+			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name)) //starts with because maybe we have "myBook1"
 				return;
 
 			//figure out what name we're really going to use (might need to add a number suffix)
@@ -572,22 +573,28 @@ namespace Bloom
 			return ValidateBook(PathToExistingHtml);
 		}
 
-		public void UpdateBookFileAndFolderName()
+		public void UpdateBookFileAndFolderName(LanguageSettings languageSettings)
 		{
-			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'-bloom-vernacularBookTitle')]");
+			SetBookName(GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code));
+		 }
+
+		public string GetVernacularTitleFromHtml(string Iso639Code)
+		{
+			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
+				string.Format("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='{0}']", Iso639Code));
 			if (textWithTitle == null)
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-				return;
+				return "unknown";
 			}
 			string title = textWithTitle.InnerText.Trim();
 			if (string.IsNullOrEmpty(title))
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-				return;
+				return "unknown";
 			}
-			SetBookName(title);
-		 }
+			return title;
+		}
 
 
 		private string SanitizeNameForFileSystem(string name)

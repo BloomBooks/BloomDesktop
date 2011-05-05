@@ -58,7 +58,7 @@ namespace Bloom
 			var fi = new FileInfo(file);
 
 			return string.Format("Version {0}.{1}.{2} Built on {3}", ver.Major, ver.Minor,
-				ver.Revision, fi.CreationTime.ToString("dd-MMM-yyyy"));
+				ver.Build, fi.CreationTime.ToString("dd-MMM-yyyy"));
 		}
 
 		public bool UserWantsToOpenADifferentProject { get; set; }

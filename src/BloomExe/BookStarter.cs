@@ -84,7 +84,7 @@ namespace Bloom
 			}
 			storage.Save();
 
-			storage.UpdateBookFileAndFolderName();
+			storage.UpdateBookFileAndFolderName(_languageSettings);
 			return storage.FolderPath;
 		}
 

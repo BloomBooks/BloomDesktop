@@ -111,10 +111,11 @@ namespace Bloom
 			{
 				if (Type == BookType.Publication)
 				{
-					var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
-					if (node == null)
-						return "unknown";
-					return (node.InnerText);
+//                    var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
+//                    if (node == null)
+//                        return "unknown";
+//                    return (node.InnerText);
+					return _storage.GetVernacularTitleFromHtml(_projectSettings.Iso639Code);
 				}
 				else //for templates and such, we can already just use the folder name
 				{
@@ -735,7 +736,7 @@ namespace Bloom
 				GetOrCreateElement("//html", "head");
 				GetOrCreateElement("//head", "title").InnerText = title;
 			}
-			_storage.UpdateBookFileAndFolderName();
+			_storage.SetBookName(title);
 		}
 
 		private XmlElement GetOrCreateElement(string parentPath, string name)

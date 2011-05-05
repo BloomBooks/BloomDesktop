@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Properties;
@@ -32,6 +33,7 @@ namespace Bloom
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
+			TimeBomb();
 
 			//bring in settings from any previous version
 			if (Settings.Default.NeedUpgrade)
@@ -229,6 +231,22 @@ namespace Bloom
 				false
 #endif
 				);
+		}
+
+		public static void TimeBomb()
+		{
+			var asm = Assembly.GetExecutingAssembly();
+			var file = asm.CodeBase.Replace("file:", string.Empty);
+			file = file.TrimStart('/');
+			var fi = new FileInfo(file);
+			if(DateTime.UtcNow.Subtract(fi.CreationTimeUtc).Days > 15)
+				//if (DateTime.UtcNow.Subtract(fi.CreationTimeUtc).Seconds > 100)
+				{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					"Sorry, this experimental version of Bloom is now over 15 days old.  Please get a new version at bloom.palaso.org");
+					Process.GetCurrentProcess().Kill();
+			}
+
 		}
 	}
 
