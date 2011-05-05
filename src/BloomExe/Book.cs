@@ -652,7 +652,8 @@ namespace Bloom
 				{
 					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
 					Guard.AgainstNull(destNode, textareaElementId);
-					destNode.InnerText = editNode.InnerText;
+					//the following prevents us from double-encoding reserved characters
+					destNode.InnerText = editNode.InnerText.Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">");
 				}
 			}
 

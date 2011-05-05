@@ -242,9 +242,9 @@ namespace Bloom.Edit
 		public void SetSourceText(Dictionary<string, string> sourceTexts)
 		{
 			//null means hide it, empty list means just empty it
-		  //  SetTranslationPanelVisibility(sourceTexts!=null);
-
-		   _translationSourcesControl.SetTexts(sourceTexts);
+			//SetTranslationPanelVisibility(sourceTexts != null);
+			if (sourceTexts != null)
+				_translationSourcesControl.SetTexts(sourceTexts);
 		}
 
 		public void ClearSourceText()
