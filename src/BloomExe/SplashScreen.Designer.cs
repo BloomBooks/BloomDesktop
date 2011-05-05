@@ -33,6 +33,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this._fadeOutTimer = new System.Windows.Forms.Timer(this.components);
             this._versionInfo = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -54,9 +55,9 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(400, 144);
             this.label1.TabIndex = 1;
-            this.label1.Text = "This is an experimental version of Bloom.\r\n\r\nPlease let us how know things go for" +
-                " you: what works? What gives you problems? \r\n\r\nBe sure to read the Release Notes" +
-                ".";
+            this.label1.Text = "This is an experimental version of Bloom. \r\n\r\nPlease let us how know things go fo" +
+                "r you: what works? What gives you problems? \r\n\r\nBe sure to read the Release Note" +
+                "s.";
             // 
             // _fadeOutTimer
             // 
@@ -74,6 +75,17 @@
             this._versionInfo.TabIndex = 13;
             this._versionInfo.Text = "Version Info";
             // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.Color.Maroon;
+            this.label2.Location = new System.Drawing.Point(320, 286);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(183, 13);
+            this.label2.TabIndex = 14;
+            this.label2.Text = "<-- Will expire 15 days after build date";
+            // 
             // SplashScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -81,6 +93,7 @@
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(548, 309);
             this.ControlBox = false;
+            this.Controls.Add(this.label2);
             this.Controls.Add(this._versionInfo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
@@ -105,5 +118,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Timer _fadeOutTimer;
         private System.Windows.Forms.Label _versionInfo;
+        private System.Windows.Forms.Label label2;
     }
 }
