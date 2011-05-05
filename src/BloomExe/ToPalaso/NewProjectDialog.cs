@@ -105,7 +105,7 @@ namespace Bloom.ToPalaso
 
 		public bool IsShellMakingProject
 		{
-			get { return _shellMakingProjectCheckbox.Checked; }
+			get { return _radioShellbookLibrary.Checked; }
 
 		}
 
