@@ -53,6 +53,11 @@ DIV.numberedPage
 {
 	counter-increment: pageNumber;
 }
+/* the title page is page 1, but we just don't show it (hence, no Div.titlePge:after section)*/
+DIV.titlePage
+{
+	counter-increment: pageNumber;
+}
 DIV.numberedPage:after
 {
 	content: counter(pageNumber);
