@@ -42,14 +42,12 @@ FIELDSET, A IMG
 BODY
 {
 	font-size: 100%;
-	font-family: sans-serif;
 	line-height: 1.5;
 }
 /*+}*/
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
-
 }
 /*used with shellbooks where we want to hide all but one language*/
 TEXTAREA.hideMe
