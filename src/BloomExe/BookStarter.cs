@@ -136,39 +136,18 @@ namespace Bloom
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
+			//"data-" is an html5 attribute you can put on any element. We're using that on the page div
+
 			//NB: this works even if the parent and child are the same, which is the case when making a new book
 			//but not when we're adding an individual template page.
 
 			string parentId = parentPageDiv.GetAttribute("id");
 			childPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-			string parentLineage = GetParentLineage(parentPageDiv);
-
-			XmlElement childLineageElement = (XmlElement) childPageDiv.SelectSingleNodeHonoringDefaultNS("a[@class='-bloom-pageLineage']");
-
-			if (childLineageElement == null)
-			{
-				//stick an <a> in there, with an empty lineage
-				childLineageElement = childPageDiv.OwnerDocument.CreateElement("a");
-
-				var doc = new XmlDocument(childPageDiv.OwnerDocument.NameTable);
-
-				doc.LoadXml("<a href='' class='-bloom-pageLineage' style='visibility:hidden'>.</a>");//the "." there is just to prevent the xmlwriter from condensing this into a single tag, which then makes everthing below invisible!!!!
-				childLineageElement = (XmlElement)childPageDiv.OwnerDocument.ImportNode(doc.SelectSingleNodeHonoringDefaultNS("//a"), true);
-				childPageDiv.AppendChild(childLineageElement);
-			}
-
-			childLineageElement.SetAttribute("href", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+			string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pageLineage", string.Empty);
+			childPageDiv.SetAttribute("data-pageLineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
 		}
 
-		private static string GetParentLineage(XmlElement parentPageDiv)
-		{
-			string parentLineage = string.Empty;
-			XmlElement parentLineageElement = (XmlElement)parentPageDiv.SelectSingleNodeHonoringDefaultNS("a[@class='-bloom-pageLineage']");
-			if(parentLineageElement!=null)
-				parentLineage=parentLineageElement.GetAttribute("href");
-			return parentLineage;
-		}
 
 		private static bool ContainsClass(XmlNode element, string className)
 		{

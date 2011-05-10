@@ -10,6 +10,10 @@
 		{
 			color: #0099FF;
 		}
+		.style3
+		{
+			background-color: #CCFF99;
+		}
 	</style>
 </head>
 <body>
@@ -74,13 +78,16 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 <li>-bloom-pageLineage.  See the section below on Lineage.</li>
 <h2>Lineage</h2>
 <p>(This area is especially immature)</p>
-<p>While Bloom doesn't yet provide it, we may someday need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.  Here's how it works at the moment:</p>
+<p>While Bloom doesn't yet provide it, we may someday need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.
+	We&#39;re doing this by using HTML 5&#39;s new &quot;data-*&quot; attributes. Here's how it works at the moment:</p>
 
-	&lt;a href=&quot;0151a8d0-8718-41f0-a7fb-71c6995fa80a;bfc0737c-f76a-4a34-93ba-d28cb483823a&quot; class=&#39;-bloom-pageLineage&#39;
-	style=&#39;visibility:hidden&#39;&gt;&lt;/a&gt;<br />
-	<p>Notice that the href above has 2 guids (Globally Unique Identifiers), separated by a semicolon.  This tells us that this page came from a page with the id bfc0737c-f76a-4a34-93ba-d28cb483823a, which in turn came from a page with the id 0151a8d0-8718-41f0-a7fb-71c6995fa80a.</p>
-	<p>Careful: if that closing tag is missing, everything following this will be
-		invisible.</p>
+	&lt;div class=&quot;-bloom-page numberedPage imageOnTop&quot;
+	id=&quot;c320c12c-f81d-4071-86b1-70396d48048d&quot; <span class="style1">
+	data-pageLineage=&quot;5dcd48df-e9ab-4a07-afd4-6a24d0398382;</span><span
+		class="style3">a3ddc7f4-eef5-453b-babf-76ec86d0eacb&quot;</span>&gt;<br />
+	<p>Notice that the value has 2 guids (Globally Unique Identifiers), separated by a semicolon.  This tells us that this page came from a page with the id
+		a3ddc7f4-eef5-453b-babf-76ec86d0eacb, which in turn came from a page with the id
+		5dcd48df-e9ab-4a07-afd4-6a24d0398382.</p>
 	<h2>
 		"Constants"</h2>
 	<p>
