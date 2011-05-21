@@ -369,9 +369,9 @@ namespace Bloom
 			}
 			else
 			{
-				Logger.WriteMinorEvent("File.Replace({0},{1})", tempPath,PathToExistingHtml);
+				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-						File.Replace(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
+					Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
 			}
 		}
 
@@ -551,7 +551,7 @@ namespace Bloom
 			 //next, rename the enclosing folder
 			try
 			{
-				Directory.Move(FolderPath, newFolderPath);
+				Palaso.IO.FolderUtils.MoveDirectorySafely(FolderPath, newFolderPath);
 				_folderPath = newFolderPath;
 			}
 			catch (Exception)

@@ -166,7 +166,7 @@ namespace Bloom
 			}
 			var tempPath = _docPath.Replace(".htm", "-edited.htm");
 			dom.Save(tempPath);
-			File.Replace(tempPath, _docPath, _docPath+ ".bak", true);
+			Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, _docPath, _docPath + ".bak");
 		}
 
 	}
