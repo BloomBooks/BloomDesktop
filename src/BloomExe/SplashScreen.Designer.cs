@@ -84,7 +84,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(183, 13);
             this.label2.TabIndex = 14;
-            this.label2.Text = "<-- Will expire 15 days after build date";
+            this.label2.Text = "<-- Will expire 30 days after build date";
             // 
             // SplashScreen
             // 
