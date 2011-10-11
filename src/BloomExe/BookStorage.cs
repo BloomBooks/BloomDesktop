@@ -551,7 +551,7 @@ namespace Bloom
 			 //next, rename the enclosing folder
 			try
 			{
-				Palaso.IO.FolderUtils.MoveDirectorySafely(FolderPath, newFolderPath);
+				Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
 				_folderPath = newFolderPath;
 			}
 			catch (Exception)
