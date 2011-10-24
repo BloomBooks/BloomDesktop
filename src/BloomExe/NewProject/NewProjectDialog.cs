@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using Palaso.UI.WindowsForms.WritingSystems;
 
-namespace Bloom.ToPalaso
+namespace Bloom.NewProject
 {
 	public partial class NewProjectDialog: Form
 	{
@@ -19,6 +19,14 @@ namespace Bloom.ToPalaso
 			Icon = Application.OpenForms[0].Icon;
 			btnOK.Enabled = false;
 			_pathLabel.Text = "";
+			_kindOfProjectControl1.Left = _chooseLanguageButton.Left;
+			_kindOfProjectControl1.Width = btnCancel.Right - _kindOfProjectControl1.Left;
+			_kindOfProjectControl1._nextButton.Click += new EventHandler(_nextButton_Click);
+		}
+
+		void _nextButton_Click(object sender, EventArgs e)
+		{
+			_kindOfProjectControl1.Visible = false;
 		}
 
 		protected virtual bool EnableOK
@@ -105,7 +113,10 @@ namespace Bloom.ToPalaso
 
 		public bool IsShellMakingProject
 		{
-			get { return _radioShellbookLibrary.Checked; }
+			get
+			{
+				return _kindOfProjectControl1._radioShellbookLibrary.Checked;
+			}
 
 		}
 

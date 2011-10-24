@@ -1,4 +1,4 @@
-namespace Bloom.ToPalaso
+namespace Bloom.NewProject
 {
 	partial class NewProjectDialog
 	{
@@ -37,9 +37,7 @@ namespace Bloom.ToPalaso
 			this.label2 = new System.Windows.Forms.Label();
 			this._chooseLanguageButton = new System.Windows.Forms.Button();
 			this._languageInfoLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._radioNormalVernacularLibrary = new System.Windows.Forms.RadioButton();
-			this._radioShellbookLibrary = new System.Windows.Forms.RadioButton();
-			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._kindOfProjectControl1 = new KindOfProjectControl();
 			this.SuspendLayout();
 			//
 			// label1
@@ -132,44 +130,12 @@ namespace Bloom.ToPalaso
 			this._languageInfoLabel.TabIndex = 8;
 			this._languageInfoLabel.TabStop = false;
 			//
-			// _radioNormalVernacularLibrary
+			// _kindOfProjectControl1
 			//
-			this._radioNormalVernacularLibrary.AutoSize = true;
-			this._radioNormalVernacularLibrary.Checked = true;
-			this._radioNormalVernacularLibrary.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._radioNormalVernacularLibrary.Location = new System.Drawing.Point(55, 219);
-			this._radioNormalVernacularLibrary.Name = "_radioNormalVernacularLibrary";
-			this._radioNormalVernacularLibrary.Size = new System.Drawing.Size(168, 19);
-			this._radioNormalVernacularLibrary.TabIndex = 2;
-			this._radioNormalVernacularLibrary.TabStop = true;
-			this._radioNormalVernacularLibrary.Text = "A normal vernacular library";
-			this._radioNormalVernacularLibrary.UseVisualStyleBackColor = true;
-			//
-			// _radioShellbookLibrary
-			//
-			this._radioShellbookLibrary.AutoSize = true;
-			this._radioShellbookLibrary.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._radioShellbookLibrary.Location = new System.Drawing.Point(55, 242);
-			this._radioShellbookLibrary.Name = "_radioShellbookLibrary";
-			this._radioShellbookLibrary.Size = new System.Drawing.Size(394, 19);
-			this._radioShellbookLibrary.TabIndex = 3;
-			this._radioShellbookLibrary.Text = "A library of shellbooks in a national language for distribution to others";
-			this._radioShellbookLibrary.UseVisualStyleBackColor = true;
-			//
-			// betterLabel1
-			//
-			this.betterLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.betterLabel1.Location = new System.Drawing.Point(28, 202);
-			this.betterLabel1.Multiline = true;
-			this.betterLabel1.Name = "betterLabel1";
-			this.betterLabel1.ReadOnly = true;
-			this.betterLabel1.Size = new System.Drawing.Size(100, 20);
-			this.betterLabel1.TabIndex = 13;
-			this.betterLabel1.TabStop = false;
-			this.betterLabel1.Text = "This is will be";
+			this._kindOfProjectControl1.Location = new System.Drawing.Point(403, 18);
+			this._kindOfProjectControl1.Name = "_kindOfProjectControl1";
+			this._kindOfProjectControl1.Size = new System.Drawing.Size(76, 292);
+			this._kindOfProjectControl1.TabIndex = 9;
 			//
 			// NewProjectDialog
 			//
@@ -179,9 +145,7 @@ namespace Bloom.ToPalaso
 			this.AutoScroll = true;
 			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(491, 320);
-			this.Controls.Add(this.betterLabel1);
-			this.Controls.Add(this._radioShellbookLibrary);
-			this.Controls.Add(this._radioNormalVernacularLibrary);
+			this.Controls.Add(this._kindOfProjectControl1);
 			this.Controls.Add(this._languageInfoLabel);
 			this.Controls.Add(this._chooseLanguageButton);
 			this.Controls.Add(this.label2);
@@ -210,8 +174,6 @@ namespace Bloom.ToPalaso
 		protected System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _chooseLanguageButton;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _languageInfoLabel;
-		private System.Windows.Forms.RadioButton _radioNormalVernacularLibrary;
-		private System.Windows.Forms.RadioButton _radioShellbookLibrary;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
+		private KindOfProjectControl _kindOfProjectControl1;
 	}
 }
