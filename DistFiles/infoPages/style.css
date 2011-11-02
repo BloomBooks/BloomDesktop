@@ -6,13 +6,40 @@ BODY
 HTML
 {
 }
-P
+
+h1, h2, h3, h4 {margin: 24pt 0 0 0 ;}
+p, li
 {
-	width: 458px;
+	width: 550px;
 	text-align: left;
-	margin-top: 4px;
+	margin-top: 6px;
+	font-size: medium ;
+	line-height: 200%;
 }
-P.indent
+
+ul, li {
+	padding-left: 10pt ;
+
+}
+
+		.style1
+		{
+			background-color: #FFFF66;
+		}
+		.style2
+		{
+			color: #0099FF;
+		}
+		.style3
+		{
+			background-color: #CCFF99;
+		}
+
+pre {
+	font-family:monospace ;
+	background-color: lime ;
+}
+p.indent
 {
 	/*+placement:shift 67px 1px;*/
 	position: relative;
