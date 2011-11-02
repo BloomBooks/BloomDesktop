@@ -1,48 +1,59 @@
-BODY
-{
-	font-family: Tahoma;
-	margin-left: 53px;
+BODY {
+	background-color : #EEEEEE; /*light grey */
+	font-family : Tahoma;
+	margin-left : 53px;
 }
-HTML
-{
+HTML {
 }
-
-h1, h2, h3, h4 {margin: 24pt 0 0 0 ;}
-p, li
-{
-	width: 550px;
-	text-align: left;
-	margin-top: 6px;
-	font-size: medium ;
-	line-height: 200%;
+h1,
+h2,
+h3,
+h4 {
+	margin : 24pt 0 0 0;
 }
-
-ul, li {
-	padding-left: 10pt ;
-
+form,
+table,
+tr {
+	background-color : #EEEEEE; /*light grey */
 }
-
-		.style1
-		{
-			background-color: #FFFF66;
-		}
-		.style2
-		{
-			color: #0099FF;
-		}
-		.style3
-		{
-			background-color: #CCFF99;
-		}
-
+p,
+li {
+	width : 550px;
+	text-align : left;
+	margin-top : 6px;
+	font-size : medium;
+	line-height : 200%;
+}
+ol,
+ul {
+	padding-left : 15pt;
+}
+li {
+	padding-left : 5pt;
+}
+.andikaFont {
+	font-family : andika, arial, helvetica, sans-serif;
+}
+.timesFont {
+	font-family : roman, 'times new roman', times, serif;
+	font-size : 90%;
+	font-weight : normal;
+}
+.yellow {
+	background-color : #FFFF66;
+}
+.green {
+	color : #0099FF;
+}
+.light-green {
+	background-color : #CCFF99;
+}
 pre {
-	font-family:monospace ;
-	background-color: lime ;
+	font-family : monospace;
 }
-p.indent
-{
+p.indent {
 	/*+placement:shift 67px 1px;*/
-	position: relative;
-	left: 67px;
-	top: 1px;
+	position : relative;
+	left : 67px;
+	top : 1px;
 }
