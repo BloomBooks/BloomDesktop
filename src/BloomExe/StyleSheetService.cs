@@ -28,7 +28,7 @@ namespace Skybound.Gecko
 		{
 			nsIIOService ios = Xpcom.GetService<nsIIOService>("@mozilla.org/network/io-service;1");
 			ios = Xpcom.QueryInterface<nsIIOService>(ios);
-			nsIURI ssURI = ios.NewURI(new nsACString(sheetURI), null, null);
+			nsIURI ssURI = ios.NewURI(new nsAUTF8String(sheetURI), null, null);
 			if (!StyleSheetService.sheetRegistered(ssURI, type))
 			{
 				return false;
@@ -40,7 +40,7 @@ namespace Skybound.Gecko
 		{
 			nsIIOService ios = Xpcom.GetService<nsIIOService>("@mozilla.org/network/io-service;1");
 			ios = Xpcom.QueryInterface<nsIIOService>(ios);
-			nsIURI ssURI = ios.NewURI(new nsACString(sheetURI), null, null);
+			nsIURI ssURI = ios.NewURI(new nsAUTF8String(sheetURI), null, null);
 			if (StyleSheetService.sheetRegistered(ssURI, type))
 				return;
 
@@ -51,7 +51,7 @@ namespace Skybound.Gecko
 		{
 			nsIIOService ios = Xpcom.GetService<nsIIOService>("@mozilla.org/network/io-service;1");
 			ios = Xpcom.QueryInterface<nsIIOService>(ios);
-			nsIURI ssURI = ios.NewURI(new nsACString(sheetURI), null, null);
+			nsIURI ssURI = ios.NewURI(new nsAUTF8String(sheetURI), null, null);
 			if (StyleSheetService.sheetRegistered(ssURI, type))
 				StyleSheetService.unregisterSheet(ssURI, type);
 		}

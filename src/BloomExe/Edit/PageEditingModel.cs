@@ -54,6 +54,7 @@ namespace Bloom.Edit
 						}
 					}
 					image.Save(dest, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+					imageInfo.Metadata.Write(dest);
 					return imageFileName;
 				}
 			}
