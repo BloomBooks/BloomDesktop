@@ -93,7 +93,7 @@ namespace Bloom
 						_browser.Height = _browser.Document.ActiveElement.ScrollHeight;
 						_browser.Width = _browser.Document.ActiveElement.ScrollWidth;
 
-					var docImage = _browser.GetBitmap(_browser.Document.ActiveElement.ScrollWidth, _browser.Document.ActiveElement.ScrollHeight);
+					var docImage = _browser.GetBitmap((uint) _browser.Document.ActiveElement.ScrollWidth, (uint) _browser.Document.ActiveElement.ScrollHeight);
 					//docImage.Save(@"c:\dev\temp\zzzz.bmp");
 						_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent, drawBorderDashed);
 				}

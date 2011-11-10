@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -11,8 +13,13 @@ using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
+
 	public partial class Browser : UserControl
 	{
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool SetDllDirectory(string lpPathName);
+
 
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -26,6 +33,23 @@ namespace Bloom
 		public event EventHandler OnBrowserClick;
 
 
+
+		public static void SetUpXulRunner()
+		{
+			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (!Directory.Exists(xulRunnerPath))
+			{
+#if DEBUG
+				//if this is a programmer, go look in the lib directory
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+											 Path.Combine("lib", "xulrunner8"));
+#endif
+			}
+			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
+			SetDllDirectory(xulRunnerPath);
+
+			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
+		}
 
 		public Browser()
 		{

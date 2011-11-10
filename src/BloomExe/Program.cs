@@ -14,9 +14,6 @@ namespace Bloom
 	static class Program
 	{
 
-		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SetDllDirectory(string lpPathName);
 
 		/// <summary>
 		/// We have one project open at a time, and this helps us bootstrap the project and
@@ -55,19 +52,7 @@ namespace Bloom
 
 			_applicationContainer = new ApplicationContainer();
 
-			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-			if (!Directory.Exists(xulRunnerPath))
-			{
-#if DEBUG
-				//if this is a programmer, go look in the lib directory
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-											 Path.Combine("lib", "xulrunner"));
-#endif
-			}
-			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-			SetDllDirectory(xulRunnerPath);
-
-			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
+			Browser.SetUpXulRunner();
 
 #if !DEBUG
 			SetUpErrorHandling();
@@ -96,6 +81,7 @@ namespace Bloom
 			if (_projectContext != null)
 				_projectContext.Dispose();
 		}
+
 
 		private static void Application_Idle(object sender, EventArgs e)
 		{
