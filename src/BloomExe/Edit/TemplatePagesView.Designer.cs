@@ -1,4 +1,4 @@
-﻿namespace Bloom
+﻿namespace Bloom.Edit
 {
     partial class TemplatePagesView
     {

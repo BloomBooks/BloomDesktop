@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
+using Bloom.Book;
 
-namespace Bloom
+namespace Bloom.Edit
 {
 	/// <summary>
 	/// This is just so the first (top-left) thumbnail is empty, so that the cover page appears in the second column.

@@ -1,10 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
+using Bloom.Edit;
 
-namespace Bloom.Library
+namespace Bloom.Book
 {
 	public class BookCollection
 	{
@@ -48,10 +49,24 @@ namespace Bloom.Library
 		{
 			var starter = _bookStarterFactory();
 			var path = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+
+
 			ListOfBooksIsOutOfDate();
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
 			var newBook = _books.Find(b => b.FolderPath == path);
+			if (Configurator.IsConfigurable(newBook.RawDom))
+			{
+				if(DialogResult.Cancel == Configurator.ShowConfigurationDialog(newBook.GetPathHtmlFile()))
+				{
+					newBook.Delete();// Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(path);
+					ListOfBooksIsOutOfDate();
+					if (CollectionChanged != null)
+						CollectionChanged.Invoke(this, null);
+					return; // the template had a configuration page and they clicked "cancel"
+				}
+			}
+
 			if (_bookSelection != null)
 			{
 				 _bookSelection.SelectBook(newBook);

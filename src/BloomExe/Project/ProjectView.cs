@@ -89,7 +89,7 @@ namespace Bloom.Project
 		}
 
 
-		private void OnEditBook(Book book)
+		private void OnEditBook(Book.Book book)
 		{
 			_tabControl.SelectedTab = _editTabPage;
 		}

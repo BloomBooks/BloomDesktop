@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using Bloom.Book;
 
 namespace Bloom.Edit
 {

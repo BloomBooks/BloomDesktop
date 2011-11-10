@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Book;
 using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Library
@@ -60,12 +61,12 @@ namespace Bloom.Library
 			}
 		}
 
-		public  void SelectBook(Book book)
+		public  void SelectBook(Book.Book book)
 		{
 			 _bookSelection.SelectBook(book);
 		}
 
-		public void DeleteBook(Book book, BookCollection collection)
+		public void DeleteBook(Book.Book book, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
 

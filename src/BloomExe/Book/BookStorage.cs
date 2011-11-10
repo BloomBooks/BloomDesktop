@@ -3,20 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
-using Bloom.Publish;
-using BloomTemp;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
-namespace Bloom
+namespace Bloom.Book
 {
 	/* The role of this class is simply to isolate the actual storage mechanism (e.g. file system)
 	 * to a single place.  All the other classes can then just pass around DOMs.
@@ -83,6 +79,7 @@ namespace Bloom
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				//add a unique id for our use
+	 //review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
 				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
 					if(string.IsNullOrEmpty(node.GetAttribute("id")))
@@ -99,8 +96,7 @@ namespace Bloom
 				{
 					if (string.IsNullOrEmpty(node.GetAttribute("id")))
 						node.SetAttribute("id", Guid.NewGuid().ToString());
-				}
-
+			 }
 				UpdateSupportFiles();
 			}
 		}

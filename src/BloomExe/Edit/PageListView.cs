@@ -2,9 +2,9 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Bloom.Edit;
+using Bloom.Book;
 
-namespace Bloom
+namespace Bloom.Edit
 {
 	public partial class PageListView : UserControl
 	{
@@ -42,7 +42,7 @@ namespace Bloom
 			_thumbNailList.BackColor = BackColor;
 		}
 
-		public void SetBook(Book book)//review: could do this instead by giving this class the bookselection object
+		public void SetBook(Book.Book book)//review: could do this instead by giving this class the bookselection object
 		{
 		  //  return;
 

@@ -1,20 +1,21 @@
 using System.Collections.Generic;
 using System.IO;
+using Bloom.Book;
 using Bloom.Library;
 
 namespace Bloom
 {
 	public interface ITemplateFinder
 	{
-		Book FindTemplateBook(string key);
+		Book.Book FindTemplateBook(string key);
 	}
 
 	public class TemplateCollectionList : ITemplateFinder
 	{
-		private readonly Book.Factory _bookFactory;
+		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 
-		public TemplateCollectionList(Book.Factory bookFactory, BookStorage.Factory storageFactory)
+		public TemplateCollectionList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
@@ -26,7 +27,7 @@ namespace Bloom
 			set;
 		}
 
-		public Book FindTemplateBook(string key)
+		public Book.Book FindTemplateBook(string key)
 		{
 			foreach (var root in RepositoryFolders)
 			{

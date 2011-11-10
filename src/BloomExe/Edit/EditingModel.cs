@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
+using Bloom.Book;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -16,7 +17,7 @@ namespace Bloom.Edit
 		private readonly ProjectSettings _projectSettings;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
-		private Book _currentlyDisplayedBook;
+		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
 
 
@@ -95,7 +96,7 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection != null; }
 		}
 
-		public Book CurrentBook
+		public Book.Book CurrentBook
 		{
 			get { return _bookSelection.CurrentSelection; }
 		}
