@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
+using Bloom.Book;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
