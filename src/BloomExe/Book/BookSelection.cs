@@ -1,6 +1,6 @@
 using System;
 
-namespace Bloom
+namespace Bloom.Book
 {
 	public class BookSelection
 	{

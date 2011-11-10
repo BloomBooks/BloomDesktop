@@ -74,6 +74,11 @@ namespace Bloom
 			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
   */      }
 
+		public void Save(string path)
+		{
+			_browser.SaveDocument(path);
+		}
+
 		private void UpdateEditButtons()
 		{
 			if (_copyCommand == null)

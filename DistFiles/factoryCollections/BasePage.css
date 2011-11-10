@@ -62,6 +62,12 @@ DIV.-bloom-page
 	background-color: #FFFFFF;
 	/*[ph]0*/
 }
+/* this doesn't do what I expected... it leave a blank.
+Until we fix that, put configuration page at the end of the document so it doesn't show */
+DIV.-bloom-configurationPage
+{
+	/*visibility:collapse;*/
+}
 @media screen
 {
 	DIV.-bloom-page

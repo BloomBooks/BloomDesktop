@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,7 +13,7 @@ using Bloom.Publish;
 using Palaso.Code;
 using Palaso.Xml;
 
-namespace Bloom
+namespace Bloom.Book
 {
 	public class Book
 	{
@@ -856,5 +855,13 @@ namespace Bloom
 			return dom;
 		}
 
+		/// <summary>
+		/// this is used for configuration, where we do want to offer up the original file.
+		/// </summary>
+		/// <returns></returns>
+		public string GetPathHtmlFile()
+		{
+			return _storage.PathToExistingHtml;
+		}
 	}
 }

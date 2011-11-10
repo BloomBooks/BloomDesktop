@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
-using Bloom;
+﻿using System.Xml;
+using Bloom.Book;
 using NUnit.Framework;
 using Palaso.Xml;
 
-namespace BloomTests
+namespace BloomTests.Book
 {
 	[TestFixture]
 	public sealed class PageTests

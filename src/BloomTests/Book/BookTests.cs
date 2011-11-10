@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Xml;
 using Bloom;
+using Bloom.Book;
 using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
@@ -12,7 +9,7 @@ using Palaso.IO;
 using Palaso.TestUtilities;
 using Palaso.Xml;
 
-namespace BloomTests
+namespace BloomTests.Book
 {
 	[TestFixture]
 	public class BookTests
@@ -35,7 +32,7 @@ namespace BloomTests
 			_storage.SetupGet(x => x.Dom).Returns(()=>_documentDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
-			_storage.SetupGet(x => x.BookType).Returns(Book.BookType.Publication);
+			_storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
 			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns((XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
@@ -53,9 +50,9 @@ namespace BloomTests
 
 	  }
 
-		private Book CreateBook()
+		private Bloom.Book.Book CreateBook()
 		{
-			return new Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
+			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
 				new ProjectSettings(new NewProjectInfo() {PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_testFolder.Path,"test"), Iso639Code = "xyz" }),
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
@@ -407,7 +404,7 @@ namespace BloomTests
 			Assert.AreEqual(1, guids.Length);
 		}
 
-		private void TestTemplateInsertion(Book book, IPage existingPage, string divContent)
+		private void TestTemplateInsertion(Bloom.Book.Book book, IPage existingPage, string divContent)
 		{
 			Mock<IPage> templatePage = CreateTemplatePage(divContent);
 
@@ -416,13 +413,13 @@ namespace BloomTests
 			Assert.AreEqual("-bloom-page somekind", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
 
-		private XmlNode GetPageFromBookDom(Book book, int pageNumber0Based)
+		private XmlNode GetPageFromBookDom(Bloom.Book.Book book, int pageNumber0Based)
 		{
 			var result = book.RawDom.StripXHtmlNameSpace();
 			return result.SafeSelectNodes("//div[contains(@class, '-bloom-page')]", null)[pageNumber0Based];
 		}
 
-		private void AssertPageCount(Book book, int expectedCount)
+		private void AssertPageCount(Bloom.Book.Book book, int expectedCount)
 		{
 			var result = book.RawDom.StripXHtmlNameSpace();
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]", expectedCount);

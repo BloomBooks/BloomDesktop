@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
-using Palaso.Code;
-using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
 
-namespace Bloom
+namespace Bloom.Book
 {
 	/// <summary>
 	/// Creates the files for a new blank book from a template book
@@ -31,6 +27,11 @@ namespace Bloom
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
+
+			//TODO: all this gets thrown away, and replaced by what is found in the textarea with class "-bloom-vernacularBookTitle"
+			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
+			// defaultNameForDerivedBooks, but maybe there is a reason
+
 			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceTemplateFolder, newBookFolder);
@@ -71,7 +72,7 @@ namespace Bloom
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
-			//Remove from the new book an div-pages labelled as "extraPage"
+			//Remove from the new book any div-pages labelled as "extraPage"
 			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'-bloom-extraPage')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
@@ -113,13 +114,14 @@ namespace Bloom
 		/// <param name="pageDiv"></param>
 		private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
 		{
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("/html/body/div"))
+			foreach (XmlElement node in pageDiv.SafeSelectNodes("//div"))
 			{
 					node.SetAttribute("id", Guid.NewGuid().ToString());
 			}
 
 			foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
 			{
+				if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
 					node.SetAttribute("id", Guid.NewGuid().ToString());
 			}
 

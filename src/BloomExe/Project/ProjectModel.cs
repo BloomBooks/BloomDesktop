@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Book;
 
 namespace Bloom.Project
 {
@@ -51,7 +52,7 @@ namespace Bloom.Project
 			}
 		}
 
-		public Book FindTemplate(string key)
+		public Book.Book FindTemplate(string key)
 		{
 			return null;
 		}

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Xml;
 using Palaso.Xml;
 
-namespace Bloom
+namespace Bloom.Book
 {
 	public interface IPage
 	{

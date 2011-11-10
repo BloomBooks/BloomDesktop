@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
+using Bloom.Book;
 using Palaso.IO;
 using Palaso.Xml;
 
@@ -28,7 +29,7 @@ namespace Bloom.Publish
 		}
 
 		private readonly BookSelection _bookSelection;
-		private Book _currentlyLoadedBook;
+		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker)

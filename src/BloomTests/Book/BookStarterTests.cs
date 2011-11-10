@@ -1,13 +1,12 @@
 ﻿using System.IO;
-using System.Xml;
 using Bloom;
+using Bloom.Book;
 using NUnit.Framework;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
 
-
-namespace BloomTests
+namespace BloomTests.Book
 {
 	[TestFixture]
 	public class BookStarterTests
@@ -42,6 +41,15 @@ namespace BloomTests
 		{
 			return Path.Combine(bookFolderPath, Path.GetFileName(bookFolderPath))+".htm";
 		}
+//
+//        [Test]
+//        public void CreateBookOnDiskFromTemplate_HasConfigurationPage_xxxxxxxxxxxx()
+//        {
+//            var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+//                                                                            "Calendar");
+//
+//            var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+//        }
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()

@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
 using Bloom;
+using Bloom.Book;
 using Bloom.Edit;
-using Bloom.Library;
 using NUnit.Framework;
 using Palaso.IO;
 using Palaso.TestUtilities;
 
-namespace BloomTests
+namespace BloomTests.Book
 {
 	public class BookCollectionTests
 	{
@@ -28,9 +25,9 @@ namespace BloomTests
 				BookStorageFactory, null,null, new CreateFromTemplateCommand());
 		}
 
-		 Book BookFactory(BookStorage storage, bool editable)
+		 Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		 {
-			 return new Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_folder.Path,"test"), Iso639Code = "xyz"}), null,
+			 return new Bloom.Book.Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_folder.Path,"test"), Iso639Code = "xyz"}), null,
 													  new PageSelection(),
 													  new PageListChangedEvent());
 		 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Bloom.Book;
 using Bloom.Library;
 
 namespace Bloom
@@ -30,11 +31,11 @@ namespace Bloom
 		}
 	}
 
-	public class CreateFromTemplateCommand: Event<Book>
+	public class CreateFromTemplateCommand: Event<Book.Book>
 	{}
 
 
-	public class EditBookCommand : Event<Book>
+	public class EditBookCommand : Event<Book.Book>
 	{ }
 
 

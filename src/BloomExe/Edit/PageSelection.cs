@@ -1,4 +1,5 @@
 using System;
+using Bloom.Book;
 
 namespace Bloom.Edit
 {
@@ -6,7 +7,7 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 		private IPage _currentSelection;
-		private Book _currentBook;
+		private Book.Book _currentBook;
 		public event EventHandler SelectionChanged;
 
 		public PageSelection()//BookSelection bookSelection)

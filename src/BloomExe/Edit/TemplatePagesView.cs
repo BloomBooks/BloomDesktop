@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using Bloom.Edit;
+using Bloom.Book;
 
-namespace Bloom
+namespace Bloom.Edit
 {
 	public partial class TemplatePagesView : UserControl
 	{
@@ -41,7 +41,7 @@ namespace Bloom
 			}
 			else
 			{
-				_thumbNailList.SetItems(((Book) _bookSelection.CurrentSelection.TemplateBook).GetTemplatePages());
+				_thumbNailList.SetItems(((Book.Book) _bookSelection.CurrentSelection.TemplateBook).GetTemplatePages());
 			}
 		}
 

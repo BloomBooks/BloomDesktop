@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Book;
 using Palaso.IO;
 
 
@@ -114,7 +115,7 @@ namespace Bloom.Library
 				}
 				group.Tag = collection;
 			}
-			foreach (Book book in collection.GetBooks())
+			foreach (Book.Book book in collection.GetBooks())
 			{
 				try
 				{
@@ -136,7 +137,7 @@ namespace Bloom.Library
 			}
 		}
 
-		private void AddOneBook(ListViewGroup group, Book book)
+		private void AddOneBook(ListViewGroup group, Book.Book book)
 		{
 			ListViewItem item = new ListViewItem(book.Title, 0);
 			item.Tag=book;
@@ -148,11 +149,11 @@ namespace Bloom.Library
 			_listView.Items.Add(item);
 		}
 
-		private Image GetThumbnail(Book book)
+		private Image GetThumbnail(Book.Book book)
 		{
 //            if (book.Type != Book.BookType.Template)
 //            {
-			return book.GetThumbNailOfBookCover(book.Type != Book.BookType.Publication);
+			return book.GetThumbNailOfBookCover(book.Type != Book.Book.BookType.Publication);
 //            }
 //            else
 //            {
@@ -167,7 +168,7 @@ namespace Bloom.Library
 		int _templateBookletColorIndex = 0;
 		private Pen _boundsPen;
 
-		private Image GetBookletImage(Book book)
+		private Image GetBookletImage(Book.Book book)
 		{
 			var imagesDirectory = FileLocator.GetDirectoryDistributedWithApplication("images");
 			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
@@ -175,19 +176,19 @@ namespace Bloom.Library
 			string name;
 			switch (book.SizeAndShape)
 			{
-				case Book.SizeAndShapeChoice.A5Landscape:
+				case Book.Book.SizeAndShapeChoice.A5Landscape:
 					name = "A5LandscapeBooklet";
 					break;
-				case Book.SizeAndShapeChoice.A5Portrait:
+				case Book.Book.SizeAndShapeChoice.A5Portrait:
 					name = "A5PortraitBooklet";
 					break;
-				case Book.SizeAndShapeChoice.A4Landscape:
+				case Book.Book.SizeAndShapeChoice.A4Landscape:
 					name = "A5PortraitBooklet";
 					break;
-				case Book.SizeAndShapeChoice.A4Portrait:
+				case Book.Book.SizeAndShapeChoice.A4Portrait:
 					name = "A5PortraitBooklet";
 					break;
-				case Book.SizeAndShapeChoice.A3Landscape:
+				case Book.Book.SizeAndShapeChoice.A3Landscape:
 					name = "A5PortraitBooklet";
 					break;
 				default:
@@ -199,7 +200,7 @@ namespace Bloom.Library
 			do
 			{
 				string color;
-				if (book.Type == Book.BookType.Template)
+				if (book.Type == Book.Book.BookType.Template)
 				{
 					color = templateBookColors[_templateBookletColorIndex++];
 					if (_templateBookletColorIndex == templateBookColors.Length)
@@ -316,7 +317,7 @@ namespace Bloom.Library
 		{
 			if (_listView.SelectedItems.Count == 0)
 				return;
-			Book book = SelectedBook;
+			Book.Book book = SelectedBook;
 			if (book == null)
 				return;
 			Debug.WriteLine("before selecting "+book.Title);
@@ -329,13 +330,13 @@ namespace Bloom.Library
 			deleteMenuItem.Enabled = _model.CanDeleteSelection;
 		}
 
-		private Book SelectedBook
+		private Book.Book SelectedBook
 		{
 			get
 			{
 				if (_listView.SelectedItems.Count == 0)
 					return null;
-				return (Book) _listView.SelectedItems[0].Tag;
+				return (Book.Book) _listView.SelectedItems[0].Tag;
 			}
 		}
 
@@ -356,7 +357,7 @@ namespace Bloom.Library
 		{
 			if(Visible )
 			{
-				Book book = SelectedBook;
+				Book.Book book = SelectedBook;
 				if (book == null)
 					return;
 
@@ -385,7 +386,7 @@ namespace Bloom.Library
 			BookCollection collection = _listView.SelectedItems[0].Group.Tag as BookCollection;
 			if (collection != null)
 			{
-				_model.DeleteBook((Book) _listView.SelectedItems[0].Tag, collection);
+				_model.DeleteBook((Book.Book) _listView.SelectedItems[0].Tag, collection);
 				//_listView.SelectedItems.Clear();
 			}
 		}

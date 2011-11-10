@@ -1,13 +1,12 @@
 ﻿using System.IO;
 using System.Threading;
-using Bloom;
+using Bloom.Book;
 using NUnit.Framework;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
 
-
-namespace BloomTests
+namespace BloomTests.Book
 {
 	[TestFixture]
 	public class BookStorageTests
