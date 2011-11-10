@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Library;
 using Palaso.IO;
@@ -77,7 +78,7 @@ namespace Bloom
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {
-						 var l = new TemplateCollectionList(c.Resolve<Book.Factory>(), c.Resolve<BookStorage.Factory>());
+						 var l = new TemplateCollectionList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>());
 						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
