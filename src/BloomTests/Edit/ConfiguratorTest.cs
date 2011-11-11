@@ -40,35 +40,32 @@ namespace BloomTests.Edit
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 
+			Browser.SetUpXulRunner();
 
-			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-			if (!Directory.Exists(xulRunnerPath))
-			{
-#if DEBUG
-				//if this is a programmer, go look in the lib directory
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-											 Path.Combine("lib", "xulrunner"));
-#endif
-			}
-			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-			SetDllDirectory(xulRunnerPath);
-
-			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
 		}
 
 		[Test]
 		public void IsConfigurable_Calendar_True()
 		{
-			Assert.IsTrue(Configurator.IsConfigurable(GetCalendardBookStorage().Dom));
+			Assert.IsTrue(Configurator.IsConfigurable(GetCalendardBookStorage().FolderPath));
 		}
 
 		[Test, Ignore("UI-By hand")]
 		[STAThread]
 		public void ShowConfigureDialog()
 		{
-			Configurator.ShowConfigurationDialog(GetCalendardBookStorage().PathToExistingHtml);
+			var c = new Configurator();
+			c.ShowConfigurationDialog(GetCalendardBookStorage().FolderPath);
+			Assert.IsTrue(c.ConfigurationData.Contains("year"));
 		}
 
+		[Test]
+		[STAThread]
+		public void ConfigureBook_xxxxxx()
+		{
+			var c = new Configurator();
+			c.ConfigureBook(GetCalendardBookStorage().PathToExistingHtml);
+		}
 
 		private BookStorage GetCalendardBookStorage()
 		{

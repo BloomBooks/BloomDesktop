@@ -1,0 +1,18 @@
+.month table {
+  padding: 1cm;
+}
+
+.month thead td {
+	font-weight: bold;
+	font-size: larger;
+}
+
+.month thead th {
+	width: 3em;
+	text-align: center;
+}
+
+
+.month td {
+	text-align: center;
+}

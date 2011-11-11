@@ -62,6 +62,12 @@ DIV.-bloom-page
 	background-color: #FFFFFF;
 	/*[ph]0*/
 }
+/* This class is used by the calendar template, which has a page that should only be visible when we're setting up the calendar */
+DIV.-bloom-configurationPage
+{
+	display: none;
+	visibility: hidden;
+}
 @media screen
 {
 	DIV.-bloom-page
