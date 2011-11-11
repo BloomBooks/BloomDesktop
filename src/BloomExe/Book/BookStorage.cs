@@ -293,24 +293,26 @@ namespace Bloom.Book
 
 		public string PathToExistingHtml
 		{
-			get
-			{
-				string p = Path.Combine(_folderPath, Path.GetFileName(_folderPath) + ".htm");
-				if (File.Exists(p))
-					return p;
+			get { return FindBookHtmlInFolder(_folderPath); }
+		}
 
-				//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
-				var candidates = Directory.GetFiles(_folderPath, "*.htm");
-				if (candidates.Length == 1)
-					return candidates[0];
+		public static string FindBookHtmlInFolder(string folderPath)
+		{
+			string p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
+			if (File.Exists(p))
+				return p;
 
-				//template
-				p = Path.Combine(_folderPath, "templatePages.htm");
-				if (File.Exists(p))
-					return p;
+			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
+			var candidates = Directory.GetFiles(folderPath, "*.htm");
+			if (candidates.Length == 1)
+				return candidates[0];
 
-				return string.Empty;
-			}
+			//template
+			p = Path.Combine(folderPath, "templatePages.htm");
+			if (File.Exists(p))
+				return p;
+
+			return string.Empty;
 		}
 
 		public string GetTemplateKey()

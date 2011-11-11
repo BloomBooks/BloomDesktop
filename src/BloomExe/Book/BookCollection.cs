@@ -48,29 +48,33 @@ namespace Bloom.Book
 		private void CreateFromTemplate(Book templateBook)
 		{
 			var starter = _bookStarterFactory();
-			var path = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+			var newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+
+			if (Configurator.IsConfigurable(newBookFolder))
+			{
+				var c = new Configurator();
+				if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
+				{
+					return; // the template had a configuration page and they clicked "cancel"
+				}
+				c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
+			}
 
 
 			ListOfBooksIsOutOfDate();
-			if (CollectionChanged != null)
-				CollectionChanged.Invoke(this, null);
-			var newBook = _books.Find(b => b.FolderPath == path);
-			if (Configurator.IsConfigurable(newBook.RawDom))
-			{
-				if(DialogResult.Cancel == Configurator.ShowConfigurationDialog(newBook.GetPathHtmlFile()))
-				{
-					newBook.Delete();// Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(path);
-					ListOfBooksIsOutOfDate();
-					if (CollectionChanged != null)
-						CollectionChanged.Invoke(this, null);
-					return; // the template had a configuration page and they clicked "cancel"
-				}
-			}
+			NotifyCollectionChanged();
+			var newBook = _books.Find(b => b.FolderPath == newBookFolder);
 
 			if (_bookSelection != null)
 			{
 				 _bookSelection.SelectBook(newBook);
 			}
+		}
+
+		private void NotifyCollectionChanged()
+		{
+			if (CollectionChanged != null)
+				CollectionChanged.Invoke(this, null);
 		}
 
 		public void DeleteBook(Book book)

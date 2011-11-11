@@ -55,13 +55,15 @@ namespace Bloom.Book
 
 		private string GetPathToHtmlFile(string folder)
 		{
-			var candidates = Directory.GetFiles(folder, "*.htm");
-			if (candidates.Length == 1)
-				return candidates[0];
+			var candidates = from x in Directory.GetFiles(folder, "*.htm")
+							 where !(x.ToLower().EndsWith("configuration.htm"))
+							 select x;
+			if (candidates.Count() == 1)
+				return candidates.First();
 			else
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm file in each folder ({0}).", folder);
+					"There should only be a single htm file in each folder ({0}). [not counting configuration.htm]", folder);
 				throw new ApplicationException();
 			}
 

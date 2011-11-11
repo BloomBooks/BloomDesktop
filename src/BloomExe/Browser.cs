@@ -3,12 +3,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
+using Skybound.Gecko.DOM;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
@@ -74,9 +76,9 @@ namespace Bloom
 			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
   */      }
 
-		public void Save(string path)
+		public void SaveXHTML(string path)
 		{
-			_browser.SaveDocument(path);
+			_browser.SaveDocument(path, "application/xhtml+xml");
 		}
 
 		private void UpdateEditButtons()
@@ -112,6 +114,7 @@ namespace Bloom
 			}
 			base.Dispose(disposing);
 		}
+		public GeckoWebBrowser WebBrowser { get { return _browser; } }
 
 		protected override void OnLoad(EventArgs e)
 		{
@@ -351,5 +354,45 @@ namespace Bloom
 				}
 			}
 		}
+
+		/// <summary>
+		/// add a jscript source file
+		/// </summary>
+		/// <param name="filename"></param>
+		public void AddScriptSource(string filename)
+		{
+			GeckoDocument doc = WebBrowser.Document;
+			var head = doc.GetElementsByTagName("head").First();
+			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
+			script.Type = "text/javascript";
+			script.Src = filename;
+			head.AppendChild(script);
+		}
+
+		public void AddScriptContent(string content)
+		{
+			GeckoDocument doc = WebBrowser.Document;
+			var head = doc.GetElementsByTagName("head").First();
+			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
+			script.Type = "text/javascript";
+			script.Text = content;
+			head.AppendChild(script);
+		}
+
+		public void RunJavaScript(string script)
+		{
+			WebBrowser.Navigate("javascript:void("+script+")");
+			Application.DoEvents(); //review... is there a better way?  it seems that NavigationFinished isn't raised.
+		}
+
+		/* snippets
+		 *
+		 * //           _browser.WebBrowser.Navigate("javascript:void(document.getElementById('output').innerHTML = 'test')");
+//            _browser.WebBrowser.Navigate("javascript:void(alert($.fn.jquery))");
+//            _browser.WebBrowser.Navigate("javascript:void(alert($(':input').serialize()))");
+			//_browser.WebBrowser.Navigate("javascript:void(document.getElementById('output').innerHTML = form2js('form','.',false,null))");
+			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
+
+			*/
 	}
 }
