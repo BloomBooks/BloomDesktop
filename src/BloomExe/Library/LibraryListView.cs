@@ -168,7 +168,7 @@ namespace Bloom.Library
 		int _templateBookletColorIndex = 0;
 		private Pen _boundsPen;
 
-		private Image GetBookletImage(Book.Book book)
+/*        private Image GetBookletImage(Book.Book book)
 		{
 			var imagesDirectory = FileLocator.GetDirectoryDistributedWithApplication("images");
 			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
@@ -286,7 +286,7 @@ namespace Bloom.Library
 			}
 			return book;
 		}
-
+*/
 		/// <summary>
 		/// Make the result look like it's on a colored paper, or make it transparent for composing on top
 		/// of some other image.

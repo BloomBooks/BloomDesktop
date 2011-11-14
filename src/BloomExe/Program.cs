@@ -61,7 +61,7 @@ namespace Bloom
 #if DEBUG
 				//if this is a programmer, go look in the lib directory
 				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-											 Path.Combine("lib", "xulrunner"));
+											 Path.Combine("lib", "xulrunner192"));
 #endif
 			}
 			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new

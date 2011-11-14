@@ -34,11 +34,10 @@ namespace Bloom.Book
 
 		public event EventHandler ContentsChanged;
 
-		public enum SizeAndShapeChoice
-		{
-			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,
-
-		}
+//        public enum SizeAndShapeChoice
+//		{
+//			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,USLetterPortrait,USLetterLandscape,USHalfLetterPortrait,USHalfLetterLandscape
+//		}
 
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
@@ -76,7 +75,7 @@ namespace Bloom.Book
 			if (handler != null) handler(this, e);
 		}
 
-		public SizeAndShapeChoice SizeAndShape
+ /*       public SizeAndShapeChoice SizeAndShape
 		{
 			get
 			{
@@ -94,9 +93,39 @@ namespace Bloom.Book
 				{
 					return SizeAndShapeChoice.A5Landscape;
 				}
+				else if (bodyClass.Contains("A4Portrait"))
+				{
+					return SizeAndShapeChoice.A4Portrait;
+				}
+				else if (bodyClass.Contains("A5Landscape"))
+				{
+					return SizeAndShapeChoice.A5Landscape;
+				}
+				else if (bodyClass.Contains("A3Landscape"))
+				{
+					return SizeAndShapeChoice.A3Landscape;
+				}
+				else if (bodyClass.Contains("USLetterPortrait"))
+				{
+					return SizeAndShapeChoice.USLetterPortrait;
+				}
+				else if (bodyClass.Contains("USLetterLandscape"))
+				{
+					return SizeAndShapeChoice.USLetterLandscape;
+				}
+				else if (bodyClass.Contains("USHalfLetterPortrait"))
+				{
+					return SizeAndShapeChoice.USHalfLetterPortrait;
+				}
+				else if (bodyClass.Contains("USHalfLetterLandscape"))
+				{
+					return SizeAndShapeChoice.USHalfLetterLandscape;
+				}
+
 				else return SizeAndShapeChoice.Unknown;
 			}
 		}
+		*/
 
 		public enum BookType { Unknown, Template, Shell, Publication }
 
