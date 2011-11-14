@@ -124,8 +124,11 @@
   <Target Name="GetXulRunnerIntoLib">
 	<RemoveDir
 		   Directories="..\lib\XulRunner" />
-	<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-1.9.2.13.en-US.win32.zip"
+
+	<!-- we expect this has only one element, named "xulrunner"-->
+	<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
 		   TargetDirectory="..\lib\"/>
+
   </Target>
 
   <Target Name="GetWkhtmlToXIntoLib">

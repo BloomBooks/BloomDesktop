@@ -44,7 +44,19 @@ namespace Bloom
 #if DEBUG
 				//if this is a programmer, go look in the lib directory
 				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-											 Path.Combine("lib", "xulrunner8"));
+											 Path.Combine("lib", "xulrunner"));
+
+				//on my build machine, I really like to have the dir labelled with the version.
+				//but it's a hassle to update all the other parts (installer, build machine) with this number,
+				//so we only use it if we don't find the unnumbered alternative.
+				if(!Directory.Exists(xulRunnerPath))
+					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+												 Path.Combine("lib", "xulrunner8"));
+
+				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
+				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
+				//	build/build.win.proj: change the zip file to match the new name
+
 #endif
 			}
 			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
