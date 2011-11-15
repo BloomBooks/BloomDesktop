@@ -11,6 +11,7 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
 using Palaso.Code;
+using Palaso.Extensions;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -862,6 +863,22 @@ namespace Bloom.Book
 		public string GetPathHtmlFile()
 		{
 			return _storage.PathToExistingHtml;
+		}
+
+		public string GetPageSizeName()
+		{
+			var css =  BookStorage.GetPaperStyleSheetName(_storage.Dom);
+			int i = css.ToLower().IndexOf("portrait");
+			if(i > 0)
+			{
+				return css.Substring(0, i).ToUpperFirstLetter();
+			}
+			i = css.ToLower().IndexOf("landscape");
+			if (i > 0)
+			{
+				return css.Substring(0, i).ToUpperFirstLetter();
+			}
+			throw new ApplicationException("Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
 		}
 	}
 }

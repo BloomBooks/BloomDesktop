@@ -244,6 +244,28 @@ namespace Bloom.Book
 				}
 			}
 		}
+		/// <summary>
+		/// looks for the css which sets the paper size/orientation
+		/// </summary>
+		/// <param name="dom"></param>
+		public static string GetPaperStyleSheetName(XmlDocument dom)
+		{
+			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if (href == null)
+				{
+					continue;
+				}
+
+				var fileName = Path.GetFileName(href);
+				if (fileName.ToLower().Contains("portrait") || fileName.ToLower().Contains("landscape"))
+				{
+					return fileName;
+				}
+			}
+			return string.Empty;
+		}
 
 
 		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)

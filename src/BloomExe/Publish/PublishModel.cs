@@ -85,7 +85,7 @@ namespace Bloom.Publish
 						dom.WriteContentTo(writer);
 						writer.Close();
 					}
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, BookletStyle);
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, _bookSelection.CurrentSelection.GetPageSizeName(), BookletStyle);
 				}
 			}
 			catch (Exception e)
