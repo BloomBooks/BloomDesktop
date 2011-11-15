@@ -194,7 +194,7 @@ namespace Bloom.Edit
 					//todo: log this
 				}
 			};
-			using(var dlg = new ImageToolboxDialog(imageInfo))
+			using(var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				if(DialogResult.OK== dlg.ShowDialog())
 				{

@@ -909,5 +909,11 @@ namespace Bloom.Book
 			}
 			throw new ApplicationException("Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
 		}
+
+		public bool GetIsLandscape()
+		{
+			var css = BookStorage.GetPaperStyleSheetName(_storage.Dom);
+			return css.ToLower().Contains("landscape");
+		}
 	}
 }

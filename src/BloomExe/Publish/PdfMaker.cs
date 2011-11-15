@@ -22,19 +22,20 @@ namespace Bloom.Publish
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
+		/// <param name="getIsLandscape"></param>
 		/// <param name="bookletStyle"></param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, PublishModel.BookletStyleChoices bookletStyle)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletStyleChoices bookletStyle)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
-			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName);
+			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape);
 			if (bookletStyle != PublishModel.BookletStyleChoices.None)
 			{
 				MakeBooklet(outputPdfPath);
 			}
 		}
 
-		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName)
+		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,bool landscape)
 		{
 			var customSizes = new Dictionary<string, string>();
 			customSizes.Add("Halfletter", "--page-width 8.5 --page-height 5.5");
@@ -49,6 +50,7 @@ namespace Bloom.Publish
 														 string.Format(
 															"--print-media-type "+
 															pageSizeArguments +
+															(landscape? " -O Landscape ":"")+
 															"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm "+
 															"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
 															 Path.GetFileName(inputHtmlPath), outputPdfPath));

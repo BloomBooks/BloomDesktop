@@ -549,6 +549,27 @@ namespace BloomTests.Book
 			Assert.AreEqual("A5", book.GetPageSizeName());
 		}
 
+		[Test]
+		public void GetIsLandscape_portraitCSS_false()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									<link rel='stylesheet' href='a5Portrait.css' type='text/css' />
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.IsFalse(book.GetIsLandscape());
+		}
+		[Test]
+		public void GetIsLandscape_landscapeCSS_true()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									<link rel='stylesheet' href='a5LAndSCAPE.css' type='text/css' />
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.IsTrue(book.GetIsLandscape());
+		}
+
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
 			var templatePage = new Moq.Mock<IPage>();
