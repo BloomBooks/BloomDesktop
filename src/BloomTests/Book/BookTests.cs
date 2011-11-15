@@ -526,9 +526,30 @@ namespace BloomTests.Book
         }
 
 
+		[Test]
+		public void GetPageSizeName_USLetter()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									<link rel='stylesheet' href='LeTtErPortrait.css' type='text/css' />
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual("Letter", book.GetPageSizeName());
+		}
 
 
-        private Mock<IPage> CreateTemplatePage(string divContent)
+		[Test]
+		public void GetPageSizeName_A5LANDSCAPE()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									<link rel='stylesheet' href='a5LANDSCAPE.css' type='text/css' />
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual("A5", book.GetPageSizeName());
+		}
+
+    	private Mock<IPage> CreateTemplatePage(string divContent)
         {
             var templatePage = new Moq.Mock<IPage>();
             XmlDocument d = new XmlDocument(); 
