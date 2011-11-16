@@ -6,7 +6,7 @@
   <UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
   <PropertyGroup>
-	<XulRunnerLocation>Fill Me In</XulRunnerLocation>
+	<BigFilesLocation>Fill Me In</BigFilesLocation>
   </PropertyGroup>
 
   <Target Name="VersionNumbers">
@@ -125,12 +125,12 @@
 
 <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
   <ItemGroup>
-		<XulRunnerFiles Include="$(XulRunnerLocation)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
+		<XulRunnerFiles Include="$(BigFilesLocation)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
 	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
   </ItemGroup>
 
   <Target Name="GetXulRunnerIntoLib">
-	<RemoveDir Directories="..\lib\XulRunner" />
+	<RemoveDir Directories="..\lib\xulrunner" />
 
 	<!-- we expect this has only one element, named "xulrunner"-->
 	<!-- always dies with errors in the unzipper
@@ -149,7 +149,7 @@
   <Target Name="GetWkhtmlToXIntoLib">
 	<RemoveDir
 		   Directories="..\lib\wkhtmltopdf" />
-	<Unzip ZipFileName="$(XulRunnerZipLocation)\wkhtmltopdf-0.10.0_rc2.zip"
+	<Unzip ZipFileName="$(BigFilesLocation)\wkhtmltopdf-0.10.0_rc2.zip"
 		   TargetDirectory="..\lib\"/>
   </Target>
 
