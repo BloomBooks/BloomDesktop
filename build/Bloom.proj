@@ -5,7 +5,9 @@
   <UsingTask TaskName="FileUpdate" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
   <UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-
+  <PropertyGroup>
+	<XulRunnerLocation>Fill Me In</XulRunnerLocation>
+  </PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -121,15 +123,28 @@
 	</MakeWixForDirTree>
   </Target>
 
+<!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
+  <ItemGroup>
+		<XulRunnerFiles Include="$(XulRunnerLocation)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
+	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
+  </ItemGroup>
+
   <Target Name="GetXulRunnerIntoLib">
-	<RemoveDir
-		   Directories="..\lib\XulRunner" />
+	<RemoveDir Directories="..\lib\XulRunner" />
 
 	<!-- we expect this has only one element, named "xulrunner"-->
-	<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
+	<!-- always dies with errors in the unzipper
+		<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
 		   TargetDirectory="..\lib\"/>
+		   -->
 
+	<Copy
+		SourceFiles="@(XulRunnerFiles)"
+		DestinationFiles="@(XulRunnerFiles->'..\lib\xulrunner\%(RecursiveDir)%(Filename)%(Extension)')"
+		/>
   </Target>
+
+
 
   <Target Name="GetWkhtmlToXIntoLib">
 	<RemoveDir
