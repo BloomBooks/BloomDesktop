@@ -2,6 +2,17 @@
 
 /**
 * @fileoverview Creates calendar pages for a Bloom book.
+*
+*   This script is fed a configuration object with elements
+*       configuration.calendar.year
+*       (in the future:)
+*       configuration.calendar.monthName[0..11]
+*       configuration.calendar.dayName[0..6]
+*
+*   This script relies on 3 of the pages that should be in the DOM it operates on:
+*       One with class 'titlePage'
+*       One with classes 'calendarMonthTop'
+*       One with classes 'calendarMonthBottom'
 */
 
 function test() {
@@ -18,14 +29,19 @@ function test() {
 function updateDom(configuration) {
     var year = Number.from(configuration.calendar.year);
     var previous = $$('.titlePage')[0];
+    var originalMonthsPicturePage = $$('.calendarMonthTop')[0];
     for (var month = 0; month < 12; month++) {
-        var monthsPicturePage = $$('.templateMonthPicturePage')[0].clone();
+
+        var monthsPicturePage = originalMonthsPicturePage.clone();
+        monthsPicturePage.removeClass('templateOnly');
+
         monthsPicturePage.inject(previous, "after");
 
         var monthDaysPage = generateMonth(year, month);
         monthDaysPage.inject(monthsPicturePage, "after");
         previous = monthDaysPage;
     }
+    $('.templateOnly').remove();
 }
 
 function generateMonth(year, month) {
