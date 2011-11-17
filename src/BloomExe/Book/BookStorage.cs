@@ -195,7 +195,7 @@ namespace Bloom.Book
 					}
 					else
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
 					}
 				}
 			}
