@@ -19,9 +19,12 @@ function updateDom(configuration) {
     var year = Number.from(configuration.calendar.year);
     var previous = $$('.titlePage')[0];
     for (var month = 0; month < 12; month++) {
-        var monthElement = generateMonth(year, month);
-        monthElement.inject(previous, "after");
-        previous = monthElement;
+        var monthsPicturePage = $$('.templateMonthPicturePage')[0].clone();
+        monthsPicturePage.inject(previous, "after");
+        
+        var monthDaysPage = generateMonth(year, month);
+        monthDaysPage.inject(monthsPicturePage, "after");
+        previous = monthDaysPage;
     }
 }
 
