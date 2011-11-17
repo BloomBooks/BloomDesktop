@@ -63,10 +63,10 @@ The above is not needed now since the code asks wkthmlpdf to zoom the page by 9.
 preview.css.
 
 */
-	min-width: 14.8cm;
-	max-width: 14.8cm;
-	min-height: 21cm;
-	max-height: 21cm;
+	min-width: 21cm;
+	max-width: 21cm;
+	min-height: 14.8cm;
+	max-height: 14.8cm;
 }
 .coverBottomRow
 {
@@ -85,11 +85,12 @@ TEXTAREA
 }
 .simpleBigVersoContents
 {
-	height: 18.1cm;
-	/*+placement:shift 0px 61px;*/
+	height: 13.2cm;
+	/*+placement:shift 0px 39px;*/
 	position: relative;
 	left: 0px;
-	top: 61px;
+	top: 39px;
+	width: 714px;
 }
 .imageOnTop TEXTAREA
 {
@@ -98,8 +99,8 @@ TEXTAREA
 }
 .cover .-bloom-vernacularBookTitle
 {
-	height: 3.7cm;
-	width: 423px;
+	height: 2.3cm;
+	width: 721px;
 	font-size: 30pt;
 	text-align: center;
 	margin-top: 29px;
@@ -108,17 +109,21 @@ TEXTAREA
 {
 	max-height: 12cm;
 	max-width: 13.2cm;
+	/*+placement:shift -11px -9px;*/
+	position: relative;
+	left: -11px;
+	top: -9px;
 }
 /*e.g. "Health" or "Math"*/
 .cover .-bloom-topicInNationalLanguage
 {
 	width: 5.8cm;
-	/*+placement:anchor-bottom-right -14.1cm 0px;*/
+	/*+placement:anchor-bottom-right -19.9cm 2px;*/
 	position: absolute;
-	right: -14.1cm;
-	bottom: 0px;
+	right: -19.9cm;
+	bottom: 2px;
 	text-align: right;
-	height: 23px;
+	height: 30px;
 }
 .cover .-bloom-nameOfLanguage
 {
@@ -143,7 +148,7 @@ TEXTAREA
 }
 .titlePage .credits
 {
-	height: 5cm;
+	height: 2.7cm;
 	margin-left: 1cm;
 	text-align: center;
 }
@@ -158,7 +163,7 @@ TEXTAREA
 }
 .titlePage .printingHistory
 {
-	height: 7.5cm;
+	height: 3.3cm;
 	margin-left: 1cm;
 	text-align: center;
 }

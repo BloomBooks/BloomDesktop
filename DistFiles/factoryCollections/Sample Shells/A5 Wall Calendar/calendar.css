@@ -31,7 +31,7 @@
 .calendarMonthBottom TD
 {
 	width: 96px;
-	height: 83px;
+	height: 66px;
 	border: 1px solid #000000;
 	margin: 0;
 	padding: 0 0 0 2px;
@@ -66,13 +66,13 @@
 }
 .calendarTopPageText
 {
-	/*+placement:shift 97px 151px;*/
+	/*+placement:shift -10px 142px;*/
 	position: relative;
-	left: 97px;
-	top: 151px;
+	left: -10px;
+	top: 142px;
 	text-align: center;
-	width: 566px;
-	height: 24px;
+	width: 724px;
+	height: 61px;
 }
 .calendarMonthBottom TD P
 {
