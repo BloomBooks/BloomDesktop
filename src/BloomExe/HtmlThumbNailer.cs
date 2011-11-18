@@ -216,6 +216,8 @@ namespace Bloom
 
 		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
 		{
+			if (bmp == null)
+				return null;
 			//get the lesser of the desired and original size
 			destinationWidth = bmp.Width > destinationWidth ? destinationWidth : bmp.Width;
 			destinationHeight = bmp.Height > destinationHeight ? destinationHeight : bmp.Height;

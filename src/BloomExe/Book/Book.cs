@@ -65,6 +65,7 @@ namespace Bloom.Book
 				MakeAllFieldsConsistent();
 			}
 
+			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
 			LockedExceptForTranslation = HasSourceTranslations && !_projectSettings.IsShellMakingProject;
 
 		}
@@ -271,12 +272,12 @@ namespace Bloom.Book
 			XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
 
 			AddCoverColor(bookDom, CoverColor);
-			HideEverythingButFirstPage(bookDom);
+			HideEverythingButFirstPageAndRemoveScripts(bookDom);
 			return bookDom;
 		}
 
 
-		private static void HideEverythingButFirstPage(XmlDocument bookDom)
+		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
 		{
 			bool onFirst = true;
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
@@ -286,6 +287,10 @@ namespace Bloom.Book
 					node.SetAttribute("style", "", "display:none");
 				}
 				onFirst =false;
+			}
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//script"))
+			{
+				node.ParentNode.RemoveChild(node);
 			}
 		}
 

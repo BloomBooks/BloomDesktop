@@ -7,6 +7,7 @@ using System.Security;
 using System.Text;
 using System.Xml;
 using Palaso.Code;
+using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
@@ -57,7 +58,11 @@ namespace Bloom.Book
 			Dom = new XmlDocument();
 
 			RequireThat.Directory(folderPath).Exists();
-			if (File.Exists(PathToExistingHtml))
+			if (!File.Exists(PathToExistingHtml))
+			{
+				throw new ApplicationException("Could not determine which html file in the folder to use.");
+			}
+			else
 			{
 				ErrorMessages = ValidateBook(PathToExistingHtml);
 				if (!string.IsNullOrEmpty(ErrorMessages))
@@ -325,8 +330,11 @@ namespace Bloom.Book
 				return p;
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
-			var candidates = Directory.GetFiles(folderPath, "*.htm");
-			if (candidates.Length == 1)
+			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
+			candidates.Remove(folderPath.CombineForPath("configuration.htm"));
+			candidates.Remove(folderPath.CombineForPath("credits.htm"));
+			candidates.Remove(folderPath.CombineForPath("instructions.htm"));
+			if (candidates.Count == 1)
 				return candidates[0];
 
 			//template

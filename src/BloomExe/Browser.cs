@@ -268,7 +268,6 @@ namespace Bloom
 			{
 				_browser.Visible = true;
 				_browser.Navigate(_url);
-
 			}
 		}
 
@@ -373,6 +372,9 @@ namespace Bloom
 		/// <param name="filename"></param>
 		public void AddScriptSource(string filename)
 		{
+			if (!File.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
+				throw new FileNotFoundException(filename);
+
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;

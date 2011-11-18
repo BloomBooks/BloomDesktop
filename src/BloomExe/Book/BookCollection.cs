@@ -52,7 +52,7 @@ namespace Bloom.Book
 
 			if (Configurator.IsConfigurable(newBookFolder))
 			{
-				var c = new Configurator();
+				var c = new Configurator(_path);
 				if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
 				{
 					return; // the template had a configuration page and they clicked "cancel"

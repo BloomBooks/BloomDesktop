@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Json;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -42,6 +43,8 @@ namespace BloomTests.Edit
 
 			Browser.SetUpXulRunner();
 
+
+
 		}
 
 		[Test]
@@ -54,22 +57,107 @@ namespace BloomTests.Edit
 		[STAThread]
 		public void ShowConfigureDialog()
 		{
-			var c = new Configurator();
+			var c = new Configurator(_projectFolder.Path);
+
+			var stringRep = DynamicJson.Serialize(new
+			{
+				project = new { calendar = new { year = "2088" } }
+			});
+			c.CollectJsonData(stringRep);
+
 			c.ShowConfigurationDialog(GetCalendardBookStorage().FolderPath);
-			Assert.IsTrue(c.ConfigurationData.Contains("year"));
+			Assert.IsTrue(c.GetProjectData().Contains("year"));
 		}
 
 		[Test]
 		[STAThread]
 		public void ConfigureBook_xxxxxx()
 		{
-			var c = new Configurator();
+			var c = new Configurator(_projectFolder.Path);
 			c.ConfigureBook(GetCalendardBookStorage().PathToExistingHtml);
 		}
 
+		[Test]
+		public void GetAllData_LocalOnly_ReturnLocal()
+		{
+			var c = new Configurator(_projectFolder.Path);
+			dynamic j = new DynamicJson();
+			j.one = 1;
+			c.CollectJsonData(j.ToString());
+			Assert.AreEqual(j, DynamicJson.Parse(c.GetAllData()));
+		}
+
+		[Test]
+		public void ProjectSettingsAreRoundTriped()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			var stringRep = DynamicJson.Serialize(new
+						{
+							project = new {stuff = "foo"}
+						});
+			var internalsOnly = DynamicJson.Serialize(new {stuff = "foo"});
+
+			first.CollectJsonData(stringRep.ToString());
+
+			var second = new Configurator(_projectFolder.Path);
+			AssertEqual(internalsOnly, second.GetProjectData());
+		}
+
+		private void AssertEqual(string a, string b)
+		{
+			Assert.AreEqual(DynamicJson.Parse(a), DynamicJson.Parse(b));
+		}
+
+		[Test]
+		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			dynamic j = new DynamicJson();
+			j.project = new DynamicJson();
+			j.project.projectstuff = "foo";
+			first.CollectJsonData(j.ToString());
+			AssertEmpty(first.LocalData);
+		}
+
+		private static void AssertEmpty(string json)
+		{
+			Assert.IsTrue(DynamicJson.Parse(json).IsEmpty);
+		}
+
+		[Test]
+		public void WhenCollectedNoGlobalDataThenGlobalDataIsEmpty()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			dynamic j = new DynamicJson();
+			j.one = 1;
+			first.CollectJsonData(j.ToString());
+			Assert.AreEqual(j, DynamicJson.Parse(first.LocalData));
+		}
+
+		[Test]
+		public void GetProjectData_NoGlobalData_Empty()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			dynamic j = new DynamicJson();
+			j.one = 1;
+			first.CollectJsonData(j.ToString());
+			Assert.AreEqual("", first.GetProjectData());
+		}
+		[Test]
+		public void GetProjectData_NothingCollected_Empty()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			Assert.AreEqual("", first.GetProjectData());
+		}
+		[Test]
+		public void LocalData_NothingCollected_Empty()
+		{
+			var first = new Configurator(_projectFolder.Path);
+			Assert.AreEqual("", first.LocalData);
+		}
 		private BookStorage GetCalendardBookStorage()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "Calendar");
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "A5 Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator);
 			return bs;

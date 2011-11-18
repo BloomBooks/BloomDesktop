@@ -16,26 +16,56 @@ namespace Bloom.Edit
 	public partial class ConfigurationDialog : Form
 	{
 		private readonly string _filePath;
+		private readonly string _projectJsonData;
 
-		public ConfigurationDialog(string filePath)
+		/// <summary>
+		/// Show an html form, prepopulating it with saved values, and returning the new values when they click "OK"
+		/// </summary>
+		/// <param name="configurationHtmlPath"></param>
+		/// <param name="projectJsonData">Values saved previously</param>
+		public ConfigurationDialog(string configurationHtmlPath, string projectJsonData)
 		{
-			_filePath = filePath;
+			_filePath = configurationHtmlPath;
+			_projectJsonData = projectJsonData;
 			InitializeComponent();
-
-
 		}
 
 		private void ConfigurationDialog_Load(object sender, EventArgs e)
 		{
-			//_browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
+			_browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
+
 			_browser.Navigate(_filePath, false);
+
+		}
+
+		void NavigateFinishedNotifier_NavigateFinished(object sender, EventArgs e)
+		{
+			_browser.AddScriptSource("jquery-1.6.4.js");
+			_browser.AddScriptSource("form2object.js");
+			_browser.AddScriptSource("js2form.js");
+			_browser.AddScriptSource("underscore.js");
+
+			var populateForm = string.Format("populateForm('{0}')", _projectJsonData);
+
+			_browser.AddScriptContent(
+				@"function gather()
+					{
+						var formData = form2object('form', '.', false, null);
+						document.getElementById('output').innerHTML = JSON.stringify(formData, null, '\t');
+					}
+				function preloadSettings()
+					{"+populateForm+"}");
+
+			//if we have saved data from a previous run, prepopulate the form with that
+
+			_browser.RunJavaScript("preloadSettings()");
 		}
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
 		   GeckoDocument doc = _browser.WebBrowser.Document;
 
-			_browser.AddScriptSource("jquery-1.6.4.js");
+/*            _browser.AddScriptSource("jquery-1.6.4.js");
 			_browser.AddScriptSource("form2object.js");
 			_browser.AddScriptContent(
 				@"function gather()
@@ -43,7 +73,7 @@ namespace Bloom.Edit
 						var formData = form2object('form', '.', false, null);
 						document.getElementById('output').innerHTML = JSON.stringify(formData, null, '\t');
 					}");
-
+*/
 			var body = doc.GetElementsByTagName("body").First();
 			GeckoElement div = doc.CreateElement("div");
 			div.Id = "output";
