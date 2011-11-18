@@ -5,9 +5,10 @@
 *
 *   This script is fed a configuration object with elements
 *       configuration.calendar.year
-*       (in the future:)
-*       configuration.calendar.monthName[0..11]
-*       configuration.calendar.dayName[0..6]
+*
+*       These ones are in the "project" zone because they will be reused in future years/other calendar types
+*       configuration.project.calendar.monthNames[0..11]
+*       configuration.project.calendar.dayAbbreviations[0..6]
 *
 *   This script relies on 3 of the pages that should be in the DOM it operates on:
 *       One with class 'titlePage'
@@ -16,7 +17,13 @@
 */
 
 function test() {
-    var configuration = { "calendar": { "year": "2012"} };
+    var configuration = {   "calendar": { "year": "2012" },
+                            "project": { "calendar":
+                                                { "monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
+                                                    "dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                                                }
+                                            }
+    };
     updateDom(configuration);
 }
 
@@ -36,19 +43,19 @@ function updateDom(configuration) {
         monthsPicturePage.removeClass('templateOnly');
 
         monthsPicturePage.inject(previous, "after");
-        
-        var monthDaysPage = generateMonth(year, month);
+
+        var monthDaysPage = generateMonth(year, month, configuration.project.calendar.monthNames[month], configuration.project.calendar.dayAbbreviations);
         monthDaysPage.inject(monthsPicturePage, "after");
         previous = monthDaysPage;
     }
     $('.templateOnly').remove();
 }
 
-function generateMonth(year, month) {
+function generateMonth(year, month, monthName, dayAbbreviations) {
     var monthPage = new Element("div", {
         "class": "-bloom-page -bloom-required calendarMonthBottom"
     });
-    new CalConf(monthPage).draw(year, month);
+    new CalConf(monthPage).draw(year, month, monthName, dayAbbreviations);
     return monthPage;
 }
 
@@ -60,26 +67,24 @@ var CalConf = new Class({
     initialize: function (wrapper, options) {
         this.wrapper = wrapper;
         this.setOptions(options);
-        this.dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        this.ndays = this.dayNames.length;
-        this.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        this.ndays = 7;/* TODO*/
     },
 
-    draw: function (year, month) {
+    draw: function (year, month, monthName, dayAbbreviations) {
         var header = new Element("p");
         header.setAttribute("class", "calendarBottomPageHeader");
-        header.set("text", this.monthNames[month] + " " + year)
+        header.set("text", monthName + " " + year)
         header.inject(this.wrapper);
         this.table = new Element("table");
-        this.drawHeader(year, month);
+        this.drawHeader(year, month, dayAbbreviations);
         this.drawBody(year, month);
         this.table.inject(this.wrapper);
     },
 
-    drawHeader: function (year, month) {
+    drawHeader: function (year, month, dayAbbreviations) {
         var thead = new Element("thead");
         var row = new Element("tr");
-        this.dayNames.each(function (n) {
+        dayAbbreviations.each(function (n) {
             new Element("th").set("text", n).inject(row);
         });
         row.inject(thead);
