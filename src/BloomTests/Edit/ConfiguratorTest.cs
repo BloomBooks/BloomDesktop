@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Json;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Bloom;
