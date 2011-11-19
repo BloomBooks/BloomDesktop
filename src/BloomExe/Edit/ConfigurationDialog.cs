@@ -45,20 +45,22 @@ namespace Bloom.Edit
 			_browser.AddScriptSource("js2form.js");
 			_browser.AddScriptSource("underscore.js");
 
-			var populateForm = string.Format("populateForm('{0}')", _projectJsonData);
-
 			_browser.AddScriptContent(
-				@"function gather()
+				@"function gatherSettings()
 					{
 						var formData = form2object('form', '.', false, null);
 						document.getElementById('output').innerHTML = JSON.stringify(formData, null, '\t');
 					}
 				function preloadSettings()
-					{"+populateForm+"}");
+					{
+						 x =  '"+_projectJsonData+ @"';
+						var $inputs = $('#form').find('[name]');
+						pushInData($inputs, x, 'name');
+					}");
 
 			//if we have saved data from a previous run, prepopulate the form with that
 
-			_browser.RunJavaScript("preloadSettings()");
+			//skip this until it doesn't remove defaults: _browser.RunJavaScript("preloadSettings()");
 		}
 
 		private void _okButton_Click(object sender, EventArgs e)
@@ -79,7 +81,7 @@ namespace Bloom.Edit
 			div.Id = "output";
 			body.AppendChild(div);
 
-			_browser.RunJavaScript("gather()");
+			_browser.RunJavaScript("gatherSettings()");
 
 			FormData = div.InnerHtml;
 			DialogResult = DialogResult.OK;

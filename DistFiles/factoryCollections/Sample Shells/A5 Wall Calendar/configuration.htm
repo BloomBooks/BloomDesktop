@@ -13,8 +13,9 @@
 
 			<script type="text/javascript">
 				function test() {
-					x = { calendar: { year: 2044} };
-					populateForm(x);
+					x = { calendar: { year: 2044 }};
+					var $form = $("#form").find("[name]");
+				   populateForm($form, x, 'name');
 				}
 </script>
 	</head>
