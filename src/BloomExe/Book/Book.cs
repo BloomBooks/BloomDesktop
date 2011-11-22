@@ -330,7 +330,7 @@ namespace Bloom.Book
 
 			foreach (var line in contents.Split(new []{'\n'}))
 			{
-				builder.AppendFormat("<li>{0}</li>\n", HttpUtility.HtmlEncode(line));
+				builder.AppendFormat("<li>{0}</li>\n", System.Net.WebUtility.HtmlEncode(line));
 			}
 			builder.Append("</body></html>");
 			dom.LoadXml(builder.ToString());
