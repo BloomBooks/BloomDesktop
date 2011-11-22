@@ -2,6 +2,7 @@
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
+using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
@@ -222,13 +223,9 @@ namespace BloomTests.Book
         {
             string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
             string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
-            Assert.AreEqual("guitar1", Path.GetFileName(secondPath));
-            Assert.IsTrue(File.Exists(Path.Combine(secondPath, "guitar1.htm"))); 
-            
-            
-            Assert.IsTrue(Directory.Exists(firstPath));
-            Assert.IsTrue(File.Exists(Path.Combine(firstPath, "guitar.htm")));
 
+			Assert.IsTrue(File.Exists(firstPath.CombineForPath("guitar.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("guitar1.htm")));
             Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
         }
 
@@ -300,13 +297,14 @@ namespace BloomTests.Book
         private string GetShellBookFolder(string bodyContents)
         {
             var content =
-                @"<?xml version='1.0' encoding='utf-8' ?>
+				@"<?xml version='1.0' encoding='utf-8' ?>
                 <html xmlns='http://www.w3.org/1999/xhtml'>
                 <head>
                     <meta content='text/html; charset=utf-8' http-equiv='content-type' />
                     <title>Test Shell</title>
                     <link rel='stylesheet' href='A5Portrait.css' type='text/css' />
                     <link rel='stylesheet' href='../../previewMode.css' type='text/css' />
+					<meta id='defaultNameForDerivedBooks' content='guitar'/>
                 </head>
                 <body class='a5Portrait'>" +
                 bodyContents + "</body></html>";
