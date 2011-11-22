@@ -603,23 +603,25 @@ namespace Bloom.Book
 
         public void UpdateBookFileAndFolderName(LanguageSettings languageSettings)
         {
-            SetBookName(GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code));
-         }
+        	var title = GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code);
+			if(title !=null)
+        		SetBookName(title);
+        }
 
-        public string GetVernacularTitleFromHtml(string Iso639Code)
+    	public string GetVernacularTitleFromHtml(string Iso639Code)
         {
             var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
                 string.Format("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='{0}']", Iso639Code));
             if (textWithTitle == null)
             {
                 Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-                return "unknown";
+                return null;
             }
             string title = textWithTitle.InnerText.Trim();
             if (string.IsNullOrEmpty(title))
             {
                 Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-                return "unknown";
+            	return null;
             }
             return title;
         }
