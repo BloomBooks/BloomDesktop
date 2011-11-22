@@ -52,7 +52,7 @@
   </Target>
 
 
-	<Target Name="Test" DependsOnTargets="Build">
+	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
@@ -94,7 +94,7 @@
   </Target>
 
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; GetWkhtmlToXIntoLib; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
 
 	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
