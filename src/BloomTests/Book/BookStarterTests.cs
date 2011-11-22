@@ -2,6 +2,7 @@
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
+using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
@@ -222,13 +223,9 @@ namespace BloomTests.Book
 		{
 			string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
-			Assert.AreEqual("guitar1", Path.GetFileName(secondPath));
-			Assert.IsTrue(File.Exists(Path.Combine(secondPath, "guitar1.htm")));
 
-
-			Assert.IsTrue(Directory.Exists(firstPath));
-			Assert.IsTrue(File.Exists(Path.Combine(firstPath, "guitar.htm")));
-
+			Assert.IsTrue(File.Exists(firstPath.CombineForPath("guitar.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("guitar1.htm")));
 			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
 		}
 
@@ -307,6 +304,7 @@ namespace BloomTests.Book
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
+					<meta id='defaultNameForDerivedBooks' content='guitar'/>
 				</head>
 				<body class='a5Portrait'>" +
 				bodyContents + "</body></html>";
