@@ -16,4 +16,8 @@
   <File Id="thumbnail.png" Guid="55dd4787-2edb-42af-a843-235da844c553" />
   <File Id="Vaccinations.htm" Guid="8bd5853e-5d71-43e4-b245-74d757e942f3" />
   <File Id="Vaccinations.htm.bak" Guid="260a9621-b8cd-41b9-ba3c-5ca95771d5fb" />
+  <File Id="BasePage.css2" Guid="ac0e6ad9-435e-4275-961b-b9cf5a8249e8" />
+  <File Id="placeHolder.png1" Guid="e645b686-e0c9-4bf1-9ea2-f20314805083" />
+  <File Id="previewMode.css2" Guid="ff408aa2-96c2-4a30-b9de-71eecb35c5b9" />
+  <File Id="thumbnail.png1" Guid="eaf7ad9d-22b2-4d81-92cb-7e4084b19603" />
 </InstallerMetadata>
