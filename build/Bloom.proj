@@ -49,8 +49,6 @@
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
-	<!-- palaso image toolbox uses this for accessing scanners and cameras -->
-	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFolder ="../output/$(Configuration)"/>
   </Target>
 
 
