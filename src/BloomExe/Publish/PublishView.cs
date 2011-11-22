@@ -62,7 +62,11 @@ namespace Bloom.Publish
 					Cursor = Cursors.Default;
 					if (File.Exists(_model.PdfFilePath))
 					{
-						_browser.Navigate(_model.PdfFilePath, true);
+						//http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
+						var path = _model.PdfFilePath;
+						//TODO: on delete, this file:\\ gives an error
+						//var path = "file:\\" + _model.PdfFilePath + "#view=Fit&navpanes=0&pagemode=thumbs&toolbar=1";
+						_browser.Navigate(path, true);
 					}
 
 					break;
