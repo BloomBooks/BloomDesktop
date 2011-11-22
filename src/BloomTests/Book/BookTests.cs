@@ -3,6 +3,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Publish;
 using Moq;
 using NUnit.Framework;
 using Palaso.IO;
@@ -567,6 +568,26 @@ namespace BloomTests.Book
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.IsTrue(book.GetIsLandscape());
+		}
+		[Test]
+		public void GetDefaultBookletLayout_NotSpecified_Fold()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetDefaultBookletLayout());
+		}
+
+		[Test]
+		public void GetDefaultBookletLayout_CalendarSpecified_Calendar()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+									<meta id='defaultBookletLayout' content='Calendar'/>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)

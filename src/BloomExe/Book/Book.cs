@@ -888,23 +888,23 @@ namespace Bloom.Book
 		}
 
 
-		public XmlDocument GetDomForPrinting(PublishModel.BookletStyleChoices bookletStyle)
+		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion)
 		{
 			var dom = GetBookDomWithStyleSheet("previewMode.css");
 			//dom.LoadXml(_storage.Dom.OuterXml);
 
-			switch (bookletStyle)
+			switch (bookletPortion)
 			{
-				case PublishModel.BookletStyleChoices.None:
+				case PublishModel.BookletPortions.None:
 					break;
-				case PublishModel.BookletStyleChoices.BookletCover:
+				case PublishModel.BookletPortions.BookletCover:
 					HidePages(dom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
-				 case PublishModel.BookletStyleChoices.BookletPages:
+				 case PublishModel.BookletPortions.BookletPages:
 					HidePages(dom, p=>p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
 				default:
-					throw new ArgumentOutOfRangeException("bookletStyle");
+					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(dom, Color.White);
 			return dom;
@@ -939,6 +939,15 @@ namespace Bloom.Book
 		{
 			var css = BookStorage.GetPaperStyleSheetName(_storage.Dom);
 			return css.ToLower().Contains("landscape");
+		}
+
+		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
+		{
+			//NB: all we support at the moment is specifying "Calendar"
+			if(_storage.Dom.SafeSelectNodes(string.Format("//meta[@id='defaultBookletLayout' and @content='Calendar']")).Count>0)
+				return PublishModel.BookletLayoutMethod.Calendar;
+			else
+				return PublishModel.BookletLayoutMethod.SideFold;
 		}
 	}
 }

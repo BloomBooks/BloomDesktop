@@ -156,7 +156,8 @@ namespace Bloom.Edit
 			}
 			if (_view != null)
 			{
-				_view.UpdateTemplateList();
+				if(ShowTemplatePanel)
+					_view.UpdateTemplateList();
 				_view.UpdatePageList();
 			}
 		}

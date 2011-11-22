@@ -8,8 +8,7 @@ using Palaso.Xml;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and
-	/// letting you print it.
+	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it.
 	/// </summary>
 	public class PublishModel : IDisposable
 	{
@@ -21,11 +20,18 @@ namespace Bloom.Publish
 			NoBook, Working, ShowPdf
 		}
 
-		public enum BookletStyleChoices
+		public enum BookletPortions
 		{
 			None,
 			BookletCover,
 			BookletPages
+		}
+
+		public enum BookletLayoutMethod
+		{
+			SideFold,
+			CutAndStack,
+			Calendar
 		}
 
 		private readonly BookSelection _bookSelection;
@@ -38,7 +44,7 @@ namespace Bloom.Publish
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletStyle = BookletStyleChoices.BookletPages;
+			BookletPortion = BookletPortions.BookletPages;
 		}
 
 		public PublishView View { get; set; }
@@ -68,7 +74,7 @@ namespace Bloom.Publish
 				SetDisplayMode(DisplayModes.Working);
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletStyle);
+				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
@@ -85,7 +91,7 @@ namespace Bloom.Publish
 						dom.WriteContentTo(writer);
 						writer.Close();
 					}
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, _bookSelection.CurrentSelection.GetPageSizeName(), _bookSelection.CurrentSelection.GetIsLandscape(), BookletStyle);
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, _bookSelection.CurrentSelection.GetPageSizeName(), _bookSelection.CurrentSelection.GetIsLandscape(),  _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion);
 				}
 			}
 			catch (Exception e)
@@ -160,15 +166,15 @@ namespace Bloom.Publish
 			}
 		}
 
-		public BookletStyleChoices BookletStyle
+		public BookletPortions BookletPortion
 		{ get; private set; }
 
-		public void SetBookletStyle(BookletStyleChoices booklet)
+		public void SetBookletStyle(BookletPortions booklet)
 		{
-			if (BookletStyle == booklet)
+			if (BookletPortion == booklet)
 				return;
 
-			BookletStyle = booklet;
+			BookletPortion = booklet;
 			LoadBook();
 		}
 	}

@@ -6,40 +6,39 @@ BODY
 HTML
 {
 }
-
-h1, h2, h3, h4 {margin: 24pt 0 0 0 ;}
-p, li
+H1, H2, H3, H4
+{
+	margin: 24pt 0 0;
+}
+P, LI
 {
 	width: 550px;
 	text-align: left;
 	margin-top: 6px;
-	font-size: medium ;
+	font-size: medium;
 	line-height: 200%;
 }
-
-ul, li {
-	padding-left: 10pt ;
-
+UL, LI
+{
+	padding-left: 10pt;
 }
-
-		.style1
-		{
-			background-color: #FFFF66;
-		}
-		.style2
-		{
-			color: #0099FF;
-		}
-		.style3
-		{
-			background-color: #CCFF99;
-		}
-
-pre {
-	font-family:monospace ;
-	background-color: lime ;
+.style1
+{
+	background-color: #FFFF66;
 }
-p.indent
+.style2
+{
+	color: #0099FF;
+}
+.style3
+{
+	background-color: #CCFF99;
+}
+PRE
+{
+	font-family: monospace;
+}
+P.indent
 {
 	/*+placement:shift 67px 1px;*/
 	position: relative;

@@ -9,4 +9,8 @@
   <File Id="thumbnail.png1" Guid="16b4c918-880a-40f7-b957-d29745ff42c3" />
   <File Id="A5Portrait.css1" Guid="da0181f5-0921-45b6-a34e-06ea872275c6" />
   <File Id="templatePages.htm" Guid="5c1f1874-f1d5-4fd8-a8c1-ad8f04a561b2" />
+  <File Id="basePage.css3" Guid="a9911bf1-dc13-4fd5-8018-e6a544ce218e" />
+  <File Id="placeHolder.png2" Guid="16bd8477-73dc-4a72-a640-d88a5b99aa79" />
+  <File Id="previewMode.css3" Guid="b5303e92-23aa-48f7-adad-f1a2c32be793" />
+  <File Id="thumbnail.png3" Guid="d609a0cd-97de-4a34-9c41-18c466403a99" />
 </InstallerMetadata>

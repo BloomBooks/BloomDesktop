@@ -12,7 +12,7 @@
 	response to needs we discover. Take that into account before converting hundreds
 	of books. The wise thing at this point it to convert one book of each type, so that we can find any missing file-format elements that you will need. The plan is to cease any breaking changes by early 2012.</p>
 	<p>
-Bloom documents are XHTML with certain conventions and pre-defined class names, as
+Bloom documents are XHTML 5 with certain conventions and pre-defined class names, as
 	described below. Of course, you&#39;ll want to open up a bloom html file and see for
 		yourself how it is structured.&nbsp; Two simple examples are the
 		A5Portrait/templatePages.htm, and the Vaccinations.htm, which comes in the Sample Shells project. You can look at the originals or create a book using them,
@@ -51,6 +51,13 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		content=&quot;name=A5Portrait;id=056B6F11-4A6C-4942-B2BC-8861E62B03B3&quot;/&gt;
 		<br />
 		&lt;meta id=&quot;bloomBookId&quot; content=&quot;056B6F11-4A6C-4942-B2BC-8861E62B03B4&quot;/&gt;</pre>
+<h2>Booklet Styles</h2>
+	<p>Bloom's "Publish" tab has PdfDroplet built-in. It can (theoretically) make any booklet format that PdfDroplet can. While future versions of Bloom will let users chose the format, in
+		at least one case we know already what the format needs to be. That case is Wall Calendar,
+		which knows that it must be printed as a Calendar Booklet.</p>
+		<p>REVIEW: it's not clear if we want to say:<ul><li>this is the default, but whatever</li><li>this is the only layout which makes sense (one, or multiple)</li></ul>
+	<pre>
+		&lt;meta id=&quot;defaultBookletLayout&quot; content=&quot;Calendar&quot;/&gt;</pre>
 <h2>Built-in Classes</h2>
 <p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
 <ul><li>-bloom-page: Each page is indicated by a &lt;div&gt; which has this class.</li>
