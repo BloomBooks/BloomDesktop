@@ -603,8 +603,10 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(LanguageSettings languageSettings)
 		{
-			SetBookName(GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code));
-		 }
+			var title = GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code);
+			if(title !=null)
+				SetBookName(title);
+		}
 
 		public string GetVernacularTitleFromHtml(string Iso639Code)
 		{
@@ -613,13 +615,13 @@ namespace Bloom.Book
 			if (textWithTitle == null)
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-				return "unknown";
+				return null;
 			}
 			string title = textWithTitle.InnerText.Trim();
 			if (string.IsNullOrEmpty(title))
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-				return "unknown";
+				return null;
 			}
 			return title;
 		}

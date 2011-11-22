@@ -30,7 +30,7 @@ namespace Bloom.Book
 
 			//TODO: all this gets thrown away, and replaced by what is found in the textarea with class "-bloom-vernacularBookTitle"
 			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
-			// defaultNameForDerivedBooks, but maybe there is a reason
+			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
 
 			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);

@@ -789,8 +789,9 @@ namespace Bloom.Book
 			{
 				GetOrCreateElement("//html", "head");
 				GetOrCreateElement("//head", "title").InnerText = title;
+				_storage.SetBookName(title);
 			}
-			_storage.SetBookName(title);
+
 		}
 
 		private XmlElement GetOrCreateElement(string parentPath, string name)
