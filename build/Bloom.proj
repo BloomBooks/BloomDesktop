@@ -1,11 +1,20 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="StampAssemblies" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
-  <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
-  <UsingTask TaskName="Split" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
-  <UsingTask TaskName="FileUpdate" AssemblyFile="$(teamcity_build_checkoutDir)/build/Palaso.BuildTasks.dll" />
-  <UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
-  <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+	<PropertyGroup>
+		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
+	</PropertyGroup>
 
+	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+
+	<PropertyGroup>
+		<Solution>Bloom VS2010.sln</Solution>
+		<ApplicationName>Bloom</ApplicationName>
+		<Configuration>Release</Configuration>
+	</PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -26,37 +35,40 @@
 
   <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
 	<ItemGroup>
-	  <AssemblyInfoFiles Include="$(teamcity_build_checkoutDir)/src/**/assemblyinfo.cs"/>
+	  <AssemblyInfoFiles Include="$(RootDir)/src/**/assemblyinfo.cs"/>
 	</ItemGroup>
 	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
 
-	<MSBuild Projects="$(teamcity_build_checkoutDir)/Bloom VS2010.sln"
+	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
-			 Properties="Configuration=Release" />
+			 Properties="Configuration=$(Configuration)" />
 	<!-- palaso image toolbox uses this for accessing scanners and cameras -->
-	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFolder ="../output/release"/>
+	<Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFolder ="../output/$(Configuration)"/>
   </Target>
 
 
-  <Target Name="Test" DependsOnTargets ="Build">
-	<ItemGroup>
-	  <TestAssemblies Include="$(teamcity_build_checkoutDir)/output/release/*Tests.dll;"  Exclude="**\obj\**;**\SpongeTests.dll" />
-	</ItemGroup>
-	<NUnitTeamCity Assemblies="@(TestAssemblies)" ExcludeCategory="SkipOnTeamCity" />
-  </Target>
+	<Target Name="Test" DependsOnTargets="Build">
+		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
+			<Output ItemName="TestAssemblies" TaskParameter="Include" />
+		</CreateItem>
+		<NUnitTeamCity
+			Assemblies="@(TestAssemblies)"
+			ExcludeCategory="SkipOnTeamCity"
+			NUnitVersion="NUnit-2.5.5" />
+	</Target>
 
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
 
 	<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-	<Copy SourceFiles ="$(teamcity_build_checkoutDir)\src\Installer\DownloadPointers.htm"
-		   DestinationFolder ="$(teamcity_build_checkoutDir)\output\installer"/>
+	<Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
+		   DestinationFolder ="$(RootDir)\output\installer"/>
 
 	<!-- replace some parts of the file with the version number & date -->
 
-	<FileUpdate File="$(teamcity_build_checkoutDir)\output\installer\DownloadPointers.htm"
+	<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 				 DatePlaceholder='DEV_RELEASE_DATE'
 				Regex='DEV_VERSION_NUMBER'
 				 ReplacementText ="$(Version)" />
@@ -85,35 +97,35 @@
 	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
 
-	<FileUpdate File="$(teamcity_build_checkoutDir)\src\Installer\Installer.wxs" Regex='Property_ProductVersion = ".*"'
+	<FileUpdate File="$(RootDir)\src\Installer\Installer.wxs" Regex='Property_ProductVersion = ".*"'
 				ReplacementText ="Property_ProductVersion = &quot;$(Version)&quot;" />
 
 
 	<Message Text="Making Installer Version: $(Version)" Importance="high"  />
 
-	<MSBuild Projects="$(teamcity_build_checkoutDir)\src\Installer\Installer.wixproj"/>
+	<MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
 
 	<!-- remove an existing one with the same name, if necessary -->
-	<Delete Files="$(teamcity_build_checkoutDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
+	<Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
 
-	<Copy SourceFiles="$(teamcity_build_checkoutDir)\output\installer\BloomInstaller.msi"
-		  DestinationFiles="$(teamcity_build_checkoutDir)\output\installer\BloomInstaller.$(Version).msi"
+	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
+		  DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
 		  />
 
 	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
-	<Delete Files="$(teamcity_build_checkoutDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
+	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
 
   </Target>
 
 
   <Target Name="MakeWixForDistFiles">
-	<MakeDir Directories ="$(teamcity_build_checkoutDir)\output\installer" ContinueOnError ="true"/>
+	<MakeDir Directories ="$(RootDir)\output\installer" ContinueOnError ="true"/>
 
 	<MakeWixForDirTree
 				DirectoryReferenceId="ProgramDir"
 					ComponentGroupId="DistFiles"
-						RootDirectory="$(teamcity_build_checkoutDir)\DistFiles"
-				OutputFilePath="$(teamcity_build_checkoutDir)\output\installer\GeneratedDistFiles.wxs"
+						RootDirectory="$(RootDir)\DistFiles"
+				OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
 				MatchRegExPattern=".*"
 				>
 	  <!--what does this do?-->
