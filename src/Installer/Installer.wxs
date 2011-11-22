@@ -30,8 +30,8 @@ users to install just the shortcut for your app, then demand-install the
 rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
-	<PropertyRef Id="NETFRAMEWORK35" />
-	<Condition Message="Before Bloom can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of Bloom's requirements can be found at Bloom.org/wiki/Prerequisites.">
+	<PropertyRef Id="NETFRAMEWORK40" />
+	<Condition Message="Before Bloom can install, you need to install Microsoft's free .NET Framework 4.0.  A full discussion of Bloom's requirements can be found at .">
 	  Installed OR NETFRAMEWORK35
 	</Condition>
 
@@ -105,6 +105,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
 		  </Component>
+		  <Component Id="PdfDroplet.exe" Guid="{B192D381-F993-463E-9AA6-0920AFEFC637}">
+			<File Id="PdfDroplet.exe" Name="PdfDroplet.exe" KeyPath="yes" Source="..\..\output\release\PdfDroplet.exe" />
+		  </Component>
 		</Directory>
 	  </Directory>
 	</Directory>
@@ -119,6 +122,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="Interop.WIA.dll" />
 	  <ComponentRef Id="Skybound.Gecko.dll" />
 	  <ComponentRef Id="PdfSharp.dll" />
+	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
 	  <ComponentGroupRef Id ="DistFiles"/>
 	  <ComponentGroupRef Id="wkhtmltopdf" />
