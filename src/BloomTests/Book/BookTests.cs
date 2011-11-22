@@ -372,10 +372,10 @@ namespace BloomTests.Book
 			//enhance: move to book starter tests, since that's what implements the actual behavior
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' id='ma'><a href='grandma' class='-bloom-pageLineage'></a>hello</div>");
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' data-pageLineage='grandma' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement) GetPageFromBookDom(book, 1);
-			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div/a[@class='-bloom-pageLineage']", 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage]", 1);
 			string[] guids = GetLineageGuids(page);
 			Assert.AreEqual("grandma",guids[0]);
 			Assert.AreEqual("ma", guids[1]);
@@ -384,9 +384,8 @@ namespace BloomTests.Book
 
 		private string[] GetLineageGuids(XmlElement page)
 		{
-			XmlElement node = (XmlElement) page.SelectSingleNodeHonoringDefaultNS("//div/a[@class='-bloom-pageLineage']");
-			var href = node.GetAttribute("href");
-			return href.Split(new char[]{';'});
+			XmlAttribute node = (XmlAttribute) page.SelectSingleNodeHonoringDefaultNS("//div/@data-pageLineage");
+			return node.Value.Split(new char[]{';'});
 		}
 
 		[Test]
@@ -398,7 +397,7 @@ namespace BloomTests.Book
 			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
-			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div/a[@class='-bloom-pageLineage']", 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage='ma']", 1);
 			string[] guids = GetLineageGuids(page);
 			Assert.AreEqual("ma", guids[0]);
 			Assert.AreEqual(1, guids.Length);
