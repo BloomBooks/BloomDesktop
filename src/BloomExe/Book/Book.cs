@@ -243,7 +243,12 @@ namespace Bloom.Book
             dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
             dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
             AddCoverColor(dom, CoverColor);
-           
+
+			//scripts kill the rendering, when the file is sitting in temp.  Don't need to waste time loading scripts anyhow
+			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+			{
+				node.ParentNode.RemoveChild(node);
+			}
             return dom;
         }
 
@@ -461,6 +466,18 @@ namespace Bloom.Book
 
         }
 
+
+		public bool NormallyHasTemplatePages
+		{
+			//review: my thinking here (nov 2011) is definitely fuzzy
+			get
+			{
+				//default is "true"
+				var specificallyNo = _storage.Dom.SafeSelectNodes(string.Format("//meta[@id='normallyShowTemplatePages' and @content='false']"));
+				return specificallyNo.Count ==0;
+			}
+		}
+
         /// <summary>
         /// Is this a shell we're translating?
         /// </summary>
@@ -475,7 +492,9 @@ namespace Bloom.Book
             get { return !_storage.LooksOk; }
         }
 
-        private void AddCoverColor(XmlDocument dom, Color coverColor)
+ 
+
+    	private void AddCoverColor(XmlDocument dom, Color coverColor)
         {
             
             var colorValue = string.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
