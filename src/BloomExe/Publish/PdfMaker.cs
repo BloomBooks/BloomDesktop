@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using Palaso.Code;
+using Palaso.CommandLineProcessing;
 using Palaso.IO;
-using Palaso.Xml;
+using Palaso.Progress.LogBox;
+using PdfDroplet.LayoutMethods;
+using PdfSharp;
+using PdfSharp.Drawing;
 
 namespace Bloom.Publish
 {
@@ -31,7 +32,7 @@ namespace Bloom.Publish
 			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape);
 			if (bookletStyle != PublishModel.BookletStyleChoices.None)
 			{
-				MakeBooklet(outputPdfPath);
+				MakeBooklet(outputPdfPath, PdfSharp.PageSize.A4 /*TODO*/);
 			}
 		}
 
@@ -46,17 +47,22 @@ namespace Bloom.Publish
 			}
 
 			string exePath = FindWkhtmlToPdf();
+			var arguments = string.Format(
+				"--print-media-type " +
+				pageSizeArguments +
+				(landscape ? " -O Landscape " : "") +
+				"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
+				"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
+				Path.GetFileName(inputHtmlPath), outputPdfPath);
+
+			/*
 			ProcessStartInfo info = new ProcessStartInfo(exePath,
-														 string.Format(
-															"--print-media-type "+
-															pageSizeArguments +
-															(landscape? " -O Landscape ":"")+
-															"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm "+
-															"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
-															 Path.GetFileName(inputHtmlPath), outputPdfPath));
+														 arguments);
 			info.WorkingDirectory = Path.GetDirectoryName(inputHtmlPath);
 			info.ErrorDialog = true;
 			info.WindowStyle = ProcessWindowStyle.Hidden;
+
+
 
 			var proc = System.Diagnostics.Process.Start(info);
 			proc.WaitForExit(20 * 1000);
@@ -65,6 +71,11 @@ namespace Bloom.Publish
 				proc.Kill();
 				throw new ApplicationException("Making the PDF took too long.");
 			}
+	*/
+			CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(inputHtmlPath), 20, new NullProgress());
+
+			if (!File.Exists(outputPdfPath))
+				throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
 		}
 
 		private string FindWkhtmlToPdf()
@@ -84,20 +95,18 @@ namespace Bloom.Publish
 			return exePath;
 		}
 
-		private void MakeBooklet(string inAndOutPath)
+		private void MakeBooklet(string inAndOutPath, PageSize pageSize)
 		{
 			var tempPath = Path.GetTempFileName();
 			File.Delete(tempPath);
 			File.Move(inAndOutPath, tempPath);
 			using (var incoming = TempFile.TrackExisting(tempPath))
 			{
-				var converter = new Converter();
-				bool rightToLeft = false;
-				var paperTarget = new DoublePaperTarget();
-				converter.Convert(incoming.Path, inAndOutPath, paperTarget, rightToLeft);
+				LayoutMethod method = new CalendarLayouter();
+				var paperTarget = new PaperTarget("ZZ", pageSize);
+				var pdf = XPdfForm.FromFile(tempPath);
+				method.Layout(pdf, tempPath, inAndOutPath, paperTarget, /*TODO: rightToLeft*/ false);
 			}
 		}
-
-
 	}
 }

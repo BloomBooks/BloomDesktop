@@ -2,13 +2,13 @@
 
 namespace Bloom.Publish
 {
-	public abstract class PaperTarget
+	public abstract class PaperTargetx
 	{
 		public readonly int Width;
 		public readonly int Height;
 		public string Name;
 
-		public PaperTarget(string name, int width, int height)
+		public PaperTargetx(string name, int width, int height)
 		{
 			Name = name;
 			Width = width;
@@ -27,9 +27,9 @@ namespace Bloom.Publish
 		}
 	}
 
-	class DoublePaperTarget : PaperTarget
+	class DoublePaperTargetx : PaperTargetx
 	{
-		public DoublePaperTarget()
+		public DoublePaperTargetx()
 			: base(StaticName, 0,0)
 		{
 
@@ -48,9 +48,9 @@ namespace Bloom.Publish
 		public const string StaticName = @"PerservePage";//this is tied to use settings, so don't change it.
 	}
 
-	class SameSizePaperTarget : PaperTarget
+	class SameSizePaperTargetx : PaperTargetx
 	{
-		public SameSizePaperTarget()
+		public SameSizePaperTargetx()
 			: base(StaticName, 0, 0)
 		{
 

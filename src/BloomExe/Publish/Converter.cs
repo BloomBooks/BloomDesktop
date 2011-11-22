@@ -5,7 +5,7 @@ using PdfSharp.Pdf;
 
 namespace Bloom.Publish
 {
-	public class Converter
+	public class Converterx
 	{
 		private double _outputWidth;
 		private double _outputHeight;
@@ -13,7 +13,7 @@ namespace Bloom.Publish
 		private bool _rightToLeft;
 		private bool _landscapeMode=false;
 
-		public void Convert(string inputPath, string outputPath, PaperTarget paperTarget, bool rightToLeft)
+		public void Convertx(string inputPath, string outputPath, PaperTargetx paperTarget, bool rightToLeft)
 		{
 			_rightToLeft = rightToLeft;
 

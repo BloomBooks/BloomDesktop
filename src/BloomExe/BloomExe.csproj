@@ -61,6 +61,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
+    <Reference Include="PdfDroplet">
+      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+    </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
