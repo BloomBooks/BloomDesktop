@@ -81,6 +81,15 @@ Bloom documents are XHTML with certain conventions and pre-defined class names, 
 		a3ddc7f4-eef5-453b-babf-76ec86d0eacb, which in turn came from a page with the id
 		5dcd48df-e9ab-4a07-afd4-6a24d0398382.</p>
 	<h2>
+		Preventing Template pages from showing</h2>
+	<p>
+		In some documents (e.g. calendar),
+		you may want to keep things simple by hiding the list of tempalte pags during
+		editing.&nbsp; To do that, add the following to the header of the shell:</p>
+	 <pre>
+	 &lt;meta id="normallyShowTemplatePages" content="false" /&gt;
+	 </pre>
+	<h2>
 		"Constants"</h2>
 	<p>
 		If a &lt;textarea&gt; has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This allows the user to translate something once, and have it show up all over.

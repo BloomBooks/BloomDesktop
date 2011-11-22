@@ -119,7 +119,8 @@ namespace Bloom.Edit
 				}
 				else
 				{
-					return !ShowTranslationPanel;
+				   // return !ShowTranslationPanel;
+					return _bookSelection.CurrentSelection.NormallyHasTemplatePages;
 				}
 			}
 		}

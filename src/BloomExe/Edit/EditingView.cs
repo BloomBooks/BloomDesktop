@@ -76,7 +76,7 @@ namespace Bloom.Edit
 			{
 				_splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
 			}
-			else                //Templates only
+			else if (_model.ShowTemplatePanel)        //Templates only
 			{
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 			}
