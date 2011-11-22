@@ -66,10 +66,10 @@
 }
 .calendarTopPageText
 {
-	/*+placement:shift -10px 142px;*/
+	/*+placement:shift -12px 38px;*/
 	position: relative;
-	left: -10px;
-	top: 142px;
+	left: -12px;
+	top: 38px;
 	text-align: center;
 	width: 724px;
 	height: 61px;
@@ -80,4 +80,14 @@
 	position: relative;
 	left: -34px;
 	top: -7px;
+}
+.calendarMonthTop P.imageHolder IMG
+{
+	max-width: 19.1cm;
+	max-height: 8cm;
+	min-height: 5cm;
+}
+.calendarMonthTop P.imageHolder
+{
+	height: 11.7cm;
 }
