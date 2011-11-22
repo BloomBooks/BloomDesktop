@@ -1,7 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
-		<BigFilesLocation>Fill Me In</BigFilesLocation>
+	<Solution>BloomVS2010.sln</Solution>
+	<ApplicationName>Bloom</ApplicationName>
+	<Configuration>Release</Configuration>
+	<LargeFilesDir>c:\builddownloads</LargeFilesDir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -134,11 +137,12 @@
 	</MakeWixForDirTree>
   </Target>
 
-<!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
+  <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
   <ItemGroup>
-		<XulRunnerFiles Include="$(BigFilesLocation)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
+	<XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
 	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
   </ItemGroup>
+
 
   <Target Name="GetXulRunnerIntoLib">
 	<RemoveDir Directories="..\lib\xulrunner" />
@@ -155,12 +159,10 @@
 		/>
   </Target>
 
-
-
   <Target Name="GetWkhtmlToXIntoLib">
 	<RemoveDir
 		   Directories="..\lib\wkhtmltopdf" />
-	<Unzip ZipFileName="$(BigFilesLocation)\wkhtmltopdf-0.10.0_rc2.zip"
+	<Unzip ZipFileName="$(LargeFilesDir)\wkhtmltopdf-0.10.0_rc2.zip"
 		   TargetDirectory="..\lib\"/>
   </Target>
 
@@ -168,7 +170,7 @@
 	<MakeWixForDirTree
 				DirectoryReferenceId="XulRunnerDir"
 					ComponentGroupId="XulRunner"
-						RootDirectory="..\lib\XulRunner"
+						RootDirectory="..\lib\xulrunner"
 				OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
 				MatchRegExPattern=".*"
 				>
