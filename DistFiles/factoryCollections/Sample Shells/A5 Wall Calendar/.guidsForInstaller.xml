@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="A5Landscape.css" Guid="6732d784-56f6-4027-ad89-86551181a337" />
+  <File Id="basePage.css1" Guid="2667ebe0-ba8e-4991-9a9c-2b93d2b1b9bb" />
+  <File Id="calendar.css" Guid="76d33240-8568-4f08-adb4-443c467b8ca8" />
+  <File Id="configuration.css" Guid="6da7ba63-aa46-474e-b18f-f5b421a51300" />
+  <File Id="configuration.htm" Guid="1cfb4921-5331-4f61-9fbf-ac9f13f6b400" />
+  <File Id="configure.js" Guid="ec56a2d1-bf9e-45bd-9e70-d2059433b5dd" />
+  <File Id="form2object.js" Guid="b6530f18-5bb4-4dd5-94b2-4e1a8ceb03a7" />
+  <File Id="jquery_1.6.4.js" Guid="fe66c6d2-e50b-4243-9f44-5b06bf736e8f" />
+  <File Id="jquery.toObject.js" Guid="f5db7556-561e-44aa-9790-99ae5c0a40f2" />
+  <File Id="js2form.js" Guid="518d4a47-fb2d-4f4c-982c-7305bf6bd4cd" />
+  <File Id="mootools_core_1.4.1_full_nocompat.js" Guid="ed510220-7483-4683-9910-ac63bf6d3e52" />
+  <File Id="mootools_more_1.4.0.1.js" Guid="66e40018-ed34-4c23-8e29-92db4c1f9473" />
+  <File Id="placeHolder.png" Guid="03d9dc5b-c6f6-4d87-84b1-03ddae1bb79a" />
+  <File Id="previewMode.css1" Guid="a0318c34-4e0f-4815-80d3-aaffc5c6d4a9" />
+  <File Id="thumbnail.png" Guid="68f263fc-7624-4326-8ddb-1770467d8997" />
+  <File Id="underscore.js" Guid="9a628acf-c0c8-4f8e-bd30-0dbe5f4c0c33" />
+  <File Id="Wall_Calendar.htm" Guid="b2cc1677-118f-4d58-a5e7-1c98a79a1521" />
+</InstallerMetadata>

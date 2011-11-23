@@ -77,7 +77,10 @@ var populateForm =
 			var nameAtt = $(this).attr(varAtt);
 			var path = pathTranslator(nameAtt);
 			var valForForm = getFromPath(obj,path);
-			formElementPopulator($(this),valForForm);
+             //if(valForForm != null)//hatton added
+             {
+                 formElementPopulator($(this),valForForm);
+             }
 		    });
 	 };
      })();
