@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
-	<Solution>Bloom VS2010.sln</Solution>
-	<ApplicationName>Bloom</ApplicationName>
-	<Configuration>Release</Configuration>
-	<LargeFilesDir>c:\builddownloads</LargeFilesDir>
+		<Solution>Bloom VS2010.sln</Solution>
+		<ApplicationName>Bloom</ApplicationName>
+		<Configuration>Release</Configuration>
+		<LargeFilesDir>c:\builddownloads</LargeFilesDir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -74,7 +74,7 @@
 	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
 	<Message Text="Attempting rsync of DownloadPointers.htm" Importance="high"/>
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' />
+	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' />
   </Target>
 
 
