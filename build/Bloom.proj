@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
-	<Solution>BloomVS2010.sln</Solution>
+	<Solution>Bloom VS2010.sln</Solution>
 	<ApplicationName>Bloom</ApplicationName>
 	<Configuration>Release</Configuration>
 	<LargeFilesDir>c:\builddownloads</LargeFilesDir>
