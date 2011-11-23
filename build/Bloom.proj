@@ -14,12 +14,6 @@
 	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 
-	<PropertyGroup>
-		<Solution>Bloom VS2010.sln</Solution>
-		<ApplicationName>Bloom</ApplicationName>
-		<Configuration>Release</Configuration>
-	</PropertyGroup>
-
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
 
@@ -88,7 +82,7 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
 	<Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
 
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' />
+	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' />
 
 	<CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
