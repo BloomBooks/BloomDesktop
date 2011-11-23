@@ -34,6 +34,7 @@ function test() {
 *       Put a new input control in that file, give it a @name attribute, and the value will be available here.
 */
 function updateDom(configuration) {
+
     $$(".-bloom-vernacularBookTitle").set("text", configuration.calendar.year +" Calendar");
     var year = Number.from(configuration.calendar.year);
     var previous = $$('.titlePage')[0];

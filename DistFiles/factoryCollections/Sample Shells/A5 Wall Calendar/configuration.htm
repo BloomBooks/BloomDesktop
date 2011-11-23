@@ -13,14 +13,19 @@
 
 			<script type="text/javascript">
 				function test() {
-					x = { calendar: { year: 2044 }};
+					x = {
+							calendar: { year: 2044 }
+// couldn't get this array part to work
+//                          ,  project: { calendar:
+//                                            { dayAbbreviations: [1, 2, 3, 4, 5, 6, 7] }
+//                                     }
+					}
 					var $form = $("#form").find("[name]");
 				   populateForm($form, x, 'name');
 				}
 </script>
 	</head>
 	<body>
-	<button onClick='test()'></button>
 	<form id='form'>
 		  <label class="year">Year</label><input class="year" name="calendar.year" type="number" value="2012"/>
 		   <div id="dayNames">
@@ -90,5 +95,6 @@
 		  </div>
 
 		</form>
+		 <button onClick='test()'>test  preload</button>
 	</body>
 </html>

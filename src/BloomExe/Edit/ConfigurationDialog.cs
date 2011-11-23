@@ -60,7 +60,7 @@ namespace Bloom.Edit
 
 			//if we have saved data from a previous run, prepopulate the form with that
 
-			//skip this until it doesn't remove defaults: _browser.RunJavaScript("preloadSettings()");
+			_browser.RunJavaScript("preloadSettings()"); //nb: if this starts removing the defaults, it means we've lost the patch: if(valForForm != null) on line 80 of jsform.js
 		}
 
 		private void _okButton_Click(object sender, EventArgs e)
