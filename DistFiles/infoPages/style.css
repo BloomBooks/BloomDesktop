@@ -45,3 +45,12 @@ P.indent
 	left: 67px;
 	top: 1px;
 }
+DIV.note
+{
+	background: #F2E3E6;
+	border: 1px solid #CC6666;
+	text-align: left;
+	padding: 10px 10px 10px 18px;
+	-moz-border-radius-bottomleft: 4px;
+	-moz-border-radius-bottomright: 4px;
+}
