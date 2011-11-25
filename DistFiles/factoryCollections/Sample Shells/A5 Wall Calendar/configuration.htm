@@ -10,20 +10,6 @@
 			 <script type="text/javascript" src="form2object.js"></script>
 			<script type="text/javascript" src="js2form.js"></script>
 			<script type="text/javascript" src="underscore.js"></script>
-
-			<script type="text/javascript">
-				function test() {
-					x = {
-							calendar: { year: 2044 }
-// couldn't get this array part to work
-//                          ,  project: { calendar:
-//                                            { dayAbbreviations: [1, 2, 3, 4, 5, 6, 7] }
-//                                     }
-					}
-					var $form = $("#form").find("[name]");
-				   populateForm($form, x, 'name');
-				}
-</script>
 	</head>
 	<body>
 	<form id='form'>
@@ -31,25 +17,25 @@
 		   <div id="dayNames">
 		   <h1>Day Names</h1>
 		  <label>Sunday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Sun"/>
+		  <input name="project.calendar.dayAbbreviations[0]" value="Sun"/>
 		  <br />
 		  <label>Monday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Mon"/>
+		  <input name="project.calendar.dayAbbreviations[1]" value="Mon"/>
 		  <br />
 		  <label>Tuesday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Tues"/>
+		  <input name="project.calendar.dayAbbreviations[2]" value="Tues"/>
 		  <br />
 		  <label>Wednesday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Wed"/>
+		  <input name="project.calendar.dayAbbreviations[3]" value="Wed"/>
 		  <br />
 		  <label>Thursday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Thur"/>
+		  <input name="project.calendar.dayAbbreviations[4]" value="Thur"/>
 		  <br />
 		  <label>Friday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Fri"/>
+		  <input name="project.calendar.dayAbbreviations[5]" value="Fri"/>
 		  <br />
 		  <label>Saturday</label>
-		  <input name="project.calendar.dayAbbreviations[]" value="Sat"/>
+		  <input name="project.calendar.dayAbbreviations[6]" value="Sat"/>
 		  <br />
 		 </div>
 
@@ -57,44 +43,43 @@
 		  <div id="monthNames">
 		  <h1>Month Names</h1>
 		  <label>1</label>
-		  <input name="project.calendar.monthNames[]" value="January"/>
+		  <input name="project.calendar.monthNames[0]" value="January"/>
 		  <br />
 		  <label>2</label>
-		  <input name="project.calendar.monthNames[]" value="February"/>
+		  <input name="project.calendar.monthNames[1]" value="February"/>
 		  <br />
 		  <label>3</label>
-		  <input name="project.calendar.monthNames[]" value="March"/>
+		  <input name="project.calendar.monthNames[2]" value="March"/>
 		  <br />
 		  <label>4</label>
-		  <input name="project.calendar.monthNames[]" value="April"/>
+		  <input name="project.calendar.monthNames[3]" value="April"/>
 		  <br />
 		  <label>5</label>
-		  <input name="project.calendar.monthNames[]" value="May"/>
+		  <input name="project.calendar.monthNames[4]" value="May"/>
 		  <br />
 		  <label>6</label>
-		  <input name="project.calendar.monthNames[]" value="June"/>
+		  <input name="project.calendar.monthNames[5]" value="June"/>
 		  <br />
 		  <label>7</label>
-		  <input name="project.calendar.monthNames[]" value="July"/>
+		  <input name="project.calendar.monthNames[6]" value="July"/>
 		  <br />
 		  <label>8</label>
-		  <input name="project.calendar.monthNames[]" value="August"/>
+		  <input name="project.calendar.monthNames[7]" value="August"/>
 		  <br />
 		  <label>9</label>
-		  <input name="project.calendar.monthNames[]" value="September"/>
+		  <input name="project.calendar.monthNames[8]" value="September"/>
 		  <br />
 		  <label>10</label>
-		  <input name="project.calendar.monthNames[]" value="October"/>
+		  <input name="project.calendar.monthNames[9]" value="October"/>
 		  <br />
 		  <label>11</label>
-		  <input name="project.calendar.monthNames[]" value="November"/>
+		  <input name="project.calendar.monthNames[10]" value="November"/>
 		  <br />
 		  <label>12</label>
-		  <input name="project.calendar.monthNames[]" value="December"/>
+		  <input name="project.calendar.monthNames[11]" value="December"/>
 		  <br />
 		  </div>
 
 		</form>
-		 <button onClick='test()'>test  preload</button>
 	</body>
 </html>
