@@ -53,9 +53,9 @@ namespace Bloom.Edit
 					}
 				function preloadSettings()
 					{
-						 x =  '"+_projectJsonData+ @"';
+						 x =  "+_projectJsonData+ @";
 						var $inputs = $('#form').find('[name]');
-						pushInData($inputs, x, 'name');
+						populateForm($inputs, x, 'name');
 					}");
 
 			//if we have saved data from a previous run, prepopulate the form with that
@@ -67,15 +67,6 @@ namespace Bloom.Edit
 		{
 		   GeckoDocument doc = _browser.WebBrowser.Document;
 
-/*            _browser.AddScriptSource("jquery-1.6.4.js");
-			_browser.AddScriptSource("form2object.js");
-			_browser.AddScriptContent(
-				@"function gather()
-					{
-						var formData = form2object('form', '.', false, null);
-						document.getElementById('output').innerHTML = JSON.stringify(formData, null, '\t');
-					}");
-*/
 			var body = doc.GetElementsByTagName("body").First();
 			GeckoElement div = doc.CreateElement("div");
 			div.Id = "output";

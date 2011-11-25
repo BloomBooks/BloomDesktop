@@ -67,13 +67,6 @@ namespace BloomTests.Edit
 			Assert.IsTrue(c.GetProjectData().Contains("year"));
 		}
 
-		[Test]
-		[STAThread]
-		public void ConfigureBook_xxxxxx()
-		{
-			var c = new Configurator(_projectFolder.Path);
-			c.ConfigureBook(GetCalendardBookStorage().PathToExistingHtml);
-		}
 
 		[Test]
 		public void GetAllData_LocalOnly_ReturnLocal()
@@ -85,7 +78,7 @@ namespace BloomTests.Edit
 			Assert.AreEqual(j, DynamicJson.Parse(c.GetAllData()));
 		}
 
-		[Test, Ignore("need to compensate for removing 'project'")]
+		[Test]
 		public void ProjectSettingsAreRoundTriped()
 		{
 			var first = new Configurator(_projectFolder.Path);
@@ -93,12 +86,77 @@ namespace BloomTests.Edit
 						{
 							project = new {stuff = "foo"}
 						});
-			var internalsOnly = DynamicJson.Serialize(new {stuff = "foo"});
 
 			first.CollectJsonData(stringRep.ToString());
 
 			var second = new Configurator(_projectFolder.Path);
-			AssertEqual(internalsOnly, second.GetProjectData());
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
+			Assert.AreEqual("foo", j.project.stuff);
+		}
+
+
+
+		[Test]
+		public void CollectJsonData_NewTopLevelData_DataMerged()
+		{
+			var firstData = DynamicJson.Serialize(new
+			{
+				project = new { one = "1", color="red" }
+			});
+			var secondData = DynamicJson.Serialize(new
+			{
+				project = new { two = "2", color = "blue" }
+			});
+
+			var first = new Configurator(_projectFolder.Path);
+			first.CollectJsonData(firstData.ToString());
+			first.CollectJsonData(secondData.ToString());
+
+			var second = new Configurator(_projectFolder.Path);
+			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetProjectData());
+			Assert.AreEqual("2", j.project.two);
+			Assert.AreEqual("1", j.project.one);
+			Assert.AreEqual("blue", j.project.color);
+		}
+
+		[Test]
+		public void CollectJsonData_HasArrayValue_DataMerged()
+		{
+			var firstData = "{\"project\":{\"days\":[\"1\",\"2\"]}}";
+			var secondData = "{\"project\":{\"days\":[\"one\",\"two\"]}}";
+
+			var first = new Configurator(_projectFolder.Path);
+			first.CollectJsonData(firstData.ToString());
+			first.CollectJsonData(secondData.ToString());
+
+			var second = new Configurator(_projectFolder.Path);
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
+			Assert.AreEqual("one", j.project.days[0]);
+			Assert.AreEqual("two", j.project.days[1]);
+		}
+
+
+		[Test]
+		public void CollectJsonData_NewArrayItems_DataMerged()
+		{
+			var firstData = DynamicJson.Serialize(new
+													{
+														project = new {food = new {veg="v", fruit = "f"}}
+													});
+			var secondData = DynamicJson.Serialize(new
+			{
+				project = new { food = new { bread = "b", fruit = "f" } }
+			});
+
+			var first = new Configurator(_projectFolder.Path);
+			first.CollectJsonData(firstData.ToString());
+			first.CollectJsonData(secondData.ToString());
+
+			var second = new Configurator(_projectFolder.Path);
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
+			Assert.AreEqual("v", j.project.food.veg);
+			Assert.AreEqual("f", j.project.food.fruit);
+			Assert.AreEqual("b", j.project.food.bread);
 		}
 
 		private void AssertEqual(string a, string b)

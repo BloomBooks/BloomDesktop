@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Skybound.Gecko;
@@ -93,23 +95,104 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Saves off the project part to disk, stores the rest
 		/// </summary>
-		/// <param name="json"></param>
-		public void CollectJsonData(string json)
+		/// <param name="newDataString"></param>
+		public void CollectJsonData(string newDataString)
 		{
-			if (string.IsNullOrEmpty(json))
+			if (string.IsNullOrEmpty(newDataString))
 			{
 				LocalData = "";
 				return;
 			}
-
-			var j = DynamicJson.Parse(json);
-			if(j.IsDefined("project"))
+			dynamic newData = DynamicJson.Parse(newDataString);
+			dynamic projectData=null;
+			if(newData.IsDefined("project"))
 			{
-				var project = j.project.ToString();
-				File.WriteAllText(PathToProjectJson, project);
+				projectData = newData.project;
 			}
-			j.Delete("project");
-			LocalData = j.ToString();
+			//Now in LocalData, we want to save everything that isn't project data
+			newData.Delete("project");
+			LocalData = newData.ToString();
+			if (projectData == null)
+				return;	//no project data in there, so we don't have anything to merge/save
+
+			var existingDataString = GetProjectData();
+			if (!string.IsNullOrEmpty(existingDataString))
+			{
+				dynamic existingData = DynamicJson.Parse(existingDataString);
+				projectData = MergeJsonData(existingData.project.ToString(), projectData.ToString());
+			}
+
+			File.WriteAllText(PathToProjectJson, projectData.ToString());
+
+
+		}
+
+
+		/// <summary>
+		/// merge the existing data with this new stuff
+		/// </summary>
+		/// <param name="a"></param>
+		/// <param name="b">b has priority</param>
+		/// <returns></returns>
+
+		private string MergeJsonData(string a, string b)
+		{
+			//NB: this has got to be the ugliest code I have written since HighSchool.  There are just all these weird bugs, missing functions, etc. in the
+			//json libraries. And probably better ways to do this stuff, too.  Maybe it doesn't help that I'm using too different libaries in one function!
+			//All I can say is it has unit test converage.
+			JObject existing = JObject.Parse(a.ToString());
+			foreach (KeyValuePair<string, dynamic> item in DynamicJson.Parse(b))
+			{
+				bool inExisting = Contains(existing, item.Key);
+				if (IsComplexObject(item.Value.ToString()))
+				{
+					if (inExisting)
+					{
+						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\\", ""), item.Value.ToString());
+						existing.Remove(item.Key);
+						existing.Add(item.Key, JToken.Parse(merged));
+					}
+					else
+					{
+						existing.Add(item.Key, item.Value.ToString());
+					}
+				}
+				else
+				{
+					if (inExisting)
+					{
+						existing.Remove(item.Key);
+					}
+					//JToken t = JToken.Parse(item.Value.ToString());
+					if (item.Value is DynamicJson && item.Value.IsArray)
+					{
+						var value = JArray.Parse(item.Value.ToString());
+						existing.Add(item.Key, value);
+					}
+					else
+					{
+						existing.Add(item.Key, item.Value);
+					}
+				}
+			}
+			return existing.ToString().Replace("\r\n", "").Replace("\\", "");
+		}
+
+		private bool IsComplexObject(string value)
+		{
+			//TODO this is just pretend
+			return value.Contains(":");
+		}
+		private bool IsArray(string value)
+		{
+			//TODO this is just pretend
+			return value.Contains("[");
+		}
+
+		private bool Contains(JObject o, string key)
+		{
+			JToken v;
+			return o.TryGetValue(key, out v);
 		}
 
 		public string GetProjectData()
