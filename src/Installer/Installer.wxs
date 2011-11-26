@@ -9,7 +9,7 @@
 <!--Don't even think of EVER changing this -->
 
 <!-- good intro to the component vs. file thing, and why each file here is a separate component:
-http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->12
+http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
 
