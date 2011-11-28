@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 
 namespace Bloom.NewProject
@@ -104,6 +105,10 @@ namespace Bloom.NewProject
 			ProjectName = _textProjectName.Text.Trim();
 			DialogResult = DialogResult.OK;
 			Close();
+			if(IsShellMakingProject)
+				UsageReporter.SendNavigationNotice("NewShellProject");
+			else
+				UsageReporter.SendNavigationNotice("NewProject");
 		}
 
 		public string ProjectName

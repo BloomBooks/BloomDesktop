@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -57,11 +58,13 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
 			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList();
+			UsageReporter.SendNavigationNotice("DeletePage");
 		}
 
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
 			_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			UsageReporter.SendNavigationNotice("RelocatePage");
 
 		}
 
@@ -71,6 +74,7 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList();
 			//_pageSelection.SelectPage(newPage);
+			UsageReporter.SendNavigationNotice("InsertTemplatePage");
 		}
 
 		/// <summary>
@@ -207,6 +211,7 @@ namespace Bloom.Edit
 
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			InvokeUpdatePageList();
+			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 
 		private void InvokeUpdatePageList()

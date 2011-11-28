@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
+using Palaso.Reporting;
 
 namespace Bloom.Book
 {
@@ -69,6 +70,9 @@ namespace Bloom.Book
 			{
 				 _bookSelection.SelectBook(newBook);
 			}
+			//enhance: would be nice to know if this is a new shell
+			if(templateBook.IsShellOrTemplate)
+			UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
 		}
 
 		private void NotifyCollectionChanged()
