@@ -41,7 +41,7 @@ namespace Bloom
 			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
 			if (!Directory.Exists(xulRunnerPath))
 			{
-#if DEBUG
+
 				//if this is a programmer, go look in the lib directory
 				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
 											 Path.Combine("lib", "xulrunner"));
@@ -57,7 +57,7 @@ namespace Bloom
 				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
 				//	build/build.win.proj: change the zip file to match the new name
 
-#endif
+
 			}
 			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
 			SetDllDirectory(xulRunnerPath);
