@@ -486,8 +486,30 @@ namespace Bloom.Book
             get; private set;
         }
 
+    	public string CategoryForUsageReporting
+    	{
+    		get
+    		{
+    			if (HasSourceTranslations)
+    			{
+    				if (_projectSettings.IsShellMakingProject)
+    					return "ShellEditing";
+    				else
+    				{
+    					return "ShellTranslating";
+    				}
+    			}
+    			else
+    			{
+    				return "CustomBook";
+    			}
 
-        public bool HasFatalError
+    		}
+    	}
+    	
+
+
+    	public bool HasFatalError
         {
             get { return !_storage.LooksOk; }
         }
