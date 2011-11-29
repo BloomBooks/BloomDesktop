@@ -7,6 +7,7 @@ using Autofac;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Library;
+using Palaso.Extensions;
 using Palaso.IO;
 
 namespace Bloom
@@ -113,7 +114,20 @@ namespace Bloom
 
 		private static string InstalledCollectionsDirectory
 		{
-			get { return Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Bloom"), "Collections"); }
+			get
+			{
+				//we want this path of directories sitting there, waiting for the user
+				var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
+				if (!Directory.Exists(d))
+					Directory.CreateDirectory(d);
+				d = d.CombineForPath("Bloom");
+				if (!Directory.Exists(d))
+					Directory.CreateDirectory(d);
+				d = d.CombineForPath("Collections");
+				if (!Directory.Exists(d))
+					Directory.CreateDirectory(d);
+				return d;
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
