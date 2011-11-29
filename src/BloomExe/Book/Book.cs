@@ -24,7 +24,7 @@ namespace Bloom.Book
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly Palaso.IO.IFileLocator _fileLocator;
-		private readonly ProjectSettings _projectSettings;
+		private readonly LibrarySettings _librarySettings;
 
 		private  List<string> _builtInConstants = new List<string>(new[] { "-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage", "-bloom-nameOfLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
@@ -44,7 +44,7 @@ namespace Bloom.Book
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
 		public Book(IBookStorage storage, bool editable, ITemplateFinder templateFinder,
-			Palaso.IO.IFileLocator fileLocator, ProjectSettings projectSettings, HtmlThumbNailer thumbnailProvider,
+			Palaso.IO.IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
@@ -54,7 +54,7 @@ namespace Bloom.Book
 			_storage = storage;
 			_templateFinder = templateFinder;
 			_fileLocator = fileLocator;
-			_projectSettings = projectSettings;
+			_librarySettings = librarySettings;
 
 			_thumbnailProvider = thumbnailProvider;
 			_pageSelection = pageSelection;
@@ -66,7 +66,7 @@ namespace Bloom.Book
 			}
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
-			LockedExceptForTranslation = HasSourceTranslations && !_projectSettings.IsShellMakingProject;
+			LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsShellLibrary;
 
 		}
 
@@ -145,7 +145,7 @@ namespace Bloom.Book
 //                    if (node == null)
 //                        return "unknown";
 //                    return (node.InnerText);
-					return _storage.GetVernacularTitleFromHtml(_projectSettings.Iso639Code);
+					return _storage.GetVernacularTitleFromHtml(_librarySettings.Iso639Code);
 				}
 				else //for templates and such, we can already just use the folder name
 				{
@@ -189,7 +189,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _projectSettings.Iso639Code);
+			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _librarySettings.Iso639Code);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
@@ -426,7 +426,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				languageIsoToShow = _projectSettings.Iso639Code;
+				languageIsoToShow = _librarySettings.Iso639Code;
 			}
 			BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
 
@@ -460,7 +460,7 @@ namespace Bloom.Book
 			get
 			{
 				//review
-				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _projectSettings.Iso639Code));
+				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _librarySettings.Iso639Code));
 				return x.Count > 0;
 			}
 
@@ -492,7 +492,7 @@ namespace Bloom.Book
 			{
 				if (HasSourceTranslations)
 				{
-					if (_projectSettings.IsShellMakingProject)
+					if (_librarySettings.IsShellLibrary)
 						return "ShellEditing";
 					else
 					{
@@ -553,7 +553,7 @@ namespace Bloom.Book
 					{
 						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 					}
-					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _projectSettings.Iso639Code));
+					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _librarySettings.Iso639Code));
 					++pageNumber;
 				}
 			}
@@ -603,13 +603,13 @@ namespace Bloom.Book
 			//newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
-			BookStarter.SetupPage(newPageDiv, _projectSettings.Iso639Code);
+			BookStarter.SetupPage(newPageDiv, _librarySettings.Iso639Code);
 			ClearEditableValues(newPageDiv);
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _projectSettings.Iso639Code));
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _librarySettings.Iso639Code));
 
 			_storage.Save();
 			if (_pageListChangedEvent != null)
@@ -629,7 +629,7 @@ namespace Bloom.Book
 					editNode.SetAttribute("value", string.Empty);
 				}
 			}
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _projectSettings.Iso639Code)))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _librarySettings.Iso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{
@@ -703,7 +703,7 @@ namespace Bloom.Book
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _projectSettings.Iso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
 			{
 				var languageCode = editNode.GetAttribute("lang");
 
@@ -714,7 +714,7 @@ namespace Bloom.Book
 			}
 
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _projectSettings.Iso639Code)))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
 			{
 				var textareaElementId = editNode.GetAttribute("id");
 				var languageCode = editNode.GetAttribute("lang");
@@ -734,7 +734,7 @@ namespace Bloom.Book
 
 			MakeAllFieldsConsistent();
 
-			_storage.HideAllTextAreasThatShouldNotShow(_projectSettings.Iso639Code, pageSelector);
+			_storage.HideAllTextAreasThatShouldNotShow(_librarySettings.Iso639Code, pageSelector);
 
 			try
 			{
@@ -797,7 +797,7 @@ namespace Bloom.Book
 //            }
 
 			Dictionary<string,string> classes = new Dictionary<string, string>();
-			classes.Add("-bloom-nameOfLanguage", _projectSettings.LanguageName);
+			classes.Add("-bloom-nameOfLanguage", _librarySettings.LanguageName);
 
 			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
 			//nb: we intentionally go through twice, in case the value is not in the first occurrence
@@ -839,7 +839,7 @@ namespace Bloom.Book
 						RawDom.SafeSelectNodes(
 							string.Format(
 								"//{0}[(contains(@class, '_')  or contains(@class, '-bloom-')) and (@lang='{1}' or contains(@class,'-bloom-showNational'))]",
-								elementName, _projectSettings.Iso639Code)))
+								elementName, _librarySettings.Iso639Code)))
 				{
 					var theseClasses = node.GetAttribute("class").Split(new char[] {' '},
 																		StringSplitOptions.RemoveEmptyEntries);

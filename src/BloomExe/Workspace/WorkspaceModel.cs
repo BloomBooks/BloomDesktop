@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Bloom.Book;
 
-namespace Bloom.Project
+namespace Bloom.Workspace
 {
-	public class ProjectModel
+	public class WorkspaceModel
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _directoryPath;
 
-		public delegate ProjectModel Factory(string directoryPath);//autofac uses this
+		public delegate WorkspaceModel Factory(string directoryPath);//autofac uses this
 		public event EventHandler UpdateDisplay;
 
 
-		public ProjectModel(BookSelection bookSelection, string directoryPath)
+		public WorkspaceModel(BookSelection bookSelection, string directoryPath)
 		{
 			_bookSelection = bookSelection;
 			_directoryPath = directoryPath;

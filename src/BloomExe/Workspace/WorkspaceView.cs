@@ -6,11 +6,11 @@ using Bloom.Library;
 using Bloom.Publish;
 using Palaso.IO;
 
-namespace Bloom.Project
+namespace Bloom.Workspace
 {
-	public partial class ProjectView : UserControl
+	public partial class WorkspaceView : UserControl
 	{
-		private readonly ProjectModel _model;
+		private readonly WorkspaceModel _model;
 		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -18,9 +18,9 @@ namespace Bloom.Project
 
 		public event EventHandler CloseCurrentProject;
 
-		public delegate ProjectView Factory();//autofac uses this
+		public delegate WorkspaceView Factory();//autofac uses this
 
-		public ProjectView(ProjectModel model,
+		public WorkspaceView(WorkspaceModel model,
 			LibraryView.Factory libraryViewFactory,
 			EditingView.Factory editingViewFactory,
 			PublishView.Factory pdfViewFactory,

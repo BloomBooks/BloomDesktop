@@ -16,17 +16,17 @@ namespace Bloom.Edit
 	public partial class ConfigurationDialog : Form
 	{
 		private readonly string _filePath;
-		private readonly string _projectJsonData;
+		private readonly string _libraryJsonData;
 
 		/// <summary>
 		/// Show an html form, prepopulating it with saved values, and returning the new values when they click "OK"
 		/// </summary>
 		/// <param name="configurationHtmlPath"></param>
-		/// <param name="projectJsonData">Values saved previously</param>
-		public ConfigurationDialog(string configurationHtmlPath, string projectJsonData)
+		/// <param name="libraryJsonData">Values saved previously</param>
+		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData)
 		{
 			_filePath = configurationHtmlPath;
-			_projectJsonData = projectJsonData;
+			_libraryJsonData = libraryJsonData;
 			InitializeComponent();
 		}
 
@@ -53,7 +53,7 @@ namespace Bloom.Edit
 					}
 				function preloadSettings()
 					{
-						 x =  "+_projectJsonData+ @";
+						 x =  "+_libraryJsonData+ @";
 						var $inputs = $('#form').find('[name]');
 						populateForm($inputs, x, 'name');
 					}");

@@ -55,11 +55,11 @@ namespace Bloom
 					typeof(EditingModel)}.Contains(t));
 
 
-				///ProjectSettings = _scope.Resolve<Func<string, ProjectSettings>>()(projectSettingsPath);
-			  //  ProjectSettings = new ProjectSettings(projectSettingsPath);
+				///LibrarySettings = _scope.Resolve<Func<string, LibrarySettings>>()(projectSettingsPath);
+			  //  LibrarySettings = new LibrarySettings(projectSettingsPath);
 				try
 				{
-					builder.Register<ProjectSettings>(c => new ProjectSettings(projectSettingsPath)).InstancePerLifetimeScope();
+					builder.Register<LibrarySettings>(c => new LibrarySettings(projectSettingsPath)).InstancePerLifetimeScope();
 				}
 				catch(Exception)
 				{
@@ -75,7 +75,7 @@ namespace Bloom
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
-				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<ProjectSettings>().Iso639Code, new []{"tpi","en"}));//todo
+				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<LibrarySettings>().Iso639Code, new []{"tpi","en"}));//todo
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {
@@ -90,7 +90,7 @@ namespace Bloom
 					 }).InstancePerLifetimeScope();
 
 				//TODO: this gave a stackoverflow exception
-//				builder.Register<ProjectModel>(c => c.Resolve<ProjectModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
+//				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
 				//so we're doing this
 				builder.Register(c=>rootDirectoryPath).InstancePerLifetimeScope();
 

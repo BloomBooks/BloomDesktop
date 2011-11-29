@@ -8,42 +8,42 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Bloom.Project;
+using Bloom.Workspace;
 
 namespace Bloom
 {
 	public partial class Shell : Form
 	{
-		private readonly ProjectSettings _projectSettings;
-		private readonly ProjectView _projectView;
+		private readonly LibrarySettings _librarySettings;
+		private readonly WorkspaceView _workspaceView;
 
-		public Shell(ProjectView.Factory projectViewFactory, ProjectSettings projectSettings)
+		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings)
 		{
-			_projectSettings = projectSettings;
+			_librarySettings = librarySettings;
 			InitializeComponent();
 
-			_projectView = projectViewFactory();
-			_projectView.CloseCurrentProject += ((x, y) =>
+			_workspaceView = projectViewFactory();
+			_workspaceView.CloseCurrentProject += ((x, y) =>
 													{
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
 
-			_projectView.BackColor =
+			_workspaceView.BackColor =
 				System.Drawing.Color.FromArgb(((int)(((byte)(64)))),
 											  ((int)(((byte)(64)))),
 											  ((int)(((byte)(64)))));
-										_projectView.Dock = System.Windows.Forms.DockStyle.Fill;
+										_workspaceView.Dock = System.Windows.Forms.DockStyle.Fill;
 
-			this.Controls.Add(this._projectView);
+			this.Controls.Add(this._workspaceView);
 
 			SetWindowText();
 		}
 
 		private void SetWindowText()
 		{
-			Text = string.Format("{0} - Bloom {1}", _projectView.Text, GetVersionInfo());
-			if(_projectSettings.IsShellMakingProject)
+			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
+			if(_librarySettings.IsShellLibrary)
 			{
 				Text += " SHELL MAKING PROJECT";
 			}

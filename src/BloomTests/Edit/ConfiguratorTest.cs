@@ -19,7 +19,7 @@ namespace BloomTests.Edit
 		private FileLocator _fileLocator;
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
-		private TemporaryFolder _projectFolder;
+		private TemporaryFolder _libraryFolder;
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -37,7 +37,7 @@ namespace BloomTests.Edit
 											});
 			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]));
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
-			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 
 			Browser.SetUpXulRunner();
 
@@ -55,23 +55,23 @@ namespace BloomTests.Edit
 		[STAThread]
 		public void ShowConfigureDialog()
 		{
-			var c = new Configurator(_projectFolder.Path);
+			var c = new Configurator(_libraryFolder.Path);
 
 			var stringRep = DynamicJson.Serialize(new
 			{
-				project = new { calendar = new { year = "2088" } }
+				library = new { calendar = new { year = "2088" } }
 			});
 			c.CollectJsonData(stringRep);
 
 			c.ShowConfigurationDialog(GetCalendardBookStorage().FolderPath);
-			Assert.IsTrue(c.GetProjectData().Contains("year"));
+			Assert.IsTrue(c.GetLibraryData().Contains("year"));
 		}
 
 
 		[Test]
 		public void GetAllData_LocalOnly_ReturnLocal()
 		{
-			var c = new Configurator(_projectFolder.Path);
+			var c = new Configurator(_libraryFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			c.CollectJsonData(j.ToString());
@@ -79,19 +79,19 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void ProjectSettingsAreRoundTriped()
+		public void LibrarySettingsAreRoundTriped()
 		{
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			var stringRep = DynamicJson.Serialize(new
 						{
-							project = new {stuff = "foo"}
+							library = new {stuff = "foo"}
 						});
 
 			first.CollectJsonData(stringRep.ToString());
 
-			var second = new Configurator(_projectFolder.Path);
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
-			Assert.AreEqual("foo", j.project.stuff);
+			var second = new Configurator(_libraryFolder.Path);
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			Assert.AreEqual("foo", j.library.stuff);
 		}
 
 
@@ -101,38 +101,38 @@ namespace BloomTests.Edit
 		{
 			var firstData = DynamicJson.Serialize(new
 			{
-				project = new { one = "1", color="red" }
+				library = new { one = "1", color="red" }
 			});
 			var secondData = DynamicJson.Serialize(new
 			{
-				project = new { two = "2", color = "blue" }
+				library = new { two = "2", color = "blue" }
 			});
 
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_projectFolder.Path);
-			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetProjectData());
-			Assert.AreEqual("2", j.project.two);
-			Assert.AreEqual("1", j.project.one);
-			Assert.AreEqual("blue", j.project.color);
+			var second = new Configurator(_libraryFolder.Path);
+			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetLibraryData());
+			Assert.AreEqual("2", j.library.two);
+			Assert.AreEqual("1", j.library.one);
+			Assert.AreEqual("blue", j.library.color);
 		}
 
 		[Test]
 		public void CollectJsonData_HasArrayValue_DataMerged()
 		{
-			var firstData = "{\"project\":{\"days\":[\"1\",\"2\"]}}";
-			var secondData = "{\"project\":{\"days\":[\"one\",\"two\"]}}";
+			var firstData = "{\"library\":{\"days\":[\"1\",\"2\"]}}";
+			var secondData = "{\"library\":{\"days\":[\"one\",\"two\"]}}";
 
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_projectFolder.Path);
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
-			Assert.AreEqual("one", j.project.days[0]);
-			Assert.AreEqual("two", j.project.days[1]);
+			var second = new Configurator(_libraryFolder.Path);
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			Assert.AreEqual("one", j.library.days[0]);
+			Assert.AreEqual("two", j.library.days[1]);
 		}
 
 
@@ -141,22 +141,22 @@ namespace BloomTests.Edit
 		{
 			var firstData = DynamicJson.Serialize(new
 													{
-														project = new {food = new {veg="v", fruit = "f"}}
+														library = new {food = new {veg="v", fruit = "f"}}
 													});
 			var secondData = DynamicJson.Serialize(new
 			{
-				project = new { food = new { bread = "b", fruit = "f" } }
+				library = new { food = new { bread = "b", fruit = "f" } }
 			});
 
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_projectFolder.Path);
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetProjectData());
-			Assert.AreEqual("v", j.project.food.veg);
-			Assert.AreEqual("f", j.project.food.fruit);
-			Assert.AreEqual("b", j.project.food.bread);
+			var second = new Configurator(_libraryFolder.Path);
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			Assert.AreEqual("v", j.library.food.veg);
+			Assert.AreEqual("f", j.library.food.fruit);
+			Assert.AreEqual("b", j.library.food.bread);
 		}
 
 		private void AssertEqual(string a, string b)
@@ -167,10 +167,10 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			dynamic j = new DynamicJson();
-			j.project = new DynamicJson();
-			j.project.projectstuff = "foo";
+			j.library = new DynamicJson();
+			j.library.librarystuff = "foo";
 			first.CollectJsonData(j.ToString());
 			AssertEmpty(first.LocalData);
 		}
@@ -183,7 +183,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoGlobalDataThenGlobalDataIsEmpty()
 		{
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -191,30 +191,30 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void GetProjectData_NoGlobalData_Empty()
+		public void GetLibraryData_NoGlobalData_Empty()
 		{
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
-			Assert.AreEqual("", first.GetProjectData());
+			Assert.AreEqual("", first.GetLibraryData());
 		}
 		[Test]
-		public void GetProjectData_NothingCollected_Empty()
+		public void GetLibraryData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_projectFolder.Path);
-			Assert.AreEqual("", first.GetProjectData());
+			var first = new Configurator(_libraryFolder.Path);
+			Assert.AreEqual("", first.GetLibraryData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_projectFolder.Path);
+			var first = new Configurator(_libraryFolder.Path);
 			Assert.AreEqual("", first.LocalData);
 		}
 		private BookStorage GetCalendardBookStorage()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "A5 Wall Calendar");
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
 			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator);
 			return bs;
 		}

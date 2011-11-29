@@ -5,29 +5,29 @@ using System.Windows.Forms;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 
-namespace Bloom.NewProject
+namespace Bloom.NewLibrary
 {
-	public partial class NewProjectDialog: Form
+	public partial class NewLibraryDialog: Form
 	{
 		private readonly string _destinationDirectory;
 		public string Iso639Code;
 		public string LanguageName;
 
-		public NewProjectDialog(string destinationDirectory)
+		public NewLibraryDialog(string destinationDirectory)
 		{
 			_destinationDirectory = destinationDirectory;
 			InitializeComponent();
 			Icon = Application.OpenForms[0].Icon;
 			btnOK.Enabled = false;
 			_pathLabel.Text = "";
-			_kindOfProjectControl1.Left = _chooseLanguageButton.Left;
-			_kindOfProjectControl1.Width = btnCancel.Right - _kindOfProjectControl1.Left;
-			_kindOfProjectControl1._nextButton.Click += new EventHandler(_nextButton_Click);
+			_kindOfLibraryControl1.Left = _chooseLanguageButton.Left;
+			_kindOfLibraryControl1.Width = btnCancel.Right - _kindOfLibraryControl1.Left;
+			_kindOfLibraryControl1._nextButton.Click += new EventHandler(_nextButton_Click);
 		}
 
 		void _nextButton_Click(object sender, EventArgs e)
 		{
-			_kindOfProjectControl1.Visible = false;
+			_kindOfLibraryControl1.Visible = false;
 		}
 
 		protected virtual bool EnableOK
@@ -35,16 +35,16 @@ namespace Bloom.NewProject
 			get { return NameLooksOk && !string.IsNullOrEmpty(Iso639Code); }
 		}
 
-		protected void _textProjectName_TextChanged(object sender, EventArgs e)
+		protected void _textLibraryName_TextChanged(object sender, EventArgs e)
 		{
 			btnOK.Enabled = EnableOK;
 			if (btnOK.Enabled)
 			{
-				string[] dirs = PathToNewProjectDirectory.Split(Path.DirectorySeparatorChar);
+				string[] dirs = PathToNewLibraryDirectory.Split(Path.DirectorySeparatorChar);
 				if (dirs.Length > 1)
 				{
 					string root = Path.Combine(dirs[dirs.Length - 3], dirs[dirs.Length - 2]);
-					_pathLabel.Text = String.Format("Project will be created at: {0}",
+					_pathLabel.Text = String.Format("Library will be created at: {0}",
 													Path.Combine(root, dirs[dirs.Length - 1]));
 				}
 
@@ -53,9 +53,9 @@ namespace Bloom.NewProject
 			}
 			else
 			{
-				if (_textProjectName.Text.Length > 0)
+				if (_textLibraryName.Text.Length > 0)
 				{
-					_pathLabel.Text = "Unable to create a new project there.";
+					_pathLabel.Text = "Unable to create a new library there.";
 				}
 				else
 				{
@@ -70,22 +70,22 @@ namespace Bloom.NewProject
 			{
 				//http://regexlib.com/Search.aspx?k=file+name
 				//Regex legalFilePattern = new Regex(@"(.*?)");
-				//               if (!(legalFilePattern.IsMatch(_textProjectName.Text)))
+				//               if (!(legalFilePattern.IsMatch(_textLibraryName.Text)))
 				//               {
 				//                   return false;
 				//               }
 
-				if (_textProjectName.Text.Trim().Length < 1)
+				if (_textLibraryName.Text.Trim().Length < 1)
 				{
 					return false;
 				}
 
-				if (_textProjectName.Text.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
+				if (_textLibraryName.Text.IndexOfAny(Path.GetInvalidFileNameChars()) > -1)
 				{
 					return false;
 				}
 
-				if (Directory.Exists(PathToNewProjectDirectory) || File.Exists(PathToNewProjectDirectory))
+				if (Directory.Exists(PathToNewLibraryDirectory) || File.Exists(PathToNewLibraryDirectory))
 				{
 					return false;
 				}
@@ -95,32 +95,32 @@ namespace Bloom.NewProject
 
 
 
-		public string PathToNewProjectDirectory
+		public string PathToNewLibraryDirectory
 		{
-			get { return Path.Combine(_destinationDirectory, _textProjectName.Text); }
+			get { return Path.Combine(_destinationDirectory, _textLibraryName.Text); }
 		}
 
 		protected void btnOK_Click(object sender, EventArgs e)
 		{
-			ProjectName = _textProjectName.Text.Trim();
+			LibraryName = _textLibraryName.Text.Trim();
 			DialogResult = DialogResult.OK;
 			Close();
-			if(IsShellMakingProject)
-				UsageReporter.SendNavigationNotice("NewShellProject");
+			if(IsShellMakingLibrary)
+				UsageReporter.SendNavigationNotice("NewShellLibrary");
 			else
-				UsageReporter.SendNavigationNotice("NewProject");
+				UsageReporter.SendNavigationNotice("NewLibrary");
 		}
 
-		public string ProjectName
+		public string LibraryName
 		{
 			get; private set;
 		}
 
-		public bool IsShellMakingProject
+		public bool IsShellMakingLibrary
 		{
 			get
 			{
-				return _kindOfProjectControl1._radioShellbookLibrary.Checked;
+				return _kindOfLibraryControl1._radioShellbookLibrary.Checked;
 			}
 
 		}
@@ -142,9 +142,9 @@ namespace Bloom.NewProject
 				_languageInfoLabel.Text = string.Format("{0} ({1})", dlg.ISOCodeAndName.Name, dlg.ISOCode);
 				Iso639Code = dlg.ISOCodeAndName.Code;
 				LanguageName= dlg.ISOCodeAndName.Name;
-				if(_textProjectName.Text.Trim().Length==0)
+				if(_textLibraryName.Text.Trim().Length==0)
 				{
-					_textProjectName.Text = dlg.ISOCodeAndName.Name + " Books";
+					_textLibraryName.Text = dlg.ISOCodeAndName.Name + " Books";
 				}
 			}
 		}

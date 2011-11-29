@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Bloom.NewProject;
+using Bloom.NewLibrary;
 using Bloom.ToPalaso;
 using Palaso.IO;
 
@@ -17,39 +17,39 @@ namespace Bloom
 			_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
 			_welcomeControl.TemplateButton.Image = this.Icon.ToBitmap();
 			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
-			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForProjects(),
+			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibrarys(),
 				"Create new library",
 				"Browse for other libraries on this computer...",
 				"Bloom Libraries|*.bloomLibrary",
 				dir=>true,
-				CreateNewProject);
+				CreateNewLibrary);
 
-			_welcomeControl.DoneChoosingOrCreatingProject += (x, y) =>
+			_welcomeControl.DoneChoosingOrCreatingLibrary += (x, y) =>
 																{
 																	DialogResult = DialogResult.OK;
 																	Close();
 																};
 		}
 
-		private string DefaultParentDirectoryForProjects()
+		private string DefaultParentDirectoryForLibrarys()
 		{
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
-		private NewProjectInfo CreateNewProject()
+		private NewLibraryInfo CreateNewLibrary()
 		{
-			NewProjectDialog dlg = new NewProjectDialog(DefaultParentDirectoryForProjects());
-			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewProjectDirectory))
+			NewLibraryDialog dlg = new NewLibraryDialog(DefaultParentDirectoryForLibrarys());
+			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewLibraryDirectory))
 			{
 				return null;
 			}
-			return new NewProjectInfo()
+			return new NewLibraryInfo()
 					   {
 						   PathToSettingsFile =
-							   ProjectSettings.GetPathForNewSettings(dlg.PathToNewProjectDirectory, dlg.ProjectName),
+							   LibrarySettings.GetPathForNewSettings(dlg.PathToNewLibraryDirectory, dlg.LibraryName),
 						   Iso639Code = dlg.Iso639Code,
 						   LanguageName = dlg.LanguageName,
-						   IsShellMakingProject = dlg.IsShellMakingProject
+						   IsShellLibary = dlg.IsShellMakingLibrary
 					   };
 		}
 

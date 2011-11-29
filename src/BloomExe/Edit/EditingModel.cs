@@ -15,7 +15,7 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private readonly LanguageSettings _languageSettings;
-		private readonly ProjectSettings _projectSettings;
+		private readonly LibrarySettings _librarySettings;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
 		private Book.Book _currentlyDisplayedBook;
@@ -32,12 +32,12 @@ namespace Bloom.Edit
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
 			DeletePageCommand deletePageCommand,
-			ProjectSettings projectSettings)
+			LibrarySettings librarySettings)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_languageSettings = languageSettings;
-			_projectSettings = projectSettings;
+			_librarySettings = librarySettings;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -117,7 +117,7 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				if (_projectSettings.IsShellMakingProject)
+				if (_librarySettings.IsShellLibrary)
 				{
 					return true;
 				}

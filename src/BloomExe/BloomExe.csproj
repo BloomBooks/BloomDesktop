@@ -131,7 +131,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ProjectContext.cs" />
-    <Compile Include="ProjectSettings.cs" />
+    <Compile Include="LibrarySettings.cs" />
     <Compile Include="Publish\PdfMaker.cs" />
     <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
@@ -141,18 +141,18 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewProject\KindOfProjectControl.cs">
+    <Compile Include="NewLibrary\KindOfLibraryControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewProject\KindOfProjectControl.Designer.cs">
-      <DependentUpon>KindOfProjectControl.cs</DependentUpon>
+    <Compile Include="NewLibrary\KindOfLibraryControl.Designer.cs">
+      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="NewProject\NewProjectDialog.cs">
+    <Compile Include="NewLibrary\NewLibraryDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewProject\NewProjectDialog.designer.cs">
-      <DependentUpon>NewProjectDialog.cs</DependentUpon>
+    <Compile Include="NewLibrary\NewLibraryDialog.designer.cs">
+      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\WelcomeControl.cs">
       <SubType>UserControl</SubType>
@@ -219,7 +219,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="TemplateCollectionList.cs" />
-    <Compile Include="Project\ProjectModel.cs" />
+    <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -227,11 +227,11 @@
       <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Project\ProjectView.cs">
+    <Compile Include="Workspace\WorkspaceView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Project\ProjectView.Designer.cs">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <Compile Include="Workspace\WorkspaceView.Designer.cs">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Browser.resx">
@@ -268,8 +268,8 @@
     <EmbeddedResource Include="Publish\PublishView.resx">
       <DependentUpon>PublishView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectView.resx">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <EmbeddedResource Include="Workspace\WorkspaceView.resx">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -292,11 +292,11 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProject\KindOfProjectControl.resx">
-      <DependentUpon>KindOfProjectControl.cs</DependentUpon>
+    <EmbeddedResource Include="NewLibrary\KindOfLibraryControl.resx">
+      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProject\NewProjectDialog.resx">
-      <DependentUpon>NewProjectDialog.cs</DependentUpon>
+    <EmbeddedResource Include="NewLibrary\NewLibraryDialog.resx">
+      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>

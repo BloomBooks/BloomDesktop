@@ -1,6 +1,6 @@
-namespace Bloom.NewProject
+namespace Bloom.NewLibrary
 {
-	partial class NewProjectDialog
+	partial class NewLibraryDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,16 +28,16 @@ namespace Bloom.NewProject
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewProjectDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewLibraryDialog));
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
-			this._textProjectName = new System.Windows.Forms.TextBox();
+			this._textLibraryName = new System.Windows.Forms.TextBox();
 			this._pathLabel = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
 			this._chooseLanguageButton = new System.Windows.Forms.Button();
 			this._languageInfoLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._kindOfProjectControl1 = new KindOfProjectControl();
+			this._kindOfLibraryControl1 = new KindOfLibraryControl();
 			this.SuspendLayout();
 			//
 			// label1
@@ -46,9 +46,9 @@ namespace Bloom.NewProject
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.Location = new System.Drawing.Point(25, 113);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(217, 15);
+			this.label1.Size = new System.Drawing.Size(213, 15);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "What would you like to call this project?";
+			this.label1.Text = "What would you like to call this library?";
 			//
 			// btnOK
 			//
@@ -75,14 +75,14 @@ namespace Bloom.NewProject
 			this.btnCancel.UseVisualStyleBackColor = true;
 			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
 			//
-			// _textProjectName
+			// _textLibraryName
 			//
-			this._textProjectName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._textProjectName.Location = new System.Drawing.Point(28, 137);
-			this._textProjectName.Name = "_textProjectName";
-			this._textProjectName.Size = new System.Drawing.Size(146, 23);
-			this._textProjectName.TabIndex = 1;
-			this._textProjectName.TextChanged += new System.EventHandler(this._textProjectName_TextChanged);
+			this._textLibraryName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._textLibraryName.Location = new System.Drawing.Point(28, 137);
+			this._textLibraryName.Name = "_textLibraryName";
+			this._textLibraryName.Size = new System.Drawing.Size(146, 23);
+			this._textLibraryName.TabIndex = 1;
+			this._textLibraryName.TextChanged += new System.EventHandler(this._textLibraryName_TextChanged);
 			//
 			// _pathLabel
 			//
@@ -119,7 +119,7 @@ namespace Bloom.NewProject
 			// _languageInfoLabel
 			//
 			this._languageInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this._languageInfoLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._languageInfoLabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._languageInfoLabel.Location = new System.Drawing.Point(168, 57);
@@ -130,14 +130,14 @@ namespace Bloom.NewProject
 			this._languageInfoLabel.TabIndex = 8;
 			this._languageInfoLabel.TabStop = false;
 			//
-			// _kindOfProjectControl1
+			// _kindOfLibraryControl1
 			//
-			this._kindOfProjectControl1.Location = new System.Drawing.Point(403, 18);
-			this._kindOfProjectControl1.Name = "_kindOfProjectControl1";
-			this._kindOfProjectControl1.Size = new System.Drawing.Size(76, 292);
-			this._kindOfProjectControl1.TabIndex = 9;
+			this._kindOfLibraryControl1.Location = new System.Drawing.Point(403, 18);
+			this._kindOfLibraryControl1.Name = "_kindOfLibraryControl1";
+			this._kindOfLibraryControl1.Size = new System.Drawing.Size(76, 292);
+			this._kindOfLibraryControl1.TabIndex = 9;
 			//
-			// NewProjectDialog
+			// NewLibraryDialog
 			//
 			this.AcceptButton = this.btnOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -145,20 +145,20 @@ namespace Bloom.NewProject
 			this.AutoScroll = true;
 			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(491, 320);
-			this.Controls.Add(this._kindOfProjectControl1);
+			this.Controls.Add(this._kindOfLibraryControl1);
 			this.Controls.Add(this._languageInfoLabel);
 			this.Controls.Add(this._chooseLanguageButton);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this._pathLabel);
-			this.Controls.Add(this._textProjectName);
+			this.Controls.Add(this._textLibraryName);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.btnOK);
 			this.Controls.Add(this.label1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "NewProjectDialog";
-			this.Text = "New Project";
+			this.Name = "NewLibraryDialog";
+			this.Text = "New Library";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -169,11 +169,11 @@ namespace Bloom.NewProject
 		protected System.Windows.Forms.Label label1;
 		protected System.Windows.Forms.Button btnOK;
 		protected System.Windows.Forms.Button btnCancel;
-		protected System.Windows.Forms.TextBox _textProjectName;
+		protected System.Windows.Forms.TextBox _textLibraryName;
 		protected System.Windows.Forms.Label _pathLabel;
 		protected System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _chooseLanguageButton;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _languageInfoLabel;
-		private KindOfProjectControl _kindOfProjectControl1;
+		private KindOfLibraryControl _kindOfLibraryControl1;
 	}
 }

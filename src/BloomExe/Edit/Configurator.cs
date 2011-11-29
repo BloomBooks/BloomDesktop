@@ -14,13 +14,13 @@ namespace Bloom.Edit
 	/// </summary>
 	public class Configurator
 	{
-		private readonly string _folderInWhichToReadAndSaveProjectSettings;
+		private readonly string _folderInWhichToReadAndSaveLibrarySettings;
 
-		public Configurator(string folderInWhichToReadAndSaveProjectSettings)
+		public Configurator(string folderInWhichToReadAndSaveLibrarySettings)
 		{
-			_folderInWhichToReadAndSaveProjectSettings = folderInWhichToReadAndSaveProjectSettings;
-			PathToProjectJson = _folderInWhichToReadAndSaveProjectSettings.CombineForPath("configuration.txt");
-			RequireThat.Directory(folderInWhichToReadAndSaveProjectSettings).Exists();
+			_folderInWhichToReadAndSaveLibrarySettings = folderInWhichToReadAndSaveLibrarySettings;
+			PathToLibraryJson = _folderInWhichToReadAndSaveLibrarySettings.CombineForPath("configuration.txt");
+			RequireThat.Directory(folderInWhichToReadAndSaveLibrarySettings).Exists();
 			LocalData = string.Empty;
 		}
 
@@ -36,7 +36,7 @@ namespace Bloom.Edit
 
 		public  DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetProjectData()))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData()))
 			{
 				var result = dlg.ShowDialog(null);
 				if(result == DialogResult.OK)
@@ -90,10 +90,10 @@ namespace Bloom.Edit
 
 		public string LocalData { get; set; }
 
-		private string PathToProjectJson { get; set; }
+		private string PathToLibraryJson { get; set; }
 
 		/// <summary>
-		/// Saves off the project part to disk, stores the rest
+		/// Saves off the library part to disk, stores the rest
 		/// </summary>
 		/// <param name="newDataString"></param>
 		public void CollectJsonData(string newDataString)
@@ -104,25 +104,25 @@ namespace Bloom.Edit
 				return;
 			}
 			dynamic newData = DynamicJson.Parse(newDataString);
-			dynamic projectData=null;
-			if(newData.IsDefined("project"))
+			dynamic libraryData=null;
+			if(newData.IsDefined("library"))
 			{
-				projectData = newData.project;
+				libraryData = newData.library;
 			}
-			//Now in LocalData, we want to save everything that isn't project data
-			newData.Delete("project");
+			//Now in LocalData, we want to save everything that isn't library data
+			newData.Delete("library");
 			LocalData = newData.ToString();
-			if (projectData == null)
-				return;	//no project data in there, so we don't have anything to merge/save
+			if (libraryData == null)
+				return;	//no library data in there, so we don't have anything to merge/save
 
-			var existingDataString = GetProjectData();
+			var existingDataString = GetLibraryData();
 			if (!string.IsNullOrEmpty(existingDataString))
 			{
 				dynamic existingData = DynamicJson.Parse(existingDataString);
-				projectData = MergeJsonData(existingData.project.ToString(), projectData.ToString());
+				libraryData = MergeJsonData(existingData.library.ToString(), libraryData.ToString());
 			}
 
-			File.WriteAllText(PathToProjectJson, projectData.ToString());
+			File.WriteAllText(PathToLibraryJson, libraryData.ToString());
 
 
 		}
@@ -195,25 +195,25 @@ namespace Bloom.Edit
 			return o.TryGetValue(key, out v);
 		}
 
-		public string GetProjectData()
+		public string GetLibraryData()
 		{
-			if(!File.Exists(PathToProjectJson))
+			if(!File.Exists(PathToLibraryJson))
 				return string.Empty;
 
-			var s= File.ReadAllText(PathToProjectJson);
+			var s= File.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 
-			return "{\"project\": " + s + "}";
+			return "{\"library\": " + s + "}";
 		}
 
 		public string GetAllData()
 		{
-			string projectData = GetProjectData();
+			string libraryData = GetLibraryData();
 			var local = GetInnerjson(LocalData);
-			var project = GetInnerjson(projectData);
-			if(!string.IsNullOrEmpty(projectData))
-				return "{"+local+", "+ project+"}";
+			var library = GetInnerjson(libraryData);
+			if(!string.IsNullOrEmpty(libraryData))
+				return "{"+local+", "+ library+"}";
 			else
 			{
 				return LocalData;

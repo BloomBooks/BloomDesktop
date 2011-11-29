@@ -14,16 +14,16 @@ namespace Bloom.Library
 	public class LibraryModel
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly string _pathToProject;
+		private readonly string _pathToLibrary;
 		private readonly TemplateCollectionList _templateCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 
-		public LibraryModel(string pathToProject, BookSelection bookSelection,
+		public LibraryModel(string pathToLibrary, BookSelection bookSelection,
 			TemplateCollectionList templateCollectionList,
 			BookCollection.Factory bookFactory)
 		{
 			_bookSelection = bookSelection;
-			_pathToProject = pathToProject;
+			_pathToLibrary = pathToLibrary;
 			_templateCollectionList = templateCollectionList;
 			_bookCollectionFactory = bookFactory;
 		}
@@ -36,7 +36,7 @@ namespace Bloom.Library
 
 		public IEnumerable<BookCollection> GetBookCollections()
 		{
-			yield return _bookCollectionFactory(_pathToProject, BookCollection.CollectionType.TheOneEditableCollection);
+			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 
 			foreach (var root in _templateCollectionList.RepositoryFolders)
 			{

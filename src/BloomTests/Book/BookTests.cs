@@ -54,7 +54,7 @@ namespace BloomTests.Book
 		private Bloom.Book.Book CreateBook()
 		{
 			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
-				new ProjectSettings(new NewProjectInfo() {PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_testFolder.Path,"test"), Iso639Code = "xyz" }),
+				new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), Iso639Code = "xyz" }),
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
