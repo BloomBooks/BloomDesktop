@@ -6,9 +6,9 @@
 *   This script is fed a configuration object with elements
 *       configuration.calendar.year
 *
-*       These ones are in the "project" zone because they will be reused in future years/other calendar types
-*       configuration.project.calendar.monthNames[0..11]
-*       configuration.project.calendar.dayAbbreviations[0..6]
+*       These ones are in the "library" zone because they will be reused in future years/other calendar types
+*       configuration.library.calendar.monthNames[0..11]
+*       configuration.library.calendar.dayAbbreviations[0..6]
 *
 *   This script relies on 3 of the pages that should be in the DOM it operates on:
 *       One with class 'titlePage'
@@ -18,7 +18,7 @@
 
 function test() {
     var configuration = {   "calendar": { "year": "2012" },
-                            "project": { "calendar":
+                            "library": { "calendar":
                                                 { "monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
                                                     "dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
                                                 }
@@ -46,7 +46,7 @@ function updateDom(configuration) {
 
         monthsPicturePage.inject(previous, "after");
 
-        var monthDaysPage = generateMonth(year, month, configuration.project.calendar.monthNames[month], configuration.project.calendar.dayAbbreviations);
+        var monthDaysPage = generateMonth(year, month, configuration.library.calendar.monthNames[month], configuration.library.calendar.dayAbbreviations);
         monthDaysPage.inject(monthsPicturePage, "after");
         previous = monthDaysPage;
     }

@@ -1,9 +1,6 @@
-﻿using Bloom.Edit;
-using Bloom.Publish;
-
-namespace Bloom.Project
+﻿namespace Bloom.Workspace
 {
-    partial class ProjectView
+    partial class WorkspaceView
     {
         /// <summary> 
         /// Required designer variable.
@@ -146,14 +143,14 @@ namespace Bloom.Project
             this.toolStripButton1.Text = "toolStripButton1";
             this.toolStripButton1.ToolTipText = "Open a library for a different language, or create a new library.";
             // 
-            // ProjectView
+            // WorkspaceView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this._infoButton);
             this.Controls.Add(this._openButton1);
             this.Controls.Add(this._tabControl);
-            this.Name = "ProjectView";
+            this.Name = "WorkspaceView";
             this.Size = new System.Drawing.Size(885, 540);
             this._tabControl.ResumeLayout(false);
             this.ResumeLayout(false);
