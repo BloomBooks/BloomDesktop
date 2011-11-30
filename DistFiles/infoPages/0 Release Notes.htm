@@ -14,20 +14,25 @@ Thanks for checking out this pre-release version of Bloom, which has been made a
 </p>
 
 <h4>0.3: 30 Nov 2011</h4>
-	---Breaking Changes--Classes are no longer used to mark variables. Instead, we use data-variable (this just became possible with the switch to html5). This effects:
-"-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage", and "-bloom-nameOfLanguage". While these classes still
-exists for styling purposes, they must now be accompanied by an appropriate data-variable in order to serve as placeholders for data that is copied throughout the book.
-The variable names are shown in the following examples:<ul>
-		<li>class="-bloom-vernacularBookTitle" data-variable="vernacularBookTitle"</li>
-		<li>class="-bloom-topicInNationalLanguage" data-variable="topicInNationalLanguage"</li>
-		<li>class="-bloom-nameOfLanguage" data-variable="nameOfLanguage" </li>
-	</ul>
-
+	---Breaking Changes-- <br />Making use of a new capabilty offered by html5, many formerly "special" classes have been moved to div-* attributes:
+		<table>
+		<thead><tr><th>old</th><th>new</th></tr></thead>
+		<tr><td>class=&quot;-bloom-vernacularBookTitle&quot;</td><td>data-book="vernacularBookTitle"</td></tr>
+		<tr><td>class="-bloom-topicInNationalLanguage"</td><td>data-book="topicInNationalLanguage"</td></tr>
+		<tr><td>class="_myCustomVariable"</td><td>data-book="myCustomVariable"</td></tr>
+		<tr><td>class="-bloom-nameOfLanguage"</td><td>data-library="nameOfLanguage"</td></tr>
+		<tr><td>class="-bloom-singleton</td><td>data-page="singleton"</td></tr>
+		<tr><td>class="-bloom-extraPage</td><td>data-page="extra"</td></tr>
+		<tr><td>class="-bloom-required</td><td>data-page="required"</td></tr>
+		</table>
 
 <h4>0.3: 29 Nov 2011</h4>
----Breaking Changes---
-Moved collections locations to c:\programdata\sil\bloom\collections.  Formerly, the sil part was missing. Bloom now creates this folder automatically.
-Now avoiding the word "project", in favor of "library".  So now you "create a library for your language".  This change also shows up in configuration files, so if anyone has an existing *.BloomLibrary file, open it in a text editor and change all instances of "Project" to "Libary".
+	---Breaking Changes--- Moved collections locations to
+	c:\programdata\sil\bloom\collections. Formerly, the sil part was missing. Bloom
+	now creates this folder automatically. Now avoiding the word &quot;project&quot;, in favor
+	of &quot;library&quot;. So now you &quot;create a library for your language&quot;. This change also
+	shows up in configuration files, so if anyone has an existing *.BloomLibrary
+	file, throw away the whole folder.
 
 <h4>0.3: 25 Nov 2011</h4>
 A5 Wall Calendar now usable, with vernacular days and months. Could use a graphic designer's love, though.
