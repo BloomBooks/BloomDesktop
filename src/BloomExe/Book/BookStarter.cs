@@ -166,7 +166,7 @@ namespace Bloom.Book
 		/// with the lang code of the vernacular
 		/// </summary>
 		/// <param name="pageDiv"></param>
-		private static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
+		public static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
 		{
 			foreach (var groupId in GetParagraphIdTextAreaGroupsInSinglePageDiv(pageDiv))
 			{

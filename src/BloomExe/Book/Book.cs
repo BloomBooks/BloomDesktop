@@ -60,6 +60,16 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 
+
+			//Under normal conditions, this isn't needed, because it is done when a book is first created.
+			//However we're doing it again with each open, just in case the book was dragged from another
+			//project, or the editing language was changed.  Under those conditions, if we didn't do this, we end up with no
+			//editable items, because there are no elements in our language.
+			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			{
+				BookStarter.MakeVernacularElementsForPage(div,_librarySettings.Iso639Code);
+			}
+
 			if (CanEdit)
 			{
 				MakeAllFieldsConsistent();
