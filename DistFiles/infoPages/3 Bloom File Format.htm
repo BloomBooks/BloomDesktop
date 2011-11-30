@@ -3,16 +3,29 @@
 <title>File Format xxx</title>
 	<link  rel="stylesheet" href="style.css" type="text/css" />
 
+	<style type="text/css">
+		.style1
+		{
+			background-color: #FFFFCC;
+		}
+		.style2
+		{
+			background-color: #C0C0C0;
+		}
+	</style>
+
 </head>
-<body>
+<body style="direction: ltr">
 <h1>Bloom Format</h1>
-<p>The following information is for advanced primer or shell developers.  If you're just making shells for other people to use, you probably don't need to know any of the following.</p>
-<p>
+<div class="note">The following information is for advanced primer or shell developers.  If you're just making shells for other people to use, you probably don't need to know any of the following.</div>
+<br />
+<div class="note">
 	Bloom is in experimental mode, and the Bloom format is still evolving in
 	response to needs we discover. Take that into account before converting hundreds
-	of books. The wise thing at this point it to convert one book of each type, so that we can find any missing file-format elements that you will need. The plan is to cease any breaking changes by early 2012.</p>
+	of books. The wise thing at this point it to convert one book of each type, so that we can find any missing file-format elements that you will need. The plan is to cease any breaking changes by early 2012.</div>
 	<p>
-Bloom documents are XHTML 5 with certain conventions and pre-defined class names, as
+Bloom documents are XHTML 5 with certain conventions and pre-defined class
+		names and data-* attributes, as
 	described below. Of course, you&#39;ll want to open up a bloom html file and see for
 		yourself how it is structured.&nbsp; Two simple examples are the
 		A5Portrait/templatePages.htm, and the Vaccinations.htm, which comes in the Sample Shells project. You can look at the originals or create a book using them,
@@ -27,23 +40,33 @@ Bloom documents are XHTML 5 with certain conventions and pre-defined class names
 	<p>Formatting within these pages is typically done by adding a unique class to the
 	div for a particular page layout. That class then triggers the CSS style rules
 	you&#39;ve made for the page.&nbsp; Using <a href="http://www.skybound.ca">Stylizer</a>,
-	this can be much less painful that it sounds.&nbsp; It bears repeating: all of
+	this can be much less painful than it sounds.&nbsp; It bears repeating: all of
 	this is only for making <strong>new page templates</strong>, or for jobs (like fancy literacy
 	primer templates) that can&#39;t use the standard page templates found in the
 		A5Portrait Template.&nbsp; </p>
 <h2>StyleSheets</h2>
-<p>papersize/orientation. E.g. a5portrait.css. Currently, this is the only size/portrait available.</p>
-<p>The next three stylesheets are part of Bloom and are not available for customization under any circumstances. If you delete the links to any of them in the html, they will be added back to the html.</p>
+<h4>Built-in stylesheets</h4>
+	<p>These are part of Bloom and are not available for customization under any circumstances. If you delete the links to any of them in the html, they will be added back to the html.</p>
 <ul><li>basePage.css: always applied. Used for styles which always apply, regardless of mode or paper size.</li>
 <li>editMode.css is applied during editing</li>
 <li>previewMode.css is applied during viewing and printing</li>
 </ul>
-	<p>Note: when a new book is created, each of these pages is copied in to the folder
+<h4>Paper &amp; orientation stylesheets</h4>
+	<p>These should be named according to this pattern:&nbsp; &lt;papersize&gt;&lt;orientation&gt;&lt;customName&gt;.css. E.g. a5portrait.css,
+		a4LandscapeIndonesia.css. Bloom actually looks at the name to figure some things
+		out when making a PDF.</p>
+
+	<div class="note">Note: when a new book is created, each of these pages is copied in to the folder
 		with the book, so that if it is moved to a computer which doesn&#39;t have bloom, it
 		will be still viewable.&nbsp; However, each time the book is opened, Bloom will
 		replace the stylesheets in that folder with the versions in the Bloom program
 		directory.&nbsp; So if you&#39;re working on one of the standard stylesheets, be
-		careful to not let Bloom over-write your work.</p>
+		careful to not let Bloom over-write your work.</div>
+		<h4>Organization/Region-specific stylesheets and templates</h4>
+		<p>TODO: document this</p>
+		<h4>Template-specific Stylesheets</h4>
+		<p>Some documents will need their own stylesheets. Examples include primers, calendars, and study guides.</p>
+		<p>TODO: document this</p>
 <h2>Document Data</h2>
 	<h4>(TODO)</h4>
 	<pre>
@@ -61,18 +84,27 @@ Bloom documents are XHTML 5 with certain conventions and pre-defined class names
 <h2>Built-in Classes</h2>
 <p>While most classes are just there to link with the CSS stylesheet, Bloom has several classes which the c# code looks for and uses:</p>
 <ul><li>-bloom-page: Each page is indicated by a &lt;div&gt; which has this class.</li>
+	<li>-bloom-showNational: indicates that it shouldn&#39;t be translated. See the section
+	&quot;other language-related things&quot; below.</li>
 	<li>numberedPage: (not actually know to the code, therefore not a "-bloom" one). Pages that should be part of the page numbering; i.e. all pages
 		except front matter</li>
-<li>-bloom-vernacularBookTitle: This is shown on the cover, sets the &lt;title&gt; element of the html, sets the name of the book's folder, and finally, the book's html file.</li>
-<li>-bloom-topicInNationalLanguage: e.g. "Health", "Math". Currently only used by stylesheets, but reserved for future c# code use.</li>
-<li>-bloom-nameOfLanguage: this is automatically filled in, so it should only appear in uneditable elements.</li>
-<li>-bloom-requiredPage: Page &lt;div&gt;s with this class are always added to a new book, and the user is not allowed to remove them. </li>
-<li>-bloom-singleton: Only a single copy of this page may be added to a book.</li>
-<li>-bloom-extraPage: When a book is created, any pages marked with this class will not be initially added to the new book. If the user wants one of these pages, he has to add it explicitly (by clicking on its icon in the list of template pages).</li>
-<li>-bloom-showNational: indicates that it shouldn&#39;t be translated. See the section
-	&quot;other language-related things&quot; below.</li>
-<li>-bloom-guidOfTemplateBook.  See the section below on Lineage.</li>
 </ul>
+
+	<h2>
+		Template Page Properties</h2>
+	<p>
+		Template pages can indicate various properties to the Bloom editor through the
+		<em>data-page</em> attribute of the page div.</p>
+	<ul>
+		<li>singleton: Only a single copy of this page may be added to a book.</li>
+		<li>required: Page with this tag are always added to a new book, and the user is not
+			allowed to remove them. </li>
+		<li>extra: When a book is created, any pages marked with this class will not be
+			initially added to the new book. If the user wants one of these pages, he has to
+			add it explicitly (by clicking on its icon in the list of template pages).</li>
+	</ul>    <p>
+		For example, the cover of a book would have a div like this:</p>
+	<pre>&lt;div class=&quot;-bloom-page cover coverColor&quot; <strong>data-page=&quot;required singleton&quot;</strong>&gt;</pre>
 	<h2>Lineage</h2>
 <p>(This area is especially immature)</p>
 <p>While Bloom doesn't yet provide it, we may someday need the ability to update all the pages stemming from a certain template page.  For example, an entity might change their standard title page format, and they might like to have a way of updating the existing books that were using the old format. To make that possible in the future, we need to store the lineage now.
@@ -90,19 +122,44 @@ Bloom documents are XHTML 5 with certain conventions and pre-defined class names
 		Preventing Template pages from showing</h2>
 	<p>
 		In some documents (e.g. calendar),
-		you may want to keep things simple by hiding the list of tempalte pags during
+		you may want to keep things simple by hiding the list of template pages during
 		editing.&nbsp; To do that, add the following to the header of the shell:</p>
 	 <pre>
 	 &lt;meta id="normallyShowTemplatePages" content="false" /&gt;
 	 </pre>
 	<h2>
-		"Constants"</h2>
+		"Variables&quot;</h2>
 	<p>
-		If a &lt;textarea&gt; has a class which begins with an underscore, Bloom will copy the text in that textarea into other paragraphs, spans, and textareas which have the same class. This allows the user to translate something once, and have it show up all over.
-		For example, the following textarea is used in a study book, where many of the
-		pages have a heading which, in English, just says &quot;Questions&quot;.</p>
+		If an html element has a <em>
+		data-book </em>attribute, Bloom will copy the text in that textarea into other
+		elements which have the same <em>data-book</em> property. This allows the user
+		to enter a piece of information once, and have it show up all over. For example,
+		the following textarea is used in a study book, where many of the pages have a
+		heading which, in English, just says &quot;Questions&quot;:</p>
 	<pre>
-		&lt;textarea lang=&quot;en&quot; class=&quot;Heading2 <span class="style1">_</span>questionsHeading&quot;&gt;Questions&lt;/textarea&gt;</pre>
+		&lt;textarea lang=&quot;en&quot; data-book=&quot;questionsHeading&quot;&gt;Questions&lt;/textarea&gt;</pre>
+	Now, what if
+	you want a value to repeat throught <em>all </em>the books in the library? Do that by
+	instead using a <em>data-library</em> attribute. Bloom saves such
+	variables in the &quot;.bloomLibrary&quot; file that is at the root level of each
+	library folder on disk. The values are then used in all future books in that
+	library. For example,<pre>
+		&lt;p&gt;This language is spoken in the Sub District of &lt;textarea lang=&quot;en&quot; data-library=&quot;subDistrict&quot;&gt;&lt;/textarea&gt; &lt;/p&gt;</A variable comes into use whenever the user edits a book which containing it.
+	There is at present no &quot;registry&quot; of variables.</p><p>
+	Some variables are known by Bloom itself. For example, when you create a new
+	library, Bloom makes you identify the ISO-639 (Ethnologue) code for the
+	language. It stores that value under the &quot;Iso639Code&quot; library variable. So if
+	you wanted that code to show up on a title page, you could do it this way:<pre style="margin-left: 40px">&lt;p&gt;ISo Code=&lt;span data-library=&quot;Iso639Code&quot;&gt;&lt;/span&gt;&lt;/p&gt;</pre>
+
+	<p>Here are the book variables built-in to Bloom</p>
+	<ul>
+	<li>vernacularBookTitle: This is shown on the cover, sets the title element of the html, sets the name of the book's folder, and finally, the book's html file.</li>
+	<li>topicInNationalLanguage: e.g. "Health", "Math". Currently only used by stylesheets, but reserved for future c# code use.</li>
+	</ul>
+	<p>Here are the libary variables built-in to Bloom</p>
+	<ul>
+	<li>nameOfLanguage: this is automatically filled in, so it should only appear in uneditable elements.</li>
+	</ul>
 <h2>
 		Shell Books and Languages</h2>
 	<p>

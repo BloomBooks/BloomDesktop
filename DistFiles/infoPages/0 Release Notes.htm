@@ -13,6 +13,17 @@
 Thanks for checking out this pre-release version of Bloom, which has been made available for experimentation and creation of shell books. It is not yet ready for wide-scale use.
 </p>
 
+<h4>0.3: 30 Nov 2011</h4>
+	---Breaking Changes--Classes are no longer used to mark variables. Instead, we use data-variable (this just became possible with the switch to html5). This effects:
+"-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage", and "-bloom-nameOfLanguage". While these classes still
+exists for styling purposes, they must now be accompanied by an appropriate data-variable in order to serve as placeholders for data that is copied throughout the book.
+The variable names are shown in the following examples:<ul>
+		<li>class="-bloom-vernacularBookTitle" data-variable="vernacularBookTitle"</li>
+		<li>class="-bloom-topicInNationalLanguage" data-variable="topicInNationalLanguage"</li>
+		<li>class="-bloom-nameOfLanguage" data-variable="nameOfLanguage" </li>
+	</ul>
+
+
 <h4>0.3: 29 Nov 2011</h4>
 ---Breaking Changes---
 Moved collections locations to c:\programdata\sil\bloom\collections.  Formerly, the sil part was missing. Bloom now creates this folder automatically.

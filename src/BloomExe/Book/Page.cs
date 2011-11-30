@@ -25,6 +25,7 @@ namespace Bloom.Book
 		private readonly Func<IPage, Image> _getThumbnail;
 		private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
 		private List<string> _classes;
+		private List<string> _tags;
 
 		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
@@ -34,6 +35,7 @@ namespace Bloom.Book
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
 			ReadClasses(sourcePage);
+			ReadPageTags(sourcePage);
 		}
 
 		private void ReadClasses(XmlElement sourcePage)
@@ -45,8 +47,20 @@ namespace Bloom.Book
 				_classes.AddRange(classesString.Split(new char[]{' '},StringSplitOptions.RemoveEmptyEntries));
 			}
 		}
+		private void ReadPageTags(XmlElement sourcePage)
+		{
+			_tags = new List<string>();
+			var tags = sourcePage.GetAttribute("data-page");
+			if (!string.IsNullOrEmpty(tags))
+			{
+				_tags.AddRange(tags.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+			}
+		}
 
-		public bool Required { get { return _classes.Contains("-bloom-required"); } }
+		public bool Required
+		{
+			get { return _tags.Contains("required"); }
+		}
 
 		public bool CanRelocate
 		{

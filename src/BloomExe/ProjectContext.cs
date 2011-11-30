@@ -106,6 +106,16 @@ namespace Bloom
 			{
 				yield return templateDir;
 			}
+//			TODO: Add, in the list of places we look, this libary's "regional libary" (when such a concept comes into being)
+//			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
+//			var templateCollectionList = parentContainer.Resolve<TemplateCollectionList>();
+//			foreach (var repo in templateCollectionList.RepositoryFolders)
+//			{
+//				foreach (var directory in Directory.GetDirectories(repo))
+//				{
+//					yield return directory;
+//				}
+//			}
 		}
 		private static string FactoryCollectionsDirectory
 		{

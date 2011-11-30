@@ -34,6 +34,7 @@ INPUT[type=hidden]
 {
 	display: none !important;
 }
+
 FIELDSET, A IMG
 {
 	border: 0;
@@ -54,6 +55,10 @@ TEXTAREA.hideMe
 	visibility: hidden !important;
 	position: fixed !important;
 }
+TEXTAREA
+{
+	resize: none; /*don't show those cute little resize controls in Firefox 4 and greater */
+}
 DIV.-bloom-page
 {
 	display: block;
@@ -61,6 +66,7 @@ DIV.-bloom-page
 	background-color: #FFFFFF;
 	/*[ph]0*/
 }
+
 @media screen
 {
 	DIV.-bloom-page
@@ -68,12 +74,7 @@ DIV.-bloom-page
 		/*[id]0*/border: 1px solid #000000;
 	}
 }
-/*This class is used by the calendar template, which has a page that should only be visible when we're setting up the calendar*/
-DIV.-bloom-configurationPage
-{
-	display: none;
-	visibility: hidden;
-}
+
 .centered
 {
 	text-align: center;

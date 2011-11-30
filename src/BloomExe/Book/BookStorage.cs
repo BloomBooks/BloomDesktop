@@ -611,7 +611,7 @@ namespace Bloom.Book
 		public string GetVernacularTitleFromHtml(string Iso639Code)
 		{
 			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
-				string.Format("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='{0}']", Iso639Code));
+				string.Format("//textarea[@data-book='vernacularBookTitle' and @lang='{0}']", Iso639Code));
 			if (textWithTitle == null)
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");

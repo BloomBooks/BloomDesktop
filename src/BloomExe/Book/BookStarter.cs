@@ -75,7 +75,7 @@ namespace Bloom.Book
 			//SetMetaDataElement(storage, "")
 
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'-bloom-extraPage')]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
@@ -100,7 +100,7 @@ namespace Bloom.Book
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
-			pageDiv.SetAttribute("class", pageDiv.GetAttribute("class").Replace("-bloom-extraPage", "").Trim());
+			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
 
 
 			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
@@ -123,8 +123,11 @@ namespace Bloom.Book
 
 			foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
 			{
-				if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
-					node.SetAttribute("id", Guid.NewGuid().ToString());
+				//TODO: review this "-bloom-configurationPage". Is it still needed? Either way, why is text area the only element not handled?
+//                if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
+//                    node.SetAttribute("id", Guid.NewGuid().ToString());
+
+				node.SetAttribute("id", Guid.NewGuid().ToString());
 			}
 
 			foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
@@ -284,7 +287,7 @@ namespace Bloom.Book
 		private static List<string> GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(XmlElement pageDiv)
 		{
 			List<string> groups = new List<string>();
-			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[contains(@class,'_') or contains(@class, '-bloom-')]"))
+			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@data-book or @data-library]"))
 			{
 			   var id = paragraph.GetAttribute("id");
 				//we're happy to add guids if they're missing.

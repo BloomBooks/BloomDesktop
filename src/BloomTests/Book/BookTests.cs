@@ -130,24 +130,36 @@ namespace BloomTests.Book
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 
+
+		[Test]
+		public void MakeAllFieldsConsistent_CustomLibraryVariable_CopiedToOtherElement()
+		{
+			var book = CreateBook();
+			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
+			book.MakeAllFieldsConsistent();
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='bb']");
+			Assert.AreEqual("aa", textarea2.InnerText);
+		}
+
+
 		[Test]
 		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' data-book='vernacularBookTitle'>original</textarea>
 						</p>
 					</div>
 				<div class='-bloom-page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
-						<p class='centered -bloom-vernacularBookTitle' lang='xyz' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
+						<p class='centered' lang='xyz' data-book='vernacularBookTitle' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
 				</div>
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='xyz']");
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.MakeAllFieldsConsistent();
-			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[contains(@class,'-bloom-vernacularBookTitle')  and @lang='xyz']");
+			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='vernacularBookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
 		}
 
@@ -188,13 +200,13 @@ namespace BloomTests.Book
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' class='-bloom-vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' data-book='vernacularBookTitle'>original</textarea>
 						</p>
 					</div>
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
 			textArea.InnerText ="blue";
 			book.MakeAllFieldsConsistent();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -209,7 +221,7 @@ namespace BloomTests.Book
 			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 			head.AppendChild(dom.CreateElement("title", "http://www.w3.org/1999/xhtml")).InnerText = "original";
 		   // node.SetAttribute("class", "-bloom-vernacularBookTitle");
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@class='-bloom-vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
 			textArea.InnerText = "blue";
 			book.MakeAllFieldsConsistent();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -361,7 +373,7 @@ namespace BloomTests.Book
 			//enhance: move to book starter tests, since that's what implements the actual behavior
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage'>hello</div>");
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page'  data-page='extra' >hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			Assert.AreEqual("-bloom-page", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
@@ -373,7 +385,7 @@ namespace BloomTests.Book
 			//enhance: move to book starter tests, since that's what implements the actual behavior
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' data-pageLineage='grandma' id='ma'>hello</div>");
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page'  data-page='extra'  data-pageLineage='grandma' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement) GetPageFromBookDom(book, 1);
 			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage]", 1);
@@ -395,7 +407,7 @@ namespace BloomTests.Book
 			//enhance: move to book starter tests, since that's what implements the actual behavior
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page -bloom-extraPage' id='ma'>hello</div>");
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='-bloom-page' data-page='extra' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
 			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage='ma']", 1);
@@ -608,8 +620,8 @@ namespace BloomTests.Book
 			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
 				<div class='-bloom-page' id='guid1'>
 					<p>
-						<textarea lang='en' id='1' class='-bloom-vernacularBookTitle'>tree</textarea>
-						<textarea lang='xyz' id='2' class='-bloom-vernacularBookTitle'>dog</textarea>
+						<textarea lang='en' id='1'  data-book='vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='2'  data-book='vernacularBookTitle'>dog</textarea>
 					</p>
 				</div>
 				<div class='-bloom-page' id='guid2'>
@@ -625,7 +637,10 @@ namespace BloomTests.Book
 						<textarea id='6' lang='xyz'>original2</textarea>
 					</p>
 					<p>
-						<textarea lang='xyz' id='copyOfVTitle' class='-bloom-vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='copyOfVTitle'  data-book='vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='aa'  data-library='testLibraryVariable'>aa</textarea>
+					   <textarea lang='xyz' id='bb'  data-library='testLibraryVariable'>bb</textarea>
+
 					</p>
 				</div>
 				</body></html>");

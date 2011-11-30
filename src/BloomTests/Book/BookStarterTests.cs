@@ -142,7 +142,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_HasEnglishParagraph_ConvertsToVernacular()//??????????????
 		{
 			var body = @"<div class='-bloom-page'>
-						<p id='bookTitle' lang='en' class='-bloom-vernacularBookTitle'>Book Title</p>
+						<p id='bookTitle' lang='en' data-book='vernacularBookTitle'>Book Title</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
@@ -267,14 +267,14 @@ namespace BloomTests.Book
 		{
 			return
 				GetShellBookFolder(
-					@"<div class='-bloom-page -bloom-required' id='1'>
+					@"<div class='-bloom-page' data-page='required' id='1'>
 						_required_ The user will not be allowed to remove this page.
 					  </div>
 					<div class='-bloom-page' id='2'>
 						_normal_ It would be ok for the user to remove this page.
 					</div>
 
-					<div class='-bloom-page -bloom-extraPage' id='3'>
+					<div class='-bloom-page'  data-page='extra' id='3'>
 						_extra_
 					</div>
 					<div class='-bloom-page' testid='pageWithNoLanguageTags'>

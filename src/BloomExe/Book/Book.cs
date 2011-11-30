@@ -26,7 +26,7 @@ namespace Bloom.Book
 		private readonly Palaso.IO.IFileLocator _fileLocator;
 		private readonly LibrarySettings _librarySettings;
 
-		private  List<string> _builtInConstants = new List<string>(new[] { "-bloom-vernacularBookTitle", "-bloom-topicInNationalLanguage", "-bloom-nameOfLanguage" });
+		private  List<string> _builtInConstants = new List<string>(new[] { "vernacularBookTitle", "topicInNationalLanguage", "nameOfLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -570,7 +570,7 @@ namespace Bloom.Book
 			if (!_storage.LooksOk)
 				yield break;
 
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@class, '-bloom-singleton'))]"))
+			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
 				var caption = pageNode.GetAttribute("title");
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
@@ -770,50 +770,23 @@ namespace Bloom.Book
 		/// </summary>
 		public void MakeAllFieldsConsistent()
 		{
-//            string[] fieldClasses = new string[] { "vernacularBookTitle", "natLangBookLabel", "natLangBookName" };
-//
-//            foreach (var name in fieldClasses)
-//            {
-//                string value=string.Empty;
-//                foreach (XmlElement node in RawDom.SafeSelectNodes("//textarea[contains(@class,'"+name+"')]"))
-//                {
-//                    if (value == string.Empty)
-//                        value = node.InnerText;
-//                    else
-//                        node.InnerText = value;
-//                }
-//            }
-//
-//            foreach (var name in fieldClasses)
-//            {
-//                string value = string.Empty;
-//                foreach (XmlElement node in RawDom.SafeSelectNodes("//input[contains(@class,'" + name + "')]"))
-//                {
-//                    if (value == string.Empty)
-//                        value = node.GetAttribute("value");
-//                    else
-//                        node.SetAttribute("value",value);
-//                }
-//            }
+			Dictionary<string,string> variables = new Dictionary<string, string>();
+			variables.Add("nameOfLanguage", _librarySettings.LanguageName);
 
-			Dictionary<string,string> classes = new Dictionary<string, string>();
-			classes.Add("-bloom-nameOfLanguage", _librarySettings.LanguageName);
-
-			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
+			MakeAllFieldsOfElementTypeConsistent(variables, "textarea");
 			//nb: we intentionally go through twice, in case the value is not in the first occurrence
-			MakeAllFieldsOfElementTypeConsistent(classes, "textarea");
+			MakeAllFieldsOfElementTypeConsistent(variables, "textarea");
 
-			MakeAllFieldsOfElementTypeConsistent(classes, "p");
-			MakeAllFieldsOfElementTypeConsistent(classes, "span");
+			MakeAllFieldsOfElementTypeConsistent(variables, "p");
+			MakeAllFieldsOfElementTypeConsistent(variables, "span");
 
 			string title;
-			if (classes.TryGetValue("-bloom-vernacularBookTitle", out title))
+			if (variables.TryGetValue("vernacularBookTitle", out title))
 			{
 				GetOrCreateElement("//html", "head");
 				GetOrCreateElement("//head", "title").InnerText = title;
 				_storage.SetBookName(title);
 			}
-
 		}
 
 		private XmlElement GetOrCreateElement(string parentPath, string name)
@@ -830,39 +803,32 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> classes, string elementName)
+		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> variables, string elementName)
 		{
 			try
 			{
-				foreach (
-					XmlElement node in
-						RawDom.SafeSelectNodes(
-							string.Format(
-								"//{0}[(contains(@class, '_')  or contains(@class, '-bloom-')) and (@lang='{1}' or contains(@class,'-bloom-showNational'))]",
-								elementName, _librarySettings.Iso639Code)))
+				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
+				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
+				var query = string.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.Iso639Code);
+
+				var nodesOfInterest = RawDom.SafeSelectNodes(query);
+
+				foreach (XmlElement node in nodesOfInterest)
 				{
-					var theseClasses = node.GetAttribute("class").Split(new char[] {' '},
-																		StringSplitOptions.RemoveEmptyEntries);
-					foreach (var key in theseClasses)
+					var key = node.GetAttribute("data-book").Trim();
+
+					if (!variables.ContainsKey(key))
 					{
-						if (!(key.StartsWith("_") || _builtInConstants.Contains(key)))
-							continue;
-
-						if (!classes.ContainsKey(key))
-						{
-							if (!string.IsNullOrEmpty(node.InnerText.Trim()))
-								classes.Add(key, node.InnerText.Trim());
-						}
-						else
-							node.InnerText = classes[key];
-
-						break; //only one variable name per item, of course.
+						if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+							variables.Add(key, node.InnerText.Trim());
 					}
+					else
+						node.InnerText = variables[key];
 				}
 			}
 			catch (Exception error)
 			{
-				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(,"+elementName+"). RawDom was:\r\n"+RawDom.OuterXml,error);
+				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" + RawDom.OuterXml, error);
 			}
 		}
 
