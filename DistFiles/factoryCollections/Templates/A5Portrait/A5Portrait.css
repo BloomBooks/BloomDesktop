@@ -96,7 +96,7 @@ TEXTAREA
 	height: 7.7cm;
 	margin-top: 26px;
 }
-.cover .-bloom-vernacularBookTitle
+.cover .vernacularBookTitle
 {
 	height: 3.7cm;
 	width: 423px;
@@ -110,7 +110,7 @@ TEXTAREA
 	max-width: 13.2cm;
 }
 /*e.g. "Health" or "Math"*/
-.cover .-bloom-topicInNationalLanguage
+.cover .topicInNationalLanguage
 {
 	width: 5.8cm;
 	/*+placement:anchor-bottom-right -14.1cm 0px;*/
@@ -120,7 +120,7 @@ TEXTAREA
 	text-align: right;
 	height: 23px;
 }
-.cover .-bloom-nameOfLanguage
+.cover .nameOfLanguage
 {
 	text-align: left;
 	/*+placement:anchor-bottom-left 1cm 0px;*/
@@ -130,7 +130,7 @@ TEXTAREA
 	width: 8cm;
 }
 /*e.g. "Health" or "Math"*/
-.titlePage .-bloom-vernacularBookTitle
+.titlePage .vernacularBookTitle
 {
 	top: 1cm;
 	height: 4.4cm;
@@ -162,7 +162,7 @@ TEXTAREA
 	margin-left: 1cm;
 	text-align: center;
 }
-.titlePage .-bloom-nameOfLanguage
+.titlePage .nameOfLanguage
 {
 	margin-top: 0.1cm;
 	text-align: center;
