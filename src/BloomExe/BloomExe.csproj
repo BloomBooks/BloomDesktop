@@ -50,6 +50,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\..\packages\HtmlAgilityPack.1.4.3\lib\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Server.Common">
       <HintPath>..\..\packages\JsonValue.0.5.0\lib\40\Microsoft.Server.Common.dll</HintPath>
