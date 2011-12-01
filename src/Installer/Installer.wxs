@@ -105,6 +105,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="Skybound.Gecko.dll" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
 			<File Id="Skybound.Gecko.dll" Name="Skybound.Gecko.dll" KeyPath="yes" Source="..\..\output\release\Skybound.Gecko.dll" />
 		  </Component>
+		  <Component Id="HtmlAgilityPack.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
+			<File Id="HtmlAgilityPack.dll" Name="HtmlAgilityPack.dll" KeyPath="yes" Source="..\..\output\release\HtmlAgilityPack.dll" />
+		  </Component>
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
@@ -125,6 +128,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
 	  <ComponentRef Id="Interop.WIA.dll" />
 	  <ComponentRef Id="Newtonsoft.Json.dll"/>
+	  <ComponentRef Id="HtmlAgilityPack.dll"/>
 	  <ComponentRef Id="Skybound.Gecko.dll" />
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
