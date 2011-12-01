@@ -11,6 +11,7 @@ using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
 using Skybound.Gecko.DOM;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
@@ -223,8 +224,9 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
+			//application/xhtml+xml
 			_pageDom = dom;
-			AddJavaScriptForEditing(_pageDom);
+			//now done in InitScript.js AddJavaScriptForEditing(_pageDom);
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
 			SetNewTempFile(TempFile.CreateHtm(dom));
 			_url = _tempHtmlFile.Path;
@@ -283,7 +285,18 @@ namespace Bloom
 			//this is to force an onblur so that we can get at the actual user-edited value
 			_browser.WebBrowserFocus.Deactivate();
 
-			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
+			var content = _browser.Document.GetElementsByTagName("body")[0].InnerHtml;
+
+			HtmlAgilityPack.HtmlDocument d = new HtmlDocument();
+			d.OptionOutputAsXml = true;
+			d.LoadHtml(content);
+
+
+//			var bodyDom = new XmlDocument();
+//			bodyDom.LoadXml(content);
+			_pageDom.GetElementsByTagName("body")[0].InnerXml = d.DocumentNode.InnerHtml;
+
+/*			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
 			{
 				var id = node.GetAttribute("id");
 				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("value"));
@@ -310,6 +323,7 @@ namespace Bloom
 					//todo: notice if this should fail to find a match... that'd be awfully bad!
 				}
 			}
+	*/
 		}
 
 		/// <summary>

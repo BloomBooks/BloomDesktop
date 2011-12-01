@@ -705,7 +705,10 @@ namespace Bloom.Book
 			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, '-bloom-page')]");
 			string pageDivId = divElement.GetAttribute("id");
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
+			var page = GetPageFromStorage(pageDivId);
+			page.InnerXml = divElement.InnerXml;
+
+  /*          foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
 			{
 				var imgId = editNode.GetAttribute("id");
 				var storageNode = GetStorageNode(pageDivId, "img", imgId);
@@ -741,6 +744,7 @@ namespace Bloom.Book
 					destNode.InnerText = editNode.InnerText.Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">");
 				}
 			}
+*/
 
 			MakeAllFieldsConsistent();
 
@@ -773,6 +777,20 @@ namespace Bloom.Book
 			return (XmlElement)matches[0];
 		}
 
+
+		/// <summary>
+		/// Gets the first element with the given tag & id, within the page-div with the given id.
+		/// </summary>
+		private XmlElement GetPageFromStorage(string pageDivId)
+		{
+			var query = string.Format("//div[@id='{0}']", pageDivId);
+			var matches = _storage.Dom.SafeSelectNodes(query);
+			if (matches.Count != 1)
+			{
+				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
+			}
+			return (XmlElement)matches[0];
+		}
 
 		/// <summary>
 		/// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!

@@ -93,7 +93,7 @@ namespace Bloom.Book
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)
 		{
-			MakeNewIdsForAllRepeatableElements(pageDiv);
+			//MakeNewIdsForAllRepeatableElements(pageDiv);
 
 			MakeVernacularElementsForPage(pageDiv, isoCode);
 
@@ -242,14 +242,14 @@ namespace Bloom.Book
 				{
 					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 					vernacularCopy.SetAttribute("lang",isoCode);
-					vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
+					//vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
 					vernacularCopy.InnerText = string.Empty;
 				}
 			}
 		}
 
 		/// <summary>
-		/// All textareas which are just the same thing in different languages must share the same @id.
+		/// All textareas which are just the same thing in different languages must share the same @data-group value.
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
