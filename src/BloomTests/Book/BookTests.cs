@@ -596,7 +596,7 @@ namespace BloomTests.Book
 		{
 			_documentDom = new XmlDocument();
 			_documentDom.LoadXml(@"<html ><head>
-									<meta id='defaultBookletLayout' content='Calendar'/>
+									<meta name='defaultBookletLayout' content='Calendar'/>
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());

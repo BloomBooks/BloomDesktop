@@ -165,7 +165,7 @@ namespace BloomTemp
 
             using (var writer = XmlWriter.Create(temp.Path))
             {
-                dom.WriteContentTo(writer);
+				dom.WriteContentTo(writer);
                 writer.Close();
             }
             
