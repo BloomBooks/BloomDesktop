@@ -50,8 +50,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\..\packages\HtmlAgilityPack.1.4.3\lib\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="Mark.Tidy">
+      <HintPath>..\..\lib\Mark.Tidy.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Server.Common">
@@ -184,12 +184,6 @@
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </Compile>
     <Compile Include="Event.cs" />
-    <Compile Include="Experiment\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Experiment\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Book\BookCollection.cs" />
@@ -206,12 +200,6 @@
     </Compile>
     <Compile Include="Library\LibraryView.Designer.cs">
       <DependentUpon>LibraryView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Experiment\PageControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Experiment\PageControl.Designer.cs">
-      <DependentUpon>PageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
@@ -252,9 +240,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Experiment\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="InfoView.resx">
       <DependentUpon>InfoView.cs</DependentUpon>
@@ -347,6 +332,7 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
+    <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -402,6 +388,9 @@
     <None Include="Resources\Error70x70.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy ..\..\lib\libtidy.dll $(OutDir)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
