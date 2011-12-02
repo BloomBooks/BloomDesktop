@@ -20,7 +20,7 @@ namespace Bloom.Book
 	{
 		public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
 
-		public delegate Book Factory(BookStorage storage, bool editable);//autofac uses this
+		public delegate Book Factory(BookStorage storage, bool projectIsEditable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly Palaso.IO.IFileLocator _fileLocator;
@@ -43,12 +43,12 @@ namespace Bloom.Book
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
-		public Book(IBookStorage storage, bool editable, ITemplateFinder templateFinder,
+		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 			Palaso.IO.IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
-			CanEdit = editable && storage.LooksOk;
+			IsInEditableLibrary = projectIsEditable && storage.LooksOk;
 			Id = Guid.NewGuid().ToString();
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
@@ -70,13 +70,13 @@ namespace Bloom.Book
 				BookStarter.MakeVernacularElementsForPage(div,_librarySettings.Iso639Code);
 			}
 
-			if (CanEdit)
+			if (IsInEditableLibrary)
 			{
 				MakeAllFieldsConsistent();
 			}
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
-			LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsShellLibrary;
+			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsShellLibrary;
 
 		}
 
@@ -357,15 +357,18 @@ namespace Bloom.Book
 
 		public bool CanDelete
 		{
-			get { return CanEdit; }
+			get { return IsInEditableLibrary; }
 		}
 
 		public bool CanPublish
 		{
-			get { return CanEdit; }
+			get { return IsInEditableLibrary; }
 		}
 
-		public bool CanEdit  { get; private set;}
+		/// <summary>
+		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
+		/// </summary>
+		public bool IsInEditableLibrary  { get; private set;}
 
 		public IPage FirstPage
 		{
@@ -400,7 +403,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return CanEdit ? BookType.Publication : BookType.Template; //TODO
+				return IsInEditableLibrary ? BookType.Publication : BookType.Template; //TODO
 				//return _storage.BookType;
 			}
 		}
@@ -461,7 +464,7 @@ namespace Bloom.Book
 			get
 			{
 				//hack. Eventually we might be able to lock books so that you can't edit them.
-				return !CanEdit;
+				return !IsInEditableLibrary;
 			}
 		}
 
@@ -483,37 +486,39 @@ namespace Bloom.Book
 			get
 			{
 				//default is "true"
-				var specificallyNo = _storage.Dom.SafeSelectNodes(string.Format("//meta[@id='normallyShowTemplatePages' and @content='false']"));
+				var specificallyNo = _storage.Dom.SafeSelectNodes(string.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
 				return specificallyNo.Count ==0;
 			}
 		}
 
 		/// <summary>
-		/// Is this a shell we're translating?
+		/// Is this a shell we're translating? And if so, is this a shell-making project?
 		/// </summary>
 		public bool LockedExceptForTranslation
 		{
-			get; private set;
+			get
+			{
+				return !_librarySettings.IsShellLibrary &&
+					   RawDom.SafeSelectNodes("//meta[@name='editability' and @content='translationOnly']").Count > 0;
+			}
 		}
 
 		public string CategoryForUsageReporting
 		{
 			get
 			{
-				if (HasSourceTranslations)
+				if (_librarySettings.IsShellLibrary)
 				{
-					if (_librarySettings.IsShellLibrary)
-						return "ShellEditing";
-					else
-					{
-						return "ShellTranslating";
-					}
+					return "ShellEditing";
+				}
+				else if (LockedExceptForTranslation)
+				{
+					return "ShellTranslating";
 				}
 				else
 				{
-					return "CustomBook";
+					return "CustomVernacularBook";
 				}
-
 			}
 		}
 
@@ -696,7 +701,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void SavePage(XmlDocument pageDom)
 		{
-			Debug.Assert(CanEdit);
+			Debug.Assert(IsInEditableLibrary);
 
 			string pageSelector = Page.GetPageSelectorXPath(pageDom);
 			//review: does this belong down in the storage?
@@ -959,7 +964,7 @@ namespace Bloom.Book
 		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
 		{
 			//NB: all we support at the moment is specifying "Calendar"
-			if(_storage.Dom.SafeSelectNodes(string.Format("//meta[@id='defaultBookletLayout' and @content='Calendar']")).Count>0)
+			if(_storage.Dom.SafeSelectNodes(string.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count>0)
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 				return PublishModel.BookletLayoutMethod.SideFold;

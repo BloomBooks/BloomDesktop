@@ -17,9 +17,16 @@ namespace Bloom
 
 		public string Iso639Code { get; set; }
 		public string LanguageName { get; set; }
-		public bool IsShellLibrary { get; set; }
+		public virtual bool IsShellLibrary { get; set; }
 
 		#endregion
+
+		/// <summary>
+		/// for moq in unit tests only
+		/// </summary>
+		public LibrarySettings()
+		{
+		}
 
 		public LibrarySettings(NewLibraryInfo libraryInfo)
 			:this(libraryInfo.PathToSettingsFile)

@@ -16,17 +16,18 @@ namespace BloomTests.Book
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _projectFolder;
-
 		[SetUp]
 		public void Setup()
 		{
+			var library = new Moq.Mock<LibrarySettings>();
+			library.SetupGet(x => x.IsShellLibrary).Returns(false);
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]));
+			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 		}
@@ -84,6 +85,27 @@ namespace BloomTests.Book
 		{
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 		   AssertThatXmlIn.File(path).HasNoMatchForXpath("//div[contains(text(), '_extra_')]");
+		}
+
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
+		{
+			var library = new Moq.Mock<LibrarySettings>();
+			library.SetupGet(x => x.IsShellLibrary).Returns(true);
+			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
+		{
+			var library = new Moq.Mock<LibrarySettings>();
+			library.SetupGet(x => x.IsShellLibrary).Returns(false);
+			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
 		}
 
 
@@ -186,6 +208,20 @@ namespace BloomTests.Book
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasVernacularBookTitleWithEnglish_HasItWithVernacular()
+		{
+			var body = @"<div class='-bloom-page'>
+							<p>
+								<textarea data-book='vernacularBookTitle' class='vernacularBookTitle' lang='en'>Book Name</textarea>
+							 </p>
+						</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
+		}
+
 
 	   [Test]
 		public void CreateBookOnDiskFromTemplate_TextAreaHasNoText_VernacularLangAttrSet()
@@ -305,7 +341,7 @@ namespace BloomTests.Book
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
-					<meta id='defaultNameForDerivedBooks' content='guitar'/>
+					<meta name='defaultNameForDerivedBooks' content='guitar'/>
 				</head>
 				<body class='a5Portrait'>" +
 				bodyContents + "</body></html>";

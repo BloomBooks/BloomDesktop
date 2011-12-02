@@ -15,13 +15,15 @@ namespace Bloom.Book
 	{
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private LanguageSettings _languageSettings;
+		private bool _isShellLibrary;
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings)
+		public BookStarter(BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
 		{
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
+			_isShellLibrary = librarySettings.IsShellLibrary;
 		}
 
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
@@ -74,6 +76,8 @@ namespace Bloom.Book
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
+			UpdateEditabilityIndicator(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
+
 			//Remove from the new book any div-pages labelled as "extraPage"
 			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
@@ -89,6 +93,28 @@ namespace Bloom.Book
 
 			storage.UpdateBookFileAndFolderName(_languageSettings);
 			return storage.FolderPath;
+		}
+
+		private void UpdateEditabilityIndicator(BookStorage storage)
+		{
+			XmlElement n = storage.Dom.SelectSingleNode("//meta[@name='editability']") as XmlElement;
+			if(n==null)
+			{
+				n = storage.Dom.CreateElement("meta");
+				n.SetAttribute("name","editability");
+				storage.Dom.SelectSingleNode("//head").AppendChild(n);
+			}
+
+			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
+			//created book is translationOnly. Any derivatives will then act as shells.  But it won't
+			//prevent us from editing it while in a shell-making library, since we don't honor this
+			//tag in shell-making libraries.
+			if(_isShellLibrary)
+				n.SetAttribute("content", "translationOnly");
+			else
+			{
+				n.SetAttribute("content", "open");
+			}
 		}
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)
@@ -153,6 +179,8 @@ namespace Bloom.Book
 
 			string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pageLineage", string.Empty);
 			childPageDiv.SetAttribute("data-pageLineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+
+
 		}
 
 
@@ -311,7 +339,7 @@ namespace Bloom.Book
 			string name = Path.GetFileName(sourcePath);
 
 			var storage = _bookStorageFactory(sourcePath);
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@id='defaultNameForDerivedBooks']");
+			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 			if(nameSuggestion.Count>0)
 			{
 				name = ((XmlElement) nameSuggestion[0]).GetAttribute("content");

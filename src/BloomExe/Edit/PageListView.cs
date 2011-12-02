@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using BloomTemp;
 
 namespace Bloom.Edit
 {
@@ -25,6 +28,19 @@ namespace Bloom.Edit
 			_thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
+
+#if DEBUG
+			var showSourceMenu = new System.Windows.Forms.ToolStripMenuItem("Show Source");
+			showSourceMenu.Click += new EventHandler(showSourceMenu_Click);
+			contextMenuStrip1.Items.Add(showSourceMenu);
+#endif
+		}
+
+		void showSourceMenu_Click(object sender, EventArgs e)
+		{
+			var t = Palaso.IO.TempFile.WithExtension(".xml");
+			File.WriteAllText(t.Path, _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
+			Process.Start(t.Path);
 		}
 
 		private void OnSelectedThumbnailChanged(object page, EventArgs e)
