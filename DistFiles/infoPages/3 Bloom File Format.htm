@@ -1,6 +1,8 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 <head>
-<title>File Format xxx</title>
+	<meta charset="UTF-8">
+	<title>Bloom File Format</title>
 	<link  rel="stylesheet" href="style.css" type="text/css" />
 
 	<style type="text/css">
@@ -11,6 +13,10 @@
 		.style2
 		{
 			background-color: #C0C0C0;
+		}
+		.style3
+		{
+			margin-left: 40px;
 		}
 	</style>
 
@@ -24,10 +30,30 @@
 	response to needs we discover. Take that into account before converting hundreds
 	of books. The wise thing at this point it to convert one book of each type, so that we can find any missing file-format elements that you will need. The plan is to cease any breaking changes by early 2012.</div>
 	<p>
-Bloom documents are HTML 5
-		(saved as well-formed XML) with certain conventions and pre-defined class
-		names and data-* attributes, as
-	described below. Of course, you&#39;ll want to open up a bloom html file and see for
+Bloom documents are
+		strictly-conformant HTML 5.&nbsp; The minimum <a href="http://validator.w3c.org">
+		validator.w3c.org</a> warning-and-error-free HTML 5 document looks like this:</p>
+	<p>
+		&lt;!DOCTYPE html&gt;<br />
+		&lt;html&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;head&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta charset=&quot;UTF-8&quot;&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;&lt;/title&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;/head&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;body&gt;&lt;/body&gt;<br />
+		&lt;/html&gt;</p>
+	<p>
+		Things to notice about the above:</p>
+	<ul>
+		<li>The DOCTYPE</li>
+		<li>There is no namespace attribute on the html</li>
+	</ul>
+	<p>
+		Now, because Bloom is using HTML5 in a special way --paged, editable,
+		multilinguall books-- it doesn&#39;t operate on just any HTML5 document.&nbsp; HTML5
+		allows for proprietary &quot;data-*&quot; attribute, and Bloom uses them extensively.
+		Bloom also uses some pre-defined class
+		names. Of course, you&#39;ll want to open up a bloom html file and see for
 		yourself how it is structured.&nbsp; Two simple examples are the
 		A5Portrait/templatePages.htm, and the Vaccinations.htm, which comes in the Sample Shells project. You can look at the originals or create a book using them,
 		and look at what Bloom does.</p>
@@ -37,6 +63,18 @@ Bloom documents are HTML 5
 	&lt;textarea&gt;s together inside a &lt;p&gt;, each marked with a distinct <em>lang</em>
 	attribute. Bloom will take care of only showing the user the correct &lt;textarea&gt;
 	which matches the language the user is currently working in.</p>
+	<p>All textareas which are just the same thing in different languages must by
+		contained within a paragraph.</p>
+	<p>&lt;p&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot; class=&quot;hideMe&quot;&gt; &quot;Taim yu planim gaden yu save wokim banis.&lt;/textarea&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt;When you plant a garden, you always
+		build a fence.&lt;/textarea&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;abq&quot;
+		&gt;&lt;/textarea&gt;<br />
+		&lt;/p&gt;</p>
+	<p>You&#39;ll notice that in the above sample, Bloom has hidden two of the 3 textareas,
+		by adding the &quot;hideMe&quot; class. This isn&#39;t something you, the
+		by-hand-bloom-doc-maker would do.&nbsp; It&#39;s something that happens at runtime.</p>
 	<h2>Formatting</h2>
 	<p>Formatting within these pages is typically done by adding a unique class to the
 	div for a particular page layout. That class then triggers the CSS style rules

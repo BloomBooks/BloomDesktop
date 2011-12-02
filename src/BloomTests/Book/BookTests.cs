@@ -219,7 +219,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.RawDom;
 			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-			head.AppendChild(dom.CreateElement("title", "http://www.w3.org/1999/xhtml")).InnerText = "original";
+			head.AppendChild(dom.CreateElement("title")).InnerText = "original";
 		   // node.SetAttribute("class", "-bloom-vernacularBookTitle");
 			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
 			textArea.InnerText = "blue";
@@ -542,7 +542,7 @@ namespace BloomTests.Book
 		public void GetPageSizeName_USLetter()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									<link rel='stylesheet' href='LeTtErPortrait.css' type='text/css' />
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -554,7 +554,7 @@ namespace BloomTests.Book
 		public void GetPageSizeName_A5LANDSCAPE()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									<link rel='stylesheet' href='a5LANDSCAPE.css' type='text/css' />
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -565,7 +565,7 @@ namespace BloomTests.Book
 		public void GetIsLandscape_portraitCSS_false()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									<link rel='stylesheet' href='a5Portrait.css' type='text/css' />
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -575,7 +575,7 @@ namespace BloomTests.Book
 		public void GetIsLandscape_landscapeCSS_true()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									<link rel='stylesheet' href='a5LAndSCAPE.css' type='text/css' />
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -585,7 +585,7 @@ namespace BloomTests.Book
 		public void GetDefaultBookletLayout_NotSpecified_Fold()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetDefaultBookletLayout());
@@ -595,7 +595,7 @@ namespace BloomTests.Book
 		public void GetDefaultBookletLayout_CalendarSpecified_Calendar()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head>
+			_documentDom.LoadXml(@"<html ><head>
 									<meta id='defaultBookletLayout' content='Calendar'/>
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -617,7 +617,7 @@ namespace BloomTests.Book
 		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>
+			dom.LoadXml(@"<html ><head></head><body>
 				<div class='-bloom-page' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='vernacularBookTitle'>tree</textarea>
@@ -650,7 +650,7 @@ namespace BloomTests.Book
 		private void SetDom(string bodyContents)
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html  xmlns='http://www.w3.org/1999/xhtml'><head></head><body>" + bodyContents + "</body></html>");
+			_documentDom.LoadXml(@"<html ><head></head><body>" + bodyContents + "</body></html>");
 		}
 	}
 }

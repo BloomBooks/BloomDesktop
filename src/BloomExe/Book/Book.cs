@@ -217,7 +217,7 @@ namespace Bloom.Book
 
 		private void AddJavascriptFile(XmlDocument dom, XmlElement node, string pathToJavascript)
 		{
-			XmlElement element = node.AppendChild(dom.CreateElement("script", "http://www.w3.org/1999/xhtml")) as XmlElement;
+			XmlElement element = node.AppendChild(dom.CreateElement("script")) as XmlElement;
 			element.SetAttribute("type", "text/javascript");
 			element.SetAttribute("src", "file://"+ pathToJavascript);
 			node.AppendChild(element);
@@ -227,7 +227,7 @@ namespace Bloom.Book
 		{
 			var dom = new XmlDocument();
 			var head = _storage.GetRelocatableCopyOfDom().SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
-			dom.LoadXml(@"<html xmlns='http://www.w3.org/1999/xhtml'>"+head+"<body></body></html>");
+			dom.LoadXml(@"<html>"+head+"<body></body></html>");
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
 			body.AppendChild(pageDom);
@@ -264,7 +264,7 @@ namespace Bloom.Book
 
 		private static void AddSheet(XmlDocument dom, XmlNode head, string cssFilePath, bool useFullFilePath)
 		{
-			var link = dom.CreateElement("link", "http://www.w3.org/1999/xhtml");
+			var link = dom.CreateElement("link");
 			link.SetAttribute("rel", "stylesheet");
 			if (useFullFilePath)
 			{
@@ -610,7 +610,6 @@ namespace Bloom.Book
 			XmlDocument dom = _storage.Dom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
-			//newPageElement.SetAttribute("id", Guid.NewGuid().ToString());
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _librarySettings.Iso639Code);
@@ -708,43 +707,43 @@ namespace Bloom.Book
 			var page = GetPageFromStorage(pageDivId);
 			page.InnerXml = divElement.InnerXml;
 
-  /*          foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
+			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
 			{
 				var imgId = editNode.GetAttribute("id");
 				var storageNode = GetStorageNode(pageDivId, "img", imgId);
 				Guard.AgainstNull(storageNode, imgId);
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
+			/*
+					  foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
+					  {
+						  var languageCode = editNode.GetAttribute("lang");
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
-			{
-				var languageCode = editNode.GetAttribute("lang");
-
-				var inputElementId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
-				Guard.AgainstNull(storageNode,inputElementId);
-				storageNode.SetAttribute("value", editNode.GetAttribute("value"));
-			}
+						  var inputElementId = editNode.GetAttribute("id");
+						  var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
+						  Guard.AgainstNull(storageNode,inputElementId);
+						  storageNode.SetAttribute("value", editNode.GetAttribute("value"));
+					  }
 
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
-			{
-				var textareaElementId = editNode.GetAttribute("id");
-				var languageCode = editNode.GetAttribute("lang");
+					  foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
+					  {
+						  var textareaElementId = editNode.GetAttribute("id");
+						  var languageCode = editNode.GetAttribute("lang");
 
-				if (string.IsNullOrEmpty(textareaElementId))
-				{
-					Debug.Fail(textareaElementId);
-				}
-				else
-				{
-					var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
-					Guard.AgainstNull(destNode, textareaElementId);
-					//the following prevents us from double-encoding reserved characters
-					destNode.InnerText = editNode.InnerText.Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">");
-				}
-			}
-*/
+						  if (string.IsNullOrEmpty(textareaElementId))
+						  {
+							  Debug.Fail(textareaElementId);
+						  }
+						  else
+						  {
+							  var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
+							  Guard.AgainstNull(destNode, textareaElementId);
+							  //the following prevents us from double-encoding reserved characters
+							  destNode.InnerText = editNode.InnerText.Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">");
+						  }
+					  }
+		  */
 
 			MakeAllFieldsConsistent();
 

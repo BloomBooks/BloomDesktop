@@ -110,36 +110,36 @@ namespace Bloom.Book
 			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
 		}
 
-		/// <summary>
-		/// This is to keep us from ending up with two things with the same id, caused by making two or more pages from the same template page
-		/// </summary>
-		/// <param name="pageDiv"></param>
-		private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
-		{
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//div"))
-			{
-					node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
-			{
-				//TODO: review this "-bloom-configurationPage". Is it still needed? Either way, why is text area the only element not handled?
-//                if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
+//        /// <summary>
+//        /// This is to keep us from ending up with two things with the same id, caused by making two or more pages from the same template page
+//        /// </summary>
+//        /// <param name="pageDiv"></param>
+//	    private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
+//	    {
+//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//div"))
+//            {
 //                    node.SetAttribute("id", Guid.NewGuid().ToString());
-
-				node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
-			{
-				node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//img"))
-			{
-				node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-		}
+//            }
+//
+//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
+//            {
+//				//TODO: review this "-bloom-configurationPage". Is it still needed? Either way, why is text area the only element not handled?
+////                if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
+////                    node.SetAttribute("id", Guid.NewGuid().ToString());
+//
+//				node.SetAttribute("id", Guid.NewGuid().ToString());
+//            }
+//
+//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
+//            {
+//                node.SetAttribute("id", Guid.NewGuid().ToString());
+//            }
+//
+//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//img"))
+//            {
+//                node.SetAttribute("id", Guid.NewGuid().ToString());
+//            }
+//        }
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
@@ -242,14 +242,17 @@ namespace Bloom.Book
 				{
 					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 					vernacularCopy.SetAttribute("lang",isoCode);
-					//vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
+					//we don't need textarea ids.   //vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
+					//but we should make sure if there is an id, get rid of it, because we don't want 2 elements with the same id
+					vernacularCopy.RemoveAttribute("id");
+
 					vernacularCopy.InnerText = string.Empty;
 				}
 			}
 		}
 
 		/// <summary>
-		/// All textareas which are just the same thing in different languages must share the same @data-group value.
+		/// All textareas which are just the same thing in different languages must by contained within a paragraph.
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>

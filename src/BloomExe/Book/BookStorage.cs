@@ -75,7 +75,8 @@ namespace Bloom.Book
 				else
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
-					Dom.Load(PathToExistingHtml);
+					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
+					//Dom.Load(PathToExistingHtml);
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -285,7 +286,7 @@ namespace Bloom.Book
 			}
 			if (!string.IsNullOrEmpty(folderPath))
 			{
-				var baseElement = dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
+				var baseElement = dom.CreateElement("base");
 				baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
 				head.AppendChild(baseElement);
 			}
@@ -425,8 +426,9 @@ namespace Bloom.Book
 
 		private string ValidateBook(string path)
 		{
-			XmlDocument dom = new XmlDocument();
-			dom.Load(path);
+//            XmlDocument dom = new XmlDocument();
+//            dom.Load(path);
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);
 			var ids = new List<string>();
 			StringBuilder builder = new StringBuilder();
 

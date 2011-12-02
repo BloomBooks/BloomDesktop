@@ -11,7 +11,6 @@ using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
 using Skybound.Gecko.DOM;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
@@ -89,9 +88,9 @@ namespace Bloom
 			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
   */      }
 
-		public void SaveXHTML(string path)
+		public void SaveHTML(string path)
 		{
-			_browser.SaveDocument(path, "application/xhtml+xml");
+			_browser.SaveDocument(path, "text/html");
 		}
 
 		private void UpdateEditButtons()
@@ -273,6 +272,8 @@ namespace Bloom
 			}
 		}
 
+
+
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
@@ -285,45 +286,14 @@ namespace Bloom
 			//this is to force an onblur so that we can get at the actual user-edited value
 			_browser.WebBrowserFocus.Deactivate();
 
-			var content = _browser.Document.GetElementsByTagName("body")[0].InnerHtml;
+			var body = _browser.Document.GetElementsByTagName("body");
+			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+				return;
 
-			HtmlAgilityPack.HtmlDocument d = new HtmlDocument();
-			d.OptionOutputAsXml = true;
-			d.LoadHtml(content);
+			var content = body[0].InnerHtml;
 
+			_pageDom.GetElementsByTagName("body")[0].InnerXml = XmlHtmlConverter.GetXmlDomFromHtml(content).OuterXml;
 
-//			var bodyDom = new XmlDocument();
-//			bodyDom.LoadXml(content);
-			_pageDom.GetElementsByTagName("body")[0].InnerXml = d.DocumentNode.InnerHtml;
-
-/*			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
-			{
-				var id = node.GetAttribute("id");
-				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("value"));
-			}
-
-			foreach (XmlElement node in _pageDom.SafeSelectNodes("//textarea"))
-			{
-				var id = node.GetAttribute("id");
-				if (string.IsNullOrEmpty(id))
-				{
-					throw new ApplicationException("Could not find the id '"+id+"' in the textarea");
-				}
-				else
-				{
-					foreach(var element in _browser.Document.GetElementsByTagName("textarea"))
-					{
-						if (element.Id == id)
-						{
-							node.InnerText = element.InnerHtml;
-						   // Debug.WriteLine(element.InnerHtml);
-							break;
-						}
-					}
-					//todo: notice if this should fail to find a match... that'd be awfully bad!
-				}
-			}
-	*/
 		}
 
 		/// <summary>

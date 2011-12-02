@@ -1,5 +1,7 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 <head>
+	<meta charset="UTF-8">
 <link  rel="stylesheet" href="style.css" type="text/css" />
 <title>Release Notes</title>
 </head>
@@ -13,7 +15,18 @@
 Thanks for checking out this pre-release version of Bloom, which has been made available for experimentation and creation of shell books. It is not yet ready for wide-scale use.
 </p>
 
-<h4>0.3: 30 Nov 2011</h4>
+<h4>0.3: 1 Dec 2011</h4>
+	<p>--Breaking Changes--<br />
+		I&#39;ve abandoned the attempt to store Bloom files as xml html5.&nbsp;
+		I risked death by a thousand paper cuts.&nbsp; So, as of this version, Bloom
+		uses strictly-valid HTML5 (whether well-formed-xml or not).&nbsp; Internally,
+		it&#39;s still doing xml; it uses HTML Tidy to convert to xml as needed.&nbsp; Other
+		validation issues:</p>
+	<p>The header material has changed so that it now passes the w3c validation for
+		html5, with the only remaning complaint being the proprietary &lt;meta&gt; tags.</p>
+	<p>&lt;meta&gt; tags now use @name attributes, instead of @id attributes.&nbsp; See the
+		updated File Format help topic for updated information.</p>
+	<h4>0.3: 30 Nov 2011</h4>
 	---Breaking Changes-- <br />Making use of a new capabilty offered by html5, many formerly "special" classes have been moved to div-* attributes:
 		<table>
 		<thead><tr><th>old</th><th>new</th></tr></thead>

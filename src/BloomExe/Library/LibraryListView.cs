@@ -256,7 +256,7 @@ namespace Bloom.Library
 			var dom = new XmlDocument();
 			dom.LoadXml(
 				string.Format(
-					@"<html xmlns='http://www.w3.org/1999/xhtml'>
+					@"<html>
   <body><img src='file://{0}' />
   </body>
 </html>",

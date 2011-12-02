@@ -104,7 +104,8 @@ namespace Bloom.Book
 
 		public static string GetPageSelectorXPath(XmlDocument pageDom)
 		{
-			var id = pageDom.SelectSingleNodeHonoringDefaultNS("/html/body/div").Attributes["id"].Value;
+//    		var id = pageDom.SelectSingleNodeHonoringDefaultNS("/html/body/div").Attributes["id"].Value;
+			var id = pageDom.SelectSingleNode("/html/body/div").Attributes["id"].Value;
 			return string.Format("/html/body/div[@id='{0}']", id);
 		}
 	}
