@@ -292,8 +292,13 @@ namespace Bloom
 
 			var content = body[0].InnerHtml;
 
-			_pageDom.GetElementsByTagName("body")[0].InnerXml = XmlHtmlConverter.GetXmlDomFromHtml(content).OuterXml;
+			//todo: deal with exception that can come out of this
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
+			var bodyDom = dom.SelectSingleNode("//body");
 
+			_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+
+			XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageDom.OuterXml);
 		}
 
 		/// <summary>

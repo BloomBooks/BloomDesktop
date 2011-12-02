@@ -29,13 +29,16 @@ namespace BloomTests.Edit
 		[SetUp]
 		public void Setup()
 		{
+			var library = new Moq.Mock<LibrarySettings>();
+			library.SetupGet(x => x.IsShellLibrary).Returns(false);
+
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]));
+			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]),library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 

@@ -22,7 +22,7 @@ namespace Bloom.Workspace
 
 		public bool ShowEditPage
 		{
-			get { return _bookSelection.CurrentSelection!=null && _bookSelection.CurrentSelection.CanEdit; }
+			get { return _bookSelection.CurrentSelection!=null && _bookSelection.CurrentSelection.IsInEditableLibrary; }
 		}
 
 		public bool ShowPublishPage

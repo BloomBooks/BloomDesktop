@@ -75,7 +75,9 @@ namespace Bloom.Book
 				else
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
-					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
+
+					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml); //with throw if there are errors
+
 					//Dom.Load(PathToExistingHtml);
 				}
 
@@ -428,7 +430,9 @@ namespace Bloom.Book
 		{
 //            XmlDocument dom = new XmlDocument();
 //            dom.Load(path);
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);
+
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);//with throw if there are errors
+
 			var ids = new List<string>();
 			StringBuilder builder = new StringBuilder();
 
