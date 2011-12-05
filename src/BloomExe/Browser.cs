@@ -291,14 +291,33 @@ namespace Bloom
 				return;
 
 			var content = body[0].InnerHtml;
+			XmlDocument dom;
 
 			//todo: deal with exception that can come out of this
-			var dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
-			var bodyDom = dom.SelectSingleNode("//body");
+			try
+			{
+				dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
+				var bodyDom = dom.SelectSingleNode("//body");
+				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+			}
+			catch(Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (invalid incoming html).\r\n\r\n+{0}", e);
+				return;
+			}
 
-			_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-			XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageDom.OuterXml);
+
+			try
+			{
+				XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageDom.OuterXml);
+			}
+			catch (Exception e)
+			{
+				var exceptionWithHtmlContents = new Exception(content);
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (validating page).\r\n\r\n+{0}", e.Message);
+			}
+
 		}
 
 		/// <summary>

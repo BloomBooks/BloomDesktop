@@ -33,38 +33,40 @@ namespace Bloom
 		public static XmlDocument GetXmlDomFromHtml(string content)
 		{
 			var dom = new XmlDocument();
-			using (var tidy =  TidyManaged.Document.FromString(content))
+			using (var temp = new TempFile())
 			{
-
-				//TODO get in         <meta charset="UTF-8">
-
-
-
-				tidy.ShowWarnings = false;
-				tidy.Quiet = true;
-				tidy.AddTidyMetaElement = false;
-				tidy.OutputXml = true;
-				tidy.DocType = DocTypeMode.Omit;//when it supports html5, then we will let it out it
-
-				//not using tidy.writeback becuase it's unclear what it would do in the case of an error... we'd rather not write back if it's garbage
-
-				using (var log = new MemoryStream())
+				File.WriteAllText(temp.Path, content, Encoding.UTF8);
+				using (var tidy = TidyManaged.Document.FromFile(temp.Path))
 				{
-					tidy.CleanAndRepair(log);
-					string errors = ASCIIEncoding.ASCII.GetString(log.ToArray());
-					if(!string.IsNullOrEmpty(errors))
+					tidy.ShowWarnings = false;
+					tidy.Quiet = true;
+					tidy.AddTidyMetaElement = false;
+					tidy.OutputXml = true;
+					tidy.CharacterEncoding = EncodingType.Utf8;
+					tidy.InputCharacterEncoding = EncodingType.Utf8;
+					tidy.OutputCharacterEncoding = EncodingType.Utf8;
+					tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+					var errors = tidy.CleanAndRepair();
+					if (!string.IsNullOrEmpty(errors))
 					{
-						throw new ApplicationException(errors);
+						throw new ApplicationException(errors + "\r\n\r\n" + content);
 					}
-				}
-				using (var temp = new TempFile())
-				{
-					tidy.Save(temp.Path);
-					dom.Load(temp.Path);
+					var newContents = tidy.Save();
+					try
+					{
+						newContents = newContents.Replace("&nbsp;", "&#160;"); //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
+						dom.LoadXml(newContents);
+					}
+					catch (Exception e)
+					{
+						var exceptionWithHtmlContents = new Exception(e.Message + "\r\n\r\n" + newContents);
+						throw exceptionWithHtmlContents;
+					}
 				}
 			}
 			return dom;
 		}
+
 
 		/// <summary>
 		/// Beware... htmltidy doesn't consider such things as a second <body> element to warrant any more than a "warning", so this won't throw!
