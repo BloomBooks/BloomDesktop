@@ -161,7 +161,8 @@ namespace Bloom
 			_browser.GotFocus += new EventHandler(_browser_GotFocus);
 
 			_updateCommandsTimer.Enabled = true;//hack
-		}
+
+	   }
 
 		void _browser_GotFocus(object sender, EventArgs e)
 		{

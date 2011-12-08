@@ -149,6 +149,14 @@
     var curr_this;
     var c_settings;
 
+        //TODO: as originall written, this adds <divs> to do the work. that was fine at the time,
+        //but we've since moved Bloom to a system where the whole page is retreived and stored, and now
+        //these extra guys are causing problems.  We could change bloom internals to live with them,
+        //but at the moment the goal is to make the docs be as close to "normal simple html" as possible.
+        //So for now, I'm just bailing here, and we'll see if we can come up with another way of writing
+        //this later.
+        return;
+
     // check for new & valid options
     if ((typeof options == 'object') || (options == undefined)) {
       // then update the settings [destructive]

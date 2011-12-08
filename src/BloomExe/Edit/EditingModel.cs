@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Xml;
 using Bloom.Book;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
@@ -227,31 +230,38 @@ namespace Bloom.Edit
 			_view = view;
 		}
 
-		public void HandleUserEnteredArea(GeckoElement element)
+		public void HandleUserEnteredTextGroup(string translationsJson)
 		{
+			translationsJson = translationsJson.Trim(new char[] {'[', ']'});
+			Dictionary<string, string> sourceTexts = JsonConvert.DeserializeObject<Dictionary<string, string>>(translationsJson);
+
+			//we want to show all the *other languages*
+			if (sourceTexts.ContainsKey(_languageSettings.VernacularIso639Code))
+				sourceTexts.Remove(_languageSettings.VernacularIso639Code);
+
 			//the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
-			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
+			//var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Parent.Id, _languageSettings.VernacularIso639Code);
 			if (sourceTexts.Count == 0)
 			{
 				_view.SetSourceText(null);
 			}
 			else
 			{
-				sourceTexts = RemoveVernacularFromSourceTexts(sourceTexts);
+				//sourceTexts = GetAllTextsExceptVernacular(sourceTexts);
 				_view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
 			}
 		}
 
-		private Dictionary<string, string> RemoveVernacularFromSourceTexts(Dictionary<string, string> sourceTexts)
-		{
-			var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
-			sourceTexts = new Dictionary<string, string>();
-			foreach (var keyValuePair in x)
-			{
-				sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
-			}
-			return sourceTexts;
-		}
+//        private Dictionary<string, string> GetAllTextsExceptVernacular(Dictionary<string, string> sourceTexts)
+//        {
+//            var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
+//            sourceTexts = new Dictionary<string, string>();
+//            foreach (var keyValuePair in x)
+//            {
+//                sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
+//            }
+//            return sourceTexts;
+//        }
 
 		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
 		{

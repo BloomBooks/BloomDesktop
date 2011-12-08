@@ -101,11 +101,18 @@ Bloom documents are
 		replace the stylesheets in that folder with the versions in the Bloom program
 		directory.&nbsp; So if you&#39;re working on one of the standard stylesheets, be
 		careful to not let Bloom over-write your work.</div>
-		<h4>Organization/Region-specific stylesheets and templates</h4>
-		<p>TODO: document this</p>
+		<h4>Front and Backmatter: xmatter.css</h4>
+	<p>xmatter.css contains styles for title page and verso page.&nbsp; The idea is that
+		front and back material is very likely to be organization-specific, so
+		organizations would supply their own version of this.</p>
+	<p>TODO: does xmatter.css need to be paper/orientation specific too?</p>
+	<p>TODO: how can organizations override xmatter.css?</p>
+	<p>TODO: how can organizations override the template pages themselves?&nbsp; Current
+		answer: by changing the shells. </p>
 		<h4>Template-specific Stylesheets</h4>
 		<p>Some documents will need their own stylesheets. Examples include primers, calendars, and study guides.</p>
-		<p>TODO: document this</p>
+		<p>Simply create a new CSS stylesheet and link the shell to it (this is something
+			you&#39;d do outside of bloom).</p>
 <h2>Document Data</h2>
 	<h4>(TODO)</h4>
 	<pre>
@@ -188,7 +195,7 @@ Bloom documents are
 	variables in the &quot;.bloomLibrary&quot; file that is at the root level of each
 	library folder on disk. The values are then used in all future books in that
 	library. For example,<pre>
-		&lt;p&gt;This language is spoken in the Sub District of &lt;textarea lang=&quot;en&quot; data-library=&quot;subDistrict&quot;&gt;&lt;/textarea&gt; &lt;/p&gt;</A variable comes into use whenever the user edits a book which containing it.
+		&lt;p&gt;This language is spoken in the Sub District of &lt;span data-library=&quot;subDistrict&quot;&gt;&lt;/span&gt; &lt;/p&gt;</A variable comes into use whenever the user edits a book which containing it.
 	There is at present no &quot;registry&quot; of variables.</p><p>
 	Some variables are known by Bloom itself. For example, when you create a new
 	library, Bloom makes you identify the ISO-639 (Ethnologue) code for the

@@ -72,7 +72,7 @@ namespace Bloom.Book
 
 			if (IsInEditableLibrary)
 			{
-				MakeAllFieldsConsistent();
+				UpdateFieldsAndVariables();
 			}
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -143,7 +143,6 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// we could get the title from the <title/> element, the name of the html, or the name of the folder...
-		/// for now, we're going with the folder.
 		/// </summary>
 		public string Title
 		{
@@ -151,11 +150,18 @@ namespace Bloom.Book
 			{
 				if (Type == BookType.Publication)
 				{
-//                    var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
+					//REVIEW: evaluate and document when we would choose the value in the html over the name of the folder.
+					//1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
+
+
+					//                    var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
 //                    if (node == null)
 //                        return "unknown";
 //                    return (node.InnerText);
-					return _storage.GetVernacularTitleFromHtml(_librarySettings.Iso639Code);
+					var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Iso639Code);
+					if(string.IsNullOrEmpty(s))
+						return Path.GetFileName(_storage.FolderPath);
+					return s;
 				}
 				else //for templates and such, we can already just use the folder name
 				{
@@ -719,38 +725,8 @@ namespace Bloom.Book
 				Guard.AgainstNull(storageNode, imgId);
 				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
 			}
-			/*
-					  foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//input[@lang='{0}' or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
-					  {
-						  var languageCode = editNode.GetAttribute("lang");
 
-						  var inputElementId = editNode.GetAttribute("id");
-						  var storageNode = GetStorageNode(pageDivId, "input", inputElementId);// _storage.Dom.SelectSingleNodeHonoringDefaultNS("//input[@id='" + inputElementId + "']") as XmlElement;
-						  Guard.AgainstNull(storageNode,inputElementId);
-						  storageNode.SetAttribute("value", editNode.GetAttribute("value"));
-					  }
-
-
-					  foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + string.Format("//textarea[@lang='{0}'  or contains(@class,'-bloom-showNational')]", _librarySettings.Iso639Code)))
-					  {
-						  var textareaElementId = editNode.GetAttribute("id");
-						  var languageCode = editNode.GetAttribute("lang");
-
-						  if (string.IsNullOrEmpty(textareaElementId))
-						  {
-							  Debug.Fail(textareaElementId);
-						  }
-						  else
-						  {
-							  var destNode = GetStorageNode(pageDivId, "textarea", textareaElementId);//_storage.Dom.SelectSingleNodeHonoringDefaultNS(pageSelector+"//textarea[@id='" + textareaElementId + "']") as XmlElement;
-							  Guard.AgainstNull(destNode, textareaElementId);
-							  //the following prevents us from double-encoding reserved characters
-							  destNode.InnerText = editNode.InnerText.Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">");
-						  }
-					  }
-		  */
-
-			MakeAllFieldsConsistent();
+			UpdateFieldsAndVariables();
 
 			_storage.HideAllTextAreasThatShouldNotShow(_librarySettings.Iso639Code, pageSelector);
 
@@ -797,20 +773,30 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
-		/// If we don't like that, we'd need to create an event to notice when field are changed.
+		/// Go through the document, reading in values from fields, and then pushing variable values back into fields.
+		/// Here we're calling "fields" the html supplying or receiving the data, and "variables" being key-value pairs themselves, which
+		/// are, for library variables, saved in a separate file.
 		/// </summary>
-		public void MakeAllFieldsConsistent()
+		public void UpdateFieldsAndVariables()
 		{
 			Dictionary<string,string> variables = new Dictionary<string, string>();
 			variables.Add("nameOfLanguage", _librarySettings.LanguageName);
+			variables.Add("iso639Code", _librarySettings.Iso639Code);
+			//variables.Add("vernacularBookTitle", );
 
-			MakeAllFieldsOfElementTypeConsistent(variables, "textarea");
-			//nb: we intentionally go through twice, in case the value is not in the first occurrence
-			MakeAllFieldsOfElementTypeConsistent(variables, "textarea");
+			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
+			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			MakeAllFieldsOfElementTypeConsistent(variables, "p");
-			MakeAllFieldsOfElementTypeConsistent(variables, "span");
+			GatherFieldValues(variables, "textarea", true);
+
+
+			//REVIEW and then document use of this limitToLanguage parameter
+			SetFieldsValues(variables, "textarea", true);
+			SetFieldsValues(variables, "p", false);
+			SetFieldsValues(variables, "span", false);
+			SetFieldsValues(variables, "div", false);
+			SetFieldsValues(variables, "h1", false);
+			SetFieldsValues(variables, "h2", false);
 
 			string title;
 			if (variables.TryGetValue("vernacularBookTitle", out title))
@@ -819,7 +805,9 @@ namespace Bloom.Book
 				GetOrCreateElement("//head", "title").InnerText = title;
 				_storage.SetBookName(title);
 			}
+
 		}
+
 
 		private XmlElement GetOrCreateElement(string parentPath, string name)
 		{
@@ -835,19 +823,27 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void MakeAllFieldsOfElementTypeConsistent(Dictionary<string, string> variables, string elementName)
+		private void GatherFieldValues(Dictionary<string, string> variables, string elementName, bool limitToLanguage)
 		{
 			try
 			{
 				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
 				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
-				var query = string.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.Iso639Code);
+				string query;
+				if (limitToLanguage)
+					query = string.Format("//{0}[(@data-book or @data-library) and @lang='{1}']", elementName, _librarySettings.Iso639Code);
+				else
+				{
+					query = string.Format("//{0}[(@data-book or @data-library)]", elementName);
+				}
 
 				var nodesOfInterest = RawDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					var key = node.GetAttribute("data-book").Trim();
+					if (key == string.Empty)
+						key = node.GetAttribute("data-library").Trim();
 
 					if (!variables.ContainsKey(key))
 					{
@@ -855,7 +851,44 @@ namespace Bloom.Book
 							variables.Add(key, node.InnerText.Trim());
 					}
 					else
+					{
+						//too bad, we already havea  value for this
+					}
+				}
+			}
+			catch (Exception error)
+			{
+				throw new ApplicationException("Error in GatherFieldValues(," + elementName + "). RawDom was:\r\n" + RawDom.OuterXml, error);
+			}
+		}
+
+		private void SetFieldsValues(Dictionary<string, string> variables, string elementName, bool limitToLanguage)
+		{
+			try
+			{
+				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
+				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
+				string query;
+				if(limitToLanguage)
+					query = string.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.Iso639Code);
+				else
+				{
+					query = string.Format("//{0}[(@data-book or @data-library)]", elementName);
+				}
+
+				var nodesOfInterest = RawDom.SafeSelectNodes(query);
+
+				foreach (XmlElement node in nodesOfInterest)
+				{
+					var key = node.GetAttribute("data-book").Trim();
+					if(key==string.Empty)
+						key = node.GetAttribute("data-library").Trim();
+					if(!string.IsNullOrEmpty(key) && variables.ContainsKey(key))
 						node.InnerText = variables[key];
+					else
+					{
+						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
+					}
 				}
 			}
 			catch (Exception error)

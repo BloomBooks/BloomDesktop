@@ -13,7 +13,7 @@ namespace Bloom.Book
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
 		XmlElement GetDivNodeForThisPage();
-		Dictionary<string,string> GetSourceTexts(string idOfOneTextAreaInTheGroup);
+		Dictionary<string,string> GetSourceTexts(string groupId, string vernacularCode);
 		bool Required { get; }
 		bool CanRelocate { get;}
 	}
@@ -84,15 +84,18 @@ namespace Bloom.Book
 			return _getDivNodeForThisPageMethod(this);
 		}
 
-		public Dictionary<string, string> GetSourceTexts(string idOfOneTextAreaInTheGroup)
+		public Dictionary<string, string> GetSourceTexts(string groupId, string vernacularCode)
 		{
 			var d = new Dictionary<string, string>();
 
-			var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//p/textarea[@id='{1}']/parent::node()/textarea", _sourcePage.GetAttribute("id"), idOfOneTextAreaInTheGroup));
+			//var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//p/textarea[@id='{1}']/parent::node()/textarea", _sourcePage.GetAttribute("id"), groupId));
+
+			//Find all textareas with a parent with the matchin id, by looking  in the <div> for this page
+			var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//*[@id='{1}']/textarea", _sourcePage.GetAttribute("id"), groupId));
 			foreach (XmlElement textarea in textareas)
 			{
 				var lang = textarea.GetAttribute("lang");
-				if (string.IsNullOrEmpty(lang))
+				if (string.IsNullOrEmpty(lang) || lang == vernacularCode)
 					continue;
 
 				var hint = textarea.GetAttribute("title");

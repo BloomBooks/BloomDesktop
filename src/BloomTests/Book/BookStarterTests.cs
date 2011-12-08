@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Xml;
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
@@ -52,6 +53,33 @@ namespace BloomTests.Book
 //
 //            var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 //        }
+
+
+		//regression
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_CoverHasOneVisibleVernacularTitle()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'cover')]//*[@data-book='vernacularBookTitle' and @lang='xyz' and  not(contains(@class, 'hidden'))]", 1);
+		}
+
+		//regression
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsCalledVaccinations()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			Assert.AreEqual("Vaccinations", Path.GetFileName(path));
+
+			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
+			//But that is a different set of unit tests.
+		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
@@ -107,6 +135,7 @@ namespace BloomTests.Book
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 			AssertThatXmlIn.File(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
 		}
+
 
 
 		[Test]

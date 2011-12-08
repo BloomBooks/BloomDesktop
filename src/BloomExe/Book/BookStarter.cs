@@ -26,11 +26,17 @@ namespace Bloom.Book
 			_isShellLibrary = librarySettings.IsShellLibrary;
 		}
 
+		/// <summary>
+		/// Given a template, make a new book
+		/// </summary>
+		/// <param name="sourceTemplateFolder"></param>
+		/// <param name="parentCollectionPath"></param>
+		/// <returns>path to the new book folder</returns>
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
 
-			//TODO: all this gets thrown away, and replaced by what is found in the textarea with class "-bloom-vernacularBookTitle"
+			//TODO: is this meta value at odds with with data-book="vernacularBookTitle" somewhere in the book?
 			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
 			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
 
@@ -134,38 +140,42 @@ namespace Bloom.Book
 		   //     MakeVernacularElementsForPage((XmlElement)pageDiv,isoCode);
 
 			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
-		}
 
-//        /// <summary>
-//        /// This is to keep us from ending up with two things with the same id, caused by making two or more pages from the same template page
-//        /// </summary>
-//        /// <param name="pageDiv"></param>
-//	    private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
-//	    {
-//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//div"))
-//            {
-//                    node.SetAttribute("id", Guid.NewGuid().ToString());
-//            }
+			//GatherBracketTemplates(pageDiv);
+		}
 //
-//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
-//            {
-//				//TODO: review this "-bloom-configurationPage". Is it still needed? Either way, why is text area the only element not handled?
-////                if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
-////                    node.SetAttribute("id", Guid.NewGuid().ToString());
+//		private static void GatherBracketTemplates(XmlElement pageDiv)
+//		{
+//			foreach (XmlElement element in pageDiv.SafeSelectNodes("//*[contains(text(), '{{']"))
+//			{
+//				var start = element.InnerText.IndexOf("{{")+1;
+//				var end = element.InnerText.IndexOf("}}")-1;
+//				if (end < start)
+//					continue;
 //
-//				node.SetAttribute("id", Guid.NewGuid().ToString());
-//            }
+//				var variable = element.InnerText.Substring(start, end - start);
 //
-//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
-//            {
-//                node.SetAttribute("id", Guid.NewGuid().ToString());
-//            }
+//				var parent = element.ParentNode;
+////				//do we need to insert a wrapper element to contain this variable, or is there already one there?
+//				if(!(parent.InnerText.Trim().StartsWith("{{") && parent.InnerText.Trim().EndsWith("}}")))
+//				{
+//					throw new ApplicationException(string.Format("This page has a template which isn't the only content of a parent element, as required: {{{0}}} in page with id {1}",variable, pageDiv.GetAttribute("id")));
 //
-//            foreach (XmlElement node in pageDiv.SafeSelectNodes("//img"))
-//            {
-//                node.SetAttribute("id", Guid.NewGuid().ToString());
-//            }
-//        }
+//// was planning to auto create the parent if needed:
+////					parent = element.OwnerDocument.CreateElement("div");
+////					parent.InnerText = "{{" + variable + "}}";
+////					element.ParentNode.InnerXml =							would need to insert this element... ick
+//				}
+//
+//				var b = element.GetOptionalStringAttribute("data-book","");
+//				if(!b.Contains(variable))
+//				{
+//					element.SetAttribute("data-book", (b + " " + variable).Trim());
+//				}
+//			}
+//		}
+
+
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
@@ -179,8 +189,6 @@ namespace Bloom.Book
 
 			string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pageLineage", string.Empty);
 			childPageDiv.SetAttribute("data-pageLineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
-
-
 		}
 
 
@@ -196,58 +204,57 @@ namespace Bloom.Book
 		/// <param name="pageDiv"></param>
 		public static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
 		{
-			foreach (var groupId in GetParagraphIdTextAreaGroupsInSinglePageDiv(pageDiv))
+			foreach (var element in GetTextGroupsInSinglePageDiv(pageDiv, isoCode))
 			{
-				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "textarea");
+				MakeVernacularElementForOneGroup(element, isoCode, "textarea");
 			}
-			foreach (var groupId in GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(pageDiv))
+			foreach (var element in GetParagraphsWithFieldsAndTextInSinglePageDiv(pageDiv))
 			{
-				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "p");
+				MakeVernacularElementForOneGroup(element, isoCode, "p");
 			}
-			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages)
-			XmlNodeList textareasWithoutLang =
-				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[not(@lang)]", pageDiv.GetAttribute("id")));
-			if (textareasWithoutLang.Count == 0)
-			{
-				//TODO: this is a repeat of the problem described above
-				//hack, which should only bear fruit when we're being called with a single page during template page insertion
-				textareasWithoutLang = pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]"));
-			}
-			foreach (XmlElement textarea in textareasWithoutLang)
+			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
+			foreach (XmlElement textarea in  pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]")))
 			{
 				textarea.SetAttribute("lang", isoCode);
 			}
 		}
 
-		private static void MakeVernacularElementForOneGroup(XmlElement pageDiv, string groupId, string isoCode, string elementName)
+		private static void MakeVernacularElementForOneGroup(XmlElement groupElement, string isoCode, string elementName)
 		{
 			//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
 			//for the vernacular
 			//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
 
-			string nonParagraphElementSelector = "/" + elementName;
+//            string nonParagraphElementSelector = "/" + elementName;
 
 			/* we aren't fishing for something underneath the paragraph level,
 			 * we're actuallylooking for simple paragraphs that are in a
 			 * language (e.g. they'd be non-editable areas where we're repeating
 			 * the value of some variable you can edit elsewhere)
 			 */
-			if (elementName.ToLower() == "p")
-				nonParagraphElementSelector = "";
+//            if (elementName.ToLower() == "p")
+//                nonParagraphElementSelector = "";
 
 			//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
-			XmlNodeList editableElementsWithinTheIndicatedParagraph =
-				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//p[@id='{1}']" + nonParagraphElementSelector,
-													  pageDiv.GetAttribute("id"), groupId));
+//            XmlNodeList editableElementsWithinTheIndicatedParagraph =
+//                pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//p[@id='{1}']" + nonParagraphElementSelector,
+//                                                      pageDiv.GetAttribute("id"), groupId));
+
+			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementName);
+
 			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-			{
-				//hack, which should only bear fruit when we're being called with a single page during template page insertion
+				return;
 
-				editableElementsWithinTheIndicatedParagraph = pageDiv.SafeSelectNodes(string.Format("//p[@id='{0}']"+nonParagraphElementSelector, groupId));
+//            if (editableElementsWithinTheIndicatedParagraph.Count == 0)
+//            {
+//                //hack, which should only bear fruit when we're being called with a single page during template page insertion
+//
+//                editableElementsWithinTheIndicatedParagraph = pageDiv.SafeSelectNodes(string.Format("//p[@id='{0}']"+nonParagraphElementSelector, groupId));
+//			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
+//				return;
+//
+//              }
 
-				if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-					return;
-			}
 			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
 									  where x.GetAttribute("lang") == isoCode
 									  select x;
@@ -284,9 +291,8 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetParagraphIdTextAreaGroupsInSinglePageDiv(XmlElement pageDiv)
+		private static IEnumerable<XmlElement> GetTextGroupsInSinglePageDiv(XmlElement pageDiv, string isoCode)
 		{
-			List<string> groups = new List<string>();
 			foreach (XmlElement textArea in pageDiv.SafeSelectNodes("//textarea"))
 			{
 				if (textArea.ParentNode.Name.ToLower() != "p")
@@ -296,16 +302,8 @@ namespace Bloom.Book
 					continue;//ignore it
 				}
 
-				var groupId = ((XmlElement)textArea.ParentNode).GetAttribute("id");
-				if (string.IsNullOrEmpty(groupId))
-				{   //we're happy to create the guid id's for incoming documents
-					groupId = Guid.NewGuid().ToString();
-					((XmlElement) textArea.ParentNode).SetAttribute("id", groupId);
-				}
-				if (!groups.Contains(groupId))
-					groups.Add(groupId);
+				yield return (XmlElement) textArea.ParentNode;
 			}
-			return groups;
 		}
 
 
@@ -315,24 +313,16 @@ namespace Bloom.Book
 		/// <remarks>maybe the "AndText" part won't be desirable...</remarks>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(XmlElement pageDiv)
+		private static IEnumerable<XmlElement> GetParagraphsWithFieldsAndTextInSinglePageDiv(XmlElement pageDiv)
 		{
-			List<string> groups = new List<string>();
 			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@data-book or @data-library]"))
 			{
-			   var id = paragraph.GetAttribute("id");
-				//we're happy to add guids if they're missing.
-				if(string.IsNullOrEmpty(id))
-				{
-					id = Guid.NewGuid().ToString();
-					paragraph.SetAttribute("id", id);
-				}
 				var text = paragraph.InnerText.Trim();
 			   if (!string.IsNullOrEmpty(text))
-					groups.Add(id);
+				yield return pageDiv;
 			}
-			return groups;
 		}
+
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 

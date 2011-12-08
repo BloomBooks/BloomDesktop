@@ -47,7 +47,8 @@ namespace Bloom.Library
 
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-
+					if (Path.GetFileName(dir).StartsWith("."))//skip thinks like .idea, .hg, etc.
+						continue;
 					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
 				}
 

@@ -23,7 +23,7 @@ namespace Bloom.Edit
 		private readonly PasteCommand _pasteCommand;
 		private readonly UndoCommand _undoCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private string _previousClickElementId;
+		private GeckoElement _previousClickElement;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -47,6 +47,15 @@ namespace Bloom.Edit
 			_model.SetView(this);
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
 		}
+
+		/// <summary>
+		/// called when jscript raisese the textGroupFocussed event.  That jscript lives (at the moment) in initScript.js
+		/// </summary>
+		private void OnTextGroupFocussed(string translationsInAllLanguages)
+		{
+			_model.HandleUserEnteredTextGroup(translationsInAllLanguages);
+		}
+
 
 		private void SetupThumnailLists()
 		{
@@ -89,6 +98,9 @@ namespace Bloom.Edit
 			Cursor = Cursors.WaitCursor;
 			_model.ActualVisibiltyChanged(true);
 			Cursor = Cursors.Default;
+
+			//review: there might be an earlier, better place for this
+			_browser1.WebBrowser.AddMessageEventListener("textGroupFocussed", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
 		}
 
 		protected override void OnVisibleChanged(EventArgs e)
@@ -156,24 +168,24 @@ namespace Bloom.Edit
 			var ge = e as GeckoDomEventArgs;
 			if (ge.Target.TagName == "IMG")
 				OnClickOnImage(ge);
-			if (ge.Target.TagName.ToLower() == "textarea")
-				OnClickTextArea(ge.Target);
+//            if (ge.Target.TagName.ToLower() == "textarea")
+//                OnClickTextArea(ge.Target);
 		}
 
-		private void OnClickTextArea(GeckoElement element)
-		{
-			//this might be too heavy-handed, but I added it to fix a bug
-			//where two clicks would actually take the focus out of the text area:
-
-			// was always true... as if gecko was making a new element each time
-			//if(element!=_previousClickElement)
-				if (element.Id != _previousClickElementId)
-				{
-				//todo: what about if they tab to it?
-				_model.HandleUserEnteredArea(element);
-			}
-			_previousClickElementId = element.Id;
-		}
+//        private void OnClickTextArea(GeckoElement element)
+//        {
+//            //this might be too heavy-handed, but I added it to fix a bug
+//            //where two clicks would actually take the focus out of the text area:
+//
+//            // was always true... as if gecko was making a new element each time
+//            //if(element!=_previousClickElement)
+//                if (element != _previousClickElement)
+//                {
+//                //todo: what about if they tab to it?
+//                _model.HandleUserEnteredTextGroup(element);
+//            }
+//            _previousClickElement = element;
+//        }
 
 		private void OnClickOnImage(GeckoDomEventArgs ge)
 		{

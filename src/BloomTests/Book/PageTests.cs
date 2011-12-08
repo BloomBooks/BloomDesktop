@@ -9,17 +9,28 @@ namespace BloomTests.Book
 	public sealed class PageTests
 	{
 		[Test]
-		public void GetSourceTexts_()
+		public void GetSourceTexts_WrappedByParagraphWithId_GetsCorrectTexts()
 		{
 			XmlElement pageDiv = (XmlElement)GetDom().SelectSingleNodeHonoringDefaultNS("//div[@id='pageWithTokPisinAndEnglish']");
 
 			var p = new Page(pageDiv, "caption", null, pg => pageDiv);
-			var texts = p.GetSourceTexts("text2");
+			var texts = p.GetSourceTexts("2", "xyz");
 			Assert.AreEqual(2, texts.Count);
 			Assert.AreEqual("2en", texts["en"]);
 			Assert.AreEqual("2tpi", texts["tpi"]);
 		}
 
+		[Test]
+		public void GetSourceTexts_HasVerncularToo_GetsOnlyNonVernacular()
+		{
+			XmlElement pageDiv = (XmlElement)GetDom().SelectSingleNodeHonoringDefaultNS("//div[@id='pageWithTokPisinAndEnglish']");
+
+			var p = new Page(pageDiv, "caption", null, pg => pageDiv);
+			var texts = p.GetSourceTexts("1", "xyz");
+			Assert.AreEqual(2, texts.Count);
+			Assert.AreEqual("1en", texts["en"]);
+			Assert.AreEqual("1tpi", texts["tpi"]);
+		}
 
 		private XmlDocument GetDom()
 		{
@@ -27,18 +38,19 @@ namespace BloomTests.Book
 				<html>
 					<body class='a5Portrait'>
 					<div class='-bloom-page' testid='pageWithJustTokPisin'>
-						 <p>
-							<textarea lang='tpi' id='text1' class='text'> Taim yu planim gaden yu save wokim banis.</textarea>
+						 <p id='0'>
+							<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
 					</div>
 				<div class='-bloom-page' id='pageWithTokPisinAndEnglish'>
-							<p>
-								<textarea lang='en' id='text1' class='text'>1en</textarea>
-								<textarea lang='tpi' id='text1' class='text'>1tpi</textarea>
+							<p id='1'>
+								<textarea lang='en' >1en</textarea>
+								<textarea lang='tpi'>1tpi</textarea>
+								<textarea lang='xyz'>1tpi</textarea>
 							</p>
-							<p>
-								<textarea lang='en' id='text2' class='text'>2en</textarea>
-								<textarea lang='tpi' id='text2' class='text'>2tpi</textarea>
+							<p id='2'>
+								<textarea lang='en'>2en</textarea>
+								<textarea lang='tpi'>2tpi</textarea>
 							 </p>
 						</div>
 				</body>

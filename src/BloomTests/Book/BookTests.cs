@@ -118,32 +118,49 @@ namespace BloomTests.Book
 			_storage.Verify(s => s.Save(), Times.Once());
 		}
 
+
+//		//regression
+//		[Test]
+//		public void UpdateFieldsAndVariables_NewVaccinationsBook_BookIsStillCalledVaccinations()
+//		{
+//			zzzz
+//			SetDom();
+//			var book = CreateBook();
+//			var dom = book.RawDom;
+//			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
+//			textarea1.InnerText = "peace";
+//			book.UpdateFieldsAndVariables();
+//			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
+//			Assert.AreEqual("peace", textarea2.InnerText);
+//		}
+
+
 		[Test]
-		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
+		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 
 
 		[Test]
-		public void MakeAllFieldsConsistent_CustomLibraryVariable_CopiedToOtherElement()
+		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='bb']");
 			Assert.AreEqual("aa", textarea2.InnerText);
 		}
 
 
 		[Test]
-		public void MakeAllFieldsConsistent_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
+		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
@@ -158,14 +175,14 @@ namespace BloomTests.Book
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='vernacularBookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
 		}
 
 
 		[Test]
-		public void MakeAllFieldsConsistent_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
+		public void UpdateFieldsAndVariables_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;
@@ -173,14 +190,14 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']",1);
 		}
 
 		[Test]
-		public void MakeAllFieldsConsistent_ElementIsNationalLanguage_UpdatesOthers()
+		public void UpdateFieldsAndVariables_ElementIsNationalLanguage_UpdatesOthers()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;
@@ -188,7 +205,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']", 1);
@@ -196,7 +213,7 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void MakeAllFieldsConsistent_HadNoTitleChangeVernacularTitle_SetTitleElement()
+		public void UpdateFieldsAndVariables_HadNoTitleChangeVernacularTitle_SetTitleElement()
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
@@ -208,13 +225,13 @@ namespace BloomTests.Book
 			var dom = book.RawDom;
 			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
 			textArea.InnerText ="blue";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
 			Assert.AreEqual("blue", title.InnerText);
 		}
 
 		[Test]
-		public void MakeAllFieldsConsistent_HadTitleChangeVernacularTitle_ChangesTitleElement()
+		public void UpdateFieldsAndVariables_HadTitleChangeVernacularTitle_ChangesTitleElement()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;
@@ -223,7 +240,7 @@ namespace BloomTests.Book
 		   // node.SetAttribute("class", "-bloom-vernacularBookTitle");
 			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
 			textArea.InnerText = "blue";
-			book.MakeAllFieldsConsistent();
+			book.UpdateFieldsAndVariables();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
 			Assert.AreEqual("dog", title.InnerText);
 		}
@@ -601,6 +618,8 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
+
+
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{

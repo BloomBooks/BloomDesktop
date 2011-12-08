@@ -31,6 +31,7 @@ namespace Bloom
 		}
 	}
 
+
 	public class CreateFromTemplateCommand: Event<Book.Book>
 	{}
 
