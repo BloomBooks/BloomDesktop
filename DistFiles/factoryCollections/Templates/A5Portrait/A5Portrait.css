@@ -102,7 +102,8 @@ TEXTAREA
 	width: 423px;
 	font-size: 30pt;
 	text-align: center;
-	margin-top: 29px;
+	margin-top: 1.5cm;
+	margin-left: 2cm;
 }
 .cover .picture
 {
@@ -128,6 +129,8 @@ TEXTAREA
 	left: 1cm;
 	bottom: 0px;
 	width: 8cm;
+	/*[empty]margin-left:;*/
+	font-size: 14pt;
 }
 /*e.g. "Health" or "Math"*/
 .titlePage .vernacularBookTitle
