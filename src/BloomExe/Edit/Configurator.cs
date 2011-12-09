@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
@@ -147,8 +149,9 @@ namespace Bloom.Edit
 			var existingDataString = GetLibraryData();
 			if (!string.IsNullOrEmpty(existingDataString))
 			{
-				dynamic existingData = DynamicJson.Parse(existingDataString);
-				libraryData = MergeJsonData(existingData.library.ToString(), libraryData.ToString());
+				DynamicJson existingData = DynamicJson.Parse(existingDataString);
+				if (existingData.GetDynamicMemberNames().Contains("library"))
+					libraryData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), libraryData.ToString());
 			}
 
 			File.WriteAllText(PathToLibraryJson, libraryData.ToString());
@@ -226,8 +229,8 @@ namespace Bloom.Edit
 
 		public string GetLibraryData()
 		{
-			if(!File.Exists(PathToLibraryJson))
-				return string.Empty;
+			if (!File.Exists(PathToLibraryJson))
+				return "{\"dummy\": \"x\"}";//TODO
 
 			var s= File.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
