@@ -200,13 +200,13 @@ namespace BloomTests.Edit
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
-			Assert.AreEqual("", first.GetLibraryData());
+			Assert.AreEqual("{}", first.GetLibraryData());
 		}
 		[Test]
 		public void GetLibraryData_NothingCollected_Empty()
 		{
 			var first = new Configurator(_libraryFolder.Path);
-			Assert.AreEqual("", first.GetLibraryData());
+			Assert.AreEqual("{}", first.GetLibraryData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()

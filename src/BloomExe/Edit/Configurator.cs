@@ -230,7 +230,7 @@ namespace Bloom.Edit
 		public string GetLibraryData()
 		{
 			if (!File.Exists(PathToLibraryJson))
-				return "{\"dummy\": \"x\"}";//TODO
+				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
 			var s= File.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
