@@ -178,28 +178,13 @@ namespace Bloom.Edit
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
-		   // UpdateDisplay();
 			var ge = e as GeckoDomEventArgs;
+			if (ge.Target == null)
+				return;//I've seen this happen
+
 			if (ge.Target.TagName == "IMG")
 				OnClickOnImage(ge);
-//            if (ge.Target.TagName.ToLower() == "textarea")
-//                OnClickTextArea(ge.Target);
 		}
-
-//        private void OnClickTextArea(GeckoElement element)
-//        {
-//            //this might be too heavy-handed, but I added it to fix a bug
-//            //where two clicks would actually take the focus out of the text area:
-//
-//            // was always true... as if gecko was making a new element each time
-//            //if(element!=_previousClickElement)
-//                if (element != _previousClickElement)
-//                {
-//                //todo: what about if they tab to it?
-//                _model.HandleUserEnteredTextGroup(element);
-//            }
-//            _previousClickElement = element;
-//        }
 
 		private void OnClickOnImage(GeckoDomEventArgs ge)
 		{

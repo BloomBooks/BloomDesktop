@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
@@ -6,6 +7,7 @@ using Bloom.Edit;
 using Bloom.Publish;
 using Moq;
 using NUnit.Framework;
+using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.TestUtilities;
 using Palaso.Xml;
@@ -23,6 +25,7 @@ namespace BloomTests.Book
 		private PageListChangedEvent _pageListChangedEvent;
 		private XmlDocument _documentDom;
 		private TemporaryFolder _testFolder;
+		private TemporaryFolder _tempFolder;
 
 		[SetUp]
 		public void Setup()
@@ -34,10 +37,17 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
-			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns((XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
+			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(()=>(XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
+
+
+			_testFolder = new TemporaryFolder("BookTests");
+			_tempFolder = new TemporaryFolder(_testFolder, "book");
+			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
+
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
+			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(FileLocator.GetDirectoryDistributedWithApplication("factoryCollections").CombineForPath("languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFile("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
@@ -47,14 +57,19 @@ namespace BloomTests.Book
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
-			_testFolder = new TemporaryFolder("BookTests");
+
 
 	  }
+		[TearDown]
+		public void TearDown()
+		{
+			_testFolder.Dispose();
+		}
 
 		private Bloom.Book.Book CreateBook()
 		{
 			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
-				new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), Iso639Code = "xyz" }),
+				new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz" }),
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
@@ -348,9 +363,6 @@ namespace BloomTests.Book
 
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 		 }
-
-
-
 
 
 		[Test]

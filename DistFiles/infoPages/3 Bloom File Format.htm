@@ -66,15 +66,15 @@ Bloom documents are
 	<p>All textareas which are just the same thing in different languages must by
 		contained within a paragraph.</p>
 	<p>&lt;p&gt;<br />
-&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot; class=&quot;hideMe&quot;&gt; &quot;Taim yu planim gaden yu save wokim banis.&lt;/textarea&gt;<br />
-&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot; class=&quot;hideMe&quot;&gt;When you plant a garden, you always
+&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;tpi&quot;&gt; &quot;Taim yu planim gaden yu save wokim banis.&lt;/textarea&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;en&quot;&gt;When you plant a garden, you always
 		build a fence.&lt;/textarea&gt;<br />
 &nbsp;&nbsp;&nbsp; &lt;textarea lang=&quot;abq&quot;
 		&gt;&lt;/textarea&gt;<br />
 		&lt;/p&gt;</p>
-	<p>You&#39;ll notice that in the above sample, Bloom has hidden two of the 3 textareas,
-		by adding the &quot;hideMe&quot; class. This isn&#39;t something you, the
-		by-hand-bloom-doc-maker would do.&nbsp; It&#39;s something that happens at runtime.</p>
+	<p>You&#39;ll notice that in the above sample, Bloom has 3 textareas,
+		but will only show one. This is done via the rules in the &quot;languageDisplay.css&quot;
+		stylesheet. </p>
 	<h2>Formatting</h2>
 	<p>Formatting within these pages is typically done by adding a unique class to the
 	div for a particular page layout. That class then triggers the CSS style rules
@@ -221,22 +221,14 @@ Bloom documents are
 	its lang attibute set to a proper ISO639 (Ethnologue) code:</p>
 	<pre>
 		&lt;p&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea<span class="style2"> lang=&quot;tpi&quot;</span>&gt; &quot;Taim yu planim gaden yu save wokim
-		banis.&lt;/textarea&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea
-		<span class="style2">lang=&quot;en&quot; </span>class=&quot;<span
-			class="style2">hideMe</span>&quot;&gt; When you plant a garden,
+		banis.&lt;/textarea&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp; &lt;textarea <span class="style2">lang=&quot;en&quot;</span>&gt; When you plant a garden,
 		you always build a fence.&lt;/textarea&gt;<br />&lt;/p&gt;
 	</pre>
 	<p>
-		Note: the &#39;hideMe&#39; is currently used by Bloom to hide all but one language.&nbsp;
-		In the future, we may instead use a dynamically-created css to turn languages on
-		and off.</p>
-	<p>
 		Now, if Bloom makes a book using the above paragraph, it will make a new
 		&lt;textarea&gt; for the vernacular; the resulting book will then have 3 textareas in
-		this paragraph, with all but the vernacular containing the class &#39;hideMe&#39;.</p>
-	<p>
-		That &#39;hideMe&#39; class is just to keep the source texts out of the page in the
-		browser. In <em>edit mode</em> the Bloom application still reads these
+		this paragraph; the &quot;languageDisplay.css&quot; stylesheet will hide all but the
+		vernacular.&nbsp; In <em>edit mode</em> Bloom still reads these
 		&lt;textarea&gt;s, and shows the contents source-text pane, to help the user do his
 		translation.</p>
 		<h2>Other language-related things</h2>

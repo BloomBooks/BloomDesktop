@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Web;
 using System.Xml;
@@ -12,18 +13,20 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Palaso.Code;
 using Palaso.Extensions;
+using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 
 namespace Bloom.Book
 {
 	public class Book
 	{
-		public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
+		//public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
 
 		public delegate Book Factory(BookStorage storage, bool projectIsEditable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
-		private readonly Palaso.IO.IFileLocator _fileLocator;
+		private readonly IFileLocator _fileLocator;
 		private readonly LibrarySettings _librarySettings;
 
 		private  List<string> _builtInConstants = new List<string>(new[] { "vernacularBookTitle", "topicInNationalLanguage", "nameOfLanguage" });
@@ -44,7 +47,7 @@ namespace Bloom.Book
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
-			Palaso.IO.IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
+			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent)
 		{
@@ -67,12 +70,14 @@ namespace Bloom.Book
 			//editable items, because there are no elements in our language.
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
-				BookStarter.MakeVernacularElementsForPage(div,_librarySettings.Iso639Code);
+				BookStarter.MakeVernacularElementsForPage(div,_librarySettings.VernacularIso639Code);
 			}
 
 			if (IsInEditableLibrary)
 			{
 				UpdateFieldsAndVariables();
+				WriteLanguageDisplayStyleSheet();
+				RawDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -158,8 +163,8 @@ namespace Bloom.Book
 //                    if (node == null)
 //                        return "unknown";
 //                    return (node.InnerText);
-					var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Iso639Code);
-					if(string.IsNullOrEmpty(s))
+					var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.VernacularIso639Code);
+					if(String.IsNullOrEmpty(s))
 						return Path.GetFileName(_storage.FolderPath);
 					return s;
 				}
@@ -205,7 +210,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _librarySettings.Iso639Code);
+			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _librarySettings.VernacularIso639Code);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
@@ -232,13 +237,14 @@ namespace Bloom.Book
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page,string iso639CodeToLeaveVisible)
 		{
 			var dom = new XmlDocument();
-			var head = _storage.GetRelocatableCopyOfDom().SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
+			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom();
+			var head = relocatableCopyOfDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			dom.LoadXml(@"<html>"+head+"<body></body></html>");
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
 			body.AppendChild(pageDom);
 
-				BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
+//                BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
 
 			return dom;
 		}
@@ -315,7 +321,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void HidePages(XmlDocument bookDom, Func<XmlElement,bool> hidePredicate)
+		private static void HidePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
 		{
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
 			{
@@ -346,7 +352,7 @@ namespace Bloom.Book
 
 			foreach (var line in contents.Split(new []{'\n'}))
 			{
-				builder.AppendFormat("<li>{0}</li>\n", System.Net.WebUtility.HtmlEncode(line));
+				builder.AppendFormat("<li>{0}</li>\n", WebUtility.HtmlEncode(line));
 			}
 			builder.Append("</body></html>");
 			dom.LoadXml(builder.ToString());
@@ -388,9 +394,9 @@ namespace Bloom.Book
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
 				if(Type!=BookType.Publication)
 					return null;
-				string templateKey = _storage.GetTemplateKey();
+				string templateKey = _storage.GetTemplateName();
 				Book book=null;
-				if (!string.IsNullOrEmpty(templateKey))
+				if (!String.IsNullOrEmpty(templateKey))
 				{
 					book = _templateFinder.FindTemplateBook(templateKey);
 				}
@@ -445,9 +451,9 @@ namespace Bloom.Book
 			}
 			else
 			{
-				languageIsoToShow = _librarySettings.Iso639Code;
+				languageIsoToShow = _librarySettings.VernacularIso639Code;
 			}
-			BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
+			//BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
 
 			AddCoverColor(dom, CoverColor);
 			return dom;
@@ -456,7 +462,7 @@ namespace Bloom.Book
 		private IEnumerable<string> GetTheLanguagesUsedInTextAreasOfDom(XmlDocument dom)
 		{
 			var langs = new Dictionary<string, int>();
-			foreach (XmlElement element in dom.SafeSelectNodes(string.Format("//textarea[@lang]")))
+			foreach (XmlElement element in dom.SafeSelectNodes(String.Format("//textarea[@lang]")))
 			{
 				langs[element.GetAttribute("lang").Trim()] = 1;
 			}
@@ -479,7 +485,7 @@ namespace Bloom.Book
 			get
 			{
 				//review
-				var x = _storage.Dom.SafeSelectNodes(string.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _librarySettings.Iso639Code));
+				var x = _storage.Dom.SafeSelectNodes(String.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _librarySettings.VernacularIso639Code));
 				return x.Count > 0;
 			}
 
@@ -492,7 +498,7 @@ namespace Bloom.Book
 			get
 			{
 				//default is "true"
-				var specificallyNo = _storage.Dom.SafeSelectNodes(string.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
+				var specificallyNo = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
 				return specificallyNo.Count ==0;
 			}
 		}
@@ -540,7 +546,7 @@ namespace Bloom.Book
 		private void AddCoverColor(XmlDocument dom, Color coverColor)
 		{
 
-			var colorValue = string.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
+			var colorValue = String.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
 			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
 
 			XmlElement colorStyle = dom.CreateElement("style");
@@ -570,11 +576,11 @@ namespace Bloom.Book
 					//review: we want to show titles for template books, numbers for other books.
 					//this here requires that titles be removed when the page is inserted, kind of a hack.
 					var caption = pageNode.GetAttribute("title");
-					if (string.IsNullOrEmpty(caption))
+					if (String.IsNullOrEmpty(caption))
 					{
 						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 					}
-					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _librarySettings.Iso639Code));
+					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _librarySettings.VernacularIso639Code));
 					++pageNumber;
 				}
 			}
@@ -602,7 +608,7 @@ namespace Bloom.Book
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)
 		{
 			return new Page(pageNode, caption,
-					(page => _thumbnailProvider.GetThumbnail(string.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false)),
+					(page => _thumbnailProvider.GetThumbnail(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false)),
 					(page => FindPageDiv(page)));
 		}
 
@@ -623,13 +629,13 @@ namespace Bloom.Book
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
-			BookStarter.SetupPage(newPageDiv, _librarySettings.Iso639Code);
+			BookStarter.SetupPage(newPageDiv, _librarySettings.VernacularIso639Code);
 			ClearEditableValues(newPageDiv);
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _librarySettings.Iso639Code));
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _librarySettings.VernacularIso639Code));
 
 			_storage.Save();
 			if (_pageListChangedEvent != null)
@@ -646,14 +652,14 @@ namespace Bloom.Book
 			{
 				if (editNode.GetAttribute("value").ToLower().StartsWith("lorem ipsum"))
 				{
-					editNode.SetAttribute("value", string.Empty);
+					editNode.SetAttribute("value", String.Empty);
 				}
 			}
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(string.Format("//textarea[@lang='{0}']", _librarySettings.Iso639Code)))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//textarea[@lang='{0}']", _librarySettings.VernacularIso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{
-					editNode.InnerText = string.Empty;
+					editNode.InnerText = String.Empty;
 				}
 			}
 		}
@@ -720,7 +726,7 @@ namespace Bloom.Book
 
 			UpdateFieldsAndVariables();
 
-			_storage.HideAllTextAreasThatShouldNotShow(_librarySettings.Iso639Code, pageSelector);
+//		    _storage.HideAllTextAreasThatShouldNotShow(_librarySettings.VernacularIso639Code, pageSelector);
 
 			try
 			{
@@ -728,7 +734,7 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
+				ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
 			}
 
 			InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
@@ -740,7 +746,7 @@ namespace Bloom.Book
 		/// </summary>
 		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId)
 		{
-			var query = string.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
+			var query = String.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
 			var matches = _storage.Dom.SafeSelectNodes(query);
 			if (matches.Count != 1)
 			{
@@ -755,7 +761,7 @@ namespace Bloom.Book
 		/// </summary>
 		private XmlElement GetPageFromStorage(string pageDivId)
 		{
-			var query = string.Format("//div[@id='{0}']", pageDivId);
+			var query = String.Format("//div[@id='{0}']", pageDivId);
 			var matches = _storage.Dom.SafeSelectNodes(query);
 			if (matches.Count != 1)
 			{
@@ -771,9 +777,9 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateFieldsAndVariables()
 		{
-			Dictionary<string,string> variables = new Dictionary<string, string>();
+			Dictionary<string, string> variables = new Dictionary<string, string>();
 			variables.Add("nameOfLanguage", _librarySettings.LanguageName);
-			variables.Add("iso639Code", _librarySettings.Iso639Code);
+			variables.Add("iso639Code", _librarySettings.VernacularIso639Code);
 			//variables.Add("vernacularBookTitle", );
 
 			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
@@ -823,10 +829,10 @@ namespace Bloom.Book
 				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
 				string query;
 				if (limitToLanguage)
-					query = string.Format("//{0}[(@data-book or @data-library) and @lang='{1}']", elementName, _librarySettings.Iso639Code);
+					query = String.Format("//{0}[(@data-book or @data-library) and @lang='{1}']", elementName, _librarySettings.VernacularIso639Code);
 				else
 				{
-					query = string.Format("//{0}[(@data-book or @data-library)]", elementName);
+					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
 				}
 
 				var nodesOfInterest = RawDom.SafeSelectNodes(query);
@@ -834,12 +840,12 @@ namespace Bloom.Book
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					var key = node.GetAttribute("data-book").Trim();
-					if (key == string.Empty)
+					if (key == String.Empty)
 						key = node.GetAttribute("data-library").Trim();
 
 					if (!variables.ContainsKey(key))
 					{
-						if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+						if (!String.IsNullOrEmpty(node.InnerText.Trim()))
 							variables.Add(key, node.InnerText.Trim());
 					}
 					else
@@ -862,10 +868,10 @@ namespace Bloom.Book
 				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
 				string query;
 				if(limitToLanguage)
-					query = string.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.Iso639Code);
+					query = String.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.VernacularIso639Code);
 				else
 				{
-					query = string.Format("//{0}[(@data-book or @data-library)]", elementName);
+					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
 				}
 
 				var nodesOfInterest = RawDom.SafeSelectNodes(query);
@@ -873,9 +879,9 @@ namespace Bloom.Book
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					var key = node.GetAttribute("data-book").Trim();
-					if(key==string.Empty)
+					if(key==String.Empty)
 						key = node.GetAttribute("data-library").Trim();
-					if(!string.IsNullOrEmpty(key) && variables.ContainsKey(key))
+					if(!String.IsNullOrEmpty(key) && variables.ContainsKey(key))
 						node.InnerText = variables[key];
 					else
 					{
@@ -989,10 +995,26 @@ namespace Bloom.Book
 		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
 		{
 			//NB: all we support at the moment is specifying "Calendar"
-			if(_storage.Dom.SafeSelectNodes(string.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count>0)
+			if(_storage.Dom.SafeSelectNodes(String.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count>0)
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 				return PublishModel.BookletLayoutMethod.SideFold;
+		}
+
+		/// <summary>
+		/// This stylesheet is used to hide all the elements we don't want to show, e.g. because they are not in the languages of this publication.
+		/// We read in the template version, then replace some things and write it out to the publication folder.
+		/// </summary>
+		private void WriteLanguageDisplayStyleSheet( )
+		{
+			var template = File.ReadAllText(_fileLocator.LocateFile("languageDisplayTemplate.css"));
+			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
+			if (File.Exists(path))
+				File.Delete(path);
+			File.WriteAllText(path, template.Replace("VERNACULAR", _librarySettings.VernacularIso639Code).Replace("NATIONAL", _librarySettings.NationalLanguageIso639Code));
+
+			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
+			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
 		}
 	}
 }

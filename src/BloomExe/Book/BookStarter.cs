@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -52,6 +54,7 @@ namespace Bloom.Book
 
 				//the destination may change here...
 				newBookFolder = SetupDocumentContents(newBookFolder);
+
 			}
 			catch (Exception)
 			{
@@ -125,8 +128,6 @@ namespace Bloom.Book
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)
 		{
-			//MakeNewIdsForAllRepeatableElements(pageDiv);
-
 			MakeVernacularElementsForPage(pageDiv, isoCode);
 
 			// a page might be "extra" as far as the template is concerned, but
@@ -134,47 +135,11 @@ namespace Bloom.Book
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
 
+			//BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
 
-			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
-			//this is needed when we're actually setting up a single page that was just inserted from a template
-		   //     MakeVernacularElementsForPage((XmlElement)pageDiv,isoCode);
-
-			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
 
 			//GatherBracketTemplates(pageDiv);
 		}
-//
-//		private static void GatherBracketTemplates(XmlElement pageDiv)
-//		{
-//			foreach (XmlElement element in pageDiv.SafeSelectNodes("//*[contains(text(), '{{']"))
-//			{
-//				var start = element.InnerText.IndexOf("{{")+1;
-//				var end = element.InnerText.IndexOf("}}")-1;
-//				if (end < start)
-//					continue;
-//
-//				var variable = element.InnerText.Substring(start, end - start);
-//
-//				var parent = element.ParentNode;
-////				//do we need to insert a wrapper element to contain this variable, or is there already one there?
-//				if(!(parent.InnerText.Trim().StartsWith("{{") && parent.InnerText.Trim().EndsWith("}}")))
-//				{
-//					throw new ApplicationException(string.Format("This page has a template which isn't the only content of a parent element, as required: {{{0}}} in page with id {1}",variable, pageDiv.GetAttribute("id")));
-//
-//// was planning to auto create the parent if needed:
-////					parent = element.OwnerDocument.CreateElement("div");
-////					parent.InnerText = "{{" + variable + "}}";
-////					element.ParentNode.InnerXml =							would need to insert this element... ick
-//				}
-//
-//				var b = element.GetOptionalStringAttribute("data-book","");
-//				if(!b.Contains(variable))
-//				{
-//					element.SetAttribute("data-book", (b + " " + variable).Trim());
-//				}
-//			}
-//		}
-
 
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)

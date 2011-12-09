@@ -49,12 +49,6 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
-/*used with shellbooks where we want to hide all but one language*/
-TEXTAREA.hideMe
-{
-	visibility: hidden !important;
-	position: fixed !important;
-}
 TEXTAREA
 {
 	resize: none; /*don't show those cute little resize controls in Firefox 4 and greater */

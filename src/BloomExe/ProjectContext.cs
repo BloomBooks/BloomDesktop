@@ -75,7 +75,7 @@ namespace Bloom
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
-				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<LibrarySettings>().Iso639Code, new []{"tpi","en"}));//todo
+				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<LibrarySettings>().VernacularIso639Code, new []{"tpi","en"}));//todo
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {

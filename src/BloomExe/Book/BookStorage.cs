@@ -24,7 +24,7 @@ namespace Bloom.Book
 	{
 		XmlDocument Dom { get; }
 		Book.BookType BookType { get; }
-		string GetTemplateKey();
+		string GetTemplateName();
 		string Key { get; }
 		bool LooksOk { get; }
 		string FileName { get; }
@@ -34,7 +34,7 @@ namespace Bloom.Book
 		bool TryGetPremadeThumbnail(out Image image);
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
-		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
+		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
 		string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
@@ -93,6 +93,7 @@ namespace Bloom.Book
 				}
 
 				UpdateSupportFiles();
+
 			}
 		}
 
@@ -105,14 +106,13 @@ namespace Bloom.Book
 			UpdateIfNewer("basePage.css");
 			UpdateIfNewer("previewMode.css");
 
-			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Portrait.css"))
+			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
-				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
+				var file = Path.GetFileName(path);
+				if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
+					UpdateIfNewer(file);
 			}
-			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Landscape.css"))
-			{
-				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
-			}
+
 		}
 		private void UpdateIfNewer(string fileName)
 		{
@@ -177,7 +177,9 @@ namespace Bloom.Book
 				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
 					var path = fileLocator.LocateOptionalFile(fileName);
-					if (string.IsNullOrEmpty(path))
+
+					if (string.IsNullOrEmpty(path)||
+							path.Contains("languageDisplay.css")) //todo: this feels hacky... problem is that unlike most stylesheets, it is customized for this folder, and the ones found in the factorytemplates should not be used.
 					{
 						//look in the same directory as the book
 						var local = Path.Combine(_folderPath, fileName);
@@ -335,13 +337,16 @@ namespace Bloom.Book
 			return string.Empty;
 		}
 
-		public string GetTemplateKey()
+		/// <summary>
+		/// Gives, for example, "A5Portrait", or "LetterLandscape".
+		/// </summary>
+		/// <returns></returns>
+		public string GetTemplateName()
 		{
-			//TODO it's not clear what we want to do, eventually.
-			//for now, we're just using the name of the first css we find. See htmlthumnailer for code which extracts it.
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
-				return Path.GetFileNameWithoutExtension(path);
+				if(path.ToLower().Contains("portrait") ||  path.ToLower().Contains("landscape"))
+					return Path.GetFileNameWithoutExtension(path);
 			}
 			return null;
 		}
@@ -515,39 +520,39 @@ namespace Bloom.Book
 		}
 
 
-		public void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector)
-		{
-			HideAllTextAreasThatShouldNotShow(Dom, vernacularIso639Code,optionalPageSelector);
-		}
+//        public void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector)
+//        {
+//            HideAllTextAreasThatShouldNotShow(Dom, vernacularIso639Code,optionalPageSelector);
+//        }
 
 
-		public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string iso639CodeToKeepShowing, string optionalPageSelector)
-		{
-			if (optionalPageSelector == null)
-				optionalPageSelector = string.Empty;
-
-			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
-			{
-				string cssClass = storageNode.GetAttribute("class");
-				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"-bloom-showNational"))
-				{
-					cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
-				}
-				else if (!ContainsClass(storageNode, Book.ClassOfHiddenElements))
-				{
-					cssClass += (" " + Book.ClassOfHiddenElements);
-				}
-				cssClass = cssClass.Trim();
-				if (string.IsNullOrEmpty(cssClass))
-				{
-					storageNode.RemoveAttribute("class");
-				}
-				else
-				{
-					storageNode.SetAttribute("class", cssClass);
-				}
-			}
-		}
+//        public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string iso639CodeToKeepShowing, string optionalPageSelector)
+//        {
+//            if (optionalPageSelector == null)
+//                optionalPageSelector = string.Empty;
+//
+//            foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
+//            {
+//                string cssClass = storageNode.GetAttribute("class");
+//                if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"-bloom-showNational"))
+//                {
+//                    cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
+//                }
+//                else if (!ContainsClass(storageNode, Book.ClassOfHiddenElements))
+//                {
+//                    cssClass += (" " + Book.ClassOfHiddenElements);
+//                }
+//                cssClass = cssClass.Trim();
+//                if (string.IsNullOrEmpty(cssClass))
+//                {
+//                    storageNode.RemoveAttribute("class");
+//                }
+//                else
+//                {
+//                    storageNode.SetAttribute("class", cssClass);
+//                }
+//            }
+//        }
 
 		private static bool ContainsClass(XmlNode element, string className)
 		{

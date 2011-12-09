@@ -38,7 +38,7 @@ namespace Bloom.Edit
 
 		void showSourceMenu_Click(object sender, EventArgs e)
 		{
-			var t = Palaso.IO.TempFile.WithExtension(".xml");
+			var t = Palaso.IO.TempFile.WithExtension(".htm");
 			File.WriteAllText(t.Path, _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
 			Process.Start(t.Path);
 		}

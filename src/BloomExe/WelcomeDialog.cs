@@ -47,7 +47,8 @@ namespace Bloom
 					   {
 						   PathToSettingsFile =
 							   LibrarySettings.GetPathForNewSettings(dlg.PathToNewLibraryDirectory, dlg.LibraryName),
-						   Iso639Code = dlg.Iso639Code,
+						   VernacularIso639Code = dlg.Iso639Code,
+						   NationalLanguageIso639Code = "en",//TODO
 						   LanguageName = dlg.LanguageName,
 						   IsShellLibary = dlg.IsShellMakingLibrary
 					   };

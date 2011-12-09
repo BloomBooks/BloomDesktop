@@ -15,7 +15,8 @@ namespace Bloom
 	{
 		#region Persisted roperties
 
-		public string Iso639Code { get; set; }
+		public string VernacularIso639Code { get; set; }
+		public string NationalLanguageIso639Code { get; set; }
 		public string LanguageName { get; set; }
 		public virtual bool IsShellLibrary { get; set; }
 
@@ -31,7 +32,8 @@ namespace Bloom
 		public LibrarySettings(NewLibraryInfo libraryInfo)
 			:this(libraryInfo.PathToSettingsFile)
 		{
-			Iso639Code = libraryInfo.Iso639Code;
+			VernacularIso639Code = libraryInfo.VernacularIso639Code;
+			NationalLanguageIso639Code = libraryInfo.NationalLanguageIso639Code;
 			LanguageName = libraryInfo.LanguageName;
 			IsShellLibrary = libraryInfo.IsShellLibary;
 			Save();
@@ -67,7 +69,8 @@ namespace Bloom
 		{
 			XElement library = new XElement("Library");
 			library.Add(new XAttribute("version", "0.1"));
-			library.Add(new XElement("Iso639Code", Iso639Code));
+			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
+			library.Add(new XElement("NationalIso639Code", NationalLanguageIso639Code));
 			library.Add(new XElement("LanguageName", LanguageName));
 			library.Add(new XElement("IsShellLibrary", IsShellLibrary.ToString()));
 			library.Save(SettingsFilePath);
@@ -80,7 +83,19 @@ namespace Bloom
 			{
 
 				XElement library = XElement.Load(SettingsFilePath);
-				Iso639Code = library.Descendants("Iso639Code").First().Value;
+				var vernacular = library.Descendants("VernacularIso639Code");
+				if(vernacular ==null || vernacular.Count()==0)
+					vernacular = library.Descendants("Iso639Code");//old version (dec 2011, v 0.3)
+				VernacularIso639Code = vernacular.First().Value;
+
+				var national = library.Descendants("NationalIso639Code");
+				if (national != null && national.Count() > 0)
+					NationalLanguageIso639Code = national.First().Value;
+				else
+				{
+					NationalLanguageIso639Code = "en";
+				}
+
 				LanguageName = library.Descendants("LanguageName").First().Value;
 				bool isShellMakingLibrary;
 				var isShellMakingElement = library.Descendants("IsShellLibrary");
@@ -112,6 +127,7 @@ namespace Bloom
 		public string SettingsFilePath { get; set; }
 
 
+
 		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
 		{
 			return Path.Combine(parentFolderPath, newLibraryName + ".bloomLibrary");
@@ -121,7 +137,8 @@ namespace Bloom
 	public class NewLibraryInfo
 	{
 		public string PathToSettingsFile;
-		public string Iso639Code;
+		public string VernacularIso639Code;
+		public string NationalLanguageIso639Code;
 		public string LanguageName;
 		public bool IsShellLibary;
 	}
