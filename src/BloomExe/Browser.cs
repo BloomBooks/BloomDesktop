@@ -161,7 +161,7 @@ namespace Bloom
 			_browser.GotFocus += new EventHandler(_browser_GotFocus);
 
 			_updateCommandsTimer.Enabled = true;//hack
-
+			RaiseGeckoReady();
 	   }
 
 		void _browser_GotFocus(object sender, EventArgs e)
@@ -299,6 +299,26 @@ namespace Bloom
 			{
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
 				var bodyDom = dom.SelectSingleNode("//body");
+
+				if (_pageDom == null)
+					return;
+
+				//track a regression
+				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				if (destinationDomPage == null)
+					return;
+				var expectedPageId = destinationDomPage["id"];
+
+				var browserPageId = bodyDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				if (browserPageId == null)
+					return;//why? but I've seen it happen
+
+				var thisPageId = browserPageId["id"];
+				if(expectedPageId != thisPageId)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
+					return;
+				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 			}
 			catch(Exception e)
@@ -408,6 +428,7 @@ namespace Bloom
 			Application.DoEvents(); //review... is there a better way?  it seems that NavigationFinished isn't raised.
 		}
 
+
 		/* snippets
 		 *
 		 * //           _browser.WebBrowser.Navigate("javascript:void(document.getElementById('output').innerHTML = 'test')");
@@ -417,5 +438,12 @@ namespace Bloom
 			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
 
 			*/
+		public event EventHandler GeckoReady;
+
+		public void RaiseGeckoReady()
+		{
+			EventHandler handler = GeckoReady;
+			if (handler != null) handler(this, null);
+		}
 	}
 }

@@ -8,19 +8,28 @@ using System.Text;
 using System.Xml;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
+using Skybound.Gecko;
 
 namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, XmlDocument dom, string id, PalasoImage imageInfo)
+		public void ChangePicture(string bookFolderPath, XmlDocument dom, GeckoElement img, PalasoImage imageInfo)
+		{
+			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
+			img.SetAttribute("src", imageFileName);
+		}
+
+		/// <summary>
+		/// for testing.... todo: maybe they should test ProcessAndCopyImage() directly, instead
+		/// </summary>
+		public void ChangePicture(string bookFolderPath, XmlDocument dom, string imageId, PalasoImage imageInfo)
 		{
 
-			var matches = dom.SafeSelectNodes("//img[@id='" + id + "']");
+			var matches = dom.SafeSelectNodes("//img[@id='" + imageId + "']");
 			XmlElement img = matches[0] as XmlElement;
 
 			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
-
 			img.SetAttribute("src", imageFileName);
 
 		}

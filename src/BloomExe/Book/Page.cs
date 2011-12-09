@@ -13,7 +13,6 @@ namespace Bloom.Book
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
 		XmlElement GetDivNodeForThisPage();
-		Dictionary<string,string> GetSourceTexts(string groupId, string vernacularCode);
 		bool Required { get; }
 		bool CanRelocate { get;}
 	}
@@ -21,7 +20,6 @@ namespace Bloom.Book
 	public class Page : IPage
 	{
 		private readonly string _id;
-		private readonly XmlElement _sourcePage;
 		private readonly Func<IPage, Image> _getThumbnail;
 		private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
 		private List<string> _classes;
@@ -30,7 +28,6 @@ namespace Bloom.Book
 		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			_id = sourcePage.Attributes["id"].Value;
-			_sourcePage = sourcePage;
 			_getThumbnail = getThumbnail;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
@@ -84,26 +81,6 @@ namespace Bloom.Book
 			return _getDivNodeForThisPageMethod(this);
 		}
 
-		public Dictionary<string, string> GetSourceTexts(string groupId, string vernacularCode)
-		{
-			var d = new Dictionary<string, string>();
-
-			//var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//p/textarea[@id='{1}']/parent::node()/textarea", _sourcePage.GetAttribute("id"), groupId));
-
-			//Find all textareas with a parent with the matchin id, by looking  in the <div> for this page
-			var textareas = _sourcePage.SafeSelectNodes(string.Format("//div[@id='{0}']//*[@id='{1}']/textarea", _sourcePage.GetAttribute("id"), groupId));
-			foreach (XmlElement textarea in textareas)
-			{
-				var lang = textarea.GetAttribute("lang");
-				if (string.IsNullOrEmpty(lang) || lang == vernacularCode)
-					continue;
-
-				var hint = textarea.GetAttribute("title");
-				d.Add(lang, !string.IsNullOrEmpty(hint) ? hint : textarea.InnerText);
-			}
-
-			return d;
-		}
 
 		public static string GetPageSelectorXPath(XmlDocument pageDom)
 		{

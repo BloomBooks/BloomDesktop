@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -46,7 +47,15 @@ namespace Bloom.Edit
 			SetupThumnailLists();
 			_model.SetView(this);
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
+			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 		}
+
+		private void OnGeckoReady(object sender, EventArgs e)
+		{
+			_browser1.WebBrowser.AddMessageEventListener("textGroupFocussed", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
+		}
+
+
 
 		/// <summary>
 		/// called when jscript raisese the textGroupFocussed event.  That jscript lives (at the moment) in initScript.js
@@ -91,17 +100,15 @@ namespace Bloom.Edit
 			}
 		}
 
-		void VisibleNowAddSlowContents(object sender, EventArgs e)
+	   void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
-			Application.Idle -=new EventHandler(VisibleNowAddSlowContents);
+			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
 			Cursor = Cursors.WaitCursor;
 			_model.ActualVisibiltyChanged(true);
 			Cursor = Cursors.Default;
-
-			//review: there might be an earlier, better place for this
-			_browser1.WebBrowser.AddMessageEventListener("textGroupFocussed", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
 		}
+
 
 		protected override void OnVisibleChanged(EventArgs e)
 		{
@@ -157,7 +164,14 @@ namespace Bloom.Edit
 		{
 			if (_model.HaveCurrentEditableBook)
 			{
-				_model.SaveNow();
+				//try
+				{
+					_model.SaveNow();
+				}
+//				catch()
+//				{
+//					//there is an error here where we're getting a save
+//				}
 			}
 		}
 
@@ -213,7 +227,7 @@ namespace Bloom.Edit
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
+						_model.ChangePicture(ge.Target, dlg.ImageInfo);
 					}
 					catch(System.IO.IOException error)
 					{

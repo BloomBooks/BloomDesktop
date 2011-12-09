@@ -35,7 +35,8 @@ function test() {
 */
 function updateDom(configuration) {
 
-    $$(".-bloom-vernacularBookTitle").set("text", configuration.calendar.year +" Calendar");
+    //$("textarea[data-book='vernacularBookTitle']").set("text", configuration.calendar.year +" Calendar");
+  $$(".vernacularBookTitle").set("text", configuration.calendar.year +" Calendar");
     var year = Number.from(configuration.calendar.year);
     var previous = $$('.titlePage')[0];
     var originalMonthsPicturePage = $$('.calendarMonthTop')[0];

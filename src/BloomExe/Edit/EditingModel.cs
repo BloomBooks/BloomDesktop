@@ -196,24 +196,24 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ChangePicture(string id, PalasoImage imageInfo)
+		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
 		{
 			var editor = new PageEditingModel();
 
-			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, imageInfo);
+			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
 			//We have a problem where if we save at this point, any text changes are lost.
 			//The hypothesis is that the "onblur" javascript has not run, so the value of the textareas have not yet changed.
 
-			_view.ReadEditableAreasNow();
+			//_view.ReadEditableAreasNow();
 
-			SaveNow();//have to save now because we're going to reload the page to show the new picture
+			//SaveNow();//have to save now because we're going to reload the page to show the new picture
 
 			//review: this is spagetti
-			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
+			//_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
 
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			InvokeUpdatePageList();
+			//_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			//InvokeUpdatePageList();
 			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 

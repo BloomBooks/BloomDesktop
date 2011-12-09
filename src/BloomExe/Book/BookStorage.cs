@@ -77,8 +77,6 @@ namespace Bloom.Book
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 
 					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml); //with throw if there are errors
-
-					//Dom.Load(PathToExistingHtml);
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -87,24 +85,13 @@ namespace Bloom.Book
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				//add a unique id for our use
-	 //review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
+				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
 				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
 					if(string.IsNullOrEmpty(node.GetAttribute("id")))
 						node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
 
-//                foreach (XmlElement node in Dom.SafeSelectNodes("//textarea"))
-//                {
-//                    if (string.IsNullOrEmpty(node.GetAttribute("id")))
-//                        node.SetAttribute("id", Guid.NewGuid().ToString());
-//                }
-//
-//                foreach (XmlElement node in Dom.SafeSelectNodes("//img"))
-//                {
-//                    if (string.IsNullOrEmpty(node.GetAttribute("id")))
-//                        node.SetAttribute("id", Guid.NewGuid().ToString());
-//             }
 				UpdateSupportFiles();
 			}
 		}

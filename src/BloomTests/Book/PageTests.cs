@@ -8,29 +8,6 @@ namespace BloomTests.Book
 	[TestFixture]
 	public sealed class PageTests
 	{
-		[Test]
-		public void GetSourceTexts_WrappedByParagraphWithId_GetsCorrectTexts()
-		{
-			XmlElement pageDiv = (XmlElement)GetDom().SelectSingleNodeHonoringDefaultNS("//div[@id='pageWithTokPisinAndEnglish']");
-
-			var p = new Page(pageDiv, "caption", null, pg => pageDiv);
-			var texts = p.GetSourceTexts("2", "xyz");
-			Assert.AreEqual(2, texts.Count);
-			Assert.AreEqual("2en", texts["en"]);
-			Assert.AreEqual("2tpi", texts["tpi"]);
-		}
-
-		[Test]
-		public void GetSourceTexts_HasVerncularToo_GetsOnlyNonVernacular()
-		{
-			XmlElement pageDiv = (XmlElement)GetDom().SelectSingleNodeHonoringDefaultNS("//div[@id='pageWithTokPisinAndEnglish']");
-
-			var p = new Page(pageDiv, "caption", null, pg => pageDiv);
-			var texts = p.GetSourceTexts("1", "xyz");
-			Assert.AreEqual(2, texts.Count);
-			Assert.AreEqual("1en", texts["en"]);
-			Assert.AreEqual("1tpi", texts["tpi"]);
-		}
 
 		private XmlDocument GetDom()
 		{

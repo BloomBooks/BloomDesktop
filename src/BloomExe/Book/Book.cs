@@ -718,14 +718,6 @@ namespace Bloom.Book
 			var page = GetPageFromStorage(pageDivId);
 			page.InnerXml = divElement.InnerXml;
 
-			foreach (XmlElement editNode in pageDom.SafeSelectNodes(pageSelector + "//img"))
-			{
-				var imgId = editNode.GetAttribute("id");
-				var storageNode = GetStorageNode(pageDivId, "img", imgId);
-				Guard.AgainstNull(storageNode, imgId);
-				storageNode.SetAttribute("src", editNode.GetAttribute("src"));
-			}
-
 			UpdateFieldsAndVariables();
 
 			_storage.HideAllTextAreasThatShouldNotShow(_librarySettings.Iso639Code, pageSelector);
