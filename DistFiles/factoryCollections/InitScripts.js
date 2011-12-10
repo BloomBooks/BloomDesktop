@@ -20,4 +20,18 @@ jQuery(document).ready(function () {
             event.initMessageEvent ('textGroupFocussed', true, true, json, origin, 1234, window, null);
             document.dispatchEvent (event);
         });
+
+    //make images look click-able when you cover over them
+    jQuery("img").hover(function() {
+				$(this).addClass('hoverUp')
+			},function() {
+							$(this).removeClass('hoverUp')
+						});
+
+//    jQuery("img").mousedown(function() {
+//       		$(this).addClass('hoverDown')
+//       	});
+//    jQuery("img").mouseup(function() {
+//       	    		$(this).removeClass('hoverDown')
+//       	    	});
 });

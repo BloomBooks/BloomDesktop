@@ -1,13 +1,9 @@
 /*@import url('SignalOverflow.css');*/
-
-
-	BODY
-	{
-		text-align: center;
-			background-color: #363333;
-	}
-
-
+BODY
+{
+	text-align: center;
+	background-color: #363333;
+}
 DIV.page
 {
 	background-color: #F8F8F8;
@@ -24,18 +20,20 @@ INPUT
 }
 TEXTAREA
 {
-	border: thin solid #000000;
+	border: thin solid #C0B9B9;
 }
 TEXTAREA.en
 {
-background-color: #D5D5E4;
-
-	visibility: collapse;/*this by itself just leaves a gap*/
-	position: absolute; /* this removes the gap*/
+	background-color: #D5D5E4;
+	visibility: collapse;
+/*this by itself just leaves a gap*/
+	position: absolute;
+/*this removes the gap*/
 	left: 0px;
 	top: 0px;
 }
-
-IMG
+IMG.hoverUp
 {
+	background-color: #DFDFDF;
+	border: 1px outset #000000;
 }

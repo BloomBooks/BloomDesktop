@@ -190,7 +190,7 @@ namespace Bloom.Edit
 		{
 			if (!_model.CanChangeImages())
 				return;
-
+			Cursor = Cursors.WaitCursor;
 			string currentPath = ge.Target.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
@@ -228,6 +228,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
+			Cursor = Cursors.Default;
 		}
 
 
