@@ -104,6 +104,10 @@ TEXTAREA
 	text-align: center;
 	margin-top: 1.5cm;
 	margin-left: 2cm;
+	/*+placement:shift -26px -5px;*/
+	position: relative;
+	left: -26px;
+	top: -5px;
 }
 .cover .picture
 {
@@ -114,12 +118,19 @@ TEXTAREA
 .cover .topicInNationalLanguage
 {
 	width: 5.8cm;
-	/*+placement:anchor-bottom-right -14.1cm 0px;*/
+	/*+placement:anchor-bottom-right -13.6cm -8px;*/
 	position: absolute;
-	right: -14.1cm;
-	bottom: 0px;
+	right: -13.6cm;
+	bottom: -8px;
 	text-align: right;
-	height: 23px;
+	height: 33px;
+}
+DIV.coverBottomBookKind
+{
+	/*+placement:shift -553px 101px;*/
+	position: relative;
+	left: -553px;
+	top: 101px;
 }
 .cover .nameOfLanguage
 {
@@ -131,6 +142,13 @@ TEXTAREA
 	width: 8cm;
 	/*[empty]margin-left:;*/
 	font-size: 14pt;
+}
+DIV.coverBottomLangName
+{
+	/*+placement:shift -50px 108px;*/
+	position: relative;
+	left: -50px;
+	top: 108px;
 }
 /*e.g. "Health" or "Math"*/
 .titlePage .vernacularBookTitle
