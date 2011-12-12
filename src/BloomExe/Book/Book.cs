@@ -785,16 +785,24 @@ namespace Bloom.Book
 			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			GatherFieldValues(variables, "textarea", true);
+			GatherFieldValues(variables, "*", true);
+
+//			GatherFieldValues(variables, "span", true);
+//			GatherFieldValues(variables, "p", true);
+//			GatherFieldValues(variables, "h1", true);
+//			GatherFieldValues(variables, "h2", true);
+//			GatherFieldValues(variables, "div", true);
+//			GatherFieldValues(variables, "textarea", true);
 
 
+			SetFieldsValues(variables,"*", true);
 			//REVIEW and then document use of this limitToLanguage parameter
-			SetFieldsValues(variables, "textarea", true);
-			SetFieldsValues(variables, "p", false);
-			SetFieldsValues(variables, "span", false);
-			SetFieldsValues(variables, "div", false);
-			SetFieldsValues(variables, "h1", false);
-			SetFieldsValues(variables, "h2", false);
+//			SetFieldsValues(variables, "textarea", true);
+//            SetFieldsValues(variables, "p", false);
+//            SetFieldsValues(variables, "span", false);
+//			SetFieldsValues(variables, "div", false);
+//			SetFieldsValues(variables, "h1", false);
+//			SetFieldsValues(variables, "h2", false);
 
 			string title;
 			if (variables.TryGetValue("vernacularBookTitle", out title))
@@ -827,9 +835,11 @@ namespace Bloom.Book
 			{
 				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
 				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
+
+				//TODO: at the moment, I've got it saying if it has a language, it must be the vernacular.  But I suspect we need to eventually just get savvy with language-alternatives
 				string query;
 				if (limitToLanguage)
-					query = String.Format("//{0}[(@data-book or @data-library) and @lang='{1}']", elementName, _librarySettings.VernacularIso639Code);
+					query = String.Format("//{0}[(@data-book or @data-library) and (not(@lang) or @lang='{1}')]", elementName, _librarySettings.VernacularIso639Code);
 				else
 				{
 					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
@@ -845,8 +855,9 @@ namespace Bloom.Book
 
 					if (!variables.ContainsKey(key))
 					{
-						if (!String.IsNullOrEmpty(node.InnerText.Trim()))
-							variables.Add(key, node.InnerText.Trim());
+						var value = node.InnerText.Trim();
+						if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
+							variables.Add(key, value);
 					}
 					else
 					{
@@ -868,7 +879,7 @@ namespace Bloom.Book
 				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
 				string query;
 				if(limitToLanguage)
-					query = String.Format( "//{0}[(@data-book or @data-library) and @lang='{1}']",elementName, _librarySettings.VernacularIso639Code);
+					query = String.Format("//{0}[(@data-book or @data-library) and (not(@lang) or @lang='{1}')]", elementName, _librarySettings.VernacularIso639Code);
 				else
 				{
 					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);

@@ -245,6 +245,36 @@ namespace BloomTests.Book
 			Assert.AreEqual("blue", title.InnerText);
 		}
 
+
+
+		[Test]
+		public void UpdateFieldsAndVariables_BookTitleInSpanOnSecondPage_UpdatesH2OnFirst()
+		{
+			SetDom(@"<div class='-bloom-page titlePage'>
+						<div class='pageContent'>
+							<h1 data-book='vernacularBookTitle'>{Book Title}</h1>
+							<br />
+							<h2 data-book='nationalBookTitle'>{national book title}</h2>
+						</div>
+					</div>
+				<div class='-bloom-page verso'>
+					<div class='pageContent'>
+						<br />
+						<p data-book='vernacularBookTitle'>{vernacularBookTitle}</p>
+						<br />
+						(<span data-book='nationalBookTitle'>Vaccinations</span>)
+						<br />
+					</div>
+				</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.UpdateFieldsAndVariables();
+			XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='nationalBookTitle']");
+			Assert.AreEqual("Vaccinations", nationalTitle.InnerText);
+		}
+
+
 		[Test]
 		public void UpdateFieldsAndVariables_HadTitleChangeVernacularTitle_ChangesTitleElement()
 		{
