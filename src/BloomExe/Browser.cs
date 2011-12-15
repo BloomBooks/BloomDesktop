@@ -228,7 +228,7 @@ namespace Bloom
 			_pageDom = dom;
 			//now done in InitScript.js AddJavaScriptForEditing(_pageDom);
 			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
-			SetNewTempFile(TempFile.CreateHtm(dom));
+			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
 		}

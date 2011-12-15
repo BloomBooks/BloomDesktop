@@ -26,6 +26,7 @@ namespace BloomTests.Book
 		private XmlDocument _documentDom;
 		private TemporaryFolder _testFolder;
 		private TemporaryFolder _tempFolder;
+		private LibrarySettings _librarySettings;
 
 		[SetUp]
 		public void Setup()
@@ -68,8 +69,9 @@ namespace BloomTests.Book
 
 		private Bloom.Book.Book CreateBook()
 		{
+			_librarySettings = new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz", NationalLanguage1Iso639Code="en" });
 			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
-				new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz" }),
+				_librarySettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent);
 		}
 
@@ -179,19 +181,19 @@ namespace BloomTests.Book
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' data-book='vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
 						</p>
 					</div>
 				<div class='-bloom-page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
-						<p class='centered' lang='xyz' data-book='vernacularBookTitle' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
+						<p class='centered' lang='xyz' data-book='bookTitle' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
 				</div>
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle' and @lang='xyz']");
+			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.UpdateFieldsAndVariables();
-			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='vernacularBookTitle'  and @lang='xyz']");
+			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
 		}
 
@@ -232,13 +234,13 @@ namespace BloomTests.Book
 		{
 			SetDom(@"<div class='-bloom-page' id='guid2'>
 						<p>
-							<textarea lang='xyz' data-book='vernacularBookTitle'>original</textarea>
+							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
 						</p>
 					</div>
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle']");
 			textArea.InnerText ="blue";
 			book.UpdateFieldsAndVariables();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -248,21 +250,16 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void UpdateFieldsAndVariables_BookTitleInSpanOnSecondPage_UpdatesH2OnFirst()
+		public void UpdateFieldsAndVariables_BookTitleInSpanOnSecondPage_UpdatesH2OnFirstWithCurrentNationalLang()
 		{
 			SetDom(@"<div class='-bloom-page titlePage'>
 						<div class='pageContent'>
-							<h1 data-book='vernacularBookTitle'>{Book Title}</h1>
-							<br />
-							<h2 data-book='nationalBookTitle'>{national book title}</h2>
+							<h2 data-book='bookTitle' lang='N1'>{national book title}</h2>
 						</div>
 					</div>
 				<div class='-bloom-page verso'>
 					<div class='pageContent'>
-						<br />
-						<p data-book='vernacularBookTitle'>{vernacularBookTitle}</p>
-						<br />
-						(<span data-book='nationalBookTitle'>Vaccinations</span>)
+						(<span lang='en' data-book='bookTitle'>Vaccinations</span><span lang='tpi' data-book='bookTitle'>Tambu Sut</span>)
 						<br />
 					</div>
 				</div>
@@ -270,8 +267,15 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.RawDom;
 			book.UpdateFieldsAndVariables();
-			XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='nationalBookTitle']");
+			XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Vaccinations", nationalTitle.InnerText);
+
+			//now switch the national language to Tok Pisin
+
+			_librarySettings.NationalLanguage1Iso639Code = "tpi";
+			book.UpdateFieldsAndVariables();
+			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
+			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
 		}
 
 
@@ -282,8 +286,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;
 			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 			head.AppendChild(dom.CreateElement("title")).InnerText = "original";
-		   // node.SetAttribute("class", "-bloom-vernacularBookTitle");
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='vernacularBookTitle']");
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle']");
 			textArea.InnerText = "blue";
 			book.UpdateFieldsAndVariables();
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
@@ -681,8 +684,8 @@ namespace BloomTests.Book
 			dom.LoadXml(@"<html ><head></head><body>
 				<div class='-bloom-page' id='guid1'>
 					<p>
-						<textarea lang='en' id='1'  data-book='vernacularBookTitle'>tree</textarea>
-						<textarea lang='xyz' id='2'  data-book='vernacularBookTitle'>dog</textarea>
+						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
+						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
 					</p>
 				</div>
 				<div class='-bloom-page' id='guid2'>
@@ -698,7 +701,7 @@ namespace BloomTests.Book
 						<textarea id='6' lang='xyz'>original2</textarea>
 					</p>
 					<p>
-						<textarea lang='xyz' id='copyOfVTitle'  data-book='vernacularBookTitle'>tree</textarea>
+						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='aa'  data-library='testLibraryVariable'>aa</textarea>
 					   <textarea lang='xyz' id='bb'  data-library='testLibraryVariable'>bb</textarea>
 

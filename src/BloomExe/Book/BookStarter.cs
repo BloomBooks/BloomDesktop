@@ -15,18 +15,24 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookStarter
 	{
+		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private LanguageSettings _languageSettings;
+		private readonly LibrarySettings _librarySettings;
 		private bool _isShellLibrary;
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
+		public BookStarter(IFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
 		{
+			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
+			_librarySettings = librarySettings;
 			_isShellLibrary = librarySettings.IsShellLibrary;
 		}
+
+		public bool TestingSoSkipAddingXMatter { get; set; }
 
 		/// <summary>
 		/// Given a template, make a new book
@@ -38,7 +44,7 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
 
-			//TODO: is this meta value at odds with with data-book="vernacularBookTitle" somewhere in the book?
+			//TODO: is this meta value at odds with with data-book="bookTitle" somewhere in the book?
 			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
 			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
 
@@ -87,11 +93,16 @@ namespace Bloom.Book
 
 			UpdateEditabilityIndicator(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
+			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
+			//	for shells, we'll still have pages.
 			//Remove from the new book any div-pages labelled as "extraPage"
 			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
+
+			AddXMatter(storage);
+
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
@@ -102,6 +113,34 @@ namespace Bloom.Book
 
 			storage.UpdateBookFileAndFolderName(_languageSettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// the front and back matter (xmatter) comes from a separate html file. We ship a factor one, but orgs can supply their own.
+		/// </summary>
+		/// <param name="storage"></param>
+		private void AddXMatter(BookStorage storage)
+		{
+			if (TestingSoSkipAddingXMatter)
+				return;
+
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(_fileLocator.LocateFile(_librarySettings.NameOfXMatterTemplate+"-XMatter.htm"));
+			XmlNode previousFronMatterPage = null;
+			foreach (XmlElement templatePage in dom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
+			{
+				var newPageDiv = storage.Dom.ImportNode(templatePage, true) as XmlElement;
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"'+_librarySettings.VernacularIso639Code+'"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + _librarySettings.VernacularIso639Code + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + _librarySettings.NationalLanguage1Iso639Code + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + _librarySettings.NationalLanguage1Iso639Code + '"');
+				if(!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))  //otherwise, styleshee will hide it
+				{
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + _librarySettings.NationalLanguage2Iso639Code + '"');
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + _librarySettings.NationalLanguage2Iso639Code + '"');
+				}
+				storage.Dom.SelectSingleNode("//body").InsertAfter(newPageDiv, previousFronMatterPage);
+				previousFronMatterPage = newPageDiv;
+			}
 		}
 
 		private void UpdateEditabilityIndicator(BookStorage storage)

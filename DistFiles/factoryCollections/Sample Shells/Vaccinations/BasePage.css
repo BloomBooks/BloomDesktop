@@ -53,6 +53,10 @@ TEXTAREA
 {
 	resize: none; /*don't show those cute little resize controls in Firefox 4 and greater */
 }
+DIV.data
+{
+	display:none;
+}
 DIV.-bloom-page
 {
 	display: block;

@@ -16,7 +16,8 @@ namespace Bloom
 		#region Persisted roperties
 
 		public string VernacularIso639Code { get; set; }
-		public string NationalLanguageIso639Code { get; set; }
+		public string NationalLanguage1Iso639Code { get; set; }
+		public string NationalLanguage2Iso639Code { get; set; }
 		public string LanguageName { get; set; }
 		public virtual bool IsShellLibrary { get; set; }
 
@@ -33,7 +34,7 @@ namespace Bloom
 			:this(libraryInfo.PathToSettingsFile)
 		{
 			VernacularIso639Code = libraryInfo.VernacularIso639Code;
-			NationalLanguageIso639Code = libraryInfo.NationalLanguageIso639Code;
+			NationalLanguage1Iso639Code = libraryInfo.NationalLanguage1Iso639Code;
 			LanguageName = libraryInfo.LanguageName;
 			IsShellLibrary = libraryInfo.IsShellLibary;
 			Save();
@@ -70,7 +71,8 @@ namespace Bloom
 			XElement library = new XElement("Library");
 			library.Add(new XAttribute("version", "0.1"));
 			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
-			library.Add(new XElement("NationalIso639Code", NationalLanguageIso639Code));
+			library.Add(new XElement("National1Iso639Code", NationalLanguage1Iso639Code));
+			library.Add(new XElement("National2Iso639Code", NationalLanguage1Iso639Code));
 			library.Add(new XElement("LanguageName", LanguageName));
 			library.Add(new XElement("IsShellLibrary", IsShellLibrary.ToString()));
 			library.Save(SettingsFilePath);
@@ -88,12 +90,20 @@ namespace Bloom
 					vernacular = library.Descendants("Iso639Code");//old version (dec 2011, v 0.3)
 				VernacularIso639Code = vernacular.First().Value;
 
-				var national = library.Descendants("NationalIso639Code");
+				var national = library.Descendants("National1Iso639Code");
 				if (national != null && national.Count() > 0)
-					NationalLanguageIso639Code = national.First().Value;
+					NationalLanguage1Iso639Code = national.First().Value;
 				else
 				{
-					NationalLanguageIso639Code = "en";
+					NationalLanguage1Iso639Code = "en";
+				}
+
+				national = library.Descendants("National2Iso639Code");
+				if (national != null && national.Count() > 0)
+					NationalLanguage2Iso639Code = national.First().Value;
+				else
+				{
+					NationalLanguage2Iso639Code = "";
 				}
 
 				LanguageName = library.Descendants("LanguageName").First().Value;
@@ -126,7 +136,13 @@ namespace Bloom
 		[XmlIgnore]
 		public string SettingsFilePath { get; set; }
 
-
+		/// <summary>
+		/// for the "Factory-XMatter.htm", this would be named "Factory"
+		/// </summary>
+		public string NameOfXMatterTemplate
+		{
+			get { return "Factory"; }
+		}
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
 		{
@@ -138,7 +154,8 @@ namespace Bloom
 	{
 		public string PathToSettingsFile;
 		public string VernacularIso639Code;
-		public string NationalLanguageIso639Code;
+		public string NationalLanguage1Iso639Code;
+		public string NationalLanguage2Iso639Code;
 		public string LanguageName;
 		public bool IsShellLibary;
 	}

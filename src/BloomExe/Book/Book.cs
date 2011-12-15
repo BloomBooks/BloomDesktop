@@ -15,6 +15,7 @@ using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -29,7 +30,7 @@ namespace Bloom.Book
 		private readonly IFileLocator _fileLocator;
 		private readonly LibrarySettings _librarySettings;
 
-		private  List<string> _builtInConstants = new List<string>(new[] { "vernacularBookTitle", "topicInNationalLanguage", "nameOfLanguage" });
+		private  List<string> _builtInConstants = new List<string>(new[] { "bookTitle", "topic", "nameOfLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -777,15 +778,19 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateFieldsAndVariables()
 		{
-			Dictionary<string, string> variables = new Dictionary<string, string>();
-			variables.Add("nameOfLanguage", _librarySettings.LanguageName);
-			variables.Add("iso639Code", _librarySettings.VernacularIso639Code);
+			var variables = new Dictionary<string, MultiTextBase>();
+			var lang = new MultiTextBase();
+			lang.SetAlternative("*", _librarySettings.LanguageName);
+			variables.Add("nameOfLanguage", lang);
+			var code = new MultiTextBase();
+			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
+			variables.Add("iso639Code", code);
 			//variables.Add("vernacularBookTitle", );
 
 			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			GatherFieldValues(variables, "*", true);
+			GatherFieldValues(variables, "*");
 
 //			GatherFieldValues(variables, "span", true);
 //			GatherFieldValues(variables, "p", true);
@@ -795,7 +800,7 @@ namespace Bloom.Book
 //			GatherFieldValues(variables, "textarea", true);
 
 
-			SetFieldsValues(variables,"*", true);
+			SetFieldsValues(variables,"*");
 			//REVIEW and then document use of this limitToLanguage parameter
 //			SetFieldsValues(variables, "textarea", true);
 //            SetFieldsValues(variables, "p", false);
@@ -804,12 +809,13 @@ namespace Bloom.Book
 //			SetFieldsValues(variables, "h1", false);
 //			SetFieldsValues(variables, "h2", false);
 
-			string title;
-			if (variables.TryGetValue("vernacularBookTitle", out title))
+			MultiTextBase title;
+			if (variables.TryGetValue("bookTitle", out title))
 			{
 				GetOrCreateElement("//html", "head");
-				GetOrCreateElement("//head", "title").InnerText = title;
-				_storage.SetBookName(title);
+				var t = title.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
+				GetOrCreateElement("//head", "title").InnerText = t;
+				_storage.SetBookName(t);
 			}
 
 		}
@@ -829,21 +835,11 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void GatherFieldValues(Dictionary<string, string> variables, string elementName, bool limitToLanguage)
+		private void GatherFieldValues(Dictionary<string, MultiTextBase> variables, string elementName)
 		{
 			try
 			{
-				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
-				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
-
-				//TODO: at the moment, I've got it saying if it has a language, it must be the vernacular.  But I suspect we need to eventually just get savvy with language-alternatives
-				string query;
-				if (limitToLanguage)
-					query = String.Format("//{0}[(@data-book or @data-library) and (not(@lang) or @lang='{1}')]", elementName, _librarySettings.VernacularIso639Code);
-				else
-				{
-					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
-				}
+				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
 
 				var nodesOfInterest = RawDom.SafeSelectNodes(query);
 
@@ -853,15 +849,27 @@ namespace Bloom.Book
 					if (key == String.Empty)
 						key = node.GetAttribute("data-library").Trim();
 
-					if (!variables.ContainsKey(key))
+					var value = node.InnerText.Trim();
+					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
-						var value = node.InnerText.Trim();
-						if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
-							variables.Add(key, value);
-					}
-					else
-					{
-						//too bad, we already havea  value for this
+						var lang = node.GetOptionalStringAttribute("lang", "*");
+						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" || node.GetOptionalStringAttribute("contenteditable", "false") == "true") && (lang == "V" || lang == "N1" || lang == "N2"))
+						{
+							throw new ApplicationException("Editable element (e.g. TextArea) should not have placeholder @lang attributes (V,N1,N2): "+_storage.FileName +"\r\n\r\n"+node.OuterXml);
+						}
+
+						//if we don't have a value for this variable and this language, add it
+						if (!variables.ContainsKey(key))
+						{
+							var t = new MultiTextBase();
+							t.SetAlternative(lang, value);
+							variables.Add(key, t);
+						}
+						else if (!variables[key].ContainsAlternative(lang))
+						{
+							var t = variables[key];
+							t.SetAlternative(lang, value);
+						}
 					}
 				}
 			}
@@ -871,20 +879,11 @@ namespace Bloom.Book
 			}
 		}
 
-		private void SetFieldsValues(Dictionary<string, string> variables, string elementName, bool limitToLanguage)
+		private void SetFieldsValues(Dictionary<string, MultiTextBase> variables, string elementName)
 		{
 			try
 			{
-				//TODO: This only are interested in element who have a (data-book OR data-library) AND are in the vernacular.
-				//we'll need to only copy within a language, but go beyond just that one language. E.g., we definitely want to use this for some national language fields
-				string query;
-				if(limitToLanguage)
-					query = String.Format("//{0}[(@data-book or @data-library) and (not(@lang) or @lang='{1}')]", elementName, _librarySettings.VernacularIso639Code);
-				else
-				{
-					query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
-				}
-
+				string query= String.Format("//{0}[(@data-book or @data-library)]", elementName);
 				var nodesOfInterest = RawDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
@@ -893,7 +892,14 @@ namespace Bloom.Book
 					if(key==String.Empty)
 						key = node.GetAttribute("data-library").Trim();
 					if(!String.IsNullOrEmpty(key) && variables.ContainsKey(key))
-						node.InnerText = variables[key];
+					{
+						var lang = node.GetOptionalStringAttribute("lang", "*");
+						if(lang=="N1")
+							lang = _librarySettings.NationalLanguage1Iso639Code;
+						if(lang=="V")
+							lang = _librarySettings.VernacularIso639Code;
+						node.InnerText = variables[key].GetExactAlternative(lang);
+					}
 					else
 					{
 						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
@@ -1022,7 +1028,7 @@ namespace Bloom.Book
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);
-			File.WriteAllText(path, template.Replace("VERNACULAR", _librarySettings.VernacularIso639Code).Replace("NATIONAL", _librarySettings.NationalLanguageIso639Code));
+			File.WriteAllText(path, template.Replace("VERNACULAR", _librarySettings.VernacularIso639Code).Replace("NATIONAL", _librarySettings.NationalLanguage1Iso639Code));
 
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.

@@ -26,9 +26,11 @@ namespace BloomTests.Book
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 		}
@@ -64,7 +66,7 @@ namespace BloomTests.Book
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
-			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'cover')]//*[@data-book='vernacularBookTitle' and @lang='xyz' and  not(contains(@class, 'hidden'))]", 1);
+			AssertThatXmlIn.File(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'cover')]//*[@data-book='bookTitle' and @lang='xyz']", 1);
 		}
 
 		//regression
@@ -80,6 +82,15 @@ namespace BloomTests.Book
 			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
 			//But that is a different set of unit tests.
 		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"A5Portrait");
+
+			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+		}
+
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
@@ -121,7 +132,7 @@ namespace BloomTests.Book
 		{
 			var library = new Moq.Mock<LibrarySettings>();
 			library.SetupGet(x => x.IsShellLibrary).Returns(true);
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 			AssertThatXmlIn.File(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
 		}
@@ -131,7 +142,7 @@ namespace BloomTests.Book
 		{
 			var library = new Moq.Mock<LibrarySettings>();
 			library.SetupGet(x => x.IsShellLibrary).Returns(false);
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 			AssertThatXmlIn.File(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
 		}
@@ -141,6 +152,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_HasEnglishTextArea_VernacularTextAreaAdded()
 		{
+			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
 						<p>
 						 <textarea lang='en'>This is some English</textarea>
@@ -192,8 +204,9 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_HasEnglishParagraph_ConvertsToVernacular()//??????????????
 		{
+			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
-						<p id='bookTitle' lang='en' data-book='vernacularBookTitle'>Book Title</p>
+						<p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
@@ -204,6 +217,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_NationalLanguageField_LeavesUntouched()
 		{
+			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page' testid='pageWithNoLanguageTags'>
 						<p>
 							<textarea lang='en' class='-bloom-showNational'>LanguageName</textarea>
@@ -227,6 +241,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
 		{
+			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
 							<p>
 								<textarea lang='en'> When you plant a garden you always make a fence.</textarea>
@@ -239,11 +254,12 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_HasVernacularBookTitleWithEnglish_HasItWithVernacular()
+		public void CreateBookOnDiskFromTemplate_HasBookTitleWithEnglish_HasItWithVernacular()
 		{
+			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
 							<p>
-								<textarea data-book='vernacularBookTitle' class='vernacularBookTitle' lang='en'>Book Name</textarea>
+								<textarea data-book='bookTitle' class='vernacularBookTitle' lang='en'>Book Name</textarea>
 							 </p>
 						</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
@@ -315,8 +331,6 @@ namespace BloomTests.Book
 			Directory.CreateDirectory(_projectFolder.Combine("My Book"));
 			Directory.CreateDirectory(_projectFolder.Combine("My Book1"));
 			Directory.CreateDirectory(_projectFolder.Combine("My Book3"));
-
-			//note: the actual folder file name here are set by the -bloom-vernacularBookTitle textarea i the a5portrait.
 
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
 																			"A5Portrait");

@@ -409,24 +409,24 @@ namespace Bloom.Book
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
 
 			using (var writer = XmlWriter.Create(tempPath, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
+			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(tempPath, "<!Doctype html>\r\n"+File.ReadAllText(tempPath));
 			return tempPath;
 		}
 
-		private string ValidateBook(string path)
+		public static string ValidateBook(string path)
 		{
-//            XmlDocument dom = new XmlDocument();
-//            dom.Load(path);
-
 			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);//with throw if there are errors
 
 			var ids = new List<string>();
-			StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 
 			Ensure(dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]").Count >0, "Must have at least one page", builder);
 			EnsureIdsAreUnique(dom, "textarea", ids, builder);
@@ -445,13 +445,13 @@ namespace Bloom.Book
 			return builder.ToString();
 		}
 
-		private void Ensure(bool passes, string message, StringBuilder builder)
+		private static void Ensure(bool passes, string message, StringBuilder builder)
 		{
 			if (!passes)
 				builder.AppendLine(message);
 		}
 
-		private void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
+		private static void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
 		{
 			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
 			{
@@ -609,7 +609,7 @@ namespace Bloom.Book
 		public string GetVernacularTitleFromHtml(string Iso639Code)
 		{
 			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
-				string.Format("//textarea[@data-book='vernacularBookTitle' and @lang='{0}']", Iso639Code));
+				string.Format("//textarea[@data-book='bookTitle' and @lang='{0}']", Iso639Code));
 			if (textWithTitle == null)
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");

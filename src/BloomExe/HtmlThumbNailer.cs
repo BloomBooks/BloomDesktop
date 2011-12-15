@@ -82,7 +82,7 @@ namespace Bloom
 
 				ConfigureBrowserForPaperSize(document);
 
-				using (var temp = TempFile.CreateHtm(document))
+				using (var temp = TempFile.CreateHtm5FromXml(document))
 				{
 					_browser.Navigate(temp.Path);
 					_browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();

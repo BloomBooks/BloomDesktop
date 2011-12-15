@@ -36,9 +36,10 @@ namespace BloomTests.Edit
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
 											});
-			_starter = new BookStarter(dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]),library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 
