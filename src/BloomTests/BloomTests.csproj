@@ -119,6 +119,7 @@
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
+    <Compile Include="FluentAssertXml.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
     <Compile Include="Book\PageTests.cs" />

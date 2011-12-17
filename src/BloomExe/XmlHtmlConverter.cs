@@ -40,6 +40,7 @@ namespace Bloom
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;
+					tidy.WrapAt = 0;// prevents textarea wrapping.
 					tidy.AddTidyMetaElement = false;
 					tidy.OutputXml = true;
 					tidy.CharacterEncoding = EncodingType.Utf8;

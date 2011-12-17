@@ -40,12 +40,10 @@ namespace Bloom.Library
 
             foreach (var root in _templateCollectionList.RepositoryFolders)
             {
-
                 if (!Directory.Exists(root))
                     continue;
 
-
-                foreach (var dir in Directory.GetDirectories(root))
+				foreach (var dir in Directory.GetDirectories(root))
                 {
 					if (Path.GetFileName(dir).StartsWith("."))//skip thinks like .idea, .hg, etc.
 						continue;

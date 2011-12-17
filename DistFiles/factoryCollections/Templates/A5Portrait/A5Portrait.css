@@ -147,7 +147,7 @@ DIV.coverBottomBookTopic
 	left: -26px;
 	top: -5px;
 }
-.cover .picture
+.cover IMG
 {
 	max-height: 12cm;
 	max-width: 13.2cm;
@@ -288,7 +288,7 @@ DIV.imageWholePage IMG
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
 in a <p> which has a fixed height.*/
-.imageOnTop P.imageHolder
+.imageOnTop P.image1
 {
 	height: 9.7cm;
 	text-align: center;

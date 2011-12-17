@@ -1,4 +1,3 @@
-/*@import url('SignalOverflow.css');*/
 BODY
 {
 	text-align: center;
@@ -22,6 +21,10 @@ TEXTAREA
 {
 	border: thin solid #C0B9B9;
 }
+TEXTAREA.versionAcknowledgments
+{
+	height: 266px;
+}
 TEXTAREA.en
 {
 	background-color: #D5D5E4;
@@ -36,4 +39,12 @@ IMG.hoverUp
 {
 	background-color: #DFDFDF;
 	border: 1px outset #000000;
+}
+TEXTAREA:focus
+{
+	border: 3px solid #A03C50;
+}
+.overflow
+{
+	background-color: #C30606 !important;
 }
