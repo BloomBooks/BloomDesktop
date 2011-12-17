@@ -43,7 +43,7 @@ namespace BloomTests.Book
 			File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='A5Portrait.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
 			storage.Save();
-			 AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
+			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
 		}
 
 		[Test]
@@ -52,8 +52,8 @@ namespace BloomTests.Book
 			File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
 			storage.Save();
-			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
-			AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
 

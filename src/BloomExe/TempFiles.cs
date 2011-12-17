@@ -157,6 +157,7 @@ namespace BloomTemp
 			settings.Indent = true;
 			settings.CheckCharacters = true;
 			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
+			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html;
 
 			using (var writer = XmlWriter.Create(temp.Path, settings))
 			{
@@ -164,7 +165,7 @@ namespace BloomTemp
 				writer.Close();
 			}
 			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, "<!Doctype html>\r\n" + File.ReadAllText(temp.Path));
+			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + File.ReadAllText(temp.Path));
 
 			return temp;
 		}

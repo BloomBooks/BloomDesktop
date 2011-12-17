@@ -246,7 +246,30 @@ namespace Bloom
 		{
 			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
 			{
-				if (string.IsNullOrEmpty(node.InnerText))
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+			foreach (XmlElement node in dom.SafeSelectNodes("//div"))
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//p")) //without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//span"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
 				{
 					node.InnerText = " ";
 				}
@@ -254,7 +277,7 @@ namespace Bloom
 
 			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
 			{
-				if (string.IsNullOrEmpty(node.InnerText))
+				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
 				{
 					node.InnerText = " ";
 				}
@@ -320,6 +343,12 @@ namespace Bloom
 					return;
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+
+				//enchance: would be better to do this in the InitScripts.js, and call a function in there.
+				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+				{
+					j.ParentNode.RemoveChild(j);
+				}
 			}
 			catch(Exception e)
 			{

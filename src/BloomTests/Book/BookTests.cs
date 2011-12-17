@@ -48,12 +48,14 @@ namespace BloomTests.Book
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
-			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(FileLocator.GetDirectoryDistributedWithApplication("factoryCollections").CombineForPath("languageDisplayTemplate.css"));
+			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
+			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates");
+			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(factoryCollections.CombineForPath("languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFile("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFile("Edit-TimeScripts.js")).Returns("../notareallocation/Edit-TimeScripts.js");
-
+			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(factoryCollections.CombineForPath("Factory-XMatter","Factory-XMatter.htm"));
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
@@ -94,7 +96,7 @@ namespace BloomTests.Book
 		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
 			var result = CreateBook().GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
-			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page')]",3);
+			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, '-bloom-page') and not(contains(@class,'-bloom-frontMatter'))]", 3);
 		}
 
 //        [Test]

@@ -101,7 +101,8 @@ namespace Bloom.Book
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
 
-			AddXMatter(storage);
+			if (!TestingSoSkipAddingXMatter)
+				AddXMatter(storage.Dom, _librarySettings, _fileLocator, storage.FolderPath);
 
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
@@ -118,27 +119,48 @@ namespace Bloom.Book
 		/// <summary>
 		/// the front and back matter (xmatter) comes from a separate html file. We ship a factor one, but orgs can supply their own.
 		/// </summary>
-		/// <param name="storage"></param>
-		private void AddXMatter(BookStorage storage)
+		/// <param name="dom"></param>
+		/// <param name="librarySettings"></param>
+		/// <param name="fileLocator"></param>
+		public static void AddXMatter(XmlDocument dom, LibrarySettings librarySettings, IFileLocator fileLocator, string bookFolderPath)
 		{
-			if (TestingSoSkipAddingXMatter)
-				return;
+			var fileName = librarySettings.NameOfXMatterTemplate + "-XMatter.htm";
+			var filePath = fileLocator.LocateFile((librarySettings.NameOfXMatterTemplate + "-XMatter").CombineForPath(fileName));
 
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(_fileLocator.LocateFile(_librarySettings.NameOfXMatterTemplate+"-XMatter.htm"));
-			XmlNode previousFronMatterPage = null;
-			foreach (XmlElement templatePage in dom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
+			//copy over whatever stylesheets we find in there
+			foreach (var file in Directory.GetFiles(Path.GetDirectoryName(filePath)))
 			{
-				var newPageDiv = storage.Dom.ImportNode(templatePage, true) as XmlElement;
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"'+_librarySettings.VernacularIso639Code+'"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + _librarySettings.VernacularIso639Code + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + _librarySettings.NationalLanguage1Iso639Code + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + _librarySettings.NationalLanguage1Iso639Code + '"');
-				if(!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))  //otherwise, styleshee will hide it
+				if(file.ToLower().EndsWith(".css"))
 				{
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + _librarySettings.NationalLanguage2Iso639Code + '"');
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + _librarySettings.NationalLanguage2Iso639Code + '"');
+					File.Copy(file, bookFolderPath.CombineForPath(Path.GetFileName(file)), true);
+
+					//TODO: what we should be doing is going through the template htm, copying those links over.
+					//TODO: for debugging the template/css purposes, it's REALLY nice if at runtime we're pointing the
+					// original.  But then later, we want to save it so that these are found in the same dir as the book.
+
+					dom.AddStyleSheet(file);
 				}
-				storage.Dom.SelectSingleNode("//body").InsertAfter(newPageDiv, previousFronMatterPage);
+			}
+			var templateDOM = XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath);
+			XmlNode previousFronMatterPage = null;
+
+
+			//REVIEW: This last part, '-bloom-dataDiv', is include just so we copy over those variables. There would be other ways to gather up that data
+			//and not even need to copy over the div itself... we'll see.
+
+			foreach (XmlElement templatePage in templateDOM.SafeSelectNodes("/html/body/div[contains(@data-page,'required') or contains(@class, '-bloom-dataDiv')]"))
+			{
+				var newPageDiv = dom.ImportNode(templatePage, true) as XmlElement;
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"'+librarySettings.VernacularIso639Code+'"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + librarySettings.VernacularIso639Code + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + librarySettings.NationalLanguage1Iso639Code + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + librarySettings.NationalLanguage1Iso639Code + '"');
+				if(!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code))  //otherwise, styleshee will hide it
+				{
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + librarySettings.NationalLanguage2Iso639Code + '"');
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + librarySettings.NationalLanguage2Iso639Code + '"');
+				}
+				dom.SelectSingleNode("//body").InsertAfter(newPageDiv, previousFronMatterPage);
 				previousFronMatterPage = newPageDiv;
 			}
 		}

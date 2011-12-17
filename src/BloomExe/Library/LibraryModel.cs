@@ -40,10 +40,8 @@ namespace Bloom.Library
 
 			foreach (var root in _templateCollectionList.RepositoryFolders)
 			{
-
 				if (!Directory.Exists(root))
 					continue;
-
 
 				foreach (var dir in Directory.GetDirectories(root))
 				{

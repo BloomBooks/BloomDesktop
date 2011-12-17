@@ -387,7 +387,7 @@ namespace Bloom.Book
 				File.Copy(tempPath, badFilePath,true);
 				//hack so we can package this for palaso reporting
 				var ex = new XmlSyntaxException(errors);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Oops. Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
@@ -417,7 +417,7 @@ namespace Bloom.Book
 				writer.Close();
 			}
 			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(tempPath, "<!Doctype html>\r\n"+File.ReadAllText(tempPath));
+			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n"+File.ReadAllText(tempPath));
 			return tempPath;
 		}
 
@@ -619,6 +619,11 @@ namespace Bloom.Book
 			if (string.IsNullOrEmpty(title))
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
+				return null;
+			}
+			if (title.StartsWith("{"))
+			{
+				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was still an unchanged template.");
 				return null;
 			}
 			return title;

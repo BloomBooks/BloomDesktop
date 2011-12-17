@@ -443,6 +443,8 @@ namespace Bloom.Book
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
 			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
+			BookStarter.AddXMatter(dom, _librarySettings, _fileLocator, _storage.FolderPath);
+
 			//todo: choose a language... right now we just get the first one.
 			string languageIsoToShow;
 
@@ -790,7 +792,9 @@ namespace Bloom.Book
 			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
+			Check();
 			GatherFieldValues(variables, "*");
+			Check();
 
 //			GatherFieldValues(variables, "span", true);
 //			GatherFieldValues(variables, "p", true);
@@ -817,7 +821,7 @@ namespace Bloom.Book
 				GetOrCreateElement("//head", "title").InnerText = t;
 				_storage.SetBookName(t);
 			}
-
+			Check();
 		}
 
 
@@ -849,7 +853,7 @@ namespace Bloom.Book
 					if (key == String.Empty)
 						key = node.GetAttribute("data-library").Trim();
 
-					var value = node.InnerText.Trim();
+					var value = node.InnerXml.Trim();//may contain formatting
 					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
 						var lang = node.GetOptionalStringAttribute("lang", "*");
@@ -881,6 +885,8 @@ namespace Bloom.Book
 
 		private void SetFieldsValues(Dictionary<string, MultiTextBase> variables, string elementName)
 		{
+			Check();
+
 			try
 			{
 				string query= String.Format("//{0}[(@data-book or @data-library)]", elementName);
@@ -893,12 +899,19 @@ namespace Bloom.Book
 						key = node.GetAttribute("data-library").Trim();
 					if(!String.IsNullOrEmpty(key) && variables.ContainsKey(key))
 					{
-						var lang = node.GetOptionalStringAttribute("lang", "*");
-						if(lang=="N1")
-							lang = _librarySettings.NationalLanguage1Iso639Code;
-						if(lang=="V")
-							lang = _librarySettings.VernacularIso639Code;
-						node.InnerText = variables[key].GetExactAlternative(lang);
+						if (node.Name.ToLower() == "img")
+						{
+							node.SetAttribute("src", variables[key].GetFirstAlternative());
+						}
+						else
+						{
+							var lang = node.GetOptionalStringAttribute("lang", "*");
+							if (lang == "N1")
+								lang = _librarySettings.NationalLanguage1Iso639Code;
+							if (lang == "V")
+								lang = _librarySettings.VernacularIso639Code;
+							node.InnerXml = variables[key].GetBestAlternativeString(new string[] {lang, "*"});//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+						}
 					}
 					else
 					{
@@ -910,6 +923,13 @@ namespace Bloom.Book
 			{
 				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" + RawDom.OuterXml, error);
 			}
+			Check();
+		}
+
+		private void Check()
+		{
+//    		XmlNode p = RawDom.SelectSingleNode("//p[@class='titleV']");
+//    		Debug.Assert(p.InnerXml.Length < 25);
 		}
 
 		/// <summary>

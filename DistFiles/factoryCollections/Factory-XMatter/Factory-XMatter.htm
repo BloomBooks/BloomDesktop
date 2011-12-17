@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Factory-default Front & Back Matter</title>
+	<link rel="stylesheet" href="../templates/A5Portrait/A5Portrait.css" type="text/css" />
+	<link rel="stylesheet" href="../templates/A5Portrait/previewMode.css" type="text/css" />
+	<link rel="stylesheet" href="../templates/A5Portrait/basePage.css" type="text/css" />
+	<link rel="stylesheet" href="xmatter.css" type="text/css" />
+</head>
+<body>
+	<!-- FRONT COVER --->
+	<div class="-bloom-page cover coverColor -bloom-frontMatter" data-page="required singleton" id="74731b2d-18b0-420f-ac96-6de20f659810">
+		<p class="centered">
+			<textarea data-book="bookTitle" data-hint="Enter the title in your language" class="vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</textarea>
+		</p>
+		<p  class="imageHolder"><img  class='picture' data-book=”coverImage” src="placeholder.png" /></p>
+
+		<div class="coverBottomLangName" >
+		   <div data-library="nameOfLanguage" lang="N1"  class="-bloom-showNational">{Lang in N1}</div>
+			<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get too copies
+			<div data-library="nameOfLanguage" lang="N2"  class="-bloom-showNational">{Lang in N2}</div> -->
+		</div>
+		<div class="coverBottomBookTopic" data-hint="Enter the kind of book this is. E.g. Health, Maths">
+			<span data-book="topic" lang="N1" class="-bloom-showNational">{Topic in N1}</span>
+			<!-- notice that this one is a div, becuase we want a line break if we're going to show it-->
+			<!-- languageDisplay.css would hide an "N2" if we only had one national lang -->
+			<div data-book="topic" lang="N2" class="-bloom-showNational">{Topic in N2}</div>
+		</div>
+	</div >
+
+	 <!-- TITLE PAGE --->
+	<div class="-bloom-page titlePage -bloom-frontMatter" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
+		<p data-book='bookTitle' class="titleV" lang="V">{Title in Vernacular}</p>
+		<div data-book="bookTitle" class="titleN1 -bloom-showNational"  lang="N1">{Title In National Language 1}</div>
+		<div data-book="bookTitle" class="titleN2 -bloom-showNational"  lang="N2">{Title In National Language 2}</div>
+
+		<textarea class="credits -bloom-showNational" lang="N1" data-hint="Enter the contributions made by writers, illustrators, editors, etc."> </textarea>
+
+		<div class="langName -bloom-showNational" lang="N1">{Lang in N1}</div>
+			<!-- notice that this one is a div, becuase we want a line break if we're going to show it-->
+			<!-- languageDisplay.css would hide an "N2" if we only had one national lang -->
+			<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get too copies
+				 <div data-library="nameOfLanguage" lang="N2" class="-bloom-showNational">{Lang in N2}</div>  -->
+		</div>
+
+	</div>
+
+	<!-- VERSO PAGE --->
+	<div class="-bloom-page verso -bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
+		<div data-book="originalAcknowledgments" lang="N1" class = "originalAcknowledgments -bloom-showNational" >{Original Acknowledgments}</div>
+		<div data-book="copyright" class="copyright -bloom-showNational" lang="N1">{Copyright Information}</div>
+		<div data-book="license" class="license -bloom-showNational" lang="N1">{License Information}</div>
+		<textarea class="versionAcknowledgments -bloom-showNational" lang="N1" data-hint="Acknowledgments for this version"></textarea>
+	</div>
+	</body>
+</html>

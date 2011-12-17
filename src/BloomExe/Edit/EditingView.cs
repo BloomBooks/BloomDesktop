@@ -102,6 +102,12 @@ namespace Bloom.Edit
 
 	   void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
+		   //TODO: this is causing green boxes when you quit while it is still working
+		   //we should change this to a proper background task, with good
+		   //cancellation in case we switch documents.  Note we may also switch
+		   //to some other way of making the thumbnails... e.g. it would be nice
+		   //to have instant placeholders, with thumbnails later.
+
 			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
 			Cursor = Cursors.WaitCursor;

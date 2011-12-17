@@ -87,15 +87,27 @@ namespace Bloom
 					_browser.Navigate(temp.Path);
 					_browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
 
-						//NB: this will always give us the size it was on the first page we navigated to,
+
+/* this served us well until we got squeaky-clean standards compliant (including, crucuially, the html5 <!DOCTYPE HTML> line. Then suddenly  ActiveElement.ScrollWidth was 0
+ *
+							//NB: this will always give us the size it was on the first page we navigated to,
 						//so that if the book size changes, our thumbnails are all wrong. I don't know
 						//how to fix it, so I'm using different browsers at the moment.
 						_browser.Height = _browser.Document.ActiveElement.ScrollHeight;
-						_browser.Width = _browser.Document.ActiveElement.ScrollWidth;
+						_browser.Width = _browser.Document.ActiveElement.ScrollWidth; //NB: 0 here at one time was traced to the html header <!DOCTYPE html> was enought to get us to 0
+*/
+
+					var div = _browser.Document.ActiveElement.GetElements("//div[contains(@class, '-bloom-page')]").First();
+					if (div == null)
+						throw new ApplicationException("thumbnails found now div with a class of -Bloom-Page");
+
+					_browser.Height = div.ScrollHeight;
+					_browser.Width = div.ScrollWidth;
+
 
 					try
 					{
-						var docImage = _browser.GetBitmap((uint)_browser.Document.ActiveElement.ScrollWidth, (uint)_browser.Document.ActiveElement.ScrollHeight);
+						var docImage = _browser.GetBitmap((uint)_browser.Width, (uint)_browser.Height);
 						//docImage.Save(@"c:\dev\temp\zzzz.bmp");
 						_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent, drawBorderDashed);
 					}
