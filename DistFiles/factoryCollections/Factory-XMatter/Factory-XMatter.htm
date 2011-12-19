@@ -31,26 +31,32 @@
 
 	 <!-- TITLE PAGE --->
 	<div class="-bloom-page titlePage -bloom-frontMatter" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
-		<p data-book='bookTitle' class="titleV" lang="V">{Title in Vernacular}</p>
-		<div data-book="bookTitle" class="titleN1 -bloom-showNational"  lang="N1">{Title In National Language 1}</div>
-		<div data-book="bookTitle" class="titleN2 -bloom-showNational"  lang="N2">{Title In National Language 2}</div>
+		<div id="titePageTitleBlock">
+			<p data-book='bookTitle' class="titleV" lang="V">{Title in Vernacular}</p>
+			<div data-book="bookTitle" class="titleN1 -bloom-showNational"  lang="N1">{Title In National Language 1}</div>
+			<div data-book="bookTitle" class="titleN2 -bloom-showNational"  lang="N2">{Title In National Language 2}</div>
+		</div>
 
 		<textarea class="credits -bloom-showNational" lang="N1" data-hint="Enter the contributions made by writers, illustrators, editors, etc."> </textarea>
 
-		<div data-library="nameOfLanguage" class="langName -bloom-showNational" lang="N1">{Lang in N1}</div>
-			<!-- notice that this one is a div, becuase we want a line break if we're going to show it-->
-			<!-- languageDisplay.css would hide an "N2" if we only had one national lang -->
-			<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get too copies
-				 <div data-library="nameOfLanguage" lang="N2" class="-bloom-showNational">{Lang in N2}</div>  -->
+		<div id="languageInformation">
+			<div data-library="nameOfLanguage" lang="N1" class="langName -bloom-showNational">{Lang in N1}</div>
+			<div data-library="nameOfLanguage" lang="N2" class="-bloom-showNational">{Lang in N2}</div>
+			<span data-library="dialect" class="dialect -bloom-showNational" lang="N1">{Dialect N1}</span>
+			<br />
+			<div id="languageLocation">
+				<span data-library="district" class="district -bloom-showNational" lang="N1">{District N1}</span>,  <span data-library="province" class="province -bloom-showNational" lang="N1">{Province N1}</span>
+			</div>
 		</div>
-
 	</div>
 
 	<!-- VERSO PAGE --->
 	<div class="-bloom-page verso -bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
 		<div data-book="originalAcknowledgments" lang="N1" class = "originalAcknowledgments -bloom-showNational" >{Original Acknowledgments}</div>
-		<div data-book="copyright" class="copyright -bloom-showNational" lang="N1">{Copyright Information}</div>
-		<div data-book="license" class="license -bloom-showNational" lang="N1">{License Information}</div>
+		<div id="versoLicenseAndCopyright">
+			<div data-book="copyright" class="copyright -bloom-showNational" lang="N1">{Copyright Information}</div>
+			<div data-book="license" class="license -bloom-showNational" lang="N1">{License Information}</div>
+		</div>
 		<textarea class="versionAcknowledgments -bloom-showNational" lang="N1" data-hint="Acknowledgments for this version"></textarea>
 	</div>
 	</body>

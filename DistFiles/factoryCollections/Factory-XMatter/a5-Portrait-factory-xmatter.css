@@ -1,148 +1,164 @@
-/* Cover Page */
-
-.cover .vernacularBookTitle {
-font-size:30pt;
-height:3.7cm;
-left:-26px;
-margin-left:2cm;
-margin-top:1.5cm;
-position:relative;
-text-align:center;
-top:-5px;
-width:423px;
+/*Cover Page*/
+.cover .vernacularBookTitle
+{
+	font-size: 30pt;
+	height: 3.7cm;
+	left: -26px;
+	margin-left: 2cm;
+	margin-top: 1.5cm;
+	position: relative;
+	text-align: center;
+	top: -5px;
+	width: 423px;
 }
-
-.cover IMG {
-max-height:12cm;
-max-width:13.2cm;
+.cover IMG
+{
+	max-height: 12cm;
+	max-width: 13.2cm;
 }
-
-.cover P.imageHolder {
-height:12cm;
-text-align:center;
+.cover P.imageHolder
+{
+	height: 12cm;
+	text-align: center;
 }
-
-
-DIV.coverBottomBookTopic {
-bottom:43px;
-left:9cm;
-overflow:hidden;
-position:absolute;
-text-align:right;
-width:192px;
+DIV.coverBottomBookTopic
+{
+	bottom: 43px;
+	left: 9cm;
+	overflow: hidden;
+	position: absolute;
+	text-align: right;
+	width: 192px;
 }
-
-DIV.coverBottomLangName {
-bottom:20px;
-height:56px;
-left:0.7cm;
-overflow:hidden;
-position:absolute;
-text-align:left;
-width:5.9cm;
+DIV.coverBottomLangName
+{
+	bottom: 20px;
+	height: 56px;
+	left: 0.7cm;
+	overflow: hidden;
+	position: absolute;
+	text-align: left;
+	width: 5.9cm;
 }
-
-
-/* Title Page */
-
-.titlePage {
-margin:0;
-padding:0;
-text-align:center;
+/*Title Page*/
+.titlePage
+{
+	margin: 0;
+	padding: 0;
+	text-align: center;
 }
-
-.titlePage .credits {
-height:5cm;
-margin-left:1cm;
-text-align:center;
+DIV#languageLocation
+{
+	/*+placement:shift 0px 31px;*/
+	position: relative;
+	left: 0px;
+	top: 31px;
 }
-
-
-.titlePage DIV.langName {
-display:block;
-left:8px;
-margin-left:36px;
-position:relative;
-text-align:center;
-top:304px;
-width:486px;
+.titlePage .credits
+{
+	height: 5cm;
+	margin-left: 1cm;
+	text-align: center;
 }
-
-.titlePage DIV.titleN1 {
-display:block;
-font-size:14pt;
-left:21px;
-margin-left:20px;
-position:relative;
-text-align:center;
-top:10px;
-width:495px;
+DIV.titlePage DIV#languageInformation
+{
+	/*+placement:shift 1px 129px;*/
+	position: relative;
+	left: 1px;
+	top: 129px;
+	width: 508px;
+	margin-left: 18px;
 }
-
-.titlePage TEXTAREA.credits {
-margin-left:60px;
-width:432px;
+.titlePage DIV.titleN1
+{
+	display: block;
+	font-size: 14pt;
+	left: 21px;
+	position: relative;
+	text-align: center;
+	top: 10px;
 }
-
-
-.titlePage:after {
-bottom:0.2cm;
-left:33px;
-position:absolute;
+.titlePage DIV.titleN2
+{
+	display: block;
+	font-size: 14pt;
+	left: 21px;
+	margin-left: 20px;
+	position: relative;
+	text-align: center;
+	top: 10px;
+	/*+placement:shift 22px 22px;*/
+	position: relative;
+	left: 22px;
+	top: 22px;
 }
-
-
-DIV.titlePage .titleV {
-font-size:26.1pt;
-height:113px;
-margin-bottom:0;
-margin-right:34px;
-margin-top:59px;
-text-align:center;
+.titlePage TEXTAREA.credits
+{
+	margin-left: 60px;
+	width: 432px;
 }
-
-/* Verso Page */
-
-DIV.verso {
-border:4px solid #1E15D0;
-text-align:center;
+.titlePage:after
+{
+	bottom: 0.2cm;
+	left: 33px;
+	position: absolute;
 }
-
-DIV.verso TEXTAREA.-bloom-showNational {
-height:141px;
-left:16px;
-position:absolute;
-top:516px;
+DIV.titlePage .titleV
+{
+	font-size: 26.1pt;
+	height: 113px;
+	text-align: center;
 }
-
-DIV.license {
-left:111px;
-position:absolute;
-top:386px;
+DIV#titePageTitleBlock
+{
+	margin-left: 48px;
+	margin-right: 7px;
+	margin-top: 48px;
+	width: 447px;
 }
-
-DIV.originalAcknowledgments {
-height:82px;
-left:133px;
-position:absolute;
-top:51px;
-width:299px;
+/*Verso Page*/
+DIV.verso
+{
+	border: 4px solid #1E15D0;
+	text-align: center;
 }
-
-TEXTAREA.credits {
-left:-12px;
-position:relative;
-top:56px;
+TEXTAREA.versionAcknowledgments
+{
+	/*+placement:shift -13px 111px;*/
+	position: relative;
+	left: -13px;
+	top: 111px;
+	height: 247px;
 }
-
-.verso TEXTAREA {
-margin-left:52px;
-text-align:center;
+DIV.license
+{
 }
-
-
-DIV.copyright {
-left:25px;
-position:relative;
-top:341px;
+DIV#versoLicenseAndCopyright
+{
+	/*+placement:shift -30px 54px;*/
+	position: relative;
+	left: -30px;
+	top: 54px;
+	margin-left: 57px;
+}
+DIV.originalAcknowledgments
+{
+	height: 268px;
+	width: 454px;
+	margin-left: 55px;
+	margin-top: 43px;
+}
+TEXTAREA.credits
+{
+	left: -12px;
+	position: relative;
+	top: 56px;
+}
+.verso TEXTAREA
+{
+	margin-left: 52px;
+	text-align: center;
+}
+DIV.copyright
+{
 }
