@@ -46,7 +46,6 @@ namespace Bloom.Book
 
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
-		private Dictionary<string, MultiTextBase> _variables;
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
@@ -434,7 +433,6 @@ namespace Bloom.Book
 
 		public string Id { get; set; }
 
-
 		public XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
 			if (!_storage.LooksOk)
@@ -443,36 +441,22 @@ namespace Bloom.Book
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
 
-
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				BookStarter.AddXMatter(dom, _librarySettings, _fileLocator, _storage.FolderPath, false);
 				//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-				//TODO: we don't want it to get all confusing, showing this translator's name  in there, this vernacular in there, etc.
-				var variables = new Dictionary<string, MultiTextBase>();
+				var data = new DataSet();
 				var lang = new MultiTextBase();
-				lang.SetAlternative("*", "(Your Language Name)");
-					//we don't wan to make it confusing by putting in the actual langauge name
-				variables.Add("nameOfLanguage", lang);
-				//			var code = new MultiTextBase();
-				//			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
-				//			variables.Add("iso639Code", code);
-				GatherFieldValues(variables, "*", dom);
-				SetFieldsValues(variables, "*", dom);
-			}
+				lang.SetAlternative("*", "(Your Language Name)");		//we don't wan to make it confusing by putting in the actual langauge name
+				data.TextVariables.Add("nameOfLanguage", lang);
+				data.WritingSystemCodes.Add("V", _librarySettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
+				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
+				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 
-			//todo: choose a language... right now we just get the first one.
-			string languageIsoToShow;
-
-			if (Type == BookType.Shell || Type== BookType.Template)
-			{
-				languageIsoToShow= GetTheLanguagesUsedInTextAreasOfDom(dom).FirstOrDefault();
+				var helper = new XMatterHelper(dom,_librarySettings.NameOfXMatterTemplate, _fileLocator);
+				helper.InjectXMatter( data);
+				GatherFieldValues(data, "*", dom);
+				SetFieldsValues(data, "*", dom);
 			}
-			else
-			{
-				languageIsoToShow = _librarySettings.VernacularIso639Code;
-			}
-			//BookStorage.HideAllTextAreasThatShouldNotShow(dom, languageIsoToShow, null);
 
 			AddCoverColor(dom, CoverColor);
 			return dom;
@@ -796,24 +780,25 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateFieldsAndVariables()
 		{
-			_variables = new Dictionary<string, MultiTextBase>();
+			var data = new DataSet();
 			var lang = new MultiTextBase();
 			lang.SetAlternative("*", _librarySettings.LanguageName);
-			_variables.Add("nameOfLanguage", lang);
+			data.TextVariables.Add("nameOfLanguage", lang);
 			var code = new MultiTextBase();
 			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
-			_variables.Add("iso639Code", code);
-			//variables.Add("vernacularBookTitle", );
+			data.TextVariables.Add("iso639Code", code);
+			data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
+			data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
+			data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 
-			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
+			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-
-			GatherFieldValues(_variables, "*", RawDom);
-			SetFieldsValues(_variables,"*", RawDom);
+			GatherFieldValues(data, "*", RawDom);
+			SetFieldsValues(data, "*", RawDom);
 
 			MultiTextBase title;
-			if (_variables.TryGetValue("bookTitle", out title))
+			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
 				GetOrCreateElement("//html", "head");
 				var t = title.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
@@ -838,7 +823,7 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void GatherFieldValues(Dictionary<string, MultiTextBase> variables, string elementName, XmlDocument dom)
+		private void GatherFieldValues(DataSet data, string elementName, XmlDocument dom)
 		{
 			try
 			{
@@ -862,15 +847,15 @@ namespace Bloom.Book
 						}
 
 						//if we don't have a value for this variable and this language, add it
-						if (!variables.ContainsKey(key))
+						if (!data.TextVariables.ContainsKey(key))
 						{
 							var t = new MultiTextBase();
 							t.SetAlternative(lang, value);
-							variables.Add(key, t);
+							data.TextVariables.Add(key, t);
 						}
-						else if (!variables[key].ContainsAlternative(lang))
+						else if (!data.TextVariables[key].ContainsAlternative(lang))
 						{
-							var t = variables[key];
+							var t = data.TextVariables[key];
 							t.SetAlternative(lang, value);
 						}
 					}
@@ -882,7 +867,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void SetFieldsValues(Dictionary<string, MultiTextBase> variables, string elementName, XmlDocument dom)
+		private void SetFieldsValues(DataSet data, string elementName, XmlDocument dom)
 		{
 			Check();
 
@@ -896,20 +881,18 @@ namespace Bloom.Book
 					var key = node.GetAttribute("data-book").Trim();
 					if(key==String.Empty)
 						key = node.GetAttribute("data-library").Trim();
-					if(!String.IsNullOrEmpty(key) && variables.ContainsKey(key))
+					if(!String.IsNullOrEmpty(key) && data.TextVariables.ContainsKey(key))
 					{
 						if (node.Name.ToLower() == "img")
 						{
-							node.SetAttribute("src", variables[key].GetFirstAlternative());
+							node.SetAttribute("src", data.TextVariables[key].GetFirstAlternative());
 						}
 						else
 						{
 							var lang = node.GetOptionalStringAttribute("lang", "*");
-							if (lang == "N1")
-								lang = _librarySettings.NationalLanguage1Iso639Code;
-							if (lang == "V")
-								lang = _librarySettings.VernacularIso639Code;
-							node.InnerXml = variables[key].GetBestAlternativeString(new string[] {lang, "*"});//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+							if (lang == "N1" || lang == "N2" || lang == "V")
+								lang = data.WritingSystemCodes[lang];
+							node.InnerXml = data.TextVariables[key].GetBestAlternativeString(new string[] { lang, "*" });//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 						}
 					}
 					else
@@ -1006,27 +989,7 @@ namespace Bloom.Book
 			return _storage.PathToExistingHtml;
 		}
 
-		public string GetPageSizeName()
-		{
-			var css =  BookStorage.GetPaperStyleSheetName(_storage.Dom);
-			int i = css.ToLower().IndexOf("portrait");
-			if(i > 0)
-			{
-				return css.Substring(0, i).ToUpperFirstLetter();
-			}
-			i = css.ToLower().IndexOf("landscape");
-			if (i > 0)
-			{
-				return css.Substring(0, i).ToUpperFirstLetter();
-			}
-			throw new ApplicationException("Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
-		}
 
-		public bool GetIsLandscape()
-		{
-			var css = BookStorage.GetPaperStyleSheetName(_storage.Dom);
-			return css.ToLower().Contains("landscape");
-		}
 
 		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
 		{

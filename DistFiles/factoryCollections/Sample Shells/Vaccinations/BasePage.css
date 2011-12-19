@@ -48,6 +48,10 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
+DIV.-bloom-dataDiv
+{
+	display: none;
+}
 TEXTAREA
 {
 	resize: none;

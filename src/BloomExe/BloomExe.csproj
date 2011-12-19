@@ -97,8 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
+    <Compile Include="Book\SizeAndOrientation.cs" />
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />
+    <Compile Include="Book\DataSet.cs" />
+    <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Edit\ConfigurationDialog.cs">
       <SubType>Form</SubType>
     </Compile>

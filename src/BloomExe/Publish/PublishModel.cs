@@ -91,7 +91,8 @@ namespace Bloom.Publish
 						dom.WriteContentTo(writer);
 						writer.Close();
 					}
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, _bookSelection.CurrentSelection.GetPageSizeName(), _bookSelection.CurrentSelection.GetIsLandscape(),  _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion);
+					var sizeAndOrientation = SizeAndOrientation.FromDom(_bookSelection.CurrentSelection.RawDom);
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape, _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion);
 				}
 			}
 			catch (Exception e)

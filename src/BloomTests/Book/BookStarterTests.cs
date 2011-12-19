@@ -27,7 +27,8 @@ namespace BloomTests.Book
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Factory-XMatter")
 											});
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 
