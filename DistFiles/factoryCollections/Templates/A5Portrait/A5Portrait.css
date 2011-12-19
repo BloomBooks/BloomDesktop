@@ -45,11 +45,7 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-.titlePage TEXTAREA.credits
-{
-	margin-left: 60px;
-	width: 432px;
-}
+
 DIV.-bloom-page
 {
 /*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
@@ -73,23 +69,6 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
-.titlePage DIV.langName
-{
-	width: 219px;
-	/*+placement:shift 158px 139px;*/
-	position: relative;
-	left: 158px;
-	top: 139px;
-	text-align: center;
-}
-DIV.titlePage .titleV
-{
-	font-size: 30pt;
-	text-align: center;
-	margin-bottom: 0px;
-	margin-top: 59px;
-	height: 113px;
-}
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
@@ -97,129 +76,13 @@ TEXTAREA
 	font-size: 14pt;
 	width: 11.9cm;
 }
-.titlePage TEXTAREA.titleN1
-{
-	text-align: center;
-	font-size: 20pt;
-	margin-left: 70px;
-	height: 98px;
-}
-.titlePage TEXTAREA.titleN2
-{
-	text-align: center;
-	font-size: 20pt;
-	font-style: italic;
-	margin-left: 70px;
-}
-DIV.coverBottomBookTopic
-{
-	/*+placement:anchor-bottom-left 9cm 43px;*/
-	position: absolute;
-	left: 9cm;
-	bottom: 43px;
-	overflow: hidden;
-	text-align: right;
-	width: 192px;
-}
-.simpleBigVersoContents
-{
-	height: 18.1cm;
-	/*+placement:shift 0px 61px;*/
-	position: relative;
-	left: 0px;
-	top: 61px;
-}
+
 .imageOnTop TEXTAREA
 {
 	height: 7.7cm;
 	margin-top: 26px;
 }
-.cover .vernacularBookTitle
-{
-	height: 3.7cm;
-	width: 423px;
-	font-size: 30pt;
-	text-align: center;
-	margin-top: 1.5cm;
-	margin-left: 2cm;
-	/*+placement:shift -26px -5px;*/
-	position: relative;
-	left: -26px;
-	top: -5px;
-}
-.cover IMG
-{
-	max-height: 12cm;
-	max-width: 13.2cm;
-}
-/*e.g. "Health" or "Math"*/
-.verso TEXTAREA.originalAcknowledgments
-{
-	margin-top: 57px;
-	height: 197px;
-}
-.verso TEXTAREA
-{
-	margin-left: 52px;
-	text-align: center;
-}
-DIV.coverBottomLangName
-{
-	text-align: left;
-	/*+placement:anchor-bottom-left 0.7cm 36px;*/
-	position: absolute;
-	left: 0.7cm;
-	bottom: 36px;
-	width: 5.9cm;
-	overflow: hidden;
-	height: 56px;
-}
-/*e.g. "Health" or "Math"*/
-.titlePage .vernacularBookTitle
-{
-	top: 1cm;
-	height: 4.4cm;
-	text-align: center;
-	font-size: 25pt;
-}
-.titlePage .creditsHeading
-{
-	padding-top: 35px;
-}
-.titlePage .credits
-{
-	height: 5cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .shellCredits
-{
-	top: 1.5cm;
-	height: 5cm;
-	width: 12cm;
-	margin-left: 1cm;
-	position: relative;
-	text-align: center;
-}
-.titlePage .printingHistory
-{
-	height: 7.5cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .nameOfLanguage
-{
-	margin-top: 0.1cm;
-	text-align: center;
-}
-/*the content is set in the preview.css. Here, we just position it*/
-.titlePage:after
-{
-	/*+placement:anchor-bottom-left 33px 0.2cm;*/
-	position: absolute;
-	left: 33px;
-	bottom: 0.2cm;
-}
+
 .imageOnTop .picture
 {
 	max-height: 9.7cm;
@@ -280,11 +143,7 @@ DIV.imageWholePage IMG
 {
 	height: 9cm;
 }
-.cover P.imageHolder
-{
-	height: 12cm;
-	text-align: center;
-}
+
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
 in a <p> which has a fixed height.*/

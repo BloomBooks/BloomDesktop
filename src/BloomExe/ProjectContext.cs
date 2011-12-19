@@ -102,7 +102,8 @@ namespace Bloom
 		{
 			yield return FactoryCollectionsDirectory;
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
-			
+			yield return FactoryCollectionsDirectory.CombineForPath("Factory-XMatter");
+
 			yield return templatesDir;  //currently, this is where factory-xmatter.htm lives
 
 			foreach (var templateDir in Directory.GetDirectories(templatesDir))

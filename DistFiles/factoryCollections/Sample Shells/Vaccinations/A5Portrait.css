@@ -73,15 +73,6 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
-.titlePage DIV.langName
-{
-	width: 219px;
-	/*+placement:shift 158px 139px;*/
-	position: relative;
-	left: 158px;
-	top: 139px;
-	text-align: center;
-}
 DIV.titlePage .titleV
 {
 	font-size: 30pt;
