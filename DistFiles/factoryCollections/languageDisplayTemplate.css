@@ -6,7 +6,12 @@ textarea:not([lang="VERNACULAR"])
 	display:none;
 }
 
+DIV[lang="NATIONAL"][class~="-bloom-showNational"]
+{
+	display: block; /* for div's, "normal" is block */
+}
+
 *[lang="NATIONAL"][class~="-bloom-showNational"]
 {
-	display: inline;
+	display: inline; /* for textarea's "normal" is inline
 }

@@ -603,49 +603,6 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void GetPageSizeName_USLetter()
-		{
-			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html ><head>
-									<link rel='stylesheet' href='LeTtErPortrait.css' type='text/css' />
-									</head><body></body></html>");
-			var book = CreateBook();
-			Assert.AreEqual("Letter", book.GetPageSizeName());
-		}
-
-
-		[Test]
-		public void GetPageSizeName_A5LANDSCAPE()
-		{
-			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html ><head>
-									<link rel='stylesheet' href='a5LANDSCAPE.css' type='text/css' />
-									</head><body></body></html>");
-			var book = CreateBook();
-			Assert.AreEqual("A5", book.GetPageSizeName());
-		}
-
-		[Test]
-		public void GetIsLandscape_portraitCSS_false()
-		{
-			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html ><head>
-									<link rel='stylesheet' href='a5Portrait.css' type='text/css' />
-									</head><body></body></html>");
-			var book = CreateBook();
-			Assert.IsFalse(book.GetIsLandscape());
-		}
-		[Test]
-		public void GetIsLandscape_landscapeCSS_true()
-		{
-			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html ><head>
-									<link rel='stylesheet' href='a5LAndSCAPE.css' type='text/css' />
-									</head><body></body></html>");
-			var book = CreateBook();
-			Assert.IsTrue(book.GetIsLandscape());
-		}
-		[Test]
 		public void GetDefaultBookletLayout_NotSpecified_Fold()
 		{
 			_documentDom = new XmlDocument();
