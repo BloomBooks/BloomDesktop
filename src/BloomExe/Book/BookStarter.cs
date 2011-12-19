@@ -102,7 +102,7 @@ namespace Bloom.Book
 			}
 
 			if (!TestingSoSkipAddingXMatter)
-				AddXMatter(storage.Dom, _librarySettings, _fileLocator, storage.FolderPath);
+				AddXMatter(storage.Dom, _librarySettings, _fileLocator, storage.FolderPath,true);
 
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
@@ -122,7 +122,7 @@ namespace Bloom.Book
 		/// <param name="dom"></param>
 		/// <param name="librarySettings"></param>
 		/// <param name="fileLocator"></param>
-		public static void AddXMatter(XmlDocument dom, LibrarySettings librarySettings, IFileLocator fileLocator, string bookFolderPath)
+		public static void AddXMatter(XmlDocument dom, LibrarySettings librarySettings, IFileLocator fileLocator, string bookFolderPath, bool copyInStylesheets)
 		{
 			var fileName = librarySettings.NameOfXMatterTemplate + "-XMatter.htm";
 			var filePath = fileLocator.LocateFile((librarySettings.NameOfXMatterTemplate + "-XMatter").CombineForPath(fileName));
@@ -132,25 +132,29 @@ namespace Bloom.Book
 			{
 				if(file.ToLower().EndsWith(".css"))
 				{
-					File.Copy(file, bookFolderPath.CombineForPath(Path.GetFileName(file)), true);
+					//don't want to pollute shells with this content
+					if (copyInStylesheets)
+						File.Copy(file, bookFolderPath.CombineForPath(Path.GetFileName(file)), true);
 
 					//TODO: what we should be doing is going through the template htm, copying those links over.
-					//TODO: for debugging the template/css purposes, it's REALLY nice if at runtime we're pointing the
-					// original.  But then later, we want to save it so that these are found in the same dir as the book.
+					//note for debugging the template/css purposes, it's REALLY nice if at runtime we're pointing the
+					// original.
+					//TODO:But then later, we want to save it so that these are found in the same dir as the book.
 
 					dom.AddStyleSheet(file);
 				}
 			}
-			var templateDOM = XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath);
-			XmlNode previousFronMatterPage = null;
+			var frontMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath);
+			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
+			XmlNode divBeforeNextFrontMattterPage = dom.SelectSingleNode("//body/div[contains(@class,'-bloom-dataDiv')]");
 
 
 			//REVIEW: This last part, '-bloom-dataDiv', is include just so we copy over those variables. There would be other ways to gather up that data
 			//and not even need to copy over the div itself... we'll see.
 
-			foreach (XmlElement templatePage in templateDOM.SafeSelectNodes("/html/body/div[contains(@data-page,'required') or contains(@class, '-bloom-dataDiv')]"))
+			foreach (XmlElement frontMatterPage in frontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
-				var newPageDiv = dom.ImportNode(templatePage, true) as XmlElement;
+				var newPageDiv = dom.ImportNode(frontMatterPage, true) as XmlElement;
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"'+librarySettings.VernacularIso639Code+'"');
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + librarySettings.VernacularIso639Code + '"');
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + librarySettings.NationalLanguage1Iso639Code + '"');
@@ -160,8 +164,8 @@ namespace Bloom.Book
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + librarySettings.NationalLanguage2Iso639Code + '"');
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + librarySettings.NationalLanguage2Iso639Code + '"');
 				}
-				dom.SelectSingleNode("//body").InsertAfter(newPageDiv, previousFronMatterPage);
-				previousFronMatterPage = newPageDiv;
+				dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
+				divBeforeNextFrontMattterPage = newPageDiv;
 			}
 		}
 

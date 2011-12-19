@@ -46,6 +46,7 @@ namespace Bloom.Book
 
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
+		private Dictionary<string, MultiTextBase> _variables;
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
@@ -441,9 +442,24 @@ namespace Bloom.Book
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
-			//dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 
-			BookStarter.AddXMatter(dom, _librarySettings, _fileLocator, _storage.FolderPath);
+
+			if (Type == BookType.Shell || Type == BookType.Template)
+			{
+				BookStarter.AddXMatter(dom, _librarySettings, _fileLocator, _storage.FolderPath, false);
+				//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
+				//TODO: we don't want it to get all confusing, showing this translator's name  in there, this vernacular in there, etc.
+				var variables = new Dictionary<string, MultiTextBase>();
+				var lang = new MultiTextBase();
+				lang.SetAlternative("*", "(Your Language Name)");
+					//we don't wan to make it confusing by putting in the actual langauge name
+				variables.Add("nameOfLanguage", lang);
+				//			var code = new MultiTextBase();
+				//			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
+				//			variables.Add("iso639Code", code);
+				GatherFieldValues(variables, "*", dom);
+				SetFieldsValues(variables, "*", dom);
+			}
 
 			//todo: choose a language... right now we just get the first one.
 			string languageIsoToShow;
@@ -780,41 +796,24 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateFieldsAndVariables()
 		{
-			var variables = new Dictionary<string, MultiTextBase>();
+			_variables = new Dictionary<string, MultiTextBase>();
 			var lang = new MultiTextBase();
 			lang.SetAlternative("*", _librarySettings.LanguageName);
-			variables.Add("nameOfLanguage", lang);
+			_variables.Add("nameOfLanguage", lang);
 			var code = new MultiTextBase();
 			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
-			variables.Add("iso639Code", code);
+			_variables.Add("iso639Code", code);
 			//variables.Add("vernacularBookTitle", );
 
 			// The first encountered one wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			Check();
-			GatherFieldValues(variables, "*");
-			Check();
 
-//			GatherFieldValues(variables, "span", true);
-//			GatherFieldValues(variables, "p", true);
-//			GatherFieldValues(variables, "h1", true);
-//			GatherFieldValues(variables, "h2", true);
-//			GatherFieldValues(variables, "div", true);
-//			GatherFieldValues(variables, "textarea", true);
-
-
-			SetFieldsValues(variables,"*");
-			//REVIEW and then document use of this limitToLanguage parameter
-//			SetFieldsValues(variables, "textarea", true);
-//            SetFieldsValues(variables, "p", false);
-//            SetFieldsValues(variables, "span", false);
-//			SetFieldsValues(variables, "div", false);
-//			SetFieldsValues(variables, "h1", false);
-//			SetFieldsValues(variables, "h2", false);
+			GatherFieldValues(_variables, "*", RawDom);
+			SetFieldsValues(_variables,"*", RawDom);
 
 			MultiTextBase title;
-			if (variables.TryGetValue("bookTitle", out title))
+			if (_variables.TryGetValue("bookTitle", out title))
 			{
 				GetOrCreateElement("//html", "head");
 				var t = title.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
@@ -839,13 +838,13 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void GatherFieldValues(Dictionary<string, MultiTextBase> variables, string elementName)
+		private void GatherFieldValues(Dictionary<string, MultiTextBase> variables, string elementName, XmlDocument dom)
 		{
 			try
 			{
 				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
 
-				var nodesOfInterest = RawDom.SafeSelectNodes(query);
+				var nodesOfInterest = dom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
@@ -883,14 +882,14 @@ namespace Bloom.Book
 			}
 		}
 
-		private void SetFieldsValues(Dictionary<string, MultiTextBase> variables, string elementName)
+		private void SetFieldsValues(Dictionary<string, MultiTextBase> variables, string elementName, XmlDocument dom)
 		{
 			Check();
 
 			try
 			{
 				string query= String.Format("//{0}[(@data-book or @data-library)]", elementName);
-				var nodesOfInterest = RawDom.SafeSelectNodes(query);
+				var nodesOfInterest = dom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
@@ -921,7 +920,7 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" + RawDom.OuterXml, error);
+				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" + dom.OuterXml, error);
 			}
 			Check();
 		}

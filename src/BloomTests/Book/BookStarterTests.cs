@@ -82,6 +82,43 @@ namespace BloomTests.Book
 			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
 			//But that is a different set of unit tests.
 		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
+		{
+			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'-bloom-dataDiv')]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasTitlePage()
+		{
+			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'titlePage')]", 1);
+		}
+
+		[Test, Ignore("Current architecture gives responsibility for updating to Book, so can't be tested here.")]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectImageOnCover()
+		{
+			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'cover')]//img[@src='HL0014-1.png']", 1);
+		}
+
+		[Test, Ignore("Current architecture gives spreads this responsibility for updating to Book, so can't be tested here.")]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
+		{
+			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'cover')]//*[@data-book='topic' and text()='Health']", 1);
+		}
+
+
+		private string GetNewVaccinationsBookPath()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+			return path;
+		}
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
