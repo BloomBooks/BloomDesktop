@@ -22,7 +22,7 @@ namespace BloomTests.Book
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-				BookStorageFactory, null,null, new CreateFromTemplateCommand());
+				BookStorageFactory, null,null, new CreateFromTemplateCommand(), new EditBookCommand());
 		}
 
 		 Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
