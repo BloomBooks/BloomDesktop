@@ -158,31 +158,14 @@ namespace Bloom
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
-			_browser.GotFocus += new EventHandler(_browser_GotFocus);
 
 			_updateCommandsTimer.Enabled = true;//hack
 			RaiseGeckoReady();
 	   }
 
-		void _browser_GotFocus(object sender, EventArgs e)
-		{
-
-		}
-
 		void _browser_DocumentCompleted(object sender, EventArgs e)
 		{
-		  _browser.Focus();
-		  //_setInitialFocusTimer.Enabled = true;
-		  var textareas = _browser.Document.GetElementsByTagName("textarea");
-		  if (textareas.Count > 0)
-		  {
-//              textareas[0].Focus();//doesn't work
 
-		/* will work in geckofx 2
-		 *  var area = (textareas[0].DomObject as nsIDOMHTMLTextAreaElement);
-			  area.focus();
-		 */
-		  }
 		}
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
@@ -196,7 +179,6 @@ namespace Bloom
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
 			Debug.WriteLine("Navigating " + e.Uri);
-			//e.Cancel = true;
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -409,19 +391,6 @@ namespace Bloom
 		public void Copy()
 		{
 			_browser.CopySelection();
-		}
-
-		private void _setInitialFocusTimer_Tick(object sender, EventArgs e)
-		{
-			if (_browser.Focused )
-			{
-				_setInitialFocusTimer.Enabled = false;
-				var textareas = _browser.Document.GetElementsByTagName("textarea");
-				if (textareas.Count > 0)
-				{
-					textareas[0].Focus();//doesn't work
-				}
-			}
 		}
 
 		/// <summary>
