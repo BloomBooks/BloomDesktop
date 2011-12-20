@@ -24,18 +24,21 @@ namespace Bloom.Book
     	private readonly BookStorage.Factory _storageFactory;
     	private readonly BookStarter.Factory _bookStarterFactory;
         private readonly BookSelection _bookSelection;
+    	private readonly EditBookCommand _editBookCommand;
 
-        public BookCollection(string path, CollectionType collectionType, 
+    	public BookCollection(string path, CollectionType collectionType, 
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
 			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
-			CreateFromTemplateCommand createFromTemplateCommand)
+			CreateFromTemplateCommand createFromTemplateCommand,
+			  EditBookCommand editBookCommand)
         {
             _path = path;
             _bookFactory = bookFactory;
         	_storageFactory = storageFactory;
     		_bookStarterFactory = bookStarterFactory;
     	    _bookSelection = bookSelection;
-    	    Type = collectionType;
+        	_editBookCommand = editBookCommand;
+        	Type = collectionType;
 
 			//we only pay attention if we are the editable collection 'round here.
 			if (collectionType == CollectionType.TheOneEditableCollection)
@@ -72,7 +75,11 @@ namespace Bloom.Book
             }
 			//enhance: would be nice to know if this is a new shell
 			if(templateBook.IsShellOrTemplate)
-			UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
+			{
+				UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
+			}
+			//go straight into editing
+			_editBookCommand.Raise(newBook);
         }
 
         private void NotifyCollectionChanged()

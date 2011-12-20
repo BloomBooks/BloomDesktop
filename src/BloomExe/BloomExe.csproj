@@ -336,7 +336,7 @@
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
-    <Compile Include="XmlUtilities.cs" />
+    <Compile Include="ToPalaso\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />

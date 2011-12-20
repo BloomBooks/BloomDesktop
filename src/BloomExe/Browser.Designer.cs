@@ -30,7 +30,6 @@
 			// _setInitialFocusTimer
 			// 
 			this._setInitialFocusTimer.Interval = 500;
-			this._setInitialFocusTimer.Tick += new System.EventHandler(this._setInitialFocusTimer_Tick);
 			// 
 			// Browser
 			// 
