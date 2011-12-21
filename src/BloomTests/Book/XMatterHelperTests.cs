@@ -32,7 +32,7 @@ namespace BloomTests.Book
 		private XMatterHelper CreateHelper()
 		{
 			var factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
-			var factoryXMatter = factoryCollections.CombineForPath("Factory-XMatter");
+			var factoryXMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter","Factory-XMatter");
 			return new XMatterHelper(_dom, "Factory", new FileLocator(new string[] { factoryXMatter }));
 		}
 
