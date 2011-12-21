@@ -1,0 +1,31 @@
+LI
+{
+	border: 3px solid #000000;
+	margin-top: 20px;
+	background-color: #FFFFFF;
+	float: left;
+	margin-right: 5px;
+}
+CANVAS
+{
+	image-rendering: -moz-crisp-edges;
+}
+BODY
+{
+	background-color: #312F2F;
+	margin: -29px;
+}
+UL
+{
+	list-style: none;
+	padding-bottom: 92px;
+}
+UL .ui-selected
+{
+	border: 3px solid #F39814;
+}
+LI.test
+{
+	width: 100px;
+	height: 100px;
+}
