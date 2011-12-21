@@ -19,7 +19,7 @@ namespace BloomTests.Book
 		public void Setup()
 		{
 			_folder  =new TemporaryFolder("BookCollectionTests");
-			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
 				BookStorageFactory, null,null, new CreateFromTemplateCommand(), new EditBookCommand());

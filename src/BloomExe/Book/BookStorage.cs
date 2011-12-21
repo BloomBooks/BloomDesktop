@@ -615,7 +615,11 @@ namespace Bloom.Book
 			{
 				name = name.Replace(c, ' ');
 			}
-			return name.Trim();
+			name = name.Trim();
+			const int MAX = 50;//arbitrary
+			if(name.Length >MAX)
+				return name.Substring(0, MAX);
+			return name;
 		}
 
 		/// <summary>

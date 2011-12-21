@@ -100,9 +100,12 @@ namespace Bloom
 		}
 		private static IEnumerable<string> GetFileLocations()
 		{
+			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			yield return FactoryCollectionsDirectory;
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
-			yield return FactoryCollectionsDirectory.CombineForPath("Factory-XMatter");
+
 
 			yield return templatesDir;  //currently, this is where factory-xmatter.htm lives
 

@@ -38,7 +38,8 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Factory-XMatter")
+												FileLocator.GetDirectoryDistributedWithApplication( "root"),
+												FileLocator.GetDirectoryDistributedWithApplication( "xMatter","Factory-XMatter")
 											});
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");

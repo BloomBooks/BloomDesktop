@@ -224,7 +224,7 @@ namespace Bloom.Book
 		{
 			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
 		   // AddJavascriptFile(dom, head, _fileLocator.LocateFile("jquery-1.4.4.min.js"));
-			AddJavascriptFile(dom, head, _fileLocator.LocateFile("Edit-TimeScripts.js"));
+			AddJavascriptFile(dom, head, _fileLocator.LocateFile("bloomBootstrap.js"));
 		}
 
 		private void AddJavascriptFile(XmlDocument dom, XmlElement node, string pathToJavascript)

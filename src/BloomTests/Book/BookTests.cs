@@ -48,14 +48,16 @@ namespace BloomTests.Book
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
+			string root = FileLocator.GetDirectoryDistributedWithApplication("root");
+			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates");
-			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(factoryCollections.CombineForPath("languageDisplayTemplate.css"));
+			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(root.CombineForPath("languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFile("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
-			_fileLocator.Setup(x => x.LocateFile("Edit-TimeScripts.js")).Returns("../notareallocation/Edit-TimeScripts.js");
-			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(factoryCollections.CombineForPath("Factory-XMatter","Factory-XMatter.htm"));
+			_fileLocator.Setup(x => x.LocateFile("Edit-TimeScripts.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
