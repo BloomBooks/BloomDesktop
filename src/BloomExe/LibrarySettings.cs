@@ -15,10 +15,11 @@ namespace Bloom
 	{
 		#region Persisted roperties
 
-		public string VernacularIso639Code { get; set; }
-		public string NationalLanguage1Iso639Code { get; set; }
-		public string NationalLanguage2Iso639Code { get; set; }
-		public string LanguageName { get; set; }
+		//these are virtual for the sake of the unit test mock framework
+		public virtual string VernacularIso639Code { get; set; }
+		public virtual string NationalLanguage1Iso639Code { get; set; }
+		public virtual string NationalLanguage2Iso639Code { get; set; }
+		public virtual string LanguageName { get; set; }
 		public virtual bool IsShellLibrary { get; set; }
 
 		#endregion

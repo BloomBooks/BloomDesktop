@@ -34,11 +34,13 @@ P.pagefooter
 }
 INPUT
 {
-	border: none;
+	border: transparent;
 }
 TEXTAREA
 {
-	border: none;
+	/* we have javascript function which notices this border and makes it read-only
+	  (which isn't a style, so we can't set it ourselves */
+	border: transparent;
 }
 
 DIV.-bloom-page

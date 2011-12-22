@@ -21,11 +21,11 @@
 			<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get too copies
 			<div data-library="nameOfLanguage" lang="N2"  class="-bloom-showNational">{Lang in N2}</div> -->
 		</div>
-		<div class="coverBottomBookTopic" data-hint="Enter the kind of book this is. E.g. Health, Maths">
-			<span data-book="topic" lang="N1" class="-bloom-showNational">{Topic in N1}</span>
-			<!-- notice that this one is a div, becuase we want a line break if we're going to show it-->
+		<div class="coverBottomBookTopic">
+			<!-- NB: don't be tempted to move the data-hint up to the div. If you do, it will be visible even when the user isn't allowed to edit it. Down on the textarea, jscript will scipt it when it's readonly -->
+			<textarea data-book="topic" lang="N1" data-hint="Enter the kind of book this is. E.g. Health, Maths" class="readOnlyInTranslationMode -bloom-showNational">{Topic in N1}</textarea>
 			<!-- languageDisplay.css would hide an "N2" if we only had one national lang -->
-			<div data-book="topic" lang="N2" class="-bloom-showNational">{Topic in N2}</div>
+			<textarea data-book="topic" lang="N2" class="readOnlyInTranslationMode -bloom-showNational">{Topic in N2}</textarea>
 		</div>
 	</div >
 
@@ -33,8 +33,8 @@
 	<div class="-bloom-page titlePage -bloom-frontMatter" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
 		<div id="titePageTitleBlock">
 			<p data-book='bookTitle' class="titleV" lang="V">{Title in Vernacular}</p>
-			<div data-book="bookTitle" class="titleN1 -bloom-showNational"  lang="N1">{Title In National Language 1}</div>
-			<div data-book="bookTitle" class="titleN2 -bloom-showNational"  lang="N2">{Title In National Language 2}</div>
+			<textarea data-book="bookTitle" class="titleN1 readOnlyInTranslationMode -bloom-showNational"  lang="N1">{Title In National Language 1}</textarea>
+			<textarea data-book="bookTitle" class="titleN2 readOnlyInTranslationMode -bloom-showNational"  lang="N2">{Title In National Language 2}</textarea>
 		</div>
 
 		<textarea class="credits -bloom-showNational" lang="N1" data-hint="Enter the contributions made by writers, illustrators, editors, etc."> </textarea>
@@ -42,22 +42,23 @@
 		<div id="languageInformation">
 			<div data-library="nameOfLanguage" lang="N1" class="langName -bloom-showNational">{Lang in N1}</div>
 			<div data-library="nameOfLanguage" lang="N2" class="-bloom-showNational">{Lang in N2}</div>
-			<span data-library="dialect" class="dialect -bloom-showNational" lang="N1">{Dialect N1}</span>
+			<span data-library="dialect" data-hint="dialect (optional)" class="dialect -bloom-showNational" lang="N1">{Dialect N1}</span>
 			<br />
 			<div id="languageLocation">
-				<span data-library="district" class="district -bloom-showNational" lang="N1">{District N1}</span>,  <span data-library="province" class="province -bloom-showNational" lang="N1">{Province N1}</span>
+				<textarea data-library="district" class="district -bloom-showNational" title="District" lang="N1">{District N1}</textarea>,  <textarea data-library="province" title="province" class="province -bloom-showNational" lang="N1">{Province N1}</textarea>
 			</div>
 		</div>
 	</div>
 
 	<!-- VERSO PAGE --->
 	<div class="-bloom-page verso -bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
-		<div data-book="originalAcknowledgments" lang="N1" class = "originalAcknowledgments -bloom-showNational" >{Original Acknowledgments}</div>
+		<textarea data-book="originalAcknowledgments" lang="N1" class = "originalAcknowledgments -bloom-showNational" >{Original Acknowledgments}</textarea>
 		<div id="versoLicenseAndCopyright">
-			<div data-book="copyright" class="copyright -bloom-showNational" lang="N1">{Copyright Information}</div>
-			<div data-book="license" class="license -bloom-showNational" lang="N1">{License Information}</div>
+			<textarea data-book="copyright" class="copyright readOnlyInTranslationMode -bloom-showNational" lang="N1">{Copyright Information}</textarea>
+			<textarea data-book="license" class="license readOnlyInTranslationMode -bloom-showNational" lang="N1">{License Information}</textarea>
 		</div>
-		<textarea class="versionAcknowledgments -bloom-showNational" lang="N1" data-hint="Acknowledgments for this version"></textarea>
+		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
+		<textarea class="versionAcknowledgments readOnlyInEditMode -bloom-showNational" lang="N1" data-hint="Acknowledgments for translated version"></textarea>
 	</div>
 	</body>
 </html>

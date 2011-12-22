@@ -71,7 +71,7 @@ namespace Bloom.Book
 			//editable items, because there are no elements in our language.
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
-				BookStarter.MakeVernacularElementsForPage(div,_librarySettings.VernacularIso639Code);
+				BookStarter.PrepareElementsOnPage(div, _librarySettings.VernacularIso639Code);//, this.LockedExceptForTranslation);
 			}
 
 			if (IsInEditableLibrary)
@@ -215,6 +215,14 @@ namespace Bloom.Book
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
+			if(LockedExceptForTranslation)
+			{
+				dom.AddStyleSheet(_fileLocator.LocateFile(@"editTranslationMode.css"));
+			}
+			else
+			{
+				dom.AddStyleSheet(_fileLocator.LocateFile(@"editOriginalMode.css"));
+			}
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			return dom;
@@ -556,7 +564,7 @@ namespace Bloom.Book
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
 
-				TEXTAREA.coverColor	{		background-color: #colorValue;	}
+				DIV.coverColor * TEXTAREA	{		background-color: #colorValue;	}
 				DIV.-bloom-page.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
@@ -632,7 +640,7 @@ namespace Bloom.Book
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
-			BookStarter.SetupPage(newPageDiv, _librarySettings.VernacularIso639Code);
+			BookStarter.SetupPage(newPageDiv, _librarySettings.VernacularIso639Code);//, LockedExceptForTranslation);
 			ClearEditableValues(newPageDiv);
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 

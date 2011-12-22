@@ -95,6 +95,13 @@ namespace Bloom.Book
 				}
 				_dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
+
+				foreach (XmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
+				{
+					//REVIEW: might this nuke xml in there? If so, try to select the text node ( /text() ) and then remove it and add back an empty one: node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+					e.InnerText = "";
+				}
+
 			}
 		}
 	}

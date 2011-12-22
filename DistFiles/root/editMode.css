@@ -1,7 +1,16 @@
+/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.
+There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
 	text-align: center;
 	background-color: #363333;
+}
+DIV.ui-tooltip-title
+{
+	text-align: justify;
+	margin-left: -9px;
+	margin-bottom: -19px;
+	margin-top: -8px;
 }
 DIV.page
 {
@@ -47,4 +56,24 @@ TEXTAREA:focus
 .overflow
 {
 	background-color: #C30606 !important;
+}
+/*for use with qtip, showing what language each textarea is in
+.ui-tooltip-bloomLang
+{
+}
+.ui-tooltip-bloomLang .ui-tooltip-titlebar
+{
+background-color: red;
+color: #FFFFFF;
+border: 0 dashed transparent;
+}*/
+.fieldInfo-qtip .ui-tooltip-content
+{
+	border: 0 solid #A03C50;
+	padding: 0px;
+	text-align: right;
+	color: #363333;
+	font-size: 8pt;
+	//margin-top: -8px;
+	margin-right: 8px;
 }

@@ -48,9 +48,11 @@ Core qTip styles*/
 	min-height: 14px;
 	padding: 5px 35px 5px 10px;
 	overflow: hidden;
-	border: 1px solid #000001;
+	border: 1px solid transparent;
 	border-width: 1px 1px 0;
 	font-weight: bold;
+	color: gray;
+	text-align: right;
 }
 .ui-tooltip-titlebar + .ui-tooltip-content
 {
@@ -88,7 +90,7 @@ Core qTip styles*/
 {
 	width: 18px;
 	height: 14px;
-	text-align: center;
+	text-align: left;
 	text-indent: 0;
 	font: normal bold 10px/13px Tahoma, sans-serif;
 	color: inherit;

@@ -55,8 +55,10 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(root.CombineForPath("languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFile("editMode.css")).Returns("../notareallocation/editMode.css");
+			_fileLocator.Setup(x => x.LocateFile("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
+			_fileLocator.Setup(x => x.LocateFile("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
 			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
-			_fileLocator.Setup(x => x.LocateFile("Edit-TimeScripts.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFile("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });

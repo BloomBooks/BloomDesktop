@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -105,6 +107,8 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
+				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.VernacularIso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.NationalLanguage1Iso639Code));
 				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
 				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
@@ -141,15 +145,18 @@ namespace Bloom.Book
 			//tag in shell-making libraries.
 			if(_isShellLibrary)
 				n.SetAttribute("content", "translationOnly");
-			else
-			{
-				n.SetAttribute("content", "open");
-			}
+
+			//otherwise, stick with whatever it came in with.  All shells will come in with translationOnly,
+			//all templates will come in with 'open'.
+//			else
+//			{
+//				n.SetAttribute("content", "open");
+//			}
 		}
 
-		public static void SetupPage(XmlElement pageDiv, string isoCode)
+		public static void SetupPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
 		{
-			MakeVernacularElementsForPage(pageDiv, isoCode);
+			PrepareElementsOnPage(pageDiv, isoCode);//, inShellMode);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -185,10 +192,11 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// For each group of textareas in the div which have lang attributes, make a new text area
-		/// with the lang code of the vernacular
+		/// with the lang code of the vernacular.
+		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="pageDiv"></param>
-		public static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
+		public static void PrepareElementsOnPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
 		{
 			foreach (var element in GetTextGroupsInSinglePageDiv(pageDiv, isoCode))
 			{
@@ -203,46 +211,27 @@ namespace Bloom.Book
 			{
 				textarea.SetAttribute("lang", isoCode);
 			}
+
+//			foreach (XmlElement e in pageDiv.SafeSelectNodes("//*[contains(@class,'-bloom-editableWhenNotShell')]"))
+//			{
+//				//NB: turning this on/off via style sheet would nice, but it's not possible.  The alternative would be jscript
+//				e.SetAttribute("contenteditable", inShellMode ? "false" : "true");
+//			}
 		}
 
-		private static void MakeVernacularElementForOneGroup(XmlElement groupElement, string isoCode, string elementName)
+		/// <summary>
+		/// For each group (meaning they have a common parent) of editable items, we
+		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
+		/// </summary>
+		private static void MakeVernacularElementForOneGroup(XmlElement groupElement, string vernacularCode, string elementTag)
 		{
-			//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
-			//for the vernacular
-			//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
-
-//            string nonParagraphElementSelector = "/" + elementName;
-
-			/* we aren't fishing for something underneath the paragraph level,
-			 * we're actuallylooking for simple paragraphs that are in a
-			 * language (e.g. they'd be non-editable areas where we're repeating
-			 * the value of some variable you can edit elsewhere)
-			 */
-//            if (elementName.ToLower() == "p")
-//                nonParagraphElementSelector = "";
-
-			//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
-//            XmlNodeList editableElementsWithinTheIndicatedParagraph =
-//                pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//p[@id='{1}']" + nonParagraphElementSelector,
-//                                                      pageDiv.GetAttribute("id"), groupId));
-
-			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementName);
+			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
 
 			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
 				return;
 
-//            if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-//            {
-//                //hack, which should only bear fruit when we're being called with a single page during template page insertion
-//
-//                editableElementsWithinTheIndicatedParagraph = pageDiv.SafeSelectNodes(string.Format("//p[@id='{0}']"+nonParagraphElementSelector, groupId));
-//			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-//				return;
-//
-//              }
-
 			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
-									  where x.GetAttribute("lang") == isoCode
+									  where x.GetAttribute("lang") == vernacularCode
 									  select x;
 			if (alreadyInVernacular.Count() > 0)
 				return;
@@ -252,19 +241,20 @@ namespace Bloom.Book
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
-			//no... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
+
+			//REVIEW... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
+
 			if (prototype.HasAttribute("lang"))
 			{
-				if (elementName == "p") // don't leave copies around from the template language
+				if (elementTag == "p") // don't leave copies around from the template language
 				{
-					prototype.SetAttribute("lang", isoCode);
+					prototype.SetAttribute("lang", vernacularCode);
 				}
 				else // for textareas, we *do* want copies around, because they are used for prompting in shellbooks
 				{
 					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-					vernacularCopy.SetAttribute("lang",isoCode);
-					//we don't need textarea ids.   //vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
-					//but we should make sure if there is an id, get rid of it, because we don't want 2 elements with the same id
+					vernacularCopy.SetAttribute("lang",vernacularCode);
+					//if there is an id, get rid of it, because we don't want 2 elements with the same id
 					vernacularCopy.RemoveAttribute("id");
 
 					vernacularCopy.InnerText = string.Empty;

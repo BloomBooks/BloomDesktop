@@ -37,6 +37,10 @@ jQuery(document).ready(function () {
 
     //put hint bubbles next to elements which call for them
     $("*[data-hint]").each(function () {
+        if($(this).css('border-bottom-color') == 'transparent')
+        {
+            return; //don't put tips if they can't edit it. That's just confusing
+        }
         var whatToSay = $(this).data("hint");
         $(this).qtip({
             content: whatToSay,
@@ -71,6 +75,59 @@ jQuery(document).ready(function () {
         });
     });
 
+    $.fn.hasAttr = function(name) {
+        var attr = $(this).attr(name);
+
+        // For some browsers, `attr` is undefined; for others,
+        // `attr` is false.  Check for both.
+        return (typeof attr !== 'undefined' && attr !== false);
+    };
+
+    //Show data on fields
+           $("*[data-book], *[data-library], *[lang]").each(function () {
+               var data=" ";
+              if($(this).hasAttr("data-book")) {
+                  data = $(this).attr("data-book");
+              }
+              if($(this).hasAttr("data-library")) {
+                  data = $(this).attr("data-library") ;
+              }
+              $(this).qtipSecondary({
+                  content: { text:  $(this).attr("lang") + "<br>"+ data},//, title: { text:  $(this).attr("lang")}},
+
+                  position:  {
+                      my: 'top right',
+                      at: 'top left'
+                  },
+//                  show: {
+//                                  event: false, // Don't specify a show event...
+//                                  ready: true // ... but show the tooltip when ready
+//                              },
+//                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
+                  style: {'default': false,
+                      tip: {corner: false, border:false},
+                      classes: 'fieldInfo-qtip'
+                  }
+              });
+          });
+
+    cleanup = function(){
+        // remove the div's which qtip makes for the tips themselves
+        $("div.qtip").each(function() {
+         */
+            $(this).remove($this);
+        })
+        // remove the attributes qtips adds to the things being annotated
+        $("*[aria-describedby").each(function() {
+            $(this).removeAttr("aria-describedby");
+        })
+//        $("*").each(function() {
+//            $(this).removeAttr("aria-live");
+//            $(this).removeAttr("aria-atomic");
+//            $(this).removeAttr("aria-describedby");
+//            $(this).removeAttr("aria-hidden");
+//        })
+    }
 
     //make images look click-able when you cover over them
     jQuery("img").hover(function () {
@@ -79,8 +136,21 @@ jQuery(document).ready(function () {
         $(this).removeClass('hoverUp')
     });
 
-
     //focus on the first editable field
     $(':input:enabled:visible:first').focus();
+
+    // Bloom needs to make some field readonly. E.g., the original license when the user is translating a shellbook
+    // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
+    // an attribute, so it can't be included in css.
+    // The solution here is to add the readonly attribute when we detect that their border has gone transparent.
+    $('textarea').focus(function() {
+        if($(this).css('border-bottom-color') == 'transparent'){
+                    $(this).attr("readonly", "readonly");
+                }
+                else{
+                    $(this).removeAttr("readonly");
+                }
+    });
+
 
 });

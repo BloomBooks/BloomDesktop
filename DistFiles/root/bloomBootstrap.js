@@ -5,6 +5,7 @@ var dir = path.split('/').slice(0, -1).join('/') + '/';  // remove last filename
 document.write('<script type="text/javascript" src="' + dir + 'jquery.js"></script>');//nb: we just rename whatever version of jquery we have to this.
 
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.qtip.js"></script>');
+document.write('<script type="text/javascript" src="' +dir+ 'jquery.qtipSecondary.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + dir + 'jquery.qtip.css"></script>');
 
 document.write('<script type="text/javascript" src="' + dir + 'bloomEditing.js"></script>');
