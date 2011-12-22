@@ -6,6 +6,12 @@ textarea:not([lang="VERNACULAR"])
 	display:none;
 }
 
+
+TEXTAREA[lang="NATIONAL"][class~="-bloom-showNational"]
+{
+	display: inline; /* for textarea's "normal" is inline*/
+}
+
 /* REVIEW: when would we not show a non-textarea? All that is coming to mind at the moment is if we don't have that language (e.g. N2) defined, or don't have a value to show (e.g. district or sub-district) */
 
 DIV[lang="NATIONAL"][class~="-bloom-showNational"]
@@ -13,7 +19,13 @@ DIV[lang="NATIONAL"][class~="-bloom-showNational"]
 	display: block; /* for div's, "normal" is block */
 }
 
-*[lang="NATIONAL"][class~="-bloom-showNational"]
+
+P[lang="NATIONAL"][class~="-bloom-showNational"]
 {
-	display: inline; /* for textarea's "normal" is inline
+	display: inline; /* for textarea's "normal" is inline*/
+}
+
+SPAN[lang="NATIONAL"][class~="-bloom-showNational"]
+{
+	display: inline; /* for textarea's "normal" is inline*/
 }

@@ -25,6 +25,7 @@ namespace Bloom.Book
     	private readonly BookStarter.Factory _bookStarterFactory;
         private readonly BookSelection _bookSelection;
     	private readonly EditBookCommand _editBookCommand;
+    	private readonly LibrarySettings _librarySettings;
 
     	public BookCollection(string path, CollectionType collectionType, 
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
@@ -38,7 +39,7 @@ namespace Bloom.Book
     		_bookStarterFactory = bookStarterFactory;
     	    _bookSelection = bookSelection;
         	_editBookCommand = editBookCommand;
-        	Type = collectionType;
+    		Type = collectionType;
 
 			//we only pay attention if we are the editable collection 'round here.
 			if (collectionType == CollectionType.TheOneEditableCollection)
@@ -51,6 +52,7 @@ namespace Bloom.Book
 
         private void CreateFromTemplate(Book templateBook)
         {
+			//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
             var starter = _bookStarterFactory();
             var newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
 
