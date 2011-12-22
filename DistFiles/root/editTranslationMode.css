@@ -1,0 +1,7 @@
+/* This styesheet is applied when an shell book being translated into the vernacular. It locks down fields type of book, the copyright, and license */
+
+
+textarea.readOnlyInTranslationMode
+{
+		border: transparent; //we have javascript which notices this border and makes it read-only
+}

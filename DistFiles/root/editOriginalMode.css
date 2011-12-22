@@ -1,0 +1,10 @@
+/* This styesheet is applied when an book is being edited. It does things like allow you to set the type of book, the copyright, license, etc. */
+
+
+/* this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in */
+textarea.readOnlyInEditMode
+{
+	/* we have javascript function which notices this border and makes it read-only
+	(which isn't a style, so we can't set it ourselves */
+		border: transparent;
+}
