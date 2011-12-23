@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using BloomTemp;
+using Palaso.Xml;
 using TidyManaged;
 
 
@@ -91,6 +92,54 @@ namespace Bloom
 					{
 						throw new ApplicationException(errors);
 					}
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// If an element has empty contents, like <textarea></textarea>, browsers will sometimes drop the end tag, so that now, when we read it back into xml,
+		/// anything following the <textarea> will be interpreted as part of the <textarea>!  This method makes sure such tags are never totally empty.
+		/// </summary>
+		/// <param name="dom"></param>
+		public static void MakeXmlishTagsSafeForInterpretationAsHtml(XmlDocument dom)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+			foreach (XmlElement node in dom.SafeSelectNodes("//div"))
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//p")) //without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//span"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+				{
+					node.InnerText = " ";
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+				{
+					node.InnerText = " ";
 				}
 			}
 		}

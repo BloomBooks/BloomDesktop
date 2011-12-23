@@ -209,7 +209,7 @@ namespace Bloom
 			//application/xhtml+xml
 			_pageDom = dom;
 			//now done in InitScript.js AddJavaScriptForEditing(_pageDom);
-			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
@@ -224,47 +224,7 @@ namespace Bloom
 			_tempHtmlFile = tempFile;
 		}
 
-		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
-		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				if (!node.HasChildNodes)
-				{
-					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
-				}
-			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//div"))
-			{
-				if (!node.HasChildNodes)
-				{
-					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
-				}
-			}
 
-			foreach (XmlElement node in dom.SafeSelectNodes("//p")) //without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
-			{
-				if (!node.HasChildNodes)
-				{
-					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
-				}
-			}
-
-			foreach (XmlElement node in dom.SafeSelectNodes("//span"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
-				{
-					node.InnerText = " ";
-				}
-			}
-
-			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
-				{
-					node.InnerText = " ";
-				}
-			}
-		}
 
 		private void UpdateDisplay()
 		{
