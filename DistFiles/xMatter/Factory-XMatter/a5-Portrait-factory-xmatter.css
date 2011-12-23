@@ -83,19 +83,16 @@ DIV.titlePage DIV#languageInformation
 	top: 6px;
 	width: 420px;
 }
-.titlePage DIV.titleN2
+.titlePage TEXTAREA.titleN2
 {
-	display: block;
 	font-size: 14pt;
 	left: 21px;
-	margin-left: 20px;
-	position: relative;
 	text-align: center;
-	top: 10px;
-	/*+placement:shift 22px 22px;*/
+	/*+placement:shift 20px 22px;*/
 	position: relative;
-	left: 22px;
+	left: 20px;
 	top: 22px;
+	width: 421px;
 }
 .titlePage:after
 {
@@ -148,6 +145,13 @@ DIV#versoLicenseAndCopyright
 	margin-left: 57px;
 }
 TEXTAREA.originalAcknowledgments
+{
+	height: 268px;
+	width: 454px;
+	margin-left: 55px;
+	margin-top: 43px;
+}
+DIV.originalAcknowledgments
 {
 	height: 268px;
 	width: 454px;

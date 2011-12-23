@@ -31,7 +31,6 @@ namespace BloomTests.Book
 		}
 		private XMatterHelper CreateHelper()
 		{
-			var factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			var factoryXMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter","Factory-XMatter");
 			return new XMatterHelper(_dom, "Factory", new FileLocator(new string[] { factoryXMatter }));
 		}
@@ -59,6 +58,25 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'verso')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][@id='firstPage']", 1);
 		}
+
+
+//		TODO: at the moment, we'd have to creat a whole xmatter folder
+		/// <summary>
+//		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
+//		/// But for now, this gives us the behavior we want on the title page
+//		/// </summary>
+//		[Test]
+//		public void CreateBookOnDiskFromTemplate_HasParagraphMarkedV_ConvertsToVernacular()//??????????????
+//		{
+//			_starter.TestingSoSkipAddingXMatter = true;
+//			var body = @"<div class='-bloom-page'>
+//                        <p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
+//                    </div>";
+//			string sourceTemplateFolder = GetShellBookFolder(body);
+//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
+//		}
+
 
 		//TODO: tests with a different paper size
 

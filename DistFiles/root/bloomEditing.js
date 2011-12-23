@@ -45,20 +45,22 @@ jQuery(document).ready(function () {
         {
             return; //don't put tips if they can't see it.
         }
+        theClasses='ui-tooltip-shadow ui-tooltip-plain';
+        pos =  {        at: 'right center',
+                        my: 'left center'
+               };
+
         var whatToSay = $(this).data("hint");
         $(this).qtip({
             content: whatToSay,
-            position: {
-                at: 'right center',
-                my: 'left center'
-            },
+            position: pos,
             show: {
                 event: false, // Don't specify a show event...
                 ready: true // ... but show the tooltip when ready
             },
             hide: false,
             style: {
-                classes: 'ui-tooltip-shadow ui-tooltip-plain'
+                classes: theClasses
             },
             //the following is to limit how much stuff qtip leaves in our DOM
             //since we actually save the dom, we dont' want this stuff
@@ -156,5 +158,15 @@ jQuery(document).ready(function () {
                 }
     });
 
+    //Same thing for divs which are potentially editable.
+    // editTranslationMode.css is responsible for making this transparent, but it can't reach the contentEditable attribute.
+    $('div.readOnlyInTranslationMode').focus(function() {
+        if($(this).css('border-bottom-color') == 'transparent'){
+                    $(this).removeAttr("contentEditable");
+                }
+        else{
+            $(this).attr("contentEditable", "true");
+        }
+    });
 
 });

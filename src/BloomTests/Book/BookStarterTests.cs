@@ -212,7 +212,7 @@ namespace BloomTests.Book
 		{
 			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
-						<p>
+						<p class='-bloom-translationGroup'>
 						 <textarea lang='en'>This is some English</textarea>
 						</p>
 					</div>";
@@ -241,44 +241,14 @@ namespace BloomTests.Book
 //            AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi' and contains(@class,'hideMe')]", 1);
 //        }
 
-		[Test]
-		public void CreateBookOnDiskFromTemplate_ExistingEnglishHasHideClass_NewVernacularHasNoClass()
-		{
-			var body = @"<div class='-bloom-page'>
-<p>
-						<textarea lang='en'>blah</textarea>
-</p>
-					</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz' and not(@class)]", 1);
-		}
 
-
-		/// <summary>
-		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
-		/// But for now, this gives us the behavior we want on the title page
-		/// </summary>
 		[Test]
-		public void CreateBookOnDiskFromTemplate_HasEnglishParagraph_ConvertsToVernacular()//??????????????
+		public void CreateBookOnDiskFromTemplate_NoTranslationGroupClass_LeavesUntouched()
 		{
 			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
-						<p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
-					</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
-		}
-
-
-		[Test]
-		public void CreateBookOnDiskFromTemplate_NationalLanguageField_LeavesUntouched()
-		{
-			_starter.TestingSoSkipAddingXMatter = true;
-			var body = @"<div class='-bloom-page' testid='pageWithNoLanguageTags'>
 						<p>
-							<textarea lang='en' class='-bloom-showNational'>LanguageName</textarea>
+							<textarea lang='en'>LanguageName</textarea>
 						</p>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body);
@@ -300,8 +270,8 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
 		{
 			_starter.TestingSoSkipAddingXMatter = true;
-			var body = @"<div class='-bloom-page'>
-							<p>
+			var body = @"<div class='-bloom-page '>
+							<p class='-bloom-translationGroup'>
 								<textarea lang='en'> When you plant a garden you always make a fence.</textarea>
 								<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 							</p>
@@ -316,7 +286,7 @@ namespace BloomTests.Book
 		{
 			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='-bloom-page'>
-							<p>
+							<p class='-bloom-translationGroup'>
 								<textarea data-book='bookTitle' class='vernacularBookTitle' lang='en'>Book Name</textarea>
 							 </p>
 						</div>";
@@ -415,18 +385,18 @@ namespace BloomTests.Book
 						_extra_
 					</div>
 					<div class='-bloom-page' testid='pageWithNoLanguageTags'>
-						<p>
+						<p class='-bloom-translationGroup'>
 							<textarea>Text of a simple template</textarea>
 						</p>
 					</div>
 					<div class='-bloom-page' testid='pageAlreadyHasVernacular'>
-						 <p>
+						 <p class='-bloom-translationGroup'>
 							<textarea lang='en'>This is some English</textarea>
 							<textarea lang='xyz'>original</textarea>
 						</p>
 					</div>
 					<div class='-bloom-page' testid='pageWithJustTokPisin'>
-						 <p>
+						 <p class='-bloom-translationGroup'>
 							<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
 					</div>");

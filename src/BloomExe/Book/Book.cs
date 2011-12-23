@@ -495,8 +495,8 @@ namespace Bloom.Book
 		{
 			get
 			{
-				//review
-				var x = _storage.Dom.SafeSelectNodes(String.Format("//textarea[@lang and @lang!='{0}' and not(contains(@class,'-bloom-showNational'))]", _librarySettings.VernacularIso639Code));
+				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
+				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'-bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _librarySettings.VernacularIso639Code));
 				return x.Count > 0;
 			}
 

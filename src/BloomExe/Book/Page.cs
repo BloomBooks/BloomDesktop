@@ -61,7 +61,7 @@ namespace Bloom.Book
 
 		public bool CanRelocate
 		{
-			//review: for now, we're conflating "-bloom-required" with "can't move"
+			//review: for now, we're conflating "required" with "can't move"
 			get { return !Required; }
 		}
 

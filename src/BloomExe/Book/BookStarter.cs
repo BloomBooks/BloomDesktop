@@ -211,12 +211,6 @@ namespace Bloom.Book
 			{
 				textarea.SetAttribute("lang", isoCode);
 			}
-
-//			foreach (XmlElement e in pageDiv.SafeSelectNodes("//*[contains(@class,'-bloom-editableWhenNotShell')]"))
-//			{
-//				//NB: turning this on/off via style sheet would nice, but it's not possible.  The alternative would be jscript
-//				e.SetAttribute("contenteditable", inShellMode ? "false" : "true");
-//			}
 		}
 
 		/// <summary>
@@ -237,7 +231,8 @@ namespace Bloom.Book
 				return;
 			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-			if (ContainsClass(editableElementsWithinTheIndicatedParagraph[0], "-bloom-showNational"))
+			//if (!ContainsClass(groupElement, "-bloom-translationGroup"))
+			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'-bloom-translationGroup')]").Count == 0)
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;

@@ -114,32 +114,6 @@ namespace BloomTests.Book
 //            Assert.IsTrue(gotEvent);
 //        }
 
-		/// <summary>
-		/// What we're testing here is that boxes that are supposed to show in the national language
-		/// are saved when changed.
-		/// </summary>
-		[Test]
-		public void SavePage_ChangeMadeToTexAreaWhichIsLabelledShowNational_StorageUpdatedAndToldToSave()
-		{
-			SetDom(@"<div class='-bloom-page' id='guid2'>
-						<p>
-							<textarea lang='en' id='testsNeedIds' class='-bloom-showNational'>one</textarea>
-						</p>
-					</div>
-			");
-
-			var book = CreateBook();
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textArea = dom.SelectSingleNodeHonoringDefaultNS("//textarea");
-			Assert.AreEqual("one", textArea.InnerText, "the test conditions aren't correct");
-			textArea.InnerText = "two";
-			book.SavePage(dom);
-			var textAreaInStorageDom = _storage.Object.Dom.SelectSingleNodeHonoringDefaultNS("//textarea");
-
-			Assert.AreEqual("two", textAreaInStorageDom.InnerText,
-							"the value didn't get copied to  the storage dom");
-			_storage.Verify(s => s.Save(), Times.Once());
-		}
 
 
 //		//regression

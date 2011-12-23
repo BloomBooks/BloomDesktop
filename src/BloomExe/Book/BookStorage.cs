@@ -498,41 +498,6 @@ namespace Bloom.Book
 			return didDelete;
 		}
 
-
-//        public void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector)
-//        {
-//            HideAllTextAreasThatShouldNotShow(Dom, vernacularIso639Code,optionalPageSelector);
-//        }
-
-
-//        public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string iso639CodeToKeepShowing, string optionalPageSelector)
-//        {
-//            if (optionalPageSelector == null)
-//                optionalPageSelector = string.Empty;
-//
-//            foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
-//            {
-//                string cssClass = storageNode.GetAttribute("class");
-//                if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"-bloom-showNational"))
-//                {
-//                    cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
-//                }
-//                else if (!ContainsClass(storageNode, Book.ClassOfHiddenElements))
-//                {
-//                    cssClass += (" " + Book.ClassOfHiddenElements);
-//                }
-//                cssClass = cssClass.Trim();
-//                if (string.IsNullOrEmpty(cssClass))
-//                {
-//                    storageNode.RemoveAttribute("class");
-//                }
-//                else
-//                {
-//                    storageNode.SetAttribute("class", cssClass);
-//                }
-//            }
-//        }
-
 		private static bool ContainsClass(XmlNode element, string className)
 		{
 			return ((XmlElement)element).GetAttribute("class").Contains(className);
