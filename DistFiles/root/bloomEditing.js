@@ -41,6 +41,10 @@ jQuery(document).ready(function () {
         {
             return; //don't put tips if they can't edit it. That's just confusing
         }
+        if($(this).css('display') == 'none')
+        {
+            return; //don't put tips if they can't see it.
+        }
         var whatToSay = $(this).data("hint");
         $(this).qtip({
             content: whatToSay,

@@ -30,6 +30,11 @@ DIV.coverBottomBookTopic
 	text-align: right;
 	width: 192px;
 }
+DIV.coverBottomBookTopic TEXTAREA
+{
+	width: 170px;
+	height: 33px;
+}
 DIV.coverBottomLangName
 {
 	bottom: 20px;
@@ -54,11 +59,10 @@ DIV#languageLocation
 	left: 0px;
 	top: 31px;
 }
-.titlePage .credits
+TEXTAREA.district
 {
-	height: 5cm;
-	margin-left: 1cm;
-	text-align: center;
+	width: 169px;
+	height: 33px;
 }
 DIV.titlePage DIV#languageInformation
 {
@@ -66,17 +70,18 @@ DIV.titlePage DIV#languageInformation
 	position: relative;
 	left: 1px;
 	top: 129px;
-	width: 508px;
-	margin-left: 18px;
+	width: 425px;
+	margin-left: 78px;
 }
-.titlePage DIV.titleN1
+.titlePage TEXTAREA.titleN1
 {
-	display: block;
 	font-size: 14pt;
-	left: 21px;
-	position: relative;
 	text-align: center;
-	top: 10px;
+	/*+placement:shift 18px 6px;*/
+	position: relative;
+	left: 18px;
+	top: 6px;
+	width: 420px;
 }
 .titlePage DIV.titleN2
 {
@@ -92,11 +97,6 @@ DIV.titlePage DIV#languageInformation
 	left: 22px;
 	top: 22px;
 }
-.titlePage TEXTAREA.credits
-{
-	margin-left: 60px;
-	width: 432px;
-}
 .titlePage:after
 {
 	bottom: 0.2cm;
@@ -106,8 +106,14 @@ DIV.titlePage DIV#languageInformation
 DIV.titlePage .titleV
 {
 	font-size: 26.1pt;
-	height: 113px;
+	height: 111px;
 	text-align: center;
+	border: 1px solid #000000;
+	/*+placement:shift -8px 0px;*/
+	position: relative;
+	left: -8px;
+	top: 0px;
+	width: 419px;
 }
 DIV#titePageTitleBlock
 {
@@ -124,13 +130,13 @@ DIV.verso
 }
 TEXTAREA.versionAcknowledgments
 {
-	/*+placement:shift -13px 111px;*/
+	/*+placement:shift -4px 109px;*/
 	position: relative;
-	left: -13px;
-	top: 111px;
-	height: 247px;
+	left: -4px;
+	top: 109px;
+	height: 204px !important;
 }
-DIV.license
+TEXTAREA.license
 {
 }
 DIV#versoLicenseAndCopyright
@@ -141,7 +147,7 @@ DIV#versoLicenseAndCopyright
 	top: 54px;
 	margin-left: 57px;
 }
-DIV.originalAcknowledgments
+TEXTAREA.originalAcknowledgments
 {
 	height: 268px;
 	width: 454px;
@@ -150,15 +156,19 @@ DIV.originalAcknowledgments
 }
 TEXTAREA.credits
 {
-	left: -12px;
+	height: 131px;
+	/*+placement:shift 10px 40px;*/
 	position: relative;
-	top: 56px;
+	left: 10px;
+	top: 40px;
+	text-align: center;
+	width: 421px;
 }
 .verso TEXTAREA
 {
 	margin-left: 52px;
 	text-align: center;
 }
-DIV.copyright
+TEXTAREA.copyright
 {
 }
