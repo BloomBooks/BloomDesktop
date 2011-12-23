@@ -5,6 +5,13 @@ BODY
 	text-align: center;
 	background-color: #363333;
 }
+DIV.pageLabel
+{
+	width: 205px;
+	text-align: left;
+	color: #96A9B3;
+	margin-left: 5px;
+}
 DIV.ui-tooltip-title
 {
 	text-align: justify;
@@ -25,6 +32,11 @@ DIV.page.coverColor
 INPUT
 {
 	border: thin solid #000000;
+}
+/*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+DIV.readOnlyInTranslationMode
+{
+	border: thin solid #C0B9B9;
 }
 TEXTAREA
 {
