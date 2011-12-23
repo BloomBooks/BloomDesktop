@@ -53,6 +53,11 @@ TEXTAREA:focus
 {
 	border: 3px solid #A03C50;
 }
+TEXTAREA.province
+{
+	width: 151px;
+	height: 33px;
+}
 .overflow
 {
 	background-color: #C30606 !important;
@@ -74,6 +79,6 @@ border: 0 dashed transparent;
 	text-align: right;
 	color: #363333;
 	font-size: 8pt;
-	//margin-top: -8px;
+	margin-top: -8px;
 	margin-right: 8px;
 }

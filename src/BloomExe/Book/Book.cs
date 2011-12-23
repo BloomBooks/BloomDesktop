@@ -900,7 +900,11 @@ namespace Bloom.Book
 							var lang = node.GetOptionalStringAttribute("lang", "*");
 							if (lang == "N1" || lang == "N2" || lang == "V")
 								lang = data.WritingSystemCodes[lang];
-							node.InnerXml = data.TextVariables[key].GetBestAlternativeString(new string[] { lang, "*" });//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
+							{
+								node.InnerXml = data.TextVariables[key].GetBestAlternativeString(new string[] {lang, "*"});
+									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+							}
 						}
 					}
 					else
