@@ -143,5 +143,22 @@ namespace Bloom
 				}
 			}
 		}
+
+		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
+		{
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+
+			using (var writer = XmlWriter.Create(tempPath, settings))
+			{
+				dom.WriteContentTo(writer);
+				writer.Close();
+			}
+			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
+			return tempPath;
+		}
 	}
 }
