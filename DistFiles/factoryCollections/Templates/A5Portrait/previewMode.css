@@ -16,9 +16,6 @@ BODY
 	{
 		/*[id]0*/background-color: #363333;
 	}
-}
-@media screen
-{
 	DIV.-bloom-page
 	{
 		border: 1px solid #000000 !important;
@@ -34,15 +31,14 @@ P.pagefooter
 }
 INPUT
 {
-	border: transparent;
+	border: 1px solid transparent;
 }
 TEXTAREA
 {
-	/* we have javascript function which notices this border and makes it read-only
-	  (which isn't a style, so we can't set it ourselves */
-	border: transparent;
+/*we have javascript function which notices this border and makes it read-only
+(which isn't a style, so we can't set it ourselves*/
+	border: 1px solid transparent;
 }
-
 DIV.-bloom-page
 {
 /*this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
@@ -50,22 +46,24 @@ DIV.-bloom-page
 /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
 }
-
-/* this is the  blue label in the upper-right corner of some pages*/
+/*this is the  blue label in the upper-right corner of some pages*/
 DIV.pageLabel
 {
-	display:none;
+	display: none;
 }
-
-/* pages with page numbers*/
+/*pages with page numbers*/
 DIV.numberedPage
 {
 	counter-increment: pageNumber;
 }
-/* the title page is page 1, but we just don't show it (hence, no Div.titlePge:after section)*/
+/*the title page is page 1, but we just don't show it (hence, no Div.titlePge:after section)*/
 DIV.titlePage
 {
 	counter-increment: pageNumber;
+}
+P
+{
+	border: 1px solid transparent !important;
 }
 DIV.numberedPage:after
 {
@@ -79,7 +77,6 @@ INPUT.coverColor
 {
 	background-color: #D8ADAD;
 }
-
 DIV.-bloom-page.cover:after
 {
 	/*+placement:shift 0px 0px;*/

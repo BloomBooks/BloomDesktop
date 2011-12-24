@@ -69,6 +69,11 @@ namespace Bloom.Edit
 			 *
 			 * alert($().jquery)
 			 */
+
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
+
 			var b = new Skybound.Gecko.GeckoWebBrowser();
 			var neededToMakeThingsWork = b.Handle;
 			b.Navigate(bookPath);

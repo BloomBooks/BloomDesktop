@@ -76,7 +76,7 @@ namespace Bloom
 
 				_backgroundColorOfResult = backgroundColorOfResult;
 
-				MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document);
 
 				_pendingThumbnail = null;
 
@@ -215,16 +215,7 @@ namespace Bloom
 			_browserHandleCreated =true;
 		}
 
-		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
-		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
-		}
+
 
 		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
 		{

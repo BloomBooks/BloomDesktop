@@ -206,9 +206,7 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
-			//application/xhtml+xml
 			_pageDom = dom;
-			//now done in InitScript.js AddJavaScriptForEditing(_pageDom);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;

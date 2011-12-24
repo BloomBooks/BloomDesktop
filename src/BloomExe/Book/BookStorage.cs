@@ -172,6 +172,9 @@ namespace Bloom.Book
 				{
 					continue;
 				}
+				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
+				href = href.Replace("%5C", "/");
+
 
 				var fileName = Path.GetFileName(href);
 				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
@@ -385,20 +388,10 @@ namespace Bloom.Book
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-
-			using (var writer = XmlWriter.Create(tempPath, settings))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n"+File.ReadAllText(tempPath));
-			return tempPath;
+			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
 		}
+
+
 
 		public static string ValidateBook(string path)
 		{
