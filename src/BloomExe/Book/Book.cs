@@ -564,7 +564,7 @@ namespace Bloom.Book
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
 
-				DIV.coverColor * TEXTAREA	{		background-color: #colorValue;	}
+				DIV.coverColor  TEXTAREA	{		background-color: #colorValue;	}
 				DIV.-bloom-page.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
