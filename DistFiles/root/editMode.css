@@ -29,10 +29,6 @@ DIV.page.coverColor
 	background-color: #D5D5E4;
 	border: medium outset #000000;
 }
-INPUT
-{
-	border: thin solid #000000;
-}
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode
 {
@@ -42,19 +38,9 @@ TEXTAREA
 {
 	border: thin solid #C0B9B9;
 }
-TEXTAREA.versionAcknowledgments
+DIV.editable
 {
-	height: 266px;
-}
-TEXTAREA.en
-{
-	background-color: #D5D5E4;
-	visibility: collapse;
-/*this by itself just leaves a gap*/
-	position: absolute;
-/*this removes the gap*/
-	left: 0px;
-	top: 0px;
+	border: thin solid #C0B9B9;
 }
 IMG.hoverUp
 {
@@ -62,6 +48,10 @@ IMG.hoverUp
 	border: 1px outset #000000;
 }
 TEXTAREA:focus
+{
+	border: 3px solid #A03C50;
+}
+DIV.editable:focus
 {
 	border: 3px solid #A03C50;
 }
