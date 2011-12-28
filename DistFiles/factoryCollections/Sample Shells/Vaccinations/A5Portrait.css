@@ -45,7 +45,6 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-
 DIV.-bloom-page
 {
 /*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
@@ -76,13 +75,11 @@ TEXTAREA
 	font-size: 14pt;
 	width: 11.9cm;
 }
-
 .imageOnTop TEXTAREA
 {
 	height: 7.7cm;
 	margin-top: 26px;
 }
-
 .imageOnTop .picture
 {
 	max-height: 9.7cm;
@@ -143,7 +140,6 @@ DIV.imageWholePage IMG
 {
 	height: 9cm;
 }
-
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
 in a <p> which has a fixed height.*/
@@ -160,4 +156,20 @@ DIV.-bloom-page:after
 	position: absolute;
 	left: 7.5cm;
 	top: 20.3cm;
+}
+/*It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
+DIV.textWholePage DIV
+{
+	overflow: hidden;
+	max-height: 660px;
+	min-height: 40px;
+}
+DIV.textWholePage TABLE
+{
+	width: 470px;
+	height: 668px;
+	/*+placement:shift 48px 59px;*/
+	position: relative;
+	left: 48px;
+	top: 59px;
 }

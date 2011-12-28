@@ -8,3 +8,12 @@ textarea.readOnlyInEditMode
 	(which isn't a style, so we can't set it ourselves */
 		border: transparent;
 }
+DIV.-bloom-metaData
+{
+	cursor: pointer; /* this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+DIV.-bloom-metaData TEXTAREA
+{
+   /* border: transparent; /* jscript will translate to read only */
+	cursor: pointer; /* this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}

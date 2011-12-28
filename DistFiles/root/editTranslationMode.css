@@ -7,3 +7,9 @@
 		// for DIVS with this class, we have javascript which toggles the contentEditable attribute based on the border begin transparent or not
 		border: transparent;
 }
+
+DIV.-bloom-metaData TEXTAREA
+{
+	border: transparent; /* jscript will translate to read only */
+	cursor: pointer; /* this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}

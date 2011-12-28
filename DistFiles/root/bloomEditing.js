@@ -8,16 +8,16 @@ jQuery(document).ready(function () {
 
     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
     //the same parent element
-    jQuery("textarea").focus(function () {
+    jQuery("textarea, div.editable").focus(function () {
         event = document.createEvent('MessageEvent');
         var origin = window.location.protocol + '//' + window.location.host;
         var obj = {};
-        $(this).parent().find("textarea").each(function () {
+        $(this).parent().find("textarea, div.editable").each(function () {
             obj[$(this).attr("lang")] = $(this).text();
         })
         var json = obj; //.get();
         json = JSON.stringify(json);
-        event.initMessageEvent('textGroupFocussed', true, true, json, origin, 1234, window, null);
+        event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
         document.dispatchEvent(event);
     });
 
@@ -27,6 +27,15 @@ jQuery(document).ready(function () {
     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
     jQuery("textarea").keypress(function () {
         var overflowing = this.scrollHeight > this.clientHeight;
+        if ($(this).hasClass('overflow') && !overflowing) {
+            $(this).removeClass('overflow');
+        }
+        else if (overflowing) {
+            $(this).addClass('overflow');
+        }
+    });
+    jQuery("div.editable").keypress(function () {
+        var overflowing = this.scrollHeight > $(this).maxSize().height;
         if ($(this).hasClass('overflow') && !overflowing) {
             $(this).removeClass('overflow');
         }
@@ -169,4 +178,32 @@ jQuery(document).ready(function () {
         }
     });
 
+    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
+    // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
+    $('div.-bloom-metaData').each(function() {
+       if($(this).css('cursor')=='pointer') {
+           $(this).click(function(){
+                       event = document.createEvent('MessageEvent');
+                       var origin = window.location.protocol + '//' + window.location.host;
+                       var obj = {};
+                       $(this).find("textarea").each(function () {
+                           obj[$(this).attr("data-book")] = $(this).text();
+                       })
+                       var json = obj; //.get();
+                       json = JSON.stringify(json);
+                       event.initMessageEvent('divClicked', true, true, json, origin, 1234, window, null);
+                       document.dispatchEvent(event);
+           })
+       }
+    });
 });
+
+//function SetCopyrightAndLicense(data) {
+//    $('*[data-book="copyright"]').each(function(){
+//        $(this).text(data.copyright);}
+//    )
+function SetCopyrightAndLicense(data) {
+    //nb: for textarea, we need val(). But for div, I think it would be text()
+    var x = $("textarea[data-book='copyright']");//review: what would happen if there were multiple hits?
+    x.val(data.copyright);
+}

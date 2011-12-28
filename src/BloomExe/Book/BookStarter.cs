@@ -162,12 +162,7 @@ namespace Bloom.Book
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
-
-			//BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
-
-
-			//GatherBracketTemplates(pageDiv);
-		}
+	   }
 
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
@@ -191,25 +186,26 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// For each group of textareas in the div which have lang attributes, make a new text area
+		/// For each group of editable elements in the div which have lang attributes, make a new element
 		/// with the lang code of the vernacular.
 		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		public static void PrepareElementsOnPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
 		{
-			foreach (var element in GetTextGroupsInSinglePageDiv(pageDiv, isoCode))
+			foreach (var element in GetEditableGroupsInSinglePageDiv(pageDiv))
 			{
 				MakeVernacularElementForOneGroup(element, isoCode, "textarea");
+				MakeVernacularElementForOneGroup(element, isoCode, "*[@contentEditable='true' or @contenteditable='true']");
 			}
 			foreach (var element in GetParagraphsWithFieldsAndTextInSinglePageDiv(pageDiv))
 			{
 				MakeVernacularElementForOneGroup(element, isoCode, "p");
 			}
 			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
-			foreach (XmlElement textarea in  pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]")))
+			foreach (XmlElement element in pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)] | //*[(@contentEditable='true'  or @contenteditable='true') and not(@lang)]")))
 			{
-				textarea.SetAttribute("lang", isoCode);
+				element.SetAttribute("lang", isoCode);
 			}
 		}
 
@@ -227,11 +223,10 @@ namespace Bloom.Book
 			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
 									  where x.GetAttribute("lang") == vernacularCode
 									  select x;
-			if (alreadyInVernacular.Count() > 0)
+			if (alreadyInVernacular.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 				return;
-			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-			//if (!ContainsClass(groupElement, "-bloom-translationGroup"))
+
 			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'-bloom-translationGroup')]").Count == 0)
 				return;
 
@@ -262,18 +257,11 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static IEnumerable<XmlElement> GetTextGroupsInSinglePageDiv(XmlElement pageDiv, string isoCode)
+		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement pageDiv)
 		{
-			foreach (XmlElement textArea in pageDiv.SafeSelectNodes("//textarea"))
+			foreach (XmlElement element in pageDiv.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
 			{
-				if (textArea.ParentNode.Name.ToLower() != "p")
-				{
-					//maybe not... if we don't want it to be editable but stay in the national language....
-					//Debug.Faile("All textareas need to be wrapped in a paragaraph");
-					continue;//ignore it
-				}
-
-				yield return (XmlElement) textArea.ParentNode;
+				yield return (XmlElement) element.ParentNode;
 			}
 		}
 
