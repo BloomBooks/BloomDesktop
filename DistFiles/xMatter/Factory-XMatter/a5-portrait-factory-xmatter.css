@@ -105,7 +105,6 @@ DIV.titlePage .titleV
 	font-size: 26.1pt;
 	height: 111px;
 	text-align: center;
-	border: 1px solid #000000;
 	/*+placement:shift -8px 0px;*/
 	position: relative;
 	left: -8px;
@@ -133,8 +132,10 @@ TEXTAREA.versionAcknowledgments
 	top: 109px;
 	height: 204px !important;
 }
-TEXTAREA.license
+DIV.license
 {
+	width: 461px;
+	height: 78px;
 }
 DIV#versoLicenseAndCopyright
 {
@@ -142,7 +143,21 @@ DIV#versoLicenseAndCopyright
 	position: relative;
 	left: -30px;
 	top: 54px;
-	margin-left: 57px;
+	margin-left: 83px;
+}
+DIV.licenseDescription
+{
+	font-size: 8pt;
+	margin-left: 35px;
+	margin-right: 77px;
+	/*+placement:shift 22px 0px;*/
+	position: relative;
+	left: 22px;
+	top: 0px;
+}
+DIV.licenseUrl
+{
+	display: none;
 }
 TEXTAREA.originalAcknowledgments
 {
@@ -173,6 +188,8 @@ TEXTAREA.credits
 	margin-left: 52px;
 	text-align: center;
 }
-TEXTAREA.copyright
+DIV.copyright
 {
+	width: 459px;
+	height: 34px;
 }

@@ -136,6 +136,11 @@ DIV.imageWholePage IMG
 	max-height: 18.6cm;
 	max-width: 12.2cm;
 }
+DIV.imageWholePage TABLE
+{
+	width: 556px;
+	height: 786px;
+}
 .imageOnBottom P.imageHolder
 {
 	height: 9cm;
