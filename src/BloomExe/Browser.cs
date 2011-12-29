@@ -5,8 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -17,13 +15,11 @@ using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
-
 	public partial class Browser : UserControl
 	{
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool SetDllDirectory(string lpPathName);
-
 
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -32,10 +28,9 @@ namespace Bloom
 		private TempFile _tempHtmlFile;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
-	  private  UndoCommand _undoCommand;
+		private  UndoCommand _undoCommand;
 		private  CutCommand _cutCommand;
 		public event EventHandler OnBrowserClick;
-
 
 
 		public static void SetUpXulRunner()
@@ -142,8 +137,6 @@ namespace Bloom
 			}
 
 			_browser = new GeckoWebBrowser();
-
-
 
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
@@ -259,7 +252,8 @@ namespace Bloom
 			if (_pageDom == null)
 				return;
 
-			//TODO: this made us have a blank screen most of the time, even if the we didn't run any script at all. Tom is looking into an alternative way to jscritp: RunJavaScript("cleanup()");
+			//TODO: this made us have a blank screen most of the time, even if the we didn't run any script at all. Tom is looking into an alternative way to jscript
+			//RunJavaScript("cleanup()");
 
 			//this is to force an onblur so that we can get at the actual user-edited value
 			_browser.WebBrowserFocus.Deactivate();
@@ -281,7 +275,6 @@ namespace Bloom
 				if (_pageDom == null)
 					return;
 
-				//track a regression
 				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
 				if (destinationDomPage == null)
 					return;
@@ -299,11 +292,16 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				//enhance: would be better to do this in the jscript
+				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
 				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 				{
 					j.ParentNode.RemoveChild(j);
 				}
+				foreach (XmlAttribute j in _pageDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+				{
+					j.OwnerElement.RemoveAttributeNode(j);
+				}
+
 			}
 			catch(Exception e)
 			{
@@ -324,29 +322,6 @@ namespace Bloom
 			}
 
 		}
-
-		/// <summary>
-		/// When editting using a browser (at least, gecko), we can't actually
-		/// just grab the new value of, say, a textarea.  Gecko will always return the
-		/// original value to us, even after being editted.
-		/// But from *within* the browser, javascript can get at the new values.
-		/// So here, we inject some javascript which
-		/// copies the editted values back into the dom.
-		/// </summary>
-		private void AddJavaScriptForEditing(XmlDocument dom)
-		{
-			//ref: http://dev-answers.blogspot.com/2007/08/firefox-does-not-reflect-input-form.html
-			foreach (XmlElement node in dom.SafeSelectNodes("//input"))
-			{
-				node.SetAttribute("onblur", "", "this.setAttribute('Value',this.value);");
-			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
-			}
-		}
-
-
 
 		private void OnUpdateDisplayTick(object sender, EventArgs e)
 		{
@@ -431,19 +406,5 @@ namespace Bloom
 
 
 	}
-//	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-//	public class TestMessageFilter : IMessageFilter
-//	{
-//		public bool PreFilterMessage(ref Message m)
-//		{
-//			const int WM_KEYDOWN = 0x0100;
-//
-//			if (m.Msg == WM_KEYDOWN)
-//			{
-//				Console.WriteLine("Processing the messages : " + m.Msg);
-//				return true;
-//			}
-//			return false;
-//		}
-//	}
+
 }

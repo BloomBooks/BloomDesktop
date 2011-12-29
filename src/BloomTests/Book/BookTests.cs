@@ -601,7 +601,48 @@ namespace BloomTests.Book
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
 
+		[Test]
+		public void UpdateDataDiv_DoesNotExist_MakesOne()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head></head><body><div data-book='hello'>world</div></body></html>");
+			var book = CreateBook();
+			book.UpdateVariablesAndDataDiv();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@class='-bloom-dataDiv']",1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='hello' and text()='world']",1);
+		}
 
+		[Test]
+		public void UpdateDataDiv_NewLangAdded_AddedToDataDiv()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head></head><body><div data-book='hello' lang='en'>hi</div></body></html>");
+			var book = CreateBook();
+
+			var e = book.RawDom.CreateElement("div");
+			e.SetAttribute("data-book", "hello");
+			e.SetAttribute("lang", "fr");
+			e.InnerText = "bonjour";
+			book.RawDom.SelectSingleNode("//body").AppendChild(e);
+
+			book.UpdateVariablesAndDataDiv();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@class='-bloom-dataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='hello' and @lang='en' and text()='hi']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='hello' and @lang='fr' and text()='bonjour']", 1);
+		}
+
+		[Test]
+		public void UpdateDataDiv_HasDataLibraryValues_LibraryValuesNotPutInDataDiv()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head></head><body><div data-book='hello' lang='en'>hi</div><div data-library='user' lang='en'>john</div></body></html>");
+			var book = CreateBook();
+
+
+			book.UpdateVariablesAndDataDiv();
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='user']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='-bloom-dataDiv']/div[@data-library]");
+		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{

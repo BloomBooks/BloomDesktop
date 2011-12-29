@@ -455,7 +455,7 @@ namespace Bloom.Book
 				var data = new DataSet();
 				var lang = new MultiTextBase();
 				lang.SetAlternative("*", "(Your Language Name)");		//we don't wan to make it confusing by putting in the actual langauge name
-				data.TextVariables.Add("nameOfLanguage", lang);
+				data.TextVariables.Add("nameOfLanguage", new DataItem(lang, true));
 				data.WritingSystemCodes.Add("V", _librarySettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
 				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
@@ -719,18 +719,13 @@ namespace Bloom.Book
 		{
 			Debug.Assert(IsInEditableLibrary);
 
-			string pageSelector = Page.GetPageSelectorXPath(pageDom);
-			//review: does this belong down in the storage?
-
 			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, '-bloom-page')]");
 			string pageDivId = divElement.GetAttribute("id");
 
 			var page = GetPageFromStorage(pageDivId);
 			page.InnerXml = divElement.InnerXml;
 
-			UpdateFieldsAndVariables();
-
-//		    _storage.HideAllTextAreasThatShouldNotShow(_librarySettings.VernacularIso639Code, pageSelector);
+			UpdateVariablesAndDataDiv();
 
 			try
 			{
@@ -779,15 +774,15 @@ namespace Bloom.Book
 		/// Here we're calling "fields" the html supplying or receiving the data, and "variables" being key-value pairs themselves, which
 		/// are, for library variables, saved in a separate file.
 		/// </summary>
-		public void UpdateFieldsAndVariables()
+		public DataSet UpdateFieldsAndVariables()
 		{
 			var data = new DataSet();
 			var lang = new MultiTextBase();
 			lang.SetAlternative("*", _librarySettings.LanguageName);
-			data.TextVariables.Add("nameOfLanguage", lang);
+			data.TextVariables.Add("nameOfLanguage", new DataItem(lang, true));
 			var code = new MultiTextBase();
 			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
-			data.TextVariables.Add("iso639Code", code);
+			data.TextVariables.Add("iso639Code", new DataItem(code, true));
 			data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
 			data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 			data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
@@ -798,15 +793,15 @@ namespace Bloom.Book
 			GatherFieldValues(data, "*", RawDom);
 			SetFieldsValues(data, "*", RawDom);
 
-			MultiTextBase title;
+			DataItem title;
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
 				GetOrCreateElement("//html", "head");
-				var t = title.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
+				var t = title.TextAlternatives.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
 				GetOrCreateElement("//head", "title").InnerText = t;
 				_storage.SetBookName(t);
 			}
-			Check();
+			return data;
 		}
 
 
@@ -834,9 +829,14 @@ namespace Bloom.Book
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
+					bool isLibrary=false;
+
 					var key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
+					{
 						key = node.GetAttribute("data-library").Trim();
+						isLibrary = true;
+					}
 
 					var value = node.InnerXml.Trim();//may contain formatting
 					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
@@ -852,11 +852,11 @@ namespace Bloom.Book
 						{
 							var t = new MultiTextBase();
 							t.SetAlternative(lang, value);
-							data.TextVariables.Add(key, t);
+							data.TextVariables.Add(key, new DataItem(t, isLibrary));
 						}
-						else if (!data.TextVariables[key].ContainsAlternative(lang))
+						else if (!data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
 						{
-							var t = data.TextVariables[key];
+							var t = data.TextVariables[key].TextAlternatives;
 							t.SetAlternative(lang, value);
 						}
 					}
@@ -886,7 +886,7 @@ namespace Bloom.Book
 					{
 						if (node.Name.ToLower() == "img")
 						{
-							node.SetAttribute("src", data.TextVariables[key].GetFirstAlternative());
+							node.SetAttribute("src", data.TextVariables[key].TextAlternatives.GetFirstAlternative());
 						}
 						else
 						{
@@ -895,7 +895,7 @@ namespace Bloom.Book
 								lang = data.WritingSystemCodes[lang];
 							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
-								node.InnerXml = data.TextVariables[key].GetBestAlternativeString(new string[] {lang, "*"});
+								node.InnerXml = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*" });
 									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 							}
 						}
@@ -1019,6 +1019,38 @@ namespace Bloom.Book
 
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
+		}
+
+		/// <summary>
+		/// Create or update the data div with all the data-book values in the document
+		/// </summary>
+		public void UpdateVariablesAndDataDiv()
+		{
+			XmlElement dataDiv = RawDom.SelectSingleNode("div[@class='-bloom-dataDiv']") as XmlElement;
+			if(dataDiv==null)
+			{
+				dataDiv = RawDom.CreateElement("div");
+				dataDiv.SetAttribute("class", "-bloom-dataDiv");
+				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
+			}
+			var data = UpdateFieldsAndVariables();
+			foreach (var v in data.TextVariables)
+			{
+				if (v.Value.IsLibraryValue)
+					continue;//we don't save these out here
+
+				foreach (var languageForm in v.Value.TextAlternatives.Forms)
+				{
+					if (null == dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and lang='{1}']", v.Key, languageForm.WritingSystemId)))
+					{
+						var d = RawDom.CreateElement("div");
+						d.SetAttribute("data-book", v.Key);
+						d.SetAttribute("lang", languageForm.WritingSystemId);
+						d.InnerXml = languageForm.Form;
+						dataDiv.AppendChild(d);
+					}
+				}
+			}
 		}
 	}
 }

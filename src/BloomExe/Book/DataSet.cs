@@ -11,7 +11,7 @@ namespace Bloom.Book
 		public DataSet()
 		{
 			WritingSystemCodes = new Dictionary<string, string>();
-			TextVariables = new Dictionary<string, MultiTextBase>();
+			TextVariables = new Dictionary<string, DataItem>();
 		}
 		/// <summary>
 		/// Depending on the context, the correct values for these change. E.g., "V" is the *actual* vernacular when looking at a book in the Vernacular library,
@@ -21,6 +21,17 @@ namespace Bloom.Book
 		/// </summary>
 		public Dictionary<string, string> WritingSystemCodes { get; private set; }
 
-		public Dictionary<string, MultiTextBase> TextVariables { get; private set; }
+		public Dictionary<string, DataItem> TextVariables { get; private set; }
+	}
+
+	public class DataItem
+	{
+		public DataItem(MultiTextBase text, bool isLibraryValue)
+		{
+			TextAlternatives = text;
+			IsLibraryValue = isLibraryValue;
+		}
+		public MultiTextBase TextAlternatives;
+		public bool IsLibraryValue;
 	}
 }
