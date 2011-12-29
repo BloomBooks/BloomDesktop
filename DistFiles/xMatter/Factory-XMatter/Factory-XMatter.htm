@@ -54,11 +54,13 @@
 	<!-- VERSO PAGE --->
 	<div class="-bloom-page verso -bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
 		<div class="pageLabel" lang="en">Verso Page</div>
-		<div contenteditable="true" data-book="originalAcknowledgments" data-hint="Acknowledgments" lang="N1" class = "originalAcknowledgments readOnlyInTranslationMode" >{Original Acknowledgments}</div>
-		<div class="-bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
-			<textarea data-book="copyright" data-hint="Copyright message" class="copyright readOnlyInTranslationMode " lang="N1">{Copyright Information}</textarea>
-			<img class="licenseImage" src=""/>
-			<textarea data-book="license" data-hint="License" class="license readOnlyInTranslationMode " lang="N1">{License Information}</textarea>
+		<div contenteditable="true" data-book="originalAcknowledgments" data-hint="Acknowledgments" lang="N1" class = "originalAcknowledgments editable readOnlyInTranslationMode" >{Original Acknowledgments}</div>
+		<div class="-bloom-metaData" data-hint="Copyright &amp; License" id="versoLicenseAndCopyright" data-message="editMetadata">
+			<div data-book="copyright" class="copyright " lang="N1">{Copyright Information}</div>
+			<img data-book="licenseImage" class="licenseImage" src=""/>
+			<div data-book="licenseUrl" class="licenseUrl" lang="N1">{License Url}</div>
+			<div data-book="licenseNotes" class="licenseNotes" lang="N1">{License Notes}</div>
+			<div class="licenseDescription" lang="N1">{License Description}</div>
 		</div>
 		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
 		<textarea class="versionAcknowledgments readOnlyInEditMode " lang="N1" data-hint="Acknowledgments for translated version"></textarea>

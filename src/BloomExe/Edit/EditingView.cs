@@ -8,7 +8,10 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Newtonsoft.Json.Linq;
+using Palaso.Extensions;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -48,12 +51,66 @@ namespace Bloom.Edit
 			_model.SetView(this);
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
+
+		}
+
+		private Action _pendingMessageHandler;
+		private void _handleMessageTimer_Tick(object sender, EventArgs e)
+		{
+			_handleMessageTimer.Enabled = false;
+			_pendingMessageHandler();
+			_pendingMessageHandler = null;
 		}
 
 		private void OnGeckoReady(object sender, EventArgs e)
 		{
-			_browser1.WebBrowser.AddMessageEventListener("textGroupFocussed", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
+			//bloomEditing.js raises this textGroupFocussed event
+			_browser1.WebBrowser.AddMessageEventListener("textGroupFocused", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
+
+			_browser1.WebBrowser.AddMessageEventListener("divClicked", (data =>
+																			{
+																				//I found that while in this handler, we can't call any javacript back, so we
+																				//instead just return and handle it momentarily
+																				_handleMessageTimer.Enabled = true;
+																				_pendingMessageHandler = (()=>
+																											{
+																												JObject existing = JObject.Parse(data.ToString());
+
+																												Metadata metadata = new Metadata();
+																												metadata.CopyrightNotice = existing["copyright"].Value<string>();
+																												var url = existing["licenseUrl"].Value<string>();
+																												//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+																												if (url == null || url.Trim() == "")
+																												{
+																													metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+																												}
+																												else
+																												{
+																													metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
+																												}
+
+																					using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+																					{
+																						dlg.ShowCreator = false;
+																						if (DialogResult.OK == dlg.ShowDialog())
+																						{
+																							string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+																							if(File.Exists(imagePath))
+																								File.Delete(imagePath);
+																							dlg.Metadata.License.GetImage().Save(imagePath);
+																							string result = string.Format("{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
+																															dlg.Metadata.CopyrightNotice,
+																															"license.png",
+																														  dlg.Metadata.License.Url, dlg.Metadata.License.GetDescription("en"));
+																							_browser1.RunJavaScript("SetCopyrightAndLicense("+result+")");
+																							_browser1.WebBrowser.Refresh();
+																						}
+																					}
+																				})
+																				;
+																			}));
 		}
+
 
 
 
@@ -196,6 +253,9 @@ namespace Bloom.Edit
 		{
 			if (!_model.CanChangeImages())
 				return;
+			if (ge.Target.ClassName.Contains("licenseImage"))
+				return;
+
 			Cursor = Cursors.WaitCursor;
 			string currentPath = ge.Target.GetAttribute("src");
 			var imageInfo = new PalasoImage();

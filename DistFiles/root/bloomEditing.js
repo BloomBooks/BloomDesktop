@@ -22,7 +22,7 @@ jQuery(document).ready(function () {
     });
 
 
-    //when a textarea is overfull, add the overflow class so that it gets a red background or something
+    //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
     jQuery("textarea").keypress(function () {
@@ -127,21 +127,18 @@ jQuery(document).ready(function () {
           });
 
     cleanup = function(){
+        return;
         // remove the div's which qtip makes for the tips themselves
         $("div.qtip").each(function() {
-         */
-            $(this).remove($this);
+              $(this).remove();
         })
         // remove the attributes qtips adds to the things being annotated
-        $("*[aria-describedby").each(function() {
+        $("*[aria-describedby]").each(function() {
             $(this).removeAttr("aria-describedby");
         })
-//        $("*").each(function() {
-//            $(this).removeAttr("aria-live");
-//            $(this).removeAttr("aria-atomic");
-//            $(this).removeAttr("aria-describedby");
-//            $(this).removeAttr("aria-hidden");
-//        })
+        $("*[ariasecondary-describedby]").each(function() {
+            $(this).removeAttr("ariasecondary-describedby");
+        })
     }
 
     //make images look click-able when you cover over them
@@ -151,8 +148,6 @@ jQuery(document).ready(function () {
         $(this).removeClass('hoverUp')
     });
 
-    //focus on the first editable field
-    $(':input:enabled:visible:first').focus();
 
     // Bloom needs to make some field readonly. E.g., the original license when the user is translating a shellbook
     // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
@@ -186,7 +181,7 @@ jQuery(document).ready(function () {
                        event = document.createEvent('MessageEvent');
                        var origin = window.location.protocol + '//' + window.location.host;
                        var obj = {};
-                       $(this).find("textarea").each(function () {
+                       $(this).find("*[data-book]").each(function () {
                            obj[$(this).attr("data-book")] = $(this).text();
                        })
                        var json = obj; //.get();
@@ -196,6 +191,12 @@ jQuery(document).ready(function () {
            })
        }
     });
+
+
+        //focus on the first editable field
+        //$(':input:enabled:visible:first').focus();
+    $("textarea, div.editable").first().focus();//review: this might chose a textarea which appears after the div. Could we sort on the tab order?
+
 });
 
 //function SetCopyrightAndLicense(data) {
@@ -203,7 +204,11 @@ jQuery(document).ready(function () {
 //        $(this).text(data.copyright);}
 //    )
 function SetCopyrightAndLicense(data) {
-    //nb: for textarea, we need val(). But for div, I think it would be text()
-    var x = $("textarea[data-book='copyright']");//review: what would happen if there were multiple hits?
-    x.val(data.copyright);
+    //nb: for textarea, we need val(). But for div, it would be text()
+    $("DIV[data-book='copyright']").text(data.copyright);
+    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
+    $("DIV.licenseDescription").text(data.licenseDescription);
+    $("DIV.licenseNotes").text(data.licenseNotes);
+    $("IMG[data-book='licenseImage']").attr("src", data.licenseImage+"?"+ new Date().getTime());//the time thing makes the browser reload it even if it's the same name
+
 }

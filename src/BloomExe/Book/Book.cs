@@ -659,14 +659,7 @@ namespace Bloom.Book
 
 		private void ClearEditableValues(XmlElement newPageElement)
 		{
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes("//input"))
-			{
-				if (editNode.GetAttribute("value").ToLower().StartsWith("lorem ipsum"))
-				{
-					editNode.SetAttribute("value", String.Empty);
-				}
-			}
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//textarea[@lang='{0}']", _librarySettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//*[@lang='{0}']", _librarySettings.VernacularIso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{

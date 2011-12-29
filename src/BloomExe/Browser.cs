@@ -5,6 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -106,7 +108,8 @@ namespace Bloom
 
 		void OnValidating(object sender, CancelEventArgs e)
 		{
-			UpdateDomWithNewEditsCopiedOver();
+			LoadPageDomFromBrowser();
+			//_afterValidatingTimer.Enabled = true;//LoadPageDomFromBrowser();
 		}
 
 		/// <summary>
@@ -160,6 +163,11 @@ namespace Bloom
 			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
+			WebBrowser.JavascriptError += (sender, error) =>
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
+																 error.Filename, error.Line, error.Message);
+			};
 			RaiseGeckoReady();
 	   }
 
@@ -237,18 +245,25 @@ namespace Bloom
 		}
 
 
-
+		private void _afterValidatingTimer_Tick(object sender, EventArgs e)
+		{
+			_afterValidatingTimer.Enabled = false;
+			//LoadPageDomFromBrowser();
+		}
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
 		/// </summary>
-		private void UpdateDomWithNewEditsCopiedOver()
+		private void LoadPageDomFromBrowser()
 		{
 			if (_pageDom == null)
 				return;
 
+			//TODO: this made us have a blank screen most of the time, even if the we didn't run any script at all. Tom is looking into an alternative way to jscritp: RunJavaScript("cleanup()");
+
 			//this is to force an onblur so that we can get at the actual user-edited value
 			_browser.WebBrowserFocus.Deactivate();
+			_browser.WebBrowserFocus.Activate();
 
 			var body = _browser.Document.GetElementsByTagName("body");
 			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
@@ -284,7 +299,7 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				//enchance: would be better to do this in the InitScripts.js, and call a function in there.
+				//enhance: would be better to do this in the jscript
 				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 				{
 					j.ParentNode.RemoveChild(j);
@@ -343,7 +358,7 @@ namespace Bloom
 		/// </summary>
 		public void ReadEditableAreasNow()
 		{
-			UpdateDomWithNewEditsCopiedOver();
+			LoadPageDomFromBrowser();
 		}
 
 		public void Copy()
@@ -380,9 +395,21 @@ namespace Bloom
 
 		public void RunJavaScript(string script)
 		{
-			WebBrowser.Navigate("javascript:void("+script+")");
-			Application.DoEvents(); //review... is there a better way?  it seems that NavigationFinished isn't raised.
-		}
+			//NB: someday, look at jsdIDebuggerService, which has an Eval
+
+			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,
+
+
+			WebBrowser.Navigate("javascript:void(" +script+")");
+			// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
+			//var filter = new TestMessageFilter();
+			//Application.AddMessageFilter(filter);
+				Application.DoEvents();
+
+
+			//NB: Navigating and Navigated events are never raised. I'm going under the assumption for now that the script blocks
+	   }
+
 
 
 		/* snippets
@@ -401,5 +428,22 @@ namespace Bloom
 			EventHandler handler = GeckoReady;
 			if (handler != null) handler(this, null);
 		}
+
+
 	}
+//	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+//	public class TestMessageFilter : IMessageFilter
+//	{
+//		public bool PreFilterMessage(ref Message m)
+//		{
+//			const int WM_KEYDOWN = 0x0100;
+//
+//			if (m.Msg == WM_KEYDOWN)
+//			{
+//				Console.WriteLine("Processing the messages : " + m.Msg);
+//				return true;
+//			}
+//			return false;
+//		}
+//	}
 }
