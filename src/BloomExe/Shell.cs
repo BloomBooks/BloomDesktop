@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Workspace;
+using Palaso.Reporting;
 
 namespace Bloom
 {

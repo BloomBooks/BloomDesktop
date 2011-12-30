@@ -296,6 +296,20 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 		}
 
+		/// <summary>
+		/// we want to remove any front-matter left in the shell book
+		/// </summary>
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceHasXMatter_Removed()
+		{
+			_starter.TestingSoSkipAddingXMatter = true;
+			var body = @"<div class='-bloom-page -bloom-frontMatter'>don't keep me</div>
+						<div class='-bloom-page'>keep me</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body);
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[contains(@class,'-bloom-frontMatter')]");
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'-bloom-page')]",1);
+		}
 
 	   [Test]
 		public void CreateBookOnDiskFromTemplate_TextAreaHasNoText_VernacularLangAttrSet()

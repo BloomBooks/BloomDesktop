@@ -103,7 +103,13 @@ namespace Bloom.Book
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
+			//remove any x-matter left over from the shell book
+			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-frontMatter')]"))
+			{
+				div.ParentNode.RemoveChild(div);
+			}
 
+			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
@@ -131,20 +137,13 @@ namespace Bloom.Book
 
 		private void UpdateEditabilityIndicator(BookStorage storage)
 		{
-			XmlElement n = storage.Dom.SelectSingleNode("//meta[@name='editability']") as XmlElement;
-			if(n==null)
-			{
-				n = storage.Dom.CreateElement("meta");
-				n.SetAttribute("name","editability");
-				storage.Dom.SelectSingleNode("//head").AppendChild(n);
-			}
 
 			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
 			//created book is translationOnly. Any derivatives will then act as shells.  But it won't
 			//prevent us from editing it while in a shell-making library, since we don't honor this
 			//tag in shell-making libraries.
 			if(_isShellLibrary)
-				n.SetAttribute("content", "translationOnly");
+				BookStorage.UpdateMetaElement(storage.Dom, "editability", "translationOnly");
 
 			//otherwise, stick with whatever it came in with.  All shells will come in with translationOnly,
 			//all templates will come in with 'open'.
@@ -153,6 +152,7 @@ namespace Bloom.Book
 //				n.SetAttribute("content", "open");
 //			}
 		}
+
 
 		public static void SetupPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
 		{

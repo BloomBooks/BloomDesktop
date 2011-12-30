@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -44,6 +45,12 @@ namespace Bloom.Book
 
 	public class BookStorage : IBookStorage
 	{
+		/// <summary>
+		/// History of this number:
+		///		0.4 had version 0.4
+		/// </summary>
+		private const string kBloomFormatVersion = "0.4";
+
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
 		public string ErrorMessages;
@@ -227,6 +234,24 @@ namespace Bloom.Book
 			dom.AddStyleSheet("basePage.css");
 		}
 
+		/// <summary>
+		/// creates if necessary, then updates the named <meta></meta> in the head of the html
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		public static void UpdateMetaElement(XmlDocument dom, string name, string value)
+		{
+			XmlElement n = dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
+			if (n == null)
+			{
+				n = dom.CreateElement("meta");
+				n.SetAttribute("name", name);
+				dom.SelectSingleNode("//head").AppendChild(n);
+			}
+			n.SetAttribute("content", value);
+		}
+
 		public static void RemoveModeStyleSheets(XmlDocument dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
@@ -359,8 +384,13 @@ namespace Bloom.Book
 		public void Save()
 		{
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
+
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
+			BookStorage.UpdateMetaElement(Dom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			var ver = Assembly.GetEntryAssembly().GetName().Version;
+			BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
 			string tempPath = SaveHtml(Dom);
+
 
 			string errors = ValidateBook(tempPath);
 			if (!string.IsNullOrEmpty(errors))
@@ -368,7 +398,9 @@ namespace Bloom.Book
 				var badFilePath = PathToExistingHtml + ".bad";
 				File.Copy(tempPath, badFilePath,true);
 				//hack so we can package this for palaso reporting
+				errors += "\r\n\r\n\r\nContents:\r\n\r\n" + File.ReadAllText(badFilePath);
 				var ex = new XmlSyntaxException(errors);
+
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}

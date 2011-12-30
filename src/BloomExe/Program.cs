@@ -197,7 +197,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()
 		{
-			Palaso.Reporting.ErrorReport.AddProperty("EmailAddress", "issues@bloom.palaso.org");
+			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloom.palaso.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 		}
@@ -217,6 +217,7 @@ namespace Bloom
 				false
 #endif
 				);
+
 		}
 
 		public static void TimeBomb()

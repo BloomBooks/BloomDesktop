@@ -509,8 +509,8 @@ namespace Bloom.Book
 			get
 			{
 				//default is "true"
-				var specificallyNo = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
-				return specificallyNo.Count ==0;
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
+				return node.Count ==0;
 			}
 		}
 
