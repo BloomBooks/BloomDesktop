@@ -193,9 +193,13 @@ jQuery(document).ready(function () {
     });
 
 
+
+
         //focus on the first editable field
         //$(':input:enabled:visible:first').focus();
     $("textarea, div.editable").first().focus();//review: this might chose a textarea which appears after the div. Could we sort on the tab order?
+
+
 
 });
 
@@ -210,5 +214,6 @@ function SetCopyrightAndLicense(data) {
     $("DIV.licenseDescription").text(data.licenseDescription);
     $("DIV.licenseNotes").text(data.licenseNotes);
     $("IMG[data-book='licenseImage']").attr("src", data.licenseImage+"?"+ new Date().getTime());//the time thing makes the browser reload it even if it's the same name
-
+    var shouldShowButton = ! $("DIV.licenseDescription").text();
+    $("button#editCopyrightAndLicense").css("display",shouldShowButton ? "inline" : "none");
 }

@@ -89,24 +89,26 @@ namespace Bloom.Edit
 																													metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
 																												}
 
-																					using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
-																					{
-																						dlg.ShowCreator = false;
-																						if (DialogResult.OK == dlg.ShowDialog())
-																						{
-																							string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-																							if(File.Exists(imagePath))
-																								File.Delete(imagePath);
-																							dlg.Metadata.License.GetImage().Save(imagePath);
-																							string result = string.Format("{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
-																															dlg.Metadata.CopyrightNotice,
-																															"license.png",
-																														  dlg.Metadata.License.Url, dlg.Metadata.License.GetDescription("en"));
-																							_browser1.RunJavaScript("SetCopyrightAndLicense("+result+")");
-																							_browser1.WebBrowser.Refresh();
-																						}
-																					}
-																				})
+																												using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+																												{
+																													dlg.ShowCreator = false;
+																													if (DialogResult.OK == dlg.ShowDialog())
+																													{
+																														string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+																														if (File.Exists(imagePath))
+																															File.Delete(imagePath);
+																														dlg.Metadata.License.GetImage().Save(imagePath);
+																														string result =
+																															string.Format(
+																																"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
+																																dlg.Metadata.CopyrightNotice,
+																																"license.png",
+																																dlg.Metadata.License.Url, dlg.Metadata.License.GetDescription("en"));
+																														_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+
+																													}
+																												}
+																											})
 																				;
 																			}));
 		}

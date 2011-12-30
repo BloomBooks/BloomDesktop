@@ -46,6 +46,10 @@ DIV.-bloom-page
 /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
 }
+BUTTON
+{
+	display: none;
+}
 /*this is the  blue label in the upper-right corner of some pages*/
 DIV.pageLabel
 {

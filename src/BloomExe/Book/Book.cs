@@ -76,7 +76,7 @@ namespace Bloom.Book
 
 			if (IsInEditableLibrary)
 			{
-				UpdateFieldsAndVariables();
+				UpdateFieldsAndVariables(RawDom);
 				WriteLanguageDisplayStyleSheet();
 				RawDom.AddStyleSheet(@"languageDisplay.css");
 			}
@@ -725,7 +725,8 @@ namespace Bloom.Book
 			var page = GetPageFromStorage(pageDivId);
 			page.InnerXml = divElement.InnerXml;
 
-			UpdateVariablesAndDataDiv();
+			//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
+			UpdateVariablesAndDataDiv(pageDom);
 
 			try
 			{
@@ -774,7 +775,9 @@ namespace Bloom.Book
 		/// Here we're calling "fields" the html supplying or receiving the data, and "variables" being key-value pairs themselves, which
 		/// are, for library variables, saved in a separate file.
 		/// </summary>
-		public DataSet UpdateFieldsAndVariables()
+		/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
+		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
+		public DataSet UpdateFieldsAndVariables(XmlDocument domToRead)
 		{
 			var data = new DataSet();
 			var lang = new MultiTextBase();
@@ -790,7 +793,7 @@ namespace Bloom.Book
 			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			GatherFieldValues(data, "*", RawDom);
+			GatherFieldValues(data, "*", domToRead);
 			SetFieldsValues(data, "*", RawDom);
 
 			DataItem title;
@@ -819,7 +822,7 @@ namespace Bloom.Book
 			return element;
 		}
 
-		private void GatherFieldValues(DataSet data, string elementName, XmlDocument dom)
+		private void GatherFieldValues(DataSet data, string elementName, XmlNode dom /* can be the whole dom or just a page */)
 		{
 			try
 			{
@@ -1024,16 +1027,19 @@ namespace Bloom.Book
 		/// <summary>
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
-		public void UpdateVariablesAndDataDiv()
+		/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
+		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
+
+		public void UpdateVariablesAndDataDiv(XmlDocument domToRead)
 		{
-			XmlElement dataDiv = RawDom.SelectSingleNode("div[@class='-bloom-dataDiv']") as XmlElement;
+			XmlElement dataDiv = RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']") as XmlElement;
 			if(dataDiv==null)
 			{
 				dataDiv = RawDom.CreateElement("div");
 				dataDiv.SetAttribute("class", "-bloom-dataDiv");
 				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
 			}
-			var data = UpdateFieldsAndVariables();
+			var data = UpdateFieldsAndVariables(domToRead);
 			foreach (var v in data.TextVariables)
 			{
 				if (v.Value.IsLibraryValue)
@@ -1041,7 +1047,7 @@ namespace Bloom.Book
 
 				foreach (var languageForm in v.Value.TextAlternatives.Forms)
 				{
-					if (null == dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and lang='{1}']", v.Key, languageForm.WritingSystemId)))
+					if (null == dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId)))
 					{
 						var d = RawDom.CreateElement("div");
 						d.SetAttribute("data-book", v.Key);

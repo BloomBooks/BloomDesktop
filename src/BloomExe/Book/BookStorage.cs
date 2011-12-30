@@ -387,8 +387,11 @@ namespace Bloom.Book
 
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			BookStorage.UpdateMetaElement(Dom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
-			var ver = Assembly.GetEntryAssembly().GetName().Version;
-			BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
+			if(null!= Assembly.GetEntryAssembly()) // null during unit tests
+			{
+				var ver = Assembly.GetEntryAssembly().GetName().Version;
+				BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
+			}
 			string tempPath = SaveHtml(Dom);
 
 

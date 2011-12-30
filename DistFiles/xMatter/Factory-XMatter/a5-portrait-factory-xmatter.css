@@ -126,10 +126,10 @@ DIV.verso
 }
 TEXTAREA.versionAcknowledgments
 {
-	/*+placement:shift -4px 109px;*/
-	position: relative;
-	left: -4px;
-	top: 109px;
+	/*+placement:anchor-bottom-left 58px 38px;*/
+	position: absolute;
+	left: 58px;
+	bottom: 38px;
 	height: 204px !important;
 }
 DIV.license
@@ -139,21 +139,39 @@ DIV.license
 }
 DIV#versoLicenseAndCopyright
 {
-	/*+placement:shift -30px 54px;*/
+	/*+placement:shift -21px 53px;*/
 	position: relative;
-	left: -30px;
-	top: 54px;
+	left: -21px;
+	top: 53px;
 	margin-left: 83px;
+	width: 453px;
+	height: 129px;
+}
+IMG.licenseImage
+{
+	/*+placement:shift -181px -24px;*/
+	position: relative;
+	left: -181px;
+	top: -24px;
+}
+BUTTON#editCopyrightAndLicense
+{
+	/*+placement:shift -157px -31px;*/
+	position: relative;
+	left: -157px;
+	top: -31px;
+	font-size: 9pt;
 }
 DIV.licenseDescription
 {
 	font-size: 8pt;
 	margin-left: 35px;
 	margin-right: 77px;
-	/*+placement:shift 22px 0px;*/
+	/*+placement:shift 59px -64px;*/
 	position: relative;
-	left: 22px;
-	top: 0px;
+	left: 59px;
+	top: -64px;
+	text-align: left;
 }
 DIV.licenseUrl
 {
@@ -183,13 +201,12 @@ TEXTAREA.credits
 	text-align: center;
 	width: 421px;
 }
-.verso TEXTAREA
-{
-	margin-left: 52px;
-	text-align: center;
-}
 DIV.copyright
 {
-	width: 459px;
+	width: 450px;
 	height: 34px;
+	/*+placement:shift 0px -26px;*/
+	position: relative;
+	left: 0px;
+	top: -26px;
 }
