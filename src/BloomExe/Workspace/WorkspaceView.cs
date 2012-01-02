@@ -11,6 +11,7 @@ namespace Bloom.Workspace
 	public partial class WorkspaceView : UserControl
 	{
 		private readonly WorkspaceModel _model;
+		private readonly SettingsDialog.Factory _settingsDialogFactory;
 		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -25,9 +26,11 @@ namespace Bloom.Workspace
 			EditingView.Factory editingViewFactory,
 			PublishView.Factory pdfViewFactory,
 			InfoView.Factory infoViewFactory,
+			SettingsDialog.Factory settingsDialogFactory,
 			EditBookCommand editBookCommand)
 		{
 			_model = model;
+			_settingsDialogFactory = settingsDialogFactory;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -164,6 +167,14 @@ namespace Bloom.Workspace
 			if(_tabControl.SelectedTab !=_infoTabPage)
 				SetTabVisibility(_infoTabPage, false);//we always hide this after it is used
 
+		}
+
+		private void _settingsButton_Click(object sender, EventArgs e)
+		{
+			using(var dlg = _settingsDialogFactory())
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 	}

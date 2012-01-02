@@ -460,7 +460,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 
-				var helper = new XMatterHelper(dom,_librarySettings.NameOfXMatterTemplate, _fileLocator);
+				var helper = new XMatterHelper(dom,_librarySettings.XMatterPackName, _fileLocator);
 				helper.InjectXMatter( data);
 				GatherFieldValues(data, "*", dom);
 				SetFieldsValues(data, "*", dom);

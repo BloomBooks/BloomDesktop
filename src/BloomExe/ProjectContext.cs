@@ -75,7 +75,24 @@ namespace Bloom
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
-				builder.Register<LanguageSettings>(c => new LanguageSettings(c.Resolve<LibrarySettings>().VernacularIso639Code, new []{"tpi","en"}));//todo
+				builder.Register<LanguageSettings>(c =>
+													{
+														var librarySettings = c.Resolve<LibrarySettings>();
+														var preferredSourceLanguagesInOrder = new List<string>();
+														preferredSourceLanguagesInOrder.Add(librarySettings.NationalLanguage1Iso639Code);
+														if (!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code)
+															&& librarySettings.NationalLanguage2Iso639Code != librarySettings.NationalLanguage1Iso639Code)
+															preferredSourceLanguagesInOrder.Add(librarySettings.NationalLanguage2Iso639Code);
+
+														return new LanguageSettings(librarySettings.VernacularIso639Code, preferredSourceLanguagesInOrder);
+													});
+				builder.Register<XMatterPackFinder>(c =>
+														{
+															var locations = new List<string>();
+															locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
+															locations.Add(XMatterAppDataFolder);
+															return new XMatterPackFinder(locations);
+														});
 
 				builder.Register<TemplateCollectionList>(c =>
 					 {
@@ -101,6 +118,7 @@ namespace Bloom
 		private static IEnumerable<string> GetFileLocations()
 		{
 			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			yield return FactoryCollectionsDirectory;
@@ -134,17 +152,38 @@ namespace Bloom
 			get
 			{
 				//we want this path of directories sitting there, waiting for the user
-				var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
+				var d = GetBloomAppDataFolder();
+				var collections = d.CombineForPath("Collections");
 				if (!Directory.Exists(d))
 					Directory.CreateDirectory(d);
-				d = d.CombineForPath("Bloom");
+				return collections;
+			}
+		}
+
+		private static string XMatterAppDataFolder
+		{
+			get
+			{
+				//we want this path of directories sitting there, waiting for the user
+				var d = GetBloomAppDataFolder();
 				if (!Directory.Exists(d))
 					Directory.CreateDirectory(d);
-				d = d.CombineForPath("Collections");
+				d = d.CombineForPath("XMatter");
 				if (!Directory.Exists(d))
 					Directory.CreateDirectory(d);
 				return d;
 			}
+		}
+
+		private static string GetBloomAppDataFolder()
+		{
+			var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
+			if (!Directory.Exists(d))
+				Directory.CreateDirectory(d);
+			d = d.CombineForPath("Bloom");
+			if (!Directory.Exists(d))
+				Directory.CreateDirectory(d);
+			return d;
 		}
 
 		/// ------------------------------------------------------------------------------------

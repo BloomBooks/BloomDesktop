@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Palaso.UI.WindowsForms.WritingSystems;
 
 namespace Bloom
 {
@@ -20,8 +22,27 @@ namespace Bloom
 		public virtual string NationalLanguage1Iso639Code { get; set; }
 		public virtual string NationalLanguage2Iso639Code { get; set; }
 		public virtual string LanguageName { get; set; }
+
 		public virtual bool IsShellLibrary { get; set; }
 
+		public string GetVernacularName(string inLanguage)
+		{
+			var lookup = new LookupIsoCodeModel();
+			return lookup.GetExactLanguageMatch(VernacularIso639Code).Name;
+		}
+
+		public string GetNationalLanguage1Name(string inLanguage)
+		{
+			var lookup = new LookupIsoCodeModel();
+			return lookup.GetExactLanguageMatch(NationalLanguage1Iso639Code).Name;
+		}
+		public string GeNationalLanguage2Name(string inLanguage)
+		{
+			if(string.IsNullOrEmpty(NationalLanguage2Iso639Code))
+				return string.Empty;
+			var lookup = new LookupIsoCodeModel();
+			return lookup.GetExactLanguageMatch(NationalLanguage2Iso639Code).Name;
+		}
 		#endregion
 
 		/// <summary>
@@ -38,6 +59,7 @@ namespace Bloom
 			NationalLanguage1Iso639Code = libraryInfo.NationalLanguage1Iso639Code;
 			LanguageName = libraryInfo.LanguageName;
 			IsShellLibrary = libraryInfo.IsShellLibary;
+			XMatterPackName = libraryInfo.XMatterPackName;
 			Save();
 		}
 		/// <summary>
@@ -73,9 +95,13 @@ namespace Bloom
 			library.Add(new XAttribute("version", "0.1"));
 			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
 			library.Add(new XElement("National1Iso639Code", NationalLanguage1Iso639Code));
-			library.Add(new XElement("National2Iso639Code", NationalLanguage1Iso639Code));
+			library.Add(new XElement("National2Iso639Code", NationalLanguage2Iso639Code));
 			library.Add(new XElement("LanguageName", LanguageName));
 			library.Add(new XElement("IsShellLibrary", IsShellLibrary.ToString()));
+			library.Add(new XElement("XMatterPack", XMatterPackName));
+			library.Add(new XElement("Country", Country));
+			library.Add(new XElement("Province", Province));
+			library.Add(new XElement("District", District));
 			library.Save(SettingsFilePath);
 		}
 
@@ -84,44 +110,42 @@ namespace Bloom
 		{
 			try
 			{
-
 				XElement library = XElement.Load(SettingsFilePath);
-				var vernacular = library.Descendants("VernacularIso639Code");
-				if(vernacular ==null || vernacular.Count()==0)
-					vernacular = library.Descendants("Iso639Code");//old version (dec 2011, v 0.3)
-				VernacularIso639Code = vernacular.First().Value;
-
-				var national = library.Descendants("National1Iso639Code");
-				if (national != null && national.Count() > 0)
-					NationalLanguage1Iso639Code = national.First().Value;
-				else
-				{
-					NationalLanguage1Iso639Code = "en";
-				}
-
-				national = library.Descendants("National2Iso639Code");
-				if (national != null && national.Count() > 0)
-					NationalLanguage2Iso639Code = national.First().Value;
-				else
-				{
-					NationalLanguage2Iso639Code = "";
-				}
-
-				LanguageName = library.Descendants("LanguageName").First().Value;
-				bool isShellMakingLibrary;
-				var isShellMakingElement = library.Descendants("IsShellLibrary");
-				if (isShellMakingElement != null && isShellMakingElement.Count() > 0)
-				{
-					bool.TryParse(isShellMakingElement.First().Value, out isShellMakingLibrary);
-					IsShellLibrary = isShellMakingLibrary;
-				}
+				VernacularIso639Code = GetValue(library, "VernacularIso639Code", "");
+				NationalLanguage1Iso639Code = GetValue(library, "National1Iso639Code", "en");
+				NationalLanguage2Iso639Code = GetValue(library, "National2Iso639Code", "");
+				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
+				LanguageName = GetValue(library, "LanguageName", "");
+				Country = GetValue(library, "Country","");
+				Province = GetValue(library, "Province", "");
+				District = GetValue(library, "District", "");
+				IsShellLibrary = GetBoolValue(library, "IsShellLibrary", false);
 			}
 			catch (Exception e)
 			{
+				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-																 "Ouch! There was an error reading the library settings file.  Please report this error to the developers; consider emailing them the offending file, {0}. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.",
-																 SettingsFilePath);
+																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
 				throw;
+			}
+		}
+
+		private bool GetBoolValue(XElement library, string id, bool defaultValue)
+		{
+			string s = GetValue(library, id, defaultValue.ToString());
+			bool b;
+			bool.TryParse(s, out b);
+			return b;
+		}
+
+		private string GetValue(XElement document, string id, string defaultValue)
+		{
+			var nodes = document.Descendants(id);
+			if (nodes != null && nodes.Count() > 0)
+				return nodes.First().Value;
+			else
+			{
+				return defaultValue;
 			}
 		}
 
@@ -140,10 +164,11 @@ namespace Bloom
 		/// <summary>
 		/// for the "Factory-XMatter.htm", this would be named "Factory"
 		/// </summary>
-		public string NameOfXMatterTemplate
-		{
-			get { return "Factory"; }
-		}
+		virtual public string XMatterPackName { get; set; }
+
+		virtual public string Country { get; set; }
+		virtual public string Province { get; set; }
+		virtual public string District { get; set; }
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
 		{
@@ -158,6 +183,7 @@ namespace Bloom
 		public string NationalLanguage1Iso639Code;
 		public string NationalLanguage2Iso639Code;
 		public string LanguageName;
+		public string XMatterPackName;
 		public bool IsShellLibary;
 	}
 }

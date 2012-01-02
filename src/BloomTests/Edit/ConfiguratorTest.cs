@@ -33,6 +33,7 @@ namespace BloomTests.Edit
 			library.SetupGet(x => x.IsShellLibrary).Returns(false);
 			library.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("en");
 			library.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
+			library.SetupGet(x => x.XMatterPackName).Returns("Factory");
 
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]

@@ -29,6 +29,7 @@ namespace BloomTests.Book
 			_librarySettings.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
 			_librarySettings.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("fr");
 			_librarySettings.SetupGet(x => x.NationalLanguage2Iso639Code).Returns("es");
+			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{

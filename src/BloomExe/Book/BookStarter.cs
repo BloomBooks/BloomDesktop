@@ -118,7 +118,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
 				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
-				var helper = new XMatterHelper(storage.Dom,_librarySettings.NameOfXMatterTemplate, _fileLocator);
+				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
 				helper.InjectXMatter( data);
 			}
 
