@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
+    <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\SizeAndOrientation.cs" />
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />

@@ -4,11 +4,11 @@ namespace Bloom.Book
 {
 	public class XMatterInfo
 	{
-		private readonly string _pathToFolder;
+		public readonly string PathToFolder;
 
 		public XMatterInfo(string pathToFolder)
 		{
-			_pathToFolder = pathToFolder;
+			PathToFolder = pathToFolder;
 		}
 
 		public override string ToString()
@@ -21,7 +21,7 @@ namespace Bloom.Book
 		public string Key
 		{
 			get {
-				var x = Path.GetFileName(_pathToFolder);
+				var x = Path.GetFileName(PathToFolder);
 				var end = x.ToLowerInvariant().IndexOf("-xmatter");
 				return x.Substring(0, end);
 			}

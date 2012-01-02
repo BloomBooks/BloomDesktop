@@ -71,7 +71,7 @@ namespace Bloom
 				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
 
 
-				builder.Register<IFileLocator>(c => new FileLocator(GetFileLocations())).InstancePerLifetimeScope();
+				builder.Register<IFileLocator>(c => new BloomFileLocator(c.Resolve<LibrarySettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
@@ -120,7 +120,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
+			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			yield return FactoryCollectionsDirectory;
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 
