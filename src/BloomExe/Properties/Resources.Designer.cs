@@ -144,6 +144,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap settings {
+            get {
+                object obj = ResourceManager.GetObject("settings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap WelcomeHeader {
             get {
                 object obj = ResourceManager.GetObject("WelcomeHeader", resourceCulture);
