@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -31,10 +32,21 @@ namespace Bloom.Book
 		{
 			_dom = dom;
 			_nameOfXMatterPack = nameOfXMatterPack;
-			var fileName = nameOfXMatterPack + "-XMatter.htm";
-			PathToXMatterHtml = fileLocator.LocateFile(fileName, "xmatter html file named " + fileName);
-			string styleSheetFileName = GetStyleSheetFileName();
-			PathToStyleSheetForPaperAndOrientation = fileLocator.LocateFile(styleSheetFileName, "css stylesheet named " + styleSheetFileName);
+			string directoryName = nameOfXMatterPack + "-XMatter";
+			var directoryPath = fileLocator.LocateDirectory(directoryName, "xmatter pack directory named " + directoryName);
+			string htmName = nameOfXMatterPack + "-XMatter.htm";
+			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
+			if(!File.Exists(PathToXMatterHtml))
+			{
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", htmName, directoryPath);
+				throw new ApplicationException();
+			}
+			PathToStyleSheetForPaperAndOrientation = directoryPath.CombineForPath(GetStyleSheetFileName());
+			if (!File.Exists(PathToXMatterHtml))
+			{
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
+				throw new ApplicationException();
+			}
 		}
 
 
