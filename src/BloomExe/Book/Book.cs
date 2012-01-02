@@ -452,14 +452,7 @@ namespace Bloom.Book
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
 				//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-				var data = new DataSet();
-				var lang = new MultiTextBase();
-				lang.SetAlternative("*", "(Your Language Name)");		//we don't wan to make it confusing by putting in the actual langauge name
-				data.TextVariables.Add("nameOfLanguage", new DataItem(lang, true));
-				data.WritingSystemCodes.Add("V", _librarySettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
-				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
-
+				var data = LoadDataSetFromLibrarySettings(true);
 				var helper = new XMatterHelper(dom,_librarySettings.XMatterPackName, _fileLocator);
 				helper.InjectXMatter( data);
 				GatherFieldValues(data, "*", dom);
@@ -468,16 +461,6 @@ namespace Bloom.Book
 
 			AddCoverColor(dom, CoverColor);
 			return dom;
-		}
-
-		private IEnumerable<string> GetTheLanguagesUsedInTextAreasOfDom(XmlDocument dom)
-		{
-			var langs = new Dictionary<string, int>();
-			foreach (XmlElement element in dom.SafeSelectNodes(String.Format("//textarea[@lang]")))
-			{
-				langs[element.GetAttribute("lang").Trim()] = 1;
-			}
-			return langs.Keys;
 		}
 
 		public Color CoverColor { get; set; }
@@ -779,16 +762,7 @@ namespace Bloom.Book
 		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
 		public DataSet UpdateFieldsAndVariables(XmlDocument domToRead)
 		{
-			var data = new DataSet();
-			var lang = new MultiTextBase();
-			lang.SetAlternative("*", _librarySettings.LanguageName);
-			data.TextVariables.Add("nameOfLanguage", new DataItem(lang, true));
-			var code = new MultiTextBase();
-			code.SetAlternative("*", _librarySettings.VernacularIso639Code);
-			data.TextVariables.Add("iso639Code", new DataItem(code, true));
-			data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
-			data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
-			data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
+			var data = LoadDataSetFromLibrarySettings(false);
 
 			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
@@ -803,6 +777,54 @@ namespace Bloom.Book
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
 				GetOrCreateElement("//head", "title").InnerText = t;
 				_storage.SetBookName(t);
+			}
+			return data;
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="makeGeneric">When we're showing shells, we don't wayt to make it confusing by populating them with this library's data</param>
+		/// <returns></returns>
+		private DataSet LoadDataSetFromLibrarySettings(bool makeGeneric)
+		{
+			var data = new DataSet();
+
+			data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
+			data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
+
+			if (makeGeneric)
+			{
+				data.WritingSystemCodes.Add("V", _librarySettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
+				data.AddGenericLanguageString("iso639Code", _librarySettings.VernacularIso639Code); //review: maybe this should be, like 'xyz"
+				data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)");
+				data.AddGenericLanguageString("country", "Your Country");
+				data.AddGenericLanguageString("province", "Your Province");
+				data.AddGenericLanguageString("district", "Your District");
+				data.AddGenericLanguageString("languageLocation", "(Language Location)");
+			}
+			else
+			{
+				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
+				data.AddGenericLanguageString("nameOfLanguage", _librarySettings.LanguageName);
+				data.AddGenericLanguageString("iso639Code", _librarySettings.VernacularIso639Code);
+				data.AddGenericLanguageString("country", _librarySettings.Country);
+				data.AddGenericLanguageString("province", _librarySettings.Province);
+				data.AddGenericLanguageString("district", _librarySettings.District);
+				string location = "";
+				if(!string.IsNullOrEmpty(_librarySettings.Province))
+					location +=  _librarySettings.Province+@", ";
+				if (!string.IsNullOrEmpty(_librarySettings.District))
+					location +=  _librarySettings.District;
+
+				location = location.TrimEnd(new[] {' '}).TrimEnd(new[] {','});
+
+				if (!string.IsNullOrEmpty(_librarySettings.Country))
+				{
+					location += "<br/>"+_librarySettings.Country;
+				}
+
+				data.AddGenericLanguageString("languageLocation", location);
 			}
 			return data;
 		}
