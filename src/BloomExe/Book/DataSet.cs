@@ -22,6 +22,13 @@ namespace Bloom.Book
 		public Dictionary<string, string> WritingSystemCodes { get; private set; }
 
 		public Dictionary<string, DataItem> TextVariables { get; private set; }
+
+		public void AddGenericLanguageString(string key, string value)
+		{
+			var code = new MultiTextBase();
+			code.SetAlternative("*", value);
+			TextVariables.Add(key, new DataItem(code, true));
+		}
 	}
 
 	public class DataItem
