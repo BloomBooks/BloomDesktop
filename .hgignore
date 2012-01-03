@@ -17,3 +17,10 @@ glob:HL - Health
 glob:Stuff to convert
 glob:_ReSharper
 glob:_ReSharper*
+syntax: glob
+Szn's Shell Books - Copy
+lib/xulrunner
+lib/XulRunner*
+lib/xulrunner*
+**.idea
+DistFiles/root/tmp*

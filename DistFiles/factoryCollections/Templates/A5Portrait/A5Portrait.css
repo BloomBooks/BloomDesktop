@@ -68,14 +68,6 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
-.coverBottomRow
-{
-	margin-top: 0px;
-	/*+placement:anchor-bottom-left 0px 21px;*/
-	position: absolute;
-	left: 0px;
-	bottom: 21px;
-}
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
@@ -83,97 +75,10 @@ TEXTAREA
 	font-size: 14pt;
 	width: 11.9cm;
 }
-.simpleBigVersoContents
-{
-	height: 18.1cm;
-	/*+placement:shift 0px 61px;*/
-	position: relative;
-	left: 0px;
-	top: 61px;
-}
 .imageOnTop TEXTAREA
 {
 	height: 7.7cm;
 	margin-top: 26px;
-}
-.cover .-bloom-vernacularBookTitle
-{
-	height: 3.7cm;
-	width: 423px;
-	font-size: 30pt;
-	text-align: center;
-	margin-top: 29px;
-}
-.cover .picture
-{
-	max-height: 12cm;
-	max-width: 13.2cm;
-}
-/*e.g. "Health" or "Math"*/
-.cover .-bloom-topicInNationalLanguage
-{
-	width: 5.8cm;
-	/*+placement:anchor-bottom-right -14.1cm 0px;*/
-	position: absolute;
-	right: -14.1cm;
-	bottom: 0px;
-	text-align: right;
-	height: 23px;
-}
-.cover .-bloom-nameOfLanguage
-{
-	text-align: left;
-	/*+placement:anchor-bottom-left 1cm 0px;*/
-	position: absolute;
-	left: 1cm;
-	bottom: 0px;
-	width: 8cm;
-}
-/*e.g. "Health" or "Math"*/
-.titlePage .-bloom-vernacularBookTitle
-{
-	top: 1cm;
-	height: 4.4cm;
-	text-align: center;
-	font-size: 25pt;
-}
-.titlePage .creditsHeading
-{
-	padding-top: 35px;
-}
-.titlePage .credits
-{
-	height: 5cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .shellCredits
-{
-	top: 1.5cm;
-	height: 5cm;
-	width: 12cm;
-	margin-left: 1cm;
-	position: relative;
-	text-align: center;
-}
-.titlePage .printingHistory
-{
-	height: 7.5cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .-bloom-nameOfLanguage
-{
-	margin-top: 0.1cm;
-	text-align: center;
-}
-/*the content is set in the preview.css. Here, we just position it*/
-.titlePage:after
-{
-	/*+placement:anchor-bottom-left 33px 0.2cm;*/
-	position: absolute;
-	left: 33px;
-	bottom: 0.2cm;
 }
 .imageOnTop .picture
 {
@@ -231,19 +136,19 @@ DIV.imageWholePage IMG
 	max-height: 18.6cm;
 	max-width: 12.2cm;
 }
+DIV.imageWholePage TABLE
+{
+	width: 556px;
+	height: 786px;
+}
 .imageOnBottom P.imageHolder
 {
 	height: 9cm;
 }
-.cover P.imageHolder
-{
-	height: 12cm;
-	text-align: center;
-}
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
 in a <p> which has a fixed height.*/
-.imageOnTop P.imageHolder
+.imageOnTop P.image1
 {
 	height: 9.7cm;
 	text-align: center;
@@ -256,4 +161,20 @@ DIV.-bloom-page:after
 	position: absolute;
 	left: 7.5cm;
 	top: 20.3cm;
+}
+/*It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
+DIV.textWholePage DIV
+{
+	overflow: hidden;
+	max-height: 660px;
+	min-height: 40px;
+}
+DIV.textWholePage TABLE
+{
+	width: 470px;
+	height: 668px;
+	/*+placement:shift 48px 59px;*/
+	position: relative;
+	left: 48px;
+	top: 59px;
 }

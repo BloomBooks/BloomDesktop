@@ -40,9 +40,9 @@ namespace Bloom.Publish
 
         private void UpdateDisplay()
         {
-            _coverRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.BookletCover;
-            _bodyRadio.Checked = _model.BookletStyle == PublishModel.BookletStyleChoices.BookletPages;
-            _noBookletRadio.Checked = _model.BookletStyle== PublishModel.BookletStyleChoices.None;
+            _coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
+            _bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
+            _noBookletRadio.Checked = _model.BookletPortion== PublishModel.BookletPortions.None;
         }
 
         public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -62,7 +62,11 @@ namespace Bloom.Publish
                     Cursor = Cursors.Default;
                     if (File.Exists(_model.PdfFilePath))
                     {
-                        _browser.Navigate(_model.PdfFilePath, true);
+						//http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
+                    	var path = _model.PdfFilePath;
+						//TODO: on delete, this file:\\ gives an error
+						//var path = "file:\\" + _model.PdfFilePath + "#view=Fit&navpanes=0&pagemode=thumbs&toolbar=1";
+						_browser.Navigate(path, true);
                     }
 
                     break;
@@ -98,11 +102,11 @@ namespace Bloom.Publish
         private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
         {
             if (_noBookletRadio.Checked)
-                _model.SetBookletStyle(PublishModel.BookletStyleChoices.None);
+                _model.SetBookletStyle(PublishModel.BookletPortions.None);
             else if (_coverRadio.Checked)
-                _model.SetBookletStyle(PublishModel.BookletStyleChoices.BookletCover);
+                _model.SetBookletStyle(PublishModel.BookletPortions.BookletCover);
             else
-                _model.SetBookletStyle(PublishModel.BookletStyleChoices.BookletPages);
+                _model.SetBookletStyle(PublishModel.BookletPortions.BookletPages);
             UpdateDisplay();
         }
     }

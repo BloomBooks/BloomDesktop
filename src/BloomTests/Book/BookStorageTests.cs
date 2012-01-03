@@ -40,20 +40,20 @@ namespace BloomTests.Book
 	    [Test]
         public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
         {
-            File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head><link rel='stylesheet' href='A5Portrait.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
+            File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='A5Portrait.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
             var storage = new BookStorage(_folder.FolderPath, _fileLocator);
             storage.Save();
-             AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
+             AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
         }
 
         [Test]
         public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
         {
-            File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
+            File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
             var storage = new BookStorage(_folder.FolderPath, _fileLocator);
             storage.Save();
-            AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
-            AssertThatXmlIn.File(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
+            AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
+            AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
         }
 
 
@@ -69,7 +69,7 @@ namespace BloomTests.Book
 
 	    private BookStorage GetInitialStorage()
 	    {
-	        File.WriteAllText(_bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
+	        File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
 	        var storage = new BookStorage(_folder.Path, _fileLocator);
 	        storage.Save();
 	        return storage;
@@ -78,7 +78,7 @@ namespace BloomTests.Book
         private BookStorage GetInitialStorageWithDifferentFileName(string bookName)
         {
             var bookPath = _folder.Combine(bookName + ".htm");
-            File.WriteAllText(bookPath, "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
+            File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
             var storage = new BookStorage(_folder.Path, _fileLocator);
             storage.Save();
             return storage;
@@ -106,7 +106,7 @@ namespace BloomTests.Book
             using (var y = new TemporaryFolder(_folder, "foo1"))
             using (var z = new TemporaryFolder(_folder, "foo2"))
             {
-                File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html xmlns='http://www.w3.org/1999/xhtml'><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
+                File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='-bloom-page'></div></body></html>");
             var storage = new BookStorage(original.Path, _fileLocator);
             storage.Save();
                 

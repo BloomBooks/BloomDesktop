@@ -19,15 +19,15 @@ namespace BloomTests.Book
         public void Setup()
         {
             _folder  =new TemporaryFolder("BookCollectionTests");
-            _fileLocator = new FileLocator(new string[]{});
+			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
             _collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-                BookStorageFactory, null,null, new CreateFromTemplateCommand());
+                BookStorageFactory, null,null, new CreateFromTemplateCommand(), new EditBookCommand());
         }
 
          Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
          {
-             return new Bloom.Book.Book(storage, true, null, null, new ProjectSettings(new NewProjectInfo(){PathToSettingsFile=ProjectSettings.GetPathForNewSettings(_folder.Path,"test"), Iso639Code = "xyz"}), null,
+			 return new Bloom.Book.Book(storage, true, null, _fileLocator, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
                                                       new PageSelection(),
                                                       new PageListChangedEvent());
          }

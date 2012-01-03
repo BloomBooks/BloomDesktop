@@ -6,43 +6,51 @@ BODY
 HTML
 {
 }
-
-h1, h2, h3, h4 {margin: 24pt 0 0 0 ;}
-p, li
+H1, H2, H3, H4
+{
+	margin: 24pt 0 0;
+}
+P, LI
 {
 	width: 550px;
 	text-align: left;
 	margin-top: 6px;
-    font-size: medium ;
-    line-height: 200%; 
+	font-size: medium;
+	line-height: 200%;
 }
-
-ul, li { 
-    padding-left: 10pt ; 
-   
+UL, LI
+{
+	padding-left: 10pt;
 }
-
-        .style1
-        {
-            background-color: #FFFF66;
-        }
-        .style2
-        {
-            color: #0099FF;
-        }
-        .style3
-        {
-            background-color: #CCFF99;
-        }
-
-pre {
-    font-family:monospace ;
-    background-color: lime ;
+.style1
+{
+	background-color: #FFFF66;
 }
-p.indent
+.style2
+{
+	color: #0099FF;
+}
+.style3
+{
+	background-color: #CCFF99;
+}
+PRE
+{
+	font-family: monospace;
+}
+P.indent
 {
 	/*+placement:shift 67px 1px;*/
 	position: relative;
 	left: 67px;
 	top: 1px;
+}
+DIV.note
+{
+	background: #F2E3E6;
+	border: 1px solid #CC6666;
+	text-align: left;
+	padding: 10px 10px 10px 18px;
+	-moz-border-radius-bottomleft: 4px;
+	-moz-border-radius-bottomright: 4px;
 }

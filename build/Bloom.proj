@@ -1,6 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
+		<Solution>Bloom VS2010.sln</Solution>
+		<ApplicationName>Bloom</ApplicationName>
+		<Configuration>Release</Configuration>
+		<LargeFilesDir>c:\builddownloads</LargeFilesDir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -9,12 +13,6 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-
-	<PropertyGroup>
-		<Solution>Bloom VS2010.sln</Solution>
-		<ApplicationName>Bloom</ApplicationName>
-		<Configuration>Release</Configuration>
-	</PropertyGroup>
 
   <Target Name="VersionNumbers">
     <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -26,7 +24,7 @@
     <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
     <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-    <CreateProperty Value="0.1.$(BuildCounter)">
+    <CreateProperty Value="0.3.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
    
@@ -45,12 +43,10 @@
     <MSBuild Projects="$(RootDir)/$(Solution)"
              Targets="Rebuild"
              Properties="Configuration=$(Configuration)" />
-    <!-- palaso image toolbox uses this for accessing scanners and cameras -->
-    <Copy SourceFiles ="../lib/Interop.WIA.dll" DestinationFolder ="../output/$(Configuration)"/>
   </Target>
 
 
-	<Target Name="Test" DependsOnTargets="Build">
+	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
@@ -78,7 +74,7 @@
     <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
      
     <Message Text="Attempting rsync of DownloadPointers.htm" Importance="high"/>
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' /> 
+    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' /> 
   </Target>
   
 
@@ -86,13 +82,13 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
     <Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
 
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' /> 
+    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' /> 
 
     <CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
 
    
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; GetWkhtmlToXIntoLib; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
   
     <!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
@@ -133,17 +129,32 @@
     </MakeWixForDirTree>
   </Target>
 
+  <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
+  <ItemGroup>
+    <XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
+    <!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
+  </ItemGroup>
+
+  
   <Target Name="GetXulRunnerIntoLib">
-    <RemoveDir
-           Directories="..\lib\XulRunner" />
-    <Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-1.9.2.13.en-US.win32.zip"
+    <RemoveDir Directories="..\lib\xulrunner" />
+    
+    <!-- we expect this has only one element, named "xulrunner"-->
+    <!-- always dies with errors in the unzipper
+        <Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
            TargetDirectory="..\lib\"/>
+           -->
+
+    <Copy
+        SourceFiles="@(XulRunnerFiles)"
+        DestinationFiles="@(XulRunnerFiles->'..\lib\xulrunner\%(RecursiveDir)%(Filename)%(Extension)')"
+        />
   </Target>
 
   <Target Name="GetWkhtmlToXIntoLib">
     <RemoveDir
            Directories="..\lib\wkhtmltopdf" />
-    <Unzip ZipFileName="$(XulRunnerZipLocation)\wkhtmltopdf-0.10.0_rc2.zip"
+    <Unzip ZipFileName="$(LargeFilesDir)\wkhtmltopdf-0.10.0_rc2.zip"
            TargetDirectory="..\lib\"/>
   </Target>
   
@@ -151,7 +162,7 @@
     <MakeWixForDirTree
                 DirectoryReferenceId="XulRunnerDir"
             		ComponentGroupId="XulRunner"
-				        RootDirectory="..\lib\XulRunner"
+				        RootDirectory="..\lib\xulrunner"
                 OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
                 MatchRegExPattern=".*"
 				>

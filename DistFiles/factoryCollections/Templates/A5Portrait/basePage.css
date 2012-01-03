@@ -34,7 +34,6 @@ INPUT[type=hidden]
 {
 	display: none !important;
 }
-
 FIELDSET, A IMG
 {
 	border: 0;
@@ -49,27 +48,33 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
-/*used with shellbooks where we want to hide all but one language*/
-TEXTAREA.hideMe
+DIV.-bloom-dataDiv
 {
-	visibility: hidden !important;
-	position: fixed !important;
+	display: none;
+}
+TEXTAREA
+{
+	resize: none;
+/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: hidden;
 }
 DIV.-bloom-page
 {
 	display: block;
 	page-break-after: auto;
 	background-color: #FFFFFF;
-	/*[ph]0*/
+}
+DIV.-bloom-dataPage
+{
+	display: none;
 }
 @media screen
 {
 	DIV.-bloom-page
 	{
-		/*[id]0*/border: 1px solid #000000;
+		border: 1px solid #000000;
 	}
 }
-
 .centered
 {
 	text-align: center;

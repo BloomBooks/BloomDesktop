@@ -146,29 +146,27 @@ namespace BloomTemp
             return new TempFile(path, true);
         }
 
-        public static TempFile CreateHtm()
-        {
-            return TempFile.TrackExisting(GetHtmlTempPath());
-        }
-        public static TempFile CreateHtm(string contents)
-        {
-            var t = TempFile.TrackExisting(GetHtmlTempPath());
-            using (var stream = File.CreateText(t.Path))
-            {
-                stream.WriteLine("contents");
-            }
-            return t;
-        }
-        public static TempFile CreateHtm(XmlNode dom)
+
+
+        public static TempFile CreateHtm5FromXml(XmlNode dom)
         {
             var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
-            using (var writer = XmlWriter.Create(temp.Path))
+			
+        	XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
+        	//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html;
+
+			using (var writer = XmlWriter.Create(temp.Path, settings))
             {
-                dom.WriteContentTo(writer);
+				dom.WriteContentTo(writer);
                 writer.Close();
             }
-            
+			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + File.ReadAllText(temp.Path));
+
             return temp;
         }
 

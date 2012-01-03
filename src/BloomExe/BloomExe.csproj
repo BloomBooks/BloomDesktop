@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Bloom</RootNamespace>
     <AssemblyName>Bloom</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>Bloom.Program</StartupObject>
     <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
@@ -39,48 +39,23 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\output\$(Configuration)\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\output\$(Configuration)\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisLogFile>..\..\output\debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\..\output\$(Configuration)\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisLogFile>..\..\output\release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=2.2.4.900, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Server.Common">
+      <HintPath>..\..\packages\JsonValue.0.5.0\lib\40\Microsoft.Server.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -90,18 +65,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
+    <Reference Include="PdfDroplet">
+      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+    </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Skybound.Gecko, Version=1.9.2.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Skybound.Gecko, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Skybound.Gecko.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\Skybound.Gecko.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Web" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -113,11 +91,20 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TidyManaged">
+      <HintPath>..\..\lib\TidyManaged.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
+    <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="Book\SizeAndOrientation.cs" />
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />
+    <Compile Include="Book\DataSet.cs" />
+    <Compile Include="Book\XMatterHelper.cs" />
+    <Compile Include="Book\XMatterInfo.cs" />
+    <Compile Include="Book\XMatterPackFinder.cs" />
     <Compile Include="Edit\ConfigurationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,6 +119,8 @@
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
     <Compile Include="Command.cs" />
+    <Compile Include="Edit\DynamicJson.cs" />
+    <Compile Include="Edit\JSONUtils.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
     <Compile Include="Edit\PlaceHolderPage.cs" />
     <Compile Include="Edit\SourceTextControl.cs">
@@ -150,10 +139,14 @@
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Library\SettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Library\SettingsDialog.Designer.cs">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProjectContext.cs" />
-    <Compile Include="ProjectSettings.cs" />
-    <Compile Include="Publish\Converter.cs" />
-    <Compile Include="Publish\PaperTarget.cs" />
+    <Compile Include="LibrarySettings.cs" />
     <Compile Include="Publish\PdfMaker.cs" />
     <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
@@ -163,18 +156,18 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewProject\KindOfProjectControl.cs">
+    <Compile Include="NewLibrary\KindOfLibraryControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewProject\KindOfProjectControl.Designer.cs">
-      <DependentUpon>KindOfProjectControl.cs</DependentUpon>
+    <Compile Include="NewLibrary\KindOfLibraryControl.Designer.cs">
+      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="NewProject\NewProjectDialog.cs">
+    <Compile Include="NewLibrary\NewLibraryDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewProject\NewProjectDialog.designer.cs">
-      <DependentUpon>NewProjectDialog.cs</DependentUpon>
+    <Compile Include="NewLibrary\NewLibraryDialog.designer.cs">
+      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\WelcomeControl.cs">
       <SubType>UserControl</SubType>
@@ -203,12 +196,6 @@
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </Compile>
     <Compile Include="Event.cs" />
-    <Compile Include="Experiment\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Experiment\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Book\BookCollection.cs" />
@@ -226,12 +213,6 @@
     <Compile Include="Library\LibraryView.Designer.cs">
       <DependentUpon>LibraryView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Experiment\PageControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Experiment\PageControl.Designer.cs">
-      <DependentUpon>PageControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -241,7 +222,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="TemplateCollectionList.cs" />
-    <Compile Include="Project\ProjectModel.cs" />
+    <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -249,11 +230,11 @@
       <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Project\ProjectView.cs">
+    <Compile Include="Workspace\WorkspaceView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Project\ProjectView.Designer.cs">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <Compile Include="Workspace\WorkspaceView.Designer.cs">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Browser.resx">
@@ -272,9 +253,6 @@
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Experiment\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="InfoView.resx">
       <DependentUpon>InfoView.cs</DependentUpon>
     </EmbeddedResource>
@@ -287,11 +265,14 @@
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Library\SettingsDialog.resx">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Publish\PublishView.resx">
       <DependentUpon>PublishView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectView.resx">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <EmbeddedResource Include="Workspace\WorkspaceView.resx">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -314,11 +295,11 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProject\KindOfProjectControl.resx">
-      <DependentUpon>KindOfProjectControl.cs</DependentUpon>
+    <EmbeddedResource Include="NewLibrary\KindOfLibraryControl.resx">
+      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProject\NewProjectDialog.resx">
-      <DependentUpon>NewProjectDialog.cs</DependentUpon>
+    <EmbeddedResource Include="NewLibrary\NewLibraryDialog.resx">
+      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>
@@ -331,6 +312,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -365,7 +347,8 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="XmlUtilities.cs" />
+    <Compile Include="XmlHtmlConverter.cs" />
+    <Compile Include="ToPalaso\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />
@@ -419,7 +402,13 @@
   <ItemGroup>
     <None Include="Resources\Error70x70.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy ..\..\lib\libtidy.dll $(OutDir)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
