@@ -1,6 +1,4 @@
-﻿using Bloom.Project;
-
-namespace Bloom
+﻿namespace Bloom
 {
     partial class Shell
     {

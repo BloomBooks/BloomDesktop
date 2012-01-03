@@ -1,0 +1,74 @@
+BODY
+{
+	font-family: sans-serif;
+	background: #E5EEF6;
+	margin-left: 39px;
+	height: 386px;
+	width: 499px;
+}
+INPUT
+{
+	/*+placement:shift;*/
+	position: relative;
+	left: 0;
+	top: 0;
+}
+INPUT.year
+{
+	/*+placement:shift -2px 16px;*/
+	position: relative;
+	left: -2px;
+	top: 16px;
+	font-size: x-large;
+	width: 81px;
+	height: 34px;
+	margin-bottom: 12px;
+}
+DIV#monthNames
+{
+	width: 221px;
+	/*[empty]height:;*/
+	/*+placement:shift 243px -200px;*/
+	position: relative;
+	left: 243px;
+	top: -200px;
+}
+H1
+{
+	margin-bottom: 4px;
+	font-size: x-large;
+}
+DIV#dayNames
+{
+	/*[empty]width:;*/
+}
+#dayNames INPUT
+{
+	width: 35px;
+}
+LABEL
+{
+	width: 2.5em;
+	font-weight: bold;
+	float: left;
+	text-align: left;
+}
+#dayNames LABEL
+{
+	width: 105px;
+}
+#monthNames LABEL
+{
+	width: 28px;
+	height: 9px;
+	margin-top: 5px;
+}
+LABEL.year
+{
+	font-size: x-large;
+	font-weight: bold;
+	/*+placement:shift 0px 18px;*/
+	position: relative;
+	left: 0px;
+	top: 18px;
+}

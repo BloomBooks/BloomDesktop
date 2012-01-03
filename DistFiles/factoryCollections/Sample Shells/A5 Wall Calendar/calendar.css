@@ -1,0 +1,93 @@
+.month TABLE
+{
+	padding: 1cm;
+}
+.month THEAD TD
+{
+	font-weight: bold;
+	font-size: larger;
+}
+.month THEAD TH
+{
+	width: 3em;
+	text-align: center;
+}
+.month TD
+{
+	text-align: center;
+}
+.calendarMonthBottom TABLE
+{
+	/*+placement:shift 45px 25px;*/
+	position: relative;
+	left: 45px;
+	top: 25px;
+}
+.calendarMonthBottom TH
+{
+	text-align: center;
+	font-weight: bold;
+}
+.calendarMonthBottom TD
+{
+	width: 96px;
+	height: 66px;
+	border: 1px solid #000000;
+	margin: 0;
+	padding: 0 0 0 2px;
+}
+.calendarMonthBottom TD TEXTAREA
+{
+	width: 88px;
+	height: 34px;
+	font-size: 9pt;
+	/*+placement:shift 4px -9px;*/
+	position: relative;
+	left: 4px;
+	top: -9px;
+}
+.calendarTopPagePicture.picture
+{
+	/*+placement:shift -26px 60px;*/
+	position: relative;
+	left: -26px;
+	top: 60px;
+}
+.calendarBottomPageHeader
+{
+	/*+placement:shift -29px 14px;*/
+	position: relative;
+	left: -29px;
+	top: 14px;
+	text-align: center;
+	font: 35.3pt sans-serif;
+	width: 777px;
+	height: 64px;
+}
+.calendarTopPageText
+{
+	/*+placement:shift -12px 38px;*/
+	position: relative;
+	left: -12px;
+	top: 38px;
+	text-align: center;
+	width: 724px;
+	height: 61px;
+}
+.calendarMonthBottom TD P
+{
+	/*+placement:shift -34px -7px;*/
+	position: relative;
+	left: -34px;
+	top: -7px;
+}
+.calendarMonthTop P.imageHolder IMG
+{
+	max-width: 19.1cm;
+	max-height: 8cm;
+	min-height: 5cm;
+}
+.calendarMonthTop P.imageHolder
+{
+	height: 11.7cm;
+}

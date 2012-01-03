@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
+using Palaso.Reporting;
 
 namespace Bloom.Book
 {
@@ -23,17 +24,21 @@ namespace Bloom.Book
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookStarter.Factory _bookStarterFactory;
 		private readonly BookSelection _bookSelection;
+		private readonly EditBookCommand _editBookCommand;
+		private readonly LibrarySettings _librarySettings;
 
 		public BookCollection(string path, CollectionType collectionType,
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
 			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
-			CreateFromTemplateCommand createFromTemplateCommand)
+			CreateFromTemplateCommand createFromTemplateCommand,
+			  EditBookCommand editBookCommand)
 		{
 			_path = path;
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_bookStarterFactory = bookStarterFactory;
 			_bookSelection = bookSelection;
+			_editBookCommand = editBookCommand;
 			Type = collectionType;
 
 			//we only pay attention if we are the editable collection 'round here.
@@ -47,30 +52,42 @@ namespace Bloom.Book
 
 		private void CreateFromTemplate(Book templateBook)
 		{
+			//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
 			var starter = _bookStarterFactory();
-			var path = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+			var newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+
+			if (Configurator.IsConfigurable(newBookFolder))
+			{
+				var c = new Configurator(_path);
+				if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
+				{
+					return; // the template had a configuration page and they clicked "cancel"
+				}
+				c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
+			}
 
 
 			ListOfBooksIsOutOfDate();
-			if (CollectionChanged != null)
-				CollectionChanged.Invoke(this, null);
-			var newBook = _books.Find(b => b.FolderPath == path);
-			if (Configurator.IsConfigurable(newBook.RawDom))
-			{
-				if(DialogResult.Cancel == Configurator.ShowConfigurationDialog(newBook.GetPathHtmlFile()))
-				{
-					newBook.Delete();// Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(path);
-					ListOfBooksIsOutOfDate();
-					if (CollectionChanged != null)
-						CollectionChanged.Invoke(this, null);
-					return; // the template had a configuration page and they clicked "cancel"
-				}
-			}
+			NotifyCollectionChanged();
+			var newBook = _books.Find(b => b.FolderPath == newBookFolder);
 
 			if (_bookSelection != null)
 			{
 				 _bookSelection.SelectBook(newBook);
 			}
+			//enhance: would be nice to know if this is a new shell
+			if(templateBook.IsShellOrTemplate)
+			{
+				UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
+			}
+			//go straight into editing
+			_editBookCommand.Raise(newBook);
+		}
+
+		private void NotifyCollectionChanged()
+		{
+			if (CollectionChanged != null)
+				CollectionChanged.Invoke(this, null);
 		}
 
 		public void DeleteBook(Book book)

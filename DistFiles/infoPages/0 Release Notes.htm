@@ -1,5 +1,7 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 <head>
+	<meta charset="UTF-8">
 <link  rel="stylesheet" href="style.css" type="text/css" />
 <title>Release Notes</title>
 </head>
@@ -12,6 +14,73 @@
 <p class="indent" >
 Thanks for checking out this pre-release version of Bloom, which has been made available for experimentation and creation of shell books. It is not yet ready for wide-scale use.
 </p>
+
+<h3>0.3: ? Dec 2011</h3>
+	<h4>Format Changes</h4>
+	<p>Style name change: coverBottomBookKind --&gt; coverBottomBookTopic</p>
+	<p>Shells and templates may no longer include front or back matter pages.</p>
+	<p>
+		Introduced Factory-XMatter.htm and accompanying stylesheet.&nbsp; The contents
+		of this are now inserted into each new book.&nbsp; These templates, which will
+		be replaced by organizations/countries for their own needs, are populated by
+		data from a combination of sources:
+	</p>
+	<ul>
+		<li>&nbsp;Data from the library: language name, province, district, etc.</li>
+		<li>&nbsp;Data from the &quot;-bloomDataPage&quot; div of the shellbook itself. E.g.,
+			acknowledgments, copyright, license.</li>
+		<liData from the user. E.g. Translator name.</li>
+	</ul>
+	<h4>&nbsp;UI improvements:</h4>
+	<ul>
+		<li>First editable text box is now automatically focused</li>
+		<li>The currently focused text box is now highlighted with a colored border.</li>
+		<li>elements with &quot;data-hint=&#39;tell the user something&quot; now create a nice
+			speech-bubble on the right</li>
+	</ul>
+	<h4>0.3: 9 Dec 2011</h4>
+
+Format change: id attributes are no longer used in textareas or img's.
+'hideme' class is no longer used to hide elements in languages other than those in the current publication. Instead, hiding is now the reponsibility of "languageDisplay.css", still based on the @lang attributes of elements.
+	 evelopers can now right-click on pages and choose "View in System Browser". You can then have access to every bit of info you could want about the html, stylesheets, & scripts, using firefug (Firefox), or Chrome developer tools.
+
+<h4>0.3: 1 Dec 2011</h4>
+	<p>--Breaking Changes--<br />
+		I&#39;ve abandoned the attempt to store Bloom files as xml html5.&nbsp;
+		I risked death by a thousand paper cuts.&nbsp; So, as of this version, Bloom
+		uses strictly-valid HTML5 (whether well-formed-xml or not).&nbsp; Internally,
+		it&#39;s still doing xml; it uses HTML Tidy to convert to xml as needed.&nbsp; Other
+		validation issues:</p>
+	<p>The header material has changed so that it now passes the w3c validation for
+		html5, with the only remaning complaint being the proprietary &lt;meta&gt; tags.</p>
+	<p>&lt;meta&gt; tags now use @name attributes, instead of @id attributes.&nbsp; See the
+		updated File Format help topic for updated information.</p>
+	<h4>0.3: 30 Nov 2011</h4>
+	---Breaking Changes-- <br />Making use of a new capabilty offered by html5, many formerly "special" classes have been moved to div-* attributes:
+		<table>
+		<thead><tr><th>old</th><th>new</th></tr></thead>
+		<tr><td>class=&quot;-bloom-vernacularBookTitle&quot;</td><td>data-book="vernacularBookTitle"</td></tr>
+		<tr><td>class="-bloom-topicInNationalLanguage"</td><td>data-book="topicInNationalLanguage"</td></tr>
+		<tr><td>class="_myCustomVariable"</td><td>data-book="myCustomVariable"</td></tr>
+		<tr><td>class="-bloom-nameOfLanguage"</td><td>data-library="nameOfLanguage"</td></tr>
+		<tr><td>class="-bloom-singleton</td><td>data-page="singleton"</td></tr>
+		<tr><td>class="-bloom-extraPage</td><td>data-page="extra"</td></tr>
+		<tr><td>class="-bloom-required</td><td>data-page="required"</td></tr>
+		</table>
+
+<h4>0.3: 29 Nov 2011</h4>
+	---Breaking Changes--- Moved collections locations to
+	c:\programdata\sil\bloom\collections. Formerly, the sil part was missing. Bloom
+	now creates this folder automatically. Now avoiding the word &quot;project&quot;, in favor
+	of &quot;library&quot;. So now you &quot;create a library for your language&quot;. This change also
+	shows up in configuration files, so if anyone has an existing *.BloomLibrary
+	file, throw away the whole folder.
+
+<h4>0.3: 25 Nov 2011</h4>
+A5 Wall Calendar now usable, with vernacular days and months. Could use a graphic designer's love, though.
+
+<h4>0.3: 24 Nov 2011</h4>
+In the image toolbox, you can now reuse metadata (license, copyright, illustrator) from the last image you edited.
 
 <h2>Limitations</h2>
 <p>This version has the following limitations (and probably many others). Feel free to suggest your priorities, especially if you're contributing to the Bloom project in some way :-)</p>
@@ -39,11 +108,6 @@ Thanks for checking out this pre-release version of Bloom, which has been made a
 Please email problems to Bloom's issue tracking system at <a href="mailto:issues@bloom.palaso.org">issues@bloom.palaso.org</a>
 <h2>Got Art Of Reading?</h2>
 <p>Bloom doesn't install Art Of Reading, but it works very well with it.
-You can freely place AOR on any computer, without paying for it, according to its license.
-But you must only copy the pictures (which SIL owns), not the software (which is commercial).
-To do this, follow these steps:
-<p>1) Create a folder named "Art of Reading" at the root of your "C:\" drive.
-<p>2) Copy the "Images" folder from the Art of Reading CD into that folder.</p>
-Now, when you click on an image in a book, Bloom will let you search for an AOR image.
+	It is free, and now comes with embedded metadata,
 </body>
 </html>

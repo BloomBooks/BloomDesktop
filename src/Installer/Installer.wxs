@@ -30,9 +30,9 @@ users to install just the shortcut for your app, then demand-install the
 rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
-	<PropertyRef Id="NETFRAMEWORK35" />
-	<Condition Message="Before Bloom can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of Bloom's requirements can be found at Bloom.org/wiki/Prerequisites.">
-	  Installed OR NETFRAMEWORK35
+	<PropertyRef Id="NETFRAMEWORK40CLIENT" />
+	<Condition Message="Before Bloom can install on older computers, you need to install Microsoft's free .NET Framework 4.0 (at least the smalle 'client profile'.  A full discussion of Bloom's requirements can be found at http://bloom.palaso.org/download ">
+	  Installed OR NETFRAMEWORK40CLIENT
 	</Condition>
 
 	<!--because of bug, this needs to be 1 -->
@@ -90,8 +90,12 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		   <Component Id="Palaso.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5634}">
 			<File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
 		  </Component>
+
 		  <Component Id="PalasoUIWindowsForms.dll" Guid="{A7046B6E-668C-4a4d-A866-719922C142B5}">
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
+		  </Component>
+		  <Component Id="Newtonsoft.Json.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5644}">
+			<File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" KeyPath="yes" Source="..\..\output\release\Newtonsoft.Json.dll" />
 		  </Component>
 		  <!-- used by PalasoUIWindowsForms for talking to scanner-->
 		  <Component Id="Interop.WIA.dll" Guid="{47038218-2646-4F83-BE95-4F83A8D41811}">
@@ -101,9 +105,18 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="Skybound.Gecko.dll" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
 			<File Id="Skybound.Gecko.dll" Name="Skybound.Gecko.dll" KeyPath="yes" Source="..\..\output\release\Skybound.Gecko.dll" />
 		  </Component>
+		  <Component Id="libtidy.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
+			<File Id="libtidy.dll" Name="libtidy.dll" KeyPath="yes" Source="..\..\output\release\libtidy.dll" />
+		  </Component>
+		  <Component Id="tidymanaged.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC621}">
+			<File Id="tidymanaged.dll" Name="tidymanaged.dll" KeyPath="yes" Source="..\..\output\release\tidymanaged.dll" />
+		  </Component>
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
+		  </Component>
+		  <Component Id="PdfDroplet.exe" Guid="{B192D381-F993-463E-9AA6-0920AFEFC637}">
+			<File Id="PdfDroplet.exe" Name="PdfDroplet.exe" KeyPath="yes" Source="..\..\output\release\PdfDroplet.exe" />
 		  </Component>
 		</Directory>
 	  </Directory>
@@ -117,8 +130,12 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="Palaso.dll"/>
 	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
 	  <ComponentRef Id="Interop.WIA.dll" />
+	  <ComponentRef Id="Newtonsoft.Json.dll"/>
+	  <ComponentRef Id="tidymanaged.dll"/>
+	  <ComponentRef Id="libtidy.dll"/>
 	  <ComponentRef Id="Skybound.Gecko.dll" />
 	  <ComponentRef Id="PdfSharp.dll" />
+	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
 	  <ComponentGroupRef Id ="DistFiles"/>
 	  <ComponentGroupRef Id="wkhtmltopdf" />

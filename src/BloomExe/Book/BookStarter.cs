@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Palaso.Code;
+using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -13,24 +18,38 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookStarter
 	{
+		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private LanguageSettings _languageSettings;
+		private readonly LibrarySettings _librarySettings;
+		private bool _isShellLibrary;
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings)
+		public BookStarter(IFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
 		{
+			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
+			_librarySettings = librarySettings;
+			_isShellLibrary = librarySettings.IsShellLibrary;
 		}
 
+		public bool TestingSoSkipAddingXMatter { get; set; }
+
+		/// <summary>
+		/// Given a template, make a new book
+		/// </summary>
+		/// <param name="sourceTemplateFolder"></param>
+		/// <param name="parentCollectionPath"></param>
+		/// <returns>path to the new book folder</returns>
 		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
 
-			//TODO: all this gets thrown away, and replaced by what is found in the textarea with class "-bloom-vernacularBookTitle"
+			//TODO: is this meta value at odds with with data-book="bookTitle" somewhere in the book?
 			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
-			// defaultNameForDerivedBooks, but maybe there is a reason
+			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
 
 			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
@@ -44,6 +63,7 @@ namespace Bloom.Book
 
 				//the destination may change here...
 				newBookFolder = SetupDocumentContents(newBookFolder);
+
 			}
 			catch (Exception)
 			{
@@ -55,13 +75,15 @@ namespace Bloom.Book
 
 		private string GetPathToHtmlFile(string folder)
 		{
-			var candidates = Directory.GetFiles(folder, "*.htm");
-			if (candidates.Length == 1)
-				return candidates[0];
+			var candidates = from x in Directory.GetFiles(folder, "*.htm")
+							 where !(x.ToLower().EndsWith("configuration.htm"))
+							 select x;
+			if (candidates.Count() == 1)
+				return candidates.First();
 			else
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm file in each folder ({0}).", folder);
+					"There should only be a single htm file in each folder ({0}). [not counting configuration.htm]", folder);
 				throw new ApplicationException();
 			}
 
@@ -72,11 +94,34 @@ namespace Bloom.Book
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
+			UpdateEditabilityIndicator(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
+
+			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
+			//	for shells, we'll still have pages.
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'-bloom-extraPage')]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
+			//remove any x-matter left over from the shell book
+			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-frontMatter')]"))
+			{
+				div.ParentNode.RemoveChild(div);
+			}
+
+			//now add in the xmatter from the currently selected xmatter pack
+			if (!TestingSoSkipAddingXMatter)
+			{
+				var data = new DataSet();
+				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.VernacularIso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.NationalLanguage1Iso639Code));
+				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
+				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
+				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
+				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
+				helper.InjectXMatter( data);
+			}
+
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
@@ -89,52 +134,36 @@ namespace Bloom.Book
 			return storage.FolderPath;
 		}
 
-		public static void SetupPage(XmlElement pageDiv, string isoCode)
-		{
-			MakeNewIdsForAllRepeatableElements(pageDiv);
 
-			MakeVernacularElementsForPage(pageDiv, isoCode);
+		private void UpdateEditabilityIndicator(BookStorage storage)
+		{
+
+			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
+			//created book is translationOnly. Any derivatives will then act as shells.  But it won't
+			//prevent us from editing it while in a shell-making library, since we don't honor this
+			//tag in shell-making libraries.
+			if(_isShellLibrary)
+				BookStorage.UpdateMetaElement(storage.Dom, "editability", "translationOnly");
+
+			//otherwise, stick with whatever it came in with.  All shells will come in with translationOnly,
+			//all templates will come in with 'open'.
+//			else
+//			{
+//				n.SetAttribute("content", "open");
+//			}
+		}
+
+
+		public static void SetupPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
+		{
+			PrepareElementsOnPage(pageDiv, isoCode);//, inShellMode);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
-			pageDiv.SetAttribute("class", pageDiv.GetAttribute("class").Replace("-bloom-extraPage", "").Trim());
+			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
+	   }
 
-
-			// the "descendant-or-self access is broken on our SafeSelectNodes, so we have to check self independently
-			//this is needed when we're actually setting up a single page that was just inserted from a template
-		   //     MakeVernacularElementsForPage((XmlElement)pageDiv,isoCode);
-
-			BookStorage.HideAllTextAreasThatShouldNotShow(pageDiv, isoCode, string.Empty);
-		}
-
-		/// <summary>
-		/// This is to keep us from ending up with two things with the same id, caused by making two or more pages from the same template page
-		/// </summary>
-		/// <param name="pageDiv"></param>
-		private static void MakeNewIdsForAllRepeatableElements(XmlElement pageDiv)
-		{
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//div"))
-			{
-					node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//textarea"))
-			{
-				if (node.SelectSingleNodeHonoringDefaultNS("ancestor::div[contains(@class, '-bloom-configurationPage')]")==null)
-					node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//p"))
-			{
-				node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-
-			foreach (XmlElement node in pageDiv.SafeSelectNodes("//img"))
-			{
-				node.SetAttribute("id", Guid.NewGuid().ToString());
-			}
-		}
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
@@ -157,119 +186,83 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// For each group of textareas in the div which have lang attributes, make a new text area
-		/// with the lang code of the vernacular
+		/// For each group of editable elements in the div which have lang attributes, make a new element
+		/// with the lang code of the vernacular.
+		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="pageDiv"></param>
-		private static void MakeVernacularElementsForPage(XmlElement pageDiv, string isoCode)
+		public static void PrepareElementsOnPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
 		{
-			foreach (var groupId in GetParagraphIdTextAreaGroupsInSinglePageDiv(pageDiv))
+			foreach (var element in GetEditableGroupsInSinglePageDiv(pageDiv))
 			{
-				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "textarea");
+				MakeVernacularElementForOneGroup(element, isoCode, "textarea");
+				MakeVernacularElementForOneGroup(element, isoCode, "*[@contentEditable='true' or @contenteditable='true']");
 			}
-			foreach (var groupId in GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(pageDiv))
+			foreach (var element in GetParagraphsWithFieldsAndTextInSinglePageDiv(pageDiv))
 			{
-				MakeVernacularElementForOneGroup(pageDiv, groupId, isoCode, "p");
+				MakeVernacularElementForOneGroup(element, isoCode, "p");
 			}
-			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages)
-			XmlNodeList textareasWithoutLang =
-				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//textarea[not(@lang)]", pageDiv.GetAttribute("id")));
-			if (textareasWithoutLang.Count == 0)
+			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
+			foreach (XmlElement element in pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)] | //*[(@contentEditable='true'  or @contenteditable='true') and not(@lang)]")))
 			{
-				//TODO: this is a repeat of the problem described above
-				//hack, which should only bear fruit when we're being called with a single page during template page insertion
-				textareasWithoutLang = pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)]"));
-			}
-			foreach (XmlElement textarea in textareasWithoutLang)
-			{
-				textarea.SetAttribute("lang", isoCode);
+				element.SetAttribute("lang", isoCode);
 			}
 		}
 
-		private static void MakeVernacularElementForOneGroup(XmlElement pageDiv, string groupId, string isoCode, string elementName)
+		/// <summary>
+		/// For each group (meaning they have a common parent) of editable items, we
+		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
+		/// </summary>
+		private static void MakeVernacularElementForOneGroup(XmlElement groupElement, string vernacularCode, string elementTag)
 		{
-			//there may be several (english, Tok Pisin, etc.), but we just grab the first one and copy it
-			//for the vernacular
-			//could not get this to work: var textareas = SafeSelectNodes(pageDiv, string.Format("//textarea[@id='{0}']", groupId));
+			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
 
-			string nonParagraphElementSelector = "/" + elementName;
-
-			/* we aren't fishing for something underneath the paragraph level,
-			 * we're actuallylooking for simple paragraphs that are in a
-			 * language (e.g. they'd be non-editable areas where we're repeating
-			 * the value of some variable you can edit elsewhere)
-			 */
-			if (elementName.ToLower() == "p")
-				nonParagraphElementSelector = "";
-
-			//TODO: This is Broken, so when we pass in a single page, it never finds any text areas
-			XmlNodeList editableElementsWithinTheIndicatedParagraph =
-				pageDiv.SafeSelectNodes(string.Format("//div[@id='{0}']//p[@id='{1}']" + nonParagraphElementSelector,
-													  pageDiv.GetAttribute("id"), groupId));
 			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-			{
-				//hack, which should only bear fruit when we're being called with a single page during template page insertion
-
-				editableElementsWithinTheIndicatedParagraph = pageDiv.SafeSelectNodes(string.Format("//p[@id='{0}']"+nonParagraphElementSelector, groupId));
-
-				if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-					return;
-			}
-			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
-									  where x.GetAttribute("lang") == isoCode
-									  select x;
-			if (alreadyInVernacular.Count() > 0)
 				return;
-			//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 
-			if (ContainsClass(editableElementsWithinTheIndicatedParagraph[0], "-bloom-showNational"))
+			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
+									  where x.GetAttribute("lang") == vernacularCode
+									  select x;
+			if (alreadyInVernacular.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
+				return;
+
+
+			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'-bloom-translationGroup')]").Count == 0)
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
-			//no... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
+
+			//REVIEW... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
+
 			if (prototype.HasAttribute("lang"))
 			{
-				if (elementName == "p") // don't leave copies around from the template language
+				if (elementTag == "p") // don't leave copies around from the template language
 				{
-					prototype.SetAttribute("lang", isoCode);
+					prototype.SetAttribute("lang", vernacularCode);
 				}
 				else // for textareas, we *do* want copies around, because they are used for prompting in shellbooks
 				{
 					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-					vernacularCopy.SetAttribute("lang",isoCode);
-					vernacularCopy.SetAttribute("id", Guid.NewGuid().ToString());
+					vernacularCopy.SetAttribute("lang",vernacularCode);
+					//if there is an id, get rid of it, because we don't want 2 elements with the same id
+					vernacularCopy.RemoveAttribute("id");
+
 					vernacularCopy.InnerText = string.Empty;
 				}
 			}
 		}
 
 		/// <summary>
-		/// All textareas which are just the same thing in different languages must share the same @id.
+		/// All textareas which are just the same thing in different languages must by contained within a paragraph.
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetParagraphIdTextAreaGroupsInSinglePageDiv(XmlElement pageDiv)
+		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement pageDiv)
 		{
-			List<string> groups = new List<string>();
-			foreach (XmlElement textArea in pageDiv.SafeSelectNodes("//textarea"))
+			foreach (XmlElement element in pageDiv.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
 			{
-				if (textArea.ParentNode.Name.ToLower() != "p")
-				{
-					//maybe not... if we don't want it to be editable but stay in the national language....
-					//Debug.Faile("All textareas need to be wrapped in a paragaraph");
-					continue;//ignore it
-				}
-
-				var groupId = ((XmlElement)textArea.ParentNode).GetAttribute("id");
-				if (string.IsNullOrEmpty(groupId))
-				{   //we're happy to create the guid id's for incoming documents
-					groupId = Guid.NewGuid().ToString();
-					((XmlElement) textArea.ParentNode).SetAttribute("id", groupId);
-				}
-				if (!groups.Contains(groupId))
-					groups.Add(groupId);
+				yield return (XmlElement) element.ParentNode;
 			}
-			return groups;
 		}
 
 
@@ -279,31 +272,23 @@ namespace Bloom.Book
 		/// <remarks>maybe the "AndText" part won't be desirable...</remarks>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static List<string> GetIdsOfParagraphsWithVariablesInClassAndTextInSinglePageDiv(XmlElement pageDiv)
+		private static IEnumerable<XmlElement> GetParagraphsWithFieldsAndTextInSinglePageDiv(XmlElement pageDiv)
 		{
-			List<string> groups = new List<string>();
-			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[contains(@class,'_') or contains(@class, '-bloom-')]"))
+			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@data-book or @data-library]"))
 			{
-			   var id = paragraph.GetAttribute("id");
-				//we're happy to add guids if they're missing.
-				if(string.IsNullOrEmpty(id))
-				{
-					id = Guid.NewGuid().ToString();
-					paragraph.SetAttribute("id", id);
-				}
 				var text = paragraph.InnerText.Trim();
 			   if (!string.IsNullOrEmpty(text))
-					groups.Add(id);
+				yield return pageDiv;
 			}
-			return groups;
 		}
+
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 
 			string name = Path.GetFileName(sourcePath);
 
 			var storage = _bookStorageFactory(sourcePath);
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@id='defaultNameForDerivedBooks']");
+			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 			if(nameSuggestion.Count>0)
 			{
 				name = ((XmlElement) nameSuggestion[0]).GetAttribute("content");

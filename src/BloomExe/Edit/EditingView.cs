@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -7,7 +8,10 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Newtonsoft.Json.Linq;
+using Palaso.Extensions;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -23,7 +27,7 @@ namespace Bloom.Edit
 		private readonly PasteCommand _pasteCommand;
 		private readonly UndoCommand _undoCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private string _previousClickElementId;
+		private GeckoElement _previousClickElement;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -46,7 +50,80 @@ namespace Bloom.Edit
 			SetupThumnailLists();
 			_model.SetView(this);
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
+			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
+
 		}
+
+		private Action _pendingMessageHandler;
+		private void _handleMessageTimer_Tick(object sender, EventArgs e)
+		{
+			_handleMessageTimer.Enabled = false;
+			_pendingMessageHandler();
+			_pendingMessageHandler = null;
+		}
+
+		private void OnGeckoReady(object sender, EventArgs e)
+		{
+			//bloomEditing.js raises this textGroupFocussed event
+			_browser1.WebBrowser.AddMessageEventListener("textGroupFocused", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
+
+			_browser1.WebBrowser.AddMessageEventListener("divClicked", (data =>
+																			{
+																				//I found that while in this handler, we can't call any javacript back, so we
+																				//instead just return and handle it momentarily
+																				_handleMessageTimer.Enabled = true;
+																				_pendingMessageHandler = (()=>
+																											{
+																												JObject existing = JObject.Parse(data.ToString());
+
+																												Metadata metadata = new Metadata();
+																												metadata.CopyrightNotice = existing["copyright"].Value<string>();
+																												var url = existing["licenseUrl"].Value<string>();
+																												//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+																												if (url == null || url.Trim() == "")
+																												{
+																													metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+																												}
+																												else
+																												{
+																													metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
+																												}
+
+																												using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+																												{
+																													dlg.ShowCreator = false;
+																													if (DialogResult.OK == dlg.ShowDialog())
+																													{
+																														string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+																														if (File.Exists(imagePath))
+																															File.Delete(imagePath);
+																														dlg.Metadata.License.GetImage().Save(imagePath);
+																														string result =
+																															string.Format(
+																																"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
+																																dlg.Metadata.CopyrightNotice,
+																																"license.png",
+																																dlg.Metadata.License.Url, dlg.Metadata.License.GetDescription("en"));
+																														_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+
+																													}
+																												}
+																											})
+																				;
+																			}));
+		}
+
+
+
+
+		/// <summary>
+		/// called when jscript raisese the textGroupFocussed event.  That jscript lives (at the moment) in initScript.js
+		/// </summary>
+		private void OnTextGroupFocussed(string translationsInAllLanguages)
+		{
+			_model.HandleUserEnteredTextGroup(translationsInAllLanguages);
+		}
+
 
 		private void SetupThumnailLists()
 		{
@@ -76,20 +153,27 @@ namespace Bloom.Edit
 			{
 				_splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
 			}
-			else                //Templates only
+			else if (_model.ShowTemplatePanel)        //Templates only
 			{
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 			}
 		}
 
-		void VisibleNowAddSlowContents(object sender, EventArgs e)
+	   void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
-			Application.Idle -=new EventHandler(VisibleNowAddSlowContents);
+		   //TODO: this is causing green boxes when you quit while it is still working
+		   //we should change this to a proper background task, with good
+		   //cancellation in case we switch documents.  Note we may also switch
+		   //to some other way of making the thumbnails... e.g. it would be nice
+		   //to have instant placeholders, with thumbnails later.
+
+			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
 			Cursor = Cursors.WaitCursor;
 			_model.ActualVisibiltyChanged(true);
 			Cursor = Cursors.Default;
 		}
+
 
 		protected override void OnVisibleChanged(EventArgs e)
 		{
@@ -145,41 +229,36 @@ namespace Bloom.Edit
 		{
 			if (_model.HaveCurrentEditableBook)
 			{
-				_model.SaveNow();
+				//try
+				{
+					_model.SaveNow();
+				}
+//				catch()
+//				{
+//					//there is an error here where we're getting a save
+//				}
 			}
 		}
 
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
-		   // UpdateDisplay();
 			var ge = e as GeckoDomEventArgs;
+			if (ge.Target == null)
+				return;//I've seen this happen
+
 			if (ge.Target.TagName == "IMG")
 				OnClickOnImage(ge);
-			if (ge.Target.TagName.ToLower() == "textarea")
-				OnClickTextArea(ge.Target);
-		}
-
-		private void OnClickTextArea(GeckoElement element)
-		{
-			//this might be too heavy-handed, but I added it to fix a bug
-			//where two clicks would actually take the focus out of the text area:
-
-			// was always true... as if gecko was making a new element each time
-			//if(element!=_previousClickElement)
-				if (element.Id != _previousClickElementId)
-				{
-				//todo: what about if they tab to it?
-				_model.HandleUserEnteredArea(element);
-			}
-			_previousClickElementId = element.Id;
 		}
 
 		private void OnClickOnImage(GeckoDomEventArgs ge)
 		{
 			if (!_model.CanChangeImages())
 				return;
+			if (ge.Target.ClassName.Contains("licenseImage"))
+				return;
 
+			Cursor = Cursors.WaitCursor;
 			string currentPath = ge.Target.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
@@ -194,14 +273,14 @@ namespace Bloom.Edit
 					//todo: log this
 				}
 			};
-			using(var dlg = new ImageToolboxDialog(imageInfo))
+			using(var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				if(DialogResult.OK== dlg.ShowDialog())
 				{
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						_model.ChangePicture(ge.Target.Id, dlg.ImageInfo);
+						_model.ChangePicture(ge.Target, dlg.ImageInfo);
 					}
 					catch(System.IO.IOException error)
 					{
@@ -217,6 +296,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
+			Cursor = Cursors.Default;
 		}
 
 

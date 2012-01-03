@@ -10,15 +10,15 @@ namespace Bloom.ToPalaso
 {
 	public partial class WelcomeControl: UserControl
 	{
-		private string _defaultParentDirectoryForProjects;
+		private string _defaultParentDirectoryForLibrarys;
 		private  MostRecentPathsList _mruList;
-		private Func<string, bool> _looksLikeValidProjectPredicate;
-		private string _createNewProjectButtonLabel;
-		private Func<NewProjectInfo> _createNewProjectAndReturnPath;
+		private Func<string, bool> _looksLikeValidLibraryPredicate;
+		private string _createNewLibraryButtonLabel;
+		private Func<NewLibraryInfo> _createNewLibraryAndReturnPath;
 		private string _browseLabel;
 		private string _filterString;
 
-		public event EventHandler DoneChoosingOrCreatingProject;
+		public event EventHandler DoneChoosingOrCreatingLibrary;
 
 		public WelcomeControl()
 		{
@@ -27,20 +27,20 @@ namespace Bloom.ToPalaso
 		}
 
 		public void Init(MostRecentPathsList mruList,
-			string defaultParentDirectoryForProjects,
-			string createNewProjectButtonLabel,
-			string browseForOtherProjectsLabel,
+			string defaultParentDirectoryForLibrarys,
+			string createNewLibraryButtonLabel,
+			string browseForOtherLibrarysLabel,
 			string filterString,
-			Func<string, bool> looksLikeValidProjectPredicate,
-			Func<NewProjectInfo> createNewProjectAndReturnPath)
+			Func<string, bool> looksLikeValidLibraryPredicate,
+			Func<NewLibraryInfo> createNewLibraryAndReturnPath)
 		 {
 			_filterString = filterString;
-			_createNewProjectAndReturnPath = createNewProjectAndReturnPath;
-			_browseLabel = browseForOtherProjectsLabel;
-			_defaultParentDirectoryForProjects = defaultParentDirectoryForProjects;
-			_createNewProjectButtonLabel = createNewProjectButtonLabel;
+			_createNewLibraryAndReturnPath = createNewLibraryAndReturnPath;
+			_browseLabel = browseForOtherLibrarysLabel;
+			_defaultParentDirectoryForLibrarys = defaultParentDirectoryForLibrarys;
+			_createNewLibraryButtonLabel = createNewLibraryButtonLabel;
 			_mruList = mruList;
-			_looksLikeValidProjectPredicate = looksLikeValidProjectPredicate;
+			_looksLikeValidLibraryPredicate = looksLikeValidLibraryPredicate;
 			//this.pictureBox1.Image = headerImage;
 		  }
 
@@ -66,7 +66,7 @@ namespace Bloom.ToPalaso
 			var openChoices = new TableLayoutPanel();
 			openChoices.AutoSize = true;
 			AddSection("Open", openChoices);
-			AddOpenProjectChoices(openChoices);
+			AddOpenLibraryChoices(openChoices);
 			flowLayoutPanel1.Controls.AddRange(new Control[] { createAndGetGroup, openChoices });
 		}
 
@@ -84,7 +84,7 @@ namespace Bloom.ToPalaso
 
 		private void AddFileChoice(string path, TableLayoutPanel panel)
 		{
-			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "template", true, openRecentProject_LinkClicked, panel);
+			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "template", true, openRecentLibrary_LinkClicked, panel);
 			button.Tag = path;
 		}
 
@@ -127,9 +127,9 @@ namespace Bloom.ToPalaso
 		private void AddCreateChoices(TableLayoutPanel panel)
 		{
 			AddSection("Create", panel);
-			AddChoice(_createNewProjectButtonLabel, string.Empty, "newProject", true, CreateNewProject_LinkClicked, panel);
+			AddChoice(_createNewLibraryButtonLabel, string.Empty, "newLibrary", true, CreateNewLibrary_LinkClicked, panel);
 		   // For wesay, we can add a method to allow the client dialog to add ones like this:
-			//AddChoice("Create new project from FLEx LIFT export", string.Empty, "flex", true, OnCreateProjectFromFLEx_LinkClicked, panel);
+			//AddChoice("Create new project from FLEx LIFT export", string.Empty, "flex", true, OnCreateLibraryFromFLEx_LinkClicked, panel);
 		}
 
 		private void AddGetChoices(TableLayoutPanel panel)
@@ -158,41 +158,41 @@ namespace Bloom.ToPalaso
 //                }
 //            }
 
-			if (!Directory.Exists(_defaultParentDirectoryForProjects))
+			if (!Directory.Exists(_defaultParentDirectoryForLibrarys))
 			{
 				//e.g. mydocuments/wesay
-				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
+				Directory.CreateDirectory(_defaultParentDirectoryForLibrarys);
 			}
-//			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(_defaultParentDirectoryForProjects))
+//			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(_defaultParentDirectoryForLibrarys))
 //            {
 //                if (DialogResult.Cancel == dlg.ShowDialog())
 //                    return;
-//				SelectProjectAndClose(dlg.PathToNewProject);
+//				SelectLibraryAndClose(dlg.PathToNewLibrary);
 //            }
 		}
 
 		private void OnGetFromUsb(object sender, EventArgs e)
 		{
-			if (!Directory.Exists(_defaultParentDirectoryForProjects))
+			if (!Directory.Exists(_defaultParentDirectoryForLibrarys))
 			{
 				//e.g. mydocuments/wesay
-				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
+				Directory.CreateDirectory(_defaultParentDirectoryForLibrarys);
 			}
-//			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(_defaultParentDirectoryForProjects))
+//			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(_defaultParentDirectoryForLibrarys))
 //            {
-//            	dlg.Model.ProjectFilter = dir => _looksLikeValidProjectPredicate(dir);
+//            	dlg.Model.LibraryFilter = dir => _looksLikeValidLibraryPredicate(dir);
 //                if (DialogResult.Cancel == dlg.ShowDialog())
 //                    return;
-//				SelectProjectAndClose(dlg.PathToNewProject);
+//				SelectLibraryAndClose(dlg.PathToNewLibrary);
 //            }
 		}
 
-//        private static bool GetLooksLikeWeSayProject(string directoryPath)
+//        private static bool GetLooksLikeWeSayLibrary(string directoryPath)
 //        {
 //            return Directory.GetFiles(directoryPath, "*.WeSayConfig").Length > 0;
 //        }
 
-		private void AddOpenProjectChoices(TableLayoutPanel panel)
+		private void AddOpenLibraryChoices(TableLayoutPanel panel)
 		{
 			if (_mruList != null)
 			{
@@ -210,12 +210,12 @@ namespace Bloom.ToPalaso
 			{
 				AddChoice("MRU list must be set at runtime", string.Empty, "blah blah", true, null, panel);
 			}
-			AddChoice(_browseLabel, string.Empty, "browse", true, OnBrowseForExistingProjectClick, panel);
+			AddChoice(_browseLabel, string.Empty, "browse", true, OnBrowseForExistingLibraryClick, panel);
 		}
 
-		private void openRecentProject_LinkClicked(object sender, EventArgs e)
+		private void openRecentLibrary_LinkClicked(object sender, EventArgs e)
 		{
-			SelectProjectAndClose(((Button) sender).Tag as string);
+			SelectLibraryAndClose(((Button) sender).Tag as string);
 		}
 
 		public string SelectedPath
@@ -223,44 +223,44 @@ namespace Bloom.ToPalaso
 			get; private set;
 		}
 
-		private void OnBrowseForExistingProjectClick(object sender, EventArgs e)
+		private void OnBrowseForExistingLibraryClick(object sender, EventArgs e)
 		{
-			if(!Directory.Exists(_defaultParentDirectoryForProjects))
+			if(!Directory.Exists(_defaultParentDirectoryForLibrarys))
 			{
-				Directory.CreateDirectory(_defaultParentDirectoryForProjects);
+				Directory.CreateDirectory(_defaultParentDirectoryForLibrarys);
 			}
 
 			using (var dlg = new OpenFileDialog())
 			{
-				dlg.Title = "Open Project";
+				dlg.Title = "Open Library";
 
 				dlg.Filter = _filterString;
-				//dlg.InitialDirectory = _defaultParentDirectoryForProjects;
+				//dlg.InitialDirectory = _defaultParentDirectoryForLibrarys;
 				dlg.CheckFileExists = true;
 				dlg.CheckPathExists = true;
 				if (dlg.ShowDialog(this) == DialogResult.Cancel)
 					return;
 
-				SelectProjectAndClose(dlg.FileName);
+				SelectLibraryAndClose(dlg.FileName);
 			}
 		}
 
-		private void CreateNewProject_LinkClicked(object sender, EventArgs e)
+		private void CreateNewLibrary_LinkClicked(object sender, EventArgs e)
 		{
-			var desiredOrExistingSettingsFilePath = _createNewProjectAndReturnPath();
+			var desiredOrExistingSettingsFilePath = _createNewLibraryAndReturnPath();
 			if (desiredOrExistingSettingsFilePath == null)
 				return;
-			var settings = new ProjectSettings(desiredOrExistingSettingsFilePath);
-			SelectProjectAndClose(settings.SettingsFilePath);
+			var settings = new LibrarySettings(desiredOrExistingSettingsFilePath);
+			SelectLibraryAndClose(settings.SettingsFilePath);
 		}
 
-		public void SelectProjectAndClose(string path)
+		public void SelectLibraryAndClose(string path)
 		{
 			SelectedPath = path;
 			if(!string.IsNullOrEmpty(path))
 			{
 				_mruList.AddNewPath(path);
-				Invoke(DoneChoosingOrCreatingProject);
+				Invoke(DoneChoosingOrCreatingLibrary);
 			}
 		}
 
@@ -269,11 +269,11 @@ namespace Bloom.ToPalaso
 			LoadButtons();
 		}
 
-//        private void OnCreateProjectFromFLEx_LinkClicked(object sender, EventArgs e)
+//        private void OnCreateLibraryFromFLEx_LinkClicked(object sender, EventArgs e)
 //        {
-//            if (NewProjectFromFlexClicked != null)
+//            if (NewLibraryFromFlexClicked != null)
 //            {
-//                NewProjectFromFlexClicked.Invoke(this, null);
+//                NewLibraryFromFlexClicked.Invoke(this, null);
 //            }
 //        }
 

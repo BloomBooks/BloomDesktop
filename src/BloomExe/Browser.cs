@@ -2,17 +2,24 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
 using Palaso.Xml;
 using Skybound.Gecko;
+using Skybound.Gecko.DOM;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
 	public partial class Browser : UserControl
 	{
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool SetDllDirectory(string lpPathName);
 
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -21,11 +28,39 @@ namespace Bloom
 		private TempFile _tempHtmlFile;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
-	  private  UndoCommand _undoCommand;
+		private  UndoCommand _undoCommand;
 		private  CutCommand _cutCommand;
 		public event EventHandler OnBrowserClick;
 
 
+		public static void SetUpXulRunner()
+		{
+			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (!Directory.Exists(xulRunnerPath))
+			{
+
+				//if this is a programmer, go look in the lib directory
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+											 Path.Combine("lib", "xulrunner"));
+
+				//on my build machine, I really like to have the dir labelled with the version.
+				//but it's a hassle to update all the other parts (installer, build machine) with this number,
+				//so we only use it if we don't find the unnumbered alternative.
+				if(!Directory.Exists(xulRunnerPath))
+					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+												 Path.Combine("lib", "xulrunner8"));
+
+				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
+				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
+				//	build/build.win.proj: change the zip file to match the new name
+
+
+			}
+			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
+			SetDllDirectory(xulRunnerPath);
+
+			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
+		}
 
 		public Browser()
 		{
@@ -50,9 +85,9 @@ namespace Bloom
 			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
   */      }
 
-		public void Save(string path)
+		public void SaveHTML(string path)
 		{
-			_browser.SaveDocument(path);
+			_browser.SaveDocument(path, "text/html");
 		}
 
 		private void UpdateEditButtons()
@@ -68,7 +103,8 @@ namespace Bloom
 
 		void OnValidating(object sender, CancelEventArgs e)
 		{
-			UpdateDomWithNewEditsCopiedOver();
+			LoadPageDomFromBrowser();
+			//_afterValidatingTimer.Enabled = true;//LoadPageDomFromBrowser();
 		}
 
 		/// <summary>
@@ -88,6 +124,7 @@ namespace Bloom
 			}
 			base.Dispose(disposing);
 		}
+		public GeckoWebBrowser WebBrowser { get { return _browser; } }
 
 		protected override void OnLoad(EventArgs e)
 		{
@@ -100,8 +137,6 @@ namespace Bloom
 			}
 
 			_browser = new GeckoWebBrowser();
-
-
 
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
@@ -119,30 +154,19 @@ namespace Bloom
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
-			_browser.GotFocus += new EventHandler(_browser_GotFocus);
 
 			_updateCommandsTimer.Enabled = true;//hack
-		}
-
-		void _browser_GotFocus(object sender, EventArgs e)
-		{
-
-		}
+			WebBrowser.JavascriptError += (sender, error) =>
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
+																 error.Filename, error.Line, error.Message);
+			};
+			RaiseGeckoReady();
+	   }
 
 		void _browser_DocumentCompleted(object sender, EventArgs e)
 		{
-		  _browser.Focus();
-		  //_setInitialFocusTimer.Enabled = true;
-		  var textareas = _browser.Document.GetElementsByTagName("textarea");
-		  if (textareas.Count > 0)
-		  {
-//              textareas[0].Focus();//doesn't work
 
-		/* will work in geckofx 2
-		 *  var area = (textareas[0].DomObject as nsIDOMHTMLTextAreaElement);
-			  area.focus();
-		 */
-		  }
 		}
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
@@ -156,17 +180,16 @@ namespace Bloom
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
 			Debug.WriteLine("Navigating " + e.Uri);
-			//e.Cancel = true;
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
-
-			if(_tempHtmlFile!=null)
-			{
-				_tempHtmlFile.Dispose();
-				_tempHtmlFile = null;
-			}
+		   //NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
+//    		if(_tempHtmlFile!=null)
+//    		{
+//				_tempHtmlFile.Dispose();
+//    			_tempHtmlFile = null;
+//    		}
 			//didn't seem to do anything:  _browser.WebBrowserFocus.SetFocusAtFirstElement();
 		}
 
@@ -185,9 +208,8 @@ namespace Bloom
 		public void Navigate(XmlDocument dom)
 		{
 			_pageDom = dom;
-			AddJavaScriptForEditing(_pageDom);
-			MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
-			SetNewTempFile(TempFile.CreateHtm(dom));
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
 		}
@@ -201,24 +223,7 @@ namespace Bloom
 			_tempHtmlFile = tempFile;
 		}
 
-		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
-		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
 
-			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
-		}
 
 		private void UpdateDisplay()
 		{
@@ -229,73 +234,94 @@ namespace Bloom
 			{
 				_browser.Visible = true;
 				_browser.Navigate(_url);
-
 			}
 		}
 
+
+		private void _afterValidatingTimer_Tick(object sender, EventArgs e)
+		{
+			_afterValidatingTimer.Enabled = false;
+			//LoadPageDomFromBrowser();
+		}
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
 		/// </summary>
-		private void UpdateDomWithNewEditsCopiedOver()
+		private void LoadPageDomFromBrowser()
 		{
 			if (_pageDom == null)
 				return;
 
+			//TODO: this made us have a blank screen most of the time, even if the we didn't run any script at all. Tom is looking into an alternative way to jscript
+			//RunJavaScript("cleanup()");
+
 			//this is to force an onblur so that we can get at the actual user-edited value
 			_browser.WebBrowserFocus.Deactivate();
+			_browser.WebBrowserFocus.Activate();
 
-			foreach (XmlElement node in _pageDom.SafeSelectNodes("//input"))
-			{
-				var id = node.GetAttribute("id");
-				node.SetAttribute("value", _browser.Document.GetElementById(id).GetAttribute("value"));
-			}
+			var body = _browser.Document.GetElementsByTagName("body");
+			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+				return;
 
-			foreach (XmlElement node in _pageDom.SafeSelectNodes("//textarea"))
+			var content = body[0].InnerHtml;
+			XmlDocument dom;
+
+			//todo: deal with exception that can come out of this
+			try
 			{
-				var id = node.GetAttribute("id");
-				if (string.IsNullOrEmpty(id))
+				dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
+				var bodyDom = dom.SelectSingleNode("//body");
+
+				if (_pageDom == null)
+					return;
+
+				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				if (destinationDomPage == null)
+					return;
+				var expectedPageId = destinationDomPage["id"];
+
+				var browserPageId = bodyDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				if (browserPageId == null)
+					return;//why? but I've seen it happen
+
+				var thisPageId = browserPageId["id"];
+				if(expectedPageId != thisPageId)
 				{
-					throw new ApplicationException("Could not find the id '"+id+"' in the textarea");
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
+					return;
 				}
-				else
+				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+
+				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
+				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 				{
-					foreach(var element in _browser.Document.GetElementsByTagName("textarea"))
-					{
-						if (element.Id == id)
-						{
-							node.InnerText = element.InnerHtml;
-						   // Debug.WriteLine(element.InnerHtml);
-							break;
-						}
-					}
-					//todo: notice if this should fail to find a match... that'd be awfully bad!
+					j.ParentNode.RemoveChild(j);
 				}
-			}
-		}
+				foreach (XmlAttribute j in _pageDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+				{
+					j.OwnerElement.RemoveAttributeNode(j);
+				}
 
-		/// <summary>
-		/// When editting using a browser (at least, gecko), we can't actually
-		/// just grab the new value of, say, a textarea.  Gecko will always return the
-		/// original value to us, even after being editted.
-		/// But from *within* the browser, javascript can get at the new values.
-		/// So here, we inject some javascript which
-		/// copies the editted values back into the dom.
-		/// </summary>
-		private void AddJavaScriptForEditing(XmlDocument dom)
-		{
-			//ref: http://dev-answers.blogspot.com/2007/08/firefox-does-not-reflect-input-form.html
-			foreach (XmlElement node in dom.SafeSelectNodes("//input"))
+			}
+			catch(Exception e)
 			{
-				node.SetAttribute("onblur", "", "this.setAttribute('Value',this.value);");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (invalid incoming html).\r\n\r\n+{0}", e);
+				return;
 			}
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
+
+
+
+			try
 			{
-				node.SetAttribute("onblur", "","this.innerHTML = this.value;");
+				XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageDom.OuterXml);
 			}
+			catch (Exception e)
+			{
+				var exceptionWithHtmlContents = new Exception(content);
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (validating page).\r\n\r\n+{0}", e.Message);
+			}
+
 		}
-
-
 
 		private void OnUpdateDisplayTick(object sender, EventArgs e)
 		{
@@ -307,7 +333,7 @@ namespace Bloom
 		/// </summary>
 		public void ReadEditableAreasNow()
 		{
-			UpdateDomWithNewEditsCopiedOver();
+			LoadPageDomFromBrowser();
 		}
 
 		public void Copy()
@@ -315,17 +341,70 @@ namespace Bloom
 			_browser.CopySelection();
 		}
 
-		private void _setInitialFocusTimer_Tick(object sender, EventArgs e)
+		/// <summary>
+		/// add a jscript source file
+		/// </summary>
+		/// <param name="filename"></param>
+		public void AddScriptSource(string filename)
 		{
-			if (_browser.Focused )
-			{
-				_setInitialFocusTimer.Enabled = false;
-				var textareas = _browser.Document.GetElementsByTagName("textarea");
-				if (textareas.Count > 0)
-				{
-					textareas[0].Focus();//doesn't work
-				}
-			}
+			if (!File.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
+				throw new FileNotFoundException(filename);
+
+			GeckoDocument doc = WebBrowser.Document;
+			var head = doc.GetElementsByTagName("head").First();
+			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
+			script.Type = "text/javascript";
+			script.Src = filename;
+			head.AppendChild(script);
 		}
+
+		public void AddScriptContent(string content)
+		{
+			GeckoDocument doc = WebBrowser.Document;
+			var head = doc.GetElementsByTagName("head").First();
+			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
+			script.Type = "text/javascript";
+			script.Text = content;
+			head.AppendChild(script);
+		}
+
+		public void RunJavaScript(string script)
+		{
+			//NB: someday, look at jsdIDebuggerService, which has an Eval
+
+			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,
+
+
+			WebBrowser.Navigate("javascript:void(" +script+")");
+			// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
+			//var filter = new TestMessageFilter();
+			//Application.AddMessageFilter(filter);
+				Application.DoEvents();
+
+
+			//NB: Navigating and Navigated events are never raised. I'm going under the assumption for now that the script blocks
+	   }
+
+
+
+		/* snippets
+		 *
+		 * //           _browser.WebBrowser.Navigate("javascript:void(document.getElementById('output').innerHTML = 'test')");
+//            _browser.WebBrowser.Navigate("javascript:void(alert($.fn.jquery))");
+//            _browser.WebBrowser.Navigate("javascript:void(alert($(':input').serialize()))");
+			//_browser.WebBrowser.Navigate("javascript:void(document.getElementById('output').innerHTML = form2js('form','.',false,null))");
+			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
+
+			*/
+		public event EventHandler GeckoReady;
+
+		public void RaiseGeckoReady()
+		{
+			EventHandler handler = GeckoReady;
+			if (handler != null) handler(this, null);
+		}
+
+
 	}
+
 }

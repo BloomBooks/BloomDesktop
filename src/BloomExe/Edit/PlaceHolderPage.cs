@@ -35,7 +35,7 @@ namespace Bloom.Edit
 			return null;
 		}
 
-		public Dictionary<string, string> GetSourceTexts(string idOfOneTextAreaInTheGroup)
+		public Dictionary<string, string> GetSourceTexts(string groupId, string vernacularCode)
 		{
 			return new Dictionary<string, string>();
 		}

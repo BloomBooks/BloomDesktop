@@ -8,8 +8,7 @@ using Palaso.Xml;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and
-	/// letting you print it.
+	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it.
 	/// </summary>
 	public class PublishModel : IDisposable
 	{
@@ -21,11 +20,18 @@ namespace Bloom.Publish
 			NoBook, Working, ShowPdf
 		}
 
-		public enum BookletStyleChoices
+		public enum BookletPortions
 		{
 			None,
 			BookletCover,
 			BookletPages
+		}
+
+		public enum BookletLayoutMethod
+		{
+			SideFold,
+			CutAndStack,
+			Calendar
 		}
 
 		private readonly BookSelection _bookSelection;
@@ -38,7 +44,7 @@ namespace Bloom.Publish
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletStyle = BookletStyleChoices.BookletPages;
+			BookletPortion = BookletPortions.BookletPages;
 		}
 
 		public PublishView View { get; set; }
@@ -68,11 +74,11 @@ namespace Bloom.Publish
 				SetDisplayMode(DisplayModes.Working);
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletStyle);
+				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
-				MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(dom);
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
 				 using (var tempHtml = TempFile.WithExtension(".htm"))
 				{
@@ -85,7 +91,8 @@ namespace Bloom.Publish
 						dom.WriteContentTo(writer);
 						writer.Close();
 					}
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, BookletStyle);
+					var sizeAndOrientation = SizeAndOrientation.FromDom(_bookSelection.CurrentSelection.RawDom);
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape, _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion);
 				}
 			}
 			catch (Exception e)
@@ -95,25 +102,6 @@ namespace Bloom.Publish
 				return;
 			}
 			SetDisplayMode(DisplayModes.ShowPdf);
-		}
-
-		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
-		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
-
-			foreach (XmlElement node in dom.SafeSelectNodes("//script"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
 		}
 
 		private string GetPdfPath(string fileName)
@@ -160,15 +148,15 @@ namespace Bloom.Publish
 			}
 		}
 
-		public BookletStyleChoices BookletStyle
+		public BookletPortions BookletPortion
 		{ get; private set; }
 
-		public void SetBookletStyle(BookletStyleChoices booklet)
+		public void SetBookletStyle(BookletPortions booklet)
 		{
-			if (BookletStyle == booklet)
+			if (BookletPortion == booklet)
 				return;
 
-			BookletStyle = booklet;
+			BookletPortion = booklet;
 			LoadBook();
 		}
 	}

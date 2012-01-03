@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="SampleShells.bloomLibrary" Guid="31e21879-ab33-44f8-9278-2ef8d5ef890b" />
+  <File Id="A5_Wall_Calendar.zip" Guid="814e1f53-a163-48b3-b332-54d187915d19" />
+</InstallerMetadata>

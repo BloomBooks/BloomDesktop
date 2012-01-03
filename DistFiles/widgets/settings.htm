@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<title>Bloom Settings</title>
+		<link type="text/css" href="css/bloom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+		<link type="text/css" href="settings.css" rel="stylesheet" />
+		<!-- Load jQuery and the minified plugin -->
+		<script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery.dform-0.1.4.min.js"></script>
+
+		<style type="text/css">
+				input, label {
+						display: block;
+				}
+		</style>
+
+		<script type='text/javascript'>
+
+			$(document).ready(function(){
+				// Create a form from some JSON
+				$("#myform").buildForm({
+					"action": "index.html",
+					"method": "get",
+					"elements": [
+						{
+									"type" : "tabs",
+									"resizable" :
+									{
+										"minHeight" : 180,
+										"minWidth" : 300
+									},
+									"entries" :
+									{
+										"tab1":
+										{
+											"caption" : "Languages",
+											"elements" :
+											[
+												{
+													"name" : "V",
+													"caption" : "Vernacular Language",
+													"type" : "text"
+												},
+												{
+												   "type" : "select",
+													"name" : "N1",
+													"caption" : "National Language 1",
+												   "options" :
+												   {
+													   "zh" : "中文",
+													   "id" : "Bahasa Indonesia",
+													   "en" :
+													   {
+														   "selected" : "true",
+														   "html" : "English"
+													   },
+													   "es" : "Español",
+													   "fr" : "Français",
+													   "sw" : "Kiswahili",
+													   "pt" : "Português",
+													   "th" : "ไทย",
+													   "tpi" : "Tok Pisin",
+													   "tl" : "Wikang Tagalog"
+												   }
+											   },
+												{
+												   "type" : "select",
+													"name" : "N2",
+													"caption" : "National Language 2 (optional)",
+												   "options" :
+												   {
+													   "" : "--",
+													   "zh" : "中文",
+													   "id" : "Bahasa Indonesia",
+													   "en" : "English",
+													   "es" : "Español",
+													   "fr" : "Français",
+													   "sw" : "Kiswahili",
+													   "pt" : "Português",
+													   "th" : "ไทย",
+													   "tpi" : "Tok Pisin",
+													   "tl" : "Wikang Tagalog"
+												   }
+											   }
+											]
+										},
+										"tab2" :
+										{
+											"caption" : "Book Making",
+											"elements" :
+											[
+												{
+																								   "type" : "select",
+																									"name" : "xmatter",
+																									"caption" : "Front & Back Matter Pack",
+																								   "options" :
+																								   {
+																										"factory" :
+																										{
+																											"selected" : "true",
+																											"html" : "Default"
+																										},
+																									   "SIL-Indonesia" : "Indonesia SIL"
+																								   }
+																							   }
+											]
+										},
+										"tab3" :
+										   {
+											   "caption" : "Project Information",
+											   "elements" :
+											   [
+												   {
+													  "type" : "text",
+													   "name" : "country",
+													   "caption" : "Country"
+												   },
+												   {
+													  "type" : "text",
+													   "name" : "province",
+													   "caption" : "Province"
+												   },
+												   {
+													  "type" : "text",
+													   "name" : "district",
+													   "caption" : "District"
+												   }
+											   ]
+										   }
+									}
+								}
+					]
+				});
+
+			});
+		</script>
+		<script>$("button").button()</script>
+	</head>
+	<body>
+		<form id="myform"></form>
+		<ul class="bottomButtons">
+			<li><button id="cancel">Cancel</button></li>
+			<li><button id="ok">OK</button></li>
+		</ul>
+	</body>
+</html>

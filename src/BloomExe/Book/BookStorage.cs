@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Xml;
 using Palaso.Code;
+using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
@@ -23,7 +25,7 @@ namespace Bloom.Book
 	{
 		XmlDocument Dom { get; }
 		Book.BookType BookType { get; }
-		string GetTemplateKey();
+		string GetTemplateName();
 		string Key { get; }
 		bool LooksOk { get; }
 		string FileName { get; }
@@ -33,7 +35,7 @@ namespace Bloom.Book
 		bool TryGetPremadeThumbnail(out Image image);
 		XmlDocument GetRelocatableCopyOfDom();
 		bool DeleteBook();
-		void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
+		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
 		string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
@@ -43,6 +45,12 @@ namespace Bloom.Book
 
 	public class BookStorage : IBookStorage
 	{
+		/// <summary>
+		/// History of this number:
+		///		0.4 had version 0.4
+		/// </summary>
+		private const string kBloomFormatVersion = "0.4";
+
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
 		public string ErrorMessages;
@@ -57,7 +65,11 @@ namespace Bloom.Book
 			Dom = new XmlDocument();
 
 			RequireThat.Directory(folderPath).Exists();
-			if (File.Exists(PathToExistingHtml))
+			if (!File.Exists(PathToExistingHtml))
+			{
+				throw new ApplicationException("Could not determine which html file in the folder to use.");
+			}
+			else
 			{
 				ErrorMessages = ValidateBook(PathToExistingHtml);
 				if (!string.IsNullOrEmpty(ErrorMessages))
@@ -70,7 +82,8 @@ namespace Bloom.Book
 				else
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
-					Dom.Load(PathToExistingHtml);
+
+					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml); //with throw if there are errors
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -79,25 +92,15 @@ namespace Bloom.Book
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				//add a unique id for our use
-	 //review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
+				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
 				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
 					if(string.IsNullOrEmpty(node.GetAttribute("id")))
 						node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
 
-				foreach (XmlElement node in Dom.SafeSelectNodes("//textarea"))
-				{
-					if (string.IsNullOrEmpty(node.GetAttribute("id")))
-						node.SetAttribute("id", Guid.NewGuid().ToString());
-				}
-
-				foreach (XmlElement node in Dom.SafeSelectNodes("//img"))
-				{
-					if (string.IsNullOrEmpty(node.GetAttribute("id")))
-						node.SetAttribute("id", Guid.NewGuid().ToString());
-			 }
 				UpdateSupportFiles();
+
 			}
 		}
 
@@ -110,14 +113,13 @@ namespace Bloom.Book
 			UpdateIfNewer("basePage.css");
 			UpdateIfNewer("previewMode.css");
 
-			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Portrait.css"))
+			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
-				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
+				var file = Path.GetFileName(path);
+				if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
+					UpdateIfNewer(file);
 			}
-			foreach (var paperStyleSheet in Directory.GetFiles(_folderPath, "*Landscape.css"))
-			{
-				UpdateIfNewer(Path.GetFileName(paperStyleSheet));
-			}
+
 		}
 		private void UpdateIfNewer(string fileName)
 		{
@@ -177,12 +179,17 @@ namespace Bloom.Book
 				{
 					continue;
 				}
+				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
+				href = href.Replace("%5C", "/");
+
 
 				var fileName = Path.GetFileName(href);
 				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
 					var path = fileLocator.LocateOptionalFile(fileName);
-					if (string.IsNullOrEmpty(path))
+
+					if (string.IsNullOrEmpty(path)||
+							path.Contains("languageDisplay.css")) //todo: this feels hacky... problem is that unlike most stylesheets, it is customized for this folder, and the ones found in the factorytemplates should not be used.
 					{
 						//look in the same directory as the book
 						var local = Path.Combine(_folderPath, fileName);
@@ -195,7 +202,7 @@ namespace Bloom.Book
 					}
 					else
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
 					}
 				}
 			}
@@ -227,6 +234,24 @@ namespace Bloom.Book
 			dom.AddStyleSheet("basePage.css");
 		}
 
+		/// <summary>
+		/// creates if necessary, then updates the named <meta></meta> in the head of the html
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		public static void UpdateMetaElement(XmlDocument dom, string name, string value)
+		{
+			XmlElement n = dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
+			if (n == null)
+			{
+				n = dom.CreateElement("meta");
+				n.SetAttribute("name", name);
+				dom.SelectSingleNode("//head").AppendChild(n);
+			}
+			n.SetAttribute("content", value);
+		}
+
 		public static void RemoveModeStyleSheets(XmlDocument dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
@@ -246,6 +271,7 @@ namespace Bloom.Book
 		}
 
 
+
 		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
 		{
 		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
@@ -258,7 +284,7 @@ namespace Bloom.Book
 			}
 			if (!string.IsNullOrEmpty(folderPath))
 			{
-				var baseElement = dom.CreateElement("base", "http://www.w3.org/1999/xhtml");
+				var baseElement = dom.CreateElement("base");
 				baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
 				head.AppendChild(baseElement);
 			}
@@ -293,33 +319,41 @@ namespace Bloom.Book
 
 		public string PathToExistingHtml
 		{
-			get
-			{
-				string p = Path.Combine(_folderPath, Path.GetFileName(_folderPath) + ".htm");
-				if (File.Exists(p))
-					return p;
-
-				//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
-				var candidates = Directory.GetFiles(_folderPath, "*.htm");
-				if (candidates.Length == 1)
-					return candidates[0];
-
-				//template
-				p = Path.Combine(_folderPath, "templatePages.htm");
-				if (File.Exists(p))
-					return p;
-
-				return string.Empty;
-			}
+			get { return FindBookHtmlInFolder(_folderPath); }
 		}
 
-		public string GetTemplateKey()
+		public static string FindBookHtmlInFolder(string folderPath)
 		{
-			//TODO it's not clear what we want to do, eventually.
-			//for now, we're just using the name of the first css we find. See htmlthumnailer for code which extracts it.
+			string p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
+			if (File.Exists(p))
+				return p;
+
+			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
+			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
+			candidates.Remove(folderPath.CombineForPath("configuration.htm"));
+			candidates.Remove(folderPath.CombineForPath("credits.htm"));
+			candidates.Remove(folderPath.CombineForPath("instructions.htm"));
+			if (candidates.Count == 1)
+				return candidates[0];
+
+			//template
+			p = Path.Combine(folderPath, "templatePages.htm");
+			if (File.Exists(p))
+				return p;
+
+			return string.Empty;
+		}
+
+		/// <summary>
+		/// Gives, for example, "A5Portrait", or "LetterLandscape".
+		/// </summary>
+		/// <returns></returns>
+		public string GetTemplateName()
+		{
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
-				return Path.GetFileNameWithoutExtension(path);
+				if(path.ToLower().Contains("portrait") ||  path.ToLower().Contains("landscape"))
+					return Path.GetFileNameWithoutExtension(path);
 			}
 			return null;
 		}
@@ -350,8 +384,16 @@ namespace Bloom.Book
 		public void Save()
 		{
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
+
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
+			BookStorage.UpdateMetaElement(Dom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			if(null!= Assembly.GetEntryAssembly()) // null during unit tests
+			{
+				var ver = Assembly.GetEntryAssembly().GetName().Version;
+				BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
+			}
 			string tempPath = SaveHtml(Dom);
+
 
 			string errors = ValidateBook(tempPath);
 			if (!string.IsNullOrEmpty(errors))
@@ -359,8 +401,10 @@ namespace Bloom.Book
 				var badFilePath = PathToExistingHtml + ".bad";
 				File.Copy(tempPath, badFilePath,true);
 				//hack so we can package this for palaso reporting
+				errors += "\r\n\r\n\r\nContents:\r\n\r\n" + File.ReadAllText(badFilePath);
 				var ex = new XmlSyntaxException(errors);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Oops. Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
@@ -379,24 +423,17 @@ namespace Bloom.Book
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-
-			using (var writer = XmlWriter.Create(tempPath, settings))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-			return tempPath;
+			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
 		}
 
-		private string ValidateBook(string path)
+
+
+		public static string ValidateBook(string path)
 		{
-			XmlDocument dom = new XmlDocument();
-			dom.Load(path);
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);//with throw if there are errors
+
 			var ids = new List<string>();
-			StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 
 			Ensure(dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]").Count >0, "Must have at least one page", builder);
 			EnsureIdsAreUnique(dom, "textarea", ids, builder);
@@ -415,13 +452,13 @@ namespace Bloom.Book
 			return builder.ToString();
 		}
 
-		private void Ensure(bool passes, string message, StringBuilder builder)
+		private static void Ensure(bool passes, string message, StringBuilder builder)
 		{
 			if (!passes)
 				builder.AppendLine(message);
 		}
 
-		private void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
+		private static void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
 		{
 			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
 			{
@@ -489,41 +526,6 @@ namespace Bloom.Book
 			return didDelete;
 		}
 
-
-		public void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector)
-		{
-			HideAllTextAreasThatShouldNotShow(Dom, vernacularIso639Code,optionalPageSelector);
-		}
-
-
-		public static void HideAllTextAreasThatShouldNotShow(XmlNode rootElement, string iso639CodeToKeepShowing, string optionalPageSelector)
-		{
-			if (optionalPageSelector == null)
-				optionalPageSelector = string.Empty;
-
-			foreach (XmlElement storageNode in rootElement.SafeSelectNodes(optionalPageSelector + "//textarea"))
-			{
-				string cssClass = storageNode.GetAttribute("class");
-				if (storageNode.GetAttribute("lang") == iso639CodeToKeepShowing || ContainsClass(storageNode,"-bloom-showNational"))
-				{
-					cssClass = cssClass.Replace(Book.ClassOfHiddenElements, "");
-				}
-				else if (!ContainsClass(storageNode, Book.ClassOfHiddenElements))
-				{
-					cssClass += (" " + Book.ClassOfHiddenElements);
-				}
-				cssClass = cssClass.Trim();
-				if (string.IsNullOrEmpty(cssClass))
-				{
-					storageNode.RemoveAttribute("class");
-				}
-				else
-				{
-					storageNode.SetAttribute("class", cssClass);
-				}
-			}
-		}
-
 		private static bool ContainsClass(XmlNode element, string className)
 		{
 			return ((XmlElement)element).GetAttribute("class").Contains(className);
@@ -571,23 +573,30 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(LanguageSettings languageSettings)
 		{
-			SetBookName(GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code));
-		 }
+			var title = GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code);
+			if(title !=null)
+				SetBookName(title);
+		}
 
 		public string GetVernacularTitleFromHtml(string Iso639Code)
 		{
 			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
-				string.Format("//textarea[contains(@class,'-bloom-vernacularBookTitle') and @lang='{0}']", Iso639Code));
+				string.Format("//textarea[@data-book='bookTitle' and @lang='{0}']", Iso639Code));
 			if (textWithTitle == null)
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-				return "unknown";
+				return null;
 			}
 			string title = textWithTitle.InnerText.Trim();
 			if (string.IsNullOrEmpty(title))
 			{
 				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-				return "unknown";
+				return null;
+			}
+			if (title.StartsWith("{"))
+			{
+				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was still an unchanged template.");
+				return null;
 			}
 			return title;
 		}
@@ -599,7 +608,11 @@ namespace Bloom.Book
 			{
 				name = name.Replace(c, ' ');
 			}
-			return name.Trim();
+			name = name.Trim();
+			const int MAX = 50;//arbitrary
+			if(name.Length >MAX)
+				return name.Substring(0, MAX);
+			return name;
 		}
 
 		/// <summary>

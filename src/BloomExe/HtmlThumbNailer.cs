@@ -76,47 +76,45 @@ namespace Bloom
 
 				_backgroundColorOfResult = backgroundColorOfResult;
 
-				MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(document);
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document);
 
 				_pendingThumbnail = null;
 
 				ConfigureBrowserForPaperSize(document);
 
-				//_browser.DocumentCompleted += OnThumbNailBrowser_DocumentCompleted;//review: there's also a "navigated"
-
-				using (var temp = TempFile.CreateHtm(document))
+				using (var temp = TempFile.CreateHtm5FromXml(document))
 				{
-
-					// this is firing before it looks ready (no active element), so we'll just poll for
-					//the correct state, below.    //_browser.Navigated += OnThumbNailBrowser_DocumentCompleted;//don't want to hear about the preceding navigating to about:blank
-
-					//_browser.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
-
 					_browser.Navigate(temp.Path);
-					var giveUpTime = DateTime.Now.AddSeconds(4);
-						// this can take a long time if the image on the front page is big.
+					_browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
 
-					while (_pendingThumbnail == null && DateTime.Now < giveUpTime)
+
+/* this served us well until we got squeaky-clean standards compliant (including, crucuially, the html5 <!DOCTYPE HTML> line. Then suddenly  ActiveElement.ScrollWidth was 0
+ *
+							//NB: this will always give us the size it was on the first page we navigated to,
+						//so that if the book size changes, our thumbnails are all wrong. I don't know
+						//how to fix it, so I'm using different browsers at the moment.
+						_browser.Height = _browser.Document.ActiveElement.ScrollHeight;
+						_browser.Width = _browser.Document.ActiveElement.ScrollWidth; //NB: 0 here at one time was traced to the html header <!DOCTYPE html> was enought to get us to 0
+*/
+
+					var div = _browser.Document.ActiveElement.GetElements("//div[contains(@class, '-bloom-page')]").First();
+					if (div == null)
+						throw new ApplicationException("thumbnails found now div with a class of -Bloom-Page");
+
+					_browser.Height = div.ScrollHeight;
+					_browser.Width = div.ScrollWidth;
+
+
+					try
 					{
-						//_browser.Document.ActiveElement!=null
-						if (_browser.Url.AbsolutePath.EndsWith(Path.GetFileName(temp.Path)))
-						{
-							try
-							{
-								OnThumbNailBrowser_DocumentCompleted(drawBorderDashed, null);
-							}
-							catch (Exception)
-							{
-								//we often land here, but I've tested and the second time through the try, we succeed.
-								//so this suggests that the AbsolutePath changes, but it's not quit ready to get
-								//at the document.
-							}
-
-						}
-						//TODO: could lead to hard to reproduce bugs
-						Application.DoEvents();
-
-						Thread.Sleep(100);
+						var docImage = _browser.GetBitmap((uint)_browser.Width, (uint)_browser.Height);
+						//docImage.Save(@"c:\dev\temp\zzzz.bmp");
+						_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent, drawBorderDashed);
+					}
+// ReSharper disable EmptyGeneralCatchClause
+					catch
+// ReSharper restore EmptyGeneralCatchClause
+					{
 					}
 				}
 				if (_pendingThumbnail == null)
@@ -217,40 +215,12 @@ namespace Bloom
 			_browserHandleCreated =true;
 		}
 
-		private void MakeSafeForBrowserWhichDoesntUnderstandXmlSingleElements(XmlDocument dom)
-		{
-			foreach (XmlElement node in dom.SafeSelectNodes("//textarea"))
-			{
-				if (string.IsNullOrEmpty(node.InnerText))
-				{
-					node.InnerText = " ";
-				}
-			}
-		}
-		private void OnThumbNailBrowser_DocumentCompleted(object drawBorderDashed, EventArgs e)
-		{
-			//NB: this will always give us the size it was on the first page we navigated to,
-			//so that if the book size changes, our thumbnails are all wrong. I don't know
-			//how to fix it, so I'm using different browsers at the moment.
-			var width = _browser.Document.ActiveElement.ScrollWidth;
-			var height = _browser.Document.ActiveElement.ScrollHeight;
-
-			using (Bitmap docImage = new Bitmap(width, height))
-			{
-				_browser.Height = height;
-				_browser.Width = width;
-
-				_browser.DrawToBitmap(docImage,
-												   new Rectangle(0,//_browser.Location.X,
-																 0,//_browser.Location.Y,
-																 width, height));
-				_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,(bool)drawBorderDashed);
-			}
-		}
 
 
 		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
 		{
+			if (bmp == null)
+				return null;
 			//get the lesser of the desired and original size
 			destinationWidth = bmp.Width > destinationWidth ? destinationWidth : bmp.Width;
 			destinationHeight = bmp.Height > destinationHeight ? destinationHeight : bmp.Height;

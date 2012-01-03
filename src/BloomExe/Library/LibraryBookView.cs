@@ -72,7 +72,7 @@ namespace Bloom.Library
 			{
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
-				_editBookButton.Visible = _bookSelection.CurrentSelection.CanEdit && !_bookSelection.CurrentSelection.HasFatalError;
+				_editBookButton.Visible = _bookSelection.CurrentSelection.IsInEditableLibrary && !_bookSelection.CurrentSelection.HasFatalError;
 				_reshowPending = false;
 			}
 		}

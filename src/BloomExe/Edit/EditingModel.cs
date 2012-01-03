@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Xml;
 using Bloom.Book;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
 
@@ -14,7 +18,7 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private readonly LanguageSettings _languageSettings;
-		private readonly ProjectSettings _projectSettings;
+		private readonly LibrarySettings _librarySettings;
 		private XmlDocument _domForCurrentPage;
 		private bool _visible;
 		private Book.Book _currentlyDisplayedBook;
@@ -31,12 +35,12 @@ namespace Bloom.Edit
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
 			DeletePageCommand deletePageCommand,
-			ProjectSettings projectSettings)
+			LibrarySettings librarySettings)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_languageSettings = languageSettings;
-			_projectSettings = projectSettings;
+			_librarySettings = librarySettings;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -57,11 +61,13 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
 			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList();
+			UsageReporter.SendNavigationNotice("DeletePage");
 		}
 
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
 			_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			UsageReporter.SendNavigationNotice("RelocatePage");
 
 		}
 
@@ -71,6 +77,7 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList();
 			//_pageSelection.SelectPage(newPage);
+			UsageReporter.SendNavigationNotice("InsertTemplatePage");
 		}
 
 		/// <summary>
@@ -113,13 +120,14 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				if (_projectSettings.IsShellMakingProject)
+				if (_librarySettings.IsShellLibrary)
 				{
 					return true;
 				}
 				else
 				{
-					return !ShowTranslationPanel;
+				   // return !ShowTranslationPanel;
+					return _bookSelection.CurrentSelection.NormallyHasTemplatePages;
 				}
 			}
 		}
@@ -155,7 +163,8 @@ namespace Bloom.Edit
 			}
 			if (_view != null)
 			{
-				_view.UpdateTemplateList();
+				if(ShowTemplatePanel)
+					_view.UpdateTemplateList();
 				_view.UpdatePageList();
 			}
 		}
@@ -187,24 +196,25 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ChangePicture(string id, PalasoImage imageInfo)
+		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
 		{
 			var editor = new PageEditingModel();
 
-			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, id, imageInfo);
+			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
 			//We have a problem where if we save at this point, any text changes are lost.
 			//The hypothesis is that the "onblur" javascript has not run, so the value of the textareas have not yet changed.
 
-			_view.ReadEditableAreasNow();
+			//_view.ReadEditableAreasNow();
 
-			SaveNow();//have to save now because we're going to reload the page to show the new picture
+			//SaveNow();//have to save now because we're going to reload the page to show the new picture
 
 			//review: this is spagetti
-			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
+			//_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
 
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			InvokeUpdatePageList();
+			//_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			//InvokeUpdatePageList();
+			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 
 		private void InvokeUpdatePageList()
@@ -220,31 +230,38 @@ namespace Bloom.Edit
 			_view = view;
 		}
 
-		public void HandleUserEnteredArea(GeckoElement element)
+		public void HandleUserEnteredTextGroup(string translationsJson)
 		{
+			translationsJson = translationsJson.Trim(new char[] {'[', ']'});
+			Dictionary<string, string> sourceTexts = JsonConvert.DeserializeObject<Dictionary<string, string>>(translationsJson);
+
+			//we want to show all the *other languages*
+			if (sourceTexts.ContainsKey(_languageSettings.VernacularIso639Code))
+				sourceTexts.Remove(_languageSettings.VernacularIso639Code);
+
 			//the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
-			var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Id);
+			//var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Parent.Id, _languageSettings.VernacularIso639Code);
 			if (sourceTexts.Count == 0)
 			{
 				_view.SetSourceText(null);
 			}
 			else
 			{
-				sourceTexts = RemoveVernacularFromSourceTexts(sourceTexts);
+				//sourceTexts = GetAllTextsExceptVernacular(sourceTexts);
 				_view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
 			}
 		}
 
-		private Dictionary<string, string> RemoveVernacularFromSourceTexts(Dictionary<string, string> sourceTexts)
-		{
-			var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
-			sourceTexts = new Dictionary<string, string>();
-			foreach (var keyValuePair in x)
-			{
-				sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
-			}
-			return sourceTexts;
-		}
+//        private Dictionary<string, string> GetAllTextsExceptVernacular(Dictionary<string, string> sourceTexts)
+//        {
+//            var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
+//            sourceTexts = new Dictionary<string, string>();
+//            foreach (var keyValuePair in x)
+//            {
+//                sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
+//            }
+//            return sourceTexts;
+//        }
 
 		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
 		{

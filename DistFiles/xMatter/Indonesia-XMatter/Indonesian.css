@@ -1,0 +1,184 @@
+BODY
+{
+	font-size: 100%;
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	line-height: 1.5;
+}
+/*+}*/
+
+/****************** All Pages ******************************/
+textarea {color: red;  margin: 0 ; font-size: 14pt ;}
+textarea[lang="en"] {display: none ;}
+figure {display: block; text-align: center ;
+}
+figure img {
+	margin-left: auto;  /* for centering a block */
+	margin-right: auto;
+	width: 70%;
+}
+DIV.leftPage:after
+
+{
+	position: static;
+	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
+	position: absolute;
+	left: 1cm;
+	top: 20cm;
+}
+DIV.rightPage:after
+{
+	position: static;
+	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
+	position: absolute;
+	/* A5 page 14.8 x 21 cm */
+	left: 13.8cm;
+	top: 20cm;
+}
+/****************** Right Page ******************************/
+.cover, .titlePage, .permissionsPage, .rightPage { margin: 0 ;}
+
+/****************** Left Page ******************************/
+.blankPage, .copyrightPage, .leftPage { margin: 0 ;}
+
+/****************** Cover Page ******************************/
+.cover .series { padding-bottom: 0.5pc; padding-top: 0pc; padding-right: 5pc; width: 35pc; height: 4.5pc; float: right ; border-bottom: black double 4pt; }
+.cover .series table { height: 4.5pc; float: right ;  font-variant:small-caps; font-size: 12pt ; font-style: italic ; }
+.cover .seriesNumber {color:white ; top:-14pt; left:30pt;  ; font-size: 10pt ; font-family: sans-serif ; font-style:normal ; font-weight: bold ;}
+.cover .series textarea {width: 2pc; height: 1pc ; color: white ; background-color: black ; }
+.cover .series td img {  height: 60 ; padding-left: 6pt;   }
+.cover .series td span {   height: 4.5pc   ;    }
+.cover p.bookTitleVernacular textarea
+{
+	font-size: 30pt;
+	text-align: center;
+	margin-top: 3pc;
+}
+.cover figure {
+	display: block ;
+	margin-top: 0pc ;
+	margin-bottom: 0pc ;
+	margin-left: 3pc ;
+	margin-right: 3pc ;
+	/*border: blue solid 6pt ;*/
+}
+.cover figure img {
+	display: block ;	/*height: 12cm;*/
+	margin-left: auto;  /* for centering a block */
+	margin-right: auto;
+	width: 70%;
+}
+
+.cover .bookTitlesNationalLanguage textarea
+{
+	font-size: 20pt;
+	text-align: center;
+	margin: 0;
+	font-size: 20pt ;
+	font-style:italic ;
+	color: red ;
+}
+.languages textarea {margin-left: 3pc ; margin-right: 6pc ; text-align: center ;  font-style: italic ;}
+.languages { text-align: center ;  font-style: italic ;}
+
+
+
+
+/*in order to make images of different vertical/horizontal shapes come out
+correctly, give them a max-width and max-height, then enclose them
+in a <p> which has a fixed height.*/
+.imageOnTop P.imageHolder
+{
+	height: 9.7cm;
+	text-align: center;
+	margin-top: 1cm;
+}
+/****************** Title Page ******************************/
+
+.titlePage ._bookTitleVernacular
+{
+margin-top: 6pc;
+padding-bottom: 1pc ;
+text-align: center;
+font-weight: bold ;
+font-size: 25pt;
+	border-bottom: black solid 1pt  ;
+margin-left: auto ;
+margin-right: auto ;
+width: 60%
+}
+
+
+.titlePage ._bookTitleNationalLanguage
+{
+	font-size: 20pt;
+	text-align: center;
+	margin-top: 2pc;
+	margin-bottom: 0pc ;
+	font-size: 20pt ;
+	font-style:italic ;
+}
+.titlePage p { font-size: 10pt; margin: 0 ; }
+.titlePage textarea { font-size: 10pt; margin: 0 ; }
+.titlePage .info {text-align: center; font-size: 10pt; margin-top: 1.5pc; }
+.titlePage .originalAuthor {text-align: center ;}
+.titlePage .originalIllustrator {text-align: center ;}
+.titlePage .adaptingAuthor {text-align: center ; margin:0 ; margin-left: -3pc ; height:1pc ; }
+.titlePage .adaptingIllustrator {text-align: center; }
+.titlePage ._copyrightHolder  {text-align: center; margin-top: 8pc; height: 1.5pc; margin-left: 3pc ; }
+.titlePage ._copyrightYear {text-align: center;  margin-left: 3pc ;   }
+
+
+/****************** Copyright Page ******************************/
+.copyrightPage p { text-align:center ; font-size: 10pt ;}
+.copyrightPage textarea {  text-align: center ; font-size: 10pt; }
+.copyrightPage .bookTitleVernacular {
+	margin-top: 6pc;
+	margin-bottom: 1pc ;
+	margin-left: 3pc ;
+	font-weight: bold ;
+	color: red ;
+	font-size: 12pt ;}
+.copyrightPage textarea._copyrightHolder {height:2pc ;}
+.copyrightPage textarea.copyright {height:3pc ;}
+.copyrightPage .info {margin-top: 2pc ;}
+.copyrightPage textarea.credits {height: 30pc ;}
+.copyrightPage textarea.use {height:2pc ; font-style: italic ; margin-top: 2pc; margin-bottom: 2pc ; font-weight: bold ;}
+
+/****************** Permissions Page ******************************/
+.forwardPage p textarea {text-align: center ; margin-top: 3pc ;}
+
+/* Kata */
+
+/****************** Translation in back ******************************/
+.translation textarea{font-size: 10pt ; }
+
+
+/****************** xxx ******************************/
+
+/****************** garbage below ******************************/
+
+.titlePage .printingHistory
+{
+	height: 7.5cm;
+	margin-left: 1cm;
+	text-align: center;
+}
+.titlePage .-bloom-nameOfLanguage
+{
+	margin-top: 0.1cm;
+	text-align: center;
+}
+/*the content is set in the preview.css. Here, we just position it*/
+.titlePage:after
+{
+	/*+placement:anchor-bottom-left 33px 0.2cm;*/
+	position: absolute;
+	left: 33px;
+	bottom: 0.2cm;
+}
+.translators
+{
+	text-align: center;
+	height: 1.6cm;
+	position: relative;
+}
