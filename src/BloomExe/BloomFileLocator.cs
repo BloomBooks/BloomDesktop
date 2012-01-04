@@ -22,6 +22,8 @@ namespace Bloom
 		protected override IEnumerable<string> GetSearchPaths()
 		{
 			var xMatterFolder = _xMatterPackFinder.FindByKey(_librarySettings.XMatterPackName);
+			if(null == xMatterFolder)
+				xMatterFolder = _xMatterPackFinder.FindByKey("Factory");
 			return base.GetSearchPaths().Concat(new[] { xMatterFolder.PathToFolder });
 		}
 	}
