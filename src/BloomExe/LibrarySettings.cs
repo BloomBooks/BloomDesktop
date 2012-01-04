@@ -50,6 +50,8 @@ namespace Bloom
 		/// </summary>
 		public LibrarySettings()
 		{
+			XMatterPackName = "Factory";
+			NationalLanguage1Iso639Code = "en";
 		}
 
 		public LibrarySettings(NewLibraryInfo libraryInfo)
@@ -180,10 +182,10 @@ namespace Bloom
 	{
 		public string PathToSettingsFile;
 		public string VernacularIso639Code;
-		public string NationalLanguage1Iso639Code;
+		public string NationalLanguage1Iso639Code="en";
 		public string NationalLanguage2Iso639Code;
 		public string LanguageName;
-		public string XMatterPackName;
+		public string XMatterPackName= "Factory";
 		public bool IsShellLibary;
 	}
 }
