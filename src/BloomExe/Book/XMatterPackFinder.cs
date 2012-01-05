@@ -48,6 +48,13 @@ namespace Bloom.Book
 				{
 					_all.Add(new XMatterInfo(directory));
 				}
+
+				foreach (var shortcut in Directory.GetFiles(path, "*.lnk", SearchOption.TopDirectoryOnly))
+				{
+					var p = ResolveShortcut.Resolve(shortcut);
+					if (Directory.Exists(p))
+						_all.Add(new XMatterInfo(p));
+				}
 			}
 		}
 
