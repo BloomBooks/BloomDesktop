@@ -119,6 +119,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
+				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter( data);
 			}
 

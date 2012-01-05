@@ -47,6 +47,7 @@ namespace Bloom.Book
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();
 			}
+			FrontMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml);
 		}
 
 
@@ -72,13 +73,19 @@ namespace Bloom.Book
 		/// </summary>
 		public string PathToXMatterHtml { get; set; }
 
+		/// <summary>
+		/// this is separated out to ease unit testing
+		/// </summary>
+		public XmlDocument FrontMatterDom { get; set; }
+
 		public void InjectXMatter( DataSet data)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
 			{
 				//copy over any image files used by this front matter
-				foreach (var file in Directory.GetFiles(Path.GetDirectoryName(PathToXMatterHtml), "*.png;*.jpg;*.gif"))
+				string path = Path.GetDirectoryName(PathToXMatterHtml);
+				foreach (var file in Directory.GetFiles(path, "*.png").Concat(Directory.GetFiles(path, "*.jpg").Concat(Directory.GetFiles(path, "*.gif").Concat(Directory.GetFiles(path, "*.bmp")))))
 				{
 					File.Copy(file, FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file)), true);
 				}
@@ -89,11 +96,10 @@ namespace Bloom.Book
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
 			_dom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
-			var frontMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml);
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[contains(@class,'-bloom-dataDiv')]");
 
-			foreach (XmlElement frontMatterPage in frontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
+			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
 				var newPageDiv = _dom.ImportNode(frontMatterPage, true) as XmlElement;
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + data.WritingSystemCodes["V"] + '"');
@@ -108,10 +114,15 @@ namespace Bloom.Book
 				_dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
 
+				//enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
 				foreach (XmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
 				{
-					//REVIEW: might this nuke xml in there? If so, try to select the text node ( /text() ) and then remove it and add back an empty one: node.AppendChild(node.OwnerDocument.CreateTextNode(""));
-					e.InnerText = "";
+					foreach ( var node in e.ChildNodes)
+					{
+						XmlText t = node as XmlText;
+						if(t!=null && t.Value.StartsWith("{"))
+							t.Value ="";
+					}
 				}
 
 			}
