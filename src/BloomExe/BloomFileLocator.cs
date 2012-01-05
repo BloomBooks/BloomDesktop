@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom.Book;
@@ -24,7 +25,10 @@ namespace Bloom
 			var xMatterFolder = _xMatterPackFinder.FindByKey(_librarySettings.XMatterPackName);
 			if(null == xMatterFolder)
 				xMatterFolder = _xMatterPackFinder.FindByKey("Factory");
-			return base.GetSearchPaths().Concat(new[] { xMatterFolder.PathToFolder });
+
+			//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
+			//itself, in case they're looking for something inside it
+			return base.GetSearchPaths().Concat(new[] { Path.GetDirectoryName(xMatterFolder.PathToFolder), xMatterFolder.PathToFolder });
 		}
 	}
 }
