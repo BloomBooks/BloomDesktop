@@ -29,6 +29,15 @@ namespace Bloom.Book
 			code.SetAlternative("*", value);
 			TextVariables.Add(key, new DataItem(code, true));
 		}
+		public void AddLanguageString(string writingSystemId, string key, string value, bool isLibraryValue)
+		{
+			if(!TextVariables.ContainsKey(key))
+			{
+				var text = new MultiTextBase();
+				TextVariables.Add(key, new DataItem(text, isLibraryValue));
+			}
+			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
+		}
 	}
 
 	public class DataItem

@@ -38,7 +38,7 @@ namespace Bloom.Library
 			}
 			else
 			{
-				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _librarySettings.GeNationalLanguage2Name("en"), _librarySettings.NationalLanguage2Iso639Code);
+				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _librarySettings.GetNationalLanguage2Name("en"), _librarySettings.NationalLanguage2Iso639Code);
 				_removeSecondNationalLanguageButton.Visible = true;
 			}
 

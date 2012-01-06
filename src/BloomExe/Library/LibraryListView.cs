@@ -315,7 +315,9 @@ namespace Bloom.Library
 
     	private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_listView.SelectedItems.Count == 0)
+    		try
+    		{
+    		if (_listView.SelectedItems.Count == 0)
                 return;
     	    Book.Book book = SelectedBook;
             if (book == null)
@@ -328,7 +330,13 @@ namespace Bloom.Library
             book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
     	    deleteMenuItem.Enabled = _model.CanDeleteSelection;
-        }
+
+			}
+			catch (Exception err)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Bloom cannot display that book.");
+			}
+		}
 
         private Book.Book SelectedBook
         {
