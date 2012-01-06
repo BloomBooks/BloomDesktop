@@ -31,6 +31,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsDialog));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this._removeSecondNationalLanguageButton = new System.Windows.Forms.LinkLabel();
 			this._national2ChangeLink = new System.Windows.Forms.LinkLabel();
 			this._national1ChangeLink = new System.Windows.Forms.LinkLabel();
 			this._vernacularChangeLink = new System.Windows.Forms.LinkLabel();
@@ -52,7 +53,6 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this._okButton = new System.Windows.Forms.Button();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this._removeSecondNationalLanguageButton = new System.Windows.Forms.LinkLabel();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -93,6 +93,17 @@
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// _removeSecondNationalLanguageButton
+			// 
+			this._removeSecondNationalLanguageButton.AutoSize = true;
+			this._removeSecondNationalLanguageButton.Location = new System.Drawing.Point(159, 243);
+			this._removeSecondNationalLanguageButton.Name = "_removeSecondNationalLanguageButton";
+			this._removeSecondNationalLanguageButton.Size = new System.Drawing.Size(58, 19);
+			this._removeSecondNationalLanguageButton.TabIndex = 18;
+			this._removeSecondNationalLanguageButton.TabStop = true;
+			this._removeSecondNationalLanguageButton.Text = "Remove";
+			this._removeSecondNationalLanguageButton.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._removeSecondNationalLanguageButton_LinkClicked);
 			// 
 			// _national2ChangeLink
 			// 
@@ -143,9 +154,9 @@
 			this.label6.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label6.Location = new System.Drawing.Point(26, 198);
 			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(208, 19);
+			this.label6.Size = new System.Drawing.Size(277, 19);
 			this.label6.TabIndex = 13;
-			this.label6.Text = "National Language 2 (Optional)";
+			this.label6.Text = "Regional / National Language 2 (Optional)";
 			// 
 			// _nationalLanguage1Label
 			// 
@@ -211,6 +222,7 @@
 			// 
 			// _xmatterPackCombo
 			// 
+			this._xmatterPackCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._xmatterPackCombo.FormattingEnabled = true;
 			this._xmatterPackCombo.Location = new System.Drawing.Point(29, 54);
 			this._xmatterPackCombo.Name = "_xmatterPackCombo";
@@ -308,17 +320,6 @@
 			this.checkBox1.TabIndex = 3;
 			this.checkBox1.Text = "Require Shift-click to open these settings in the future";
 			this.checkBox1.UseVisualStyleBackColor = true;
-			// 
-			// _removeSecondNationalLanguageButton
-			// 
-			this._removeSecondNationalLanguageButton.AutoSize = true;
-			this._removeSecondNationalLanguageButton.Location = new System.Drawing.Point(159, 243);
-			this._removeSecondNationalLanguageButton.Name = "_removeSecondNationalLanguageButton";
-			this._removeSecondNationalLanguageButton.Size = new System.Drawing.Size(58, 19);
-			this._removeSecondNationalLanguageButton.TabIndex = 18;
-			this._removeSecondNationalLanguageButton.TabStop = true;
-			this._removeSecondNationalLanguageButton.Text = "Remove";
-			this._removeSecondNationalLanguageButton.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._removeSecondNationalLanguageButton_LinkClicked);
 			// 
 			// SettingsDialog
 			// 

@@ -798,6 +798,8 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _librarySettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
 				data.AddGenericLanguageString("iso639Code", _librarySettings.VernacularIso639Code); //review: maybe this should be, like 'xyz"
 				data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)");
+				data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)");
+				data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)");
 				data.AddGenericLanguageString("country", "Your Country");
 				data.AddGenericLanguageString("province", "Your Province");
 				data.AddGenericLanguageString("district", "Your District");
@@ -806,7 +808,9 @@ namespace Bloom.Book
 			else
 			{
 				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
-				data.AddGenericLanguageString("nameOfLanguage", _librarySettings.LanguageName);
+				data.AddLanguageString("*", "nameOfLanguage", _librarySettings.VernacularLanguageName, true);
+				data.AddLanguageString("*", "nameOfNationalLanguage1", _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code), true);
+				data.AddLanguageString("*", "nameOfNationalLanguage2", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code), true);
 				data.AddGenericLanguageString("iso639Code", _librarySettings.VernacularIso639Code);
 				data.AddGenericLanguageString("country", _librarySettings.Country);
 				data.AddGenericLanguageString("province", _librarySettings.Province);

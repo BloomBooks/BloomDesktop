@@ -142,10 +142,8 @@ namespace Bloom.NewLibrary
 				_languageInfoLabel.Text = string.Format("{0} ({1})", dlg.ISOCodeAndName.Name, dlg.ISOCode);
 				Iso639Code = dlg.ISOCodeAndName.Code;
 				LanguageName= dlg.ISOCodeAndName.Name;
-				if(_textLibraryName.Text.Trim().Length==0)
-				{
-					_textLibraryName.Text = dlg.ISOCodeAndName.Name + " Books";
-				}
+
+				_textLibraryName.Text = dlg.ISOCodeAndName.Name + " Books";
 			}
 		}
 	}

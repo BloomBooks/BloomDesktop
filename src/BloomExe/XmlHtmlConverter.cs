@@ -34,6 +34,8 @@ namespace Bloom
 		public static XmlDocument GetXmlDomFromHtml(string content)
 		{
 			var dom = new XmlDocument();
+			//hack. tidy deletes <span data-libray='somethingImportant'></span>
+			content = content.Replace("></span>", ">REMOVEME</span>");
 			using (var temp = new TempFile())
 			{
 				File.WriteAllText(temp.Path, content, Encoding.UTF8);
@@ -48,6 +50,14 @@ namespace Bloom
 					tidy.InputCharacterEncoding = EncodingType.Utf8;
 					tidy.OutputCharacterEncoding = EncodingType.Utf8;
 					tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+					//maybe try this? tidy.Markup = true;
+
+					//NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
+					tidy.MergeSpans = AutoBool.No;
+					tidy.DropEmptyParagraphs = false;
+					tidy.MergeDivs = AutoBool.No;
+
+
 					var errors = tidy.CleanAndRepair();
 					if (!string.IsNullOrEmpty(errors))
 					{
@@ -57,6 +67,7 @@ namespace Bloom
 					try
 					{
 						newContents = newContents.Replace("&nbsp;", "&#160;"); //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
+						newContents = newContents.Replace("REMOVEME", "");
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)
@@ -129,9 +140,9 @@ namespace Bloom
 
 			foreach (XmlElement node in dom.SafeSelectNodes("//span"))
 			{
-				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+				if (!node.HasChildNodes)
 				{
-					node.InnerText = " ";
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
 				}
 			}
 

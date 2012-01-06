@@ -42,6 +42,7 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(pathToXMatterHtml), pathToXMatterHtml);
 		}
 
+
 		[Test]
 		public void GetStyleSheetFileName_AllDefaults_Correct()
 		{
@@ -59,6 +60,21 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][@id='firstPage']", 1);
 		}
 
+		[Test]
+		public void InjectXMatter_SpanWithNameOfLanguage2_GetsLang()
+		{
+			var frontMatterDom = new XmlDocument();
+			frontMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
+						 <div class='-bloom-page cover coverColor -bloom-frontMatter' data-page='required'>
+						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						</div></body></html>");
+			var helper = CreateHelper();
+			helper.FrontMatterDom = frontMatterDom;
+
+			helper.InjectXMatter(_dataSet);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
+			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
+		}
 
 //		TODO: at the moment, we'd have to creat a whole xmatter folder
 		/// <summary>

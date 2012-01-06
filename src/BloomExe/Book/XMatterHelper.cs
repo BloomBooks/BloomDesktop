@@ -121,7 +121,7 @@ namespace Bloom.Book
 					{
 						XmlText t = node as XmlText;
 						if(t!=null && t.Value.StartsWith("{"))
-							t.Value ="";
+							t.Value =""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
 					}
 				}
 

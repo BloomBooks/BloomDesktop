@@ -21,7 +21,7 @@ namespace Bloom
 		public virtual string VernacularIso639Code { get; set; }
 		public virtual string NationalLanguage1Iso639Code { get; set; }
 		public virtual string NationalLanguage2Iso639Code { get; set; }
-		public virtual string LanguageName { get; set; }
+		public virtual string VernacularLanguageName { get; set; }
 
 		public virtual bool IsShellLibrary { get; set; }
 
@@ -34,9 +34,11 @@ namespace Bloom
 		public string GetNationalLanguage1Name(string inLanguage)
 		{
 			var lookup = new LookupIsoCodeModel();
+			//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
+			//So, we'd rather have GetBestLanguageMatch()
 			return lookup.GetExactLanguageMatch(NationalLanguage1Iso639Code).Name;
 		}
-		public string GeNationalLanguage2Name(string inLanguage)
+		public string GetNationalLanguage2Name(string inLanguage)
 		{
 			if(string.IsNullOrEmpty(NationalLanguage2Iso639Code))
 				return string.Empty;
@@ -59,7 +61,8 @@ namespace Bloom
 		{
 			VernacularIso639Code = libraryInfo.VernacularIso639Code;
 			NationalLanguage1Iso639Code = libraryInfo.NationalLanguage1Iso639Code;
-			LanguageName = libraryInfo.LanguageName;
+			NationalLanguage2Iso639Code = libraryInfo.NationalLanguage2Iso639Code;
+			VernacularLanguageName = libraryInfo.LanguageName;
 			IsShellLibrary = libraryInfo.IsShellLibary;
 			XMatterPackName = libraryInfo.XMatterPackName;
 			Save();
@@ -98,7 +101,7 @@ namespace Bloom
 			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
 			library.Add(new XElement("National1Iso639Code", NationalLanguage1Iso639Code));
 			library.Add(new XElement("National2Iso639Code", NationalLanguage2Iso639Code));
-			library.Add(new XElement("LanguageName", LanguageName));
+			library.Add(new XElement("LanguageName", VernacularLanguageName));
 			library.Add(new XElement("IsShellLibrary", IsShellLibrary.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
@@ -117,7 +120,7 @@ namespace Bloom
 				NationalLanguage1Iso639Code = GetValue(library, "National1Iso639Code", "en");
 				NationalLanguage2Iso639Code = GetValue(library, "National2Iso639Code", "");
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
-				LanguageName = GetValue(library, "LanguageName", "");
+				VernacularLanguageName = GetValue(library, "LanguageName", "");
 				Country = GetValue(library, "Country","");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");
@@ -171,6 +174,7 @@ namespace Bloom
 		virtual public string Country { get; set; }
 		virtual public string Province { get; set; }
 		virtual public string District { get; set; }
+
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
 		{
