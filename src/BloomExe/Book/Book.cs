@@ -11,6 +11,7 @@ using System.Xml;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using Newtonsoft.Json;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -225,7 +226,44 @@ namespace Bloom.Book
 			}
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
+			AddUIDictionary(dom);
 			return dom;
+		}
+
+		/// <summary>
+		/// stick in a json with various values we want to make available to the javascript
+		/// </summary>
+		/// <param name="dom"></param>
+		private void AddUIDictionary(XmlDocument dom)
+		{
+			XmlElement dictionaryScriptElement = dom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
+			if (dictionaryScriptElement != null)
+				dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
+
+			dictionaryScriptElement = dom.CreateElement("script");
+			dictionaryScriptElement.SetAttribute("type", "text/javascript");
+			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
+			var d = new Dictionary<string, string>();
+			d.Add(_librarySettings.VernacularIso639Code, _librarySettings.VernacularLanguageName);
+			d.Add(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
+			d.Add(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code));
+
+			d.Add("vernacularLang", _librarySettings.VernacularIso639Code);//use for making the vernacular the first tab
+			d.Add("{V}", _librarySettings.VernacularLanguageName);
+			d.Add("{N1}", _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
+			d.Add("{N2}", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code));
+
+			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
+
+			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+		}
+
+		private static void AddDictionaryValue(XmlDocument dom, XmlElement dictionaryDiv, string key, string value)
+		{
+			var div = dom.CreateElement("div");
+			div.SetAttribute("data-key", key);
+			div.InnerText = value;
+			dictionaryDiv.AppendChild(div);
 		}
 
 		private void AddJavaScriptForEditing(XmlDocument dom)
@@ -924,7 +962,14 @@ namespace Bloom.Book
 								lang = data.WritingSystemCodes[lang];
 							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
-								node.InnerXml = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*" });
+								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] {lang, "*"});
+
+								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
+								if(lang==data.WritingSystemCodes["N2"] && s== data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] {data.WritingSystemCodes["N1"], "*"}))
+								{
+									s = ""; //don't show it in N2, since it's the same as N1
+								}
+								node.InnerXml = s;
 									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 							}
 						}
@@ -1083,6 +1128,18 @@ namespace Bloom.Book
 					}
 				}
 			}
+
+		}
+
+		private XmlElement GetOrCreateElement(XmlElement parent, string predicate, string name)
+		{
+			XmlElement element = (XmlElement) parent.SelectSingleNodeHonoringDefaultNS("/" + predicate);
+			if (element == null)
+			{
+				element = parent.OwnerDocument.CreateElement(name, parent.NamespaceURI);
+				parent.AppendChild(element);
+			}
+			return element;
 		}
 	}
 }

@@ -5,14 +5,15 @@ Its purpose is to hide elements that are in languages that will not be printed i
 /* Hide all textareas in translation groups which aren't in the current vernacular */
 *.-bloom-translationGroup textarea:not([lang="VERNACULAR"])
 {
-	display:none;
+	border-bottom-color: transparent; /*cause jscript to make us readonly, which we can't do from css */
+	background-color: #d3d3d3;
 }
 
 /* DIVS and P's and such which are supposed to be translatable also get hidden if not in vernacular */
 
 *.-bloom-translationGroup *.editable:not([lang="VERNACULAR"])
 {
-	display:none;
+	border-bottom-color: transparent; /*cause jscript to make us readonly, which we can't do from css */
 }
 
 /*TEXTAREA[lang="NATIONAL"][class~="-bloom-showNational"]*/

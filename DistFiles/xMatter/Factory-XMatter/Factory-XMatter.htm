@@ -12,7 +12,7 @@
 	<!-- FRONT COVER --->
 	<div class="-bloom-page cover coverColor -bloom-frontMatter" data-page="required singleton" id="74731b2d-18b0-420f-ac96-6de20f659810">
 
-	   <textarea data-book="bookTitle" data-hint="Book title in your language" class="vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</textarea>
+	   <textarea data-book="bookTitle" data-hint="Book title in {V}" class="vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</textarea>
 
 		<p  class="imageHolder"><img  class='picture' data-book='coverImage' src="placeholder.png" /></p>
 
@@ -34,8 +34,8 @@
 		<div class="pageLabel" lang="en">Title Page</div>
 		<div id="titePageTitleBlock">
 			<p data-book='bookTitle' class="titleV" lang="V">{Title in Vernacular}</p>
-			<textarea data-book="bookTitle"  data-hint="Title in national language" class="titleN1 readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</textarea>
-			<textarea data-book="bookTitle" data-hint="Title in 2nd national language" class="titleN2 readOnlyInTranslationMode "  lang="N2">{Title In National Language 2}</textarea>
+			<textarea data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</textarea>
+			<textarea data-book="bookTitle" data-hint="Title in {N2}" class="titleN2 readOnlyInTranslationMode "  lang="N2">{Title In National Language 2}</textarea>
 		</div>
 
 		<textarea class="credits " lang="N1" data-hint="The contributions made by writers, illustrators, editors, etc."> </textarea>
@@ -43,7 +43,7 @@
 		<div id="languageInformation">
 			<div data-library="nameOfLanguage" lang="N1" class="langName ">{Lang in N1}</div>
 			<div data-library="nameOfLanguage" lang="N2"  class="langName ">{Lang in N2}</div>
-			<span data-library="dialect" data-hint="dialect (optional)" class="dialect " lang="N1">{Dialect N1}</span>
+			<div data-library="dialect" class="dialect " lang="N1">{Dialect N1}</div>
 			<br />
 			<div data-library="languageLocation" class="languageLocation" lang="N1"/>
 		</div>
@@ -53,7 +53,7 @@
 	<div class="-bloom-page verso -bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
 		<div class="pageLabel" lang="en">Verso Page</div>
 		<div contenteditable="true" data-book="originalAcknowledgments" data-hint="Acknowledgments" lang="N1" class = "originalAcknowledgments editable readOnlyInTranslationMode" >{Original Acknowledgments}</div>
-		<div class="-bloom-metaData" data-hint="Copyright &amp; License" id="versoLicenseAndCopyright" data-message="editMetadata">
+		<div class="-bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
 			<button id="editCopyrightAndLicense">Edit Copyright &amp; License</button>
 			<div data-book="copyright" class="copyright " lang="N1">{copyright}</div>
 			<img data-book="licenseImage" class="licenseImage" src=""/>
