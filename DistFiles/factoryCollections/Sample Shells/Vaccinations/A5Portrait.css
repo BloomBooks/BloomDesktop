@@ -68,17 +68,47 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
+DIV.imageOnTop DIV.-bloom-translationGroup
+{
+	height: 291px;
+	/*+placement:shift 20px -14px;*/
+	position: relative;
+	left: 20px;
+	top: -14px;
+	width: 464px;
+}
+DIV.imageInMiddle DIV.bottom
+{
+	height: 195px;
+	/*+placement:shift 21px 104px;*/
+	position: relative;
+	left: 21px;
+	top: 104px;
+	width: 449px;
+}
+DIV.imageInMiddle P
+{
+	/*+placement:shift 36px 57px;*/
+	position: relative;
+	left: 36px;
+	top: 57px;
+	width: 411px;
+}
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 	font-size: 14pt;
-	width: 11.9cm;
+	width: 100%;
+}
+DIV.imageInMiddle TEXTAREA
+{
+	height: 100%;
 }
 .imageOnTop TEXTAREA
 {
-	height: 7.7cm;
-	margin-top: 26px;
+	height: 100%;
+	width: 100%;
 }
 .imageOnTop .picture
 {
@@ -89,10 +119,14 @@ TEXTAREA
 {
 	max-height: 6.3cm;
 }
-.imageInMiddle TEXTAREA
+DIV.imageInMiddle DIV.top
 {
-	height: 5.8cm;
-	margin-top: 1cm;
+	height: 189px;
+	/*+placement:shift 26px 30px;*/
+	position: relative;
+	left: 26px;
+	top: 30px;
+	width: 442px;
 }
 .imageOnBottom .picture
 {
@@ -102,8 +136,16 @@ TEXTAREA
 }
 .imageOnBottom TEXTAREA
 {
-	height: 8.9cm;
-	margin-top: 1cm;
+	height: 100%;
+}
+DIV.imageOnBottom DIV.-bloom-translationGroup
+{
+	height: 235px;
+	/*+placement:shift 22px 77px;*/
+	position: relative;
+	left: 22px;
+	top: 77px;
+	width: 459px;
 }
 .textWholePage TEXTAREA
 {
@@ -136,6 +178,10 @@ DIV.imageWholePage IMG
 	max-height: 18.6cm;
 	max-width: 12.2cm;
 }
+DIV.imageWholePage TD
+{
+	text-align: center;
+}
 DIV.imageWholePage TABLE
 {
 	width: 556px;
@@ -144,6 +190,11 @@ DIV.imageWholePage TABLE
 .imageOnBottom P.imageHolder
 {
 	height: 9cm;
+	/*+placement:anchor-bottom-left 18px 106px;*/
+	position: absolute;
+	left: 18px;
+	bottom: 106px;
+	width: 466px;
 }
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
