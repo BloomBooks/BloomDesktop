@@ -1,3 +1,20 @@
+function Cleanup(){
+
+       // remove the div's which qtip makes for the tips themselves
+       $("div.qtip").each(function() {
+             $(this).remove();
+       })
+
+       // remove the attributes qtips adds to the things being annotated
+       $("*[aria-describedby]").each(function() {
+           $(this).removeAttr("aria-describedby");
+       })
+       $("*[ariasecondary-describedby]").each(function() {
+           $(this).removeAttr("ariasecondary-describedby");
+       })
+       $("*.editTimeOnly").remove();
+       $("*").removeAttr("data-easytabs");
+   }
 
 jQuery(document).ready(function () {
 
@@ -44,6 +61,12 @@ jQuery(document).ready(function () {
         }
     });
 
+    if (typeof String.prototype.startsWith != 'function') {
+      String.prototype.startsWith = function (str){
+        return this.indexOf(str) == 0;
+      };
+    }
+
     //put hint bubbles next to elements which call for them
     $("*[data-hint]").each(function () {
         if($(this).css('border-bottom-color') == 'transparent')
@@ -60,6 +83,11 @@ jQuery(document).ready(function () {
                };
 
         var whatToSay = $(this).data("hint");
+        var dictionary = GetDictionary();
+        for(key in dictionary) {
+            if(key.startsWith("{"))
+                whatToSay = whatToSay.replace(key, dictionary[key]);
+        }
         $(this).qtip({
             content: whatToSay,
             position: pos,
@@ -126,20 +154,10 @@ jQuery(document).ready(function () {
               });
           });
 
-    cleanup = function(){
-        return;
-        // remove the div's which qtip makes for the tips themselves
-        $("div.qtip").each(function() {
-              $(this).remove();
-        })
-        // remove the attributes qtips adds to the things being annotated
-        $("*[aria-describedby]").each(function() {
-            $(this).removeAttr("aria-describedby");
-        })
-        $("*[ariasecondary-describedby]").each(function() {
-            $(this).removeAttr("ariasecondary-describedby");
-        })
-    }
+
+
+    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+    Cleanup();
 
     //make images look click-able when you cover over them
     jQuery("img").hover(function () {
@@ -201,6 +219,39 @@ jQuery(document).ready(function () {
 
 
 
+    //add tabs to translationGroups
+    $("*.-bloom-translationGroup").each(function () {
+        $(this).prepend('<ul class="editTimeOnly"></ul>');
+        var list =  $(this).find('ul');
+        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
+        //it's just a one-line change.
+        var dictionary = GetDictionary();
+        var items = $(this).find("textarea, div.editable");
+        items.sort(function(a,b){
+            var keyA=$(a).attr('lang');
+            var keyB=$(b).attr('lang');
+            if(keyA == dictionary.vernacularLang)
+                return -1;
+            if(keyB == dictionary.vernacularLang)
+                return 1;
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        });
+        items.each(function () {
+            var iso = $(this).attr('lang');
+            var languageName = dictionary[iso];
+            if(!languageName)
+                languageName = iso;
+           $(list).append('<li><a href="#'+iso+'">'+languageName+'</a></li>');
+        });
+       });
+
+
+    $("*.-bloom-translationGroup").easytabs({
+          animate: false
+        });
+
 });
 
 //function SetCopyrightAndLicense(data) {
@@ -218,67 +269,3 @@ function SetCopyrightAndLicense(data) {
     $("button#editCopyrightAndLicense").css("display",shouldShowButton ? "inline" : "none");
 }
 
-function print(){
-    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-    			var webBrowserPrint =
-    window.content.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-    	.getInterface(Components.interfaces.nsIWebBrowserPrint);
-
-    var printSettings = webBrowserPrint.globalPrintSettings;
-	webBrowserPrint.print(printSettings, null);
-
-}
-
-function pdf(){
-    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-    			var webBrowserPrint =
-    window.content.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-    	.getInterface(Components.interfaces.nsIWebBrowserPrint);
-
-    var printSettings = webBrowserPrint.globalPrintSettings;
-    printSettings.printToFile = true;
-    printSettings.toFileName = "c:\test.pdf";
-    printSettings.printSilent = true;
-    printSettings.showPrintProgress = false;
-    printSettings.outputFormat =  Components.interfaces.nsIPrintSettings.kOutputFormatPDF;
-
-    webBrowserPrint.print(printSettings, null);
-}
-
-function pdf1()
-{
-    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-    			var webBrowserPrint =
-    window.content.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-    	.getInterface(Components.interfaces.nsIWebBrowserPrint);
-
-    var printSettings = webBrowserPrint.globalPrintSettings;
-
-//    printSettings.orientation     = orientation;
-//    printSettings.marginTop       = marginTop;
-//    printSettings.marginBottom    = marginBottom;
-//    printSettings.marginLeft      = marginLeft;
-//    printSettings.marginRight     = marginRight;
- //   printSettings.printBGColors   = bgColors;
-//    printSettings.printBGImages   = bgImages;
-    printSettings.footerStrLeft   = "";
-    printSettings.footerStrCenter = "";
-    printSettings.footerStrRight  = "";
-    printSettings.headerStrLeft   = "";
-    printSettings.headerStrRight  = "";
-    printSettings.headerStrCenter = "";
-     printSettings.printToFile = true;
-     printSettings.printSilent = true;
-     printSettings.toFileName = "c://test.pdf";
-    printSettings.OutputFormat =     Components.interfaces.nsIPrintSettings.kOutputFormatPDF;
-     // Adobe Postscript Drivers are expected (together with a FILE: printer called
-     // "Generic PostScript Printer". Drivers can be found here:
-     // http://www.adobe.com/support/downloads/product.jsp?product=44&platform=Windows
-
-         printSettings.printerName = "Generic PostScript Printer";
-
-     printSettings.paperName = paperName;
-     printSettings.showPrintProgress = false;
-}
