@@ -2,7 +2,6 @@
 There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
-	text-align: center;
 	background-color: #363333;
 }
 DIV.pageLabel
@@ -83,4 +82,63 @@ border: 0 dashed transparent;
 	font-size: 8pt;
 	margin-top: -8px;
 	margin-right: 8px;
+}
+UL
+{
+	margin: 0;
+	padding: 0;
+	/*+placement:displace 0px -38px;*/
+	position: absolute;
+	margin-left: 0px;
+	margin-top: -38px;
+	z-index: 1;
+	background-color: #FFFFFF;
+}
+UL LI
+{
+	display: inline-block;
+	border: 1px none #000000;
+	border-bottom: 1px none #F8F8F8;
+	border: 1px solid #D5D5E4;
+	padding-right: 11px;
+	padding-left: 7px;
+	border-top-left-radius: 9px;
+	border-top-right-radius: 9px;
+}
+UL LI A
+{
+	display: block;
+	padding: 5px;
+	outline: none;
+	/*[empty]font-style:;*/
+	text-decoration: none;
+	color: #000000;
+}
+UL LI A:hover
+{
+	text-decoration: underline;
+}
+UL LI.active
+{
+	padding-top: 1px;
+	position: relative;
+	top: 1px;
+	border: 1px solid #C0B9B9;
+	border-bottom: 1px solid #FFFFFF;
+}
+UL LI A.active
+{
+	font-weight: bold;
+}
+.panel-container
+{
+	border: 1px solid #000000;
+	padding: 0 10px;
+}
+DIV.textWholePage UL
+{
+	/*+placement:displace 1px -37px;*/
+	position: absolute;
+	margin-left: 1px;
+	margin-top: -37px;
 }
