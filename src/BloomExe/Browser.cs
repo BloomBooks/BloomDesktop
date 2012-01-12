@@ -141,6 +141,7 @@ namespace Bloom
             _browser.Parent = this;
             _browser.Dock = DockStyle.Fill;
             Controls.Add(_browser);
+			
             _browser.Navigating += new GeckoNavigatingEventHandler(_browser_Navigating);
            // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
             //necessarily need).  When I comment this out, I get an error if the href had, for example,
@@ -179,7 +180,13 @@ namespace Bloom
 
         void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
         {
-            Debug.WriteLine("Navigating " + e.Uri);
+			if (e.Uri.OriginalString.ToLower().StartsWith("http"))
+			{
+				e.Cancel = true;
+				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+			}
+
+			Debug.WriteLine("Navigating " + e.Uri);
         }
 		
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
