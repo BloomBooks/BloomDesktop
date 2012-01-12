@@ -68,7 +68,9 @@ namespace Bloom
 						//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
 						using (image = Image.FromFile(thumbNailFilePath))
 						{
-							return new Bitmap(image);
+							var thumbnail = new Bitmap(image) {Tag = thumbNailFilePath};
+							_images.Add(thumbNailFilePath,thumbnail);
+							return thumbnail;
 						}
 					}
 				}

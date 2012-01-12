@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,11 @@ namespace Bloom
 			var dom = new XmlDocument();
 			//hack. tidy deletes <span data-libray='somethingImportant'></span>
 			content = content.Replace("></span>", ">REMOVEME</span>");
-			using (var temp = new TempFile())
+
+
+
+			//using (var temp = new TempFile())
+			var temp = new TempFile();
 			{
 				File.WriteAllText(temp.Path, content, Encoding.UTF8);
 				using (var tidy = TidyManaged.Document.FromFile(temp.Path))
@@ -77,6 +82,19 @@ namespace Bloom
 					}
 				}
 			}
+			try
+			{
+				//It's a mystery but http://jira.palaso.org/issues/browse/BL-46 was reported by several people on Win XP, even though a look at html tidy dispose indicates that it does dispose (and thus close) the stream.
+				// Therefore, I'm moving the dispose to an explict call so that I can catch the error and ignore it, leaving an extra file in Temp.
+
+				temp.Dispose(); //enhance... could make a version of this which collects up any failed deletes and re-attempts them with each call to this
+			}
+			catch (Exception error)
+			{
+				//swallow
+				Debug.Fail("Repro of http://jira.palaso.org/issues/browse/BL-46 ");
+			}
+
 			return dom;
 		}
 

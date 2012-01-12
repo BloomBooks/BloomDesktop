@@ -210,7 +210,7 @@ namespace Bloom.Edit
 			//SaveNow();//have to save now because we're going to reload the page to show the new picture
 
 			//review: this is spagetti
-			//_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
+			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
 
 			//_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			//InvokeUpdatePageList();

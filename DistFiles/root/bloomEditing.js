@@ -3,18 +3,100 @@ function Cleanup(){
        // remove the div's which qtip makes for the tips themselves
        $("div.qtip").each(function() {
              $(this).remove();
-       })
+    });
 
        // remove the attributes qtips adds to the things being annotated
        $("*[aria-describedby]").each(function() {
            $(this).removeAttr("aria-describedby");
-       })
+    });
        $("*[ariasecondary-describedby]").each(function() {
            $(this).removeAttr("ariasecondary-describedby");
-       })
+    });
        $("*.editTimeOnly").remove();
        $("*").removeAttr("data-easytabs");
    }
+
+function MakeSourceTextDivForGroup(group) {
+
+    var divForBubble = $(group).clone();
+    $(divForBubble).removeClass();//remove them all
+    $(divForBubble).addClass("ui-sourceTextsForBubble");
+    //don't want the vernacular in the bubble
+    $(divForBubble).find("*[lang='" + GetDictionary().vernacularLang + "']").each(function () {
+        $(this).remove();
+    });
+    $(this).after(divForBubble);
+
+
+    //make that li's for the source text elements in this new div
+    $(divForBubble).each(function () {
+        $(this).prepend('<ul class="editTimeOnly z"></ul>');
+        var list = $(this).find('ul');
+        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
+        //it's just a one-line change.
+        var dictionary = GetDictionary();
+        var items = $(this).find("textarea, div.editable");
+        items.sort(function (a, b) {
+            var keyA = $(a).attr('lang');
+            var keyB = $(b).attr('lang');
+            if (keyA == dictionary.vernacularLang)
+                return -1;
+            if (keyB == dictionary.vernacularLang)
+                return 1;
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        });
+        var shellEditingMode = false;
+        items.each(function () {
+            var iso = $(this).attr('lang');
+            var languageName = dictionary[iso];
+            if (!languageName)
+                languageName = iso;
+            // in translatino mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+            if (shellEditingMode || iso != dictionary.vernacularLang) {
+                $(list).append('<li><a href="#' + iso + '">' + languageName + '</a></li>');
+            }
+        });
+    });
+
+    //now turn that new div into a set of tabs
+    $(divForBubble).easytabs({
+        animate:false
+    });
+
+
+    // turn that tab thing into a bubble, and attach it to the original div ("group")
+    $(group).each(function () {
+        var targetHeight = $(this).height();
+
+        $(this).qtip({
+            position:{       at:'right center',
+                my:'left center',
+                adjust:{
+                    x:10,
+                    y:0
+                }
+            },
+            content: $(divForBubble),
+
+            show:{
+                ready:true // ... but show the tooltip when ready
+            },
+            events:{
+                render:function (event, api) {
+                    api.elements.content.height(targetHeight);
+                }
+            },
+            style:{
+                //doesn't work: tip:{ size: {height: 50, width:50}             },
+                //doesn't work: tip:{ size: {x: 50, y:50}             },
+                classes:'ui-tooltip-green ui-tooltip-rounded ui-bloomSourceTextsBubble'},
+            hide:false//{ when: 'mouseout', fixed: true }
+        });
+    });
+}
+
 
 jQuery(document).ready(function () {
 
@@ -218,40 +300,13 @@ jQuery(document).ready(function () {
     $("textarea, div.editable").first().focus();//review: this might chose a textarea which appears after the div. Could we sort on the tab order?
 
 
-
-    //add tabs to translationGroups
+    //copy source texts out to their own div, where we can make a bubble with tabs out of them
+    //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
     $("*.-bloom-translationGroup").each(function () {
-        $(this).prepend('<ul class="editTimeOnly"></ul>');
-        var list =  $(this).find('ul');
-        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
-        //it's just a one-line change.
-        var dictionary = GetDictionary();
-        var items = $(this).find("textarea, div.editable");
-        items.sort(function(a,b){
-            var keyA=$(a).attr('lang');
-            var keyB=$(b).attr('lang');
-            if(keyA == dictionary.vernacularLang)
-                return -1;
-            if(keyB == dictionary.vernacularLang)
-                return 1;
-            if (keyA < keyB) return -1;
-            if (keyA > keyB) return 1;
-            return 0;
+        if ($(this).find("textarea").length > 1) {
+            MakeSourceTextDivForGroup(this);
+        }
         });
-        items.each(function () {
-            var iso = $(this).attr('lang');
-            var languageName = dictionary[iso];
-            if(!languageName)
-                languageName = iso;
-           $(list).append('<li><a href="#'+iso+'">'+languageName+'</a></li>');
-        });
-       });
-
-
-    $("*.-bloom-translationGroup").easytabs({
-          animate: false
-        });
-
 });
 
 //function SetCopyrightAndLicense(data) {

@@ -3,13 +3,43 @@
 
 *.readOnlyInTranslationMode
 {
-		// in the case of textarea's,we have javascript which notices this border and makes it read-only
-		// for DIVS with this class, we have javascript which toggles the contentEditable attribute based on the border begin transparent or not
-		border: transparent;
+/*in the case of textarea's,we have javascript which notices this border and makes it read-only
+for DIVS with this class, we have javascript which toggles the contentEditable attribute based on the border begin transparent or not*/
+	border: 1px solid transparent;
 }
 
 DIV.-bloom-metaData TEXTAREA
 {
-	border: transparent; /* jscript will translate to read only */
-	cursor: pointer; /* this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+	border: 1px solid transparent;
+/*jscript will translate to read only*/
+	cursor: pointer;
+/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+DIV.ui-sourceTextsForBubble
+{
+	width: 198px;
+	margin-top: 10px;
+}
+DIV.ui-bloomSourceTextsBubble DIV.ui-tooltip-content
+{
+	width: 307px;
+}
+DIV DIV.ui-sourceTextsForBubble TEXTAREA
+{
+	height: 304px;
+	background: transparent;
+	border: none;
+	margin-top: 13px;
+	width: 320px;
+	margin: 11px 0 0;
+}
+.ui-tooltip .qtip .ui-bloomSourceTextsBubble
+{
+	width: 293px !important;
+	height: 138px;
+	max-width: 1009px !important;
+}
+DIV.ui-sourceTextsForBubble UL
+{
+	background: none;
 }
