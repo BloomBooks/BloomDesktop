@@ -89,33 +89,6 @@ namespace Bloom.Edit
 
 			//use htmlagilitypack to covert back to xml-well-formedness before saving
 			b.SaveDocument(bookPath);
-
-//			XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath);
-
-/*			HtmlAgilityPack.HtmlDocument d = new HtmlAgilityPack.HtmlDocument();
-			d.OptionOutputAsXml = true;
-
-			//d.LoadHtml( b.Document.DocumentElement.InnerHtml);
-			d.Load(bookPath);
-
-			//OK< at this point, HtmlAgilityPack has decided to wrap our html in a <span>. Don't ask me!
-			//So we have to pluck the html out of it...
-			var html = d.DocumentNode.SelectSingleNode("//html");
-
-			//save it without that...
-			var c = new HtmlAgilityPack.HtmlDocument();
-			c.OptionOutputAsXml = true;
-			c.LoadHtml(html.OuterHtml);
-			c.Save(bookPath);
-
-			//also, by now we've lost the doctype, so...
-
-			//already has an xml, and we want to insert the DocType after it, so we just remove it.
-			var text = File.ReadAllText(bookPath).Replace("<?xml version=\"1.0\" encoding=\"utf-8\"?>","");
-
-			//add in the doctype under the xml
-			File.WriteAllText(bookPath,"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n<!DOCTYPE html>\r\n"+text);
-*/
 		}
 
 		public void RunJavaScript(GeckoWebBrowser b, string script)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
 using Palaso.Reporting;
@@ -55,7 +56,6 @@ namespace Bloom.Book
 			//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
 			var starter = _bookStarterFactory();
 			var newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
-
 			if (Configurator.IsConfigurable(newBookFolder))
 			{
 				var c = new Configurator(_path);
@@ -65,7 +65,6 @@ namespace Bloom.Book
 				}
 				c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
 			}
-
 
 			ListOfBooksIsOutOfDate();
 			NotifyCollectionChanged();
@@ -80,7 +79,7 @@ namespace Bloom.Book
 			{
 				UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
 			}
-			//go straight into editing
+
 			_editBookCommand.Raise(newBook);
 		}
 

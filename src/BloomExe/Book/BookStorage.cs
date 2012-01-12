@@ -536,6 +536,8 @@ namespace Bloom.Book
 			name = SanitizeNameForFileSystem(name);
 
 			var currentFilePath =PathToExistingHtml;
+			//REVIEW: This doesn't immediataly make sense; if this functino is told to call it Foo but it's current Foo1... why does this just return?
+
 			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name)) //starts with because maybe we have "myBook1"
 				return;
 
