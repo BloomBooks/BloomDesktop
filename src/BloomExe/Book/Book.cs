@@ -749,7 +749,7 @@ namespace Bloom.Book
 			page.InnerXml = divElement.InnerXml;
 
 			//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-			UpdateVariablesAndDataDiv(pageDom);
+			var data = UpdateVariablesAndDataDiv(pageDom);
 
 		    try
 		    {
@@ -759,7 +759,9 @@ namespace Bloom.Book
 		    {
 		        ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
 		    }
-            
+
+			UpdateBookFolderAndFileNames(data);
+	
 			//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
 			//e.g., look for the class "cover"
             InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
@@ -812,18 +814,34 @@ namespace Bloom.Book
 			GatherFieldValues(data, "*", domToRead);
 			SetFieldsValues(data, "*", RawDom);
 
-            DataItem title;
-            if (data.TextVariables.TryGetValue("bookTitle", out title))
-            {
-                GetOrCreateElement("//html", "head");
-            	var t = title.TextAlternatives.GetBestAlternativeString(new string[]{_librarySettings.VernacularIso639Code});
-            	GetOrCreateElement("//head", "title").InnerText = t;
-				_storage.SetBookName(t);
-            }
-        	return data;
+    		UpdateTitle(data);
+			return data;
         }
 
-		/// <summary>
+    	private void UpdateTitle(DataSet data)
+    	{
+    		DataItem title;
+
+    		if (data.TextVariables.TryGetValue("bookTitle", out title))
+    		{
+    			GetOrCreateElement("//html", "head");
+    			var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_librarySettings.VernacularIso639Code});
+    			if (!string.IsNullOrEmpty(t.Trim()))
+    			{
+    				GetOrCreateElement("//head", "title").InnerText = t;
+    			}
+    		}
+    	}
+
+		private void UpdateBookFolderAndFileNames(DataSet data)
+		{
+			UpdateTitle(data);
+			var title = GetOrCreateElement("//head", "title").InnerText;
+			if (!string.IsNullOrEmpty(title.Trim()))
+				_storage.SetBookName(title);			
+		}
+
+    	/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="makeGeneric">When we're showing shells, we don't wayt to make it confusing by populating them with this library's data</param>
@@ -1105,7 +1123,7 @@ namespace Bloom.Book
     	/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
 		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
 
-    	public void UpdateVariablesAndDataDiv(XmlDocument domToRead)
+    	public DataSet UpdateVariablesAndDataDiv(XmlDocument domToRead)
 		{
 			XmlElement dataDiv = RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']") as XmlElement;
 			if(dataDiv==null)
@@ -1132,7 +1150,7 @@ namespace Bloom.Book
 					}
 				}
 			}
-
+			return data;
 		}
 
 		private XmlElement GetOrCreateElement(XmlElement parent, string predicate, string name)
