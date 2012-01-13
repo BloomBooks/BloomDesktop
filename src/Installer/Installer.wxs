@@ -111,6 +111,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="tidymanaged.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC621}">
 			<File Id="tidymanaged.dll" Name="tidymanaged.dll" KeyPath="yes" Source="..\..\output\release\tidymanaged.dll" />
 		  </Component>
+		  <!-- needed by libtidy.dll on some machines that don't have it  -->
+		  <Component Id="msvcr100.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC333}">
+			<File Id="msvcr100.dll" Name="msvcr100.dll" KeyPath="yes" Source="..\..\output\release\msvcr100.dll" />
+		  </Component>
+
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
@@ -133,6 +138,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="Newtonsoft.Json.dll"/>
 	  <ComponentRef Id="tidymanaged.dll"/>
 	  <ComponentRef Id="libtidy.dll"/>
+	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
 	  <ComponentRef Id="Skybound.Gecko.dll" />
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
