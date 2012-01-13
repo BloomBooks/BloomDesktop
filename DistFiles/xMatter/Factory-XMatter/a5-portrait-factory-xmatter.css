@@ -157,10 +157,10 @@ IMG.licenseImage
 }
 BUTTON#editCopyrightAndLicense
 {
-	/*+placement:shift -157px -31px;*/
+	/*+placement:shift -15px -30px;*/
 	position: relative;
-	left: -157px;
-	top: -31px;
+	left: -15px;
+	top: -30px;
 	font-size: 9pt;
 }
 DIV.licenseDescription
