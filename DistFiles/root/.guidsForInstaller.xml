@@ -10,4 +10,24 @@
   <File Id="SignalOverflow.css" Guid="f03e4ffa-c4db-4a74-91ca-014db56346a8" />
   <File Id="SignalOverflow.js" Guid="51693708-d93c-4fd6-87df-c059862425c3" />
   <File Id="templateStyle.css" Guid="d0d19545-f991-481a-97e8-a99388f4964e" />
+  <File Id="BasePage.css3" Guid="8bd24177-f191-47da-9c4c-aa238f48184e" />
+  <File Id="bloomBootstrap.js" Guid="e876b18b-02f3-4b49-852d-572071241634" />
+  <File Id="bloomEditing.js" Guid="66cb543e-55d8-4381-b0b0-25269bcd72d5" />
+  <File Id="editOriginalMode.css" Guid="b5f47869-24e3-4511-9b10-0c7566f17fa8" />
+  <File Id="editTranslationMode.css" Guid="219357d6-a6de-4715-a1f3-c1e68d71e8df" />
+  <File Id="jquery_ui.css" Guid="34b17afa-e2fb-4ca1-9218-aee97f350e2c" />
+  <File Id="jquery_ui.js" Guid="a312c5f8-1a08-4ad7-95d5-ccf3132a2fd3" />
+  <File Id="jquery.easytabs___b4_refactor.js" Guid="c6c365c5-f857-4200-930c-cae7b6c70dfc" />
+  <File Id="jquery.easytabs___Copy.js" Guid="c009e5a3-a3b9-4ff8-a573-4e40d4dba9fa" />
+  <File Id="jquery.easytabs.js" Guid="9bef8e14-0a75-45fa-a17e-605bd2c6c867" />
+  <File Id="jquery.hashchange.min.js" Guid="49a02434-9d16-4337-a7dc-baf31aae2d25" />
+  <File Id="jquery.js" Guid="26052395-9122-412a-9a58-84ab964dac32" />
+  <File Id="jquery.qtip.css" Guid="5d60f745-35d1-4d1e-8409-cb2962a669c1" />
+  <File Id="jquery.qtip.js" Guid="8c17a34d-9e22-44ca-96e1-9e786424d2bd" />
+  <File Id="jquery.qtipSecondary.js" Guid="586916b9-1a8a-42cb-9d60-d638bbb2ac8f" />
+  <File Id="jquery.sizes.js" Guid="34f82c32-d8f5-47f1-80e0-cb0d0d872bbf" />
+  <File Id="jquery.watermark.js" Guid="bfcbbe41-af3f-4c03-9d51-e4a8e2540523" />
+  <File Id="languageDisplayTemplate.css" Guid="72b34549-186d-4546-bbf9-226e3ddafa4e" />
+  <File Id="pdfPrintingTests.js" Guid="94780c05-0349-415e-9d62-d03ceebc4f5b" />
+  <File Id="previewMode.css3" Guid="891c98ed-ebf8-42cf-b5ca-869f269360c9" />
 </InstallerMetadata>

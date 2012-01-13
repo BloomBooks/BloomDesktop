@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -157,9 +158,12 @@ namespace Bloom
 			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
+			var errorsToHide = new List<string>();
+			errorsToHide.Add("['Shockwave Flash'] is undefined"); // can happen when mootools (used by calendar) is loaded
 			WebBrowser.JavascriptError += (sender, error) =>
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
+				if(! errorsToHide.Any(matchString=> error.Message.Contains(matchString)))
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
 																 error.Filename, error.Line, error.Message);
 			};
 			RaiseGeckoReady();

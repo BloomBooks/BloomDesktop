@@ -11,4 +11,12 @@
   <File Id="MakingNewShellsCollectionsFolder.png" Guid="6d6d38b4-827d-4769-8b8f-000cbec3b05f" />
   <File Id="_0_Release_Notes.htm" Guid="b7dda83e-76a6-4687-81d2-b4293d8efd46" />
   <File Id="_1_About.htm" Guid="e74b49aa-5e97-4537-b067-d6987c22deea" />
+  <File Id="__bloomDataDiv.png" Guid="d6814e32-ccf7-4402-b136-6e33ed0d0641" />
+  <File Id="_4_Building_Dynamic_Templates.html" Guid="18cebda5-fc7c-409c-aeda-049732b93372" />
+  <File Id="dataHint.png" Guid="cb496daa-cd84-4512-8ba2-b763fa8ab581" />
+  <File Id="MakingNewShellsChooseTemplate.png" Guid="16ea2545-1035-4b56-b79a-bd13c98c3b02" />
+  <File Id="MakingNewShellsEditBloomLibrary.png" Guid="43208310-5161-4590-aa80-ddc33a57cdd8" />
+  <File Id="MakingNewShellsLanguage.png" Guid="f35fb442-cc57-459b-9054-37eecbccdc16" />
+  <File Id="MakingNewShellsNewProject.png" Guid="484755f9-ef89-4e01-847a-79c8b27c8c30" />
+  <File Id="MakingNewShellsOpenBloomLibrary.png" Guid="7a7803b5-006d-434c-a532-e9af964e2e49" />
 </InstallerMetadata>
