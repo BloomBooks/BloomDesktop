@@ -18,4 +18,8 @@
   <File Id="thumbnail.png" Guid="68f263fc-7624-4326-8ddb-1770467d8997" />
   <File Id="underscore.js" Guid="9a628acf-c0c8-4f8e-bd30-0dbe5f4c0c33" />
   <File Id="Wall_Calendar.htm" Guid="b2cc1677-118f-4d58-a5e7-1c98a79a1521" />
+  <File Id="basePage.css" Guid="ed7abebe-e1bd-4f4c-a3f0-ce6e31c06601" />
+  <File Id="del_Wall_Calendar.txt" Guid="b9597a6e-91e4-4b7a-b2c8-21b371dde1de" />
+  <File Id="languageDisplay.css" Guid="d43dbc82-486d-458d-bb00-ac4c978d4c41" />
+  <File Id="previewMode.css" Guid="478df482-6bc4-46ff-84bc-e64cd10d4589" />
 </InstallerMetadata>
