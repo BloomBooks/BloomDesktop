@@ -131,7 +131,7 @@ namespace Bloom.Book
 			}
 			storage.Save();
 
-			storage.UpdateBookFileAndFolderName(_languageSettings);
+			storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
 		}
 

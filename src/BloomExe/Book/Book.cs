@@ -760,6 +760,7 @@ namespace Bloom.Book
 				ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
 			}
 
+			//todo: first page only:
 			UpdateBookFolderAndFileNames(data);
 
 			//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
@@ -836,9 +837,7 @@ namespace Bloom.Book
 		private void UpdateBookFolderAndFileNames(DataSet data)
 		{
 			UpdateTitle(data);
-			var title = GetOrCreateElement("//head", "title").InnerText;
-			if (!string.IsNullOrEmpty(title.Trim()))
-				_storage.SetBookName(title);
+			_storage.UpdateBookFileAndFolderName(_librarySettings);
 		}
 
 		/// <summary>

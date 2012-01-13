@@ -1,13 +1,14 @@
-/* This styesheet is applied when an shell book being translated into the vernacular. It locks down fields type of book, the copyright, and license */
-
-
+/*This styesheet is applied when an shell book being translated into the vernacular. It locks down fields type of book, the copyright, and license*/
+BUTTON#editCopyrightAndLicense
+{
+	display: none;
+}
 *.readOnlyInTranslationMode
 {
 /*in the case of textarea's,we have javascript which notices this border and makes it read-only
 for DIVS with this class, we have javascript which toggles the contentEditable attribute based on the border begin transparent or not*/
-	border: 1px solid transparent;
+	border: 1px solid transparent !important;
 }
-
 DIV.-bloom-metaData TEXTAREA
 {
 	border: 1px solid transparent;

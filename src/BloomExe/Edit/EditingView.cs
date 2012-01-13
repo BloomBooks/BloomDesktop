@@ -143,17 +143,17 @@ namespace Bloom.Edit
 			_splitTemplateAndSource.Panel1.Controls.Clear();
 			_splitTemplateAndSource.Panel2.Controls.Clear();
 
-			if (_model.ShowTemplatePanel && _model.ShowTranslationPanel)    //BOTH
-			{
-				_splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
-				_splitTemplateAndSource.Panel2.Controls.Add(_translationSourcesControl);
-				_splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
-			}
-			else if (_model.ShowTranslationPanel)    //Translation only
-			{
-				_splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
-			}
-			else if (_model.ShowTemplatePanel)        //Templates only
+//            if (_model.ShowTemplatePanel && _model.ShowTranslationPanel)    //BOTH
+//            {
+//                _splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
+//                _splitTemplateAndSource.Panel2.Controls.Add(_translationSourcesControl);
+//                _splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
+//            }
+//            else if (_model.ShowTranslationPanel)    //Translation only
+//            {
+//                _splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
+//            }
+			/*else*/ if (_model.ShowTemplatePanel)        //Templates only
 			{
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 			}

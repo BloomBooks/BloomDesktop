@@ -40,7 +40,7 @@ namespace Bloom.Book
 		string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
-		void UpdateBookFileAndFolderName(LanguageSettings settings);
+		void UpdateBookFileAndFolderName(LibrarySettings settings);
 	}
 
 	public class BookStorage : IBookStorage
@@ -573,9 +573,9 @@ namespace Bloom.Book
 			return ValidateBook(PathToExistingHtml);
 		}
 
-		public void UpdateBookFileAndFolderName(LanguageSettings languageSettings)
+		public void UpdateBookFileAndFolderName(LibrarySettings librarySettings)
 		{
-			var title = GetVernacularTitleFromHtml(languageSettings.VernacularIso639Code);
+			var title = GetVernacularTitleFromHtml(librarySettings.VernacularIso639Code);
 			if(title !=null)
 				SetBookName(title);
 		}
