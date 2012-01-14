@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace BloomTests
 			{
 				File.WriteAllText(input.Path,"<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				maker.MakePdf(input.Path, output.Path, "a5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.None);
+				maker.MakePdf(input.Path, output.Path, "a5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.None, new DoWorkEventArgs(null));
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path));
 			}
@@ -36,7 +37,7 @@ namespace BloomTests
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				maker.MakePdf(input.Path, output.Path, "A5", false, PublishModel.BookletLayoutMethod.SideFold,  PublishModel.BookletPortions.BookletPages);
+				maker.MakePdf(input.Path, output.Path, "A5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages, new DoWorkEventArgs(null));
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path));
 			}

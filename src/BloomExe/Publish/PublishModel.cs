@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Xml;
 using Bloom.Book;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 
 namespace Bloom.Publish
@@ -54,24 +56,18 @@ namespace Bloom.Publish
 		{
 			if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
-				LoadBook();
+			//	View.MakeBooklet();
 			}
 		}
 
 
-		public void LoadBook()
+		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
 			try
 			{
-				if (_bookSelection.CurrentSelection == null)
-				{
-					SetDisplayMode(DisplayModes.NoBook);
-					return;
-				}
 
-				SetDisplayMode(DisplayModes.Working);
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 				XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
@@ -92,7 +88,10 @@ namespace Bloom.Publish
 						writer.Close();
 					}
 					var sizeAndOrientation = SizeAndOrientation.FromDom(_bookSelection.CurrentSelection.RawDom);
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape, _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion);
+					if (doWorkEventArgs.Cancel)
+						return;
+
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape, _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
 				}
 			}
 			catch (Exception e)
@@ -101,7 +100,6 @@ namespace Bloom.Publish
 				SetDisplayMode(DisplayModes.NoBook);
 				return;
 			}
-			SetDisplayMode(DisplayModes.ShowPdf);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -149,15 +147,7 @@ namespace Bloom.Publish
 		}
 
 		public BookletPortions BookletPortion
-		{ get; private set; }
+		{ get; set; }
 
-		public void SetBookletStyle(BookletPortions booklet)
-		{
-			if (BookletPortion == booklet)
-				return;
-
-			BookletPortion = booklet;
-			LoadBook();
-		}
 	}
 }

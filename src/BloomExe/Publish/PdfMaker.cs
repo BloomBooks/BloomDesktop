@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using Palaso.Code;
@@ -23,14 +24,19 @@ namespace Bloom.Publish
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="pdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
-		/// <param name="getIsLandscape"></param>
+		/// <param name="landscape"> </param>
+		/// <param name="booketLayoutMethod"> </param>
 		/// <param name="bookletPortion"></param>
-		public void MakePdf(string inputHtmlPath, string pdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion)
+		/// <param name="doWorkEventArgs"> </param>
+		/// <param name="getIsLandscape"></param>
+		public void MakePdf(string inputHtmlPath, string pdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
-			MakeSimplePdf(inputHtmlPath, pdfPath, paperSizeName, landscape);
+			MakeSimplePdf(inputHtmlPath, pdfPath, paperSizeName, landscape, doWorkEventArgs);
+			if (doWorkEventArgs.Cancel)
+				return;
 			if (bookletPortion != PublishModel.BookletPortions.None)
 			{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
@@ -38,7 +44,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,bool landscape)
+		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, DoWorkEventArgs doWorkEventArgs)
 		{
 			var customSizes = new Dictionary<string, string>();
 			customSizes.Add("Halfletter", "--page-width 8.5 --page-height 5.5");
@@ -57,7 +63,8 @@ namespace Bloom.Publish
 				"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
 				Path.GetFileName(inputHtmlPath), outputPdfPath);
 
-			CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(inputHtmlPath), 20, new NullProgress());
+			var progress = new CancellableNullProgress(doWorkEventArgs);
+			CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(inputHtmlPath), 20, progress);
 
 			if (!File.Exists(outputPdfPath))
 				throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
@@ -144,6 +151,25 @@ namespace Bloom.Publish
 				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
 				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, /*TODO: rightToLeft*/ false);
+			}
+		}
+	}
+
+	internal class CancellableNullProgress : NullProgress
+	{
+		private readonly DoWorkEventArgs _doWorkEventArgs;
+
+		public CancellableNullProgress(DoWorkEventArgs doWorkEventArgs)
+		{
+			_doWorkEventArgs = doWorkEventArgs;
+		}
+
+		public override bool CancelRequested
+		{
+			get { return _doWorkEventArgs.Cancel; }
+			set
+			{
+				base.CancelRequested = value;
 			}
 		}
 	}

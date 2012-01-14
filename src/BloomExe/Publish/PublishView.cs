@@ -15,31 +15,74 @@ namespace Bloom.Publish
 
 		public delegate PublishView Factory();//autofac uses this
 
-		private bool _selectionChangedWhileWeWereInvisible;
-		private XmlDocument _pleaseWaitPage;
-
-		public PublishView(PublishModel model)
+		public PublishView(PublishModel model,
+			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
-			InitializeComponent();
+			try
+			{
+				InitializeComponent();
+			}
+			catch (Exception error)
+			{
+				if (error.Message.Contains("0x80040154"))
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Please install Adobe Reader before running Bloom.");
+					Environment.FailFast("Bloom quitting for lack of Adobe Reader");
+				}
+				throw error;
+			}
+
 			if(this.DesignMode)
 				return;
 
 			_model = model;
 			_model.View = this;
 
-			_pleaseWaitPage = new XmlDocument();
-			_pleaseWaitPage.InnerXml = "<html><body>Please Wait</body></html>";
+			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
+
+			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
+			//off the tab itself changing, either to us or away from us.
+			selectedTabChangedEvent.Subscribe(c=>
+												{
+													if (c == this)
+													{
+														if (_makePdfBackgroundWorker.IsBusy)
+															return;
+
+														_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+														MakeBooklet();
+													}
+													else if (c!=this && _makePdfBackgroundWorker.IsBusy)
+														_makePdfBackgroundWorker.CancelAsync();
+												});
+
+			//TODO: find a way to call this just once, at the right time:
+
+			//			UsageReporter.SendNavigationNotice("Publish");
+		}
+
+		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		{
+			SetDisplayMode(PublishModel.DisplayModes.ShowPdf);
+			UpdateDisplay();
+			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
+			{
+				MakeBooklet();
+			}
 		}
 
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			_loadTimer.Enabled = true;
-			UpdateDisplay();
+			//_loadTimer.Enabled = true;
+			//UpdateDisplay();
 		}
 
 		private void UpdateDisplay()
 		{
+			if(_model==null)
+				return;
+
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
 			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
 			_noBookletRadio.Checked = _model.BookletPortion== PublishModel.BookletPortions.None;
@@ -51,12 +94,11 @@ namespace Bloom.Publish
 			{
 				case PublishModel.DisplayModes.NoBook:
 					Cursor = Cursors.Default;
-					_browser.Navigate("about:blank", false);
 					break;
 				case PublishModel.DisplayModes.Working:
-					_browser.Cursor = Cursors.WaitCursor;
+					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
-					_browser.Navigate(_pleaseWaitPage);
+					_workingIndicator.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
 					Cursor = Cursors.Default;
@@ -64,50 +106,59 @@ namespace Bloom.Publish
 					{
 						//http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
 						var path = _model.PdfFilePath;
-						//TODO: on delete, this file:\\ gives an error
-						//var path = "file:\\" + _model.PdfFilePath + "#view=Fit&navpanes=0&pagemode=thumbs&toolbar=1";
-						_browser.Navigate(path, true);
+						_workingIndicator.Visible = false;
+						_adobeReader.Hide();
+						_adobeReader.LoadFile(path);
+						_adobeReader.setShowToolbar(false);
+						_adobeReader.setView("Fit");
+						_adobeReader.Show();
 					}
 
 					break;
 			}
 		}
 
-		private void _browser_VisibleChanged(object sender, EventArgs e)
-		{
-			if (Visible)
-			{
-				_browser.Navigate(_pleaseWaitPage);
-				_loadTimer.Enabled = true;
-				UsageReporter.SendNavigationNotice("Publish");
-			}
-		}
-
-		private void _loadTimer_Tick(object sender, EventArgs e)
-		{
-			_loadTimer.Enabled = false;
-//            if (_currentlyLoadedBook != BookSelection.CurrentSelection)
-//            {
-//                LoadBook();
-//            }
-			if (!Visible)
-			{
-			  //  _selectionChangedWhileWeWereInvisible = true;
-				return;
-			}
-			_model.LoadBook();
-			UpdateDisplay();
-		}
 
 		private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
 		{
-			if (_noBookletRadio.Checked)
-				_model.SetBookletStyle(PublishModel.BookletPortions.None);
-			else if (_coverRadio.Checked)
-				_model.SetBookletStyle(PublishModel.BookletPortions.BookletCover);
+			var old = _model.BookletPortion;
+			SetModelFromRadioButtons();
+			if (old == _model.BookletPortion)
+				return;
+
+			if(_makePdfBackgroundWorker.IsBusy)
+			{
+				_makePdfBackgroundWorker.CancelAsync();
+			}
 			else
-				_model.SetBookletStyle(PublishModel.BookletPortions.BookletPages);
-			UpdateDisplay();
+				MakeBooklet();
+		}
+
+		private void SetModelFromRadioButtons()
+		{
+			if (_noBookletRadio.Checked)
+				_model.BookletPortion = PublishModel.BookletPortions.None;
+			else if (_coverRadio.Checked)
+				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
+			else
+				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+		}
+
+		public void MakeBooklet()
+		{
+			SetDisplayMode(PublishModel.DisplayModes.Working);
+			_makePdfBackgroundWorker.RunWorkerAsync();
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			_adobeReader.printAll();
+		}
+
+		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		{
+			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
+			_model.LoadBook(e);
 		}
 	}
 }

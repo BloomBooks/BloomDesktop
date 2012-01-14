@@ -48,6 +48,7 @@ namespace Bloom
 					typeof(TemplateInsertionCommand),
 					typeof(DeletePageCommand),
 					typeof(EditBookCommand),
+					typeof(SelectedTabChangedEvent),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookSelection),
 					typeof(RelocatePageEvent),

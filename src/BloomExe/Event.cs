@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Library;
 
@@ -31,6 +32,11 @@ namespace Bloom
 		}
 	}
 
+	/// <summary>
+	/// Gives the first control in the tab
+	/// </summary>
+	public class SelectedTabChangedEvent : Event<Control>
+	{ }
 
 	public class CreateFromTemplateCommand: Event<Book.Book>
 	{}
