@@ -151,6 +151,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap spinner {
+            get {
+                object obj = ResourceManager.GetObject("spinner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap WelcomeHeader {
             get {
                 object obj = ResourceManager.GetObject("WelcomeHeader", resourceCulture);
