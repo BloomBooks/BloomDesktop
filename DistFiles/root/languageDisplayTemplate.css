@@ -18,29 +18,6 @@ Its purpose is to hide elements that are in languages that will not be printed i
 	display: none;
 }
 
-/*TEXTAREA[lang="NATIONAL"][class~="-bloom-showNational"]*/
-/*{*/
-	/*display: inline; *//* for textarea's "normal" is inline*/
-/*}*/
-
-/* REVIEW: when would we not show a non-textarea? All that is coming to mind at the moment is if we don't have that language (e.g. N2) defined, or don't have a value to show (e.g. district or sub-district) */
-
-/*DIV[lang="NATIONAL"][class~="-bloom-showNational"]*/
-/*{*/
-	/*display: block; *//* for div's, "normal" is block */
-/*}*/
-
-
-/*P[lang="NATIONAL"][class~="-bloom-showNational"]*/
-/*{*/
-	/*display: inline; *//* for textarea's "normal" is inline*/
-/*}*/
-
-/*SPAN[lang="NATIONAL"][class~="-bloom-showNational"]*/
-/*{*/
-	/*display: inline; *//* for textarea's "normal" is inline*/
-/*}*/
-
 *[lang="N2"] /* anything left with an N2, well we dont' have a language for it */
 {
 	display: none;

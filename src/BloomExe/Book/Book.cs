@@ -500,6 +500,8 @@ namespace Bloom.Book
 			}
 
 			AddCoverColor(dom, CoverColor);
+
+			AddPreviewJScript(dom);
 			return dom;
 		}
 
@@ -581,8 +583,6 @@ namespace Bloom.Book
 		{
 
 			var colorValue = String.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
-			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
-
 			XmlElement colorStyle = dom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
@@ -591,9 +591,24 @@ namespace Bloom.Book
 				DIV.-bloom-page.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
+			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
 			header.AppendChild(colorStyle);
 		}
 
+
+		/// <summary>
+		/// Make stuff readonly, which isn't doable via css, surprisingly
+		/// </summary>
+		/// <param name="dom"></param>
+		private void AddPreviewJScript(XmlDocument dom)
+		{
+			XmlElement script = dom.CreateElement("script");
+			script.SetAttribute("type", "text/javascript");
+			script.InnerText = @"jQuery(function() {$('textarea').focus(function() {$(this).attr('readonly','readonly');});})";
+			XmlElement header = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//head");
+			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
+			header.AppendChild(script);
+		}
 
 		public IEnumerable<IPage> GetPages()
 		{
