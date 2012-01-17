@@ -24,3 +24,4 @@ lib/XulRunner*
 lib/xulrunner*
 **.idea
 DistFiles/root/tmp*
+*.pdb
