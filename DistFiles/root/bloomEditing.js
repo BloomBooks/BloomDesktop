@@ -19,6 +19,10 @@ function Cleanup(){
 function MakeSourceTextDivForGroup(group) {
 
     var divForBubble = $(group).clone();
+    $(divForBubble).find("textarea").each(function() {
+        $(this).attr("readonly", "readonly");
+    });
+
     $(divForBubble).removeClass();//remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
