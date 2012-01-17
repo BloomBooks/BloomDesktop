@@ -17,18 +17,23 @@ namespace Bloom.Library
 
 		private readonly LibrarySettings _librarySettings;
 		private XMatterPackFinder _xmatterPackFinder;
+		private bool _restartMightBeNeeded;
 
 		public SettingsDialog(LibrarySettings librarySettings, XMatterPackFinder xmatterPackFinder)
 		{
 			_librarySettings = librarySettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			InitializeComponent();
+			if(_librarySettings.IsShellLibrary)
+			{
+				_vernacularOrShellLanguageLabel.Text = "Language you are entering into shells";
+			}
 			UpdateDisplay();
 		}
 
 		private void UpdateDisplay()
 		{
-			_vernacularLanguageLabel.Text = string.Format("{0} ({1})", _librarySettings.GetVernacularName("en"), _librarySettings.VernacularIso639Code);
+			_vernacularLanguageName.Text = string.Format("{0} ({1})", _librarySettings.GetVernacularName("en"), _librarySettings.VernacularIso639Code);
 			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _librarySettings.GetNationalLanguage1Name("en"), _librarySettings.NationalLanguage1Iso639Code);
 
 			if (string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
@@ -45,7 +50,7 @@ namespace Bloom.Library
 			_countryText.Text = _librarySettings.Country;
 			_provinceText.Text = _librarySettings.Province;
 			_districtText.Text = _librarySettings.District;
-
+			_restartMessage.Visible = _restartMightBeNeeded;
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());
@@ -57,22 +62,26 @@ namespace Bloom.Library
 		private void _vernacularChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_librarySettings.VernacularIso639Code = ChangeLanguage(_librarySettings.VernacularIso639Code);
+			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 		private void _national1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_librarySettings.NationalLanguage1Iso639Code = ChangeLanguage( _librarySettings.NationalLanguage1Iso639Code);
+			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 
 		private void _national2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_librarySettings.NationalLanguage2Iso639Code = ChangeLanguage(_librarySettings.NationalLanguage2Iso639Code);
+			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_librarySettings.NationalLanguage2Iso639Code = null;
+			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 

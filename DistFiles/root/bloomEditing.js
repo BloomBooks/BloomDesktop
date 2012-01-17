@@ -303,6 +303,7 @@ jQuery(document).ready(function () {
         //$(':input:enabled:visible:first').focus();
     $("textarea, div.editable").first().focus();//review: this might chose a textarea which appears after the div. Could we sort on the tab order?
 
+    SetupTopicDialog();
 
     //copy source texts out to their own div, where we can make a bubble with tabs out of them
     //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
@@ -328,3 +329,67 @@ function SetCopyrightAndLicense(data) {
     $("button#editCopyrightAndLicense").css("display",shouldShowButton ? "inline" : "none");
 }
 
+function FindOrCreateTopicDialogDiv() {
+    var dialogContents = $("body").find("div#topicChooser");
+    if (!dialogContents.length) {
+        //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
+        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
+        var topics = ["Agriculture", "Business", "Culture", "Community Living", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Science", "Tradition"];
+
+        dialogContents.append("<ol id='topics'></ol>");
+        for (i in topics) {
+            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
+        }
+
+        $("#topics").selectable();
+
+        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
+        $("#topics").selectable({
+            unselected:function () {
+                $(":not(.ui-selected)", this).each(function () {
+                    $(this).removeClass('ui-state-highlight');
+                });
+            },
+            selected:function () {
+                $(".ui-selected", this).each(function () {
+                    $(this).addClass('ui-state-highlight');
+                });
+            }
+        });
+        $("#topics li").hover(
+            function () {
+                $(this).addClass('ui-state-hover');
+            },
+            function () {
+                $(this).removeClass('ui-state-hover');
+            }
+        );
+    }
+    return dialogContents;
+}
+function SetupTopicDialog() {
+    $("textarea[data-book='topic']").click(function(){
+       // url = GetDictionary().urlOfUIFiles + "/topicDialog.htm";
+        var dialogContents = FindOrCreateTopicDialogDiv();
+        var dlg = $(dialogContents).dialog({
+                autoOpen: "true",
+                modal: "true",
+                buttons: {
+                    "Ok": function() {
+                        var t = $("ol#topics li.ui-selected");
+                        if(t.length)
+                        {
+                            $("textarea[data-book='topic']").text(t[0].innerHTML);
+                        }
+                        $(this).dialog("close");
+                    }
+                }
+        });
+
+        //make a double click on an item close the dialog
+        dlg.find("li").dblclick( function(){
+         var x = dlg.dialog("option", "buttons");
+         x['Ok'].apply(dlg);
+        });
+    });
+}
