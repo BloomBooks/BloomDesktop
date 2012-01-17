@@ -114,7 +114,7 @@
 			this._settingsButton.Name = "_settingsButton";
 			this._settingsButton.Size = new System.Drawing.Size(22, 23);
 			this._settingsButton.TabIndex = 12;
-			this.toolTip1.SetToolTip(this._settingsButton, "Get settingsrmation About Bloom");
+			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
 			this._settingsButton.UseVisualStyleBackColor = false;
 			this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
 			// 
