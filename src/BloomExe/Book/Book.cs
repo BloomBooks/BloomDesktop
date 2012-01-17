@@ -255,6 +255,9 @@ namespace Bloom.Book
 			d.Add("{N1}", _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
 			d.Add("{N2}", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code));
 
+			//REVIEW: this is deviating a bit from the normal use of the dictionary...
+			d.Add("urlOfUIFiles", "file:///"+ _fileLocator.LocateDirectory("ui", "ui files directory"));
+
 			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
 			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);

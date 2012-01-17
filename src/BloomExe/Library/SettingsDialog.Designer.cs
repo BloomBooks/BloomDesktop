@@ -39,8 +39,8 @@
 			this.label6 = new System.Windows.Forms.Label();
 			this._nationalLanguage1Label = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
-			this._vernacularLanguageLabel = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
+			this._vernacularLanguageName = new System.Windows.Forms.Label();
+			this._vernacularOrShellLanguageLabel = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.label1 = new System.Windows.Forms.Label();
 			this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
@@ -53,6 +53,7 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this._okButton = new System.Windows.Forms.Button();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
+			this._restartMessage = new System.Windows.Forms.Label();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -71,7 +72,7 @@
 			this.tabControl1.Location = new System.Drawing.Point(1, 2);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(364, 307);
+			this.tabControl1.Size = new System.Drawing.Size(619, 344);
 			this.tabControl1.TabIndex = 0;
 			// 
 			// tabPage1
@@ -84,12 +85,12 @@
 			this.tabPage1.Controls.Add(this.label6);
 			this.tabPage1.Controls.Add(this._nationalLanguage1Label);
 			this.tabPage1.Controls.Add(this.label4);
-			this.tabPage1.Controls.Add(this._vernacularLanguageLabel);
-			this.tabPage1.Controls.Add(this.label2);
+			this.tabPage1.Controls.Add(this._vernacularLanguageName);
+			this.tabPage1.Controls.Add(this._vernacularOrShellLanguageLabel);
 			this.tabPage1.Location = new System.Drawing.Point(4, 26);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(356, 277);
+			this.tabPage1.Size = new System.Drawing.Size(611, 314);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -178,25 +179,25 @@
 			this.label4.TabIndex = 10;
 			this.label4.Text = "National Language 1";
 			// 
-			// _vernacularLanguageLabel
+			// _vernacularLanguageName
 			// 
-			this._vernacularLanguageLabel.AutoSize = true;
-			this._vernacularLanguageLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._vernacularLanguageLabel.Location = new System.Drawing.Point(26, 44);
-			this._vernacularLanguageLabel.Name = "_vernacularLanguageLabel";
-			this._vernacularLanguageLabel.Size = new System.Drawing.Size(49, 19);
-			this._vernacularLanguageLabel.TabIndex = 8;
-			this._vernacularLanguageLabel.Text = "foobar";
+			this._vernacularLanguageName.AutoSize = true;
+			this._vernacularLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._vernacularLanguageName.Location = new System.Drawing.Point(26, 44);
+			this._vernacularLanguageName.Name = "_vernacularLanguageName";
+			this._vernacularLanguageName.Size = new System.Drawing.Size(49, 19);
+			this._vernacularLanguageName.TabIndex = 8;
+			this._vernacularLanguageName.Text = "foobar";
 			// 
-			// label2
+			// _vernacularOrShellLanguageLabel
 			// 
-			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label2.Location = new System.Drawing.Point(26, 24);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(140, 19);
-			this.label2.TabIndex = 7;
-			this.label2.Text = "Vernacular Language";
+			this._vernacularOrShellLanguageLabel.AutoSize = true;
+			this._vernacularOrShellLanguageLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._vernacularOrShellLanguageLabel.Location = new System.Drawing.Point(26, 24);
+			this._vernacularOrShellLanguageLabel.Name = "_vernacularOrShellLanguageLabel";
+			this._vernacularOrShellLanguageLabel.Size = new System.Drawing.Size(140, 19);
+			this._vernacularOrShellLanguageLabel.TabIndex = 7;
+			this._vernacularOrShellLanguageLabel.Text = "Vernacular Language";
 			// 
 			// tabPage2
 			// 
@@ -301,7 +302,7 @@
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._okButton.Location = new System.Drawing.Point(279, 345);
+			this._okButton.Location = new System.Drawing.Point(534, 382);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
 			this._okButton.TabIndex = 1;
@@ -314,19 +315,32 @@
 			this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.checkBox1.AutoSize = true;
 			this.checkBox1.Enabled = false;
-			this.checkBox1.Location = new System.Drawing.Point(12, 315);
+			this.checkBox1.Location = new System.Drawing.Point(12, 352);
 			this.checkBox1.Name = "checkBox1";
 			this.checkBox1.Size = new System.Drawing.Size(278, 17);
 			this.checkBox1.TabIndex = 3;
 			this.checkBox1.Text = "Require Shift-click to open these settings in the future";
 			this.checkBox1.UseVisualStyleBackColor = true;
 			// 
+			// _restartMessage
+			// 
+			this._restartMessage.AutoSize = true;
+			this._restartMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._restartMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+			this._restartMessage.Location = new System.Drawing.Point(8, 382);
+			this._restartMessage.Name = "_restartMessage";
+			this._restartMessage.Size = new System.Drawing.Size(383, 20);
+			this._restartMessage.TabIndex = 19;
+			this._restartMessage.Text = "Restart or re-open project to use new settings.";
+			this._restartMessage.Visible = false;
+			// 
 			// SettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(366, 380);
+			this.ClientSize = new System.Drawing.Size(621, 417);
+			this.Controls.Add(this._restartMessage);
 			this.Controls.Add(this.checkBox1);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this.tabControl1);
@@ -354,7 +368,7 @@
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.TabPage tabPage3;
 		private System.Windows.Forms.Button _okButton;
-		protected System.Windows.Forms.Label label2;
+		protected System.Windows.Forms.Label _vernacularOrShellLanguageLabel;
 		private System.Windows.Forms.LinkLabel _national2ChangeLink;
 		private System.Windows.Forms.LinkLabel _national1ChangeLink;
 		private System.Windows.Forms.LinkLabel _vernacularChangeLink;
@@ -362,7 +376,7 @@
 		protected System.Windows.Forms.Label label6;
 		protected System.Windows.Forms.Label _nationalLanguage1Label;
 		protected System.Windows.Forms.Label label4;
-		protected System.Windows.Forms.Label _vernacularLanguageLabel;
+		protected System.Windows.Forms.Label _vernacularLanguageName;
 		private System.Windows.Forms.CheckBox checkBox1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ComboBox _xmatterPackCombo;
@@ -373,5 +387,6 @@
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.LinkLabel _removeSecondNationalLanguageButton;
+		private System.Windows.Forms.Label _restartMessage;
 	}
 }
