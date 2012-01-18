@@ -150,10 +150,12 @@ DIV#versoLicenseAndCopyright
 }
 IMG.licenseImage
 {
-	/*+placement:shift -181px -24px;*/
-	position: relative;
-	left: -181px;
-	top: -24px;
+	/*+placement:anchor-top-left 158px 79px;*/
+	position: absolute;
+	left: 158px;
+	top: 79px;
+	/*[empty]width:;*/
+	/*[empty]height:;*/
 }
 BUTTON#editCopyrightAndLicense
 {
@@ -168,11 +170,13 @@ DIV.licenseDescription
 	font-size: 8pt;
 	margin-left: 35px;
 	margin-right: 77px;
-	/*+placement:shift 59px -64px;*/
-	position: relative;
-	left: 59px;
-	top: -64px;
-	text-align: left;
+	/*+placement:anchor-top-left -42px 7px;*/
+	position: absolute;
+	left: -42px;
+	top: 7px;
+	text-align: center;
+	width: 452px;
+	height: 0px;
 }
 DIV.licenseUrl
 {
