@@ -154,12 +154,14 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
+	  <ComponentRef Id="Interop.Acrobat.dll" />
+	  <ComponentRef Id="Interop.AcroPDFLib.dll" />
+	  <ComponentRef Id="AxInterop.AcroPDFLib.dll" />
+
 	  <ComponentGroupRef Id ="DistFiles"/>
 	  <ComponentGroupRef Id="wkhtmltopdf" />
 	  <ComponentGroupRef Id="XulRunner" />
-	  <ComponentGroupRef Id="Interop.Acrobat.dll" />
-	  <ComponentGroupRef Id="Interop.AcroPDFLib.dll" />
-	  <ComponentGroupRef Id="AxInterop.AcroPDFLib.dll" />
+
 
 
 	</Feature>
