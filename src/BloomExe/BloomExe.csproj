@@ -425,6 +425,8 @@
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)
 copy ..\..\lib\libtidy.dll $(OutDir)
+copy ..\..\lib\dotnet\Interop.AcroPDFLib.dll $(OutDir)
+copy ..\..\lib\dotnet\Interop.Acrobat.dll $(OutDir)
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
