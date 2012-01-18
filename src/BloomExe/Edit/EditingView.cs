@@ -97,7 +97,11 @@ namespace Bloom.Edit
 																														string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
 																														if (File.Exists(imagePath))
 																															File.Delete(imagePath);
-																														dlg.Metadata.License.GetImage().Save(imagePath);
+																														Image licenseImage = dlg.Metadata.License.GetImage();
+																														if(licenseImage!=null)
+																														{
+																															licenseImage.Save(imagePath);
+																														}
 																														string result =
 																															string.Format(
 																																"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
