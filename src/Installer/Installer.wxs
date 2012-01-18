@@ -116,6 +116,17 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="msvcr100.dll" Name="msvcr100.dll" KeyPath="yes" Source="..\..\output\release\msvcr100.dll" />
 		  </Component>
 
+		  <!-- For embedding Adobe Reader -->
+		  <Component Id="Interop.Acrobat.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D6}">
+			<File Id="Interop.Acrobat.dll" Name="Interop.Acrobat.dll" KeyPath="yes" Source="..\..\output\release\Interop.Acrobat.dll" />
+		  </Component>
+		  <Component Id="Interop.AcroPDFLib.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D7}">
+			<File Id="Interop.AcroPDFLib.dll" Name="Interop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\Interop.AcroPDFLib.dll" />
+		  </Component>
+		  <Component Id="AxInterop.AcroPDFLib.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D8}">
+			<File Id="AxInterop.AcroPDFLib.dll" Name="AxInterop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\AxInterop.AcroPDFLib.dll" />
+		  </Component>
+
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
@@ -146,6 +157,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentGroupRef Id ="DistFiles"/>
 	  <ComponentGroupRef Id="wkhtmltopdf" />
 	  <ComponentGroupRef Id="XulRunner" />
+	  <ComponentGroupRef Id="Interop.Acrobat.dll" />
+	  <ComponentGroupRef Id="Interop.AcroPDFLib.dll" />
+	  <ComponentGroupRef Id="AxInterop.AcroPDFLib.dll" />
+
 
 	</Feature>
 	<Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
