@@ -68,6 +68,33 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
+TEXTAREA
+{
+/*specifying the font again, here, really is needed*/
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	font-size: 14pt;
+	width: 100%;
+}
+.translators
+{
+	text-align: center;
+	height: 1.6cm;
+	position: relative;
+}
+DIV.-bloom-page:after
+{
+	position: static;
+	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
+	position: absolute;
+	left: 7.5cm;
+	top: 20.3cm;
+}
+.imageOnTop P.image1
+{
+	height: 9.7cm;
+	text-align: center;
+	margin-top: 1cm;
+}
 DIV.imageOnTop DIV.-bloom-translationGroup
 {
 	height: 291px;
@@ -76,6 +103,23 @@ DIV.imageOnTop DIV.-bloom-translationGroup
 	left: 20px;
 	top: -14px;
 	width: 464px;
+}
+/*in order to make images of different vertical/horizontal shapes come out
+correctly, give them a max-width and max-height, then enclose them
+in a <p> which has a fixed height.*/
+.imageOnTop TEXTAREA
+{
+	height: 100%;
+	width: 100%;
+}
+DIV.imageOnTop IMG.picture
+{
+	max-height: 9.7cm;
+	max-width: 12.6cm;
+	/*+placement:shift -14px 38px;*/
+	position: relative;
+	left: -14px;
+	top: 38px;
 }
 DIV.imageInMiddle DIV.bottom
 {
@@ -94,26 +138,9 @@ DIV.imageInMiddle P
 	top: 57px;
 	width: 411px;
 }
-TEXTAREA
-{
-/*specifying the font again, here, really is needed*/
-	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
-	font-size: 14pt;
-	width: 100%;
-}
 DIV.imageInMiddle TEXTAREA
 {
 	height: 100%;
-}
-.imageOnTop TEXTAREA
-{
-	height: 100%;
-	width: 100%;
-}
-.imageOnTop .picture
-{
-	max-height: 9.7cm;
-	max-width: 12.6cm;
 }
 .imageInMiddle .picture
 {
@@ -138,6 +165,15 @@ DIV.imageInMiddle DIV.top
 {
 	height: 100%;
 }
+.imageOnBottom P.imageHolder
+{
+	height: 9cm;
+	/*+placement:anchor-bottom-left 18px 106px;*/
+	position: absolute;
+	left: 18px;
+	bottom: 106px;
+	width: 466px;
+}
 DIV.imageOnBottom DIV.-bloom-translationGroup
 {
 	height: 235px;
@@ -152,12 +188,6 @@ DIV.imageOnBottom DIV.-bloom-translationGroup
 	height: 18.9cm;
 	margin-top: 1cm;
 }
-.translators
-{
-	text-align: center;
-	height: 1.6cm;
-	position: relative;
-}
 .imageWholePage P.imageHolder
 {
 	height: 18.6cm;
@@ -168,7 +198,6 @@ DIV.imageOnBottom DIV.-bloom-translationGroup
 	top: 0px;
 	margin-top: 43px;
 }
-/*TODO: figure out how to center this image vertically*/
 DIV.imageWholePage IMG
 {
 	display: table-cell;
@@ -186,32 +215,6 @@ DIV.imageWholePage TABLE
 {
 	width: 556px;
 	height: 786px;
-}
-.imageOnBottom P.imageHolder
-{
-	height: 9cm;
-	/*+placement:anchor-bottom-left 18px 106px;*/
-	position: absolute;
-	left: 18px;
-	bottom: 106px;
-	width: 466px;
-}
-/*in order to make images of different vertical/horizontal shapes come out
-correctly, give them a max-width and max-height, then enclose them
-in a <p> which has a fixed height.*/
-.imageOnTop P.image1
-{
-	height: 9.7cm;
-	text-align: center;
-	margin-top: 1cm;
-}
-DIV.-bloom-page:after
-{
-	position: static;
-	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
-	position: absolute;
-	left: 7.5cm;
-	top: 20.3cm;
 }
 /*It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
 DIV.textWholePage DIV

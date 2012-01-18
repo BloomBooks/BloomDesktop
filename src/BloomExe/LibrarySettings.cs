@@ -15,10 +15,22 @@ namespace Bloom
 	/// </summary>
 	public class LibrarySettings
 	{
+		private string _vernacularIso639Code;
+
+
 		#region Persisted roperties
 
 		//these are virtual for the sake of the unit test mock framework
-		public virtual string VernacularIso639Code { get; set; }
+		public virtual string VernacularIso639Code
+		{
+			get { return _vernacularIso639Code; }
+			set
+			{
+				_vernacularIso639Code = value;
+				VernacularLanguageName = GetVernacularName(NationalLanguage1Iso639Code);
+			}
+		}
+
 		public virtual string NationalLanguage1Iso639Code { get; set; }
 		public virtual string NationalLanguage2Iso639Code { get; set; }
 		public virtual string VernacularLanguageName { get; set; }

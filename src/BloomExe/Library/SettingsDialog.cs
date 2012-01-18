@@ -62,6 +62,7 @@ namespace Bloom.Library
 		private void _vernacularChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_librarySettings.VernacularIso639Code = ChangeLanguage(_librarySettings.VernacularIso639Code);
+
 			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
