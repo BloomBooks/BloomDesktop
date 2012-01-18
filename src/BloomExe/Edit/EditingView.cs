@@ -72,52 +72,62 @@ namespace Bloom.Edit
 																				//I found that while in this handler, we can't call any javacript back, so we
 																				//instead just return and handle it momentarily
 																				_handleMessageTimer.Enabled = true;
-																				_pendingMessageHandler = (()=>
-																											{
-																												JObject existing = JObject.Parse(data.ToString());
-
-																												Metadata metadata = new Metadata();
-																												metadata.CopyrightNotice = existing["copyright"].Value<string>();
-																												var url = existing["licenseUrl"].Value<string>();
-																												//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
-																												if (url == null || url.Trim() == "")
-																												{
-																													metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-																												}
-																												else
-																												{
-																													metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
-																												}
-
-																												using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
-																												{
-																													dlg.ShowCreator = false;
-																													if (DialogResult.OK == dlg.ShowDialog())
-																													{
-																														string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-																														if (File.Exists(imagePath))
-																															File.Delete(imagePath);
-																														Image licenseImage = dlg.Metadata.License.GetImage();
-																														if(licenseImage!=null)
-																														{
-																															licenseImage.Save(imagePath);
-																														}
-																														string result =
-																															string.Format(
-																																"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}', licenseDescription: '{3}' }}",
-																																dlg.Metadata.CopyrightNotice,
-																																"license.png",
-																																dlg.Metadata.License.Url, dlg.Metadata.License.GetDescription("en"));
-																														_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
-
-																													}
-																												}
-																											})
-																				;
+																				_pendingMessageHandler = (()=>OnClickCopyrightAndLicenseDiv(data));
 																			}));
 		}
 
+		private void OnClickCopyrightAndLicenseDiv(string data)
+		{
+			JObject existing = JObject.Parse(data.ToString());
 
+			Metadata metadata = new Metadata();
+			metadata.CopyrightNotice = existing["copyright"].Value<string>();
+			var url = existing["licenseUrl"].Value<string>();
+			//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+			if (url == null || url.Trim() == "")
+			{
+				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+				JToken licenseNotes;
+				if (existing.TryGetValue("licenseNotes", out licenseNotes))
+				{
+					metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
+				}
+				else
+				{
+					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+				}
+			}
+			else
+			{
+				metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
+			}
+
+			using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+			{
+				dlg.ShowCreator = false;
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+					if (File.Exists(imagePath))
+						File.Delete(imagePath);
+					Image licenseImage = dlg.Metadata.License.GetImage();
+					if (licenseImage != null)
+					{
+						licenseImage.Save(imagePath);
+					}
+
+					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+
+					string result =
+						string.Format(
+							"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
+							dlg.Metadata.CopyrightNotice,
+							"license.png",
+							dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement, dlg.Metadata.License.GetDescription("en"));
+					_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+				}
+			}
+		}
 
 
 		/// <summary>

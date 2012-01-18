@@ -61,6 +61,7 @@
 			// 
 			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
+			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
 			this._splitContainer1.Name = "_splitContainer1";
 			// 
 			// _splitContainer1.Panel1
@@ -70,8 +71,8 @@
 			// _splitContainer1.Panel2
 			// 
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
-			this._splitContainer1.Size = new System.Drawing.Size(900, 600);
-			this._splitContainer1.SplitterDistance = 212;
+			this._splitContainer1.Size = new System.Drawing.Size(1200, 738);
+			this._splitContainer1.SplitterDistance = 213;
 			this._splitContainer1.SplitterWidth = 1;
 			this._splitContainer1.TabIndex = 0;
 			// 
@@ -79,6 +80,7 @@
 			// 
 			this._splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer2.Location = new System.Drawing.Point(0, 0);
+			this._splitContainer2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
 			this._splitContainer2.Name = "_splitContainer2";
 			// 
 			// _splitContainer2.Panel1
@@ -90,8 +92,8 @@
 			// 
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
-			this._splitContainer2.Size = new System.Drawing.Size(687, 600);
-			this._splitContainer2.SplitterDistance = 564;
+			this._splitContainer2.Size = new System.Drawing.Size(986, 738);
+			this._splitContainer2.SplitterDistance = 809;
 			this._splitContainer2.SplitterWidth = 1;
 			this._splitContainer2.TabIndex = 0;
 			// 
@@ -109,7 +111,7 @@
             this._deletePageButton});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(564, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(809, 25);
 			this.toolStrip1.TabIndex = 2;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -173,14 +175,16 @@
 			// 
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
+			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
 			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
 			this._splitTemplateAndSource.Orientation = System.Windows.Forms.Orientation.Horizontal;
 			// 
 			// _splitTemplateAndSource.Panel2
 			// 
 			this._splitTemplateAndSource.Panel2.Controls.Add(this._translationSourcesControl);
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(122, 600);
-			this._splitTemplateAndSource.SplitterDistance = 247;
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(176, 738);
+			this._splitTemplateAndSource.SplitterDistance = 303;
+			this._splitTemplateAndSource.SplitterWidth = 5;
 			this._splitTemplateAndSource.TabIndex = 0;
 			// 
 			// _editButtonsUpdateTimer
@@ -198,9 +202,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.Location = new System.Drawing.Point(0, 25);
+			this._browser1.Location = new System.Drawing.Point(0, 31);
+			this._browser1.Margin = new System.Windows.Forms.Padding(5);
 			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(564, 578);
+			this._browser1.Size = new System.Drawing.Size(809, 711);
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
@@ -210,18 +215,18 @@
 			this._translationSourcesControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._translationSourcesControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._translationSourcesControl.Location = new System.Drawing.Point(0, 0);
-			this._translationSourcesControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this._translationSourcesControl.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
 			this._translationSourcesControl.Name = "_translationSourcesControl";
-			this._translationSourcesControl.Size = new System.Drawing.Size(122, 349);
+			this._translationSourcesControl.Size = new System.Drawing.Size(176, 430);
 			this._translationSourcesControl.TabIndex = 3;
 			// 
 			// EditingView
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.Controls.Add(this._splitContainer1);
+			this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
 			this.Name = "EditingView";
-			this.Size = new System.Drawing.Size(900, 600);
+			this.Size = new System.Drawing.Size(1200, 738);
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
 			this._splitContainer1.ResumeLayout(false);
