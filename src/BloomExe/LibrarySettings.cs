@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Palaso.UI.WindowsForms.WritingSystems;
+using Palaso.WritingSystems;
 
 namespace Bloom
 {
@@ -40,7 +41,10 @@ namespace Bloom
 		public string GetVernacularName(string inLanguage)
 		{
 			var lookup = new LookupIsoCodeModel();
-			return lookup.GetExactLanguageMatch(VernacularIso639Code).Name;
+			Iso639LanguageCode exactLanguageMatch = lookup.GetExactLanguageMatch(VernacularIso639Code);
+			if (exactLanguageMatch == null)
+				return "???";
+			return exactLanguageMatch.Name;
 		}
 
 		public string GetNationalLanguage1Name(string inLanguage)
