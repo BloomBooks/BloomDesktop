@@ -154,6 +154,11 @@ namespace Bloom.Edit
 			if (!visible || _currentlyDisplayedBook == CurrentBook)
 				return;
 
+			if(_currentlyDisplayedBook != CurrentBook)
+			{
+				CurrentBook.PrepareForEditing();
+			}
+
 			_currentlyDisplayedBook = CurrentBook;
 			//if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
 			{

@@ -127,5 +127,18 @@ namespace Bloom.Book
 
 			}
 		}
+
+
+		/// <summary>
+		///remove any x-matter in the book
+		/// </summary>
+		/// <param name="storage"></param>
+		public static void RemoveExistingXMatter(XmlDocument dom)
+		{
+			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'-bloom-frontMatter')]"))
+			{
+				div.ParentNode.RemoveChild(div);
+			}
+		}
 	}
 }

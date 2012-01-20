@@ -160,9 +160,17 @@ namespace Bloom
 			_updateCommandsTimer.Enabled = true;//hack
 			var errorsToHide = new List<string>();
 			errorsToHide.Add("['Shockwave Flash'] is undefined"); // can happen when mootools (used by calendar) is loaded
+			//after swalling that one, you just get another... do this for now
+			errorsToHide.Add("mootools"); // can happen when mootools (used by calendar) is loaded
+
+			errorsToHide.Add("PlacesCategoriesStarter.js"); //happens if you let bloom sit there long enough
+			//again, more generally
+			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
+
+
 			WebBrowser.JavascriptError += (sender, error) =>
 			{
-				if(! errorsToHide.Any(matchString=> error.Message.Contains(matchString)))
+				if(! errorsToHide.Any(matchString=> (error.Filename+error.Message).Contains(matchString)))
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
 																 error.Filename, error.Line, error.Message);
 			};

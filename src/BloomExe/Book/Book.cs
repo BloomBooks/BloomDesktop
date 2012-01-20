@@ -66,14 +66,6 @@ namespace Bloom.Book
 			_pageListChangedEvent = pageListChangedEvent;
 
 
-			//Under normal conditions, this isn't needed, because it is done when a book is first created.
-			//However we're doing it again with each open, just in case the book was dragged from another
-			//project, or the editing language was changed.  Under those conditions, if we didn't do this, we end up with no
-			//editable items, because there are no elements in our language.
-			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
-			{
-				BookStarter.PrepareElementsOnPage(div, _librarySettings.VernacularIso639Code);//, this.LockedExceptForTranslation);
-			}
 
 			if (IsInEditableLibrary)
 			{
@@ -494,18 +486,24 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-				var data = LoadDataSetFromLibrarySettings(true);
-				var helper = new XMatterHelper(dom,_librarySettings.XMatterPackName, _fileLocator);
-				helper.InjectXMatter( data);
-				GatherFieldValues(data, "*", dom);
-				SetFieldsValues(data, "*", dom);
+				RebuildXMatter(dom);
 			}
 
 			AddCoverColor(dom, CoverColor);
 
 			AddPreviewJScript(dom);
 			return dom;
+		}
+
+		private void RebuildXMatter(XmlDocument dom)
+		{
+//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
+			var data = LoadDataSetFromLibrarySettings(false);
+			var helper = new XMatterHelper(dom, _librarySettings.XMatterPackName, _fileLocator);
+			XMatterHelper.RemoveExistingXMatter(dom);
+			helper.InjectXMatter(data);
+			GatherFieldValues(data, "*", dom);
+			SetFieldsValues(data, "*", dom);
 		}
 
 		public Color CoverColor { get; set; }
@@ -831,6 +829,14 @@ namespace Bloom.Book
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherFieldValues(data, "*", domToRead);
+
+			foreach (var item in data.TextVariables)
+			{
+				foreach (var form in item.Value.TextAlternatives.Forms)
+				{
+					Debug.WriteLine("Gathered: {0}[{1}]={2}", item.Key,form.WritingSystemId, form.Form );
+				}
+			}
 			SetFieldsValues(data, "*", RawDom);
 
 			UpdateTitle(data);
@@ -944,7 +950,11 @@ namespace Bloom.Book
 						isLibrary = true;
 					}
 
-					var value = node.InnerXml.Trim();//may contain formatting
+					string value = node.InnerXml.Trim();//may contain formatting
+					if(node.Name.ToLower() == "img")
+					{
+						value = node.GetAttribute("src");
+					}
 					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
 						var lang = node.GetOptionalStringAttribute("lang", "*");
@@ -1001,7 +1011,17 @@ namespace Bloom.Book
 								lang = data.WritingSystemCodes[lang];
 							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
-								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] {lang, "*"});
+								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*" });
+
+								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it write.
+								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
+								//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
+								//was giving "", which we then used to remove our nice values.
+								//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
+								//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
+								//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
+								if (s=="" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
+									continue;
 
 								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
 								if(lang==data.WritingSystemCodes["N2"] && s== data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] {data.WritingSystemCodes["N1"], "*"}))
@@ -1017,6 +1037,9 @@ namespace Bloom.Book
 					{
 						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
 					}
+					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']").OuterXml);
+
+
 				}
 			}
 			catch (Exception error)
@@ -1143,30 +1166,47 @@ namespace Bloom.Book
 		public DataSet UpdateVariablesAndDataDiv(XmlDocument domToRead)
 		{
 			XmlElement dataDiv = RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']") as XmlElement;
+
 			if(dataDiv==null)
 			{
 				dataDiv = RawDom.CreateElement("div");
 				dataDiv.SetAttribute("class", "-bloom-dataDiv");
 				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
 			}
+			Debug.WriteLine("before update: " + dataDiv.OuterXml);
+
 			var data = UpdateFieldsAndVariables(domToRead);
+			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
 			{
 				if (v.Value.IsLibraryValue)
 					continue;//we don't save these out here
 
+				//Debug.WriteLine("before: " + dataDiv.OuterXml);
+
 				foreach (var languageForm in v.Value.TextAlternatives.Forms)
 				{
-					if (null == dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId)))
+					XmlNode node = dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId));
+					if (null == node)
 					{
+						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId, languageForm.Form);
+
 						var d = RawDom.CreateElement("div");
 						d.SetAttribute("data-book", v.Key);
 						d.SetAttribute("lang", languageForm.WritingSystemId);
 						d.InnerXml = languageForm.Form;
 						dataDiv.AppendChild(d);
+						Debug.WriteLine("nop: " + dataDiv.OuterXml);
+					}
+					else
+					{
+						node.InnerXml = languageForm.Form;
+						Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId, languageForm.Form);
+						Debug.WriteLine("now: " + dataDiv.OuterXml);
 					}
 				}
 			}
+			Debug.WriteLine("after update: " + dataDiv.OuterXml);
 			return data;
 		}
 
@@ -1179,6 +1219,25 @@ namespace Bloom.Book
 				parent.AppendChild(element);
 			}
 			return element;
+		}
+
+		/// <summary>
+		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
+		/// *changing xmatter pack, and update to it, changing the languages, etc.
+		/// *the book was dragged from another project
+		/// *the editing language was changed.
+		/// Under those conditions, if we didn't, for example, do a PrepareElementsOnPage, we would end up with no
+		/// editable items, because there are no elements in our language.
+		/// </summary>
+		public void PrepareForEditing()
+		{
+			// I may re-enable this later....			RebuildXMatter(RawDom);
+
+			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			{
+				BookStarter.PrepareElementsOnPage(div, _librarySettings.VernacularIso639Code);
+			}
+
 		}
 	}
 }
