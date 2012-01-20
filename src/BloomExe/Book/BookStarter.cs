@@ -103,11 +103,8 @@ namespace Bloom.Book
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
-			//remove any x-matter left over from the shell book
-			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-frontMatter')]"))
-			{
-				div.ParentNode.RemoveChild(div);
-			}
+
+			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 			
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
@@ -135,7 +132,8 @@ namespace Bloom.Book
 		    return storage.FolderPath;
 		}
 
-	
+
+
 		private void UpdateEditabilityIndicator(BookStorage storage)
 		{
 
