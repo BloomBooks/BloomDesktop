@@ -43,7 +43,6 @@
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this._browser1 = new Bloom.Browser();
-			this._translationSourcesControl = new Bloom.Edit.SourceTextControl();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -181,7 +180,7 @@
 			// 
 			// _splitTemplateAndSource.Panel2
 			// 
-			this._splitTemplateAndSource.Panel2.Controls.Add(this._translationSourcesControl);
+
 			this._splitTemplateAndSource.Size = new System.Drawing.Size(176, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
 			this._splitTemplateAndSource.SplitterWidth = 5;
@@ -209,16 +208,7 @@
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
-			// 
-			// _translationSourcesControl
-			// 
-			this._translationSourcesControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._translationSourcesControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._translationSourcesControl.Location = new System.Drawing.Point(0, 0);
-			this._translationSourcesControl.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
-			this._translationSourcesControl.Name = "_translationSourcesControl";
-			this._translationSourcesControl.Size = new System.Drawing.Size(176, 430);
-			this._translationSourcesControl.TabIndex = 3;
+
 			// 
 			// EditingView
 			// 
@@ -250,7 +240,6 @@
         private System.Windows.Forms.SplitContainer _splitContainer2;
         private Browser _browser1;
         private System.Windows.Forms.SplitContainer _splitTemplateAndSource;
-        private SourceTextControl _translationSourcesControl;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton _cutButton;
         private System.Windows.Forms.ToolStripButton _copyButton;

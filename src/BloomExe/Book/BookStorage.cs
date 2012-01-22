@@ -349,7 +349,11 @@ namespace Bloom.Book
 		/// </summary>
 		/// <returns></returns>
         public string GetTemplateName()
-        {
+		{
+			var key = GetMetaValue("TemplateSource", null);
+			if (key!=null)
+				return key;
+
             foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
             {
                 if(path.ToLower().Contains("portrait") ||  path.ToLower().Contains("landscape"))
@@ -358,7 +362,17 @@ namespace Bloom.Book
             return null;
         }
 
-        public string Key
+    	private string GetMetaValue(string name, string defaultValue)
+    	{
+			var nameSuggestion = Dom.SafeSelectNodes("//head/meta[@name='"+name+"']");
+			if (nameSuggestion.Count > 0)
+			{
+				return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+			}
+    		return defaultValue;
+    	}
+
+    	public string Key
         {
             get
             {

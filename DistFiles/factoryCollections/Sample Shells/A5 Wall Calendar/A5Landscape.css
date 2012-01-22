@@ -68,14 +68,6 @@ preview.css.
 	min-height: 14.8cm;
 	max-height: 14.8cm;
 }
-.coverBottomRow
-{
-	margin-top: 0px;
-	/*+placement:anchor-bottom-left 0px 21px;*/
-	position: absolute;
-	left: 0px;
-	bottom: 21px;
-}
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
@@ -83,102 +75,10 @@ TEXTAREA
 	font-size: 14pt;
 	width: 11.9cm;
 }
-.simpleBigVersoContents
-{
-	height: 13.2cm;
-	/*+placement:shift 0px 39px;*/
-	position: relative;
-	left: 0px;
-	top: 39px;
-	width: 714px;
-}
 .imageOnTop TEXTAREA
 {
 	height: 7.7cm;
 	margin-top: 26px;
-}
-.cover .vernacularBookTitle
-{
-	height: 2.3cm;
-	width: 721px;
-	font-size: 30pt;
-	text-align: center;
-	margin-top: 29px;
-}
-.cover .picture
-{
-	max-height: 12cm;
-	max-width: 13.2cm;
-	/*+placement:shift -11px -9px;*/
-	position: relative;
-	left: -11px;
-	top: -9px;
-}
-/*e.g. "Health" or "Math"*/
-.cover .topicInNationalLanguage
-{
-	width: 5.8cm;
-	/*+placement:anchor-bottom-right -19.9cm 2px;*/
-	position: absolute;
-	right: -19.9cm;
-	bottom: 2px;
-	text-align: right;
-	height: 30px;
-}
-.cover .nameOfLanguage
-{
-	text-align: left;
-	/*+placement:anchor-bottom-left 1cm 0px;*/
-	position: absolute;
-	left: 1cm;
-	bottom: 0px;
-	width: 8cm;
-}
-/*e.g. "Health" or "Math"*/
-.titlePage .vernacularBookTitle
-{
-	top: 1cm;
-	height: 4.4cm;
-	text-align: center;
-	font-size: 25pt;
-}
-.titlePage .creditsHeading
-{
-	padding-top: 35px;
-}
-.titlePage .credits
-{
-	height: 2.7cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .shellCredits
-{
-	top: 1.5cm;
-	height: 5cm;
-	width: 12cm;
-	margin-left: 1cm;
-	position: relative;
-	text-align: center;
-}
-.titlePage .printingHistory
-{
-	height: 3.3cm;
-	margin-left: 1cm;
-	text-align: center;
-}
-.titlePage .nameOfLanguage
-{
-	margin-top: 0.1cm;
-	text-align: center;
-}
-/*the content is set in the preview.css. Here, we just position it*/
-.titlePage:after
-{
-	/*+placement:anchor-bottom-left 33px 0.2cm;*/
-	position: absolute;
-	left: 33px;
-	bottom: 0.2cm;
 }
 .imageOnTop .picture
 {
@@ -210,12 +110,6 @@ TEXTAREA
 	height: 18.9cm;
 	margin-top: 1cm;
 }
-.translators
-{
-	text-align: center;
-	height: 1.6cm;
-	position: relative;
-}
 .imageWholePage P.imageHolder
 {
 	height: 18.6cm;
@@ -239,11 +133,6 @@ DIV.imageWholePage IMG
 .imageOnBottom P.imageHolder
 {
 	height: 9cm;
-}
-.cover P.imageHolder
-{
-	height: 12cm;
-	text-align: center;
 }
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
