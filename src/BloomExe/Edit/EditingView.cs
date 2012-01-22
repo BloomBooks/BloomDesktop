@@ -334,18 +334,6 @@ namespace Bloom.Edit
 //            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
 //        }
 
-		public void SetSourceText(Dictionary<string, string> sourceTexts)
-		{
-			//null means hide it, empty list means just empty it
-			//SetTranslationPanelVisibility(sourceTexts != null);
-			if (sourceTexts != null)
-				_translationSourcesControl.SetTexts(sourceTexts);
-		}
-
-		public void ClearSourceText()
-		{
-			_translationSourcesControl.ClearTextContents();
-		}
 		/// <summary>
 		/// this started as an experiment, where our textareas were not being read when we saved because of the need
 		/// to change the picture

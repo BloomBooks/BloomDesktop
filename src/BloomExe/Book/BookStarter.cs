@@ -124,7 +124,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
 				SetupIdAndLineage(div, div);
-				SetupPage(div, _languageSettings.VernacularIso639Code);
+				SetupPage(div, _librarySettings);
 			}
 			storage.Save();
 
@@ -153,9 +153,9 @@ namespace Bloom.Book
 		}
 
 
-		public static void SetupPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
+		public static void SetupPage(XmlElement pageDiv, LibrarySettings librarySettings)//, bool inShellMode)
 		{
-			PrepareElementsOnPage(pageDiv, isoCode);//, inShellMode);
+			PrepareElementsOnPage(pageDiv, librarySettings);//, inShellMode);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -190,7 +190,21 @@ namespace Bloom.Book
 		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="pageDiv"></param>
-		public static void PrepareElementsOnPage(XmlElement pageDiv, string isoCode)//, bool inShellMode)
+		public static void PrepareElementsOnPage(XmlElement pageDiv, LibrarySettings librarySettings)//, bool inShellMode)
+		{
+			PrepareElementsOnPageOneLanguage(pageDiv, librarySettings.VernacularIso639Code);
+
+			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
+			BookStarter.PrepareElementsOnPageOneLanguage(pageDiv,librarySettings.NationalLanguage1Iso639Code);
+
+			//nb: really we need to have a place where we list the bilgual/triligual desires, and that may be book specific
+			if(!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code))
+			{
+				BookStarter.PrepareElementsOnPageOneLanguage(pageDiv, librarySettings.NationalLanguage2Iso639Code);
+			}
+		}
+
+		private static void PrepareElementsOnPageOneLanguage(XmlElement pageDiv, string isoCode)
 		{
 			foreach (var element in GetEditableGroupsInSinglePageDiv(pageDiv))
 			{
@@ -202,9 +216,24 @@ namespace Bloom.Book
 				MakeVernacularElementForOneGroup(element, isoCode, "p");
 			}
 			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
-			foreach (XmlElement element in pageDiv.SafeSelectNodes(string.Format("//textarea[not(@lang)] | //*[(@contentEditable='true'  or @contenteditable='true') and not(@lang)]")))
+			foreach (
+				XmlElement element in
+					pageDiv.SafeSelectNodes(
+						string.Format("//textarea[not(@lang)] | //*[(@contentEditable='true'  or @contenteditable='true') and not(@lang)]"))
+				)
 			{
 				element.SetAttribute("lang", isoCode);
+			}
+
+			foreach (XmlElement e in pageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
+			{
+				foreach (var node in e.ChildNodes)
+				{
+					XmlText t = node as XmlText;
+					if (t != null && t.Value.StartsWith("{"))
+						t.Value = "";
+							//otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
+				}
 			}
 		}
 

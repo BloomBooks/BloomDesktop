@@ -164,6 +164,9 @@ namespace Bloom
 			errorsToHide.Add("mootools"); // can happen when mootools (used by calendar) is loaded
 
 			errorsToHide.Add("PlacesCategoriesStarter.js"); //happens if you let bloom sit there long enough
+
+			errorsToHide.Add("PlacesDBUtils"); //happens if you let bloom sit there long enough
+
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 

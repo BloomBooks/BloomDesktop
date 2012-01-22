@@ -15,5 +15,5 @@ document.write('<link rel="stylesheet" type="text/css" href="' + dir + 'jquery.q
 
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.sizes.js"></script>');
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.watermark.js"></script>');
-
+document.write('<script type="text/javascript" src="' +dir+ 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' + dir + 'bloomEditing.js"></script>');

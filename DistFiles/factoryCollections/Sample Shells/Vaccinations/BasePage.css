@@ -75,6 +75,14 @@ DIV.-bloom-dataPage
 		border: 1px solid #000000;
 	}
 }
+DIV.imageWholePage DIV.imageHolder
+{
+	/*+placement:shift 44px 50px;*/
+	position: relative;
+	left: 44px;
+	top: 50px;
+	width: 465px;
+}
 .centered
 {
 	text-align: center;
@@ -85,10 +93,6 @@ DIV.-bloom-dataPage
 	height: 422px;
 }
 .imageInMiddle .text
-{
-	position: relative;
-}
-.imageWholePage .picture
 {
 	position: relative;
 }

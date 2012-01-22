@@ -32,15 +32,16 @@
 		<div data-book="copyright">Copyright SIL International 2011</div>
 	</div>
 	<div class="-bloom-page calendarMonthTop templateOnly">
-		<p class="centered imageHolder">
+		<div class="imageHolder">
 			<img class="calendarTopPagePicture picture" src="placeHolder.png" />
-		</p>
+		</div>
 		<p class="centered">
-			<textarea class="calendarTopPageText"  >Some text for the month</textarea>
+			<textarea class="calendarTopPageText">Some text for the month</textarea>
 		</p>
 	</div>
 	<div class="-bloom-page calendarMonthBottom templateOnly">
 		<p class="centered calendarBottomPageHeader">January 2099</p>
+		<!-- NB: the javascript doesn't actually use the following; it's not a template -->
 		<table>
 		<thead>
 
@@ -58,7 +59,7 @@
 		</thead>
 		<tbody>
 		  <tr>
-			<td><p>1</p><textarea> </textarea></td>
+			<td><div>1</div><textarea> </textarea></td> <!-- NB: the actual contents are created by javascript. This first line has been modified to remind us what the javscript actually enters -->
 			<td>2</td>
 
 			<td>3</td>

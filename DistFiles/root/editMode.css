@@ -140,3 +140,24 @@ DIV.textWholePage UL
 	margin-left: 1px;
 	margin-top: -37px;
 }
+/*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
+.ui-mouseOver .ui-resizable-handle
+{
+	width: 8px;
+	height: 8px;
+	border: 1px solid rgb(128, 128, 128);
+	background: rgb(242, 242, 242);
+}
+.ui-resizable-n, .ui-resizable-s
+{
+	left: 45%;
+}
+.ui-resizable-e, .ui-resizable-w
+{
+	top: 45%;
+}
+.ui-resizable-se
+{
+	/*[disabled]bottom:-5px;*/
+	/*[disabled]right:-5px;*/
+}

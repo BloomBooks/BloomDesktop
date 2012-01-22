@@ -316,7 +316,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_TextAreaHasNoText_VernacularLangAttrSet()
 		{
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea", 3);
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea[@lang='xyz']", 1);
 		}
 		[Test]
@@ -382,10 +382,12 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement) dom.SafeSelectNodes("//div[@class='-bloom-page']")[0], "xyz");
+			BookStarter.PrepareElementsOnPage((XmlElement) dom.SafeSelectNodes("//div[@class='-bloom-page']")[0],_librarySettings.Object);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true']", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true']", 4);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true' and @lang='xyz']", 1);
 		}
 
@@ -402,14 +404,14 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[@class='-bloom-page']")[0], "xyz");
+			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[@class='-bloom-page']")[0], _librarySettings.Object);
 
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div[@lang='en']", 1);
 		}
 
 		[Test]
-		public void PrepareElementsOnPage_HasTextAreaInsideTranslationGroup_MakesVernacular()
+		public void PrepareElementsOnPage_HasTextAreaInsideTranslationGroup_MakesVernacularAndNational()
 		{
 			var contents = @"<div class='-bloom-page -bloom-translationGroup'>
 						<textarea lang='en'>This is some English</textarea>
@@ -417,10 +419,12 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]")[0], "xyz");
+			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]")[0],_librarySettings.Object);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
 		}
 
@@ -435,9 +439,9 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]")[0], "xyz");
+			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]")[0],_librarySettings.Object);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
 		}

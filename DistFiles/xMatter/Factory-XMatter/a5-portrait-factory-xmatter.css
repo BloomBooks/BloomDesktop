@@ -10,25 +10,30 @@
 	text-align: center;
 	top: -5px;
 	width: 423px;
+	/*+placement:anchor-top-left -5px 6px;*/
+	position: absolute;
+	left: -5px;
+	top: 6px;
 }
-.cover IMG
+.cover DIV.imageHolder
 {
-	max-height: 12cm;
-	max-width: 13.2cm;
-}
-.cover P.imageHolder
-{
-	height: 12cm;
-	text-align: center;
+	height: 8.3cm;
+	width: 432px;
+	/*+placement:anchor-top-left 66px 227px;*/
+	position: absolute;
+	left: 66px;
+	top: 227px;
 }
 DIV.coverBottomBookTopic
 {
-	bottom: 43px;
-	left: 9cm;
 	overflow: hidden;
-	position: absolute;
 	text-align: right;
-	width: 192px;
+	width: 265px;
+	height: 35px;
+	/*+placement:shift 266px 720px;*/
+	position: relative;
+	left: 266px;
+	top: 720px;
 }
 DIV.coverBottomBookTopic TEXTAREA
 {

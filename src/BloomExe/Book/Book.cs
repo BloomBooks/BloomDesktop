@@ -603,11 +603,18 @@ namespace Bloom.Book
 		/// <param name="dom"></param>
 		private void AddPreviewJScript(XmlDocument dom)
 		{
+			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
+			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
+			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.myimgscale.js"));
+
 			XmlElement script = dom.CreateElement("script");
 			script.SetAttribute("type", "text/javascript");
-			script.InnerText = @"jQuery(function() {$('textarea').focus(function() {$(this).attr('readonly','readonly');});})";
-			XmlElement header = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//head");
-			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
+			script.InnerText = @"jQuery(function() {
+						$('textarea').focus(function() {$(this).attr('readonly','readonly');});
+
+						//make images scale up to their container without distorting their proportions, while being centered within it.
+						$('img').scaleImage({ scale: 'fit' }); //uses jquery.myimgscale.js
+			})";
 			header.AppendChild(script);
 		}
 
@@ -679,7 +686,7 @@ namespace Bloom.Book
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
-			BookStarter.SetupPage(newPageDiv, _librarySettings.VernacularIso639Code);//, LockedExceptForTranslation);
+			BookStarter.SetupPage(newPageDiv, _librarySettings);//, LockedExceptForTranslation);
 			ClearEditableValues(newPageDiv);
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]
 
@@ -1235,7 +1242,7 @@ namespace Bloom.Book
 
 			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
-				BookStarter.PrepareElementsOnPage(div, _librarySettings.VernacularIso639Code);
+				BookStarter.PrepareElementsOnPage(div, _librarySettings);
 			}
 
 		}

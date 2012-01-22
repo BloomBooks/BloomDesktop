@@ -14,6 +14,12 @@ function Cleanup(){
     });
        $("*.editTimeOnly").remove();
        $("*").removeAttr("data-easytabs");
+
+       $("div.ui-resizable-handle").remove();
+       $('div, figure').each(function () {
+           $(this).removeClass('ui-draggable');
+           $(this).removeClass('ui-resizable');
+       });
    }
 
 function MakeSourceTextDivForGroup(group) {
@@ -148,30 +154,28 @@ jQuery(document).ready(function () {
     });
 
     if (typeof String.prototype.startsWith != 'function') {
-      String.prototype.startsWith = function (str){
-        return this.indexOf(str) == 0;
-      };
+        String.prototype.startsWith = function (str) {
+            return this.indexOf(str) == 0;
+        };
     }
 
     //put hint bubbles next to elements which call for them
     $("*[data-hint]").each(function () {
-        if($(this).css('border-bottom-color') == 'transparent')
-        {
+        if ($(this).css('border-bottom-color') == 'transparent') {
             return; //don't put tips if they can't edit it. That's just confusing
         }
-        if($(this).css('display') == 'none')
-        {
+        if ($(this).css('display') == 'none') {
             return; //don't put tips if they can't see it.
         }
-        theClasses='ui-tooltip-shadow ui-tooltip-plain';
-        pos =  {        at: 'right center',
-                        my: 'left center'
-               };
+        theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+        pos = { at: 'right center',
+            my: 'left center'
+        };
 
         var whatToSay = $(this).data("hint");
         var dictionary = GetDictionary();
-        for(key in dictionary) {
-            if(key.startsWith("{"))
+        for (key in dictionary) {
+            if (key.startsWith("{"))
                 whatToSay = whatToSay.replace(key, dictionary[key]);
         }
         $(this).qtip({
@@ -204,7 +208,7 @@ jQuery(document).ready(function () {
         });
     });
 
-    $.fn.hasAttr = function(name) {
+    $.fn.hasAttr = function (name) {
         var attr = $(this).attr(name);
 
         // For some browsers, `attr` is undefined; for others,
@@ -213,32 +217,32 @@ jQuery(document).ready(function () {
     };
 
     //Show data on fields
-           $("*[data-book], *[data-library], *[lang]").each(function () {
-               var data=" ";
-              if($(this).hasAttr("data-book")) {
-                  data = $(this).attr("data-book");
-              }
-              if($(this).hasAttr("data-library")) {
-                  data = $(this).attr("data-library") ;
-              }
-              $(this).qtipSecondary({
-                  content: { text:  $(this).attr("lang") + "<br>"+ data},//, title: { text:  $(this).attr("lang")}},
+    $("*[data-book], *[data-library], *[lang]").each(function () {
+        var data = " ";
+        if ($(this).hasAttr("data-book")) {
+            data = $(this).attr("data-book");
+        }
+        if ($(this).hasAttr("data-library")) {
+            data = $(this).attr("data-library");
+        }
+        $(this).qtipSecondary({
+            content: { text: $(this).attr("lang") + "<br>" + data }, //, title: { text:  $(this).attr("lang")}},
 
-                  position:  {
-                      my: 'top right',
-                      at: 'top left'
-                  },
-//                  show: {
-//                                  event: false, // Don't specify a show event...
-//                                  ready: true // ... but show the tooltip when ready
-//                              },
-//                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
-                  style: {'default': false,
-                      tip: {corner: false, border:false},
-                      classes: 'fieldInfo-qtip'
-                  }
-              });
-          });
+            position: {
+                my: 'top right',
+                at: 'top left'
+            },
+            //                  show: {
+            //                                  event: false, // Don't specify a show event...
+            //                                  ready: true // ... but show the tooltip when ready
+            //                              },
+            //                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
+            style: { 'default': false,
+                tip: { corner: false, border: false },
+                classes: 'fieldInfo-qtip'
+            }
+        });
+    });
 
 
 
@@ -257,51 +261,54 @@ jQuery(document).ready(function () {
     // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
     // an attribute, so it can't be included in css.
     // The solution here is to add the readonly attribute when we detect that their border has gone transparent.
-    $('textarea').focus(function() {
-        if($(this).css('border-bottom-color') == 'transparent'){
-                    $(this).attr("readonly", "readonly");
-                }
-                else{
-                    $(this).removeAttr("readonly");
-                }
+    $('textarea').focus(function () {
+        if ($(this).css('border-bottom-color') == 'transparent') {
+            $(this).attr("readonly", "readonly");
+        }
+        else {
+            $(this).removeAttr("readonly");
+        }
     });
 
     //Same thing for divs which are potentially editable.
     // editTranslationMode.css is responsible for making this transparent, but it can't reach the contentEditable attribute.
-    $('div.readOnlyInTranslationMode').focus(function() {
-        if($(this).css('border-bottom-color') == 'transparent'){
-                    $(this).removeAttr("contentEditable");
-                }
-        else{
+    $('div.readOnlyInTranslationMode').focus(function () {
+        if ($(this).css('border-bottom-color') == 'transparent') {
+            $(this).removeAttr("contentEditable");
+        }
+        else {
             $(this).attr("contentEditable", "true");
         }
     });
 
     // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-    $('div.-bloom-metaData').each(function() {
-       if($(this).css('cursor')=='pointer') {
-           $(this).click(function(){
-                       event = document.createEvent('MessageEvent');
-                       var origin = window.location.protocol + '//' + window.location.host;
-                       var obj = {};
-                       $(this).find("*[data-book]").each(function () {
-                           obj[$(this).attr("data-book")] = $(this).text();
-                       })
-                       var json = obj; //.get();
-                       json = JSON.stringify(json);
-                       event.initMessageEvent('divClicked', true, true, json, origin, 1234, window, null);
-                       document.dispatchEvent(event);
-           })
-       }
+    $('div.-bloom-metaData').each(function () {
+        if ($(this).css('cursor') == 'pointer') {
+            $(this).click(function () {
+                event = document.createEvent('MessageEvent');
+                var origin = window.location.protocol + '//' + window.location.host;
+                var obj = {};
+                $(this).find("*[data-book]").each(function () {
+                    obj[$(this).attr("data-book")] = $(this).text();
+                })
+                var json = obj; //.get();
+                json = JSON.stringify(json);
+                event.initMessageEvent('divClicked', true, true, json, origin, 1234, window, null);
+                document.dispatchEvent(event);
+            })
+        }
     });
 
 
+    //add drag and resize ability where elements call for it
+    $(".draggable").draggable();
+    $(".resizable").resizable({ handles: 'nw, ne, sw, se' });
+    $(".resizable").mouseenter(function () { $(this).addClass("ui-mouseOver") }).mouseleave(function () { $(this).removeClass("ui-mouseOver") });
 
-
-        //focus on the first editable field
-        //$(':input:enabled:visible:first').focus();
-    $("textarea, div.editable").first().focus();//review: this might chose a textarea which appears after the div. Could we sort on the tab order?
+    //focus on the first editable field
+    //$(':input:enabled:visible:first').focus();
+    $("textarea, div.editable").first().focus(); //review: this might chose a textarea which appears after the div. Could we sort on the tab order?
 
     SetupTopicDialog();
 
@@ -311,7 +318,22 @@ jQuery(document).ready(function () {
         if ($(this).find("textarea").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
+    });
+
+    //make images scale up to their container without distorting their proportions, while being centered within it.
+    $("img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+
+    // when the image changes, we need to scale again:
+    $("img").load(function () {
+         $(this).scaleImage({ scale: "fit" });
+    });
+
+    //and when their parent is resized by the user, we need to scale again:
+    $("img").each(function () {
+        $(this).parent().resize(function () {
+            $(this).find("img").scaleImage({ scale: "fit" });
         });
+    });
 });
 
 //function SetCopyrightAndLicense(data) {

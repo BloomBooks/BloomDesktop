@@ -2,37 +2,27 @@
 .cover .vernacularBookTitle
 {
 	font-size: 30pt;
-	height: 3.7cm;
+	height: 2.1cm;
 	left: -26px;
 	margin-left: 2cm;
 	margin-top: 1.5cm;
 	position: relative;
 	text-align: center;
 	top: -5px;
-	width: 423px;
-	/*+placement:shift 141px -40px;*/
-	position: relative;
-	left: 141px;
-	top: -40px;
+	width: 727px;
+	/*+placement:anchor-top-left -44px -35px;*/
+	position: absolute;
+	left: -44px;
+	top: -35px;
 }
-.cover IMG
+.cover .imageHolder
 {
-	max-height: 12cm;
-	max-width: 13.2cm;
-	/*+placement:shift;*/
-	position: relative;
-	left: 0;
-	top: 0;
-}
-.cover P.imageHolder
-{
-	height: 7.3cm;
-	text-align: center;
-	/*+placement:shift 226px -90px;*/
-	position: relative;
-	left: 226px;
-	top: -90px;
-	width: 0px;
+	height: 8.6cm;
+	width: 726px;
+	/*+placement:anchor-top-left 34px 112px;*/
+	position: absolute;
+	left: 34px;
+	top: 112px;
 }
 DIV.coverBottomBookTopic
 {
@@ -42,10 +32,10 @@ DIV.coverBottomBookTopic
 	position: absolute;
 	text-align: right;
 	width: 192px;
-	/*+placement:shift 579px 7px;*/
-	position: relative;
-	left: 579px;
-	top: 7px;
+	/*+placement:anchor-bottom-left 576px 32px;*/
+	position: absolute;
+	left: 576px;
+	bottom: 32px;
 }
 DIV.coverBottomBookTopic TEXTAREA
 {
@@ -59,12 +49,16 @@ DIV.coverBottomBookTopic TEXTAREA
 DIV.coverBottomLangName
 {
 	bottom: 20px;
-	height: 56px;
+	height: 30px;
 	left: 0.7cm;
 	overflow: hidden;
 	position: absolute;
 	text-align: left;
-	width: 5.9cm;
+	width: 8.6cm;
+	/*+placement:anchor-top-left 26px 458px;*/
+	position: absolute;
+	left: 26px;
+	top: 458px;
 }
 /*Title Page*/
 .titlePage
@@ -87,10 +81,10 @@ TEXTAREA.district
 }
 DIV.titlePage DIV#languageInformation
 {
-	/*+placement:shift 83px 23px;*/
-	position: relative;
-	left: 83px;
-	top: 23px;
+	/*+placement:anchor-top-left 100px 278px;*/
+	position: absolute;
+	left: 100px;
+	top: 278px;
 	width: 425px;
 	margin-left: 78px;
 }
@@ -98,22 +92,24 @@ DIV.titlePage DIV#languageInformation
 {
 	font-size: 14pt;
 	text-align: center;
-	/*+placement:shift 153px -3px;*/
-	position: relative;
-	left: 153px;
-	top: -3px;
+	/*+placement:anchor-top-left 130px 113px;*/
+	position: absolute;
+	left: 130px;
+	top: 113px;
 	width: 420px;
+	height: 42px;
 }
 .titlePage TEXTAREA.titleN2
 {
 	font-size: 14pt;
 	left: 21px;
 	text-align: center;
-	/*+placement:shift 20px 22px;*/
-	position: relative;
-	left: 20px;
-	top: 22px;
-	width: 421px;
+	/*+placement:anchor-top-left 129px 161px;*/
+	position: absolute;
+	left: 129px;
+	top: 161px;
+	width: 423px;
+	height: 36px;
 }
 .titlePage:after
 {
@@ -186,13 +182,13 @@ DIV.originalAcknowledgments
 }
 TEXTAREA.credits
 {
-	height: 131px;
-	/*+placement:shift 11px 0px;*/
-	position: relative;
-	left: 11px;
-	top: 0px;
+	height: 160px;
+	/*+placement:anchor-top-left 87px 339px;*/
+	position: absolute;
+	left: 87px;
+	top: 339px;
 	text-align: center;
-	width: 421px;
+	width: 645px;
 }
 .verso TEXTAREA
 {

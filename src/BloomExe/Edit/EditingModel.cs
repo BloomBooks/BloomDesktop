@@ -181,7 +181,7 @@ namespace Bloom.Edit
 				if(_domForCurrentPage!=null)
 					SaveNow();
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-				_view.ClearSourceText();
+				//_view.ClearSourceText();
 			}
 		}
 
@@ -237,24 +237,24 @@ namespace Bloom.Edit
 
 		public void HandleUserEnteredTextGroup(string translationsJson)
 		{
-			translationsJson = translationsJson.Trim(new char[] {'[', ']'});
-			Dictionary<string, string> sourceTexts = JsonConvert.DeserializeObject<Dictionary<string, string>>(translationsJson);
-
-			//we want to show all the *other languages*
-			if (sourceTexts.ContainsKey(_languageSettings.VernacularIso639Code))
-				sourceTexts.Remove(_languageSettings.VernacularIso639Code);
-
-			//the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
-			//var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Parent.Id, _languageSettings.VernacularIso639Code);
-			if (sourceTexts.Count == 0)
-			{
-				_view.SetSourceText(null);
-			}
-			else
-			{
-				//sourceTexts = GetAllTextsExceptVernacular(sourceTexts);
-				_view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
-			}
+//        	translationsJson = translationsJson.Trim(new char[] {'[', ']'});
+//			Dictionary<string, string> sourceTexts = JsonConvert.DeserializeObject<Dictionary<string, string>>(translationsJson);
+//
+//			//we want to show all the *other languages*
+//			if (sourceTexts.ContainsKey(_languageSettings.VernacularIso639Code))
+//				sourceTexts.Remove(_languageSettings.VernacularIso639Code);
+//
+//            //the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
+//			//var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Parent.Id, _languageSettings.VernacularIso639Code);
+//            if (sourceTexts.Count == 0)
+//            {
+//                _view.SetSourceText(null);
+//            }
+//            else
+//            {
+//                //sourceTexts = GetAllTextsExceptVernacular(sourceTexts);
+//              //  _view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
+//            }
 		}
 
 //        private Dictionary<string, string> GetAllTextsExceptVernacular(Dictionary<string, string> sourceTexts)
