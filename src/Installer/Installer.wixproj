@@ -6,7 +6,7 @@
 	<SchemaVersion>2.0</SchemaVersion>
 	<OutputName>BloomInstaller</OutputName>
 	<OutputType>Package</OutputType>
-	<WixToolPath>C:\Program Files\Windows Installer XML v3\bin\</WixToolPath>
+	<WixToolPath>C:\Program Files\Windows Installer XML v3.5\bin\</WixToolPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
 	<OutputPath>..\..\output\installer\</OutputPath>
@@ -68,11 +68,11 @@
   </ItemGroup>
   <ItemGroup>
 	<WixExtension Include="WixUtilExtension">
-	  <HintPath>C:\Program Files\Windows Installer XML v3\bin\WixUtilExtension.dll</HintPath>
+	  <HintPath>C:\Program Files\Windows Installer XML v3.5\bin\WixUtilExtension.dll</HintPath>
 	</WixExtension>
 	<WixExtension Include="WixNetFxExtension">
-	  <HintPath>C:\Program Files\Windows Installer XML v3\bin\WixNetFxExtension.dll</HintPath>
+	  <HintPath>C:\Program Files\Windows Installer XML v3.5\bin\WixNetFxExtension.dll</HintPath>
 	</WixExtension>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.0\Wix.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets" />
 </Project>
