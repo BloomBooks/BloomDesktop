@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace Bloom.Edit
 		private bool _visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
+		private List<ContentLanguage> _contentLanguages;
 
 
 		public event EventHandler UpdatePageList;
@@ -48,6 +50,7 @@ namespace Bloom.Edit
 			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
+			_contentLanguages = new List<ContentLanguage>();
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -68,9 +71,7 @@ namespace Bloom.Edit
 		{
 			_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			UsageReporter.SendNavigationNotice("RelocatePage");
-
 		}
-
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
@@ -79,14 +80,6 @@ namespace Bloom.Edit
 			//_pageSelection.SelectPage(newPage);
 			UsageReporter.SendNavigationNotice("InsertTemplatePage");
 		}
-
-		/// <summary>
-		/// if we were add a template page right now, what would be its initial location?
-		/// </summary>
-		//        public int CurrentInsertPoint
-		//        {
-		//
-		//        }
 
 		public string CurrentBookName
 		{
@@ -142,6 +135,67 @@ namespace Bloom.Edit
 
 		}
 
+		/// <summary>
+		/// These are the languages available for selecting for bilingual and trilingual
+		/// </summary>
+		public IEnumerable<ContentLanguage> ContentLanguages
+		{
+			get
+			{
+				_contentLanguages.Clear();
+				_contentLanguages.Add(new ContentLanguage(_librarySettings.VernacularIso639Code, _librarySettings.GetVernacularName("en")){Locked=true, Selected=true});
+				//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
+				var l2 = new ContentLanguage(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name("en")) {Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _librarySettings.NationalLanguage1Iso639Code};
+				_contentLanguages.Add(l2);
+				if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
+				{
+					var l3 = new ContentLanguage(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name("en")) { Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _librarySettings.NationalLanguage2Iso639Code };
+					_contentLanguages.Add(l3);
+				}
+				return _contentLanguages;
+			}
+		}
+		/// <summary>
+		/// user has selected or de-selected a content language
+		/// </summary>
+		public void ContentLanguagesSelectionChanged()
+		{
+			string l2 = null;
+			string l3 = null;
+			foreach (var language in _contentLanguages)
+			{
+				if (language.Locked)
+					continue; //that's the vernacular
+				if(language.Selected && l2==null)
+					l2 = language.Iso639Code;
+				else if(language.Selected)
+				{
+					l3 = language.Iso639Code;
+					break;
+				}
+			}
+			_bookSelection.CurrentSelection.SetMultilingualContentLanguages(l2,l3);
+		}
+
+		public class ContentLanguage
+		{
+			public readonly string Iso639Code;
+			public readonly string Name;
+
+			public ContentLanguage(string iso639Code, string name)
+			{
+				Iso639Code = iso639Code;
+				Name = name;
+			}
+			public override string ToString()
+			{
+				return Name;
+			}
+
+			public bool Selected;
+			public bool Locked;
+		}
+
 		public bool GetBookHasChanged()
 		{
 			return _currentlyDisplayedBook != CurrentBook;
@@ -152,7 +206,12 @@ namespace Bloom.Edit
 			_visible = visible;
 			Debug.WriteLine("EditingModel._visible =" + _visible);
 			if (!visible || _currentlyDisplayedBook == CurrentBook)
+			{
+				//review: it's not clear when this is needed... the browser validating also calls save, but it doesn't always validate.
+				//perhaps we should drop that validating call, and just use this?
+				SaveNow();
 				return;
+			}
 
 			if(_currentlyDisplayedBook != CurrentBook)
 			{
@@ -235,38 +294,6 @@ namespace Bloom.Edit
 			_view = view;
 		}
 
-		public void HandleUserEnteredTextGroup(string translationsJson)
-		{
-//        	translationsJson = translationsJson.Trim(new char[] {'[', ']'});
-//			Dictionary<string, string> sourceTexts = JsonConvert.DeserializeObject<Dictionary<string, string>>(translationsJson);
-//
-//			//we want to show all the *other languages*
-//			if (sourceTexts.ContainsKey(_languageSettings.VernacularIso639Code))
-//				sourceTexts.Remove(_languageSettings.VernacularIso639Code);
-//
-//            //the parent is the paragraph, which is the element which has the id. The textareas themselves just have @lang
-//			//var sourceTexts = _pageSelection.CurrentSelection.GetSourceTexts(element.Parent.Id, _languageSettings.VernacularIso639Code);
-//            if (sourceTexts.Count == 0)
-//            {
-//                _view.SetSourceText(null);
-//            }
-//            else
-//            {
-//                //sourceTexts = GetAllTextsExceptVernacular(sourceTexts);
-//              //  _view.SetSourceText(sourceTexts);//_languageSettings.ChooseBestSource(sourceTexts, string.Empty));
-//            }
-		}
-
-//        private Dictionary<string, string> GetAllTextsExceptVernacular(Dictionary<string, string> sourceTexts)
-//        {
-//            var x = sourceTexts.Where(t => t.Key != _languageSettings.VernacularIso639Code);
-//            sourceTexts = new Dictionary<string, string>();
-//            foreach (var keyValuePair in x)
-//            {
-//                sourceTexts.Add(keyValuePair.Key,keyValuePair.Value);
-//            }
-//            return sourceTexts;
-//        }
 
 		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
 		{
@@ -291,6 +318,8 @@ namespace Bloom.Edit
 		{
 			return !_currentlyDisplayedBook.LockedExceptForTranslation;
 		}
+
+
 	}
 
 		//_book.DeletePage(_pageSelection.CurrentSelection);

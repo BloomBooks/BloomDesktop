@@ -62,7 +62,7 @@ namespace Bloom.Book
 				File.Move(oldNamedFile, newNamedFile);
 
 				//the destination may change here...
-				newBookFolder = SetupDocumentContents(newBookFolder);
+				newBookFolder = SetupNewDocumentContents(newBookFolder);
 
 			}
 			catch (Exception)
@@ -89,7 +89,7 @@ namespace Bloom.Book
 
 		}
 
-		private string SetupDocumentContents(string initialPath)
+		private string SetupNewDocumentContents(string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
@@ -124,7 +124,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
 				SetupIdAndLineage(div, div);
-				SetupPage(div, _librarySettings);
+				SetupPage(div, _librarySettings, null, null);
 			}
 			storage.Save();
 
@@ -153,7 +153,7 @@ namespace Bloom.Book
 		}
 
 
-		public static void SetupPage(XmlElement pageDiv, LibrarySettings librarySettings)//, bool inShellMode)
+		public static void SetupPage(XmlElement pageDiv, LibrarySettings librarySettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
 			PrepareElementsOnPage(pageDiv, librarySettings);//, inShellMode);
 
@@ -184,6 +184,14 @@ namespace Bloom.Book
 			return ((XmlElement) element).GetAttribute("class").Contains(className);
 		}
 
+		private static void AddClassIfMissing(XmlElement element, string className)
+		{
+			string classes = element.GetAttribute("class");
+			if (classes.Contains(className))
+				return;
+			element.SetAttribute("class", (classes + " "+className).Trim());
+		}
+
 		/// <summary>
 		/// For each group of editable elements in the div which have lang attributes, make a new element
 		/// with the lang code of the vernacular.
@@ -202,6 +210,68 @@ namespace Bloom.Book
 			{
 				BookStarter.PrepareElementsOnPageOneLanguage(pageDiv, librarySettings.NationalLanguage2Iso639Code);
 			}
+		}
+
+		/// <summary>
+		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
+		/// </summary>
+		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string contentLanguageIso2, string contentLanguageIso3)
+		{
+			var multilingualClass = "bloom-monolingual";
+			var contentLanguages = new Dictionary<string, string>();
+			if (!string.IsNullOrEmpty(contentLanguageIso2))
+			{
+				multilingualClass = "bloom-bilingual";
+				contentLanguages.Add(contentLanguageIso2, "bloom-content2");
+			}
+			if(!string.IsNullOrEmpty(contentLanguageIso3))
+			{
+				multilingualClass = "bloom-trilingual";
+				Debug.Assert(!string.IsNullOrEmpty(contentLanguageIso2), "shouldn't have a content3 lang with no content2 lang");
+				contentLanguages.Add(contentLanguageIso3, "bloom-content3");
+			}
+
+			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
+			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			{
+				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
+				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
+				RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
+				AddClassIfMissing(pageDiv, multilingualClass);
+			}
+
+			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes("//*[contains(@class,'-bloom-translationGroup')]"))
+			{
+				foreach (XmlElement e in group.SafeSelectNodes("//textarea | //div")) //nb: we don't necessarily care that a div is editable or not
+				{
+					var lang = e.GetAttribute("lang");
+					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
+					foreach (var language in contentLanguages)
+					{
+						if(lang == language.Key)
+						{
+							e.SetAttribute("class", (e.GetAttribute("class") + " " + language.Value).Trim());
+							break;//don't check the other languages
+						}
+					}
+				}
+			}
+		}
+
+		private static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
+		{
+			var classes = xmlElement.GetAttribute("class");
+			if (string.IsNullOrEmpty(classes))
+				return;
+			var parts = classes.SplitTrimmed(' ');
+
+			classes = "";
+			foreach (var part in parts)
+			{
+				if (!part.StartsWith(classPrefix))
+					classes += part + " ";
+			}
+			xmlElement.SetAttribute("class", classes.Trim());
 		}
 
 		private static void PrepareElementsOnPageOneLanguage(XmlElement pageDiv, string isoCode)

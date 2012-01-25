@@ -42,6 +42,7 @@
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
+			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._browser1 = new Bloom.Browser();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
@@ -52,7 +53,6 @@
 			this._splitContainer2.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._splitTemplateAndSource)).BeginInit();
-			this._splitTemplateAndSource.Panel2.SuspendLayout();
 			this._splitTemplateAndSource.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -60,7 +60,7 @@
 			// 
 			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
-			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
 			this._splitContainer1.Name = "_splitContainer1";
 			// 
 			// _splitContainer1.Panel1
@@ -79,7 +79,7 @@
 			// 
 			this._splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer2.Location = new System.Drawing.Point(0, 0);
-			this._splitContainer2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this._splitContainer2.Margin = new System.Windows.Forms.Padding(4);
 			this._splitContainer2.Name = "_splitContainer2";
 			// 
 			// _splitContainer2.Panel1
@@ -107,7 +107,8 @@
             this._pasteButton,
             this.toolStripSeparator1,
             this._undoButton,
-            this._deletePageButton});
+            this._deletePageButton,
+            this._contentLanguagesDropdown});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
 			this.toolStrip1.Size = new System.Drawing.Size(809, 25);
@@ -174,13 +175,9 @@
 			// 
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
-			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
 			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
 			this._splitTemplateAndSource.Orientation = System.Windows.Forms.Orientation.Horizontal;
-			// 
-			// _splitTemplateAndSource.Panel2
-			// 
-
 			this._splitTemplateAndSource.Size = new System.Drawing.Size(176, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
 			this._splitTemplateAndSource.SplitterWidth = 5;
@@ -195,6 +192,21 @@
 			// 
 			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
 			// 
+			// _contentLanguagesDropdown
+			// 
+			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.White;
+			this._contentLanguagesDropdown.Image = ((System.Drawing.Image)(resources.GetObject("_contentLanguagesDropdown.Image")));
+			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._contentLanguagesDropdown.Margin = new System.Windows.Forms.Padding(50, 1, 0, 2);
+			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
+			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 22);
+			this._contentLanguagesDropdown.Text = "Multilingual Settings";
+			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
+			this._contentLanguagesDropdown.DropDownClosed += new System.EventHandler(this._contentLanguagesDropdown_DropDownClosed);
+			this._contentLanguagesDropdown.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._contentLanguagesDropdown_DropDownItemClicked);
+			this._contentLanguagesDropdown.Click += new System.EventHandler(this._contentLanguagesDropdown_Click);
+			// 
 			// _browser1
 			// 
 			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -208,13 +220,12 @@
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
-
 			// 
 			// EditingView
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.Controls.Add(this._splitContainer1);
-			this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 738);
 			this._splitContainer1.Panel2.ResumeLayout(false);
@@ -227,7 +238,6 @@
 			this._splitContainer2.ResumeLayout(false);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
-			this._splitTemplateAndSource.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitTemplateAndSource)).EndInit();
 			this._splitTemplateAndSource.ResumeLayout(false);
 			this.ResumeLayout(false);
@@ -249,6 +259,7 @@
         private System.Windows.Forms.ToolStripButton _deletePageButton;
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;
+		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 
 
     }

@@ -25,6 +25,8 @@ function Cleanup(){
 function MakeSourceTextDivForGroup(group) {
 
     var divForBubble = $(group).clone();
+
+    //make the source texts in the bubble read-only
     $(divForBubble).find("textarea").each(function() {
         $(this).attr("readonly", "readonly");
     });
@@ -35,10 +37,24 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("*[lang='" + GetDictionary().vernacularLang + "']").each(function () {
         $(this).remove();
     });
+    //don't want empty items in the bubble
+    $(divForBubble).find("textarea:empty, div:empty").each(function () {
+        $(this).remove();
+    });
+
+    //don't want bilingual/trilingual boxes to be shown in the bubble
+    $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function () {
+        $(this).remove();
+    });
+
+    //if there are no languages to show in the bubble, bail out now
+    if ($(divForBubble).find("textarea, div").length == 0)
+        return;
+
     $(this).after(divForBubble);
 
 
-    //make that li's for the source text elements in this new div
+    //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
     $(divForBubble).each(function () {
         $(this).prepend('<ul class="editTimeOnly z"></ul>');
         var list = $(this).find('ul');
@@ -63,8 +79,10 @@ function MakeSourceTextDivForGroup(group) {
             var languageName = dictionary[iso];
             if (!languageName)
                 languageName = iso;
+            var shouldShowOnPage = (iso == dictionary.vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+
             // in translatino mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-            if (shellEditingMode || iso != dictionary.vernacularLang) {
+            if (shellEditingMode || !shouldShowOnPage) {
                 $(list).append('<li><a href="#' + iso + '">' + languageName + '</a></li>');
             }
         });

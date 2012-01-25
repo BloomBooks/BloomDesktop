@@ -68,39 +68,6 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
-DIV.imageOnTop DIV.imageHolder
-{
-	width: 490px;
-	/*+placement:shift 34px 21px;*/
-	position: relative;
-	left: 34px;
-	top: 21px;
-}
-DIV.imageWholePage DIV.imageHolder
-{
-	/*+placement:shift 20px 68px;*/
-	position: relative;
-	left: 20px;
-	top: 68px;
-	width: 520px;
-	height: 668px;
-}
-DIV.imageInMiddle DIV.imageHolder
-{
-	/*+placement:shift 49px 72px;*/
-	position: relative;
-	left: 49px;
-	top: 72px;
-	width: 475px;
-}
-DIV.imageOnBottom DIV.imageHolder
-{
-	/*+placement:shift 37px 140px;*/
-	position: relative;
-	left: 37px;
-	top: 140px;
-	width: 496px;
-}
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
@@ -122,9 +89,18 @@ DIV.-bloom-page:after
 	left: 7.5cm;
 	top: 20.3cm;
 }
-.imageOnTop P.image1
+/*Image On Top*/
+DIV.imageOnTop DIV.imageHolder
 {
-	height: 9.7cm;
+	width: 490px;
+	/*+placement:shift 34px 21px;*/
+	position: relative;
+	left: 34px;
+	top: 21px;
+}
+DIV.imageOnTop.bloom-trilingual DIV.imageHolder
+{
+	height: 8cm;
 	text-align: center;
 	margin-top: 1cm;
 }
@@ -137,9 +113,14 @@ DIV.imageOnTop DIV.-bloom-translationGroup
 	top: -14px;
 	width: 464px;
 }
-/*in order to make images of different vertical/horizontal shapes come out
-correctly, give them a max-width and max-height, then enclose them
-in a <p> which has a fixed height.*/
+DIV.imageOnTop.bloom-trilingual DIV.-bloom-translationGroup
+{
+	height: 357px;
+	/*+placement:shift 20px -50px;*/
+	position: relative;
+	left: 20px;
+	top: -50px;
+}
 .imageOnTop TEXTAREA
 {
 	height: 100%;
@@ -149,6 +130,23 @@ in a <p> which has a fixed height.*/
 	left: -8px;
 	top: 92px;
 }
+.imageOnTop.bloom-bilingual TEXTAREA
+{
+	height: 50%;
+	/*+placement:shift -8px 92px;*/
+	position: relative;
+	left: -8px;
+	top: 92px;
+}
+.imageOnTop.trilingual TEXTAREA
+{
+	height: 30%;
+	/*+placement:shift -8px 92px;*/
+	position: relative;
+	left: -8px;
+	top: 92px;
+}
+/*Image In Middle*/
 DIV.imageInMiddle DIV.bottom
 {
 	height: 195px;
@@ -170,7 +168,7 @@ DIV.imageInMiddle TEXTAREA
 {
 	height: 100%;
 }
-.imageInMiddle .picture
+DIV.imageInMiddle .picture
 {
 	max-height: 6.3cm;
 }
@@ -183,6 +181,7 @@ DIV.imageInMiddle DIV.top
 	top: 30px;
 	width: 442px;
 }
+/*Image On Bottom*/
 .imageOnBottom .picture
 {
 	max-height: 9cm;
@@ -214,6 +213,32 @@ DIV.imageOnBottom DIV.-bloom-translationGroup
 	left: 22px;
 	top: 77px;
 	width: 459px;
+}
+/*Image Whole Page*/
+DIV.imageWholePage DIV.imageHolder
+{
+	/*+placement:shift 20px 68px;*/
+	position: relative;
+	left: 20px;
+	top: 68px;
+	width: 520px;
+	height: 668px;
+}
+DIV.imageInMiddle DIV.imageHolder
+{
+	/*+placement:shift 49px 72px;*/
+	position: relative;
+	left: 49px;
+	top: 72px;
+	width: 475px;
+}
+DIV.imageOnBottom DIV.imageHolder
+{
+	/*+placement:shift 37px 140px;*/
+	position: relative;
+	left: 37px;
+	top: 140px;
+	width: 496px;
 }
 .textWholePage TEXTAREA
 {
@@ -248,7 +273,8 @@ DIV.imageWholePage TABLE
 	width: 556px;
 	height: 786px;
 }
-/*It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
+/*Text Whole Page
+It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
 DIV.textWholePage DIV
 {
 	overflow: hidden;

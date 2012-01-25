@@ -51,7 +51,7 @@ Core qTip styles*/
 	border: 1px solid transparent;
 	border-width: 1px 1px 0;
 	font-weight: bold;
-	color: gray;
+	color: #808080;
 	text-align: right;
 }
 .ui-tooltip-titlebar + .ui-tooltip-content

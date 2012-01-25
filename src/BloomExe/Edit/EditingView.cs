@@ -28,7 +28,8 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DeletePageCommand _deletePageCommand;
 		private GeckoElement _previousClickElement;
-
+		private Action _pendingMessageHandler;
+		private bool _updatingDisplay;
 		public delegate EditingView Factory();//autofac uses this
 
 
@@ -54,7 +55,8 @@ namespace Bloom.Edit
 
 		}
 
-		private Action _pendingMessageHandler;
+
+
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
 		{
 			_handleMessageTimer.Enabled = false;
@@ -135,7 +137,7 @@ namespace Bloom.Edit
 		/// </summary>
 		private void OnTextGroupFocussed(string translationsInAllLanguages)
 		{
-			_model.HandleUserEnteredTextGroup(translationsInAllLanguages);
+
 		}
 
 
@@ -157,17 +159,7 @@ namespace Bloom.Edit
 			_splitTemplateAndSource.Panel1.Controls.Clear();
 			_splitTemplateAndSource.Panel2.Controls.Clear();
 
-//            if (_model.ShowTemplatePanel && _model.ShowTranslationPanel)    //BOTH
-//            {
-//                _splitTemplateAndSource.Panel1.Controls.Add(_templatePagesView);
-//                _splitTemplateAndSource.Panel2.Controls.Add(_translationSourcesControl);
-//                _splitContainer2.Panel2.Controls.Add(_splitTemplateAndSource);
-//            }
-//            else if (_model.ShowTranslationPanel)    //Translation only
-//            {
-//                _splitContainer2.Panel2.Controls.Add(_translationSourcesControl);
-//            }
-			/*else*/ if (_model.ShowTemplatePanel)        //Templates only
+			if (_model.ShowTemplatePanel)        //Templates only
 			{
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
 			}
@@ -226,8 +218,8 @@ namespace Bloom.Edit
 				var dom = _model.GetXmlDocumentForCurrentPage();
 			   _browser1.Focus();
 			   _browser1.Navigate(dom);
-
 		   }
+		UpdateDisplay();
 		}
 
 		public void UpdateTemplateList()
@@ -355,6 +347,32 @@ namespace Bloom.Edit
 
 		public void UpdateDisplay()
 		{
+			_updatingDisplay = true;
+			_contentLanguagesDropdown.DropDownItems.Clear();
+			foreach (var l in _model.ContentLanguages)
+			{
+				ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
+				item.Tag = l;
+				item.Enabled = !l.Locked;
+				item.Checked = l.Selected;
+				item.CheckOnClick = true;
+				item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);
+			}
+			_updatingDisplay = false;
+		}
+
+		void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
+		{
+			if(_updatingDisplay)
+				return;
+			var item = (ToolStripMenuItem) sender;
+			((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
+
+			_model.ContentLanguagesSelectionChanged();
+		}
+
+		public void UpdateEditButtons()
+		{
 			_cutButton.Enabled = _cutCommand != null && _cutCommand.Enabled;
 			_copyButton.Enabled = _copyCommand != null && _copyCommand.Enabled;
 			_pasteButton.Enabled = _pasteCommand != null && _pasteCommand.Enabled;
@@ -365,7 +383,7 @@ namespace Bloom.Edit
 
 		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
 		{
-			UpdateDisplay();
+			UpdateEditButtons();
 		}
 
 		private void _cutButton_Click(object sender, EventArgs e)
@@ -381,6 +399,28 @@ namespace Bloom.Edit
 		private void _deletePageButton_Click(object sender, EventArgs e)
 		{
 			_deletePageCommand.Execute();
+		}
+
+		private void _contentLanguagesDropdown_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _contentLanguagesDropdown_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+//			if (_updatingDisplay)
+//				return;
+//
+//			//looking for checks here didn't work... apparently the checking happens after this even is raised
+		}
+
+		private void _contentLanguagesDropdown_DropDownClosed(object sender, EventArgs e)
+		{
+//			foreach (ToolStripMenuItem item in _contentLanguagesDropdown.DropDownItems)
+//			{
+//				((EditingModel.ContentLanguage) item.Tag).Selected = item.Checked;
+//			}
+//			_model.ContentLanguagesSelectionChanged();
 		}
 
 	}

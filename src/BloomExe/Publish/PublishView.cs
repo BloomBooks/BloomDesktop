@@ -75,7 +75,7 @@ namespace Bloom.Publish
 		{
 			base.OnLoad(e);
 			//_loadTimer.Enabled = true;
-			//UpdateDisplay();
+			//UpdateEditButtons();
 		}
 
 		private void UpdateDisplay()

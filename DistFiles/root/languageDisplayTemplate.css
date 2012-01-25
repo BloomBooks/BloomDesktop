@@ -7,7 +7,7 @@ Its purpose is to hide elements that are in languages that will not be printed i
 {
 	/*border-bottom-color: transparent; *//*cause jscript to make us readonly, which we can't do from css */
 	/*background-color: #d3d3d3;*/
-	display: none;
+/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
 }
 
 /* DIVS and P's and such which are supposed to be translatable also get hidden if not in vernacular */
@@ -15,10 +15,10 @@ Its purpose is to hide elements that are in languages that will not be printed i
 *.-bloom-translationGroup *.editable:not([lang="VERNACULAR"])
 {
 	/*border-bottom-color: transparent; *//*cause jscript to make us readonly, which we can't do from css */
-	display: none;
+/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
 }
 
 *[lang="N2"] /* anything left with an N2, well we dont' have a language for it */
 {
-	display: none;
+/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
 }
