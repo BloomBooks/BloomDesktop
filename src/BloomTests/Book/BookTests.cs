@@ -626,6 +626,40 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void UpdateDataDiv_HasTrilingualLanguages_AddsToDataDiv()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head></head><body></body></html>");
+			var book = CreateBook();
+			book.SetMultilingualContentLanguages("okm", "kbt");
+			book.UpdateVariablesAndDataDiv(_documentDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
+		}
+		[Test]
+		public void UpdateDataDiv_ThirdContentLangTurnedOff_RemovedFromDataDiv()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head><div class='-bloom-dataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			var book = CreateBook();
+			book.SetMultilingualContentLanguages(null, null);
+			book.UpdateVariablesAndDataDiv(_documentDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage3']", 0);
+		}
+
+		[Test]
+		public void UpdateDataDiv_DomHas2ContentLanguages_PulledIntoBookProperties()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"<html><head><div class='-bloom-dataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			var book = CreateBook();
+			book.UpdateVariablesAndDataDiv(_documentDom);
+			Assert.AreEqual("okm", book.MultilingualContentLanguage2);
+			Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
+		}
+
+
+		[Test]
 		public void UpdateDataDiv_NewLangAdded_AddedToDataDiv()
 		{
 			_documentDom = new XmlDocument();
