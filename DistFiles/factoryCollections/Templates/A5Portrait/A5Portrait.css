@@ -147,10 +147,6 @@ DIV.imageOnTop.bloom-trilingual DIV.-bloom-translationGroup
 .imageOnTop.bloom-bilingual TEXTAREA
 {
 	height: 50%;
-	/*+placement:shift -8px 92px;*/
-	position: relative;
-	left: -8px;
-	top: 92px;
 }
 .imageOnTop.bloom-trilingual TEXTAREA
 {
@@ -159,6 +155,20 @@ DIV.imageOnTop.bloom-trilingual DIV.-bloom-translationGroup
 	position: relative;
 	left: -8px;
 	top: 92px;
+}
+.imageOnTop.bloom-trilingual TEXTAREA.bloom-content2
+{
+	/*+placement:anchor-top-left -8px 207px;*/
+	position: absolute;
+	left: -8px;
+	top: 207px;
+}
+.imageOnTop.bloom-trilingual TEXTAREA.bloom-content3
+{
+	/*+placement:anchor-top-left -8px 321px;*/
+	position: absolute;
+	left: -8px;
+	top: 321px;
 }
 /*Image In Middle*/
 DIV.imageInMiddle DIV.bottom

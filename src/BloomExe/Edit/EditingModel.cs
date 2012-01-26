@@ -145,12 +145,15 @@ namespace Bloom.Edit
 				_contentLanguages.Clear();
 				_contentLanguages.Add(new ContentLanguage(_librarySettings.VernacularIso639Code, _librarySettings.GetVernacularName("en")){Locked=true, Selected=true});
 				//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-				var l2 = new ContentLanguage(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name("en")) {Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _librarySettings.NationalLanguage1Iso639Code};
-				_contentLanguages.Add(l2);
+				var item2 = new ContentLanguage(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name("en")) {Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _librarySettings.NationalLanguage1Iso639Code};
+				_contentLanguages.Add(item2);
 				if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
 				{
-					var l3 = new ContentLanguage(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name("en")) { Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _librarySettings.NationalLanguage2Iso639Code };
-					_contentLanguages.Add(l3);
+					//NB: this could be the 2nd language (when the national 1 language is not selected)
+					bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_librarySettings.NationalLanguage2Iso639Code ||
+									_bookSelection.CurrentSelection.MultilingualContentLanguage3 ==_librarySettings.NationalLanguage2Iso639Code;
+					var item3 = new ContentLanguage(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name("en")) { Selected = selected };
+					_contentLanguages.Add(item3);
 				}
 				return _contentLanguages;
 			}
@@ -174,7 +177,12 @@ namespace Bloom.Edit
 					break;
 				}
 			}
+
+			//Reload to display these changes
+			SaveNow();
 			_bookSelection.CurrentSelection.SetMultilingualContentLanguages(l2,l3);
+			_bookSelection.CurrentSelection.PrepareForEditing();
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
 		public class ContentLanguage

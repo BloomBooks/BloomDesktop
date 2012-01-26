@@ -133,6 +133,7 @@ jQuery(document).ready(function () {
 
 
 
+/*
     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
     //the same parent element
     jQuery("textarea, div.editable").focus(function () {
@@ -146,6 +147,21 @@ jQuery(document).ready(function () {
         json = JSON.stringify(json);
         event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
         document.dispatchEvent(event);
+    });
+*/
+
+//in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
+    $(".-bloom-translationGroup").each(function(){
+      var contentElements = $(this).find("textarea, div");
+      contentElements.sort(function (a, b) {
+        var scoreA = $(a).hasClass('bloom-content1') + ($(a).hasClass('bloom-content2')*2)+ ($(a).hasClass('bloom-content3')*3);
+        var scoreB = $(b).hasClass('bloom-content1') + ($(b).hasClass('bloom-content2')*2)+ ($(b).hasClass('bloom-content3')*3);
+        if (scoreA < scoreB) return -1;
+        if (scoreA > scoreB) return 1;
+        return 0;
+      });
+      //do the actual rearrangement
+      $(this).append(contentElements);
     });
 
 
