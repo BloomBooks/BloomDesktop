@@ -219,7 +219,7 @@ namespace Bloom.Book
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
-			BookStarter.UpdateContentLanguageClasses(dom, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			return dom;
 		}
 
@@ -489,7 +489,7 @@ namespace Bloom.Book
 			{
 				RebuildXMatter(dom);
 			}
-			BookStarter.UpdateContentLanguageClasses(dom, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			AddCoverColor(dom, CoverColor);
 
 			AddPreviewJScript(dom);
@@ -583,7 +583,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
 		/// </summary>
-		public string MultilingualContentLanguage2 { get;
+		public string MultilingualContentLanguage2
+		{
+			//REVIEW: this is messy, essentially storing the same datum in a property *and* the data-div.  Would it be too slow to just keep it in the data-div alone?
+			get;
 
 			/* only SetMultilingualContentLanguages should use this*/
 			private set;
@@ -615,8 +618,10 @@ namespace Bloom.Book
 			MultilingualContentLanguage2 = language2Code;
 			MultilingualContentLanguage3 = language3Code;
 
+			RemoveDataDivElement("contentLanguage1");
 			RemoveDataDivElement("contentLanguage2");
 			RemoveDataDivElement("contentLanguage3");
+			AddDataDivBookVariable("contentLanguage1", "*", _librarySettings.VernacularIso639Code);
 			if (MultilingualContentLanguage2 != null)
 			{
 				AddDataDivBookVariable("contentLanguage2", "*", language2Code);
@@ -1106,6 +1111,7 @@ namespace Bloom.Book
 			Debug.WriteLine("before update: " + dataDiv.OuterXml);
 
 			var data = UpdateFieldsAndVariables(domToRead);
+			data.UpdateGenericLanguageString("contentLanguage1",_librarySettings.VernacularIso639Code, false);
 			data.UpdateGenericLanguageString("contentLanguage2", string.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
 			data.UpdateGenericLanguageString("contentLanguage3", string.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
 
@@ -1336,7 +1342,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
 			{
 				BookStarter.PrepareElementsOnPage(div, _librarySettings);
-				BookStarter.UpdateContentLanguageClasses(div, MultilingualContentLanguage2, MultilingualContentLanguage3);
+				BookStarter.UpdateContentLanguageClasses(div, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			}
 
 		}

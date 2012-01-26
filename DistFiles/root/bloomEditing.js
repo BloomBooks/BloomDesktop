@@ -267,11 +267,23 @@ jQuery(document).ready(function () {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    //make images look click-able when you cover over them
-    jQuery("img").hover(function () {
-        $(this).addClass('hoverUp')
-    }, function () {
+  //make images look click-able when you cover over them
+    jQuery(".imageHolder").mouseenter(function () {
+    $(this).prepend("<button class='changeImageButton' title='Change Image'></button>");
+        $(this).addClass('hoverUp');
+    }).mouseleave(function () {
         $(this).removeClass('hoverUp')
+    $(this).find(".changeImageButton").each(function(){$(this).remove()});
+    });
+
+    jQuery(".draggable").mouseenter(function () {
+    $(this).prepend("<button class='moveButton' title='Move'></button>")
+    $(this).find(".moveButton").mousedown(function (e) {
+      $(this).parent().trigger(e);
+    });
+  });
+  jQuery(".draggable").mouseleave(function () {
+    $(this).find(".moveButton").each(function(){$(this).remove()});
     });
 
 

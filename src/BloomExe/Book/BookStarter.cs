@@ -215,10 +215,12 @@ namespace Bloom.Book
 		/// <summary>
 		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
 		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string contentLanguageIso2, string contentLanguageIso3)
+		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
 		{
 			var multilingualClass = "bloom-monolingual";
 			var contentLanguages = new Dictionary<string, string>();
+			contentLanguages.Add(vernacularIso, "bloom-content1");
+
 			if (!string.IsNullOrEmpty(contentLanguageIso2))
 			{
 				multilingualClass = "bloom-bilingual";

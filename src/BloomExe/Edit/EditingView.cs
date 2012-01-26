@@ -253,7 +253,7 @@ namespace Bloom.Edit
 			if (ge.Target == null)
 				return;//I've seen this happen
 
-			if (ge.Target.TagName == "IMG")
+			if (ge.Target.ClassName == "changeImageButton")
 				OnClickOnImage(ge);
 		}
 
@@ -264,8 +264,24 @@ namespace Bloom.Edit
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 
-			Cursor = Cursors.WaitCursor;
-			string currentPath = ge.Target.GetAttribute("src");
+			GeckoElement imageElement = null;
+			foreach(var n in ge.Target.Parent.ChildNodes)
+			{
+				if (n is GeckoElement && ((GeckoElement)n).TagName.ToLower() == "img")
+				{
+					imageElement = (GeckoElement) n;
+					break;
+				}
+			}
+
+			if(imageElement ==null)
+			{
+				Debug.Fail("Could not find image element");
+				return;
+			}
+
+			 Cursor = Cursors.WaitCursor;
+			 string currentPath = imageElement.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 			if (File.Exists(existingImagePath))
@@ -286,7 +302,7 @@ namespace Bloom.Edit
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						_model.ChangePicture(ge.Target, dlg.ImageInfo);
+						_model.ChangePicture(imageElement, dlg.ImageInfo);
 					}
 					catch(System.IO.IOException error)
 					{
