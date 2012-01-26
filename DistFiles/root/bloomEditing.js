@@ -133,6 +133,7 @@ jQuery(document).ready(function () {
 
 
 
+/*
     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
     //the same parent element
     jQuery("textarea, div.editable").focus(function () {
@@ -147,8 +148,23 @@ jQuery(document).ready(function () {
         event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
         document.dispatchEvent(event);
     });
+*/
 
-
+//in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
+		$(".-bloom-translationGroup").each(function(){
+			var contentElements = $(this).find("textarea, div");
+			contentElements.sort(function (a, b) {
+				var scoreA = $(a).hasClass('bloom-content1') + ($(a).hasClass('bloom-content2')*2)+ ($(a).hasClass('bloom-content3')*3);			
+				var scoreB = $(b).hasClass('bloom-content1') + ($(b).hasClass('bloom-content2')*2)+ ($(b).hasClass('bloom-content3')*3);
+				if (scoreA < scoreB) return -1;
+				if (scoreA > scoreB) return 1;
+				return 0;
+			});
+			//do the actual rearrangement
+			$(this).append(contentElements);
+		});
+		
+		
     //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
