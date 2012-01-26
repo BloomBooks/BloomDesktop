@@ -633,6 +633,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages("okm", "kbt");
 			book.UpdateVariablesAndDataDiv(_documentDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='-bloom-dataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
 		}

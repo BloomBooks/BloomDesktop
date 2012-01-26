@@ -68,6 +68,20 @@ preview.css.
 	min-height: 21cm;
 	max-height: 21cm;
 }
+/*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.*/
+.bloom-monolingual TEXTAREA:not(.bloom-content1)
+{
+	display: none;
+}
+.bloom-bilingual TEXTAREA:not(.bloom-content1):not(.bloom-content2)
+{
+	display: none;
+}
+.bloom-trilingual TEXTAREA:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3)
+{
+	display: none;
+}
+/*generic*/
 TEXTAREA
 {
 /*specifying the font again, here, really is needed*/
@@ -138,7 +152,7 @@ DIV.imageOnTop.bloom-trilingual DIV.-bloom-translationGroup
 	left: -8px;
 	top: 92px;
 }
-.imageOnTop.trilingual TEXTAREA
+.imageOnTop.bloom-trilingual TEXTAREA
 {
 	height: 30%;
 	/*+placement:shift -8px 92px;*/
