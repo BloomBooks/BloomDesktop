@@ -51,13 +51,12 @@ namespace Bloom.Edit
             SetupThumnailLists();
             _model.SetView(this);
             _browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
-        	_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
-			
+        
+			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
+
         }
 
-
-
-    	private void _handleMessageTimer_Tick(object sender, EventArgs e)
+		private void _handleMessageTimer_Tick(object sender, EventArgs e)
 		{
 			_handleMessageTimer.Enabled = false;
 			_pendingMessageHandler();
@@ -183,6 +182,8 @@ namespace Bloom.Edit
 
         protected override void OnVisibleChanged(EventArgs e)
         {
+			//review: we might be better switching to the EditingModel.OnTagChanged for this detection as visibility is flakey
+
             base.OnVisibleChanged(e);
 
             if (Visible)
@@ -239,7 +240,7 @@ namespace Bloom.Edit
 			{
 				//try
 				{
-					_model.SaveNow();
+//					_model.SaveNow();
 				}
 //				catch()
 //				{

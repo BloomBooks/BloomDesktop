@@ -16,18 +16,20 @@ namespace Bloom
     public partial class Shell : Form
     {
         private readonly LibrarySettings _librarySettings;
-        private readonly WorkspaceView _workspaceView;
+    	private readonly LibraryClosing _libraryClosingEvent;
+    	private readonly WorkspaceView _workspaceView;
 
-		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings)
+		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings, LibraryClosing libraryClosingEvent)
         {
 		    _librarySettings = librarySettings;
-		    InitializeComponent();
+			_libraryClosingEvent = libraryClosingEvent;
+			InitializeComponent();
 
             _workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
 			                                     	{
 			                                     		UserWantsToOpenADifferentProject = true;
-			                                     		Close();
+														Close();
 			                                     	});
 
             _workspaceView.BackColor =
@@ -40,6 +42,12 @@ namespace Bloom
 
 			SetWindowText();
         }
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			_libraryClosingEvent.Raise(null);
+			base.OnClosing(e);
+		}
 
 		private void SetWindowText()
 		{
