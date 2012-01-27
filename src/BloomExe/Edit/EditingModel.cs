@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization.Formatters;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Newtonsoft.Json;
@@ -37,6 +38,8 @@ namespace Bloom.Edit
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
 			DeletePageCommand deletePageCommand,
+			SelectedTabChangedEvent selectedTabChangedEvent,
+			LibraryClosing libraryClosingEvent,
 			LibrarySettings librarySettings)
 		{
 			_bookSelection = bookSelection;
@@ -47,10 +50,21 @@ namespace Bloom.Edit
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
+			libraryClosingEvent.Subscribe(o=>SaveNow());
 			_contentLanguages = new List<ContentLanguage>();
+		}
+
+		private void OnTabChanged(TabChangedDetails details)
+		{
+			if(details.From == _view)
+			{
+				SaveNow();
+			}
+			//enhance: this might be more reliable than the current EditingView.OnVisibleChanged() for detecting when we move *to* this control.
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)

@@ -234,7 +234,7 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@class,'-bloom-frontMatter'))]"))
 			{
 				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");

@@ -2,23 +2,27 @@
 Its purpose is to hide elements that are in languages that will not be printed in this version of the book.*/
 
 
-/* Hide all textareas in translation groups which aren't in the current vernacular */
-*.-bloom-translationGroup textarea:not([lang="VERNACULAR"])
+/* Hide all textareas and other editable fields in translation groups which aren't in the current vernacular */
+DIV.-bloom-frontMatter DIV.-bloom-translationGroup *.editable:not([lang="VERNACULAR"])
 {
 	/*border-bottom-color: transparent; *//*cause jscript to make us readonly, which we can't do from css */
 	/*background-color: #d3d3d3;*/
-/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
+	/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
+
+	display: none;
 }
 
-/* DIVS and P's and such which are supposed to be translatable also get hidden if not in vernacular */
-
-*.-bloom-translationGroup *.editable:not([lang="VERNACULAR"])
+DIV.-bloom-frontMatter DIV.-bloom-translationGroup textarea:not([lang="VERNACULAR"])
 {
 	/*border-bottom-color: transparent; *//*cause jscript to make us readonly, which we can't do from css */
-/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
+	/*background-color: #d3d3d3;*/
+	/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
+
+	display: none;
 }
+
 
 *[lang="N2"] /* anything left with an N2, well we dont' have a language for it */
 {
-/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
+	display: none;
 }

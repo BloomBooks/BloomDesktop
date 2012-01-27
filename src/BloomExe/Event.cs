@@ -32,14 +32,26 @@ namespace Bloom
 		}
 	}
 
+	public class TabChangedDetails
+	{
+		public Control From;
+		public Control To;
+	}
 	/// <summary>
 	/// Gives the first control in the tab
 	/// </summary>
-	public class SelectedTabChangedEvent : Event<Control>
+	public class SelectedTabChangedEvent : Event<TabChangedDetails>
 	{ }
 
 	public class CreateFromTemplateCommand: Event<Book.Book>
 	{}
+
+
+	/// <summary>
+	/// called when the user is quiting or changing to another library
+	/// </summary>
+	public class LibraryClosing : Event<object>
+	{ }
 
 
 	public class EditBookCommand : Event<Book.Book>

@@ -44,7 +44,7 @@ namespace Bloom.Publish
 			//off the tab itself changing, either to us or away from us.
 			selectedTabChangedEvent.Subscribe(c=>
 												{
-													if (c == this)
+													if (c.To == this)
 													{
 														if (_makePdfBackgroundWorker.IsBusy)
 															return;
@@ -52,7 +52,7 @@ namespace Bloom.Publish
 														_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 														MakeBooklet();
 													}
-													else if (c!=this && _makePdfBackgroundWorker.IsBusy)
+													else if (c.To!=this && _makePdfBackgroundWorker.IsBusy)
 														_makePdfBackgroundWorker.CancelAsync();
 												});
 

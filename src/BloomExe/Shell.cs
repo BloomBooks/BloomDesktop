@@ -16,11 +16,13 @@ namespace Bloom
 	public partial class Shell : Form
 	{
 		private readonly LibrarySettings _librarySettings;
+		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings)
+		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings, LibraryClosing libraryClosingEvent)
 		{
 			_librarySettings = librarySettings;
+			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
 			_workspaceView = projectViewFactory();
@@ -39,6 +41,12 @@ namespace Bloom
 			this.Controls.Add(this._workspaceView);
 
 			SetWindowText();
+		}
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			_libraryClosingEvent.Raise(null);
+			base.OnClosing(e);
 		}
 
 		private void SetWindowText()

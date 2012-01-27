@@ -17,6 +17,7 @@ namespace Bloom.Workspace
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private InfoView _infoView;
+		private Control _previouslySelectedControl;
 
 		public event EventHandler CloseCurrentProject;
 
@@ -170,7 +171,12 @@ namespace Bloom.Workspace
 			if(_tabControl.SelectedTab !=_infoTabPage)
 				SetTabVisibility(_infoTabPage, false);//we always hide this after it is used
 
-			_selectedTabChangedEvent.Raise((Control) _tabControl.SelectedTab.Controls[0]);
+			_selectedTabChangedEvent.Raise(new TabChangedDetails()
+											{
+												From = _previouslySelectedControl,
+												To = (Control) _tabControl.SelectedTab.Controls[0]
+											});
+			_previouslySelectedControl = (Control) _tabControl.SelectedTab.Controls[0];
 		}
 
 		private void _settingsButton_Click(object sender, EventArgs e)
