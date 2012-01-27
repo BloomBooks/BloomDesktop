@@ -39,10 +39,10 @@
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._undoButton = new System.Windows.Forms.ToolStripButton();
 			this._deletePageButton = new System.Windows.Forms.ToolStripButton();
+			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._browser1 = new Bloom.Browser();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
@@ -171,6 +171,21 @@
 			this._deletePageButton.Text = "Delete Page";
 			this._deletePageButton.Click += new System.EventHandler(this._deletePageButton_Click);
 			// 
+			// _contentLanguagesDropdown
+			// 
+			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.White;
+			this._contentLanguagesDropdown.Image = ((System.Drawing.Image)(resources.GetObject("_contentLanguagesDropdown.Image")));
+			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._contentLanguagesDropdown.Margin = new System.Windows.Forms.Padding(50, 1, 0, 2);
+			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
+			this._contentLanguagesDropdown.Size = new System.Drawing.Size(29, 22);
+			this._contentLanguagesDropdown.Text = "Multilingual Settings";
+			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
+			this._contentLanguagesDropdown.DropDownClosed += new System.EventHandler(this._contentLanguagesDropdown_DropDownClosed);
+			this._contentLanguagesDropdown.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._contentLanguagesDropdown_DropDownItemClicked);
+			this._contentLanguagesDropdown.Click += new System.EventHandler(this._contentLanguagesDropdown_Click);
+			// 
 			// _splitTemplateAndSource
 			// 
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -191,21 +206,6 @@
 			// _handleMessageTimer
 			// 
 			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
-			// 
-			// _contentLanguagesDropdown
-			// 
-			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.White;
-			this._contentLanguagesDropdown.Image = ((System.Drawing.Image)(resources.GetObject("_contentLanguagesDropdown.Image")));
-			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._contentLanguagesDropdown.Margin = new System.Windows.Forms.Padding(50, 1, 0, 2);
-			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
-			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 22);
-			this._contentLanguagesDropdown.Text = "Multilingual Settings";
-			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
-			this._contentLanguagesDropdown.DropDownClosed += new System.EventHandler(this._contentLanguagesDropdown_DropDownClosed);
-			this._contentLanguagesDropdown.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._contentLanguagesDropdown_DropDownItemClicked);
-			this._contentLanguagesDropdown.Click += new System.EventHandler(this._contentLanguagesDropdown_Click);
 			// 
 			// _browser1
 			// 

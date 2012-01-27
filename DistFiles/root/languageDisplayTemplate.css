@@ -18,6 +18,20 @@ DIV.-bloom-frontMatter DIV.-bloom-translationGroup textarea:not([lang="VERNACULA
 	/*background-color: #d3d3d3;*/
 	/* src guys that aren't part of bi/trilingual will be moved to bubble anyways    display: none;*/
 
+   display: none;
+}
+
+/*tems that are contained by  a bloom-translationGroup are made visible according to the monolingual/bilingual/trilingual settings*/
+.bloom-monolingual DIV.-bloom-translationGroup *:not(.bloom-content1)
+{
+	display: none;
+}
+.bloom-bilingual DIV.-bloom-translationGroup *:not(.bloom-content1):not(.bloom-content2)
+{
+	display: none;
+}
+.bloom-trilingual DIV.-bloom-translationGroup *:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3)
+{
 	display: none;
 }
 
