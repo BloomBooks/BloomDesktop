@@ -23,7 +23,7 @@ namespace BloomTests.Book
 		public void Setup()
 		{
 			_dom = new XmlDocument();
-			_dom.LoadXml("<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body><div class='bloom-dataDiv'></div><div id ='firstPage' class='bloom-page'>1st page</div></body></html>");
+			_dom.LoadXml("<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body><div id='bloomDataDiv'></div><div id ='firstPage' class='bloom-page'>1st page</div></body></html>");
 			_dataSet = new DataSet();
 			_dataSet.WritingSystemCodes.Add("V","xyz");
 			_dataSet.WritingSystemCodes.Add("N1", "fr");
@@ -53,7 +53,7 @@ namespace BloomTests.Book
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
 			CreateHelper().InjectXMatter(_dataSet);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][contains(@class,'bloom-dataDiv')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'titlePage')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'verso')]", 1);
