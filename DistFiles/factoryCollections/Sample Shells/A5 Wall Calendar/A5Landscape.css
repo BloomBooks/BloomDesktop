@@ -45,7 +45,7 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-DIV.-bloom-page
+DIV.bloom-page
 {
 /*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
@@ -110,7 +110,7 @@ TEXTAREA
 	height: 18.9cm;
 	margin-top: 1cm;
 }
-.imageWholePage P.imageHolder
+.imageWholePage P.bloom-imageContainer
 {
 	height: 18.6cm;
 	width: 12cm;
@@ -130,20 +130,20 @@ DIV.imageWholePage IMG
 	max-height: 18.6cm;
 	max-width: 12.2cm;
 }
-.imageOnBottom P.imageHolder
+.imageOnBottom P.bloom-imageContainer
 {
 	height: 9cm;
 }
 /*in order to make images of different vertical/horizontal shapes come out
 correctly, give them a max-width and max-height, then enclose them
 in a <p> which has a fixed height.*/
-.imageOnTop P.imageHolder
+.imageOnTop P.bloom-imageContainer
 {
 	height: 9.7cm;
 	text-align: center;
 	margin-top: 1cm;
 }
-DIV.-bloom-page:after
+DIV.bloom-page:after
 {
 	position: static;
 	/*+placement:anchor-top-left 7.5cm 20.3cm;*/

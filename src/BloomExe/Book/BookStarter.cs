@@ -121,7 +121,7 @@ namespace Bloom.Book
 			}
 
 			//If this is a shell book, make elements to hold the vernacular
-			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				SetupIdAndLineage(div, div);
 				SetupPage(div, _librarySettings, null, null);
@@ -234,7 +234,7 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@class,'-bloom-frontMatter'))]"))
+			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter'))]"))
 			{
 				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
@@ -242,7 +242,7 @@ namespace Bloom.Book
 				AddClassIfMissing(pageDiv, multilingualClass);
 			}
 
-			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes("//*[contains(@class,'-bloom-translationGroup')]"))
+			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
 			{
 				foreach (XmlElement e in group.SafeSelectNodes("//textarea | //div")) //nb: we don't necessarily care that a div is editable or not
 				{
@@ -327,7 +327,7 @@ namespace Bloom.Book
 				return;
 
 
-			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'-bloom-translationGroup')]").Count == 0)
+			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;

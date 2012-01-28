@@ -204,7 +204,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			XmlDocument dom = GetHtmlDomWithJustOnePage(page, _librarySettings.VernacularIso639Code);
+			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
@@ -279,7 +279,7 @@ namespace Bloom.Book
 			node.AppendChild(element);
 		}
 
-		private XmlDocument GetHtmlDomWithJustOnePage(IPage page,string iso639CodeToLeaveVisible)
+		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)
 		{
 			var dom = new XmlDocument();
 			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom();
@@ -306,7 +306,7 @@ namespace Bloom.Book
 			{
 				return GetErrorDom();
 			}
-			var dom = GetHtmlDomWithJustOnePage(page, iso639CodeToShow);
+			var dom = GetHtmlDomWithJustOnePage(page);
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
 			AddCoverColor(dom, CoverColor);
@@ -348,7 +348,7 @@ namespace Bloom.Book
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
 		{
 			bool onFirst = true;
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
 			{
 				if (!onFirst)
 				{
@@ -364,7 +364,7 @@ namespace Bloom.Book
 
 		private static void HidePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
 		{
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, '-bloom-page')]"))
+			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
 			{
 				if (hidePredicate(node))
 				{
@@ -519,7 +519,7 @@ namespace Bloom.Book
 			get
 			{
 				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
-				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'-bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _librarySettings.VernacularIso639Code));
+				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _librarySettings.VernacularIso639Code));
 				return x.Count > 0;
 			}
 
@@ -636,7 +636,7 @@ namespace Bloom.Book
 			colorStyle.InnerXml = @"<!--
 
 				DIV.coverColor  TEXTAREA	{		background-color: #colorValue;	}
-				DIV.-bloom-page.coverColor	{		background-color: #colorValue;	}
+				DIV.bloom-page.coverColor	{		background-color: #colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
@@ -675,7 +675,7 @@ namespace Bloom.Book
 				_pagesCache = new List<IPage>();
 
 				int pageNumber = 0;
-				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 				{
 					//review: we want to show titles for template books, numbers for other books.
 					//this here requires that titles be removed when the page is inserted, kind of a hack.
@@ -701,7 +701,7 @@ namespace Bloom.Book
 			if (!_storage.LooksOk)
 				yield break;
 
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'-bloom-page') and not(contains(@data-page, 'singleton'))]"))
+			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
 				var caption = pageNode.GetAttribute("title");
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
@@ -812,7 +812,7 @@ namespace Bloom.Book
 		{
 			Debug.Assert(IsInEditableLibrary);
 
-			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, '-bloom-page')]");
+			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 			string pageDivId = divElement.GetAttribute("id");
 
 			var page = GetPageFromStorage(pageDivId);
@@ -1171,11 +1171,11 @@ namespace Bloom.Book
 
 		private XmlElement GetOrCreateDataDiv()
 		{
-			var dataDiv = RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']") as XmlElement;
+			var dataDiv = RawDom.SelectSingleNode("//div[@class='bloom-dataDiv']") as XmlElement;
 			if (dataDiv == null)
 			{
 				dataDiv = RawDom.CreateElement("div");
-				dataDiv.SetAttribute("class", "-bloom-dataDiv");
+				dataDiv.SetAttribute("class", "bloom-dataDiv");
 				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
 			}
 			return dataDiv;
@@ -1300,7 +1300,7 @@ namespace Bloom.Book
 					{
 						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
 					}
-					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@class='-bloom-dataDiv']").OuterXml);
+					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@class='bloom-dataDiv']").OuterXml);
 
 
 				}
@@ -1335,7 +1335,7 @@ namespace Bloom.Book
 		{
 			// I may re-enable this later....			RebuildXMatter(RawDom);
 
-			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]"))
+			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				BookStarter.PrepareElementsOnPage(div, _librarySettings);
 				BookStarter.UpdateContentLanguageClasses(div, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);

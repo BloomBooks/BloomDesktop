@@ -1,3 +1,13 @@
+// VERTICALLY ALIGN FUNCTION
+$.fn.VAlign = function() {
+  return this.each(function(i){
+    var ah = $(this).height();
+    var ph = $(this).parent().height();
+    var mh = Math.ceil((ph-ah) / 2);
+    $(this).css('margin-top', mh);
+  });
+};
+
 function Cleanup(){
 
        // remove the div's which qtip makes for the tips themselves
@@ -119,7 +129,7 @@ function MakeSourceTextDivForGroup(group) {
             style:{
                 //doesn't work: tip:{ size: {height: 50, width:50}             },
                 //doesn't work: tip:{ size: {x: 50, y:50}             },
-                classes:'ui-tooltip-green ui-tooltip-rounded ui-bloomSourceTextsBubble'},
+                classes:'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'},
             hide:false//{ when: 'mouseout', fixed: true }
         });
     });
@@ -151,7 +161,7 @@ jQuery(document).ready(function () {
 */
 
 //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
-    $(".-bloom-translationGroup").each(function(){
+    $(".bloom-translationGroup").each(function(){
       var contentElements = $(this).find("textarea, div");
       contentElements.sort(function (a, b) {
         var scoreA = $(a).hasClass('bloom-content1') + ($(a).hasClass('bloom-content2')*2)+ ($(a).hasClass('bloom-content3')*3);
@@ -187,6 +197,18 @@ jQuery(document).ready(function () {
         }
     });
 
+
+  //--------------------------------
+  //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
+
+  //do it initially
+  $(".bloom-verticalAlign").VAlign();
+  //reposition as needed
+  $(".bloom-verticalAlign").resize(function() { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
+    $(this).VAlign();
+  });
+
+  /* Defines a starts-with function*/
     if (typeof String.prototype.startsWith != 'function') {
         String.prototype.startsWith = function (str) {
             return this.indexOf(str) == 0;
@@ -284,7 +306,7 @@ jQuery(document).ready(function () {
     Cleanup();
 
   //make images look click-able when you cover over them
-    jQuery(".imageHolder").mouseenter(function () {
+    jQuery(".bloom-imageContainer").mouseenter(function () {
     $(this).prepend("<button class='changeImageButton' title='Change Image'></button>");
         $(this).addClass('hoverUp');
     }).mouseleave(function () {
@@ -329,7 +351,7 @@ jQuery(document).ready(function () {
 
     // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-    $('div.-bloom-metaData').each(function () {
+    $('div.bloom-metaData').each(function () {
         if ($(this).css('cursor') == 'pointer') {
             $(this).click(function () {
                 event = document.createEvent('MessageEvent');
@@ -360,7 +382,7 @@ jQuery(document).ready(function () {
 
     //copy source texts out to their own div, where we can make a bubble with tabs out of them
     //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
-    $("*.-bloom-translationGroup").each(function () {
+    $("*.bloom-translationGroup").each(function () {
         if ($(this).find("textarea").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
@@ -377,7 +399,8 @@ jQuery(document).ready(function () {
     //and when their parent is resized by the user, we need to scale again:
     $("img").each(function () {
         $(this).parent().resize(function () {
-            $(this).find("img").scaleImage({ scale: "fit" });
+        $(this).find("img").scaleImage({ scale: "fit" });
+        ResetRememberedSize(this);
         });
     });
 });

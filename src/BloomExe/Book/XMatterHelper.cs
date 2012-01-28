@@ -97,7 +97,7 @@ namespace Bloom.Book
 			_dom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
-			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[contains(@class,'-bloom-dataDiv')]");
+			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[contains(@class,'bloom-dataDiv')]");
 
 			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
@@ -135,7 +135,7 @@ namespace Bloom.Book
 		/// <param name="storage"></param>
 		public static void RemoveExistingXMatter(XmlDocument dom)
 		{
-			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'-bloom-frontMatter')]"))
+			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]"))
 			{
 				div.ParentNode.RemoveChild(div);
 			}

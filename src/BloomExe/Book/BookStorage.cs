@@ -449,7 +449,7 @@ namespace Bloom.Book
 			var ids = new List<string>();
 			var builder = new StringBuilder();
 
-			Ensure(dom.SafeSelectNodes("//div[contains(@class,'-bloom-page')]").Count >0, "Must have at least one page", builder);
+			Ensure(dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count >0, "Must have at least one page", builder);
 			EnsureIdsAreUnique(dom, "textarea", ids, builder);
 			EnsureIdsAreUnique(dom, "p", ids, builder);
 			EnsureIdsAreUnique(dom, "img", ids, builder);

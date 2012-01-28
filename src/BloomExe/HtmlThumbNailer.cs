@@ -99,9 +99,9 @@ namespace Bloom
 						_browser.Width = _browser.Document.ActiveElement.ScrollWidth; //NB: 0 here at one time was traced to the html header <!DOCTYPE html> was enought to get us to 0
 */
 
-					var div = _browser.Document.ActiveElement.GetElements("//div[contains(@class, '-bloom-page')]").First();
+					var div = _browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").First();
 					if (div == null)
-						throw new ApplicationException("thumbnails found now div with a class of -Bloom-Page");
+						throw new ApplicationException("thumbnails found now div with a class of bloom-Page");
 
 					_browser.Height = div.ScrollHeight;
 					_browser.Width = div.ScrollWidth;
