@@ -97,7 +97,7 @@ namespace Bloom.Book
 			_dom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
-			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[contains(@class,'bloom-dataDiv')]");
+			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
 			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{

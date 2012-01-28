@@ -97,7 +97,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
 		{
-			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-dataDiv')]", 1);
+			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']", 1);
 		}
 
 		[Test]

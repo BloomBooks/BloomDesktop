@@ -1171,11 +1171,11 @@ namespace Bloom.Book
 
 		private XmlElement GetOrCreateDataDiv()
 		{
-			var dataDiv = RawDom.SelectSingleNode("//div[@class='bloom-dataDiv']") as XmlElement;
+			var dataDiv = RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
 			if (dataDiv == null)
 			{
 				dataDiv = RawDom.CreateElement("div");
-				dataDiv.SetAttribute("class", "bloom-dataDiv");
+				dataDiv.SetAttribute("id", "bloomDataDiv");
 				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
 			}
 			return dataDiv;
@@ -1300,7 +1300,7 @@ namespace Bloom.Book
 					{
 						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
 					}
-					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@class='bloom-dataDiv']").OuterXml);
+					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@id='bloomDataDiv']").OuterXml);
 
 
 				}

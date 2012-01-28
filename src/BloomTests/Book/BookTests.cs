@@ -621,8 +621,8 @@ namespace BloomTests.Book
 			_documentDom.LoadXml(@"<html><head></head><body><div data-book='hello'>world</div></body></html>");
 			var book = CreateBook();
 			book.UpdateVariablesAndDataDiv(_documentDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@class='bloom-dataDiv']",1);//NB microsoft uses 1 as the first. W3c uses 0.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='hello' and text()='world']",1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']",1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and text()='world']",1);
 		}
 
 		[Test]
@@ -633,26 +633,26 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages("okm", "kbt");
 			book.UpdateVariablesAndDataDiv(_documentDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
 		}
 		[Test]
 		public void UpdateDataDiv_ThirdContentLangTurnedOff_RemovedFromDataDiv()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html><head><div class='bloom-dataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			_documentDom.LoadXml(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages(null, null);
 			book.UpdateVariablesAndDataDiv(_documentDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='contentLanguage3']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3']", 0);
 		}
 
 		[Test]
 		public void UpdateDataDiv_DomHas2ContentLanguages_PulledIntoBookProperties()
 		{
 			_documentDom = new XmlDocument();
-			_documentDom.LoadXml(@"<html><head><div class='bloom-dataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			_documentDom.LoadXml(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.UpdateVariablesAndDataDiv(_documentDom);
 			Assert.AreEqual("okm", book.MultilingualContentLanguage2);
@@ -674,9 +674,9 @@ namespace BloomTests.Book
 			book.RawDom.SelectSingleNode("//body").AppendChild(e);
 
 			book.UpdateVariablesAndDataDiv(_documentDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@class='bloom-dataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='hello' and @lang='en' and text()='hi']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-dataDiv']/div[@data-book='hello' and @lang='fr' and text()='bonjour']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='en' and text()='hi']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='fr' and text()='bonjour']", 1);
 		}
 
 		[Test]
@@ -688,8 +688,8 @@ namespace BloomTests.Book
 
 
 			book.UpdateVariablesAndDataDiv(_documentDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='bloom-dataDiv']/div[@data-book='user']");
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='bloom-dataDiv']/div[@data-library]");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
 		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
