@@ -6,7 +6,7 @@ textarea:not([lang="en"])
 	display:none;
 }
 
-*[lang="en"][class~="-bloom-showNational"]
+*[lang="en"][class~="bloom-showNational"]
 {
 	display: inline;
 }

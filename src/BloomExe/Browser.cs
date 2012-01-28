@@ -297,12 +297,12 @@ namespace Bloom
 				if (_pageDom == null)
 					return;
 
-				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'bloom-page')]");
 				if (destinationDomPage == null)
 					return;
 				var expectedPageId = destinationDomPage["id"];
 
-				var browserPageId = bodyDom.SelectSingleNode("//body/div[contains(@class,'-bloom-page')]");
+				var browserPageId = bodyDom.SelectSingleNode("//body/div[contains(@class,'bloom-page')]");
 				if (browserPageId == null)
 					return;//why? but I've seen it happen
 

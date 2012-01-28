@@ -9,7 +9,7 @@ BUTTON#editCopyrightAndLicense
 for DIVS with this class, we have javascript which toggles the contentEditable attribute based on the border begin transparent or not*/
 	border: 1px solid transparent !important;
 }
-DIV.-bloom-metaData TEXTAREA
+DIV.bloom-metaData TEXTAREA
 {
 	border: 1px solid transparent;
 /*jscript will translate to read only*/
@@ -21,7 +21,7 @@ DIV.ui-sourceTextsForBubble
 	width: 198px;
 	margin-top: 10px;
 }
-DIV.ui-bloomSourceTextsBubble DIV.ui-tooltip-content
+DIV.uibloomSourceTextsBubble DIV.ui-tooltip-content
 {
 	width: 307px;
 }
@@ -34,7 +34,7 @@ DIV DIV.ui-sourceTextsForBubble TEXTAREA
 	width: 320px;
 	margin: 11px 0 0;
 }
-.ui-tooltip .qtip .ui-bloomSourceTextsBubble
+.ui-tooltip .qtip .uibloomSourceTextsBubble
 {
 	width: 293px !important;
 	height: 138px;

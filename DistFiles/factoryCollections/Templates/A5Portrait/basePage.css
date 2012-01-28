@@ -48,7 +48,7 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
-DIV.-bloom-dataDiv
+DIV.bloom-dataDiv
 {
 	display: none;
 }
@@ -58,24 +58,24 @@ TEXTAREA
 /*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: hidden;
 }
-DIV.-bloom-page
+DIV.bloom-page
 {
 	display: block;
 	page-break-after: auto;
 	background-color: #FFFFFF;
 }
-DIV.-bloom-dataPage
+DIV.bloom-dataPage
 {
 	display: none;
 }
 @media screen
 {
-	DIV.-bloom-page
+	DIV.bloom-page
 	{
 		border: 1px solid #000000;
 	}
 }
-DIV.imageWholePage DIV.imageHolder
+DIV.imageWholePage DIV.bloom-imageContainer
 {
 	/*+placement:shift 44px 50px;*/
 	position: relative;
@@ -88,13 +88,13 @@ DIV.imageWholePage DIV.imageHolder
 	text-align: center;
 	margin-left: 1cm;
 }
-.imageOnTop P.imageHolder
+.imageOnTop P.bloom-imageContainer
 {
-	height: 422px;
+	/*[disabled]height:422px;*/
 }
 .imageInMiddle .text
 {
-	position: relative;
+	/*[disabled]position:relative;*/
 }
 .centerJustify
 {

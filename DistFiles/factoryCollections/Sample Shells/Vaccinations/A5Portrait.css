@@ -45,7 +45,7 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-DIV.-bloom-page
+DIV.bloom-page
 {
 /*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
@@ -83,7 +83,7 @@ TEXTAREA
 	height: 1.6cm;
 	position: relative;
 }
-DIV.-bloom-page:after
+DIV.bloom-page:after
 {
 	position: static;
 	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
@@ -92,7 +92,7 @@ DIV.-bloom-page:after
 	top: 20.3cm;
 }
 /*Image On Top*/
-DIV.imageOnTop DIV.imageHolder
+DIV.imageOnTop DIV.bloom-imageContainer
 {
 	width: 490px;
 	/*+placement:shift 34px 21px;*/
@@ -100,13 +100,13 @@ DIV.imageOnTop DIV.imageHolder
 	left: 34px;
 	top: 21px;
 }
-DIV.imageOnTop.bloom-trilingual DIV.imageHolder
+DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
 {
 	height: 8cm;
 	text-align: center;
 	margin-top: 1cm;
 }
-DIV.imageOnTop DIV.-bloom-translationGroup
+DIV.imageOnTop DIV.bloom-translationGroup
 {
 	height: 291px;
 	/*+placement:shift 20px -14px;*/
@@ -115,7 +115,7 @@ DIV.imageOnTop DIV.-bloom-translationGroup
 	top: -14px;
 	width: 464px;
 }
-DIV.imageOnTop.bloom-trilingual DIV.-bloom-translationGroup
+DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
 {
 	height: 357px;
 	/*+placement:shift 20px -50px;*/
@@ -208,7 +208,7 @@ DIV.imageInMiddle DIV.top
 	left: 2px;
 	top: -32px;
 }
-.imageOnBottom P.imageHolder
+.imageOnBottom P.bloom-imageContainer
 {
 	height: 9cm;
 	/*+placement:anchor-bottom-left 18px 106px;*/
@@ -217,7 +217,7 @@ DIV.imageInMiddle DIV.top
 	bottom: 106px;
 	width: 466px;
 }
-DIV.imageOnBottom DIV.-bloom-translationGroup
+DIV.imageOnBottom DIV.bloom-translationGroup
 {
 	height: 235px;
 	/*+placement:shift 22px 77px;*/
@@ -227,7 +227,7 @@ DIV.imageOnBottom DIV.-bloom-translationGroup
 	width: 459px;
 }
 /*Image Whole Page*/
-DIV.imageWholePage DIV.imageHolder
+DIV.imageWholePage DIV.bloom-imageContainer
 {
 	/*+placement:shift 20px 68px;*/
 	position: relative;
@@ -236,7 +236,7 @@ DIV.imageWholePage DIV.imageHolder
 	width: 520px;
 	height: 668px;
 }
-DIV.imageInMiddle DIV.imageHolder
+DIV.imageInMiddle DIV.bloom-imageContainer
 {
 	/*+placement:shift 49px 72px;*/
 	position: relative;
@@ -244,7 +244,7 @@ DIV.imageInMiddle DIV.imageHolder
 	top: 72px;
 	width: 475px;
 }
-DIV.imageOnBottom DIV.imageHolder
+DIV.imageOnBottom DIV.bloom-imageContainer
 {
 	/*+placement:shift 37px 140px;*/
 	position: relative;
@@ -257,7 +257,7 @@ DIV.imageOnBottom DIV.imageHolder
 	height: 18.9cm;
 	margin-top: 1cm;
 }
-.imageWholePage P.imageHolder
+.imageWholePage DIV.bloom-imageContainer
 {
 	height: 18.6cm;
 	width: 12cm;
@@ -286,19 +286,11 @@ DIV.imageWholePage TABLE
 	height: 786px;
 }
 /*Text Whole Page
-It's tricky to get the text to align vertically. We do it with a div wrapped in  minimal table.*/
-DIV.textWholePage DIV
+The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
+DIV.textWholePage DIV.bloom-translationGroup DIV
 {
-	overflow: hidden;
-	max-height: 660px;
-	min-height: 40px;
-}
-DIV.textWholePage TABLE
-{
-	width: 470px;
-	height: 668px;
-	/*+placement:shift 48px 59px;*/
-	position: relative;
-	left: 48px;
-	top: 59px;
+	margin-top: 26px;
+	margin-left: 34px;
+	margin-right: 39px;
+	min-height: 67px;
 }

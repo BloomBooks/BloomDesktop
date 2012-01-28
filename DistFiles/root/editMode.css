@@ -106,10 +106,10 @@ TEXTAREA.province
 	background-color: #C30606 !important;
 }
 /*for use with qtip, showing what language each textarea is in
-.ui-tooltip-bloomLang
+.ui-tooltipbloomLang
 {
 }
-.ui-tooltip-bloomLang .ui-tooltip-titlebar
+.ui-tooltipbloomLang .ui-tooltip-titlebar
 {
 background-color: red;
 color: #FFFFFF;

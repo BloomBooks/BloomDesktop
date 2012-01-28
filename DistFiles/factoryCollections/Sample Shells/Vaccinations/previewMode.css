@@ -16,12 +16,12 @@ BODY
 	{
 		/*[id]0*/background-color: #363333;
 	}
-	DIV.-bloom-page
+	DIV.bloom-page
 	{
 		border: 1px solid #000000 !important;
 	}
 }
-DIV.-bloom-page.coverColor
+DIV.bloom-page.coverColor
 {
 	background-color: #D8ADAD;
 }
@@ -43,7 +43,7 @@ TEXTAREA
 	left: 10px;
 	bottom: -49px;
 }
-DIV.-bloom-page
+DIV.bloom-page
 {
 /*this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
 	border: 1px solid #FFFFFF;
@@ -85,7 +85,7 @@ INPUT.coverColor
 {
 	background-color: #D8ADAD;
 }
-DIV.-bloom-page.cover:after
+DIV.bloom-page.cover:after
 {
 	/*+placement:shift 0px 0px;*/
 	position: relative;
@@ -94,7 +94,7 @@ DIV.-bloom-page.cover:after
 	visibility: hidden;
 /*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
 }
-DIV.-bloom-startPageNumbering
+DIV.bloom-startPageNumbering
 {
 	counter-reset: pageNumber;
 }
