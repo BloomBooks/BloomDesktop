@@ -287,7 +287,9 @@ namespace Bloom.Edit
 			 string currentPath = imageElement.GetAttribute("src");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
-			if (File.Exists(existingImagePath))
+
+			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
+			if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
 			{
 				try
 				{
