@@ -1,0 +1,94 @@
+/*+init {*/
+*
+{
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 1em;
+}
+H1, H2, H3, H4, H5, H6, TH
+{
+	font-weight: inherit;
+}
+ADDRESS, CITE, DFN, VAR
+{
+	font-style: inherit;
+}
+CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON
+{
+	font-family: inherit;
+}
+TABLE
+{
+	border-spacing: 0;
+}
+TH
+{
+	text-align: left;
+}
+HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR
+{
+	position: static;
+}
+INPUT[type=hidden]
+{
+	display: none !important;
+}
+FIELDSET, A IMG
+{
+	border: 0;
+}
+BODY
+{
+	font-size: 100%;
+	line-height: 1.5;
+}
+/*+}*/
+BODY
+{
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+}
+TEXTAREA, DIV.bloom-editable
+{
+	resize: none;
+/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: hidden;
+}
+DIV.bloom-page
+{
+	display: block;
+	page-break-after: auto;
+	background-color: #FFFFFF;
+}
+DIV#bloomDataDiv
+{
+	display: none;
+}
+@media screen
+{
+	DIV.bloom-page
+	{
+		border: 1px solid #000000;
+	}
+}
+DIV.imageWholePage DIV.bloom-imageContainer
+{
+	/*+placement:shift 44px 50px;*/
+	position: relative;
+	left: 44px;
+	top: 50px;
+	width: 465px;
+}
+.centered
+{
+	text-align: center;
+	margin-left: 1cm;
+}
+.centerJustify
+{
+	text-align: center;
+}
+P
+{
+	margin-left: 1cm;
+}
