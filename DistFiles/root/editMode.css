@@ -75,24 +75,17 @@ BUTTON.moveButton
 	border: 0 hidden #000000;
 	z-index: 1000;
 }
-TEXTAREA
+TEXTAREA, DIV.bloom-editable
 {
 	border: thin solid #C0B9B9;
-}
-DIV.editable
-{
-	border: thin solid #C0B9B9;
+	/*[disabled]min-height:34px;*/
 }
 IMG.hoverUp
 {
 	background-color: #DFDFDF;
 	border: 1px outset #000000;
 }
-TEXTAREA:focus
-{
-	border: 3px solid #A03C50;
-}
-DIV.editable:focus
+TEXTAREA:focus, DIV.bloom-editable:focus
 {
 	border: 3px solid #A03C50;
 }

@@ -48,11 +48,7 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
-DIV.bloom-dataDiv
-{
-	display: none;
-}
-TEXTAREA
+TEXTAREA, DIV.bloom-editable
 {
 	resize: none;
 /*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -64,7 +60,7 @@ DIV.bloom-page
 	page-break-after: auto;
 	background-color: #FFFFFF;
 }
-DIV.bloom-dataPage
+DIV#bloomDataDiv
 {
 	display: none;
 }
@@ -87,14 +83,6 @@ DIV.imageWholePage DIV.bloom-imageContainer
 {
 	text-align: center;
 	margin-left: 1cm;
-}
-.imageOnTop P.bloom-imageContainer
-{
-	/*[disabled]height:422px;*/
-}
-.imageInMiddle .text
-{
-	/*[disabled]position:relative;*/
 }
 .centerJustify
 {

@@ -278,20 +278,22 @@ namespace Bloom.Book
 
 		private static void PrepareElementsOnPageOneLanguage(XmlElement pageDiv, string isoCode)
 		{
-			foreach (var element in GetEditableGroupsInSinglePageDiv(pageDiv))
+			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
 			{
-				MakeVernacularElementForOneGroup(element, isoCode, "textarea");
-				MakeVernacularElementForOneGroup(element, isoCode, "*[@contentEditable='true' or @contenteditable='true']");
+				MakeVernacularElementForOneGroup(groupElement, isoCode, "*");
+				//remove any elements in teh translationgroup which don't have a lang
+				foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang)]"))
+				{
+					elementWithoutLanguage.ParentNode.RemoveChild(elementWithoutLanguage);
+				}
 			}
-			foreach (var element in GetParagraphsWithFieldsAndTextInSinglePageDiv(pageDiv))
-			{
-				MakeVernacularElementForOneGroup(element, isoCode, "p");
-			}
+
+
 			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
 			foreach (
 				XmlElement element in
-					pageDiv.SafeSelectNodes(
-						string.Format("//textarea[not(@lang)] | //*[(@contentEditable='true'  or @contenteditable='true') and not(@lang)]"))
+					pageDiv.SafeSelectNodes(//NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
+						"//textarea[not(@lang)] | //*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
 				)
 			{
 				element.SetAttribute("lang", isoCode);
@@ -326,30 +328,15 @@ namespace Bloom.Book
 			if (alreadyInVernacular.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 				return;
 
-
 			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
-
-			//REVIEW... shellbooks should have lang on all, but what would we do for simple templates? //Debug.Assert(prototype.HasAttribute("lang"));
-
-			if (prototype.HasAttribute("lang"))
-			{
-				if (elementTag == "p") // don't leave copies around from the template language
-				{
-					prototype.SetAttribute("lang", vernacularCode);
-				}
-				else // for textareas, we *do* want copies around, because they are used for prompting in shellbooks
-				{
-					XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-					vernacularCopy.SetAttribute("lang",vernacularCode);
-					//if there is an id, get rid of it, because we don't want 2 elements with the same id
-					vernacularCopy.RemoveAttribute("id");
-
-					vernacularCopy.InnerText = string.Empty;
-				}
-			}
+			XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
+			vernacularCopy.SetAttribute("lang",vernacularCode);
+			//if there is an id, get rid of it, because we don't want 2 elements with the same id
+			vernacularCopy.RemoveAttribute("id");
+			vernacularCopy.InnerText = string.Empty;
 		}
 
 		/// <summary>
@@ -357,13 +344,13 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement pageDiv)
-		{
-			foreach (XmlElement element in pageDiv.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
-			{
-				yield return (XmlElement) element.ParentNode;
-			}
-		}
+//		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement pageDiv)
+//	    {
+////			foreach (XmlElement element in pageDiv.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
+////	        {
+////	        	yield return (XmlElement) element.ParentNode;
+////	        }
+//	    }
 
 
 		/// <summary>

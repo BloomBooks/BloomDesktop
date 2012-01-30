@@ -11,23 +11,21 @@
 <body>
 	<!-- FRONT COVER --->
 	<div class="bloom-page cover coverColor bloom-frontMatter" data-page="required singleton" id="74731b2d-18b0-420f-ac96-6de20f659810">
+		<div data-book="bookTitle" data-hint="Book title" class="bloom-editable vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</div>
+		<div data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 bloom-editable readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</div>
 
-		<div class="bloom-translationGroup forGroupingOnly">
-			<textarea data-book="bookTitle" data-hint="Book title" class="vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</textarea>
-		</div>
-
-		<div  class="bloom-imageContainer"><img  class='picture' data-book='coverImage' src="placeholder.png" /></div>
+		<div  class="bloom-imageContainer"><img  data-book='coverImage' src="placeholder.png" /></div>
 
 		<div class="coverBottomLangName" >
-		   <div data-library="nameOfLanguage" lang="N1"  class="">{Lang in N1}</div>
+		   <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
 			<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get too copies
 			<div data-library="nameOfLanguage" lang="N2"  class="">{Lang in N2}</div> -->
 		</div>
 		<div class="coverBottomBookTopic">
 			<!-- NB: don't be tempted to move the data-hint up to the div. If you do, it will be visible even when the user isn't allowed to edit it. Down on the textarea, jscript will scipt it when it's readonly -->
-			<textarea data-book="topic" lang="N1" data-hint="Enter the kind of book this is. E.g. Health, Maths" class="readOnlyInTranslationMode ">{Topic in N1}</textarea>
+			<div data-book="topic" lang="N1" data-hint="Enter the kind of book this is. E.g. Health, Maths" class="topicN1 readOnlyInTranslationMode ">{Topic in N1}</div>
 			<!-- languageDisplay.css would hide an "N2" if we only had one national lang -->
-			<textarea data-book="topic" lang="N2"  class="readOnlyInTranslationMode ">{Topic in N2}</textarea>
+			<div data-book="topic" lang="N2"  class="topicN2 readOnlyInTranslationMode ">{Topic in N2}</div>
 		</div>
 	</div >
 
@@ -35,14 +33,12 @@
 	<div class="bloom-page titlePage bloom-frontMatter" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
 		<div class="pageLabel" lang="en">Title Page</div>
 		<div id="titePageTitleBlock">
-			  <div class="bloom-translationGroup forGroupingOnly">
-				<div data-book='bookTitle' class="titleV" readonly="readonly" lang="V">{Title in Vernacular}</div>
-			  </div>
-			<textarea data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</textarea>
-			<textarea data-book="bookTitle" data-hint="Title in {N2}" class="titleN2 readOnlyInTranslationMode "  lang="N2">{Title In National Language 2}</textarea>
+			<div data-book='bookTitle' class="titleV" readonly="readonly" lang="V">{Title in Vernacular}</div>
+			<div data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</div>
+			<div data-book="bookTitle" data-hint="Title in {N2}" class="titleN2 readOnlyInTranslationMode "  lang="N2">{Title In National Language 2}</div>
 		</div>
 
-		<textarea class="credits " lang="N1" data-hint="The contributions made by writers, illustrators, editors, etc."> </textarea>
+		<div class="credits bloom-editable" lang="N1" data-hint="The contributions made by writers, illustrators, editors, etc."> </div>
 
 		<div id="languageInformation">
 			<div data-library="nameOfLanguage" lang="N1" class="langName ">{Lang in N1}</div>
@@ -66,7 +62,7 @@
 			<div class="licenseDescription" lang="N1">{License Description}</div>
 		</div>
 		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
-		<textarea class="versionAcknowledgments readOnlyInEditMode " lang="N1" data-hint="Acknowledgments for translated version"></textarea>
+		<div class="versionAcknowledgments bloom-editable readOnlyInEditMode" lang="N1" data-hint="Acknowledgments for translated version"></div>
 	</div>
 	</body>
 </html>

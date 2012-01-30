@@ -171,11 +171,17 @@ namespace Bloom
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
 
+			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
+			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
+			//it will continue to show in firebug, so i won't forget about it
+
+			errorsToHide.Add("jquery.js at line 622");
 			WebBrowser.JavascriptError += (sender, error) =>
 			{
-				if(! errorsToHide.Any(matchString=> (error.Filename+error.Message).Contains(matchString)))
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a JScript error in {0} at line {1}: {2}",
-																 error.Filename, error.Line, error.Message);
+				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
+										error.Filename, error.Line, error.Message);
+				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 			};
 			RaiseGeckoReady();
 	   }

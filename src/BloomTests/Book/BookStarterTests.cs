@@ -164,7 +164,7 @@ namespace BloomTests.Book
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover ')]//textarea[@lang='xyz' and contains(@data-book, 'bookTitle') and not(text())]", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover ')]//div[@lang='xyz' and contains(@data-book, 'bookTitle') and not(text())]", 1);
 		}
 
 		[Test]
@@ -457,27 +457,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-trilingual')]", 1);
 		}
 
-		[Test]
-		public void PrepareElementsOnPage_HasEditableDiv_AddsVernacularDiv()
-		{
-			var contents = @"<div class='bloom-page'>
-						<table class='bloom-translationGroup'> <!-- table is used for vertical alignment of the div on some pages -->
-						 <td>
-							<div contentEditable='true' lang='en'>This is some English</div>
-						</td>
-						</table>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement) dom.SafeSelectNodes("//div[@class='bloom-page']")[0],_librarySettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true']", 4);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true' and @lang='en']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@contentEditable='true' and @lang='xyz']", 1);
-		}
 
 		[Test]
 		public void PrepareElementsOnPage_HasNonEditableDiv_LeavesAlone()
@@ -516,23 +496,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
 		}
 
-		[Test]
-		public void PrepareElementsOnPage_HasTextAreaInsideParagraphTranslationGroup_MakesVernacular()
-		{
-			var contents = @"<div class='bloom-page bloom-translationGroup'>
-					<p>
-						<textarea lang='en'>This is some English</textarea>
-					</p>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
 
-			BookStarter.PrepareElementsOnPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],_librarySettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
-		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
