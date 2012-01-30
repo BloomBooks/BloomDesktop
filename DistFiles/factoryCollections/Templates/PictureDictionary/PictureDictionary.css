@@ -1,0 +1,140 @@
+BODY
+{
+}
+TEXTAREA
+{
+	text-align: center;
+	margin-bottom: 0;
+	padding-bottom: 0px;
+	padding-top: 0px;
+	margin-top: 0px;
+	height: 39px;
+}
+DIV.wordsDiv TEXTAREA.contentLanguage1
+{
+	font-weight: bold;
+}
+DIV.wordsDiv TEXTAREA
+{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	height: 24px;
+	width: 188px;
+	display: inline;
+	line-height: 0.9;
+	text-align: left;
+}
+DIV.bloom-imageContainer
+{
+	height: 114px;
+	width: 188px;
+	display: block;
+	margin-bottom: 4px;
+	padding-bottom: 0px;
+	padding-top: 0px;
+	margin-top: 0px;
+}
+DIV.wordsDiv
+{
+}
+DIV.domain
+{
+	font: 24pt sans-serif;
+	text-align: center;
+	margin-top: 14px;
+	margin-left: 20px;
+	margin-right: 23px;
+}
+DIV.domain DIV
+{
+	/*[disabled]display:block;*/
+	min-width: 50px;
+	height: 41px;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+	/*[empty]margin-right:;*/
+}
+DIV.domain DIV.bloom-content2
+{
+	font-style: italic;
+	font-size: 18pt;
+	vertical-align: baseline;
+	/*[disabled]+placement:shift 0px -8px;*/
+	display: inline-block;
+	min-width: 159px;
+	margin-right: 14px;
+}
+.bloom-trilingual DIV.domain DIV.bloom-content3:before
+{
+	content: "/  ";
+}
+DIV.domain DIV.bloom-content3
+{
+	font-size: 18pt;
+	display: inline-block;
+	min-width: 157px;
+}
+DIV.wordAndPicture
+{
+	width: 144px;
+	text-align: center;
+}
+DIV.Images6 IMG
+{
+	margin-top: 0px;
+	padding-top: 0px;
+	padding-bottom: 1px;
+	margin-bottom: 0px;
+}
+/*NB: Child(1) is actually the domain title. So we start with 2*/
+DIV.wordAndPicture:nth-child(2)
+{
+	/*+placement:anchor-top-right 349px 116px;*/
+	position: absolute;
+	right: 349px;
+	top: 116px;
+}
+DIV.wordAndPicture:nth-child(3)
+{
+	/*+placement:anchor-top-right 75px 114px;*/
+	position: absolute;
+	right: 75px;
+	top: 114px;
+}
+DIV.wordAndPicture:nth-child(4)
+{
+	/*+placement:anchor-top-right 349px 332px;*/
+	position: absolute;
+	right: 349px;
+	top: 332px;
+}
+DIV.wordAndPicture:nth-child(5)
+{
+	/*+placement:anchor-top-right 75px 338px;*/
+	position: absolute;
+	right: 75px;
+	top: 338px;
+}
+DIV.wordAndPicture:nth-child(6)
+{
+	/*+placement:anchor-top-right 349px 549px;*/
+	position: absolute;
+	right: 349px;
+	top: 549px;
+}
+DIV.wordAndPicture:nth-child(7)
+{
+	/*+placement:anchor-top-right 69px 559px;*/
+	position: absolute;
+	right: 69px;
+	top: 559px;
+}
+TD
+{
+	vertical-align: middle;
+	text-align: center;
+}

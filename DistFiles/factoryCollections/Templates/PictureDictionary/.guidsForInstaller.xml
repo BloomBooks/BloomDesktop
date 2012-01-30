@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="A5Portrait.css" Guid="16853c4d-829c-4963-86c9-23f232871f46" />
+  <File Id="placeHolder.png1" Guid="b5a88671-add7-4472-9a51-307028b2009f" />
+  <File Id="templatePages.htm1" Guid="53d85f22-6c4b-4d50-a8b2-fc81bf055169" />
+  <File Id="basePage.css2" Guid="a741e984-1cf2-4614-9ab3-dd3c63ef9369" />
+  <File Id="previewMode.css2" Guid="395e8909-8201-4a22-89f8-94d45b995e64" />
+  <File Id="thumbnail.png1" Guid="16b4c918-880a-40f7-b957-d29745ff42c3" />
+  <File Id="A5Portrait.css1" Guid="da0181f5-0921-45b6-a34e-06ea872275c6" />
+  <File Id="templatePages.htm" Guid="5c1f1874-f1d5-4fd8-a8c1-ad8f04a561b2" />
+  <File Id="basePage.css3" Guid="a9911bf1-dc13-4fd5-8018-e6a544ce218e" />
+  <File Id="placeHolder.png2" Guid="16bd8477-73dc-4a72-a640-d88a5b99aa79" />
+  <File Id="previewMode.css3" Guid="b5303e92-23aa-48f7-adad-f1a2c32be793" />
+  <File Id="thumbnail.png3" Guid="d609a0cd-97de-4a34-9c41-18c466403a99" />
+  <File Id="languageDisplay.css2" Guid="d5caebdd-b609-4613-961a-2339894b801c" />
+  <File Id="placeHolder.png3" Guid="3ba7932e-494c-4fb0-8fb3-3df097c5288d" />
+  <File Id="thumbnail.png2" Guid="e2aa64cc-969b-465c-8d5c-09a341a4939c" />
+  <File Id="A5Portrait.css2" Guid="1870d3cd-efa3-4ba8-87a8-dfef0f9fa961" />
+  <File Id="languageDisplay.css3" Guid="d150e33d-c4f7-4290-9a8d-fc27c5414374" />
+  <File Id="PictureDictionary.css" Guid="c4c4dec2-0abb-4db4-9a9b-d4a06734a9be" />
+  <File Id="placeHolder.png4" Guid="8031934f-8d56-4262-9582-9af248c69db7" />
+</InstallerMetadata>
