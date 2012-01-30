@@ -141,7 +141,7 @@ jQuery(document).ready(function () {
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     jQuery("textarea").blur(function () { this.innerHTML = this.value; });
 
-
+	SetCopyrightAndLicenseButtonVisibility();
 
 /*
     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
@@ -348,6 +348,10 @@ jQuery(document).ready(function () {
             $(this).attr("contentEditable", "true");
         }
     });
+	
+	$('div.bloom-editable').each(function () {
+		$(this).attr('contentEditable', 'true');
+	});
 
     // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
@@ -416,7 +420,11 @@ function SetCopyrightAndLicense(data) {
     $("DIV.licenseDescription").text(data.licenseDescription);
     $("DIV.licenseNotes").text(data.licenseNotes);
     $("IMG[data-book='licenseImage']").attr("src", data.licenseImage+"?"+ new Date().getTime());//the time thing makes the browser reload it even if it's the same name
-    var shouldShowButton = ! $("DIV.licenseDescription").text();
+	SetCopyrightAndLicenseButtonVisibility();
+}
+
+function SetCopyrightAndLicenseButtonVisibility() {
+    var shouldShowButton = ! ($("DIV.copyright").text());
     $("button#editCopyrightAndLicense").css("display",shouldShowButton ? "inline" : "none");
 }
 
@@ -459,7 +467,7 @@ function FindOrCreateTopicDialogDiv() {
     return dialogContents;
 }
 function SetupTopicDialog() {
-    $("textarea[data-book='topic']").click(function(){
+    $("div[data-book='topic']").click(function(){
        // url = GetDictionary().urlOfUIFiles + "/topicDialog.htm";
         var dialogContents = FindOrCreateTopicDialogDiv();
         var dlg = $(dialogContents).dialog({
@@ -470,7 +478,7 @@ function SetupTopicDialog() {
                         var t = $("ol#topics li.ui-selected");
                         if(t.length)
                         {
-                            $("textarea[data-book='topic']").text(t[0].innerHTML);
+                            $("div[data-book='topic']").text(t[0].innerHTML);
                         }
                         $(this).dialog("close");
                     }

@@ -2,7 +2,7 @@
 .cover .vernacularBookTitle
 {
 	font-size: 30pt;
-	height: 3.7cm;
+	height: 3.3cm;
 	left: -26px;
 	margin-left: 2cm;
 	margin-top: 1.5cm;
@@ -15,30 +15,47 @@
 	left: -5px;
 	top: 6px;
 }
+.cover .titleN1
+{
+	font-size: 12pt;
+	height: 0.8cm;
+	left: -26px;
+	margin-left: 2cm;
+	margin-top: 1.5cm;
+	position: relative;
+	text-align: center;
+	top: -5px;
+	width: 423px;
+	/*+placement:anchor-top-left -4px 142px;*/
+	position: absolute;
+	left: -4px;
+	top: 142px;
+}
 .cover DIV.bloom-imageContainer
 {
 	height: 8.3cm;
 	width: 432px;
-	/*+placement:anchor-top-left 66px 227px;*/
+	/*+placement:anchor-top-left 66px 267px;*/
 	position: absolute;
 	left: 66px;
-	top: 227px;
+	top: 267px;
 }
 DIV.coverBottomBookTopic
 {
 	overflow: hidden;
 	text-align: right;
-	width: 265px;
-	height: 35px;
-	/*+placement:shift 266px 720px;*/
-	position: relative;
-	left: 266px;
-	top: 720px;
+	width: 237px;
+	height: 75px;
+	/*+placement:anchor-bottom-right 29px 0px;*/
+	position: absolute;
+	right: 29px;
+	bottom: 0px;
+	min-height: 20px;
 }
-DIV.coverBottomBookTopic TEXTAREA
+DIV.coverBottomBookTopic DIV.topicN1
 {
-	width: 170px;
-	height: 33px;
+	height: 106px;
+	min-height: 20px;
 }
 DIV.coverBottomLangName
 {
@@ -48,73 +65,74 @@ DIV.coverBottomLangName
 	overflow: hidden;
 	position: absolute;
 	text-align: left;
-	width: 5.9cm;
+	width: 8.4cm;
 }
 /*Title Page*/
-.titlePage
+DIV.titlePage
 {
 	margin: 0;
 	padding: 0;
 	text-align: center;
-}
-DIV#languageLocation
-{
-	/*+placement:shift 0px 31px;*/
-	position: relative;
-	left: 0px;
-	top: 31px;
-}
-TEXTAREA.district
-{
-	width: 169px;
-	height: 33px;
-}
-DIV.titlePage DIV#languageInformation
-{
-	/*+placement:shift 1px 129px;*/
-	position: relative;
-	left: 1px;
-	top: 129px;
-	width: 425px;
-	margin-left: 78px;
-}
-.titlePage TEXTAREA.titleN1
-{
-	font-size: 14pt;
-	text-align: center;
-	/*+placement:shift 18px 6px;*/
-	position: relative;
-	left: 18px;
-	top: 6px;
-	width: 420px;
-}
-.titlePage TEXTAREA.titleN2
-{
-	font-size: 14pt;
-	left: 21px;
-	text-align: center;
-	/*+placement:shift 20px 22px;*/
-	position: relative;
-	left: 20px;
-	top: 22px;
-	width: 421px;
-}
-.titlePage:after
-{
-	bottom: 0.2cm;
-	left: 33px;
-	position: absolute;
 }
 DIV.titlePage .titleV
 {
 	font-size: 26.1pt;
 	height: 111px;
 	text-align: center;
-	/*+placement:shift -8px 0px;*/
-	position: relative;
-	left: -8px;
+	/*+placement:anchor-top-left 16px 0px;*/
+	position: absolute;
+	left: 16px;
 	top: 0px;
 	width: 419px;
+}
+.titlePage .titleN1
+{
+	font-size: 14pt;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 121px;*/
+	position: absolute;
+	left: 16px;
+	top: 121px;
+	width: 420px;
+	height: 45px;
+}
+.titlePage .titleN2
+{
+	font-size: 14pt;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 168px;*/
+	position: absolute;
+	left: 16px;
+	top: 168px;
+	width: 420px;
+	height: 45px;
+}
+DIV.titlePage .credits
+{
+	height: 131px;
+	/*+placement:anchor-top-left 65px 318px;*/
+	position: absolute;
+	left: 65px;
+	top: 318px;
+	text-align: center;
+	width: 421px;
+}
+DIV.titlePage DIV#languageInformation
+{
+	/*+placement:shift -5px 416px;*/
+	position: relative;
+	left: -5px;
+	top: 416px;
+	width: 425px;
+	margin-left: 78px;
+}
+DIV.languageLocation
+{
+	/*+placement:anchor-top-left 6px 50px;*/
+	position: absolute;
+	left: 6px;
+	top: 50px;
+	width: 407px;
 }
 DIV#titePageTitleBlock
 {
@@ -129,7 +147,7 @@ DIV.verso
 	border: 4px solid #1E15D0;
 	text-align: center;
 }
-TEXTAREA.versionAcknowledgments
+DIV.versionAcknowledgments
 {
 	/*+placement:anchor-bottom-left 58px 38px;*/
 	position: absolute;
@@ -137,11 +155,6 @@ TEXTAREA.versionAcknowledgments
 	bottom: 38px;
 	height: 204px !important;
 	width: 457px;
-}
-DIV.license
-{
-	width: 461px;
-	height: 78px;
 }
 DIV#versoLicenseAndCopyright
 {
@@ -153,21 +166,38 @@ DIV#versoLicenseAndCopyright
 	width: 453px;
 	height: 129px;
 }
+DIV.licenseNotes
+{
+	/*+placement:anchor-top-left 3px 37px;*/
+	position: absolute;
+	left: 3px;
+	top: 37px;
+	width: 449px;
+}
+DIV.copyright
+{
+	width: 450px;
+	height: 34px;
+	/*+placement:anchor-top-left 3px 6px;*/
+	position: absolute;
+	left: 3px;
+	top: 6px;
+}
 IMG.licenseImage
 {
-	/*+placement:anchor-top-left 158px 79px;*/
+	width: 114px !important;
+	height: 34px !important;
+	/*+placement:anchor-top-left -43px 61px;*/
 	position: absolute;
-	left: 158px;
-	top: 79px;
-	/*[empty]width:;*/
-	/*[empty]height:;*/
+	left: -43px;
+	top: 61px;
 }
 BUTTON#editCopyrightAndLicense
 {
-	/*+placement:shift -15px -30px;*/
-	position: relative;
-	left: -15px;
-	top: -30px;
+	/*+placement:anchor-top-left 148px 0px;*/
+	position: absolute;
+	left: 148px;
+	top: 0px;
 	font-size: 9pt;
 }
 DIV.licenseDescription
@@ -175,24 +205,17 @@ DIV.licenseDescription
 	font-size: 8pt;
 	margin-left: 35px;
 	margin-right: 77px;
-	/*+placement:anchor-top-left -42px 7px;*/
-	position: absolute;
-	left: -42px;
-	top: 7px;
-	text-align: center;
-	width: 452px;
-	height: 0px;
+	text-align: left;
+	width: 70%;
+	height: 57px;
+	/*+placement:shift 89px 60px;*/
+	position: relative;
+	left: 89px;
+	top: 60px;
 }
 DIV.licenseUrl
 {
 	display: none;
-}
-TEXTAREA.originalAcknowledgments
-{
-	height: 268px;
-	width: 454px;
-	margin-left: 55px;
-	margin-top: 43px;
 }
 DIV.originalAcknowledgments
 {
@@ -200,23 +223,4 @@ DIV.originalAcknowledgments
 	width: 454px;
 	margin-left: 55px;
 	margin-top: 43px;
-}
-TEXTAREA.credits
-{
-	height: 131px;
-	/*+placement:shift 10px 40px;*/
-	position: relative;
-	left: 10px;
-	top: 40px;
-	text-align: center;
-	width: 421px;
-}
-DIV.copyright
-{
-	width: 450px;
-	height: 34px;
-	/*+placement:shift 0px -26px;*/
-	position: relative;
-	left: 0px;
-	top: -26px;
 }

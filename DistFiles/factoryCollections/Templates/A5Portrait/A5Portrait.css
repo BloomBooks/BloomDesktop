@@ -95,10 +95,11 @@ DIV.bloom-page:after
 DIV.imageOnTop DIV.bloom-imageContainer
 {
 	width: 490px;
-	/*+placement:shift 34px 21px;*/
-	position: relative;
+	/*+placement:anchor-top-left 34px 21px;*/
+	position: absolute;
 	left: 34px;
 	top: 21px;
+	height: 385px;
 }
 DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
 {
@@ -109,122 +110,138 @@ DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
 DIV.imageOnTop DIV.bloom-translationGroup
 {
 	height: 291px;
-	/*+placement:shift 20px -14px;*/
-	position: relative;
-	left: 20px;
-	top: -14px;
+	/*+placement:anchor-top-left 39px 442px;*/
+	position: absolute;
+	left: 39px;
+	top: 442px;
 	width: 464px;
 }
 DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
 {
 	height: 357px;
-	/*+placement:shift 20px -50px;*/
-	position: relative;
-	left: 20px;
-	top: -50px;
+	/*+placement:anchor-top-left 40px 398px;*/
+	position: absolute;
+	left: 40px;
+	top: 398px;
 }
-.imageOnTop TEXTAREA
+.imageOnTop.bloom-monolingual DIV.bloom-editable
 {
 	height: 100%;
 	width: 100%;
-	/*+placement:shift -8px 92px;*/
-	position: relative;
-	left: -8px;
-	top: 92px;
 }
-.imageOnTop.bloom-bilingual TEXTAREA
+.imageOnTop.bloom-bilingual DIV.bloom-editable
 {
 	height: 50%;
+	width: 100%;
 }
-.imageOnTop.bloom-trilingual TEXTAREA
+.imageOnTop.bloom-trilingual DIV.bloom-editable
 {
-	height: 30%;
-	/*+placement:shift -8px 92px;*/
-	position: relative;
-	left: -8px;
-	top: 92px;
-}
-.imageOnTop.bloom-trilingual TEXTAREA.bloom-content2
-{
-	/*+placement:anchor-top-left -8px 207px;*/
-	position: absolute;
-	left: -8px;
-	top: 207px;
-}
-.imageOnTop.bloom-trilingual TEXTAREA.bloom-content3
-{
-	/*+placement:anchor-top-left -8px 321px;*/
-	position: absolute;
-	left: -8px;
-	top: 321px;
+	height: 33%;
+	width: 100%;
 }
 /*Image In Middle*/
-DIV.imageInMiddle DIV.bottom
+DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV
 {
-	height: 195px;
-	/*+placement:shift 21px 104px;*/
-	position: relative;
-	left: 21px;
-	top: 104px;
-	width: 449px;
+	height: 100% !important;
+	width: 100%;
 }
-DIV.imageInMiddle P
+DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV
 {
-	/*+placement:shift 36px 57px;*/
-	position: relative;
-	left: 36px;
-	top: 57px;
-	width: 411px;
+	height: 50% !important;
+	width: 100%;
 }
-DIV.imageInMiddle TEXTAREA
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
 {
-	height: 100%;
+	height: 33% !important;
+	width: 100%;
 }
-DIV.imageInMiddle .picture
+DIV.imageInMiddle DIV.bloom-translationGroup.top
 {
-	max-height: 6.3cm;
-}
-DIV.imageInMiddle DIV.top
-{
-	height: 189px;
-	/*+placement:shift 26px 30px;*/
-	position: relative;
+	height: 5.3cm;
+	width: 488px;
+	/*+placement:anchor-top-left 26px 30px;*/
+	position: absolute;
 	left: 26px;
 	top: 30px;
-	width: 442px;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
+{
+	height: 6.9cm;
+	width: 488px;
+	/*+placement:anchor-top-left 26px 30px;*/
+	position: absolute;
+	left: 26px;
+	top: 30px;
+}
+DIV.imageInMiddle DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 31px 242px;*/
+	position: absolute !important;
+	left: 31px !important;
+	top: 242px !important;
+	border: 1px solid #000000;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 31px 311px;*/
+	position: absolute !important;
+	left: 31px !important;
+	top: 311px !important;
+	border: 1px solid #000000;
+	height: 152px;
+}
+DIV.imageInMiddle DIV.bloom-translationGroup.bottom
+{
+	height: 5.4cm;
+	width: 478px;
+	/*+placement:anchor-top-left 33px 543px;*/
+	position: absolute;
+	left: 33px;
+	top: 543px;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
+{
+	height: 6.5cm;
+	width: 478px;
+	/*+placement:anchor-top-left 33px 490px;*/
+	position: absolute;
+	left: 33px;
+	top: 490px;
 }
 /*Image On Bottom*/
-.imageOnBottom .picture
-{
-	max-height: 9cm;
-	max-width: 12cm;
-	padding-top: 18px;
-}
-.imageOnBottom TEXTAREA
-{
-	height: 133%;
-	/*+placement:shift 2px -32px;*/
-	position: relative;
-	left: 2px;
-	top: -32px;
-}
-.imageOnBottom P.bloom-imageContainer
-{
-	height: 9cm;
-	/*+placement:anchor-bottom-left 18px 106px;*/
-	position: absolute;
-	left: 18px;
-	bottom: 106px;
-	width: 466px;
-}
 DIV.imageOnBottom DIV.bloom-translationGroup
 {
-	height: 235px;
-	/*+placement:shift 22px 77px;*/
-	position: relative;
-	left: 22px;
-	top: 77px;
 	width: 459px;
+	height: 319px;
+	/*+placement:anchor-top-left 22px 44px;*/
+	position: absolute;
+	left: 22px;
+	top: 44px;
+}
+.imageOnBottom DIV.bloom-translationGroup DIV
+{
+	height: 50%;
+	width: 100%;
+	margin-top: 17px;
+}
+.imageOnBottom.bloom-bilingual DIV.bloom-translationGroup DIV
+{
+	height: 100%;
+	width: 100%;
+}
+.imageOnBottom.bloom-trilingual DIV.bloom-translationGroup DIV
+{
+	height: 33%;
+	width: 100%;
+}
+.imageOnBottom DIV.bloom-imageContainer
+{
+	height: 8.4cm;
+	width: 454px;
+	/*+placement:anchor-top-left 62px 441px;*/
+	position: absolute;
+	left: 62px;
+	top: 441px;
 }
 /*Image Whole Page*/
 DIV.imageWholePage DIV.bloom-imageContainer
@@ -242,15 +259,8 @@ DIV.imageInMiddle DIV.bloom-imageContainer
 	position: relative;
 	left: 49px;
 	top: 72px;
-	width: 475px;
-}
-DIV.imageOnBottom DIV.bloom-imageContainer
-{
-	/*+placement:shift 37px 140px;*/
-	position: relative;
-	left: 37px;
-	top: 140px;
-	width: 496px;
+	width: 479px;
+	height: 279px;
 }
 .textWholePage TEXTAREA
 {
@@ -287,10 +297,20 @@ DIV.imageWholePage TABLE
 }
 /*Text Whole Page
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
+DIV.textWholePage DIV.bloom-translationGroup
+{
+	/*+placement:anchor-top-left 27px 3px;*/
+	position: absolute;
+	left: 27px;
+	top: 3px;
+	width: 498px;
+	max-height: 716px;
+}
 DIV.textWholePage DIV.bloom-translationGroup DIV
 {
 	margin-top: 26px;
 	margin-left: 34px;
 	margin-right: 39px;
 	min-height: 67px;
+	height: 30%;
 }

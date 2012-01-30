@@ -9,7 +9,7 @@ DIV.ui-sourceTextsForBubble TEXTAREA
 	border: none;
 }
 /*this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in*/
-TEXTAREA.readOnlyInEditMode
+*.readOnlyInEditMode
 {
 /*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
