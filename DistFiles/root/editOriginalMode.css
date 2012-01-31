@@ -3,10 +3,12 @@ OL#topics
 {
 	list-style: none;
 }
-DIV.ui-sourceTextsForBubble TEXTAREA
+DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
 {
 	background-color: transparent;
 	border: none;
+	height: 236px;
+	overflow: auto;
 }
 /*this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in*/
 *.readOnlyInEditMode
