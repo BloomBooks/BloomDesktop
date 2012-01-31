@@ -160,5 +160,10 @@ namespace Bloom.Publish
 			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
 			_model.LoadBook(e);
 		}
+
+		private void _saveButton_Click(object sender, EventArgs e)
+		{
+			_model.Save();
+		}
 	}
 }

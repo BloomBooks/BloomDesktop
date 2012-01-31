@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Palaso.IO;
@@ -39,12 +40,15 @@ namespace Bloom.Publish
 		private readonly BookSelection _bookSelection;
 		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
+		private readonly LibrarySettings _librarySettings;
+		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, LibrarySettings librarySettings)
 		{
 			BookSelection = bookSelection;
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_librarySettings = librarySettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			BookletPortion = BookletPortions.BookletPages;
 		}
@@ -108,7 +112,7 @@ namespace Bloom.Publish
 
 			for (int i = 0; i < 100; i++)
 			{
-				path = Path.Combine(Path.GetTempPath(), fileName + i + ".pdf");
+				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf",fileName, i));
 				if (!File.Exists(path))
 					break;
 
@@ -149,5 +153,42 @@ namespace Bloom.Publish
 		public BookletPortions BookletPortion
 		{ get; set; }
 
+		public void Save()
+		{
+			try
+			{
+				using (var dlg = new SaveFileDialog())
+				{
+					if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+						dlg.InitialDirectory = _lastDirectory;
+					var portion = "";
+					switch (BookletPortion)
+					{
+						case BookletPortions.None:
+							portion = "Pages";
+							break;
+						case BookletPortions.BookletCover:
+							portion = "Cover";
+							break;
+						case BookletPortions.BookletPages:
+							portion = "Inside";
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
+					}
+					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath), _librarySettings.GetVernacularName("en"),portion);
+					dlg.FileName = suggestedName;
+					if (DialogResult.OK == dlg.ShowDialog())
+					{
+						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
+						File.Copy(PdfFilePath, dlg.FileName, true);
+					}
+				}
+			}
+			catch (Exception err)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
+			}
+		}
 	}
 }
