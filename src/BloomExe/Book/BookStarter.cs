@@ -150,7 +150,10 @@ namespace Bloom.Book
 			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
 			if (dataDiv == null)
 			{
-				dataDiv = dom.OwnerDocument.CreateElement("div");
+				XmlDocument doc = dom as XmlDocument;
+				if (doc == null)
+					doc = dom.OwnerDocument;
+				dataDiv = doc.CreateElement("div");
 				dataDiv.SetAttribute("id", "bloomDataDiv");
 				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
 			}

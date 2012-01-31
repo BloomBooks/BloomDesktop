@@ -284,7 +284,7 @@ namespace Bloom.Edit
 			}
 
 			 Cursor = Cursors.WaitCursor;
-			 string currentPath = imageElement.GetAttribute("src");
+			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
