@@ -486,6 +486,7 @@ function SetupTopicDialog() {
         var dlg = $(dialogContents).dialog({
                 autoOpen: "true",
                 modal: "true",
+				zIndex: 30000, //qtip is in the 15000 range
                 buttons: {
                     "Ok": function() {
                         var t = $("ol#topics li.ui-selected");
