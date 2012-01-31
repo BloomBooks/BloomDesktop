@@ -74,6 +74,25 @@ DIV.titlePage
 	padding: 0;
 	text-align: center;
 }
+DIV.ISBNContainer
+{
+	/*+placement:anchor-top-left 74px 445px;*/
+	position: absolute;
+	left: 74px;
+	top: 445px;
+	width: 424px;
+}
+DIV.ISBNContainer DIV
+{
+	height: 21px;
+	display: inline-block;
+	text-align: left;
+	/*+placement:shift 1px 4px;*/
+	position: relative;
+	left: 1px;
+	top: 4px;
+	min-width: 120px;
+}
 DIV.titlePage .titleV
 {
 	font-size: 26.1pt;
@@ -119,10 +138,10 @@ DIV.titlePage .credits
 }
 DIV.titlePage DIV#languageInformation
 {
-	/*+placement:shift -5px 416px;*/
+	/*+placement:shift -5px 424px;*/
 	position: relative;
 	left: -5px;
-	top: 416px;
+	top: 424px;
 	width: 425px;
 	margin-left: 78px;
 }
