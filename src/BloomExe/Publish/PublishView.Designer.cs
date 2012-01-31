@@ -39,6 +39,7 @@
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this._workingIndicatorGif = new System.Windows.Forms.PictureBox();
+			this._saveButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).BeginInit();
 			this._workingIndicator.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
@@ -98,7 +99,7 @@
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(56, 26);
 			this.button1.TabIndex = 6;
-			this.button1.Text = "Print";
+			this.button1.Text = "&Print...";
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
@@ -129,10 +130,21 @@
 			this._workingIndicatorGif.TabIndex = 8;
 			this._workingIndicatorGif.TabStop = false;
 			// 
+			// _saveButton
+			// 
+			this._saveButton.Location = new System.Drawing.Point(674, 3);
+			this._saveButton.Name = "_saveButton";
+			this._saveButton.Size = new System.Drawing.Size(56, 26);
+			this._saveButton.TabIndex = 9;
+			this._saveButton.Text = "&Save...";
+			this._saveButton.UseVisualStyleBackColor = true;
+			this._saveButton.Click += new System.EventHandler(this._saveButton_Click);
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this._saveButton);
 			this.Controls.Add(this._workingIndicator);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this._adobeReader);
@@ -160,5 +172,6 @@
 		private System.ComponentModel.BackgroundWorker _makePdfBackgroundWorker;
 		private System.Windows.Forms.Panel _workingIndicator;
 		private System.Windows.Forms.PictureBox _workingIndicatorGif;
+		private System.Windows.Forms.Button _saveButton;
     }
 }
