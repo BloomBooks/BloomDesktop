@@ -403,5 +403,10 @@ namespace Bloom.Library
 		{
 
 		}
+
+		private void _listView_DoubleClick(object sender, EventArgs e)
+		{
+			_model.DoubleClickedBook();
+		}
 	}
 }

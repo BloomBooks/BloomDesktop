@@ -17,15 +17,18 @@ namespace Bloom.Library
 		private readonly string _pathToLibrary;
 		private readonly TemplateCollectionList _templateCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
+		private readonly EditBookCommand _editBookCommand;
 
 		public LibraryModel(string pathToLibrary, BookSelection bookSelection,
 			TemplateCollectionList templateCollectionList,
-			BookCollection.Factory bookFactory)
+			BookCollection.Factory bookFactory,
+			EditBookCommand editBookCommand)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
 			_templateCollectionList = templateCollectionList;
 			_bookCollectionFactory = bookFactory;
+			_editBookCommand = editBookCommand;
 		}
 
 		public bool CanDeleteSelection
@@ -77,6 +80,12 @@ namespace Bloom.Library
 					_bookSelection.SelectBook(null);
 				}
 			}
+		}
+
+		public void DoubleClickedBook()
+		{
+			if(_bookSelection.CurrentSelection.IsInEditableLibrary && ! _bookSelection.CurrentSelection.HasFatalError)
+				_editBookCommand.Raise(_bookSelection.CurrentSelection);
 		}
 	}
 }
