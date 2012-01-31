@@ -598,7 +598,14 @@ namespace Bloom.Book
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
-			if (language2Code == "")
+			if (language2Code == _librarySettings.VernacularIso639Code) //can't have the vernacular twice
+				language2Code = null;
+			if (language3Code == _librarySettings.VernacularIso639Code)
+				language3Code = null;
+			if (language2Code == language3Code)	//can't use the same lang twice
+				language3Code = null;
+
+			if (string.IsNullOrEmpty(language2Code))
 			{
 				if(!string.IsNullOrEmpty(language3Code))
 				{

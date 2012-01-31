@@ -65,6 +65,8 @@ namespace Bloom.Edit
 				SaveNow();
 			}
 			//enhance: this might be more reliable than the current EditingView.OnVisibleChanged() for detecting when we move *to* this control.
+
+			_visible = details.To == _view;
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -223,11 +225,13 @@ namespace Bloom.Edit
 			return _currentlyDisplayedBook != CurrentBook;
 		}
 
-		public void ActualVisibiltyChanged(bool visible)
+		public void ActualVisibiltyChanged(bool unused)
 		{
-			_visible = visible;
+			//I don't trust this value in. I'm relying instead on setting this via the SelectedTabChangedEvent.
+			//_visible = visible;
+
 			Debug.WriteLine("EditingModel._visible =" + _visible);
-			if (!visible || _currentlyDisplayedBook == CurrentBook)
+			if (!_visible || _currentlyDisplayedBook == CurrentBook)
 			{
 				//review: it's not clear when this is needed... the browser validating also calls save, but it doesn't always validate.
 				//perhaps we should drop that validating call, and just use this?

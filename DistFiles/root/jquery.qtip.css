@@ -231,7 +231,7 @@ Core qTip styles*/
 .ui-tooltip-green .ui-tooltip-titlebar, .ui-tooltip-green .ui-tooltip-content
 {
 	border-color: #90D93F;
-	color: #3F6219;
+	color: #000000;
 }
 .ui-tooltip-green .ui-tooltip-content
 {
