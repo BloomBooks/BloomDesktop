@@ -49,7 +49,7 @@ namespace Bloom.Book
 		/// History of this number:
 		///		0.4 had version 0.4
 		/// </summary>
-		private const string kBloomFormatVersion = "0.4";
+		private const string kBloomFormatVersion = "0.5";
 
 		private  string _folderPath;
 		private readonly IFileLocator _fileLocator;
