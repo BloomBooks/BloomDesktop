@@ -40,10 +40,10 @@
 			this._undoButton = new System.Windows.Forms.ToolStripButton();
 			this._deletePageButton = new System.Windows.Forms.ToolStripButton();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
+			this._browser1 = new Bloom.Browser();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this._browser1 = new Bloom.Browser();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -186,6 +186,20 @@
 			this._contentLanguagesDropdown.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._contentLanguagesDropdown_DropDownItemClicked);
 			this._contentLanguagesDropdown.Click += new System.EventHandler(this._contentLanguagesDropdown_Click);
 			// 
+			// _browser1
+			// 
+			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this._browser1.Location = new System.Drawing.Point(0, 31);
+			this._browser1.Margin = new System.Windows.Forms.Padding(5);
+			this._browser1.Name = "_browser1";
+			this._browser1.Size = new System.Drawing.Size(809, 711);
+			this._browser1.TabIndex = 1;
+			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
+			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
+			// 
 			// _splitTemplateAndSource
 			// 
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -206,20 +220,6 @@
 			// _handleMessageTimer
 			// 
 			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
-			// 
-			// _browser1
-			// 
-			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.Location = new System.Drawing.Point(0, 31);
-			this._browser1.Margin = new System.Windows.Forms.Padding(5);
-			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(809, 711);
-			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
-			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
 			// 
 			// EditingView
 			// 

@@ -49,8 +49,10 @@ function MakeSourceTextDivForGroup(group) {
     var divForBubble = $(group).clone();
     
     //make the source texts in the bubble read-only
-    $(divForBubble).find("textarea").each(function() {
+    $(divForBubble).find("textarea, div").each(function() {
         $(this).attr("readonly", "readonly");
+		$(this).removeClass('bloom-editable');
+		$(this).attr("contenteditable","false");
     });
 
     $(divForBubble).removeClass();//remove them all
@@ -83,7 +85,7 @@ function MakeSourceTextDivForGroup(group) {
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
         var dictionary = GetDictionary();
-        var items = $(this).find("textarea, div.editable");
+        var items = $(this).find("textarea, div");
         items.sort(function (a, b) {
             var keyA = $(a).attr('lang');
             var keyB = $(b).attr('lang');
@@ -158,11 +160,11 @@ jQuery(document).ready(function () {
 /*
     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
     //the same parent element
-    jQuery("textarea, div.editable").focus(function () {
+    jQuery("textarea, div.bloom-editable").focus(function () {
         event = document.createEvent('MessageEvent');
         var origin = window.location.protocol + '//' + window.location.host;
         var obj = {};
-        $(this).parent().find("textarea, div.editable").each(function () {
+        $(this).parent().find("textarea, div.bloom-editable").each(function () {
             obj[$(this).attr("lang")] = $(this).text();
         })
         var json = obj; //.get();
@@ -199,7 +201,7 @@ jQuery(document).ready(function () {
             $(this).addClass('overflow');
         }
     });
-    jQuery("div.editable").keypress(function () {
+    jQuery("div.bloom-editable").keypress(function () {
         var overflowing = this.scrollHeight > $(this).maxSize().height;
         if ($(this).hasClass('overflow') && !overflowing) {
             $(this).removeClass('overflow');
@@ -341,7 +343,7 @@ jQuery(document).ready(function () {
     // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
     // an attribute, so it can't be included in css.
     // The solution here is to add the readonly attribute when we detect that their border has gone transparent.
-    $('textarea').focus(function () {
+    $('textarea, div').focus(function () {
         if ($(this).css('border-bottom-color') == 'transparent') {
             $(this).attr("readonly", "readonly");
         }
@@ -392,14 +394,14 @@ jQuery(document).ready(function () {
 
     //focus on the first editable field
     //$(':input:enabled:visible:first').focus();
-    $("textarea, div.editable").first().focus(); //review: this might chose a textarea which appears after the div. Could we sort on the tab order?
+    $("textarea, div.bloom-editable").first().focus(); //review: this might chose a textarea which appears after the div. Could we sort on the tab order?
 
     SetupTopicDialog();
 
     //copy source texts out to their own div, where we can make a bubble with tabs out of them
     //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
     $("*.bloom-translationGroup").each(function () {
-        if ($(this).find("textarea").length > 1) {
+        if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
     });

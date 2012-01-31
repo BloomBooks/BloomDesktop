@@ -25,3 +25,4 @@ lib/xulrunner*
 **.idea
 DistFiles/root/tmp*
 *.pdb
+lib/dotnet/Palaso*.dll
