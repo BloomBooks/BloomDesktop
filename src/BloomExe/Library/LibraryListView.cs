@@ -20,14 +20,14 @@ namespace Bloom.Library
         private readonly LibraryModel _model;
         private readonly HtmlThumbNailer _thumbnailProvider;
         private readonly BookSelection _bookSelection;
-        private bool _reshowPending = false;
+    	private bool _reshowPending = false;
 
-        public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider, BookSelection bookSelection)
+		public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider, BookSelection bookSelection)
         {
             _model = model;
             _thumbnailProvider = thumbnailProvider;
             _bookSelection = bookSelection;
-            InitializeComponent();
+			InitializeComponent();
         	_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
         	_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
             _listView.OwnerDraw = true;
@@ -403,5 +403,10 @@ namespace Bloom.Library
         {
          
         }
+
+		private void _listView_DoubleClick(object sender, EventArgs e)
+		{
+			_model.DoubleClickedBook();
+		}
     }
 }
