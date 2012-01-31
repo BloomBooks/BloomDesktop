@@ -106,6 +106,9 @@ namespace Bloom.Book
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
+			//remove ISBN number, if the original had one
+			RemoveDataDivElement(storage.Dom, "ISBN");
+
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
@@ -120,6 +123,7 @@ namespace Bloom.Book
 				helper.InjectXMatter( data);
 			}
 
+
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
@@ -132,7 +136,26 @@ namespace Bloom.Book
 			return storage.FolderPath;
 		}
 
+		private void RemoveDataDivElement(XmlNode dom, string key)
+		{
+			var dataDiv = GetOrCreateDataDiv(dom);
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			{
+				dataDiv.RemoveChild(e);
+			}
+		}
 
+		private XmlElement GetOrCreateDataDiv(XmlNode dom)
+		{
+			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
+			if (dataDiv == null)
+			{
+				dataDiv = dom.OwnerDocument.CreateElement("div");
+				dataDiv.SetAttribute("id", "bloomDataDiv");
+				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
+			}
+			return dataDiv;
+		}
 
 		private void UpdateEditabilityIndicator(BookStorage storage)
 		{

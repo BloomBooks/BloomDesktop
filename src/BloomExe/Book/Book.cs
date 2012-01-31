@@ -1164,7 +1164,6 @@ namespace Bloom.Book
 			{
 				dataDiv.RemoveChild(e);
 			}
-
 		}
 
 
