@@ -29,7 +29,7 @@ namespace BloomTests.Book
 		 {
 			 return new Bloom.Book.Book(storage, true, null, _fileLocator, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
 													  new PageSelection(),
-													  new PageListChangedEvent());
+													  new PageListChangedEvent(), new BookRefreshEvent());
 		 }
 
 		 BookStorage BookStorageFactory(string folderPath)

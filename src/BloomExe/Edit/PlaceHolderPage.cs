@@ -49,5 +49,10 @@ namespace Bloom.Edit
 		{
 			get { return false; }
 		}
+
+		public Book.Book Book
+		{
+			get { return null; } set { }
+		}
 	}
 }

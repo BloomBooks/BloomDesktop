@@ -64,6 +64,12 @@ namespace Bloom
 	public class PageListChangedEvent : Event<object>
 	{ }
 
+	/// <summary>
+	/// ANything displaying the book should re-load it.
+	/// </summary>
+	public class BookRefreshEvent : Event<Book.Book>
+	{ }
+
 	public class RelocatePageInfo
 	{
 		public IPage Page;

@@ -421,6 +421,9 @@
   <ItemGroup>
     <None Include="Resources\spinner.gif" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pagePlaceHolder.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)

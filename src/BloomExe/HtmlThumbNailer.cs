@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -12,20 +13,20 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Properties;
 using BloomTemp;
+using Palaso.Code;
 using Palaso.Reporting;
 using Palaso.Xml;
 using Skybound.Gecko;
 
 namespace Bloom
 {
-	public class HtmlThumbNailer
+	public class HtmlThumbNailer: IDisposable
 	{
-		GeckoWebBrowser _browser;
-		private Image _pendingThumbnail;
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
 		private readonly int _sizeInPixels =70;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
+		private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
 
 		/// <summary>
 		///This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give us the size it was on the first page we navigated to,
@@ -33,12 +34,29 @@ namespace Bloom
 		/// </summary>
 		private Dictionary<string, GeckoWebBrowser> _browserCacheForDifferentPaperSizes = new Dictionary<string, GeckoWebBrowser>();
 
+		private bool _disposed;
 
 		public HtmlThumbNailer(int sizeInPixels)
 		{
 			_sizeInPixels = sizeInPixels;
+			Application.Idle += new EventHandler(Application_Idle);
 		}
 
+		void Application_Idle(object sender, EventArgs e)
+		{
+			if (_orders.Count > 0)
+			{
+				ProcessOrder(_orders.Dequeue());
+			}
+		}
+
+		public void RemoveFromCache(string key)
+		{
+			if (_images.ContainsKey(key))
+			{
+				_images.Remove(key);
+			}
+		}
 
 		/// <summary>
 		///
@@ -48,89 +66,122 @@ namespace Bloom
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
 		/// <param name="drawBorderDashed"></param>
 		/// <returns></returns>
-		public Image GetThumbnail(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed)
+		public void GetThumbnailAsync(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed, Action<Image> callback)
 		{
+			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
+
+			string thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+
+			//In our cache?
+			Image image;
+			if (_images.TryGetValue(key, out image))
+			{
+				callback(image);
+				return;
+			}
+
+			//Sitting on disk?
+			if (!string.IsNullOrEmpty(folderForThumbNailCache))
+			{
+
+				if (File.Exists(thumbNailFilePath))
+				{
+					//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
+					using (image = Image.FromFile(thumbNailFilePath))
+					{
+						var thumbnail = new Bitmap(image) { Tag = thumbNailFilePath };
+						_images.Add(key, thumbnail);
+						callback(thumbnail);
+						return;
+					}
+				}
+			}
+			//!!!!!!!!! geckofx doesn't work in its own thread, so we're using the Application's idle event instead.
+
+			_orders.Enqueue(new ThumbnailOrder()
+							{
+								ThumbNailFilePath = thumbNailFilePath,
+								BackgroundColorOfResult = backgroundColorOfResult,
+								Callback = callback,
+								Document = document,
+								DrawBorderDashed = drawBorderDashed,
+								FolderForThumbNailCache = folderForThumbNailCache,
+								Key = key
+							});
+		}
+
+		void ProcessOrder(ThumbnailOrder order)
+		{
+			//e.Result = order;
+			//Thread.CurrentThread.Name = "Thumbnailer" + order.Key;
+			Image pendingThumbnail = null;
+
 			lock (this)
 			{
-				Image image;
-				if (_images.TryGetValue(key, out image))
-				{
-					return image;
-				}
+				_backgroundColorOfResult = order.BackgroundColorOfResult;
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
 
-				string thumbNailFilePath = null;
-				if (!string.IsNullOrEmpty(folderForThumbNailCache))
+
+				var browser = GetBrowserForPaperSize(order.Document);
+				lock (browser)
 				{
-					//var folderName = Path.GetFileName(folderForThumbNailCache);
-					thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
-					if (File.Exists(thumbNailFilePath))
+					using (var temp = TempFile.CreateHtm5FromXml(order.Document))
 					{
-						//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-						using (image = Image.FromFile(thumbNailFilePath))
+						order.Done = false;
+						browser.Tag = order;
+
+						browser.Navigate(temp.Path);
+
+						var stopTime = DateTime.Now.AddSeconds(5);
+						while (!_disposed && (!order.Done || browser.Document.ActiveElement == null )&& DateTime.Now < stopTime)
 						{
-							var thumbnail = new Bitmap(image) {Tag = thumbNailFilePath};
-							_images.Add(thumbNailFilePath,thumbnail);
-							return thumbnail;
+							Application.DoEvents(); //TODO: avoid this
+							//Thread.Sleep(100);
+						}
+						if (_disposed)
+							return;
+						if (!order.Done)
+						{
+							Debug.Fail("(debug only) Make thumbnail timed out");
+							return;
+						}
+
+						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+						var div = browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").First();
+						if (div == null)
+							throw new ApplicationException("thumbnails found now div with a class of bloom-Page");
+
+						browser.Height = div.ScrollHeight;
+						browser.Width = div.ScrollWidth;
+
+						try
+						{
+							var docImage = browser.GetBitmap((uint) browser.Width, (uint) browser.Height);
+							//docImage.Save(@"c:\dev\temp\zzzz.bmp");
+							if (_disposed)
+								return;
+							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,
+															 order.DrawBorderDashed);
+						}
+							// ReSharper disable EmptyGeneralCatchClause
+						catch
+							// ReSharper restore EmptyGeneralCatchClause
+						{
 						}
 					}
 				}
-
-
-				_backgroundColorOfResult = backgroundColorOfResult;
-
-				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document);
-
-				_pendingThumbnail = null;
-
-				ConfigureBrowserForPaperSize(document);
-
-				using (var temp = TempFile.CreateHtm5FromXml(document))
+				if (pendingThumbnail == null)
 				{
-					_browser.Navigate(temp.Path);
-					_browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-
-
-/* this served us well until we got squeaky-clean standards compliant (including, crucuially, the html5 <!DOCTYPE HTML> line. Then suddenly  ActiveElement.ScrollWidth was 0
- *
-							//NB: this will always give us the size it was on the first page we navigated to,
-						//so that if the book size changes, our thumbnails are all wrong. I don't know
-						//how to fix it, so I'm using different browsers at the moment.
-						_browser.Height = _browser.Document.ActiveElement.ScrollHeight;
-						_browser.Width = _browser.Document.ActiveElement.ScrollWidth; //NB: 0 here at one time was traced to the html header <!DOCTYPE html> was enought to get us to 0
-*/
-
-					var div = _browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").First();
-					if (div == null)
-						throw new ApplicationException("thumbnails found now div with a class of bloom-Page");
-
-					_browser.Height = div.ScrollHeight;
-					_browser.Width = div.ScrollWidth;
-
-
-					try
-					{
-						var docImage = _browser.GetBitmap((uint)_browser.Width, (uint)_browser.Height);
-						//docImage.Save(@"c:\dev\temp\zzzz.bmp");
-						_pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent, drawBorderDashed);
-					}
-// ReSharper disable EmptyGeneralCatchClause
-					catch
-// ReSharper restore EmptyGeneralCatchClause
-					{
-					}
+					pendingThumbnail = Resources.PagePlaceHolder;
 				}
-				if (_pendingThumbnail == null)
-				{
-					_pendingThumbnail = Resources.GenericPage32x32;
-				}
-				else if (!string.IsNullOrEmpty(thumbNailFilePath))
+				else if (!string.IsNullOrEmpty(order.ThumbNailFilePath))
 				{
 					try
 					{
 						//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
-						using (Bitmap b = new Bitmap(_pendingThumbnail))
+						using (Bitmap b = new Bitmap(pendingThumbnail))
 						{
-							b.Save(thumbNailFilePath);
+							b.Save(order.ThumbNailFilePath);
 						}
 					}
 					catch (Exception)
@@ -139,12 +190,14 @@ namespace Bloom
 					}
 				}
 
-				_pendingThumbnail.Tag = thumbNailFilePath; //usefull if we later know we need to clear out that file
+				pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
 
 				try
-					//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
+				//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
 				{
-					_images.Add(key, _pendingThumbnail);
+					if (_images.ContainsKey(order.Key))
+						_images.Remove(order.Key);
+					_images.Add(order.Key, pendingThumbnail);
 				}
 				catch (Exception error)
 				{
@@ -152,11 +205,21 @@ namespace Bloom
 					//not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
 				}
 			}
-			return _pendingThumbnail;
+			Debug.WriteLine("Created new thumbnail: "+order.Key);
+			//order.ResultingThumbnail = pendingThumbnail;
+			if (_disposed)
+				return;
+			order.Callback(pendingThumbnail);
+		}
+
+		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
+		{
+			ThumbnailOrder order = (ThumbnailOrder) ((GeckoWebBrowser) sender).Tag;
+			order.Done = true;
 		}
 
 
-		private void ConfigureBrowserForPaperSize(XmlDocument document)
+		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
 		{
 //            string paperSizeTemplate=string.Empty;
 //            string[] paperSizeTemplateNames = new string[]{"A5Portrait", "A4Landscape", "A5LandScape", "A4Portrait"};
@@ -172,27 +235,30 @@ namespace Bloom
 				{
 					var paperStyleSheets = document.SafeSelectNodes(
 						"html/head/link[contains(@href, 'Landscape') or contains(@href, 'Portrait')]");
-					if (paperStyleSheets.Count == 0)
-					{
-						Debug.Fail(
-							"THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
-
-						_browser = MakeNewBrowser();
-						return;
-					}
+//                    if (paperStyleSheets.Count == 0)
+//                    {
+//                        Debug.Fail(
+//                            "THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
+//
+//                        return MakeNewBrowser();
+//                    }
 
 					paperSizeName = Path.GetFileNameWithoutExtension(paperStyleSheets[0].GetStringAttribute("href"));
 				}
-			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out _browser))
+			GeckoWebBrowser b;
+			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
 				{
-					_browser = MakeNewBrowser();
-					_browserCacheForDifferentPaperSizes.Add(paperSizeName, _browser);
+					 b = MakeNewBrowser();
+					 b.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
+					_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
 				}
-				return;
+				return b;
 		}
 
 		private GeckoWebBrowser MakeNewBrowser()
 		{
+			Debug.WriteLine("making browser");
+
 			var browser = new GeckoWebBrowser();
 			browser.HandleCreated += new EventHandler(OnBrowser_HandleCreated);
 			browser.CreateControl();
@@ -347,5 +413,31 @@ namespace Bloom
 				}
 			}
 		}
+
+		public void Dispose()
+		{
+			_disposed = true;
+			Application.Idle -= Application_Idle;
+			_orders.Clear();
+			foreach (var browser in _browserCacheForDifferentPaperSizes)
+			{
+				browser.Value.Navigated -= _browser_Navigated;
+				browser.Value.Dispose();
+			}
+			_browserCacheForDifferentPaperSizes.Clear();
+		}
+	}
+
+	public class ThumbnailOrder
+	{
+		public Image ResultingThumbnail;
+		public Action<Image> Callback;
+		public bool DrawBorderDashed;
+		public XmlDocument Document;
+		public Color BackgroundColorOfResult;
+		public string FolderForThumbNailCache;
+		public string Key;
+		public bool Done;
+		public string ThumbNailFilePath;
 	}
 }

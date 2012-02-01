@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Properties;
 using Palaso.IO;
 
 
@@ -143,25 +144,12 @@ namespace Bloom.Library
 			item.Tag=book;
 			item.Group = group;
 
-			Image thumbnail = GetThumbnail(book);
-			_pageThumbnails.Images.Add(book.Id,thumbnail);
-			item.ImageIndex = _pageThumbnails.Images.Count - 1;
+
+			Image thumbnail = Resources.PagePlaceHolder;;
+			_bookThumbnails.Images.Add(book.Id, thumbnail);
+			item.ImageIndex = _bookThumbnails.Images.Count - 1;
 			_listView.Items.Add(item);
-		}
-
-		private Image GetThumbnail(Book.Book book)
-		{
-//            if (book.Type != Book.BookType.Template)
-//            {
-			return book.GetThumbNailOfBookCover(book.Type != Book.Book.BookType.Publication);
-//            }
-//            else
-//            {
-//                return ComposeCoverPageWithBooklet(null, GetBookletImage(book));//for templates, let's just show a blank cover
-//            }
-
-			//thumbnail = ComposeCoverPageWithBooklet(thumbnail, GetBookletImage(book));
-			//return thumbnail;
+			book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication, image => RefreshOneThumbnail(book, image));
 		}
 
 		int _vernacularBookletColorIndex = 0;
@@ -317,20 +305,21 @@ namespace Bloom.Library
 		{
 			try
 			{
-			if (_listView.SelectedItems.Count == 0)
-				return;
-			Book.Book book = SelectedBook;
-			if (book == null)
-				return;
-			Debug.WriteLine("before selecting "+book.Title);
-			_model.SelectBook(book);
-			Debug.WriteLine("after selecting "+book.Title);
-			//didn't help: _listView.Focus();//hack we were losing clicks
-			book.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged);//in case we're already subscribed
-			book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
+				if (_listView.SelectedItems.Count == 0)
+					return;
+				Book.Book book = SelectedBook;
+				if (book == null)
+					return;
+				Debug.WriteLine("before selecting " + book.Title);
+				_model.SelectBook(book);
+				Debug.WriteLine("after selecting " + book.Title);
+				//didn't help: _listView.Focus();//hack we were losing clicks
+				book.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
+				book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
-			deleteMenuItem.Enabled = _model.CanDeleteSelection;
-
+				deleteMenuItem.Enabled = _model.CanDeleteSelection;
+				_updateThumbnailMenu.Visible = _model.CanDeleteSelection;
+				_updateFrontMatterToolStripMenu.Visible = _model.CanDeleteSelection;
 			}
 			catch (Exception err)
 			{
@@ -379,14 +368,27 @@ namespace Bloom.Library
 				if (_reshowPending)
 				{
 					_reshowPending = false;
-					var imageIndex = _pageThumbnails.Images.IndexOfKey(book.Id);
-					if (imageIndex > -1)
-					{
-						_pageThumbnails.Images[imageIndex] = GetThumbnail(book);
-						_listView.Refresh();
-					}
+					RecreateOneThumbnail(book);
 				}
 			}
+		}
+
+		private void RefreshOneThumbnail(Book.Book book, Image image)
+		{
+			if (IsDisposed)
+				return;
+			var imageIndex = _bookThumbnails.Images.IndexOfKey(book.Id);
+			if (imageIndex > -1)
+			{
+				_bookThumbnails.Images[imageIndex] = image;
+				//_listView.Refresh();
+				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
+				_listView.Invalidate(listItem.Bounds);
+			}
+		}
+		private void RecreateOneThumbnail(Book.Book book)
+		{
+			_model.UpdateThumbnailAsync(RefreshOneThumbnail);
 		}
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)
@@ -407,6 +409,21 @@ namespace Bloom.Library
 		private void _listView_DoubleClick(object sender, EventArgs e)
 		{
 			_model.DoubleClickedBook();
+		}
+
+		private void _updateThumbnailMenu_Click(object sender, EventArgs e)
+		{
+			RecreateOneThumbnail((Book.Book)_listView.SelectedItems[0].Tag);
+		}
+
+		private void _updateFrontMatterToolStripMenu_Click(object sender, EventArgs e)
+		{
+			_model.UpdateFrontMatter();
+		}
+
+		private void _openFolderOnDisk_Click(object sender, EventArgs e)
+		{
+			_model.OpenFolderOnDisk();
 		}
 	}
 }

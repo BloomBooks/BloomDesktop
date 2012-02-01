@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using Bloom.Book;
+using Bloom.Properties;
 
 namespace Bloom.Edit
 {
@@ -15,6 +16,14 @@ namespace Bloom.Edit
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
+
+		private ListViewItem _currentDraggingItem;
+		private ListViewItem _currentTarget;
+		private Pen _boundsPen;
+		private int _numberofEmptyListItemsAtStart;
+		public HtmlThumbNailer Thumbnailer;
+		private Image _placeHolderImage;
+		//private Point _mouseDownLocation;
 
 		//public Action<Page> PageSelectedMethod { get; set; }
 		public event EventHandler PageSelectedChanged;
@@ -30,6 +39,7 @@ namespace Bloom.Edit
 			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
 			 _boundsPen = new Pen(Brushes.DarkGray, 2);
 
+			_placeHolderImage = new Bitmap(32, 32);
 
 		}
 
@@ -87,33 +97,69 @@ namespace Bloom.Edit
 
 				if (page is PlaceHolderPage)
 					++_numberofEmptyListItemsAtStart;
+//
+//                var item = new ListViewItem(page.Caption);
+//                item.Tag = page;
+//                //nb IndexOf is not supported, throws exception
+//                var index = 0;
+//                item.ImageIndex = -1;
+//                foreach (var image in _thumbnailImageList.Images)
+//                {
+//                    if (image == page.Thumbnail)
+//                    {
+//                        item.ImageIndex = index;
+//                        break;
+//                    }
+//                    index++;
+//                }
+//                if (item.ImageIndex < 0)
+//                {
+//                    _thumbnailImageList.Images.Add(page.Thumbnail);
+//                    item.ImageIndex = _thumbnailImageList.Images.Count - 1;
+//                }
+//
+//                if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
+//                    return;
+//                _listView.Items.Add(item);
 
-				var item = new ListViewItem(page.Caption);
-				item.Tag = page;
-				//nb IndexOf is not supported, throws exception
-				var index = 0;
-				item.ImageIndex = -1;
-				foreach (var image in _thumbnailImageList.Images)
-				{
-					if (image == page.Thumbnail)
-					{
-						item.ImageIndex = index;
-						break;
-					}
-					index++;
-				}
-				if (item.ImageIndex < 0)
-				{
-					_thumbnailImageList.Images.Add(page.Thumbnail);
-					item.ImageIndex = _thumbnailImageList.Images.Count - 1;
-				}
-
-				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
-					return;
-				_listView.Items.Add(item);
+				AddOnePage(page);
 			}
 			_listView.EndUpdate();
 			ResumeLayout();
+		}
+
+
+		private void AddOnePage(IPage page)
+		{
+			ListViewItem item = new ListViewItem(page.Caption, 0);
+			item.Tag = page;
+
+			Image thumbnail = Resources.PagePlaceHolder; ;
+			if (page is PlaceHolderPage)
+				thumbnail = _placeHolderImage;
+			_thumbnailImageList.Images.Add(page.Id, thumbnail);
+			item.ImageIndex = _thumbnailImageList.Images.Count - 1;
+			_listView.Items.Add(item);
+			if (!(page is PlaceHolderPage))
+			{
+				Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page), Color.White,
+											  false, image => RefreshOneThumbnailCallback(page, image));
+			}
+		}
+
+		private void RefreshOneThumbnailCallback(IPage page, Image image)
+		{
+			if (IsDisposed)
+				return;
+			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
+			if (imageIndex > -1)
+			{
+				_thumbnailImageList.Images[imageIndex] = image;
+				//_listView.Refresh();
+				var listItem = (from ListViewItem i in _listView.Items where i.Tag == page select i).FirstOrDefault();
+				_listView.Invalidate(listItem.Bounds);
+
+			}
 		}
 
 
@@ -243,11 +289,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private ListViewItem _currentDraggingItem;
-		private ListViewItem _currentTarget;
-		private Pen _boundsPen;
-		private int _numberofEmptyListItemsAtStart;
-		//private Point _mouseDownLocation;
 
 		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{

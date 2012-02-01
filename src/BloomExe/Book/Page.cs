@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
+using Palaso.Code;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -15,6 +16,7 @@ namespace Bloom.Book
 		XmlElement GetDivNodeForThisPage();
 		bool Required { get; }
 		bool CanRelocate { get;}
+		Book Book { get; set; }
 	}
 
 	public class Page : IPage
@@ -25,10 +27,12 @@ namespace Bloom.Book
 		private List<string> _classes;
 		private List<string> _tags;
 
-		public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
+		public Page(Book book, XmlElement sourcePage,  string caption, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			_id = sourcePage.Attributes["id"].Value;
-			_getThumbnail = getThumbnail;
+			//_getThumbnail = getThumbnail;
+			Guard.AgainstNull(book,"Book");
+			Book = book;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
 			ReadClasses(sourcePage);
@@ -64,6 +68,8 @@ namespace Bloom.Book
 			//review: for now, we're conflating "required" with "can't move"
 			get { return !Required; }
 		}
+
+		public Book Book { get; set; }
 
 		public string Id{get { return _id; }}
 

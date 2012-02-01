@@ -13,7 +13,7 @@ namespace Bloom.Edit
 
 		public delegate TemplatePagesView Factory();//autofac uses this
 
-		public TemplatePagesView(BookSelection bookSelection, TemplateInsertionCommand templateInsertionCommand)
+		public TemplatePagesView(BookSelection bookSelection, TemplateInsertionCommand templateInsertionCommand, HtmlThumbNailer thumbnailProvider)
 		{
 			_bookSelection = bookSelection;
 			_templateInsertionCommand = templateInsertionCommand;
@@ -21,6 +21,7 @@ namespace Bloom.Edit
 			this.Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
 			_thumbNailList.PageSelectedChanged += new EventHandler(OnPageClicked);
+			_thumbNailList.Thumbnailer = thumbnailProvider;
 		 }
 
 		void OnPageClicked(object sender, EventArgs e)

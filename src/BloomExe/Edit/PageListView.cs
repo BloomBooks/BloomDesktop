@@ -17,17 +17,18 @@ namespace Bloom.Edit
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent, EditingModel model)
+		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider)
 		{
 			_pageSelection = pageSelection;
 			_deletePageCommand = deletePageCommand;
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
+			_thumbNailList.Thumbnailer = thumbnailProvider;
 			_thumbNailList.CanSelect = true;
 			_thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
-			_thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
+			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 
 #if DEBUG
 			var showSourceMenu = new System.Windows.Forms.ToolStripMenuItem("Show Source");
@@ -43,7 +44,7 @@ namespace Bloom.Edit
 			Process.Start(t.Path);
 		}
 
-		private void OnSelectedThumbnailChanged(object page, EventArgs e)
+		private void OnPageSelectedChanged(object page, EventArgs e)
 		{
 			if (page == null)
 				return;

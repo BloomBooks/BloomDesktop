@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -86,6 +87,21 @@ namespace Bloom.Library
 		{
 			if(_bookSelection.CurrentSelection.IsInEditableLibrary && ! _bookSelection.CurrentSelection.HasFatalError)
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
+		}
+
+		public void OpenFolderOnDisk()
+		{
+			Process.Start(_bookSelection.CurrentSelection.FolderPath);
+		}
+
+		public void UpdateFrontMatter()
+		{
+			_bookSelection.CurrentSelection.UpdateXMatter();
+		}
+
+		public void UpdateThumbnailAsync(Action<Book.Book,Image> callback)
+		{
+			_bookSelection.CurrentSelection.RebuildThumbNailAsync(callback);
 		}
 	}
 }
