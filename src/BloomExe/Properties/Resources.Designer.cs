@@ -95,13 +95,6 @@ namespace Bloom.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap GenericPage32x32 {
-            get {
-                object obj = ResourceManager.GetObject("GenericPage32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
         internal static System.Drawing.Bitmap info16x16 {
             get {
                 object obj = ResourceManager.GetObject("info16x16", resourceCulture);
@@ -133,6 +126,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap open {
             get {
                 object obj = ResourceManager.GetObject("open", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PagePlaceHolder {
+            get {
+                object obj = ResourceManager.GetObject("PagePlaceHolder", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

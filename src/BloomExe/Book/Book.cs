@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Xml;
 using Bloom.Edit;
@@ -35,6 +36,7 @@ namespace Bloom.Book
         private HtmlThumbNailer _thumbnailProvider;
         private readonly PageSelection _pageSelection;
         private readonly PageListChangedEvent _pageListChangedEvent;
+    	private readonly BookRefreshEvent _bookRefreshEvent;
     	private IBookStorage _storage;
         private List<IPage> _pagesCache;
 
@@ -51,7 +53,8 @@ namespace Bloom.Book
     	public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
             IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider, 
             PageSelection pageSelection,
-            PageListChangedEvent pageListChangedEvent) 
+            PageListChangedEvent pageListChangedEvent,
+			BookRefreshEvent bookRefreshEvent) 
         {
             IsInEditableLibrary = projectIsEditable && storage.LooksOk;
             Id = Guid.NewGuid().ToString();
@@ -64,10 +67,10 @@ namespace Bloom.Book
             _thumbnailProvider = thumbnailProvider;
             _pageSelection = pageSelection;
             _pageListChangedEvent = pageListChangedEvent;
+    		_bookRefreshEvent = bookRefreshEvent;
 
 
-
-            if (IsInEditableLibrary)
+    		if (IsInEditableLibrary)
             {
                 UpdateFieldsAndVariables(RawDom);
 				WriteLanguageDisplayStyleSheet();
@@ -169,33 +172,35 @@ namespace Bloom.Book
             }
         }
 
-        public  Image GetThumbNailOfBookCover(bool drawBorderDashed)
-        {
-            if(HasFatalError)
-            {
-                return Resources.Error70x70;
-            }
-            Image thumb;
-            if(_storage.TryGetPremadeThumbnail(out thumb))
-                return thumb;
+		public void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
+		{
+			try
+			{
+				if (HasFatalError)
+				{
+					callback(Resources.Error70x70);
+				}
+				Image thumb;
+				if (_storage.TryGetPremadeThumbnail(out thumb))
+					callback(thumb);
 
-            var dom = GetPreviewXmlDocumentForFirstPage();
-            if(dom == null)
-            {
-                return Resources.Error70x70;
-            }
-            string folderForCachingThumbnail = null;
-            
-            folderForCachingThumbnail = _storage.FolderPath;
-           
-            return _thumbnailProvider.GetThumbnail(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed);
-        }
+				var dom = GetPreviewXmlDocumentForFirstPage();
+				if (dom == null)
+				{
+					callback(Resources.Error70x70);
+				}
+				string folderForCachingThumbnail = null;
 
-//        protected string PathToThumbnailCache
-//        {
-//            get {return Path.Combine(_storage.FolderPath, "thumbnail.") }
-//            
-//        }
+				folderForCachingThumbnail = _storage.FolderPath;
+
+				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback);
+			}
+			catch (Exception err)
+			{
+				Debug.Fail(err.Message);
+				callback(Resources.Error70x70);
+			}
+		}
 
         public XmlDocument GetEditableHtmlDomForPage(IPage page)
         {
@@ -300,7 +305,7 @@ namespace Bloom.Book
         /// <param name="page"></param>
         /// <param name="iso639CodeToShow">NB: this isn't always the vernacular. If we're showing template pages, it will be, um, English?</param>
         /// <returns></returns>
-        public XmlDocument GetPreviewXmlDocumentForPage(IPage page, string iso639CodeToShow)
+        public XmlDocument GetPreviewXmlDocumentForPage(IPage page)
         {
             if(!_storage.LooksOk)
             {
@@ -491,6 +496,12 @@ namespace Bloom.Book
     		AddPreviewJScript(dom);
             return dom;
         }
+
+		public void UpdateXMatter()
+		{
+			RebuildXMatter(RawDom);
+			_bookRefreshEvent.Raise(this);
+		}
 
     	private void RebuildXMatter(XmlDocument dom)
     	{
@@ -716,11 +727,17 @@ namespace Bloom.Book
             }
         }
 
-		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)
+		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)//, Action<Image> thumbNailReadyCallback)
 		{
-			return new Page(pageNode, caption,
-                    (page => _thumbnailProvider.GetThumbnail(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false)),
-					(page => FindPageDiv(page)));
+			return new Page(this, pageNode, caption,
+//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
+//					//	(page => GetPageThumbNail()),
+						(page => FindPageDiv(page)));
+		}
+
+		public Image GetPageThumbNail()
+		{
+			return Resources.Error70x70;
 		}
 
         private XmlElement FindPageDiv(IPage page)
@@ -1348,5 +1365,12 @@ namespace Bloom.Book
 			}
 
 		}
+
+    	public void RebuildThumbNailAsync(Action<Book,Image> callback)
+    	{
+    		_storage.RemoveBookThumbnail();
+    		_thumbnailProvider.RemoveFromCache(_storage.Key);
+			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image));
+    	}
     }
 }

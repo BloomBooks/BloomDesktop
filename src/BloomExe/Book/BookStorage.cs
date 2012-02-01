@@ -41,6 +41,7 @@ namespace Bloom.Book
         void SetBookName(string name);
         string GetValidateErrors();
         void UpdateBookFileAndFolderName(LibrarySettings settings);
+    	void RemoveBookThumbnail();
     }
 
     public class BookStorage : IBookStorage
@@ -483,6 +484,15 @@ namespace Bloom.Book
                     ids.Add(id);
             }
         }
+
+		public void RemoveBookThumbnail()
+		{
+			string path = Path.Combine(_folderPath, "thumbnail.png");
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
+		}
 
         public bool TryGetPremadeThumbnail(out Image image)
         {

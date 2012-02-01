@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
+using Palaso.Code;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -15,21 +16,24 @@ namespace Bloom.Book
     	XmlElement GetDivNodeForThisPage();
         bool Required { get; }
         bool CanRelocate { get;}
+    	Book Book { get; set; }
     }
 
     public class Page : IPage
     {
     	private readonly string _id;
         private readonly Func<IPage, Image> _getThumbnail;
-        private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
+    	private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
         private List<string> _classes;
     	private List<string> _tags;
 
-    	public Page(XmlElement sourcePage,  string caption, Func<IPage, Image> getThumbnail, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
+    	public Page(Book book, XmlElement sourcePage,  string caption, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
         {
         	_id = sourcePage.Attributes["id"].Value;
-            _getThumbnail = getThumbnail;
-            _getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
+            //_getThumbnail = getThumbnail;
+			Guard.AgainstNull(book,"Book");
+    		Book = book;
+    		_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
             Caption = caption;
             ReadClasses(sourcePage);
 			ReadPageTags(sourcePage);
@@ -65,7 +69,9 @@ namespace Bloom.Book
             get { return !Required; }
         }
 
-        public string Id{get { return _id; }}
+    	public Book Book { get; set; }
+
+    	public string Id{get { return _id; }}
 
     	public string Caption { get; private set; }
         public Image Thumbnail { get 
