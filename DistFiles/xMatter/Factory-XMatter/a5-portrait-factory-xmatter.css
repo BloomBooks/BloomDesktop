@@ -1,5 +1,5 @@
 /*Cover Page*/
-.cover .vernacularBookTitle
+.cover .bookTitle.bloom-content1
 {
 	font-size: 30pt;
 	height: 3.3cm;
@@ -15,7 +15,7 @@
 	left: -5px;
 	top: 6px;
 }
-.cover .titleN1
+.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 12pt;
 	height: 0.8cm;
@@ -30,6 +30,10 @@
 	position: absolute;
 	left: -4px;
 	top: 142px;
+}
+.cover .bookTitle.bloom-contentNational2
+{
+	display: none;
 }
 .cover DIV.bloom-imageContainer
 {
@@ -73,13 +77,48 @@ DIV.titlePage
 	margin: 0;
 	padding: 0;
 	text-align: center;
+	/*+placement:shift;*/
+	position: relative;
+	left: 0;
+	top: 0;
+}
+DIV#titePageTitleBlock DIV.bloom-content1
+{
+	font-size: 26.1pt;
+	height: 111px;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 0px;*/
+	position: absolute;
+	left: 16px;
+	top: 0px;
+	width: 419px;
+}
+DIV#titePageTitleBlock DIV.bloom-contentNational1
+{
+	height: 35px;
+	text-align: center;
+	/*+placement:anchor-top-left 15px 119px;*/
+	position: absolute;
+	left: 15px;
+	top: 119px;
+	width: 419px;
+}
+DIV#titePageTitleBlock DIV.bloom-contentNational2
+{
+	height: 35px;
+	text-align: center;
+	/*+placement:anchor-top-left 15px 159px;*/
+	position: absolute;
+	left: 15px;
+	top: 159px;
+	width: 419px;
 }
 DIV.ISBNContainer
 {
-	/*+placement:anchor-top-left 74px 445px;*/
+	/*+placement:anchor-top-left 74px 459px;*/
 	position: absolute;
 	left: 74px;
-	top: 445px;
+	top: 459px;
 	width: 424px;
 }
 DIV.ISBNContainer DIV
@@ -92,17 +131,6 @@ DIV.ISBNContainer DIV
 	left: 1px;
 	top: 4px;
 	min-width: 120px;
-}
-DIV.titlePage .titleV
-{
-	font-size: 26.1pt;
-	height: 111px;
-	text-align: center;
-	/*+placement:anchor-top-left 16px 0px;*/
-	position: absolute;
-	left: 16px;
-	top: 0px;
-	width: 419px;
 }
 .titlePage .titleN1
 {
@@ -128,13 +156,18 @@ DIV.titlePage .titleV
 }
 DIV.titlePage .credits
 {
+	display: none;
+}
+DIV.titlePage .credits.bloom-contentNational1
+{
 	height: 131px;
-	/*+placement:anchor-top-left 65px 318px;*/
+	/*+placement:anchor-top-left 65px 209px;*/
 	position: absolute;
 	left: 65px;
-	top: 318px;
+	top: 209px;
 	text-align: center;
 	width: 421px;
+	display: block;
 }
 DIV.titlePage DIV#languageInformation
 {
@@ -187,10 +220,10 @@ DIV#versoLicenseAndCopyright
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left 3px 37px;*/
+	/*+placement:anchor-top-left 3px 57px;*/
 	position: absolute;
 	left: 3px;
-	top: 37px;
+	top: 57px;
 	width: 449px;
 }
 DIV.copyright
@@ -238,8 +271,13 @@ DIV.licenseUrl
 }
 DIV.originalAcknowledgments
 {
+	display: none;
+}
+DIV.originalAcknowledgments.bloom-contentNational1
+{
 	height: 268px;
 	width: 454px;
 	margin-left: 55px;
 	margin-top: 43px;
+	display: block;
 }

@@ -78,7 +78,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument FrontMatterDom { get; set; }
 
-		public void InjectXMatter( DataSet data)
+		public void InjectXMatter( Dictionary<string, string> writingSystemCodes)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -102,14 +102,14 @@ namespace Bloom.Book
 			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
 				var newPageDiv = _dom.ImportNode(frontMatterPage, true) as XmlElement;
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + data.WritingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + data.WritingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + data.WritingSystemCodes["N1"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + data.WritingSystemCodes["N1"] + '"');
-				if (!String.IsNullOrEmpty(data.WritingSystemCodes["N2"]))  //otherwise, styleshee will hide it
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + writingSystemCodes["V"] + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + writingSystemCodes["N1"] + '"');
+				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + writingSystemCodes["N1"] + '"');
+				if (!String.IsNullOrEmpty(writingSystemCodes["N2"]))  //otherwise, styleshee will hide it
 				{
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + data.WritingSystemCodes["N2"] + '"');
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + data.WritingSystemCodes["N2"] + '"');
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + writingSystemCodes["N2"] + '"');
+					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
 				}
 				_dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
