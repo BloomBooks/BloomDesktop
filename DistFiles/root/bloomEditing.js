@@ -8,6 +8,20 @@ $.fn.VAlign = function() {
     });
 };
 
+function isBrOrWhitespace(node) {
+    return node && ( (node.nodeType == 1 && node.nodeName.toLowerCase() == "br") ||
+           (node.nodeType == 3 && /^\s*$/.test(node.nodeValue) ) );
+}
+
+function TrimTrailingLineBreaksInDivs(node) {
+    while ( isBrOrWhitespace(node.firstChild) ) {
+        node.removeChild(node.firstChild);
+    }
+    while ( isBrOrWhitespace(node.lastChild) ) {
+        node.removeChild(node.lastChild);
+    }
+}
+
 function Cleanup() {
 
     // remove the div's which qtip makes for the tips themselves
@@ -42,6 +56,10 @@ function Cleanup() {
             $(this).removeClass('bloom-hideWhenPublishing');
         }
     });
+
+  $('div.bloom-editable').each( function() {
+    TrimTrailingLineBreaksInDivs(this);
+  });
 }
 
 function MakeSourceTextDivForGroup(group) {
@@ -191,8 +209,9 @@ jQuery(document).ready(function() {
     $(".bloom-translationGroup").each(function() {
         var contentElements = $(this).find("textarea, div");
         contentElements.sort(function(a, b) {
-            var scoreA = $(a).hasClass('bloom-content1') + ($(a).hasClass('bloom-content2') * 2) + ($(a).hasClass('bloom-content3') * 3);
-            var scoreB = $(b).hasClass('bloom-content1') + ($(b).hasClass('bloom-content2') * 2) + ($(b).hasClass('bloom-content3') * 3);
+      //using negatives so that something with none of these labels ends up with a > score and at the end
+            var scoreA = $(a).hasClass('bloom-content1')*-3 + ($(a).hasClass('bloom-content2') * -2) + ($(a).hasClass('bloom-content3') * -1);
+            var scoreB = $(b).hasClass('bloom-content1')*-3 + ($(b).hasClass('bloom-content2') * -2) + ($(b).hasClass('bloom-content3') * -1);
             if (scoreA < scoreB)
                 return -1;
             if (scoreA > scoreB)
