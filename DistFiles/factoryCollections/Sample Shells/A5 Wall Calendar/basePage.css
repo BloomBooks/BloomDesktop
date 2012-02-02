@@ -92,3 +92,17 @@ P
 {
 	margin-left: 1cm;
 }
+/*Unless otherwise positioned and made visible, hide all the language elements in there*/
+DIV.bloom-translationGroup DIV
+{
+	display: none;
+}
+/*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
+DIV.bloom-page:not(.bloom-frontMatter) .bloom-content1, DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2, DIV.bloom-page:not(.bloom-frontMatter) .bloom-content3
+{
+	display: inherit;
+}
+DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2
+{
+	display: inherit;
+}
