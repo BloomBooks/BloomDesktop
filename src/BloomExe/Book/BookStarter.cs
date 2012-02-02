@@ -247,12 +247,12 @@ namespace Bloom.Book
 			var contentLanguages = new Dictionary<string, string>();
 			contentLanguages.Add(vernacularIso, "bloom-content1");
 
-			if (!string.IsNullOrEmpty(contentLanguageIso2))
+			if (!string.IsNullOrEmpty(contentLanguageIso2) && vernacularIso!= contentLanguageIso2)
 			{
 				multilingualClass = "bloom-bilingual";
 				contentLanguages.Add(contentLanguageIso2, "bloom-content2");
 			}
-			if(!string.IsNullOrEmpty(contentLanguageIso3))
+			if (!string.IsNullOrEmpty(contentLanguageIso3) && vernacularIso != contentLanguageIso3 && contentLanguageIso2 != contentLanguageIso3 )
 			{
 				multilingualClass = "bloom-trilingual";
 				Debug.Assert(!string.IsNullOrEmpty(contentLanguageIso2), "shouldn't have a content3 lang with no content2 lang");
@@ -270,15 +270,16 @@ namespace Bloom.Book
 
 			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
 			{
+				var isFrontMatter = group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter')]").Count>0;
 				foreach (XmlElement e in group.SafeSelectNodes("//textarea | //div")) //nb: we don't necessarily care that a div is editable or not
 				{
 					var lang = e.GetAttribute("lang");
 					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
-					if (lang == national1Iso)
+					if (isFrontMatter && lang == national1Iso)
 					{
 						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational1").Trim());
 					}
-					if (!string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
+					if (isFrontMatter && !string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
 					{
 						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational2").Trim());
 					}

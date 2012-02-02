@@ -243,10 +243,10 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 			d.Add(_librarySettings.VernacularIso639Code, _librarySettings.VernacularLanguageName);
-			if (!d.ContainsKey(_librarySettings.NationalLanguage1Iso639Code))
-			d.Add(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
-			if (!d.ContainsKey(_librarySettings.NationalLanguage2Iso639Code))
-			d.Add(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code));
+			if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code) && !d.ContainsKey(_librarySettings.NationalLanguage1Iso639Code))
+				d.Add(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
+			if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code) && !d.ContainsKey(_librarySettings.NationalLanguage2Iso639Code))
+				d.Add(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage2Iso639Code));
 
 			d.Add("vernacularLang", _librarySettings.VernacularIso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _librarySettings.VernacularLanguageName);

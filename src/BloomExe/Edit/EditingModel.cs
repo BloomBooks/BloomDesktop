@@ -148,7 +148,7 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-					   !_pageSelection.CurrentSelection.Required && !_currentlyDisplayedBook.LockedExceptForTranslation;
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook!=null && !_currentlyDisplayedBook.LockedExceptForTranslation;
 			}
 
 		}
