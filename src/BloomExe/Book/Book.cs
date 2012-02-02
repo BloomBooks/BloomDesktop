@@ -224,7 +224,7 @@ namespace Bloom.Book
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
-			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, _librarySettings.NationalLanguage1Iso639Code, _librarySettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			return dom;
 		}
 
@@ -251,7 +251,7 @@ namespace Bloom.Book
 			d.Add("vernacularLang", _librarySettings.VernacularIso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _librarySettings.VernacularLanguageName);
 			d.Add("{N1}", _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
-			d.Add("{N2}", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage1Iso639Code));
+			d.Add("{N2}", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage2Iso639Code));
 
 			//REVIEW: this is deviating a bit from the normal use of the dictionary...
 			d.Add("urlOfUIFiles", "file:///"+ _fileLocator.LocateDirectory("ui", "ui files directory"));
@@ -490,7 +490,7 @@ namespace Bloom.Book
 			{
 				RebuildXMatter(dom);
 			}
-			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, _librarySettings.NationalLanguage1Iso639Code, _librarySettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			AddCoverColor(dom, CoverColor);
 
 			AddPreviewJScript(dom);
@@ -499,6 +499,7 @@ namespace Bloom.Book
 
 		public void UpdateXMatter()
 		{
+			_pagesCache = null;
 			RebuildXMatter(RawDom);
 			_bookRefreshEvent.Raise(this);
 		}
@@ -507,10 +508,11 @@ namespace Bloom.Book
 		{
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
 			var data = LoadDataSetFromLibrarySettings(false);
+			GatherDataItemsFromDom(data, "*", RawDom);
 			var helper = new XMatterHelper(dom, _librarySettings.XMatterPackName, _fileLocator);
 			XMatterHelper.RemoveExistingXMatter(dom);
-			helper.InjectXMatter(data);
-			GatherDataItemsFromDom(data, "*", dom);
+			helper.InjectXMatter(data.WritingSystemCodes);
+			BookStarter.PrepareElementsInPageOrDocument(dom, _librarySettings);
 			UpdateDomWIthDataItems(data, "*", dom);
 		}
 
@@ -1297,7 +1299,8 @@ namespace Bloom.Book
 								lang = data.WritingSystemCodes[lang];
 							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
-								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*" });
+								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*"});//, "en", "fr", "es" });//review: I really hate to lose the data, but I admit, this is trying a bit too hard :-)
+
 
 								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it write.
 								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
@@ -1351,7 +1354,7 @@ namespace Bloom.Book
 		/// *changing xmatter pack, and update to it, changing the languages, etc.
 		/// *the book was dragged from another project
 		/// *the editing language was changed.
-		/// Under those conditions, if we didn't, for example, do a PrepareElementsOnPage, we would end up with no
+		/// Under those conditions, if we didn't, for example, do a PrepareElementsInPageOrDocument, we would end up with no
 		/// editable items, because there are no elements in our language.
 		/// </summary>
 		public void PrepareForEditing()
@@ -1360,8 +1363,8 @@ namespace Bloom.Book
 
 			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				BookStarter.PrepareElementsOnPage(div, _librarySettings);
-				BookStarter.UpdateContentLanguageClasses(div, _librarySettings.VernacularIso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+				BookStarter.PrepareElementsInPageOrDocument(div, _librarySettings);
+				BookStarter.UpdateContentLanguageClasses(div, _librarySettings.VernacularIso639Code, _librarySettings.NationalLanguage1Iso639Code, _librarySettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			}
 
 		}

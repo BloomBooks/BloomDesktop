@@ -120,7 +120,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter( data);
+				helper.InjectXMatter(data.WritingSystemCodes);
 			}
 
 
@@ -181,7 +181,7 @@ namespace Bloom.Book
 
 		public static void SetupPage(XmlElement pageDiv, LibrarySettings librarySettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
-			PrepareElementsOnPage(pageDiv, librarySettings);//, inShellMode);
+			PrepareElementsInPageOrDocument(pageDiv, librarySettings);//, inShellMode);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -223,25 +223,25 @@ namespace Bloom.Book
 		/// with the lang code of the vernacular.
 		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
-		/// <param name="pageDiv"></param>
-		public static void PrepareElementsOnPage(XmlElement pageDiv, LibrarySettings librarySettings)//, bool inShellMode)
+		/// <param name="node"></param>
+		public static void PrepareElementsInPageOrDocument(XmlNode node, LibrarySettings librarySettings)//, bool inShellMode)
 		{
-			PrepareElementsOnPageOneLanguage(pageDiv, librarySettings.VernacularIso639Code);
+			PrepareElementsOnPageOneLanguage(node, librarySettings.VernacularIso639Code);
 
 			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
-			BookStarter.PrepareElementsOnPageOneLanguage(pageDiv,librarySettings.NationalLanguage1Iso639Code);
+			BookStarter.PrepareElementsOnPageOneLanguage(node,librarySettings.NationalLanguage1Iso639Code);
 
 			//nb: really we need to have a place where we list the bilgual/triligual desires, and that may be book specific
 			if(!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code))
 			{
-				BookStarter.PrepareElementsOnPageOneLanguage(pageDiv, librarySettings.NationalLanguage2Iso639Code);
+				BookStarter.PrepareElementsOnPageOneLanguage(node, librarySettings.NationalLanguage2Iso639Code);
 			}
 		}
 
 		/// <summary>
 		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
 		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
+		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string vernacularIso, string national1Iso, string national2Iso, string contentLanguageIso2, string contentLanguageIso3)
 		{
 			var multilingualClass = "bloom-monolingual";
 			var contentLanguages = new Dictionary<string, string>();
@@ -274,6 +274,14 @@ namespace Bloom.Book
 				{
 					var lang = e.GetAttribute("lang");
 					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
+					if (lang == national1Iso)
+					{
+						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational1").Trim());
+					}
+					if (!string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
+					{
+						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational2").Trim());
+					}
 					foreach (var language in contentLanguages)
 					{
 						if(lang == language.Key)
@@ -302,11 +310,11 @@ namespace Bloom.Book
 			xmlElement.SetAttribute("class", classes.Trim());
 		}
 
-		private static void PrepareElementsOnPageOneLanguage(XmlElement pageDiv, string isoCode)
+		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
 		{
 			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
 			{
-				MakeVernacularElementForOneGroup(groupElement, isoCode, "*");
+				MakeElementWithLanguageForOneGroup(groupElement, isoCode, "*");
 				//remove any elements in teh translationgroup which don't have a lang
 				foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang)]"))
 				{
@@ -341,7 +349,7 @@ namespace Bloom.Book
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
-		private static void MakeVernacularElementForOneGroup(XmlElement groupElement, string vernacularCode, string elementTag)
+		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string vernacularCode, string elementTag)
 		{
 			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
 
@@ -370,9 +378,9 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="pageDiv"></param>
 		/// <returns></returns>
-//		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement pageDiv)
+//		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement node)
 //	    {
-////			foreach (XmlElement element in pageDiv.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
+////			foreach (XmlElement element in node.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
 ////	        {
 ////	        	yield return (XmlElement) element.ParentNode;
 ////	        }

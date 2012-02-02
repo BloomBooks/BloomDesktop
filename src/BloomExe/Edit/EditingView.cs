@@ -444,5 +444,10 @@ namespace Bloom.Edit
 //			_model.ContentLanguagesSelectionChanged();
 		}
 
+		public void ClearOutDisplay()
+		{
+			_pageListView.Clear();
+			_browser1.Navigate("about:blank",false);
+		}
 	}
 }

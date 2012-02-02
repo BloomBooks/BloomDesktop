@@ -11,8 +11,9 @@
 <body>
 	<!-- FRONT COVER --->
 	<div class="bloom-page cover coverColor bloom-frontMatter" data-page="required singleton" id="74731b2d-18b0-420f-ac96-6de20f659810">
-		<div data-book="bookTitle" data-hint="Book title" class="bloom-editable vernacularBookTitle coverColor" lang="V">{Title in Vernacular}</div>
-		<div data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 bloom-editable readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</div>
+		<div class="bloom-translationGroup">
+			<div data-book="bookTitle" data-hint="Book title in {lang}" class="bookTitle bloom-editable"></div>
+		</div>
 
 		<div  class="bloom-imageContainer"><img  data-book='coverImage' src="placeholder.png" /></div>
 
@@ -32,20 +33,21 @@
 	 <!-- TITLE PAGE --->
 	<div class="bloom-page titlePage bloom-frontMatter" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
 		<div class="pageLabel" lang="en">Title Page</div>
-		<div id="titePageTitleBlock">
-			<div data-book='bookTitle' class="titleV" readonly="readonly" lang="V">{Title in Vernacular}</div>
-			<div data-book="bookTitle"  data-hint="Title in {N1}" class="titleN1 readOnlyInTranslationMode "  lang="N1">{Title In National Language 1}</div>
-			<div data-book="bookTitle" data-hint="Title in {N2}" class="titleN2 readOnlyInTranslationMode "  lang="N2">{Title In National Language 2}</div>
+		<div id="titePageTitleBlock" class="bloom-translationGroup"  >
+			<div data-book='bookTitle' class="bloom-editable" data-hint="Book title in {lang}"></div>
 		</div>
 
-		<div class="credits bloom-editable" lang="N1" data-hint="The contributions made by writers, illustrators, editors, etc."> </div>
-		<div class="ISBNContainer"><span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN" class="bloom-editable" lang="N1" data-hint="International Standard Book Number"> </div></div>
+		 <div class="bloom-translationGroup">
+			  <div data-book="originalContributions" class="credits bloom-editable" data-hint="The contributions made by writers, illustrators, editors, etc. in {lang}"> </div>
+		  </div>
+		<div class="ISBNContainer" data-hint="International Standard Book Number">
+			<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN" class="bloom-editable" lang="*"> </div>
+		</div>
 
 		<div id="languageInformation">
 			<div data-library="nameOfLanguage" lang="N1" class="langName ">{Lang in N1}</div>
 			<div data-library="nameOfLanguage" lang="N2"  class="langName ">{Lang in N2}</div>
 			<div data-library="dialect" class="dialect " lang="N1">{Dialect N1}</div>
-			<br />
 			<div data-library="languageLocation" class="languageLocation" lang="N1"/>
 		</div>
 	</div>
@@ -53,17 +55,19 @@
 	<!-- VERSO PAGE --->
 	<div class="bloom-page verso bloom-frontMatter" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
 		<div class="pageLabel" lang="en">Verso Page</div>
-		<div contenteditable="true" data-book="originalAcknowledgments" data-hint="Acknowledgments" lang="N1" class = "originalAcknowledgments editable readOnlyInTranslationMode" >{Original Acknowledgments}</div>
+		   <div class="bloom-translationGroup" >
+			  <div contenteditable="true"  data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments"lang="N1" class = "originalAcknowledgments editable readOnlyInTranslationMode" >{Original Acknowledgments}</div>
+		   </div>
 		<div class="bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
 			<button id="editCopyrightAndLicense">Edit Copyright &amp; License</button>
-			<div data-book="copyright" class="copyright " lang="N1">{copyright}</div>
+			<div data-book="copyright" class="copyright " lang="*">{copyright}</div>
 			<img data-book="licenseImage" class="licenseImage" src=""/>
-			<div data-book="licenseUrl" class="licenseUrl" lang="N1">{License Url}</div>
-			<div data-book="licenseNotes" class="licenseNotes" lang="N1">{License Notes}</div>
-			<div class="licenseDescription" lang="N1">{License Description}</div>
+			<div data-book="licenseUrl" class="licenseUrl" lang="en">{License Url}</div>
+			<div data-book="licenseNotes" class="licenseNotes" lang="en">{License Notes}</div> <!--might need to change -->
+			<div data-book="licenseDescription" class="licenseDescription" lang="en">{License Description}</div>
 		</div>
 		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
-		<div class="versionAcknowledgments bloom-editable readOnlyInEditMode" lang="N1" data-hint="Acknowledgments for translated version"></div>
+		<div class="versionAcknowledgments bloom-editable readOnlyInEditMode" lang="N1" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version in {lang}"></div>
 	</div>
 	</body>
 </html>

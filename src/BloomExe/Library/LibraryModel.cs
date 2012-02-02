@@ -96,7 +96,10 @@ namespace Bloom.Library
 
 		public void UpdateFrontMatter()
 		{
-			_bookSelection.CurrentSelection.UpdateXMatter();
+			var b = _bookSelection.CurrentSelection;
+			_bookSelection.SelectBook(null);
+			b.UpdateXMatter();
+			_bookSelection.SelectBook(b);
 		}
 
 		public void UpdateThumbnailAsync(Action<Book.Book,Image> callback)

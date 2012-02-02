@@ -73,6 +73,8 @@ namespace Bloom.Edit
 		{
 			//prevent trying to save this page in whatever comes next
 			_domForCurrentPage = null;
+			_currentlyDisplayedBook = null;
+			_view.ClearOutDisplay();
 		}
 
 		private void OnDeletePage()

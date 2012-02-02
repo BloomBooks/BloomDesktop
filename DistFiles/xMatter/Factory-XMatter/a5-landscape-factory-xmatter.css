@@ -1,4 +1,12 @@
 /*Cover Page*/
+DIV.titleN1
+{
+	/*+placement:anchor-top-left 33px 107px;*/
+	position: absolute;
+	left: 33px;
+	top: 107px;
+	width: 275px;
+}
 .cover .vernacularBookTitle
 {
 	font-size: 30pt;
@@ -15,7 +23,7 @@
 	left: -44px;
 	top: -35px;
 }
-.cover .imageHolder
+.cover .bloom-imageContainer
 {
 	height: 8.6cm;
 	width: 726px;
@@ -55,10 +63,10 @@ DIV.coverBottomLangName
 	position: absolute;
 	text-align: left;
 	width: 8.6cm;
-	/*+placement:anchor-top-left 26px 458px;*/
+	/*+placement:anchor-top-left 29px 498px;*/
 	position: absolute;
-	left: 26px;
-	top: 458px;
+	left: 29px;
+	top: 498px;
 }
 /*Title Page*/
 .titlePage
