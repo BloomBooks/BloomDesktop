@@ -1,4 +1,8 @@
 /*Cover Page*/
+.cover .bookTitle
+{
+	display: none;
+}
 .cover .bookTitle.bloom-content1
 {
 	font-size: 30pt;
@@ -14,6 +18,7 @@
 	position: absolute;
 	left: -5px;
 	top: 6px;
+	display: block;
 }
 .cover .bookTitle.bloom-contentNational1
 {
@@ -30,10 +35,7 @@
 	position: absolute;
 	left: -4px;
 	top: 142px;
-}
-.cover .bookTitle.bloom-contentNational2
-{
-	display: none;
+	display: block;
 }
 .cover DIV.bloom-imageContainer
 {
@@ -82,6 +84,11 @@ DIV.titlePage
 	left: 0;
 	top: 0;
 }
+/*Unless otherwise positioned and made visible, hide all the language elements in there*/
+DIV.bloom-translationGroup DIV
+{
+	display: none;
+}
 DIV#titePageTitleBlock DIV.bloom-content1
 {
 	font-size: 26.1pt;
@@ -92,6 +99,7 @@ DIV#titePageTitleBlock DIV.bloom-content1
 	left: 16px;
 	top: 0px;
 	width: 419px;
+	display: block;
 }
 DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
@@ -102,15 +110,12 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 	left: 15px;
 	top: 119px;
 	width: 419px;
+	display: block;
 }
 DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
 	height: 35px;
 	text-align: center;
-	/*+placement:anchor-top-left 15px 159px;*/
-	position: absolute;
-	left: 15px;
-	top: 159px;
 	width: 419px;
 }
 DIV.ISBNContainer
@@ -177,6 +182,11 @@ DIV.titlePage DIV#languageInformation
 	top: 424px;
 	width: 425px;
 	margin-left: 78px;
+	height: 155px;
+}
+DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational1
+{
+	display: block;
 }
 DIV.languageLocation
 {

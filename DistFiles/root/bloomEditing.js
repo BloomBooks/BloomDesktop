@@ -105,7 +105,8 @@ function MakeSourceTextDivForGroup(group) {
             var languageName = dictionary[iso];
             if (!languageName)
                 languageName = iso;
-            var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */|| $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3') || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2');
+            var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+		
 
             // in translatino mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (shellEditingMode || !shouldShowOnPage) {
@@ -118,8 +119,14 @@ function MakeSourceTextDivForGroup(group) {
     if ($(divForBubble).find("li").length > 0) {
         $(divForBubble).easytabs({
             animate: false
-        });
-    }
+        })
+	}
+	else {
+		$(divForBubble).remove();//no tabs, so hide the bubble
+		return;
+	}
+		
+    
 
 
     // turn that tab thing into a bubble, and attach it to the original div ("group")
@@ -237,8 +244,10 @@ jQuery(document).ready(function() {
         };
     }
 
-    //put hint bubbles next to elements which call for them
+    //put hint bubbles next to elements which call for them.
+	//show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
     $("*[data-hint]").each(function() {
+		
         if ($(this).css('border-bottom-color') == 'transparent') {
             return; //don't put tips if they can't edit it. That's just confusing
         }
@@ -258,17 +267,22 @@ jQuery(document).ready(function() {
             
             whatToSay = whatToSay.replace("{lang}", dictionary[$(this).attr('lang')]);
         }
+		
+		var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
+		var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
         $(this).qtip({
             content: whatToSay,
             position: pos,
             show: {
-                event: false, // Don't specify a show event...
-                ready: true // ... but show the tooltip when ready
+                event: " focusin mouseenter",
+                ready:  shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
             },
-            hide: false,
+            hide: {
+				event:hideEvents
+			},
             style: {
                 classes: theClasses
-            },
+            }
             //the following is to limit how much stuff qtip leaves in our DOM
             //since we actually save the dom, we dont' want this stuff
             //1) we're using data-hint instead of title. That makes it easy
@@ -277,14 +291,14 @@ jQuery(document).ready(function() {
             //2) we prerender
             //3) after the render, we clean up this aria-describedby attr
             //4) somebody needs to call the qtipCleanupFunction to remove the div
-            prerender: true,
-            events: {
-                render: function(event, api) {
-                    $('*[oldtitle]').each(function() {
-                        $(this)[0].removeAttribute('aria-describedby');
-                    });
-                }
-            }
+  //          prerender: true,
+  //          events: {
+  //              render: function(event, api) {
+  //                  $('*[oldtitle]').each(function() {
+  //                      $(this)[0].removeAttribute('aria-describedby');
+  //                  });
+  //              }
+   //         }
         });
     });
     
@@ -368,7 +382,7 @@ jQuery(document).ready(function() {
 
     //Same thing for divs which are potentially editable.
     // editTranslationMode.css is responsible for making this transparent, but it can't reach the contentEditable attribute.
-    $('div.readOnlyInTranslationMode').focus(function() {
+    $('div.bloom-readOnlyInTranslationMode').focus(function() {
         if ($(this).css('border-bottom-color') == 'transparent') {
             $(this).removeAttr("contentEditable");
         } 
@@ -412,7 +426,7 @@ jQuery(document).ready(function() {
 
     //focus on the first editable field
     //$(':input:enabled:visible:first').focus();
-    $("textarea, div.bloom-editable").first().focus(); //review: this might chose a textarea which appears after the div. Could we sort on the tab order?
+    $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
     
     SetupTopicDialog();
 
