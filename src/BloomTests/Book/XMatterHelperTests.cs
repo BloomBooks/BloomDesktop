@@ -46,7 +46,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetStyleSheetFileName_AllDefaults_Correct()
 		{
-			Assert.AreEqual("A5-portrait-Factory-XMatter.css",CreateHelper().GetStyleSheetFileName());
+			Assert.AreEqual("Factory-XMatter.css",CreateHelper().GetStyleSheetFileName());
 		}
 
 		[Test]

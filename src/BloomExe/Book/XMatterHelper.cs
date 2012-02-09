@@ -53,8 +53,9 @@ namespace Bloom.Book
 
 		public string GetStyleSheetFileName()
 		{
-			var sizeAndOrientation = SizeAndOrientation.FromDom(_dom);
-			return sizeAndOrientation.PageSizeName + "-" + sizeAndOrientation.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
+//			var sizeAndOrientation = SizeAndOrientation.FromDom(_dom);
+//			return sizeAndOrientation.PageSizeName + "-" + sizeAndOrientation.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
+			return _nameOfXMatterPack + "-XMatter.css";
 		}
 
 		/// <summary>
