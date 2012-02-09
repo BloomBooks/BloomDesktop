@@ -368,18 +368,57 @@ namespace Bloom.Edit
 
 		public void UpdateDisplay()
 		{
-			_updatingDisplay = true;
-			_contentLanguagesDropdown.DropDownItems.Clear();
-			foreach (var l in _model.ContentLanguages)
+			try
 			{
-				ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
-				item.Tag = l;
-				item.Enabled = !l.Locked;
-				item.Checked = l.Selected;
-				item.CheckOnClick = true;
-				item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);
+				_updatingDisplay = true;
+#if !DEBUG
+			toolStripButton1.Visible = false;
+#endif
+				_contentLanguagesDropdown.DropDownItems.Clear();
+				foreach (var l in _model.ContentLanguages)
+				{
+					ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
+					item.Tag = l;
+					item.Enabled = !l.Locked;
+					item.Checked = l.Selected;
+					item.CheckOnClick = true;
+					item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);
+				}
+
+				_pageSizeAndOrientationChoices.DropDownItems.Clear();
+				var currentPageSizeAndOrientation = _model.GetCurrentPageSizeAndOrientation().ToLower();
+				foreach (var l in _model.GetPageSizeAndOrientationChoices())
+				{
+					ToolStripMenuItem item = (ToolStripMenuItem) _pageSizeAndOrientationChoices.DropDownItems.Add(l);
+					item.Tag = l;
+					item.Checked = l.ToLower() == currentPageSizeAndOrientation;
+					item.CheckOnClick = true;
+					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+				}
+
+				_pageSizeAndOrientationChoices.Text = currentPageSizeAndOrientation;
+
 			}
-			_updatingDisplay = false;
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem updating the edit display.");
+			}
+			finally
+			{
+				_updatingDisplay = false;
+			}
+		}
+
+		private void _pageSizeAndOrientationChoices_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
+
+		void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			_model.SetPaperSizeAndOrientation((string)item.Tag);
+			UpdateDisplay();
 		}
 
 		void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
@@ -449,5 +488,12 @@ namespace Bloom.Edit
 			_pageListView.Clear();
 			_browser1.Navigate("about:blank",false);
 		}
+
+		private void OnClickOpenInStylizer(object sender, EventArgs e)
+		{
+			_model.OpenPageInStylizer();
+		}
+
+
 	}
 }

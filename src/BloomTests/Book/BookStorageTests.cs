@@ -23,7 +23,7 @@ namespace BloomTests.Book
 			_fileLocator = new FileLocator(new string[]
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait")
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book")
 											});
 			_fixtureFolder = new TemporaryFolder("BloomBookStorageTest");
 			_folder = new TemporaryFolder(_fixtureFolder,"theBook");
@@ -40,10 +40,10 @@ namespace BloomTests.Book
 		[Test]
 		public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
 		{
-			File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='A5Portrait.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+			File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
 			storage.Save();
-			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
+			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
 
 		[Test]

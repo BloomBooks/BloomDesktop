@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 using Palaso.TestUtilities;
 using Palaso.Xml;
 
@@ -38,7 +39,7 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
-			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(()=>(XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
+			_storage.Setup(x => x.GetRelocatableCopyOfDom(new NullProgress())).Returns(()=>(XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
 
 
 			_testFolder = new TemporaryFolder("BookTests");
@@ -400,6 +401,15 @@ namespace BloomTests.Book
 			Assert.AreEqual(2, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[1].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[1].Attributes["src"].Value.Contains(".js"));
+		}
+
+
+		[Test]
+		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
+		{
+			var book = CreateBook();
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]", 1);
 		}
 
 		[Test]

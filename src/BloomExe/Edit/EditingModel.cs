@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters;
 using System.Windows.Forms;
@@ -176,6 +177,20 @@ namespace Bloom.Edit
 				return _contentLanguages;
 			}
 		}
+
+		public IEnumerable<string> GetPageSizeAndOrientationChoices()
+		{
+			return CurrentBook.GetPageSizeAndOrientationChoices();
+		}
+
+		public void SetPaperSizeAndOrientation(string paperSizeAndOrientationName)
+		{
+			SaveNow();
+			CurrentBook.SetPaperSizeAndOrientation(paperSizeAndOrientationName);
+			CurrentBook.PrepareForEditing();
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+		}
+
 		/// <summary>
 		/// user has selected or de-selected a content language
 		/// </summary>
@@ -198,8 +213,8 @@ namespace Bloom.Edit
 
 			//Reload to display these changes
 			SaveNow();
-			_bookSelection.CurrentSelection.SetMultilingualContentLanguages(l2,l3);
-			_bookSelection.CurrentSelection.PrepareForEditing();
+			CurrentBook.SetMultilingualContentLanguages(l2, l3);
+			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
@@ -348,6 +363,19 @@ namespace Bloom.Edit
 		}
 
 
+		public string GetCurrentPageSizeAndOrientation()
+		{
+			return CurrentBook.GetSizeAndOrientation().ToString();
+		}
+
+		public void OpenPageInStylizer()
+		{
+			string path = Path.GetTempFileName();
+			var dom = GetXmlDocumentForCurrentPage();
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			XmlHtmlConverter.SaveDOMAsHtml5(dom, path);
+			Process.Start("c:\\Program Files (x86)\\Skybound Stylizer 5\\Stylizer.exe", path);
+		}
 	}
 
 		//_book.DeletePage(_pageSelection.CurrentSelection);

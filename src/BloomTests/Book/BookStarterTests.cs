@@ -37,7 +37,7 @@ namespace BloomTests.Book
 												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "A5Portrait"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
 											});
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), _librarySettings.Object);
@@ -144,7 +144,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"A5Portrait");
+																			"Basic Book");
 
 			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 		}
@@ -154,7 +154,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"A5Portrait");
+																			"Basic Book");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -170,7 +170,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5AndXMatter_CoverTitleIsIntiallyEmpty()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"A5Portrait");
+																			"Basic Book");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -178,12 +178,12 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromFactoryA5Portrait_CreatesWithCorrectStylesheets()
+		public void CreateBookOnDiskFromTemplate_FromFactoryBasicBook_CreatesWithCorrectStylesheets()
 		{
-				 var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "A5Portrait");
+				 var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
 
 				 var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
-				AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'A5Portrait')]", 1);
+				AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 				AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 				AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
 		}
@@ -368,7 +368,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_GetsExpectedName()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"A5Portrait");
+																			"Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
@@ -534,7 +534,7 @@ namespace BloomTests.Book
 			Directory.CreateDirectory(_projectFolder.Combine("My Book3"));
 
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"A5Portrait");
+																			"Basic Book");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
@@ -583,7 +583,7 @@ namespace BloomTests.Book
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					<title>Test Shell</title>
-					<link rel='stylesheet' href='A5Portrait.css' type='text/css' />
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
 					<meta name='defaultNameForDerivedBooks' content='guitar'/>
 				</head>

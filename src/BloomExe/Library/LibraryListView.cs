@@ -149,132 +149,15 @@ namespace Bloom.Library
 			_bookThumbnails.Images.Add(book.Id, thumbnail);
 			item.ImageIndex = _bookThumbnails.Images.Count - 1;
 			_listView.Items.Add(item);
-			book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication, image => RefreshOneThumbnail(book, image));
+
+				book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,
+												  image => RefreshOneThumbnail(book, image));
+
 		}
 
-		int _vernacularBookletColorIndex = 0;
-		int _templateBookletColorIndex = 0;
 		private Pen _boundsPen;
 
-/*        private Image GetBookletImage(Book.Book book)
-		{
-			var imagesDirectory = FileLocator.GetDirectoryDistributedWithApplication("images");
-			var vernacularBookColors = new string[] {"green", "yellow", "pink"};
-			var templateBookColors = new string[] { "blue","purple" };
-			string name;
-			switch (book.SizeAndShape)
-			{
-				case Book.Book.SizeAndShapeChoice.A5Landscape:
-					name = "A5LandscapeBooklet";
-					break;
-				case Book.Book.SizeAndShapeChoice.A5Portrait:
-					name = "A5PortraitBooklet";
-					break;
-				case Book.Book.SizeAndShapeChoice.A4Landscape:
-					name = "A5PortraitBooklet";
-					break;
-				case Book.Book.SizeAndShapeChoice.A4Portrait:
-					name = "A5PortraitBooklet";
-					break;
-				case Book.Book.SizeAndShapeChoice.A3Landscape:
-					name = "A5PortraitBooklet";
-					break;
-				default:
-					name = "A5PortraitBooklet";
-					break;
-			}
 
-			string path;
-			do
-			{
-				string color;
-				if (book.Type == Book.Book.BookType.Template)
-				{
-					color = templateBookColors[_templateBookletColorIndex++];
-					if (_templateBookletColorIndex == templateBookColors.Length)
-						_templateBookletColorIndex = 0;
-				}
-				else
-				{
-					color = vernacularBookColors[_vernacularBookletColorIndex++];
-					if (_vernacularBookletColorIndex == vernacularBookColors.Length)
-						_vernacularBookletColorIndex = 0;
-				}
-
-
-				path = Path.Combine(imagesDirectory, name + color + ".png");
-
-			} while (!File.Exists(path));
-			Bitmap image= (Bitmap) Image.FromFile(path);
-			return image;
-#if SkipTHis
-
-//            Bitmap coloredImage = new Bitmap(image);
-//		    var newColor = Color.Pink;
-//
-			//svg.
-//		    using(var g = Graphics.FromImage(coloredImage))
-//		    {
-//		       g.DrawImage(image, 0,0);
-//               for (int x = 0; x < coloredImage.Width; x++)
-//               {
-//                   for (int y = 0; y < coloredImage.Height; y++)
-//                   {
-//                       Color bitColor = image.GetPixel(x, y);
-					   //compare without respect to transparency
-//                       if (bitColor.R == 255 && bitColor.G == 0) // && bitColor.G==Color.Red.G && bitColor.B == Color.Red.B)
-//                       {
-						   //Sets all the pixels to white but with the original alpha value
-//                           coloredImage.SetPixel(x, y, Color.FromArgb(bitColor.A, newColor.R, newColor.G,newColor.B));
-//                       }
-//                   }
-//               }
-//
-//		    }
-		  //  return coloredImage;
-
-
-			What this is all about: I was trying to get gecko to make the booklet bitmap for me via svg. I was
-			then going to change the svg at runtime to have the color I wanted, because it's not a simple mater
-			of replacing a color (as I attempted in the code above). Where the black lines come near the color,
-			the svg renderer blurs them, making color replacement impossible. Anyhow, xulrunner 1.9.1 would just
-			give me a broken image icon.  Could try again someday with a newer xulrunner, because firefox 3.6
-			did show it, when I fed that same page in.
-
-			var dom = new XmlDocument();
-			dom.LoadXml(
-				string.Format(
-					@"<html>
-  <body><img src='file://{0}' />
-  </body>
-</html>",
-					@"C:\dev\Bloom\DistFiles\images\a5Portrait.svg"));// Path.Combine(imagesDirectory,"a5Portrait.svg")));
-			return _thumbnailProvider.GetThumbnail("pink", dom, Color.Transparent);
-#endif
-		}
-
-		private Image ComposeCoverPageWithBooklet(Image thumbnail, Image booklet)
-		{
-			Image book = new Bitmap(70, 70);
-			using (var g = Graphics.FromImage(book))
-			{
-				g.CompositingMode = CompositingMode.SourceOver;
-				g.CompositingQuality = CompositingQuality.HighQuality;
-
-				if (booklet != null)
-				{
-					Rectangle destRect = new Rectangle(0, 0, booklet.Width, book.Height);
-					g.DrawImage(booklet, destRect, 0, 0, booklet.Width, book.Height,
-								GraphicsUnit.Pixel, MagentaToPaperColor(Color.LightGreen));
-				}
-				if (thumbnail != null) //no cover page thumnail was available
-				{
-					g.DrawImage(thumbnail, -10, -5);
-				}
-			}
-			return book;
-		}
-*/
 		/// <summary>
 		/// Make the result look like it's on a colored paper, or make it transparent for composing on top
 		/// of some other image.

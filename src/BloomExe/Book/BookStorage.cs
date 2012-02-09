@@ -10,6 +10,7 @@ using System.Xml;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
@@ -25,7 +26,7 @@ namespace Bloom.Book
 	{
 		XmlDocument Dom { get; }
 		Book.BookType BookType { get; }
-		string GetTemplateName();
+		//string GetTemplateName();
 		string Key { get; }
 		bool LooksOk { get; }
 		string FileName { get; }
@@ -33,7 +34,7 @@ namespace Bloom.Book
 		string PathToExistingHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		XmlDocument GetRelocatableCopyOfDom();
+		XmlDocument GetRelocatableCopyOfDom(IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
@@ -171,7 +172,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void UpdateStyleSheetLinkPaths(XmlDocument dom, Palaso.IO.IFileLocator fileLocator)
+		private void UpdateStyleSheetLinkPaths(XmlDocument dom, IFileLocator fileLocator, IProgress log)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -203,7 +204,7 @@ namespace Bloom.Book
 					}
 					else
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
+						log.WriteError("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath);
 					}
 				}
 			}
@@ -345,23 +346,6 @@ namespace Bloom.Book
 			return string.Empty;
 		}
 
-		/// <summary>
-		/// Gives, for example, "A5Portrait", or "LetterLandscape".
-		/// </summary>
-		/// <returns></returns>
-		public string GetTemplateName()
-		{
-			var key = GetMetaValue("TemplateSource", null);
-			if (key!=null)
-				return key;
-
-			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
-			{
-				if(path.ToLower().Contains("portrait") ||  path.ToLower().Contains("landscape"))
-					return Path.GetFileNameWithoutExtension(path);
-			}
-			return null;
-		}
 
 		private string GetMetaValue(string name, string defaultValue)
 		{
@@ -517,6 +501,7 @@ namespace Bloom.Book
 		/// it really should be, because that way you can take it to another location or computer
 		/// and it will still look right in a browser.
 		/// </summary>
+		/// <param name="log"> </param>
 		/// <param name="bookletStyle"></param>
 //        public string GetHtmlFileForPrintingWithWkHtmlToPdf(PublishModel.BookletStyleChoices bookletStyle)
 //        {
@@ -533,12 +518,12 @@ namespace Bloom.Book
 //            }
 //        }
 
-		public XmlDocument GetRelocatableCopyOfDom()
+		public XmlDocument GetRelocatableCopyOfDom(IProgress log)
 		{
 			XmlDocument dom = (XmlDocument)Dom.Clone();
 
 			SetBaseForRelativePaths(dom, _folderPath);
-			UpdateStyleSheetLinkPaths(dom, _fileLocator);
+			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
 			return dom;
 		}
 

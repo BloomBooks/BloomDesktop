@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
 using Palaso.Xml;
@@ -49,6 +50,7 @@ namespace Bloom.Book
 
 		static private int _coverColorIndex = 0;
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
+		private IProgress _log= new StringBuilderProgress();
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
@@ -61,7 +63,10 @@ namespace Bloom.Book
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
 			_templateFinder = templateFinder;
-			_fileLocator = fileLocator;
+
+			//the fileLocator we get doesn't know anything about this particular book
+			_fileLocator = ((BloomFileLocator) fileLocator).CloneAndCustomize(new string[]{storage.FolderPath});
+
 			_librarySettings = librarySettings;
 
 			_thumbnailProvider = thumbnailProvider;
@@ -176,7 +181,7 @@ namespace Bloom.Book
 		{
 			try
 			{
-				if (HasFatalError)
+				if (HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
 				{
 					callback(Resources.Error70x70);
 				}
@@ -204,7 +209,7 @@ namespace Bloom.Book
 
 		public XmlDocument GetEditableHtmlDomForPage(IPage page)
 		{
-			if (!_storage.LooksOk)
+			if (_log.ErrorEncountered)
 			{
 				return GetErrorDom();
 			}
@@ -243,7 +248,7 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 			d.Add(_librarySettings.VernacularIso639Code, _librarySettings.VernacularLanguageName);
-			if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code) && !d.ContainsKey(_librarySettings.NationalLanguage1Iso639Code))
+			if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage1Iso639Code) && !d.ContainsKey(_librarySettings.NationalLanguage1Iso639Code))
 				d.Add(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name(_librarySettings.NationalLanguage1Iso639Code));
 			if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code) && !d.ContainsKey(_librarySettings.NationalLanguage2Iso639Code))
 				d.Add(_librarySettings.NationalLanguage2Iso639Code, _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage2Iso639Code));
@@ -287,7 +292,7 @@ namespace Bloom.Book
 		private XmlDocument GetHtmlDomWithJustOnePage(IPage page)
 		{
 			var dom = new XmlDocument();
-			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom();
+			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom(_log);
 			var head = relocatableCopyOfDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			dom.LoadXml(@"<html>"+head+"<body></body></html>");
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
@@ -299,6 +304,7 @@ namespace Bloom.Book
 			return dom;
 		}
 
+
 		/// <summary>
 		///
 		/// </summary>
@@ -307,7 +313,7 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public XmlDocument GetPreviewXmlDocumentForPage(IPage page)
 		{
-			if(!_storage.LooksOk)
+			if(_log.ErrorEncountered)
 			{
 				return GetErrorDom();
 			}
@@ -337,7 +343,7 @@ namespace Bloom.Book
 		}
 		public XmlDocument GetPreviewXmlDocumentForFirstPage()
 		{
-			if (!_storage.LooksOk)
+			if (_log.ErrorEncountered)
 			{
 				return null;
 			}
@@ -380,8 +386,7 @@ namespace Bloom.Book
 
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
-			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom();
-			//dom.AddStyleSheet("file://"+_fileLocator.LocateFile(cssFileName));
+			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom(_log);
 			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
 			return dom;
 		}
@@ -394,7 +399,7 @@ namespace Bloom.Book
 			builder.Append("<html><body>");
 			builder.AppendLine("<p>This book ("+_storage.FolderPath+") has errors.");
 			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and the someone needs to find and fix the problem (and your book).</p>");
+				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
 
 			foreach (var line in contents.Split(new []{'\n'}))
 			{
@@ -408,7 +413,16 @@ namespace Bloom.Book
 		private XmlDocument GetErrorDom()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml("<html><body>Something went wrong</body></html>");
+			var builder = new StringBuilder();
+			builder.Append("<html><body>");
+			builder.AppendLine("<p>This book (" + _storage.FolderPath + ") has errors.");
+			builder.AppendLine(
+				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+
+			builder.Append(((StringBuilderProgress)_log).Text);
+
+			builder.Append("</body></html>");
+			dom.LoadXml(builder.ToString());
 			return dom;
 		}
 
@@ -440,7 +454,8 @@ namespace Bloom.Book
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
 				if(Type!=BookType.Publication)
 					return null;
-				string templateKey = _storage.GetTemplateName();
+				string templateKey = GetMetaValue("pageTemplateSource", "");
+
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
 				{
@@ -455,6 +470,16 @@ namespace Bloom.Book
 				}
 				return book;
 			}
+		}
+
+		private string GetMetaValue(string name, string defaultValue)
+		{
+			var nameSuggestion = RawDom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			if (nameSuggestion.Count > 0)
+			{
+				return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+			}
+			return defaultValue;
 		}
 
 		public BookType Type
@@ -480,6 +505,10 @@ namespace Bloom.Book
 
 		public XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
+			if (_log.ErrorEncountered)
+			{
+				return GetErrorDom();
+			}
 			if (!_storage.LooksOk)
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
@@ -585,7 +614,7 @@ namespace Bloom.Book
 
 		public bool HasFatalError
 		{
-			get { return !_storage.LooksOk; }
+			get { return _log.ErrorEncountered; }
 		}
 
 
@@ -687,7 +716,7 @@ namespace Bloom.Book
 
 		public IEnumerable<IPage> GetPages()
 		{
-			if (!_storage.LooksOk)
+			if (_log.ErrorEncountered)
 				yield break;
 
 			if (_pagesCache == null)
@@ -718,7 +747,7 @@ namespace Bloom.Book
 
 		public IEnumerable<IPage> GetTemplatePages()
 		{
-			if (!_storage.LooksOk)
+			if (_log.ErrorEncountered)
 				yield break;
 
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
@@ -944,6 +973,7 @@ namespace Bloom.Book
 			_storage.UpdateBookFileAndFolderName(_librarySettings);
 		}
 
+
 		/// <summary>
 		///
 		/// </summary>
@@ -952,6 +982,7 @@ namespace Bloom.Book
 		private DataSet LoadDataSetFromLibrarySettings(bool makeGeneric)
 		{
 			var data = new DataSet();
+
 
 			data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
 			data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
@@ -1374,6 +1405,29 @@ namespace Bloom.Book
 			_storage.RemoveBookThumbnail();
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
 			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image));
+		}
+
+		public SizeAndOrientation GetSizeAndOrientation()
+		{
+			return (SizeAndOrientation.GetSizeAndOrientation(RawDom));
+		}
+
+		public IEnumerable<string> GetPageSizeAndOrientationChoices()
+		{
+			try
+			{
+				return SizeAndOrientation.GetPageSizeAndOrientationChoices(RawDom, _fileLocator);
+			}
+			catch (Exception error)
+			{
+				_log.WriteError(error.Message);
+				throw error;
+			}
+		}
+
+		public void SetPaperSizeAndOrientation(string paperSizeAndOrientationName)
+		{
+			SizeAndOrientation.SetPaperSizeAndOrientation(RawDom, paperSizeAndOrientationName);
 		}
 	}
 }

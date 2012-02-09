@@ -130,6 +130,9 @@ namespace Bloom.Book
 				SetupIdAndLineage(div, div);
 				SetupPage(div, _librarySettings, null, null);
 			}
+
+			SizeAndOrientation.SetPaperSizeAndOrientation(storage.Dom, "A5Portrait");
+
 			storage.Save();
 
 			storage.UpdateBookFileAndFolderName(_librarySettings);
@@ -277,22 +280,27 @@ namespace Bloom.Book
 					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
 					if (isFrontMatter && lang == national1Iso)
 					{
-						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational1").Trim());
+						AddClass(e,"bloom-contentNational1");
 					}
 					if (isFrontMatter && !string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
 					{
-						e.SetAttribute("class", (e.GetAttribute("class") + " bloom-contentNational2").Trim());
+						AddClass(e, "bloom-contentNational2");
 					}
 					foreach (var language in contentLanguages)
 					{
 						if(lang == language.Key)
 						{
-							e.SetAttribute("class", (e.GetAttribute("class") + " " + language.Value).Trim());
+							AddClass(e, language.Value);
 							break;//don't check the other languages
 						}
 					}
 				}
 			}
+		}
+
+		private static void AddClass( XmlElement e,string className)
+		{
+			e.SetAttribute("class", (e.GetAttribute("class") + " "+className).Trim());
 		}
 
 		private static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
@@ -310,6 +318,9 @@ namespace Bloom.Book
 			}
 			xmlElement.SetAttribute("class", classes.Trim());
 		}
+
+
+
 
 		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
 		{

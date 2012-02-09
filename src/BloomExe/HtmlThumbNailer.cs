@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
 using Palaso.Code;
@@ -221,30 +222,8 @@ namespace Bloom
 
 		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
 		{
-//            string paperSizeTemplate=string.Empty;
-//            string[] paperSizeTemplateNames = new string[]{"A5Portrait", "A4Landscape", "A5LandScape", "A4Portrait"};
-//            foreach (var name in paperSizeTemplateNames)
-//            {
-				 string paperSizeName;
-				XmlNodeList safeSelectNodes = document.SafeSelectNodes("html/body/img");
-				if (safeSelectNodes.Count == 1)
-				{
-					paperSizeName = safeSelectNodes[0].GetStringAttribute("src");
-				}
-				else
-				{
-					var paperStyleSheets = document.SafeSelectNodes(
-						"html/head/link[contains(@href, 'Landscape') or contains(@href, 'Portrait')]");
-//                    if (paperStyleSheets.Count == 0)
-//                    {
-//                        Debug.Fail(
-//                            "THumbnailer could not identify paper size. In Release version, this would still work, just  slower & more memory");
-//
-//                        return MakeNewBrowser();
-//                    }
+		   string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document).ToString();
 
-					paperSizeName = Path.GetFileNameWithoutExtension(paperStyleSheets[0].GetStringAttribute("href"));
-				}
 			GeckoWebBrowser b;
 			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
 				{
