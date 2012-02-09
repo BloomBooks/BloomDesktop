@@ -26,3 +26,7 @@ lib/xulrunner*
 DistFiles/root/tmp*
 *.pdb
 lib/dotnet/Palaso*.dll
+DistFiles/factoryCollections/Templates/BasicBook/basePage.css
+DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
+DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
+*.bak
