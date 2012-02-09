@@ -45,28 +45,10 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-DIV.bloom-page
+/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+#bloom-supportedPageConfigurations
 {
-/*before fiddling with these, set the border color of Div.Page in preview.css so you can see what the pdf is doing
-these should be 14.8, but wkhtmltopdf shinks it
-The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
-properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
-page be the full page, regardless of the contents.
-
-min-width: 15.3cm;
-max-width: 15.3cm;
-/*these should be 21, but wkhtmltopdf shinks it, and this makes each successive page more "off" until it's rediculous
-min-height: 21.82cm;
-max-height: 21.82cm;
-
-The above is not needed now since the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
-preview.css.
-
-*/
-	min-width: 14.8cm;
-	max-width: 14.8cm;
-	min-height: 21cm;
-	max-height: 21cm;
+	content: "A5Portrait, A4Landscape";
 }
 /*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
 generic*/
@@ -101,6 +83,16 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	top: 21px;
 	height: 385px;
 }
+.imageOnTop.A4Landscape DIV.bloom-imageContainer
+{
+	width: 511px;
+	/*+placement:anchor-top-left 27px 52px;*/
+	position: absolute;
+	left: 27px;
+	top: 52px;
+	height: 692px;
+	border: 1px solid #000000;
+}
 DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
 {
 	height: 8cm;
@@ -115,6 +107,15 @@ DIV.imageOnTop DIV.bloom-translationGroup
 	left: 39px;
 	top: 442px;
 	width: 464px;
+}
+DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
+{
+	height: 692px;
+	/*+placement:anchor-top-left 567px 51px;*/
+	position: absolute;
+	left: 567px;
+	top: 51px;
+	width: 511px;
 }
 DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
 {
