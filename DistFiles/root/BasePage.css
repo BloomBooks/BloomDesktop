@@ -106,3 +106,41 @@ DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2
 {
 	display: inherit;
 }
+
+/* Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
+these should be 14.8, but wkhtmltopdf shinks it
+The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
+properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
+page be the full page, regardless of the contents.
+
+To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
+preview.css.
+*/
+
+DIV.bloom-page.A5Portrait
+{	min-width: 14.8cm;
+	max-width: 14.8cm;
+	min-height: 21cm;
+	max-height: 21cm;
+}
+DIV.bloom-page.A5Landscape
+{
+	min-width: 21cm;
+	max-width: 21cm;
+	min-height: 14.8cm;
+	max-height: 14.8cm;
+}
+DIV.bloom-page.A4Landscape
+{
+	min-width: 297mm;
+	max-width: 297mm;
+	min-height: 210mm;
+	max-height: 210mm;
+}
+DIV.bloom-page.A4Portrait
+{
+	min-width: 210mm;
+	max-width: 210mm;
+	min-height: 297mm;
+	max-height: 297mm;
+}
