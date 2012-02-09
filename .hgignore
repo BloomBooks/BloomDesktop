@@ -30,3 +30,6 @@ DistFiles/factoryCollections/Templates/BasicBook/basePage.css
 DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
 DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
 *.bak
+**/Sample Shells/**/previewMode.css
+**/Sample Shells/**/languageDisplay.css
+**/Sample Shells/**/basePage.css
