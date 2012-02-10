@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Book;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Skybound.Gecko;
@@ -166,7 +167,7 @@ namespace Bloom.Edit
 				//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 				var item2 = new ContentLanguage(_librarySettings.NationalLanguage1Iso639Code, _librarySettings.GetNationalLanguage1Name("en")) {Selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _librarySettings.NationalLanguage1Iso639Code};
 				_contentLanguages.Add(item2);
-				if (!string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
+				if (!String.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
 				{
 					//NB: this could be the 2nd language (when the national 1 language is not selected)
 					bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_librarySettings.NationalLanguage2Iso639Code ||
@@ -368,13 +369,18 @@ namespace Bloom.Edit
 			return CurrentBook.GetSizeAndOrientation().ToString();
 		}
 
+		public static string GetPathToStylizer()
+		{
+			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
+		}
+
 		public void OpenPageInStylizer()
 		{
 			string path = Path.GetTempFileName();
 			var dom = GetXmlDocumentForCurrentPage();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			XmlHtmlConverter.SaveDOMAsHtml5(dom, path);
-			Process.Start("c:\\Program Files (x86)\\Skybound Stylizer 5\\Stylizer.exe", path);
+			Process.Start(GetPathToStylizer(), path);
 		}
 	}
 

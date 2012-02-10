@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Book;
 using Newtonsoft.Json.Linq;
 using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -54,6 +55,7 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 
+			OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
 		}
 
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
@@ -371,9 +373,7 @@ namespace Bloom.Edit
 			try
 			{
 				_updatingDisplay = true;
-#if !DEBUG
-			toolStripButton1.Visible = false;
-#endif
+
 				_contentLanguagesDropdown.DropDownItems.Clear();
 				foreach (var l in _model.ContentLanguages)
 				{
@@ -493,7 +493,5 @@ namespace Bloom.Edit
 		{
 			_model.OpenPageInStylizer();
 		}
-
-
 	}
 }
