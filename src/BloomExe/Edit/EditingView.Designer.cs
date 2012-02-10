@@ -45,7 +45,7 @@
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this._browser1 = new Bloom.Browser();
-			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+			this.OpenInStylizer = new System.Windows.Forms.ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -112,7 +112,7 @@
             this._deletePageButton,
             this._contentLanguagesDropdown,
             this._pageSizeAndOrientationChoices,
-            this.toolStripButton1});
+            this.OpenInStylizer});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
 			this.toolStrip1.Size = new System.Drawing.Size(809, 25);
@@ -238,17 +238,17 @@
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
 			// 
-			// toolStripButton1
+			// OpenInStylizer
 			// 
-			this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this.toolStripButton1.ForeColor = System.Drawing.SystemColors.ActiveCaption;
-			this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.toolStripButton1.Margin = new System.Windows.Forms.Padding(30, 1, 0, 2);
-			this.toolStripButton1.Name = "toolStripButton1";
-			this.toolStripButton1.Size = new System.Drawing.Size(93, 22);
-			this.toolStripButton1.Text = "Open in Stylizer";
-			this.toolStripButton1.Click += new System.EventHandler(this.OnClickOpenInStylizer);
+			this.OpenInStylizer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this.OpenInStylizer.ForeColor = System.Drawing.SystemColors.ActiveCaption;
+			this.OpenInStylizer.Image = ((System.Drawing.Image)(resources.GetObject("OpenInStylizer.Image")));
+			this.OpenInStylizer.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.OpenInStylizer.Margin = new System.Windows.Forms.Padding(30, 1, 0, 2);
+			this.OpenInStylizer.Name = "toolStripButton1";
+			this.OpenInStylizer.Size = new System.Drawing.Size(93, 22);
+			this.OpenInStylizer.Text = "Open in Stylizer";
+			this.OpenInStylizer.Click += new System.EventHandler(this.OnClickOpenInStylizer);
 			// 
 			// EditingView
 			// 
@@ -290,7 +290,7 @@
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _pageSizeAndOrientationChoices;
-		private System.Windows.Forms.ToolStripButton toolStripButton1;
+		private System.Windows.Forms.ToolStripButton OpenInStylizer;
 
 
     }

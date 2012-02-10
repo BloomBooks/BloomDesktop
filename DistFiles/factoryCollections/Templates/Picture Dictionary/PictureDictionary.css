@@ -1,3 +1,8 @@
+/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+#bloom-supportedPageConfigurations
+{
+	content: "A5Portrait";
+}
 BODY
 {
 }
