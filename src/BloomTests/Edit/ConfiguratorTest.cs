@@ -40,7 +40,7 @@ namespace BloomTests.Edit
 											{
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "BasicBook"),
 												FileLocator.GetDirectoryDistributedWithApplication( "root"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});

@@ -65,7 +65,7 @@ namespace Bloom.Book
 			_templateFinder = templateFinder;
 
 			//the fileLocator we get doesn't know anything about this particular book
-			_fileLocator = ((BloomFileLocator) fileLocator).CloneAndCustomize(new string[]{storage.FolderPath});
+			_fileLocator = fileLocator.CloneAndCustomize(new string[]{storage.FolderPath});
 
 			_librarySettings = librarySettings;
 

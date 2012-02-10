@@ -18,7 +18,9 @@ namespace BloomTests.Book
 		[SetUp]
 		public void Setup()
 		{
+			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
 			_folder  =new TemporaryFolder("BookCollectionTests");
+//			_fileLocator = new BloomFileLocator(new LibrarySettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,

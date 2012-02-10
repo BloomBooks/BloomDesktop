@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom;
@@ -39,7 +40,10 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
 			_storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
-			_storage.Setup(x => x.GetRelocatableCopyOfDom(new NullProgress())).Returns(()=>(XmlDocument)_documentDom.Clone());// review: the real thing does more than just clone
+			_storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(()=>
+																						{
+																							return (XmlDocument) _documentDom.Clone();
+																						});// review: the real thing does more than just clone
 
 
 			_testFolder = new TemporaryFolder("BookTests");
@@ -62,11 +66,12 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFile("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
+			//warning: we're neutering part of what the code under test is trying to do here:
+			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
+
 			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
-
-
 	  }
 		[TearDown]
 		public void TearDown()
@@ -408,6 +413,7 @@ namespace BloomTests.Book
 		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
 		{
 			var book = CreateBook();
+			book.SetPaperSizeAndOrientation("A5Portrait");
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]", 1);
 		}
