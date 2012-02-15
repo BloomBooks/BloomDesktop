@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Bloom.Book;
 using Bloom.Library;
+using Bloom.web;
 
 namespace Bloom
 {
@@ -10,15 +12,21 @@ namespace Bloom
         Book.Book FindTemplateBook(string key);
     }
 
-    public class TemplateCollectionList : ITemplateFinder
+    public class StoreCollectionList : ITemplateFinder
     {
         private readonly Book.Book.Factory _bookFactory;
     	private readonly BookStorage.Factory _storageFactory;
+    	private readonly BookCollection.Factory _bookCollectionFactory;
 
-    	public TemplateCollectionList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory)
+    	//for moq'ing 
+		public StoreCollectionList(){}
+
+    	public StoreCollectionList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
+			_bookCollectionFactory = bookCollectionFactory;
+
 		}
 
     	public IEnumerable<string> RepositoryFolders
@@ -47,5 +55,29 @@ namespace Bloom
             }
             return null;
         }
+
+    	public virtual IEnumerable<BookCollection> GetStoreCollections()
+    	{
+    		foreach (var root in RepositoryFolders)
+    		{
+    			if (!Directory.Exists(root))
+    				continue;
+
+    			foreach (var dir in Directory.GetDirectories(root))
+    			{
+    				if (Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
+    					continue;
+    				yield return _bookCollectionFactory(dir, BookCollection.CollectionType.TemplateCollection);
+    			}
+
+    			//follow shortcuts
+    			foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
+    			{
+    				var path = ResolveShortcut.Resolve(shortcut);
+    				if (Directory.Exists(path))
+    					yield return _bookCollectionFactory(path, BookCollection.CollectionType.TemplateCollection);
+    			}
+    		}
+    	}
     }
 }
