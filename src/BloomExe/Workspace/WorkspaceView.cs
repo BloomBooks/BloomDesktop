@@ -13,7 +13,7 @@ namespace Bloom.Workspace
 		private readonly WorkspaceModel _model;
 		private readonly SettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
-		private LibraryView _libraryView;
+		private Control _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private InfoView _infoView;
@@ -21,10 +21,10 @@ namespace Bloom.Workspace
 
 		public event EventHandler CloseCurrentProject;
 
-		public delegate WorkspaceView Factory();//autofac uses this
+		public delegate WorkspaceView Factory(Control libraryView);//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-			LibraryView.Factory libraryViewFactory,
+			Control libraryView,
 			EditingView.Factory editingViewFactory,
 			PublishView.Factory pdfViewFactory,
 			InfoView.Factory infoViewFactory,
@@ -50,7 +50,7 @@ namespace Bloom.Workspace
 			//
 			// _libraryView
 			//
-			this._libraryView = libraryViewFactory();
+			this._libraryView = libraryView;
 			this._libraryView.Dock = System.Windows.Forms.DockStyle.Fill;
 			_libraryTabPage.Controls.Add(_libraryView);
 

@@ -52,6 +52,9 @@ namespace Bloom.Book
 		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
 		private IProgress _log= new StringBuilderProgress();
 
+		//for moq'ing only
+		public Book(){}
+
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
@@ -151,7 +154,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// we could get the title from the <title/> element, the name of the html, or the name of the folder...
 		/// </summary>
-		public string Title
+		public virtual string Title
 		{
 			get
 			{
@@ -496,12 +499,12 @@ namespace Bloom.Book
 			get {return  _storage.Dom; }
 		}
 
-		public string FolderPath
+		public virtual string FolderPath
 		{
 			get { return _storage.FolderPath; }
 		}
 
-		public string Id { get; set; }
+		public virtual string Id { get; set; }
 
 		public XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
@@ -530,6 +533,7 @@ namespace Bloom.Book
 		{
 			_pagesCache = null;
 			RebuildXMatter(RawDom);
+			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
@@ -638,6 +642,11 @@ namespace Bloom.Book
 			private set;
 		}
 
+		public string ThumbnailPath
+		{
+			get { return Path.Combine(FolderPath, "thumbnail.png"); }
+		}
+
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			if (language2Code == _librarySettings.VernacularIso639Code) //can't have the vernacular twice
@@ -699,19 +708,22 @@ namespace Bloom.Book
 		/// <param name="dom"></param>
 		private void AddPreviewJScript(XmlDocument dom)
 		{
-			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
-			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.myimgscale.js"));
+//			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
+//			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
+//			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.myimgscale.js"));
+//
+//			XmlElement script = dom.CreateElement("script");
+//			script.SetAttribute("type", "text/javascript");
+//			script.InnerText = @"jQuery(function() {
+//						$('textarea').focus(function() {$(this).attr('readonly','readonly');});
+//
+//						//make images scale up to their container without distorting their proportions, while being centered within it.
+//						$('img').scaleImage({ scale: 'fit' }); //uses jquery.myimgscale.js
+//			})";
+//			header.AppendChild(script);
 
-			XmlElement script = dom.CreateElement("script");
-			script.SetAttribute("type", "text/javascript");
-			script.InnerText = @"jQuery(function() {
-						$('textarea').focus(function() {$(this).attr('readonly','readonly');});
-
-						//make images scale up to their container without distorting their proportions, while being centered within it.
-						$('img').scaleImage({ scale: 'fit' }); //uses jquery.myimgscale.js
-			})";
-			header.AppendChild(script);
+			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
+			AddJavascriptFile(dom, head, _fileLocator.LocateFile("bloomPreviewBootstrap.js"));
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1112,6 +1124,7 @@ namespace Bloom.Book
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(dom, Color.White);
+			AddPreviewJScript(dom);
 			return dom;
 		}
 

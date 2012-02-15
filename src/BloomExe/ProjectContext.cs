@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Library;
+using Bloom.Workspace;
+using Bloom.web;
 using Palaso.Extensions;
 using Palaso.IO;
 
@@ -19,7 +22,9 @@ namespace Bloom
 		/// and disposed of along with this ProjectContext class
 		/// </summary>
 		private ILifetimeScope _scope;
-		public Shell ProjectWindow { get; private set; }
+
+		private BloomServer _bloomServer;
+		public Form ProjectWindow { get; private set; }
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
@@ -27,6 +32,14 @@ namespace Bloom
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
+
+			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+			{
+				var libraryCollection =_scope.Resolve<BookCollection.Factory>()(Path.GetDirectoryName(projectSettingsPath), BookCollection.CollectionType.TheOneEditableCollection);
+				var storeCollectionList = _scope.Resolve<StoreCollectionList>();
+				_bloomServer = new BloomServer(_scope.Resolve<LibrarySettings>(), libraryCollection, storeCollectionList, _scope.Resolve<HtmlThumbNailer>());
+				_bloomServer.Start();
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -51,6 +64,7 @@ namespace Bloom
 					typeof(SelectedTabChangedEvent),
 					typeof(LibraryClosing),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
+					typeof(BookRefreshEvent),
 					typeof(BookSelection),
 					typeof(RelocatePageEvent),
 					typeof(PageSelection),
@@ -69,9 +83,9 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<TemplateCollectionList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<BookSelection>(), c.Resolve<StoreCollectionList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
-
+				//builder.Register<BookCollection>(c => c.Resolve<BookCollection>());
 
 				builder.Register<IFileLocator>(c => new BloomFileLocator(c.Resolve<LibrarySettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 				const int kListViewIconHeightAndSize = 70;
@@ -96,16 +110,16 @@ namespace Bloom
 															return new XMatterPackFinder(locations);
 														});
 
-				builder.Register<TemplateCollectionList>(c =>
+				builder.Register<StoreCollectionList>(c =>
 					 {
-						 var l = new TemplateCollectionList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>());
+						 var l = new StoreCollectionList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),c.Resolve<BookCollection.Factory>());
 						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
 
 				builder.Register<ITemplateFinder>(c =>
 					 {
-						 return c.Resolve<TemplateCollectionList>();
+						 return c.Resolve<StoreCollectionList>();
 					 }).InstancePerLifetimeScope();
 
 				//TODO: this gave a stackoverflow exception
@@ -114,6 +128,20 @@ namespace Bloom
 				builder.Register(c=>rootDirectoryPath).InstancePerLifetimeScope();
 
 				builder.RegisterType<CreateFromTemplateCommand>().InstancePerLifetimeScope();
+
+
+				builder.Register<Func<WorkspaceView>>(c => ()=>
+													{
+														var factory = c.Resolve<WorkspaceView.Factory>();
+														if (projectSettingsPath.ToLower().Contains("web"))
+														{
+															return factory(c.Resolve<WebLibraryView>());
+														}
+														else
+														{
+															return factory(c.Resolve<LibraryView>());
+														}
+													});
 			});
 
 		}
@@ -135,7 +163,7 @@ namespace Bloom
 			}
 //			TODO: Add, in the list of places we look, this libary's "regional libary" (when such a concept comes into being)
 //			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
-//			var templateCollectionList = parentContainer.Resolve<TemplateCollectionList>();
+//			var templateCollectionList = parentContainer.Resolve<StoreCollectionList>();
 //			foreach (var repo in templateCollectionList.RepositoryFolders)
 //			{
 //				foreach (var directory in Directory.GetDirectories(repo))
@@ -191,6 +219,9 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
+			if(_bloomServer!=null)
+				_bloomServer.Dispose();
+			_bloomServer = null;
 			_scope.Dispose();
 			_scope = null;
 		}

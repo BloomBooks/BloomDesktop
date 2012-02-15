@@ -28,6 +28,12 @@ namespace Bloom.Book
 		private readonly EditBookCommand _editBookCommand;
 		private readonly LibrarySettings _librarySettings;
 
+
+		//for moq only
+		public BookCollection()
+		{
+		}
+
 		public BookCollection(string path, CollectionType collectionType,
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
 			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
@@ -102,7 +108,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public string Name
+		public virtual string Name
 		{
 			get { return Path.GetFileName(_path); }
 		}
@@ -113,7 +119,7 @@ namespace Bloom.Book
 			_books = null;
 		}
 
-		public IEnumerable<Book> GetBooks()
+		public virtual IEnumerable<Book> GetBooks()
 		{
 			if (_books == null)
 			{

@@ -57,7 +57,7 @@ namespace Bloom
 
 
 			}
-			//Review: and early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
+			//Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
 			SetDllDirectory(xulRunnerPath);
 
 			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
@@ -201,7 +201,7 @@ namespace Bloom
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
-			if (e.Uri.OriginalString.ToLower().StartsWith("http"))
+			if (e.Uri.OriginalString.ToLower().StartsWith("http") && !e.Uri.OriginalString.ToLower().Contains("bloom"))
 			{
 				e.Cancel = true;
 				Process.Start(e.Uri.OriginalString); //open in the system browser instead

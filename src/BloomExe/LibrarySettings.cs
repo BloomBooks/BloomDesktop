@@ -171,7 +171,7 @@ namespace Bloom
 		}
 
 
-		public string LibraryName { get; protected set; }
+		public virtual string LibraryName { get; protected set; }
 
 		[XmlIgnore]
 		public string FolderPath

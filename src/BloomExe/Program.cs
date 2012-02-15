@@ -2,10 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Anna;
 using Bloom.Properties;
+using Bloom.web;
 using Palaso.IO;
 using Palaso.Reporting;
 
@@ -14,6 +18,7 @@ namespace Bloom
 	static class Program
 	{
 
+		//static HttpListener listener = new HttpListener();
 
 		/// <summary>
 		/// We have one project open at a time, and this helps us bootstrap the project and
@@ -23,6 +28,7 @@ namespace Bloom
 
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
+
 
 		[STAThread]
 		static void Main()
@@ -57,30 +63,25 @@ namespace Bloom
 #if !DEBUG
 			SetUpErrorHandling();
 #endif
-//            var args = Environment.GetCommandLineArgs();
-//            _commandLineRequestedFirstTimeAfterInstallationBehavior = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
+
+
+				StartUpShellBasedOnMostRecentUsedIfPossible();
+				Application.Idle += new EventHandler(Application_Idle);
+				Application.Run();
 
 
 
-			//			var args = Environment.GetCommandLineArgs();
-			//			var firstTimeArg = args.FirstOrDefault(x => x.ToLower().StartsWith("-i"));
-			//			if (firstTimeArg != null)
-			//			{
-			//				using (var dlg = new FirstTimeRunDialog("put filename here"))
-			//					dlg.ShowDialog();
-			//			}
+				Settings.Default.Save();
 
-			StartUpShellBasedOnMostRecentUsedIfPossible();
-			Application.Idle += new EventHandler(Application_Idle);
-			Application.Run();
+				Logger.ShutDown();
 
-			Settings.Default.Save();
+				if (_projectContext != null)
+					_projectContext.Dispose();
 
-			Logger.ShutDown();
 
-			if (_projectContext != null)
-				_projectContext.Dispose();
+
 		}
+
 
 
 		private static void Application_Idle(object sender, EventArgs e)
@@ -110,7 +111,9 @@ namespace Bloom
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
+
 				_projectContext.ProjectWindow.Show();
+
 				return true;
 			}
 			catch (Exception e)

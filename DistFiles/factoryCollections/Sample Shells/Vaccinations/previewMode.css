@@ -52,7 +52,7 @@ DIV.bloom-page
 }
 BUTTON
 {
-	display: none;
+	display: none !important;
 }
 /*this is the  blue label in the upper-right corner of some pages*/
 DIV.pageLabel
@@ -98,9 +98,8 @@ DIV.bloom-startPageNumbering
 {
 	counter-reset: pageNumber;
 }
-
-/* this could be placed on an element by hand, but it is notably added by jscript when the element has
-	a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty */
+/*this could be placed on an element by hand, but it is notably added by jscript when the element has
+a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing
 {
 	visibility: hidden;

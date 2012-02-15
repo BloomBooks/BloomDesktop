@@ -19,7 +19,7 @@ namespace Bloom
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-		public Shell(WorkspaceView.Factory projectViewFactory, LibrarySettings librarySettings, LibraryClosing libraryClosingEvent)
+		public Shell(Func<WorkspaceView> projectViewFactory, LibrarySettings librarySettings, LibraryClosing libraryClosingEvent)
 		{
 			_librarySettings = librarySettings;
 			_libraryClosingEvent = libraryClosingEvent;
