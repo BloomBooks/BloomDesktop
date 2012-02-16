@@ -20,52 +20,52 @@ namespace Bloom.Book
 			get { return IsLandScape ? "landscape" : "portrait"; }
 
 		}
+//
+//		public static SizeAndOrientation FromDom(XmlDocument dom)
+//		{
+//			var soa = new SizeAndOrientation();
+//
+//			var css = GetPaperStyleSheetName(dom);
+//			int i = css.ToLower().IndexOf("portrait");
+//			if (i > 0)
+//			{
+//				soa.IsLandScape = false;
+//				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
+//				return soa;
+//			}
+//			i = css.ToLower().IndexOf("landscape");
+//			if (i > 0)
+//			{
+//				soa.IsLandScape = true;
+//				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
+//				return soa;
+//			}
+//			throw new ApplicationException(
+//				"Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
+//		}
 
-		public static SizeAndOrientation FromDom(XmlDocument dom)
-		{
-			var soa = new SizeAndOrientation();
-
-			var css = GetPaperStyleSheetName(dom);
-			int i = css.ToLower().IndexOf("portrait");
-			if (i > 0)
-			{
-				soa.IsLandScape = false;
-				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
-				return soa;
-			}
-			i = css.ToLower().IndexOf("landscape");
-			if (i > 0)
-			{
-				soa.IsLandScape = true;
-				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
-				return soa;
-			}
-			throw new ApplicationException(
-				"Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
-		}
-
-		/// <summary>
-		/// looks for the css which sets the paper size/orientation
-		/// </summary>
-		/// <param name="dom"></param>
-		private static string GetPaperStyleSheetName(XmlDocument dom)
-		{
-			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-
-				var fileName = Path.GetFileName(href);
-				if (fileName.ToLower().Contains("portrait") || fileName.ToLower().Contains("landscape"))
-				{
-					return fileName;
-				}
-			}
-			return String.Empty;
-		}
+//		/// <summary>
+//		/// looks for the css which sets the paper size/orientation
+//		/// </summary>
+//		/// <param name="dom"></param>
+//		private static string GetPaperStyleSheetName(XmlDocument dom)
+//		{
+//			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+//			{
+//				var href = linkNode.GetAttribute("href");
+//				if (href == null)
+//				{
+//					continue;
+//				}
+//
+//				var fileName = Path.GetFileName(href);
+//				if (fileName.ToLower().Contains("portrait") || fileName.ToLower().Contains("landscape"))
+//				{
+//					return fileName;
+//				}
+//			}
+//			return String.Empty;
+//		}
 
 		public override string ToString()
 		{
@@ -88,7 +88,7 @@ namespace Bloom.Book
 			return new SizeAndOrientation()
 					{
 						IsLandScape = name.Contains("landscape"),
-						PageSizeName = name.Substring(0, startOfOrientationName).ToUpper()
+						PageSizeName = name.Substring(0, startOfOrientationName).ToUpperFirstLetter()
 					};
 		}
 

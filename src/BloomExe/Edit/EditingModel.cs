@@ -39,6 +39,7 @@ namespace Bloom.Edit
 			TemplateInsertionCommand templateInsertionCommand,
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
+			BookRefreshEvent bookRefreshEvent,
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			LibraryClosing libraryClosingEvent,
@@ -52,6 +53,8 @@ namespace Bloom.Edit
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+
+			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
@@ -74,9 +77,12 @@ namespace Bloom.Edit
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
 			//prevent trying to save this page in whatever comes next
+			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
 			_view.ClearOutDisplay();
+			if(!wasNull)
+				InvokeUpdatePageList();
 		}
 
 		private void OnDeletePage()

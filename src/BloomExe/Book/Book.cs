@@ -299,7 +299,13 @@ namespace Bloom.Book
 			var head = relocatableCopyOfDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			dom.LoadXml(@"<html>"+head+"<body></body></html>");
 			var body = dom.SelectSingleNodeHonoringDefaultNS("//body");
-			var pageDom = dom.ImportNode(page.GetDivNodeForThisPage(), true);
+			var divNodeForThisPage = page.GetDivNodeForThisPage();
+			if(divNodeForThisPage==null)
+			{
+				throw new ApplicationException(string.Format("The request page {0} from book {1} isn't in this book {2}.", page.Id,
+															 page.Book.FolderPath, page.Book.FolderPath));
+			}
+			var pageDom = dom.ImportNode(divNodeForThisPage, true);
 			body.AppendChild(pageDom);
 
 //                BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
@@ -522,7 +528,12 @@ namespace Bloom.Book
 			{
 				RebuildXMatter(dom);
 			}
-			BookStarter.UpdateContentLanguageClasses(dom, _librarySettings.VernacularIso639Code, _librarySettings.NationalLanguage1Iso639Code, _librarySettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
+			var primaryLanguage = _librarySettings.VernacularIso639Code;
+			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
+				primaryLanguage = _librarySettings.NationalLanguage1Iso639Code;
+
+			BookStarter.UpdateContentLanguageClasses(dom, primaryLanguage, _librarySettings.NationalLanguage1Iso639Code, _librarySettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			AddCoverColor(dom, CoverColor);
 
 			AddPreviewJScript(dom);

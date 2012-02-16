@@ -157,7 +157,8 @@ namespace Bloom.Edit
 				_thumbnailImageList.Images[imageIndex] = image;
 				//_listView.Refresh();
 				var listItem = (from ListViewItem i in _listView.Items where i.Tag == page select i).FirstOrDefault();
-				_listView.Invalidate(listItem.Bounds);
+				if(listItem!=null)//saw this happen once
+					_listView.Invalidate(listItem.Bounds);
 
 			}
 		}

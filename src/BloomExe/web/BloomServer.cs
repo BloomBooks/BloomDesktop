@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using Bloom.Book;
 using Palaso.IO;
+using Palaso.Reporting;
 
 namespace Bloom.web
 {
@@ -44,10 +45,20 @@ namespace Bloom.web
 			if (_listener == null || !_listener.IsListening)
 				return; //strangely, this callback is fired when we close downn the listener
 
-			HttpListenerContext context = _listener.EndGetContext(ar);
-			HttpListenerRequest request = context.Request;
-			MakeReply(new RequestInfo(context));
-			_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
+			try
+			{
+				HttpListenerContext context = _listener.EndGetContext(ar);
+				HttpListenerRequest request = context.Request;
+				MakeReply(new RequestInfo(context));
+				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent(error.Message);
+#if DEBUG
+				throw;
+#endif
+			}
 		}
 
 		/// <summary>

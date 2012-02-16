@@ -6,7 +6,7 @@ namespace Bloom.Library
 {
 	public partial class LibraryView : UserControl
 	{
-		public delegate LibraryView Factory();//autofac uses this
+		//public delegate LibraryView Factory();//autofac uses this
 
 
 		private LibraryListView libraryListView1;

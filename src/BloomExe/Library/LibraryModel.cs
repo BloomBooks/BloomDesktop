@@ -16,19 +16,19 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
-		private readonly TemplateCollectionList _templateCollectionList;
+		private readonly StoreCollectionList _storeCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
 
 		public LibraryModel(string pathToLibrary, BookSelection bookSelection,
-			TemplateCollectionList templateCollectionList,
-			BookCollection.Factory bookFactory,
+			StoreCollectionList storeCollectionList,
+			BookCollection.Factory bookCollectionFactory,
 			EditBookCommand editBookCommand)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
-			_templateCollectionList = templateCollectionList;
-			_bookCollectionFactory = bookFactory;
+			_storeCollectionList = storeCollectionList;
+			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
 		}
 
@@ -42,27 +42,10 @@ namespace Bloom.Library
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 
-			foreach (var root in _templateCollectionList.RepositoryFolders)
-			{
-				if (!Directory.Exists(root))
-					continue;
-
-				foreach (var dir in Directory.GetDirectories(root))
-				{
-					if (Path.GetFileName(dir).StartsWith("."))//skip thinks like .idea, .hg, etc.
-						continue;
-					yield return _bookCollectionFactory(dir,BookCollection.CollectionType.TemplateCollection);
-				}
-
-				//follow shortcuts
-				foreach (var shortcut in Directory.GetFiles(root,"*.lnk",SearchOption.TopDirectoryOnly))
-				{
-					var path = ResolveShortcut.Resolve(shortcut);
-					if(Directory.Exists(path))
-						yield return _bookCollectionFactory(path,BookCollection.CollectionType.TemplateCollection);
-				}
-			}
+			foreach (var bookCollection in _storeCollectionList.GetStoreCollections())
+				yield return bookCollection;
 		}
+
 
 		public  void SelectBook(Book.Book book)
 		{

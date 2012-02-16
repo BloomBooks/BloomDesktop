@@ -54,8 +54,13 @@ namespace Bloom.Edit
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
-
+			_model.UpdatePageList += new EventHandler(_model_UpdatePageList);
 			OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
+		}
+
+		void _model_UpdatePageList(object sender, EventArgs e)
+		{
+			UpdatePageList();
 		}
 
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
