@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reactive.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Anna;
 using Bloom.Properties;
-using Bloom.web;
-using Palaso.IO;
 using Palaso.Reporting;
 
 namespace Bloom
