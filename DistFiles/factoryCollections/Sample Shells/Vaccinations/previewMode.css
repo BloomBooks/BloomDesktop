@@ -25,6 +25,20 @@ DIV.bloom-page.coverColor
 {
 	background-color: #D8ADAD;
 }
+/*When in preview, people often think they are looking at something edtiable. Give them this visual feedack*/
+.disabledVisual
+{
+	cursor: not-allowed;
+}
+.disabledVisual IMG
+{
+	opacity: 0.4;
+}
+.disabledVisual DIV
+{
+	opacity: 0.4;
+	cursor: not-allowed;
+}
 P.pagefooter
 {
 	display: block;
