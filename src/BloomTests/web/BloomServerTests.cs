@@ -15,7 +15,7 @@ using Palaso.TestUtilities;
 
 namespace BloomTests.web
 {
-	[TestFixture]
+	[TestFixture, Ignore]
 	public class BloomServerTests
 	{
 		private TemporaryFolder _folder;
