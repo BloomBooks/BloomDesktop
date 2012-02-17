@@ -1,0 +1,318 @@
+/*Cover Page*/
+.cover.A4Landscape .bloom-translationGroup
+{
+	/*+placement:anchor-top-left 112px 44px;*/
+	position: absolute;
+	left: 112px;
+	top: 44px;
+	width: 901px;
+	text-align: center;
+}
+.cover.A5Portrait .bloom-translationGroup
+{
+	/*+placement:anchor-top-left 33px 44px;*/
+	position: absolute;
+	left: 33px;
+	top: 44px;
+	width: 475px;
+	text-align: center;
+}
+.cover.A5Portrait .bookTitle.bloom-content1
+{
+	font-size: 30.3pt;
+	height: 3.3cm;
+	position: relative;
+	width: 100%;
+	/*+placement:anchor-top-left -5px 6px;*/
+	position: absolute;
+	left: -5px;
+	top: 6px;
+	display: block;
+}
+.cover .bookTitle.bloom-content1
+{
+	font-size: 38.3pt;
+	height: 3.3cm;
+	position: relative;
+	width: 100%;
+	/*+placement:anchor-top-left -5px 6px;*/
+	position: absolute;
+	left: -5px;
+	top: 6px;
+	display: block;
+}
+.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 12pt;
+	height: 0.8cm;
+	width: 100%;
+	/*+placement:anchor-top-left -4px 142px;*/
+	position: absolute;
+	left: -4px;
+	top: 142px;
+	display: block;
+}
+.cover DIV.bloom-imageContainer
+{
+	height: 11.9cm;
+	width: 472px;
+	/*+placement:anchor-top-left 31px 246px;*/
+	position: absolute;
+	left: 31px;
+	top: 246px;
+}
+.cover.A4Landscape DIV.bloom-imageContainer
+{
+	height: 10cm;
+	width: 1019px;
+	/*+placement:anchor-top-left 58px 287px;*/
+	position: absolute;
+	left: 58px;
+	top: 287px;
+}
+DIV.coverBottomBookTopic
+{
+	overflow: hidden;
+	text-align: right;
+	width: 237px;
+	height: 58px;
+	/*+placement:anchor-bottom-right 29px 17px;*/
+	position: absolute;
+	right: 29px;
+	bottom: 17px;
+	min-height: 20px;
+}
+DIV.coverBottomBookTopic DIV.topicN1
+{
+	height: 106px;
+	min-height: 20px;
+	width: 100%;
+}
+DIV.coverBottomLangName
+{
+	bottom: 20px;
+	height: 56px;
+	left: 0.7cm;
+	overflow: hidden;
+	position: absolute;
+	text-align: left;
+	width: 8.4cm;
+}
+/*Title Page*/
+DIV.titlePage
+{
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	/*+placement:shift;*/
+	position: relative;
+	left: 0;
+	top: 0;
+}
+/*Unless otherwise positioned and made visible, hide all the language elements in there*/
+DIV.bloom-translationGroup DIV
+{
+	display: none;
+}
+DIV#titePageTitleBlock DIV.bloom-content1
+{
+	font-size: 26.1pt;
+	height: 111px;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 0px;*/
+	position: absolute;
+	left: 16px;
+	top: 0px;
+	width: 419px;
+	display: block;
+}
+DIV#titePageTitleBlock DIV.bloom-contentNational1
+{
+	height: 35px;
+	text-align: center;
+	/*+placement:anchor-top-left 15px 119px;*/
+	position: absolute;
+	left: 15px;
+	top: 119px;
+	width: 419px;
+	display: block;
+}
+DIV#titePageTitleBlock DIV.bloom-contentNational2
+{
+	height: 35px;
+	text-align: center;
+	width: 419px;
+}
+DIV.ISBNContainer
+{
+	/*+placement:anchor-top-left 74px 459px;*/
+	position: absolute;
+	left: 74px;
+	top: 459px;
+	width: 424px;
+}
+DIV.ISBNContainer DIV
+{
+	height: 21px;
+	display: inline-block;
+	text-align: left;
+	/*+placement:shift 1px 4px;*/
+	position: relative;
+	left: 1px;
+	top: 4px;
+	min-width: 120px;
+}
+.titlePage .titleN1
+{
+	font-size: 14pt;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 121px;*/
+	position: absolute;
+	left: 16px;
+	top: 121px;
+	width: 420px;
+	height: 45px;
+}
+.titlePage .titleN2
+{
+	font-size: 14pt;
+	text-align: center;
+	/*+placement:anchor-top-left 16px 168px;*/
+	position: absolute;
+	left: 16px;
+	top: 168px;
+	width: 420px;
+	height: 45px;
+}
+DIV.titlePage .credits
+{
+	display: none;
+}
+DIV.titlePage .credits.bloom-contentNational1
+{
+	height: 131px;
+	/*+placement:anchor-top-left 65px 209px;*/
+	position: absolute;
+	left: 65px;
+	top: 209px;
+	text-align: center;
+	width: 421px;
+	display: block;
+}
+DIV.titlePage DIV#languageInformation
+{
+	/*+placement:shift -5px 424px;*/
+	position: relative;
+	left: -5px;
+	top: 424px;
+	width: 425px;
+	margin-left: 78px;
+	height: 155px;
+}
+DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational1
+{
+	display: block;
+}
+DIV.languageLocation
+{
+	/*+placement:anchor-top-left 6px 50px;*/
+	position: absolute;
+	left: 6px;
+	top: 50px;
+	width: 407px;
+}
+DIV#titePageTitleBlock
+{
+	margin-left: 48px;
+	margin-right: 7px;
+	margin-top: 48px;
+	width: 447px;
+}
+/*Verso Page*/
+DIV.verso
+{
+	border: 4px solid #1E15D0;
+	text-align: center;
+}
+DIV.versionAcknowledgments
+{
+	/*+placement:anchor-bottom-left 58px 38px;*/
+	position: absolute;
+	left: 58px;
+	bottom: 38px;
+	height: 204px !important;
+	width: 457px;
+}
+DIV#versoLicenseAndCopyright
+{
+	/*+placement:shift -21px 53px;*/
+	position: relative;
+	left: -21px;
+	top: 53px;
+	margin-left: 83px;
+	width: 453px;
+	height: 129px;
+}
+DIV.licenseNotes
+{
+	/*+placement:anchor-top-left 3px 57px;*/
+	position: absolute;
+	left: 3px;
+	top: 57px;
+	width: 449px;
+}
+DIV.copyright
+{
+	width: 450px;
+	height: 34px;
+	/*+placement:anchor-top-left 3px 6px;*/
+	position: absolute;
+	left: 3px;
+	top: 6px;
+}
+IMG.licenseImage
+{
+	width: 114px !important;
+	height: 34px !important;
+	/*+placement:anchor-top-left -43px 61px;*/
+	position: absolute;
+	left: -43px;
+	top: 61px;
+}
+BUTTON#editCopyrightAndLicense
+{
+	/*+placement:anchor-top-left 148px 0px;*/
+	position: absolute;
+	left: 148px;
+	top: 0px;
+	font-size: 9pt;
+}
+DIV.licenseDescription
+{
+	font-size: 8pt;
+	margin-left: 35px;
+	margin-right: 77px;
+	text-align: left;
+	width: 70%;
+	height: 57px;
+	/*+placement:shift 89px 60px;*/
+	position: relative;
+	left: 89px;
+	top: 60px;
+}
+DIV.licenseUrl
+{
+	display: none;
+}
+DIV.originalAcknowledgments
+{
+	display: none;
+}
+DIV.originalAcknowledgments.bloom-contentNational1
+{
+	height: 268px;
+	width: 454px;
+	margin-left: 55px;
+	margin-top: 43px;
+	display: block;
+}
