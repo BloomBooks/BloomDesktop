@@ -81,10 +81,9 @@ namespace Bloom.Book
 			if (IsInEditableLibrary)
 			{
 				UpdateFieldsAndVariables(RawDom);
-
+				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
+				RawDom.AddStyleSheet(@"languageDisplay.css");
 			}
-			WriteLanguageDisplayStyleSheet();
-			RawDom.AddStyleSheet(@"languageDisplay.css");
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
 			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsShellLibrary;
