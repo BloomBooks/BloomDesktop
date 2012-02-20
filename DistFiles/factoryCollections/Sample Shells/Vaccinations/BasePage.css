@@ -53,6 +53,8 @@ TEXTAREA, DIV.bloom-editable
 	resize: none;
 /*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: hidden;
+	font-size: 14pt;
+	line-height: 27.6pt;
 }
 DIV.bloom-page
 {
@@ -106,8 +108,7 @@ DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2
 {
 	display: inherit;
 }
-
-/* Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
+/*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
 The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
 properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
@@ -116,9 +117,9 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 */
-
 DIV.bloom-page.A5Portrait
-{	min-width: 14.8cm;
+{
+	min-width: 14.8cm;
 	max-width: 14.8cm;
 	min-height: 21cm;
 	max-height: 21cm;
