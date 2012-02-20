@@ -107,6 +107,7 @@ DIV.imageOnTop DIV.bloom-translationGroup
 	left: 39px;
 	top: 442px;
 	width: 464px;
+	display: table;
 }
 DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 {
@@ -116,6 +117,10 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	left: 567px;
 	top: 51px;
 	width: 511px;
+}
+DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
+{
+	height: 222px;
 }
 DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
 {
@@ -129,6 +134,8 @@ DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
 {
 	height: 100%;
 	width: 100%;
+	display: table-cell !important;
+	vertical-align: bottom;
 }
 .imageOnTop.bloom-bilingual DIV.bloom-editable
 {
