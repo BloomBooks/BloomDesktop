@@ -222,7 +222,7 @@ namespace Bloom
 
 		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
 		{
-		   string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document).ToString();
+		   string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document, "A5Portrait").ToString();
 
 			GeckoWebBrowser b;
 			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))

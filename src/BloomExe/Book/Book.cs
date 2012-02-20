@@ -555,7 +555,8 @@ namespace Bloom.Book
 			GatherDataItemsFromDom(data, "*", RawDom);
 			var helper = new XMatterHelper(dom, _librarySettings.XMatterPackName, _fileLocator);
 			XMatterHelper.RemoveExistingXMatter(dom);
-			helper.InjectXMatter(data.WritingSystemCodes);
+			var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait");
+			helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
 			BookStarter.PrepareElementsInPageOrDocument(dom, _librarySettings);
 			UpdateDomWIthDataItems(data, "*", dom);
 		}
@@ -1433,7 +1434,7 @@ namespace Bloom.Book
 
 		public SizeAndOrientation GetSizeAndOrientation()
 		{
-			return (SizeAndOrientation.GetSizeAndOrientation(RawDom));
+			return (SizeAndOrientation.GetSizeAndOrientation(RawDom, "A5Portrait"));
 		}
 
 		public IEnumerable<string> GetPageSizeAndOrientationChoices()

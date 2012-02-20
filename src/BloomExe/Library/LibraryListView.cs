@@ -266,7 +266,8 @@ namespace Bloom.Library
 				_bookThumbnails.Images[imageIndex] = image;
 				//_listView.Refresh();
 				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
-				_listView.Invalidate(listItem.Bounds);
+				if(listItem!=null)
+					_listView.Invalidate(listItem.Bounds);
 			}
 		}
 		private void RecreateOneThumbnail(Book.Book book)

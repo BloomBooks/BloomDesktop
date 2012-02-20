@@ -10,6 +10,9 @@ using Palaso.Xml;
 
 namespace Bloom.Book
 {
+	/// <summary>
+	/// NB: html class names are case sensitive! In this code, we want to accept stuff regardless of case, but always generate Capitalized paper size and orientation names
+	/// </summary>
 	public class SizeAndOrientation
 	{
 		public string PageSizeName;
@@ -17,7 +20,7 @@ namespace Bloom.Book
 
 		public string OrientationName
 		{
-			get { return IsLandScape ? "landscape" : "portrait"; }
+			get { return IsLandScape ? "Landscape" : "Portrait"; }
 
 		}
 //
@@ -75,7 +78,7 @@ namespace Bloom.Book
 		public static SizeAndOrientation FromString(string name)
 		{
 			name = name.ToLower();
-			var startOfOrientationName = Math.Max(name.IndexOf("landscape"), name.IndexOf("portrait"));
+			var startOfOrientationName = Math.Max(name.ToLower().IndexOf("landscape"), name.ToLower().IndexOf("portrait"));
 			if(startOfOrientationName == -1)
 			{
 				Debug.Fail("No orientation name found in '"+name+"'");
@@ -87,7 +90,7 @@ namespace Bloom.Book
 			}
 			return new SizeAndOrientation()
 					{
-						IsLandScape = name.Contains("landscape"),
+						IsLandScape = name.ToLower().Contains("landscape"),
 						PageSizeName = name.Substring(0, startOfOrientationName).ToUpperFirstLetter()
 					};
 		}
@@ -132,12 +135,12 @@ namespace Bloom.Book
 			yield return "A5Portrait";
 		}
 
-		public static SizeAndOrientation GetSizeAndOrientation(XmlDocument dom)
+		public static SizeAndOrientation GetSizeAndOrientation(XmlDocument dom, string defaultIfMissing)
 		{
-			var firstPage = dom.SelectSingleNode("//div[contains(@class,'bloom-page')]");
+			var firstPage = dom.SelectSingleNode("descendant-or-self::div[contains(@class,'bloom-page')]");
 			if (firstPage == null)
-				return FromString("A5Portrait");
-			string sao = "A5Portrait";
+				return FromString(defaultIfMissing);
+			string sao = defaultIfMissing;
 			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
 			{
 				if (part.ToLower().Contains("portrait") || part.ToLower().Contains("landscape"))
@@ -151,10 +154,10 @@ namespace Bloom.Book
 
 		public static void UpdatePageSizeAndOrientationClasses(XmlNode node, string sizeAndOrientation)
 		{
-			foreach (XmlElement pageDiv in node.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement pageDiv in node.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]"))
 			{
-				RemoveClassesContaining(pageDiv, "landscape");
-				RemoveClassesContaining(pageDiv, "portrait");
+				RemoveClassesContaining(pageDiv, "Landscape");
+				RemoveClassesContaining(pageDiv, "Portrait");
 				AddClass(pageDiv, sizeAndOrientation);
 			}
 		}

@@ -109,6 +109,8 @@ namespace Bloom.Book
 			//remove ISBN number, if the original had one
 			RemoveDataDivElement(storage.Dom, "ISBN");
 
+			var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(storage.Dom, "A5Portrait");
+
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
@@ -120,7 +122,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
 				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemCodes);
+				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
 			}
 
 
@@ -131,7 +133,7 @@ namespace Bloom.Book
 				SetupPage(div, _librarySettings, null, null);
 			}
 
-			SizeAndOrientation.SetPaperSizeAndOrientation(storage.Dom, "A5Portrait");
+	//		SizeAndOrientation.SetPaperSizeAndOrientation(storage.Dom, sizeAndOrientation.ToString());
 
 			storage.Save();
 

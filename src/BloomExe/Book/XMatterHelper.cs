@@ -79,7 +79,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument FrontMatterDom { get; set; }
 
-		public void InjectXMatter( Dictionary<string, string> writingSystemCodes)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, string sizeAndOrientation)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -103,6 +103,12 @@ namespace Bloom.Book
 			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
 				var newPageDiv = _dom.ImportNode(frontMatterPage, true) as XmlElement;
+
+
+				//we want the front matter pages to match what we found in the source book
+				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, sizeAndOrientation.ToString());
+
+
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + writingSystemCodes["V"] + '"');
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + writingSystemCodes["N1"] + '"');
@@ -125,7 +131,6 @@ namespace Bloom.Book
 							t.Value =""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
 					}
 				}
-
 			}
 		}
 

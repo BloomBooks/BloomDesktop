@@ -91,7 +91,7 @@ namespace Bloom.Publish
 						dom.WriteContentTo(writer);
 						writer.Close();
 					}
-					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom);
+					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom, "A5Portrait");
 					if (doWorkEventArgs.Cancel)
 						return;
 

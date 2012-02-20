@@ -11,11 +11,12 @@ DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
 	overflow: auto;
 }
 /*this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in*/
-*.readOnlyInEditMode
+.bloom-readOnlyInEditMode
 {
-/*we have javascript function which notices this border and makes it read-only
+/*we have javascript function which notices this setting and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
-	border: 1px solid transparent;
+	/*[disabled]border:1px solid transparent;*/
+	cursor: not-allowed;
 }
 DIV.bloom-metaData
 {

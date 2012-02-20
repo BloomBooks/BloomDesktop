@@ -385,24 +385,29 @@ jQuery(document).ready(function() {
         });
     });
 
-
+    $('div.bloom-editable').each(function() {
+        $(this).attr('contentEditable', 'true');
+    });
     // Bloom needs to make some field readonly. E.g., the original license when the user is translating a shellbook
     // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
     // an attribute, so it can't be included in css.
     // The solution here is to add the readonly attribute when we detect that their border has gone transparent.
     $('textarea, div').focus(function() {
-        if ($(this).css('border-bottom-color') == 'transparent') {
-            $(this).attr("readonly", "readonly");
+//        if ($(this).css('border-bottom-color') == 'transparent') {
+        if ($(this).css('cursor') == 'not-allowed') {
+            $(this).attr("readonly", "true");
+      $(this).removeAttr("contentEditable");
         }
         else {
             $(this).removeAttr("readonly");
+      //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
         }
     });
 
     //Same thing for divs which are potentially editable.
     // editTranslationMode.css is responsible for making this transparent, but it can't reach the contentEditable attribute.
     $('div.bloom-readOnlyInTranslationMode').focus(function() {
-        if ($(this).css('border-bottom-color') == 'transparent') {
+         if ($(this).css('cursor') == 'not-allowed') {
             $(this).removeAttr("contentEditable");
         }
         else {
@@ -410,9 +415,7 @@ jQuery(document).ready(function() {
         }
     });
 
-    $('div.bloom-editable').each(function() {
-        $(this).attr('contentEditable', 'true');
-    });
+
 
     // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
@@ -459,15 +462,15 @@ jQuery(document).ready(function() {
 
 
     //make images scale up to their container without distorting their proportions, while being centered within it.
-    $("img").scaleImage({scale: "fit"}); //uses jquery.myimgscale.js
+    $(".bloom-imageContainer img").scaleImage({scale: "fit"}); //uses jquery.myimgscale.js
 
     // when the image changes, we need to scale again:
-    $("img").load(function() {
+    $(".bloom-imageContainer img").load(function() {
         $(this).scaleImage({scale: "fit"});
     });
 
     //and when their parent is resized by the user, we need to scale again:
-    $("img").each(function() {
+    $(".bloom-imageContainer img").each(function() {
         $(this).parent().resize(function() {
             $(this).find("img").scaleImage({scale: "fit"});
             ResetRememberedSize(this);
