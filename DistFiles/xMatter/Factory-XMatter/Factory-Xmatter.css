@@ -1,14 +1,6 @@
-/*Cover Page*/
-.cover.A4Landscape .bloom-translationGroup
-{
-	/*+placement:anchor-top-left 112px 44px;*/
-	position: absolute;
-	left: 112px;
-	top: 44px;
-	width: 901px;
-	text-align: center;
-}
-.cover.A5Portrait .bloom-translationGroup
+/*Cover Page
+....Title*/
+.A5Portrait.cover .bloom-translationGroup
 {
 	/*+placement:anchor-top-left 33px 44px;*/
 	position: absolute;
@@ -17,7 +9,26 @@
 	width: 475px;
 	text-align: center;
 }
-.cover.A5Portrait .bookTitle.bloom-content1
+.A5Landscape.cover .bloom-translationGroup
+{
+	/*+placement:anchor-top-left 37px 30px;*/
+	position: absolute;
+	left: 37px;
+	top: 30px;
+	width: 728px;
+	text-align: center;
+}
+.A4Landscape.cover .bloom-translationGroup
+{
+	/*+placement:anchor-top-left 112px 44px;*/
+	position: absolute;
+	left: 112px;
+	top: 44px;
+	width: 901px;
+	text-align: center;
+}
+/*...................Vernacular*/
+.A5Portrait.cover .bookTitle.bloom-content1
 {
 	font-size: 30.3pt;
 	height: 3.3cm;
@@ -29,10 +40,10 @@
 	top: 6px;
 	display: block;
 }
-.cover .bookTitle.bloom-content1
+.A5Landscape.cover .bookTitle.bloom-content1
 {
 	font-size: 38.3pt;
-	height: 3.3cm;
+	height: 1.5cm;
 	position: relative;
 	width: 100%;
 	/*+placement:anchor-top-left -5px 6px;*/
@@ -41,18 +52,54 @@
 	top: 6px;
 	display: block;
 }
-.cover .bookTitle.bloom-contentNational1
+.A4Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 38.3pt;
+	height: 1.5cm;
+	position: relative;
+	width: 100%;
+	/*+placement:anchor-top-left -5px 6px;*/
+	position: absolute;
+	left: -5px;
+	top: 6px;
+	display: block;
+}
+/*....................National 1*/
+.A5Portrait.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 12pt;
 	height: 0.8cm;
 	width: 100%;
-	/*+placement:anchor-top-left -4px 142px;*/
+	/*+placement:anchor-top-left -4px 134px;*/
 	position: absolute;
 	left: -4px;
-	top: 142px;
+	top: 134px;
 	display: block;
 }
-.cover DIV.bloom-imageContainer
+.A5Landscape.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 12pt;
+	height: 0.8cm;
+	width: 100%;
+	/*+placement:anchor-top-left -4px 68px;*/
+	position: absolute;
+	left: -4px;
+	top: 68px;
+	display: block;
+}
+.A4Landscape.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 12pt;
+	height: 0.8cm;
+	width: 100%;
+	/*+placement:anchor-top-left -4px 68px;*/
+	position: absolute;
+	left: -4px;
+	top: 68px;
+	display: block;
+}
+/*......Image*/
+.A5Portrait.cover DIV.bloom-imageContainer
 {
 	height: 11.9cm;
 	width: 472px;
@@ -61,15 +108,25 @@
 	left: 31px;
 	top: 246px;
 }
-.cover.A4Landscape DIV.bloom-imageContainer
+.A5Landscape.cover DIV.bloom-imageContainer
 {
-	height: 10cm;
-	width: 1019px;
-	/*+placement:anchor-top-left 58px 287px;*/
+	height: 9cm;
+	width: 728px;
+	/*+placement:anchor-top-left 34px 135px;*/
 	position: absolute;
-	left: 58px;
-	top: 287px;
+	left: 34px;
+	top: 135px;
 }
+.A4Landscape.cover DIV.bloom-imageContainer
+{
+	height: 14.9cm;
+	width: 901px;
+	/*+placement:anchor-top-left 109px 154px;*/
+	position: absolute;
+	left: 109px;
+	top: 154px;
+}
+/*.......Topic*/
 DIV.coverBottomBookTopic
 {
 	overflow: hidden;
@@ -81,12 +138,21 @@ DIV.coverBottomBookTopic
 	right: 29px;
 	bottom: 17px;
 	min-height: 20px;
+	display: table;
 }
 DIV.coverBottomBookTopic DIV.topicN1
 {
-	height: 106px;
+	/*[disabled]height:106px;*/
 	min-height: 20px;
 	width: 100%;
+	display: table-cell;
+	vertical-align: bottom;
+}
+/*.......Language Name*/
+DIV.coverBottomLangName DIV
+{
+	display: table-cell;
+	vertical-align: bottom;
 }
 DIV.coverBottomLangName
 {
@@ -97,6 +163,7 @@ DIV.coverBottomLangName
 	position: absolute;
 	text-align: left;
 	width: 8.4cm;
+	display: table;
 }
 /*Title Page*/
 DIV.titlePage
@@ -145,22 +212,25 @@ DIV#titePageTitleBlock DIV.bloom-contentNational2
 }
 DIV.ISBNContainer
 {
-	/*+placement:anchor-top-left 74px 459px;*/
+	/*+placement:anchor-top-left 60px 460px;*/
 	position: absolute;
-	left: 74px;
-	top: 459px;
+	left: 60px;
+	top: 460px;
 	width: 424px;
+	height: 0px;
 }
 DIV.ISBNContainer DIV
 {
 	height: 21px;
 	display: inline-block;
 	text-align: left;
-	/*+placement:shift 1px 4px;*/
+	/*+placement:shift 1px 3px;*/
 	position: relative;
 	left: 1px;
-	top: 4px;
+	top: 3px;
 	min-width: 120px;
+	line-height: normal;
+	font-size: 12pt;
 }
 .titlePage .titleN1
 {
@@ -201,10 +271,10 @@ DIV.titlePage .credits.bloom-contentNational1
 }
 DIV.titlePage DIV#languageInformation
 {
-	/*+placement:shift -5px 424px;*/
-	position: relative;
-	left: -5px;
-	top: 424px;
+	/*+placement:anchor-top-left -20px 498px;*/
+	position: absolute;
+	left: -20px;
+	top: 498px;
 	width: 425px;
 	margin-left: 78px;
 	height: 155px;
@@ -234,16 +304,51 @@ DIV.verso
 	border: 4px solid #1E15D0;
 	text-align: center;
 }
-DIV.versionAcknowledgments
+/*...........originalAcknowledgments*/
+.A5Portrait DIV.originalAcknowledgments
 {
-	/*+placement:anchor-bottom-left 58px 38px;*/
-	position: absolute;
-	left: 58px;
-	bottom: 38px;
-	height: 204px !important;
-	width: 457px;
+	height: 156px;
+	width: 475px;
+	/*+placement:shift 45px 18px;*/
+	position: relative;
+	left: 45px;
+	top: 18px;
 }
-DIV#versoLicenseAndCopyright
+.A5Landscape DIV.originalAcknowledgments
+{
+	height: 156px;
+	width: 691px;
+	/*+placement:shift 45px 18px;*/
+	position: relative;
+	left: 45px;
+	top: 18px;
+}
+.A4Landscape DIV.originalAcknowledgments
+{
+	height: 156px;
+	width: 691px;
+	/*+placement:shift 45px 18px;*/
+	position: relative;
+	left: 45px;
+	top: 18px;
+}
+DIV.originalAcknowledgments DIV.bloom-contentNational1
+{
+	height: 100%;
+	width: 100%;
+	display: block;
+}
+/*................license and copyright*/
+.A5Landscape DIV.versionAcknowledgments
+{
+	/*+placement:anchor-top-left 45px 387px;*/
+	position: absolute;
+	left: 45px;
+	top: 387px;
+	height: 116px !important;
+	width: 697px;
+}
+.A4Landscape DIV#versoLicenseAndCopyright
 {
 	/*+placement:shift -21px 53px;*/
 	position: relative;
@@ -253,39 +358,57 @@ DIV#versoLicenseAndCopyright
 	width: 453px;
 	height: 129px;
 }
+.A5Portrait DIV#versoLicenseAndCopyright
+{
+	/*+placement:shift 6px 53px;*/
+	position: relative;
+	left: 6px;
+	top: 53px;
+	margin-left: 83px;
+	width: 432px;
+	height: 129px;
+}
+.A5Landscape DIV#versoLicenseAndCopyright
+{
+	/*+placement:shift 4px 30px;*/
+	position: relative;
+	left: 4px;
+	top: 30px;
+	margin-left: 83px;
+	width: 648px;
+	height: 129px;
+}
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left 3px 57px;*/
+	/*+placement:anchor-top-left 63px 56px;*/
 	position: absolute;
-	left: 3px;
-	top: 57px;
-	width: 449px;
+	left: 63px;
+	top: 56px;
+	width: 342px;
+	height: 29px;
 }
 DIV.copyright
 {
-	width: 450px;
+	width: 100%;
 	height: 34px;
-	/*+placement:anchor-top-left 3px 6px;*/
-	position: absolute;
-	left: 3px;
-	top: 6px;
 }
 IMG.licenseImage
 {
-	width: 114px !important;
-	height: 34px !important;
-	/*+placement:anchor-top-left -43px 61px;*/
+	/*[disabled]width:114px;*/
+	/*[disabled]height:34px;*/
+	/*+placement:anchor-top-left -39px 100px;*/
 	position: absolute;
-	left: -43px;
-	top: 61px;
+	left: -39px;
+	top: 100px;
 }
 BUTTON#editCopyrightAndLicense
 {
-	/*+placement:anchor-top-left 148px 0px;*/
+	/*+placement:anchor-top-left 148px -25px;*/
 	position: absolute;
 	left: 148px;
-	top: 0px;
+	top: -25px;
 	font-size: 9pt;
+	/*[disabled]display:block;*/
 }
 DIV.licenseDescription
 {
@@ -293,26 +416,24 @@ DIV.licenseDescription
 	margin-left: 35px;
 	margin-right: 77px;
 	text-align: left;
-	width: 70%;
+	width: 84%;
 	height: 57px;
-	/*+placement:shift 89px 60px;*/
+	/*+placement:shift 28px 63px;*/
 	position: relative;
-	left: 89px;
-	top: 60px;
+	left: 28px;
+	top: 63px;
 }
 DIV.licenseUrl
 {
 	display: none;
 }
-DIV.originalAcknowledgments
+/*...................version acknowledgments*/
+DIV.versionAcknowledgments
 {
-	display: none;
-}
-DIV.originalAcknowledgments.bloom-contentNational1
-{
-	height: 268px;
-	width: 454px;
-	margin-left: 55px;
-	margin-top: 43px;
-	display: block;
+	/*+placement:anchor-bottom-left 58px 38px;*/
+	position: absolute;
+	left: 58px;
+	bottom: 38px;
+	height: 204px !important;
+	width: 457px;
 }
