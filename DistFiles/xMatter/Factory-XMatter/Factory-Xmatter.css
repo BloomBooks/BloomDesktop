@@ -39,6 +39,7 @@
 	left: -5px;
 	top: 6px;
 	display: block;
+	line-height: 1;
 }
 .A5Landscape.cover .bookTitle.bloom-content1
 {
@@ -63,6 +64,7 @@
 	left: -5px;
 	top: 6px;
 	display: block;
+	line-height: 1.2;
 }
 /*....................National 1*/
 .A5Portrait.cover .bookTitle.bloom-contentNational1
