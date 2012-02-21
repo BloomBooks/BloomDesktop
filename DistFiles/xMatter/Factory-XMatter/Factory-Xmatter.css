@@ -219,20 +219,20 @@ DIV.ISBNContainer
 	left: 60px;
 	top: 460px;
 	width: 424px;
-	height: 0px;
+	/*[disabled]font-size:12pt;*/
+	/*[disabled]line-height:12pt;*/
+	font-family: arial !important;
 }
 DIV.ISBNContainer DIV
 {
-	height: 21px;
+	/*[disabled]height:21px;*/
 	display: inline-block;
 	text-align: left;
-	/*+placement:shift 1px 3px;*/
-	position: relative;
-	left: 1px;
-	top: 3px;
+	/*[disabled]+placement:shift 1px 3px;*/
 	min-width: 120px;
 	line-height: normal;
 	font-size: 12pt;
+	vertical-align: text-bottom;
 }
 .titlePage .titleN1
 {
@@ -284,6 +284,7 @@ DIV.titlePage DIV#languageInformation
 DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational1
 {
 	display: block;
+	/*[empty]border:;*/
 }
 DIV.languageLocation
 {
