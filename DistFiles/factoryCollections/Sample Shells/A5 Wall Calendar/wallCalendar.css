@@ -3,7 +3,35 @@
 {
 	content: "A5Landscape";
 }
-
+/*Top with Picture and a little text*/
+.calendarMonthTop .bloom-imageContainer
+{
+	width: 711px;
+	height: 363px;
+	/*+placement:anchor-top-left 35px 36px;*/
+	position: absolute;
+	left: 35px;
+	top: 36px;
+}
+.bloom-translationGroup.calendarBelowBigPictureText
+{
+	/*+placement:anchor-bottom-left 32px 13px;*/
+	position: absolute;
+	left: 32px;
+	bottom: 13px;
+	text-align: center;
+	width: 724px;
+	height: 111px;
+	display: table !important;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content1
+{
+	display: table-cell !important;
+	vertical-align: bottom;
+	width: 100%;
+	min-height: 14pt;
+}
+/*Bottom with day grid*/
 .month TABLE
 {
 	padding: 1cm;
@@ -45,8 +73,8 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarMonthBottom TD
 {
-	width: 96px;
-	height: 66px;
+	width: 97px;
+	height: 78px;
 	border: 1px solid #000000;
 	margin: 0;
 	padding: 0 0 0 2px;
@@ -55,12 +83,14 @@ DIV.calendarMonthTop DIV.imageHolder
 .calendarMonthBottom TD TEXTAREA
 {
 	width: 88px;
-	height: 34px;
+	height: 49px;
 	font-size: 9pt;
 	/*+placement:shift 4px -9px;*/
 	position: relative;
 	left: 4px;
 	top: -9px;
+	font-size: 10pt;
+	line-height: 11pt;
 }
 .calendarBottomPageHeader
 {
@@ -73,29 +103,10 @@ DIV.calendarMonthTop DIV.imageHolder
 	width: 777px;
 	height: 64px;
 }
-.calendarTopPageText
-{
-	/*+placement:anchor-bottom-left -5px -525px;*/
-	position: absolute;
-	left: -5px;
-	bottom: -525px;
-	text-align: center;
-	width: 724px;
-	height: 55px;
-}
 .calendarMonthBottom TD P
 {
 	/*+placement:shift -34px -7px;*/
 	position: relative;
 	left: -34px;
 	top: -7px;
-}
-.calendarMonthTop P.imageHolder
-{
-	width: 711px;
-	height: 363px;
-	/*+placement:anchor-top-left 1px 78px;*/
-	position: absolute;
-	left: 1px;
-	top: 78px;
 }
