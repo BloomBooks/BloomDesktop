@@ -31,7 +31,7 @@ namespace Bloom
 			return base.GetSearchPaths().Concat(new[] { Path.GetDirectoryName(xMatterFolder.PathToFolder), xMatterFolder.PathToFolder });
 		}
 
-		public BloomFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
+		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
 		{
 			return new BloomFileLocator(_librarySettings, _xMatterPackFinder, new List<string>(_searchPaths.Concat(addedSearchPaths)));
 		}

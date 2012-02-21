@@ -46,7 +46,6 @@ function Cleanup() {
     });
 
 
-
   $('div.bloom-editable').each( function() {
     TrimTrailingLineBreaksInDivs(this);
   });
@@ -363,13 +362,13 @@ jQuery(document).ready(function() {
         });
     });
 
-    jQuery(".draggable").mouseenter(function() {
+    jQuery(".bloom-draggable").mouseenter(function() {
         $(this).prepend("<button class='moveButton' title='Move'></button>")
         $(this).find(".moveButton").mousedown(function(e) {
             $(this).parent().trigger(e);
         });
     });
-    jQuery(".draggable").mouseleave(function() {
+    jQuery(".bloom-draggable").mouseleave(function() {
         $(this).find(".moveButton").each(function() {
             $(this).remove()
         });
@@ -428,9 +427,9 @@ jQuery(document).ready(function() {
 
 
     //add drag and resize ability where elements call for it
-    $(".draggable").draggable({containment: "parent"});
-    $(".resizable").resizable({handles: 'nw, ne, sw, se'});
-    $(".resizable").mouseenter(function() {
+    $(".bloom-draggable").draggable({containment: "parent"});
+    $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
+    $(".bloom-resizable").mouseenter(function() {
         $(this).addClass("ui-mouseOver")
     }).mouseleave(function() {
         $(this).removeClass("ui-mouseOver")
