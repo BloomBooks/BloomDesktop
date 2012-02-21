@@ -86,54 +86,69 @@ namespace Bloom.Edit
 
 		private void OnClickCopyrightAndLicenseDiv(string data)
 		{
-			JObject existing = JObject.Parse(data.ToString());
-
-			Metadata metadata = new Metadata();
-			metadata.CopyrightNotice = existing["copyright"].Value<string>();
-			var url = existing["licenseUrl"].Value<string>();
-			//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
-			if (url == null || url.Trim() == "")
+			try
 			{
-				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-				JToken licenseNotes;
-				if (existing.TryGetValue("licenseNotes", out licenseNotes))
+
+				JObject existing = JObject.Parse(data.ToString());
+
+				Metadata metadata = new Metadata();
+				metadata.CopyrightNotice = existing["copyright"].Value<string>();
+				var url = existing["licenseUrl"].Value<string>();
+				//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+				if (url == null || url.Trim() == "")
 				{
-					metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
+					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+					JToken licenseNotes;
+					if (existing.TryGetValue("licenseNotes", out licenseNotes))
+					{
+						metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
+					}
+					else
+					{
+						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+					}
 				}
 				else
 				{
-					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+					metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
 				}
-			}
-			else
-			{
-				metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
-			}
 
-			using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
-			{
-				dlg.ShowCreator = false;
-				if (DialogResult.OK == dlg.ShowDialog())
+				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
-					string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-					if (File.Exists(imagePath))
-						File.Delete(imagePath);
-					Image licenseImage = dlg.Metadata.License.GetImage();
-					if (licenseImage != null)
+					dlg.ShowCreator = false;
+					if (DialogResult.OK == dlg.ShowDialog())
 					{
-						licenseImage.Save(imagePath);
+						string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+						if (File.Exists(imagePath))
+							File.Delete(imagePath);
+						Image licenseImage = dlg.Metadata.License.GetImage();
+						if (licenseImage != null)
+						{
+							licenseImage.Save(imagePath);
+						}
+						else if (File.Exists(imagePath))
+						{
+							File.Delete(imagePath);
+						}
+
+						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+
+						string result =
+							string.Format(
+								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
+								dlg.Metadata.CopyrightNotice,
+								"license.png",
+								dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement, dlg.Metadata.License.GetDescription("en"));
+						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 					}
-
-					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-
-					string result =
-						string.Format(
-							"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-							dlg.Metadata.CopyrightNotice,
-							"license.png",
-							dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement, dlg.Metadata.License.GetDescription("en"));
-					_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 				}
+			}
+			catch (Exception error)
+			{
+#if DEBUG
+				throw;
+#endif
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
 		}
 
