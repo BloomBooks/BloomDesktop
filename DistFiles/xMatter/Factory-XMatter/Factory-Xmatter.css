@@ -149,6 +149,7 @@ DIV.coverBottomBookTopic DIV.topicN1
 	width: 100%;
 	display: table-cell;
 	vertical-align: bottom;
+	border: 1px solid #5C5757;
 }
 /*.......Language Name*/
 DIV.coverBottomLangName DIV
@@ -233,6 +234,7 @@ DIV.ISBNContainer DIV
 	line-height: normal;
 	font-size: 12pt;
 	vertical-align: text-bottom;
+	min-height: 18px;
 }
 .titlePage .titleN1
 {
@@ -304,8 +306,14 @@ DIV#titePageTitleBlock
 /*Verso Page*/
 DIV.verso
 {
-	border: 4px solid #1E15D0;
 	text-align: center;
+	line-height: normal !important;
+}
+DIV.verso DIV
+{
+	text-align: center;
+	line-height: normal;
+	font-size: 12pt;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
@@ -415,10 +423,10 @@ BUTTON#editCopyrightAndLicense
 }
 DIV.licenseDescription
 {
-	font-size: 8pt;
+	font-size: 8pt !important;
 	margin-left: 35px;
 	margin-right: 77px;
-	text-align: left;
+	text-align: left !important;
 	width: 84%;
 	height: 57px;
 	/*+placement:shift 28px 63px;*/
