@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
@@ -56,6 +57,31 @@ namespace Bloom.Edit
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 			_model.UpdatePageList += new EventHandler(_model_UpdatePageList);
 			OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
+
+		}
+
+		void ParentForm_Activated(object sender, EventArgs e)
+		{
+//			Debug.WriteLine("window activated");
+//			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
+//			Debug.WriteLine("active control: " + ActiveControl.Name);
+//			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
+//			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
+//			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
+//			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
+//			//focus() made it worse, select has no effect
+
+			/* These two lines are the result of several hours of work. The problem this solves is that when
+			 * you're switching between applications (e.g., building a shell book), the browser would highlight
+			 * the box you were in, but not really focus on it. So no red border (from the css :focus), and typing/pasting
+			 * was erratic.
+			 * So now, when we come back to Bloom (this activated event), we *deselect* the browser, then reselect it, and it's happy.
+			 */
+
+			_splitContainer1.Select();
+			_browser1.Select();
+
+//			Debug.WriteLine("active control: " + ActiveControl.Name);
 		}
 
 		void _model_UpdatePageList(object sender, EventArgs e)
@@ -464,6 +490,20 @@ namespace Bloom.Edit
 		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
 		{
 			UpdateEditButtons();
+//
+//			if (ActiveControl == null)
+//				return;
+//
+//        	StringBuilder b = new StringBuilder();
+//			b.AppendLine("tactive control: " + ActiveControl.Name);
+//			b.AppendLine("_splitContainer1 container's control: " + _splitContainer1.ActiveControl.Name);
+//			if(_splitContainer2.ActiveControl!=null)
+//				b.AppendLine("_splitContainer2 container's control: " + _splitContainer2.ActiveControl.Name);
+//			b.AppendLine("t_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
+//			b.AppendLine("t_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
+//			b.AppendLine("t_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
+//        	_focusSpy.Text = b.ToString();
+
 		}
 
 		private void _cutButton_Click(object sender, EventArgs e)
@@ -512,6 +552,11 @@ namespace Bloom.Edit
 		private void OnClickOpenInStylizer(object sender, EventArgs e)
 		{
 			_model.OpenPageInStylizer();
+		}
+
+		private void EditingView_Load(object sender, EventArgs e)
+		{
+			ParentForm.Activated += new EventHandler(ParentForm_Activated);
 		}
 	}
 }

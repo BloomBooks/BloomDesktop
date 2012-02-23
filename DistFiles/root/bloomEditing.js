@@ -170,7 +170,7 @@ function MakeSourceTextDivForGroup(group) {
 
 jQuery(document).ready(function() {
 
-    return;
+
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     jQuery("textarea").blur(function() {
