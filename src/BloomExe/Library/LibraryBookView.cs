@@ -87,7 +87,7 @@ namespace Bloom.Library
 				}
 				catch(Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that template to the library.");
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that book to the library.");
 				}
 			}
 		}
@@ -100,7 +100,7 @@ namespace Bloom.Library
 
 		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
 		{
-			_addToLibraryButton.Text = "Make a book using this template";
+			_addToLibraryButton.Text = "Add this book to my library";
 			_addToLibraryButton.Width = 250;
 		}
 

@@ -118,3 +118,8 @@ a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 {
 	visibility: hidden;
 }
+
+DIV.coverBottomBookTopic DIV.topicN1
+{
+	border: none;
+}

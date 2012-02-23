@@ -267,7 +267,10 @@ namespace Bloom.Library
 				//_listView.Refresh();
 				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
 				if(listItem!=null)
+				{
+					listItem.Text = book.Title;
 					_listView.Invalidate(listItem.Bounds);
+				}
 			}
 		}
 		private void RecreateOneThumbnail(Book.Book book)

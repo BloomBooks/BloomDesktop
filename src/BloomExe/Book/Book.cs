@@ -168,8 +168,9 @@ namespace Bloom.Book
 //                    if (node == null)
 //                        return "unknown";
 //                    return (node.InnerText);
-					var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.VernacularIso639Code);
-					if(String.IsNullOrEmpty(s))
+					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.VernacularIso639Code);
+					var s = XmlUtilities.GetTitleOfHtml(RawDom, null);
+					if(s==null)
 						return Path.GetFileName(_storage.FolderPath);
 					return s;
 				}
@@ -910,6 +911,7 @@ namespace Bloom.Book
 			}
 
 			//todo: first page only:
+			var oldPath = FolderPath;
 			UpdateBookFolderAndFileNames(data);
 
 			//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
@@ -982,12 +984,27 @@ namespace Bloom.Book
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				GetOrCreateElement("//html", "head");
+				XmlUtilities.GetOrCreateElement(RawDom,"//html", "head");
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_librarySettings.VernacularIso639Code});
-				if (!string.IsNullOrEmpty(t.Trim()))
-				{
-					GetOrCreateElement("//head", "title").InnerText = t;
-				}
+				SetTitle(t);
+			}
+		}
+
+		public void SetTitle(string t)
+		{
+			if (!string.IsNullOrEmpty(t.Trim()))
+			{
+				var titleNode = XmlUtilities.GetOrCreateElement(RawDom, "//head", "title");
+				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
+
+				//so we set the xml (not the text) of the node
+				titleNode.InnerXml = t;
+				//then ask it for the text again (will drop the xml)
+				var justTheText = titleNode.InnerText.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
+				//then clear it
+				titleNode.InnerXml = "";
+				//and set the text again!
+				titleNode.InnerText = justTheText;
 			}
 		}
 
@@ -1052,19 +1069,7 @@ namespace Bloom.Book
 		}
 
 
-		private XmlElement GetOrCreateElement(string parentPath, string name)
-		{
-			XmlElement element = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath + "/" + name);
-			if (element == null)
-			{
-				XmlElement parent = (XmlElement)RawDom.SelectSingleNodeHonoringDefaultNS(parentPath);
-				if (parent == null)
-					return null;
-				element = parent.OwnerDocument.CreateElement(name, parent.NamespaceURI);
-				parent.AppendChild(element);
-			}
-			return element;
-		}
+
 
 
 		private void Check()
@@ -1394,16 +1399,6 @@ namespace Bloom.Book
 			Check();
 		}
 
-		private XmlElement GetOrCreateElement(XmlElement parent, string predicate, string name)
-		{
-			XmlElement element = (XmlElement) parent.SelectSingleNodeHonoringDefaultNS("/" + predicate);
-			if (element == null)
-			{
-				element = parent.OwnerDocument.CreateElement(name, parent.NamespaceURI);
-				parent.AppendChild(element);
-			}
-			return element;
-		}
 
 		/// <summary>
 		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:

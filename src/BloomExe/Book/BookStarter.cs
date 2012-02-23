@@ -137,7 +137,8 @@ namespace Bloom.Book
 
 			storage.Save();
 
-			storage.UpdateBookFileAndFolderName(_librarySettings);
+			//REVIEW this actually undoes the setting of the intial files name:
+			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
 		}
 

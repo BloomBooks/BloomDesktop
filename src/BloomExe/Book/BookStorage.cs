@@ -38,7 +38,7 @@ namespace Bloom.Book
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(XmlDocument bookDom);
-		string GetVernacularTitleFromHtml(string Iso639Code);
+		//string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(LibrarySettings settings);
@@ -584,33 +584,36 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(LibrarySettings librarySettings)
 		{
-			var title = GetVernacularTitleFromHtml(librarySettings.VernacularIso639Code);
-			if(title !=null)
+			var title = XmlUtilities.GetTitleOfHtml(Dom, null);
+			if (title != null)
+			{
 				SetBookName(title);
+			}
 		}
 
-		public string GetVernacularTitleFromHtml(string Iso639Code)
-		{
-			var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
-				string.Format("//textarea[@data-book='bookTitle' and @lang='{0}']", Iso639Code));
-			if (textWithTitle == null)
-			{
-				Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-				return null;
-			}
-			string title = textWithTitle.InnerText.Trim();
-			if (string.IsNullOrEmpty(title))
-			{
-				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-				return null;
-			}
-			if (title.StartsWith("{"))
-			{
-				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was still an unchanged template.");
-				return null;
-			}
-			return title;
-		}
+//    	public string GetVernacularTitleFromHtml(string Iso639Code)
+//        {
+//
+//            var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
+//                string.Format("//textarea[@data-book='bookTitle' and @lang='{0}']", Iso639Code));
+//            if (textWithTitle == null)
+//            {
+//                Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
+//                return null;
+//            }
+//            string title = textWithTitle.InnerText.Trim();
+//            if (string.IsNullOrEmpty(title))
+//            {
+//                Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
+//            	return null;
+//            }
+//			if (title.StartsWith("{"))
+//			{
+//				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was still an unchanged template.");
+//				return null;
+//			}
+//            return title;
+//        }
 
 
 		private string SanitizeNameForFileSystem(string name)

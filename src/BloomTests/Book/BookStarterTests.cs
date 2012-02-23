@@ -365,10 +365,9 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromFactoryA5_GetsExpectedName()
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedName()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"BasicBook");
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","BasicBook");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
