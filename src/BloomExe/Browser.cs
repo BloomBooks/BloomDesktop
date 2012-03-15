@@ -246,7 +246,18 @@ namespace Bloom
 		{
 			if(_tempHtmlFile!=null)
 			{
-				_tempHtmlFile.Dispose();
+				try
+				{
+					_tempHtmlFile.Dispose();
+				}
+				catch(Exception)
+				{
+						//not worth talking to the user about it. Just abandon it in the Temp directory.
+#if DEBUG
+					throw;
+#endif
+				}
+
 			}
 			_tempHtmlFile = tempFile;
 		}
