@@ -124,6 +124,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="Workspace\FeedbackDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workspace\FeedbackDialog.Designer.cs">
+      <DependentUpon>FeedbackDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="web\BloomServer.cs" />
     <Compile Include="web\WebLibraryView.cs">
       <SubType>UserControl</SubType>
@@ -266,6 +272,9 @@
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
+      <DependentUpon>FeedbackDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="web\WebLibraryView.resx">
       <DependentUpon>WebLibraryView.cs</DependentUpon>
@@ -439,6 +448,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\pagePlaceHolder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uservoice16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Logo300x78.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\construction.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

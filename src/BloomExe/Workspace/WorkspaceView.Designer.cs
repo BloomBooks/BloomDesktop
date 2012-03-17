@@ -29,12 +29,14 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorkspaceView));
 			this._tabControl = new System.Windows.Forms.TabControl();
 			this._libraryTabPage = new System.Windows.Forms.TabPage();
 			this._editTabPage = new System.Windows.Forms.TabPage();
 			this._publishTabPage = new System.Windows.Forms.TabPage();
 			this._infoTabPage = new System.Windows.Forms.TabPage();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._feedbackButton = new System.Windows.Forms.Button();
 			this._settingsButton = new System.Windows.Forms.Button();
 			this._infoButton = new System.Windows.Forms.Button();
 			this._openButton1 = new System.Windows.Forms.Button();
@@ -103,17 +105,38 @@
 			this._infoTabPage.TabIndex = 3;
 			this._infoTabPage.UseVisualStyleBackColor = true;
 			// 
+			// _feedbackButton
+			// 
+			this._feedbackButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._feedbackButton.BackColor = System.Drawing.Color.Transparent;
+			this._feedbackButton.FlatAppearance.BorderSize = 0;
+			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._feedbackButton.ForeColor = System.Drawing.Color.White;
+			this._feedbackButton.Image = ((System.Drawing.Image)(resources.GetObject("_feedbackButton.Image")));
+			this._feedbackButton.Location = new System.Drawing.Point(504, 13);
+			this._feedbackButton.Name = "_feedbackButton";
+			this._feedbackButton.Size = new System.Drawing.Size(86, 23);
+			this._feedbackButton.TabIndex = 14;
+			this._feedbackButton.Text = "Feedback";
+			this._feedbackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.toolTip1.SetToolTip(this._feedbackButton, "Settings");
+			this._feedbackButton.UseVisualStyleBackColor = false;
+			this._feedbackButton.Click += new System.EventHandler(this._feedbackButton_Click);
+			// 
 			// _settingsButton
 			// 
 			this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._settingsButton.BackColor = System.Drawing.Color.Transparent;
 			this._settingsButton.FlatAppearance.BorderSize = 0;
 			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._settingsButton.ForeColor = System.Drawing.Color.White;
 			this._settingsButton.Image = global::Bloom.Properties.Resources.settings;
-			this._settingsButton.Location = new System.Drawing.Point(781, 11);
+			this._settingsButton.Location = new System.Drawing.Point(593, 11);
 			this._settingsButton.Name = "_settingsButton";
-			this._settingsButton.Size = new System.Drawing.Size(22, 23);
+			this._settingsButton.Size = new System.Drawing.Size(80, 23);
 			this._settingsButton.TabIndex = 12;
+			this._settingsButton.Text = "Settings";
+			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
 			this._settingsButton.UseVisualStyleBackColor = false;
 			this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
@@ -124,11 +147,14 @@
 			this._infoButton.BackColor = System.Drawing.Color.Transparent;
 			this._infoButton.FlatAppearance.BorderSize = 0;
 			this._infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._infoButton.ForeColor = System.Drawing.Color.White;
 			this._infoButton.Image = global::Bloom.Properties.Resources.info16x16;
-			this._infoButton.Location = new System.Drawing.Point(815, 11);
+			this._infoButton.Location = new System.Drawing.Point(804, 11);
 			this._infoButton.Name = "_infoButton";
-			this._infoButton.Size = new System.Drawing.Size(22, 23);
+			this._infoButton.Size = new System.Drawing.Size(75, 23);
 			this._infoButton.TabIndex = 12;
+			this._infoButton.Text = "Help";
+			this._infoButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.toolTip1.SetToolTip(this._infoButton, "Get Information About Bloom");
 			this._infoButton.UseVisualStyleBackColor = false;
 			this._infoButton.Click += new System.EventHandler(this._infoButton_Click);
@@ -139,11 +165,14 @@
 			this._openButton1.BackColor = System.Drawing.Color.Transparent;
 			this._openButton1.FlatAppearance.BorderSize = 0;
 			this._openButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._openButton1.ForeColor = System.Drawing.Color.White;
 			this._openButton1.Image = global::Bloom.Properties.Resources.open;
-			this._openButton1.Location = new System.Drawing.Point(850, 10);
+			this._openButton1.Location = new System.Drawing.Point(675, 10);
 			this._openButton1.Name = "_openButton1";
-			this._openButton1.Size = new System.Drawing.Size(22, 23);
+			this._openButton1.Size = new System.Drawing.Size(128, 23);
 			this._openButton1.TabIndex = 13;
+			this._openButton1.Text = "Open/Create Library";
+			this._openButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.toolTip1.SetToolTip(this._openButton1, "Open or Create Another Library");
 			this._openButton1.UseVisualStyleBackColor = false;
 			this._openButton1.Click += new System.EventHandler(this._openButton1_Click);
@@ -163,6 +192,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this._feedbackButton);
 			this.Controls.Add(this._settingsButton);
 			this.Controls.Add(this._infoButton);
 			this.Controls.Add(this._openButton1);
@@ -185,7 +215,8 @@
 		private System.Windows.Forms.Button _settingsButton; 
 		private System.Windows.Forms.Button _infoButton;
         private System.Windows.Forms.Button _openButton1;
-        private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.Button _feedbackButton;
 
 
     }
