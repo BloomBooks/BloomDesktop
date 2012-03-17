@@ -31,6 +31,11 @@ namespace Bloom
 			}
 			Opacity -= 0.20;
 		}
+
+		private void label1_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 
 	public class Splasher

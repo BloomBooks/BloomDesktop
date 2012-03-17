@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,26 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="_feedbackButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7O
-        HOkAAAAEZ0FNQQAAsY8L/GEFAAAACXBIWXMAAAcWAAAHFgHjmmr+AAAAGXRFWHRTb2Z0d2FyZQB3d3cu
-        aW5rc2NhcGUub3Jnm+48GgAAAppJREFUOE9j+P//PwOpmFNKRxamhyTN/GqmSiJ6wXMkrTNfiJsmbmJg
-        UGEnygAGBgZmUf3wCknLzOsNHROP3QcC1+i6U4KavllYDQBqYOcS0TTiV3cLETeObZe0yj7rHlt7ftKU
-        afvPn79wF+j8/9t27jsFNPAI2AAGIRU+YZ2AGHHztMWSVlnXxY3j3pr65j9NLum9PXXuyouHjhy7/OLF
-        i+/z588/8uvXL5D+/0+ePHkvZhh9m0HcMLpNxqnybUxu++V1G7cdOXvu/PVnz559BquCgh8/fvxfvWbN
-        rbaOnn1nzl64AzIEqOabiH7YfQYpm4IryUXth//8+fMPWRMy++XLlz9WrVl/NSq7cY+CV/t/88DK1z39
-        U84AvfeQQcIqc6NPQu3JR48eP8ZlwKNHj14tX73hqm1Q0VmQASAcGJ1xXMIy7QADl7ytJDBatik4Fj3u
-        mrzgwLt37z6ADLpy5eozoFPBrrp3796D2QtWXFW2S3us711wp6V39qn5S1afFTdL7IMEIjCahLUDs4EB
-        eErLOf3Bt2/f/kfltF2yDCq7sXD5+uM7d+263jN1wZUTJ089gAViUnH3PmFN31iUaBRUcfI18im4D7I1
-        KLXxgrhJ/EZxi/RdMna5L6Ozmo7AvAiMgWdSVumPQCkSxQBR4+hK38T6yyCFvol150F8oOuYxPRDmuTs
-        8l9t2bZrH0hu/tJ1+yXMU+eDXY+cD8RN49uyKvtPgxR5xFSfF9TwioTJC6i42gPlj0dkNhxRts+8xqth
-        o4ZhgKhhVE1Bdde5v3///rcPLT7HK2VghWwBg4g6r6CmX6aAgIEATBzFBZwyltLilulXzQPLnylaxV0B
-        Op8D2QBsbIy8ANTEyCWpa8wjrixGSDNIHgDK4nzrGCeL9QAAAABJRU5ErkJggg==
-</value>
-  </data>
 </root>

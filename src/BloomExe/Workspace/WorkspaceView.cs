@@ -13,6 +13,7 @@ namespace Bloom.Workspace
 		private readonly WorkspaceModel _model;
 		private readonly SettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
+		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private Control _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -21,20 +22,25 @@ namespace Bloom.Workspace
 
 		public event EventHandler CloseCurrentProject;
 
-		public delegate WorkspaceView Factory(Control libraryView);//autofac uses this
+		public delegate WorkspaceView Factory(Control libraryView);
+
+//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-			Control libraryView,
-			EditingView.Factory editingViewFactory,
-			PublishView.Factory pdfViewFactory,
-			InfoView.Factory infoViewFactory,
-			SettingsDialog.Factory settingsDialogFactory,
-			EditBookCommand editBookCommand,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+							 Control libraryView,
+							 EditingView.Factory editingViewFactory,
+							 PublishView.Factory pdfViewFactory,
+							 InfoView.Factory infoViewFactory,
+							 SettingsDialog.Factory settingsDialogFactory,
+							 EditBookCommand editBookCommand,
+							 SelectedTabChangedEvent selectedTabChangedEvent,
+							 FeedbackDialog.Factory feedbackDialogFactory
+			)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
+			_feedbackDialogFactory = feedbackDialogFactory;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -78,9 +84,9 @@ namespace Bloom.Workspace
 			_publishTabPage.Tag = this._tabControl.TabPages.IndexOf(_publishTabPage); //remember initial location
 			_infoTabPage.Tag = this._tabControl.TabPages.IndexOf(_infoTabPage); //remember initial location
 
-		   //NB: don't optimize this without testing... it's something of a hack to get it to display correctly
-			if(!Program.StartUpWithFirstOrNewVersionBehavior)
-			   SetTabVisibility(_infoTabPage, false);
+			//NB: don't optimize this without testing... it's something of a hack to get it to display correctly
+			if (!Program.StartUpWithFirstOrNewVersionBehavior)
+				SetTabVisibility(_infoTabPage, false);
 			SetTabVisibility(_publishTabPage, false);
 			SetTabVisibility(_editTabPage, false);
 
@@ -101,22 +107,22 @@ namespace Bloom.Workspace
 			_tabControl.SelectedTab = _editTabPage;
 		}
 
-		void Application_Idle(object sender, EventArgs e)
+		private void Application_Idle(object sender, EventArgs e)
 		{
 			//this didn't work... we got to idle when the lists were still populating
-		   Application.Idle -= new EventHandler(Application_Idle);
-//            Cursor = Cursors.Default;
+			Application.Idle -= new EventHandler(Application_Idle);
+			//            Cursor = Cursors.Default;
 		}
 
 		private void SetupTabIcons()
 		{
 			_tabControl.ImageList = new ImageList();
 			_tabControl.ImageList.ColorDepth = ColorDepth.Depth24Bit;
-			_tabControl.ImageList.ImageSize = new Size(32,32);
+			_tabControl.ImageList.ImageSize = new Size(32, 32);
 			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library.png")));
 			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication( "Images", "edit.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit.png")));
 			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish.png")));
 			_tabControl.ImageList.Images.Add(
@@ -127,7 +133,7 @@ namespace Bloom.Workspace
 			_infoTabPage.ImageIndex = 3;
 		}
 
-		void OnUpdateDisplay(object sender, System.EventArgs e)
+		private void OnUpdateDisplay(object sender, System.EventArgs e)
 		{
 			SetTabVisibility(_editTabPage, _model.ShowEditPage);
 			SetTabVisibility(_publishTabPage, _model.ShowPublishPage);
@@ -137,7 +143,7 @@ namespace Bloom.Workspace
 		{
 			if (!visible)
 			{
-				if(_tabControl.TabPages.Contains(page))
+				if (_tabControl.TabPages.Contains(page))
 				{
 					_tabControl.TabPages.Remove(page);
 				}
@@ -146,15 +152,15 @@ namespace Bloom.Workspace
 			{
 				if (!_tabControl.TabPages.Contains(page))
 				{
-					var index = _tabControl.TabCount;//(int)page.Tag;
-					_tabControl.TabPages.Insert(index,page);
+					var index = _tabControl.TabCount; //(int)page.Tag;
+					_tabControl.TabPages.Insert(index, page);
 				}
 			}
 		}
 
 		private void _openButton1_Click(object sender, EventArgs e)
 		{
-			if(_model.CloseRequested())
+			if (_model.CloseRequested())
 			{
 				Invoke(CloseCurrentProject);
 			}
@@ -168,8 +174,8 @@ namespace Bloom.Workspace
 
 		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if(_tabControl.SelectedTab !=_infoTabPage)
-				SetTabVisibility(_infoTabPage, false);//we always hide this after it is used
+			if (_tabControl.SelectedTab != _infoTabPage)
+				SetTabVisibility(_infoTabPage, false); //we always hide this after it is used
 
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
 											{
@@ -181,11 +187,18 @@ namespace Bloom.Workspace
 
 		private void _settingsButton_Click(object sender, EventArgs e)
 		{
-			using(var dlg = _settingsDialogFactory())
+			using (var dlg = _settingsDialogFactory())
 			{
 				dlg.ShowDialog();
 			}
 		}
 
+		private void _feedbackButton_Click(object sender, EventArgs e)
+		{
+			using(var x = _feedbackDialogFactory())
+			{
+				x.Show();
+			}
+		}
 	}
 }
