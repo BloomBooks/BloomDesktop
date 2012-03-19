@@ -591,8 +591,12 @@ namespace Bloom.Book
 			get
 			{
 				//default is "true"
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
-				return node.Count ==0;
+				//had this, but it seems impracticle unless bloom takes responsbility for setting it.  I can't remember what motivated it...
+				//	var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
+				//	return node.Count ==0;
+
+				//I know, this is simplistic too... eventually we might need to allow, for example, addition of font/back-matter
+				return !LockedExceptForTranslation;
 			}
 		}
 
