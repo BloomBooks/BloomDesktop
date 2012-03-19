@@ -43,6 +43,7 @@ namespace Bloom.Book
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(LibrarySettings settings);
 		void RemoveBookThumbnail();
+		IFileLocator GetFileLocator();
 	}
 
 	public class BookStorage : IBookStorage
@@ -54,16 +55,18 @@ namespace Bloom.Book
 		private const string kBloomFormatVersion = "0.5";
 
 		private  string _folderPath;
-		private readonly IFileLocator _fileLocator;
+		private BloomFileLocator _fileLocator;
 		public string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
-		public BookStorage(string folderPath, Palaso.IO.IFileLocator fileLocator)
+		public BookStorage(string folderPath, Palaso.IO.IFileLocator baseFileLocator)
 		{
 			_folderPath = folderPath;
-			_fileLocator = fileLocator;
+			//the fileLocator we get doesn't know anything about this particular book
+			_fileLocator = (BloomFileLocator) baseFileLocator.CloneAndCustomize(new string[] { folderPath });
+
 			Dom = new XmlDocument();
 
 			RequireThat.Directory(folderPath).Exists();
@@ -478,6 +481,15 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// this is a method because it wasn't clear if we will eventually generate it on the fly (book paths do change as they are renamed)
+		/// </summary>
+		/// <returns></returns>
+		public IFileLocator GetFileLocator()
+		{
+			return _fileLocator;
+		}
+
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(_folderPath, "thumbnail.png");
@@ -561,12 +573,17 @@ namespace Bloom.Book
 			try
 			{
 				Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
+
+				_fileLocator= _fileLocator.GetNewLocatorByReplacingPath(FolderPath, newFolderPath);
+
 				_folderPath = newFolderPath;
 			}
 			catch (Exception)
 			{
 				Debug.Fail("(debug mode only): could not rename the folder");
 			}
+
+
 		}
 
 		public string GetValidateErrors()

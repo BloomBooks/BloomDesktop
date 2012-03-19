@@ -30,7 +30,6 @@ namespace Bloom.Book
 		public delegate Book Factory(BookStorage storage, bool projectIsEditable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
-		private readonly IFileLocator _fileLocator;
 		private readonly LibrarySettings _librarySettings;
 
 		private  List<string> _builtInConstants = new List<string>(new[] { "bookTitle", "topic", "nameOfLanguage" });
@@ -66,9 +65,6 @@ namespace Bloom.Book
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 			_storage = storage;
 			_templateFinder = templateFinder;
-
-			//the fileLocator we get doesn't know anything about this particular book
-			_fileLocator = fileLocator.CloneAndCustomize(new string[]{storage.FolderPath});
 
 			_librarySettings = librarySettings;
 
@@ -220,15 +216,15 @@ namespace Bloom.Book
 
 			XmlDocument dom = GetHtmlDomWithJustOnePage(page);
 			BookStorage.RemoveModeStyleSheets(dom);
-			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
-			dom.AddStyleSheet(_fileLocator.LocateFile(@"editMode.css"));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
 			if(LockedExceptForTranslation)
 			{
-				dom.AddStyleSheet(_fileLocator.LocateFile(@"editTranslationMode.css"));
+				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
 			}
 			else
 			{
-				dom.AddStyleSheet(_fileLocator.LocateFile(@"editOriginalMode.css"));
+				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
 			}
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
@@ -263,7 +259,7 @@ namespace Bloom.Book
 			d.Add("{N2}", _librarySettings.GetNationalLanguage2Name(_librarySettings.NationalLanguage2Iso639Code));
 
 			//REVIEW: this is deviating a bit from the normal use of the dictionary...
-			d.Add("urlOfUIFiles", "file:///"+ _fileLocator.LocateDirectory("ui", "ui files directory"));
+			d.Add("urlOfUIFiles", "file:///"+ _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
 
 			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
@@ -281,8 +277,8 @@ namespace Bloom.Book
 		private void AddJavaScriptForEditing(XmlDocument dom)
 		{
 			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
-		   // AddJavascriptFile(dom, head, _fileLocator.LocateFile("jquery-1.4.4.min.js"));
-			AddJavascriptFile(dom, head, _fileLocator.LocateFile("bloomBootstrap.js"));
+		   // AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("jquery-1.4.4.min.js"));
+			AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
 		}
 
 		private void AddJavascriptFile(XmlDocument dom, XmlElement node, string pathToJavascript)
@@ -328,8 +324,8 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			var dom = GetHtmlDomWithJustOnePage(page);
-			dom.AddStyleSheet(_fileLocator.LocateFile(@"basePage.css"));
-			dom.AddStyleSheet(_fileLocator.LocateFile(@"previewMode.css"));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
 			AddCoverColor(dom, CoverColor);
 			AddPreviewJScript(dom);
 
@@ -397,7 +393,7 @@ namespace Bloom.Book
 		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
 		{
 			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom(_log);
-			dom.AddStyleSheet(_fileLocator.LocateFile(cssFileName));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(cssFileName));
 			return dom;
 		}
 
@@ -554,7 +550,7 @@ namespace Bloom.Book
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
 			var data = LoadDataSetFromLibrarySettings(false);
 			GatherDataItemsFromDom(data, "*", RawDom);
-			var helper = new XMatterHelper(dom, _librarySettings.XMatterPackName, _fileLocator);
+			var helper = new XMatterHelper(dom, _librarySettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(dom);
 			var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait");
 			helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
@@ -726,8 +722,8 @@ namespace Bloom.Book
 		private void AddPreviewJScript(XmlDocument dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.js"));
-//			AddJavascriptFile(dom, header, _fileLocator.LocateFile("jquery.myimgscale.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.myimgscale.js"));
 //
 //			XmlElement script = dom.CreateElement("script");
 //			script.SetAttribute("type", "text/javascript");
@@ -740,7 +736,7 @@ namespace Bloom.Book
 //			header.AppendChild(script);
 
 			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
-			AddJavascriptFile(dom, head, _fileLocator.LocateFile("bloomPreviewBootstrap.js"));
+			AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1175,7 +1171,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_fileLocator.LocateFile("languageDisplayTemplate.css"));
+			var template = File.ReadAllText(_storage.GetFileLocator().LocateFile("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);
@@ -1440,7 +1436,7 @@ namespace Bloom.Book
 		{
 			try
 			{
-				return SizeAndOrientation.GetPageSizeAndOrientationChoices(RawDom, _fileLocator);
+				return SizeAndOrientation.GetPageSizeAndOrientationChoices(RawDom, _storage.GetFileLocator());
 			}
 			catch (Exception error)
 			{
