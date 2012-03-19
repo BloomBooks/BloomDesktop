@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
-using Skybound.Gecko;
+using Gecko;
 
 namespace Bloom.Edit
 {

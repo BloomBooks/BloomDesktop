@@ -10,8 +10,8 @@ using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
 using Palaso.Xml;
-using Skybound.Gecko;
-using Skybound.Gecko.DOM;
+using Gecko;
+using Gecko.DOM;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
@@ -60,7 +60,7 @@ namespace Bloom
 			//Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
 			SetDllDirectory(xulRunnerPath);
 
-			Skybound.Gecko.Xpcom.Initialize(xulRunnerPath);
+			Gecko.Xpcom.Initialize(xulRunnerPath);
 		}
 
 		public Browser()
@@ -143,7 +143,7 @@ namespace Bloom
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
 
-			_browser.Navigating += new GeckoNavigatingEventHandler(_browser_Navigating);
+			_browser.Navigating += new EventHandler<GeckoNavigatingEventArgs>(_browser_Navigating);
 		   // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
 			//necessarily need).  When I comment this out, I get an error if the href had, for example,
 			//"bloom" for the protocol.  We could probably install that as a protocol, rather than

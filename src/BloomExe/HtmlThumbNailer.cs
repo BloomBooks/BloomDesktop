@@ -17,7 +17,7 @@ using BloomTemp;
 using Palaso.Code;
 using Palaso.Reporting;
 using Palaso.Xml;
-using Skybound.Gecko;
+using Gecko;
 
 namespace Bloom
 {
@@ -228,7 +228,7 @@ namespace Bloom
 			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
 				{
 					 b = MakeNewBrowser();
-					 b.Navigated += new GeckoNavigatedEventHandler(_browser_Navigated);
+					 b.Navigated += new EventHandler<GeckoNavigatedEventArgs>(_browser_Navigated);
 					_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
 				}
 				return b;

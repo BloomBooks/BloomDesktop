@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Palaso.IO;
 using Palaso.Reporting;
-using Skybound.Gecko;
+using Gecko;
 
 namespace Bloom.Library
 {
