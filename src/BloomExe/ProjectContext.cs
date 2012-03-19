@@ -87,7 +87,8 @@ namespace Bloom
 				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
 				//builder.Register<BookCollection>(c => c.Resolve<BookCollection>());
 
-				builder.Register<IFileLocator>(c => new BloomFileLocator(c.Resolve<LibrarySettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
+				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<LibrarySettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
+
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 

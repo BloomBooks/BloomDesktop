@@ -222,7 +222,7 @@ namespace BloomTests.Edit
 		}
 		private BookStorage GetCalendardBookStorage()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "A5 Wall Calendar");
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
 			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator);
 			return bs;

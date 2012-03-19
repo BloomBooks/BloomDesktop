@@ -44,7 +44,7 @@ namespace BloomTests.Book
 																						{
 																							return (XmlDocument) _documentDom.Clone();
 																						});// review: the real thing does more than just clone
-
+			_storage.Setup(x => x.GetFileLocator()).Returns(()=>_fileLocator.Object);
 
 			_testFolder = new TemporaryFolder("BookTests");
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
@@ -82,7 +82,7 @@ namespace BloomTests.Book
 		private Bloom.Book.Book CreateBook()
 		{
 			_librarySettings = new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz", NationalLanguage1Iso639Code = "en", NationalLanguage2Iso639Code = "fr" });
-			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object, _fileLocator.Object,
+			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object,
 				_librarySettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}

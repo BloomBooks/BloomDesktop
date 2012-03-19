@@ -26,7 +26,7 @@ namespace Bloom.Book
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(IFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
+		public BookStarter(IChangeableFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
 		{
 			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;

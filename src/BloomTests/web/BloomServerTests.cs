@@ -59,7 +59,7 @@ namespace BloomTests.web
 
 		Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		{
-			return new Bloom.Book.Book(storage, true, null, _fileLocator, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"), VernacularIso639Code = "xyz" }), null,
+			return new Bloom.Book.Book(storage, true, null, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"), VernacularIso639Code = "xyz" }), null,
 													 new PageSelection(),
 													 new PageListChangedEvent(), new BookRefreshEvent());
 		}

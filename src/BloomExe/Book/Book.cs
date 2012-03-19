@@ -55,7 +55,7 @@ namespace Bloom.Book
 		public Book(){}
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
-			IFileLocator fileLocator, LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
+		   LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent)
@@ -63,6 +63,8 @@ namespace Bloom.Book
 			IsInEditableLibrary = projectIsEditable && storage.LooksOk;
 			Id = Guid.NewGuid().ToString();
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
+
+			Guard.AgainstNull(storage,"storage");
 			_storage = storage;
 			_templateFinder = templateFinder;
 

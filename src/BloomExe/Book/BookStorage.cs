@@ -55,17 +55,18 @@ namespace Bloom.Book
 		private const string kBloomFormatVersion = "0.5";
 
 		private  string _folderPath;
-		private BloomFileLocator _fileLocator;
+		private IChangeableFileLocator _fileLocator;
 		public string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
-		public BookStorage(string folderPath, Palaso.IO.IFileLocator baseFileLocator)
+		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator)
 		{
 			_folderPath = folderPath;
 			//the fileLocator we get doesn't know anything about this particular book
-			_fileLocator = (BloomFileLocator) baseFileLocator.CloneAndCustomize(new string[] { folderPath });
+			_fileLocator = baseFileLocator;
+			_fileLocator.AddPath(folderPath);
 
 			Dom = new XmlDocument();
 
@@ -574,7 +575,8 @@ namespace Bloom.Book
 			{
 				Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
 
-				_fileLocator= _fileLocator.GetNewLocatorByReplacingPath(FolderPath, newFolderPath);
+				_fileLocator.RemovePath(FolderPath);
+				_fileLocator.AddPath(newFolderPath);
 
 				_folderPath = newFolderPath;
 			}

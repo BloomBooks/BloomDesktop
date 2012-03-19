@@ -13,7 +13,7 @@ namespace BloomTests.Book
 	{
 		private BookCollection _collection;
 		private TemporaryFolder _folder;
-		private IFileLocator _fileLocator;
+		private IChangeableFileLocator _fileLocator;
 
 		[SetUp]
 		public void Setup()
@@ -29,7 +29,7 @@ namespace BloomTests.Book
 
 		 Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		 {
-			 return new Bloom.Book.Book(storage, true, null, _fileLocator, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
+			 return new Bloom.Book.Book(storage, true, null, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
 													  new PageSelection(),
 													  new PageListChangedEvent(), new BookRefreshEvent());
 		 }
