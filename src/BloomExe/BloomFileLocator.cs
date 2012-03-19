@@ -36,5 +36,16 @@ namespace Bloom
 			return new BloomFileLocator(_librarySettings, _xMatterPackFinder, new List<string>(_searchPaths.Concat(addedSearchPaths)));
 		}
 
+		/// <summary>
+		/// used when the book is renamed
+		/// </summary>
+		/// <param name="oldPath"></param>
+		/// <param name="newPath"></param>
+		/// <returns>a new fileLocator</returns>
+		public BloomFileLocator GetNewLocatorByReplacingPath(string oldPath, string newPath)
+		{
+			var paths = _searchPaths.Where(p => p != oldPath).Concat(new [] {newPath});
+			return new BloomFileLocator(_librarySettings, _xMatterPackFinder, new List<string>(_searchPaths.Concat(paths)));
+		}
 	}
 }
