@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
+using Palaso.IO;
 using Skybound.Gecko;
 
 namespace Bloom.Edit
@@ -85,10 +86,12 @@ namespace Bloom.Edit
 			Application.DoEvents();
 
 			//Ok, so we should have a modified DOM now, which we can save back over the top.
-			//Debug.WriteLine(b.Document.DocumentElement.InnerHtml);
 
-			//use htmlagilitypack to covert back to xml-well-formedness before saving
-			b.SaveDocument(bookPath);
+			//nice non-ascii paths kill this, so let's go to a temp file first
+			var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
+			b.SaveDocument(temp.Path);
+			File.Delete(bookPath);
+			File.Move(temp.Path, bookPath);
 		}
 
 		public void RunJavaScript(GeckoWebBrowser b, string script)
