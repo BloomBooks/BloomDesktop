@@ -99,6 +99,11 @@ namespace Bloom
 			_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
 			_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 			_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
+			if(_pasteCommand.Enabled)
+			{
+				//prevent pasting images (BL-93)
+				_pasteCommand.Enabled = Clipboard.ContainsText();
+			}
 			_undoCommand.Enabled = _browser != null && _browser.CanUndo;
 		}
 
