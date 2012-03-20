@@ -15,10 +15,10 @@ namespace Bloom.Workspace
     public partial class FeedbackDialog : Form
     {
 		public delegate FeedbackDialog Factory();//autofac uses this
-		
-		private readonly IFileLocator _fileLocator;
 
-		public FeedbackDialog(IFileLocator fileLocator)
+		private readonly IChangeableFileLocator _fileLocator;
+
+		public FeedbackDialog(IChangeableFileLocator fileLocator)
     	{
     		_fileLocator = fileLocator;
     		InitializeComponent();
