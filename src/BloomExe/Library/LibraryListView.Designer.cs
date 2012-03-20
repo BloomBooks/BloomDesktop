@@ -35,13 +35,13 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LibraryListView));
 			this._listView = new System.Windows.Forms.ListView();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._updateThumbnailMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this._updateFrontMatterToolStripMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._updateFrontMatterToolStripMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this._updateThumbnailMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.contextMenuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -72,6 +72,7 @@
 			this._listView.UseCompatibleStateImageBehavior = false;
 			this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
 			this._listView.DoubleClick += new System.EventHandler(this._listView_DoubleClick);
+			this._listView.MouseDown += new System.Windows.Forms.MouseEventHandler(this._listView_MouseDown);
 			this._listView.MouseEnter += new System.EventHandler(this._listView_MouseEnter);
 			// 
 			// contextMenuStrip1
@@ -83,7 +84,33 @@
             this.toolStripMenuItem2,
             this.deleteMenuItem});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(182, 120);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(182, 98);
+			// 
+			// _updateThumbnailMenu
+			// 
+			this._updateThumbnailMenu.Name = "_updateThumbnailMenu";
+			this._updateThumbnailMenu.Size = new System.Drawing.Size(181, 22);
+			this._updateThumbnailMenu.Text = "Update Thumbnail";
+			this._updateThumbnailMenu.Click += new System.EventHandler(this._updateThumbnailMenu_Click);
+			// 
+			// _updateFrontMatterToolStripMenu
+			// 
+			this._updateFrontMatterToolStripMenu.Name = "_updateFrontMatterToolStripMenu";
+			this._updateFrontMatterToolStripMenu.Size = new System.Drawing.Size(181, 22);
+			this._updateFrontMatterToolStripMenu.Text = "Update Front Matter";
+			this._updateFrontMatterToolStripMenu.Click += new System.EventHandler(this._updateFrontMatterToolStripMenu_Click);
+			// 
+			// _openFolderOnDisk
+			// 
+			this._openFolderOnDisk.Name = "_openFolderOnDisk";
+			this._openFolderOnDisk.Size = new System.Drawing.Size(181, 22);
+			this._openFolderOnDisk.Text = "Open Folder on Disk";
+			this._openFolderOnDisk.Click += new System.EventHandler(this._openFolderOnDisk_Click);
+			// 
+			// toolStripMenuItem2
+			// 
+			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(178, 6);
 			// 
 			// deleteMenuItem
 			// 
@@ -98,32 +125,6 @@
 			this._bookThumbnails.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_bookThumbnails.ImageStream")));
 			this._bookThumbnails.TransparentColor = System.Drawing.Color.Transparent;
 			this._bookThumbnails.Images.SetKeyName(0, "booklet70x70.png");
-			// 
-			// _updateFrontMatterToolStripMenu
-			// 
-			this._updateFrontMatterToolStripMenu.Name = "_updateFrontMatterToolStripMenu";
-			this._updateFrontMatterToolStripMenu.Size = new System.Drawing.Size(181, 22);
-			this._updateFrontMatterToolStripMenu.Text = "Update Front Matter";
-			this._updateFrontMatterToolStripMenu.Click += new System.EventHandler(this._updateFrontMatterToolStripMenu_Click);
-			// 
-			// _updateThumbnailMenu
-			// 
-			this._updateThumbnailMenu.Name = "_updateThumbnailMenu";
-			this._updateThumbnailMenu.Size = new System.Drawing.Size(181, 22);
-			this._updateThumbnailMenu.Text = "Update Thumbnail";
-			this._updateThumbnailMenu.Click += new System.EventHandler(this._updateThumbnailMenu_Click);
-			// 
-			// _openFolderOnDisk
-			// 
-			this._openFolderOnDisk.Name = "_openFolderOnDisk";
-			this._openFolderOnDisk.Size = new System.Drawing.Size(181, 22);
-			this._openFolderOnDisk.Text = "Open Folder on Disk";
-			this._openFolderOnDisk.Click += new System.EventHandler(this._openFolderOnDisk_Click);
-			// 
-			// toolStripMenuItem2
-			// 
-			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(178, 6);
 			// 
 			// LibraryListView
 			// 
