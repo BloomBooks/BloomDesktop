@@ -44,7 +44,7 @@ namespace Bloom.Library
 
 		private void LoadBook()
 		{
-			_addToLibraryButton.Visible =  _addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
+			_editBookButton.Visible = _addToLibraryButton.Visible =  _addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
 			ShowBook();
 			if (_bookSelection.CurrentSelection != null)
 			{
