@@ -108,7 +108,10 @@ namespace Bloom.Publish
 						var path = _model.PdfFilePath;
 						_workingIndicator.Visible = false;
 						_adobeReader.Hide();
-						_adobeReader.LoadFile(path);
+
+						// can't handle non-ascii names _adobeReader.LoadFile(path);
+						_adobeReader.src = path;
+
 						_adobeReader.setShowToolbar(false);
 						_adobeReader.setView("Fit");
 						_adobeReader.Show();

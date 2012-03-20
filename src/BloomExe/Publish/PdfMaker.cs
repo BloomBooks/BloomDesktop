@@ -22,25 +22,25 @@ namespace Bloom.Publish
 		///
 		/// </summary>
 		/// <param name="inputHtmlPath"></param>
-		/// <param name="pdfPath"></param>
+		/// <param name="outputPdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
 		/// <param name="landscape"> </param>
 		/// <param name="booketLayoutMethod"> </param>
 		/// <param name="bookletPortion"></param>
 		/// <param name="doWorkEventArgs"> </param>
 		/// <param name="getIsLandscape"></param>
-		public void MakePdf(string inputHtmlPath, string pdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
-			MakeSimplePdf(inputHtmlPath, pdfPath, paperSizeName, landscape, doWorkEventArgs);
+			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
 			if (doWorkEventArgs.Cancel)
 				return;
 			if (bookletPortion != PublishModel.BookletPortions.None)
 			{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-				MakeBooklet(pdfPath, paperSizeName, booketLayoutMethod);
+				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod);
 			}
 		}
 
@@ -54,20 +54,35 @@ namespace Bloom.Publish
 				pageSizeArguments = "--page-size " + paperSizeName; ; //this works too " --page-width 14.8cm --page-height 21cm"
 			}
 
-			string exePath = FindWkhtmlToPdf();
-			var arguments = string.Format(
-				"--print-media-type " +
-				pageSizeArguments +
-				(landscape ? " -O Landscape " : "") +
-				"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
-				"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
-				Path.GetFileName(inputHtmlPath), outputPdfPath);
+			//wkhtmltopdf chokes on stuff like chinese file names, even if we put the console code page to UTF 8 first (CHCP 65001)
+			//so now, we just deal in temp files
+			using(var tempInput = TempFile.WithExtension(".htm"))
+			{
+				File.Delete(tempInput.Path);
+				File.Copy(inputHtmlPath, tempInput.Path);
+				var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this
+				File.Delete(tempOutput.Path);
 
-			var progress = new CancellableNullProgress(doWorkEventArgs);
-			CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(inputHtmlPath), 20, progress);
 
-			if (!File.Exists(outputPdfPath))
-				throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
+				string exePath = FindWkhtmlToPdf();
+				var arguments = string.Format(
+					"--print-media-type " +
+					pageSizeArguments +
+					(landscape ? " -O Landscape " : "") +
+					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
+					"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
+					Path.GetFileName(tempInput.Path), tempOutput.Path);
+
+				var progress = new CancellableNullProgress(doWorkEventArgs);
+				CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(tempInput.Path), 20, progress);
+
+				if (!File.Exists(tempOutput.Path))
+					throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
+
+				File.Move(tempOutput.Path, outputPdfPath);
+
+			}
+
 		}
 
 		private string FindWkhtmlToPdf()
