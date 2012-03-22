@@ -379,10 +379,10 @@ jQuery(document).ready(function() {
     $('div.bloom-editable').each(function() {
         $(this).attr('contentEditable', 'true');
     });
-    // Bloom needs to make some field readonly. E.g., the original license when the user is translating a shellbook
-    // Normally, we'd control this is a style in editTranslationMode.css. However, "readonly" isn't a style, just
+    // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
+    // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
     // an attribute, so it can't be included in css.
-    // The solution here is to add the readonly attribute when we detect that their border has gone transparent.
+    // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
     $('textarea, div').focus(function() {
 //        if ($(this).css('border-bottom-color') == 'transparent') {
         if ($(this).css('cursor') == 'not-allowed') {
@@ -395,8 +395,9 @@ jQuery(document).ready(function() {
         }
     });
 
-    //Same thing for divs which are potentially editable.
-    // editTranslationMode.css is responsible for making this transparent, but it can't reach the contentEditable attribute.
+    //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
+    // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
+    // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
     $('div.bloom-readOnlyInTranslationMode').focus(function() {
          if ($(this).css('cursor') == 'not-allowed') {
             $(this).removeAttr("contentEditable");
