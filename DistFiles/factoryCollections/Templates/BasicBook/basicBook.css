@@ -1,0 +1,324 @@
+/*+init {*/
+*
+{
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 1em;
+}
+H1, H2, H3, H4, H5, H6, TH
+{
+	font-weight: inherit;
+}
+ADDRESS, CITE, DFN, VAR
+{
+	font-style: inherit;
+}
+CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON
+{
+	font-family: inherit;
+}
+TABLE
+{
+	border-spacing: 0;
+}
+TH
+{
+	text-align: left;
+}
+HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR
+{
+	position: static;
+}
+INPUT[type=hidden]
+{
+	display: none !important;
+}
+FIELDSET, A IMG
+{
+	border: 0;
+}
+BODY
+{
+	font-size: 100%;
+	font-family: sans-serif;
+	line-height: 1.5;
+}
+/*+}*/
+/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+#bloom-supportedPageConfigurations
+{
+	content: "A5Portrait, A4Landscape";
+}
+/*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
+generic*/
+TEXTAREA
+{
+/*specifying the font again, here, really is needed*/
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	font-size: 14pt;
+	width: 100%;
+}
+.translators
+{
+	text-align: center;
+	height: 1.6cm;
+	position: relative;
+}
+DIV.bloom-page:after
+{
+	position: static;
+	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
+	position: absolute;
+	left: 7.5cm;
+	top: 20.3cm;
+}
+/*Image On Top*/
+DIV.imageOnTop DIV.bloom-imageContainer
+{
+	width: 490px;
+	/*+placement:anchor-top-left 34px 21px;*/
+	position: absolute;
+	left: 34px;
+	top: 21px;
+	height: 385px;
+}
+.imageOnTop.A4Landscape DIV.bloom-imageContainer
+{
+	width: 511px;
+	/*+placement:anchor-top-left 27px 52px;*/
+	position: absolute;
+	left: 27px;
+	top: 52px;
+	height: 692px;
+	border: 1px solid #000000;
+}
+DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
+{
+	height: 8cm;
+	text-align: center;
+	margin-top: 1cm;
+}
+DIV.imageOnTop DIV.bloom-translationGroup
+{
+	height: 291px;
+	/*+placement:anchor-top-left 39px 442px;*/
+	position: absolute;
+	left: 39px;
+	top: 442px;
+	width: 464px;
+	display: table;
+}
+DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
+{
+	height: 692px;
+	/*+placement:anchor-top-left 567px 51px;*/
+	position: absolute;
+	left: 567px;
+	top: 51px;
+	width: 511px;
+}
+DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
+{
+	height: 222px;
+}
+DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
+{
+	height: 357px;
+	/*+placement:anchor-top-left 40px 398px;*/
+	position: absolute;
+	left: 40px;
+	top: 398px;
+}
+.imageOnTop.bloom-monolingual DIV.bloom-editable
+{
+	height: 100%;
+	width: 100%;
+	display: table-cell !important;
+	vertical-align: bottom;
+}
+.imageOnTop.bloom-bilingual DIV.bloom-editable
+{
+	height: 50%;
+	width: 100%;
+}
+.imageOnTop.bloom-trilingual DIV.bloom-editable
+{
+	height: 33%;
+	width: 100%;
+}
+/*Image In Middle*/
+DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV
+{
+	height: 100% !important;
+	width: 100%;
+}
+DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV
+{
+	height: 50% !important;
+	width: 100%;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
+{
+	height: 33% !important;
+	width: 100%;
+}
+DIV.imageInMiddle DIV.bloom-translationGroup.top
+{
+	height: 5.3cm;
+	width: 488px;
+	/*+placement:anchor-top-left 26px 30px;*/
+	position: absolute;
+	left: 26px;
+	top: 30px;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
+{
+	height: 6.9cm;
+	width: 488px;
+	/*+placement:anchor-top-left 26px 30px;*/
+	position: absolute;
+	left: 26px;
+	top: 30px;
+}
+DIV.imageInMiddle DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 31px 242px;*/
+	position: absolute !important;
+	left: 31px !important;
+	top: 242px !important;
+	border: 1px solid #000000;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 31px 311px;*/
+	position: absolute !important;
+	left: 31px !important;
+	top: 311px !important;
+	border: 1px solid #000000;
+	height: 152px;
+}
+DIV.imageInMiddle DIV.bloom-translationGroup.bottom
+{
+	height: 5.4cm;
+	width: 478px;
+	/*+placement:anchor-top-left 33px 543px;*/
+	position: absolute;
+	left: 33px;
+	top: 543px;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
+{
+	height: 6.5cm;
+	width: 478px;
+	/*+placement:anchor-top-left 33px 490px;*/
+	position: absolute;
+	left: 33px;
+	top: 490px;
+}
+/*Image On Bottom*/
+DIV.imageOnBottom DIV.bloom-translationGroup
+{
+	width: 459px;
+	height: 319px;
+	/*+placement:anchor-top-left 22px 44px;*/
+	position: absolute;
+	left: 22px;
+	top: 44px;
+}
+.imageOnBottom DIV.bloom-translationGroup DIV
+{
+	height: 50%;
+	width: 100%;
+	margin-top: 17px;
+}
+.imageOnBottom.bloom-bilingual DIV.bloom-translationGroup DIV
+{
+	height: 100%;
+	width: 100%;
+}
+.imageOnBottom.bloom-trilingual DIV.bloom-translationGroup DIV
+{
+	height: 33%;
+	width: 100%;
+}
+.imageOnBottom DIV.bloom-imageContainer
+{
+	height: 8.4cm;
+	width: 454px;
+	/*+placement:anchor-top-left 62px 441px;*/
+	position: absolute;
+	left: 62px;
+	top: 441px;
+}
+/*Image Whole Page*/
+DIV.imageWholePage DIV.bloom-imageContainer
+{
+	/*+placement:shift 20px 68px;*/
+	position: relative;
+	left: 20px;
+	top: 68px;
+	width: 520px;
+	height: 668px;
+}
+DIV.imageInMiddle DIV.bloom-imageContainer
+{
+	/*+placement:shift 49px 72px;*/
+	position: relative;
+	left: 49px;
+	top: 72px;
+	width: 479px;
+	height: 279px;
+}
+.textWholePage TEXTAREA
+{
+	height: 18.9cm;
+	margin-top: 1cm;
+}
+.imageWholePage DIV.bloom-imageContainer
+{
+	height: 18.6cm;
+	width: 12cm;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	margin-top: 43px;
+}
+DIV.imageWholePage IMG
+{
+	display: table-cell;
+/*doesn't work*/
+	vertical-align: middle;
+/*doesn't work*/
+	max-height: 18.6cm;
+	max-width: 12.2cm;
+}
+DIV.imageWholePage TD
+{
+	text-align: center;
+}
+DIV.imageWholePage TABLE
+{
+	width: 556px;
+	height: 786px;
+}
+/*Text Whole Page
+The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
+DIV.textWholePage DIV.bloom-translationGroup
+{
+	/*+placement:anchor-top-left 27px 3px;*/
+	position: absolute;
+	left: 27px;
+	top: 3px;
+	width: 498px;
+	max-height: 716px;
+}
+DIV.textWholePage DIV.bloom-translationGroup DIV
+{
+	margin-top: 26px;
+	margin-left: 34px;
+	margin-right: 39px;
+	min-height: 67px;
+	height: 30%;
+}
