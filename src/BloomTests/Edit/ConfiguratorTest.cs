@@ -57,7 +57,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void IsConfigurable_Calendar_True()
 		{
-			Assert.IsTrue(Configurator.IsConfigurable(GetCalendardBookStorage().FolderPath));
+			Assert.IsTrue(Configurator.IsConfigurable(Get_NotYetConfigured_CalendardBookStorage().FolderPath));
 		}
 
 		[Test, Ignore("UI-By hand")]
@@ -72,7 +72,7 @@ namespace BloomTests.Edit
 			});
 			c.CollectJsonData(stringRep);
 
-			c.ShowConfigurationDialog(GetCalendardBookStorage().FolderPath);
+			c.ShowConfigurationDialog(Get_NotYetConfigured_CalendardBookStorage().FolderPath);
 			Assert.IsTrue(c.GetLibraryData().Contains("year"));
 		}
 
@@ -220,7 +220,9 @@ namespace BloomTests.Edit
 			var first = new Configurator(_libraryFolder.Path);
 			Assert.AreEqual("", first.LocalData);
 		}
-		private BookStorage GetCalendardBookStorage()
+
+
+		private BookStorage Get_NotYetConfigured_CalendardBookStorage()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));

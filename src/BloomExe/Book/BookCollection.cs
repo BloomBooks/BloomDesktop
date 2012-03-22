@@ -59,38 +59,50 @@ namespace Bloom.Book
 
 		private void CreateFromTemplate(Book templateBook)
 		{
-			//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
-			var starter = _bookStarterFactory();
-			var newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
-			if (Configurator.IsConfigurable(newBookFolder))
+			string newBookFolder = null;
+
+			try
 			{
-				var c = new Configurator(_path);
-				if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
+				//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
+				var starter = _bookStarterFactory();
+				newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+				if (Configurator.IsConfigurable(newBookFolder))
 				{
-					return; // the template had a configuration page and they clicked "cancel"
+					var c = new Configurator(_path);
+					if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
+					{
+						return; // the template had a configuration page and they clicked "cancel"
+					}
+					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
 				}
-				c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
+
+				ListOfBooksIsOutOfDate();
+				NotifyCollectionChanged();
+				var newBook = _books.Find(b => b.FolderPath == newBookFolder);
+
+				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
+				var name = Path.GetFileName(newBook.FolderPath); // this way, we get "my book 1", "my book 2", etc.
+				newBook.SetTitle(name);
+
+				if (_bookSelection != null)
+				{
+					_bookSelection.SelectBook(newBook);
+				}
+				//enhance: would be nice to know if this is a new shell
+				if (templateBook.IsShellOrTemplate)
+				{
+					UsageReporter.SendNavigationNotice("Create/" + templateBook.CategoryForUsageReporting + "/" + templateBook.Title);
+				}
+
+				_editBookCommand.Raise(newBook);
 			}
-
-			ListOfBooksIsOutOfDate();
-			NotifyCollectionChanged();
-			var newBook = _books.Find(b => b.FolderPath == newBookFolder);
-
-			//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
-			var name= Path.GetFileName(newBook.FolderPath); // this way, we get "my book 1", "my book 2", etc.
-			newBook.SetTitle(name);
-
-			if (_bookSelection != null)
+			catch (Exception)
 			{
-				 _bookSelection.SelectBook(newBook);
+				//clean up this ill-fated book folder up
+				if (!string.IsNullOrEmpty(newBookFolder) && Directory.Exists(newBookFolder))
+					Directory.Delete(newBookFolder, true);
+				throw;
 			}
-			//enhance: would be nice to know if this is a new shell
-			if(templateBook.IsShellOrTemplate)
-			{
-				UsageReporter.SendNavigationNotice("Create/"+templateBook.CategoryForUsageReporting+"/"+templateBook.Title);
-			}
-
-			_editBookCommand.Raise(newBook);
 		}
 
 		private void NotifyCollectionChanged()

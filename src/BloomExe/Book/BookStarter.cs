@@ -38,6 +38,11 @@ namespace Bloom.Book
 		public bool TestingSoSkipAddingXMatter { get; set; }
 
 		/// <summary>
+		/// Used in unit testing
+		/// </summary>
+		public bool OnNextRunSimulateFailureMakingBook;
+
+		/// <summary>
 		/// Given a template, make a new book
 		/// </summary>
 		/// <param name="sourceTemplateFolder"></param>
@@ -63,6 +68,9 @@ namespace Bloom.Book
 
 				//the destination may change here...
 				newBookFolder = SetupNewDocumentContents(newBookFolder);
+
+				if(OnNextRunSimulateFailureMakingBook)
+					throw new ApplicationException("Simulated failure for unit test");
 
 			}
 			catch (Exception)

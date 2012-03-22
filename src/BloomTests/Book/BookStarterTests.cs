@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
@@ -541,6 +543,22 @@ namespace BloomTests.Book
 			Assert.IsTrue(Directory.Exists(path));
 			Assert.IsTrue(File.Exists(Path.Combine(path, "My Book2.htm")));
 		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_CreationFailsForSomeReason_DoesNotLeaveIncompleteFolderAround()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "BasicBook");
+			var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			Directory.Delete(goodPath, true); //remove that good one. We just did it to get an idea of what the path is
+
+			//now fail while making a book
+
+			_starter.OnNextRunSimulateFailureMakingBook = true;
+			Assert.Throws<ApplicationException>(() => _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+
+			Assert.IsFalse(Directory.Exists(goodPath), "Should not have left the folder there, after a failed book creation");
+		}
+
 
 		private string GetShellBookFolder()
 		{
