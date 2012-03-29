@@ -45,9 +45,12 @@ namespace Bloom.Edit
 			{
 				using (Bitmap image = new Bitmap(imageInfo.Image))//review: do we really need to copy it?
 				{
-					image.MakeTransparent(Color.White); //make white look realistic against background
-
 					var isJpeg = ShouldSaveAsJpeg(imageInfo);
+
+					//photographs don't work if you try to make the white transparent
+					if(!isJpeg)
+						image.MakeTransparent(Color.White); //make white look realistic against background
+
 
 					string imageFileName = GetImageFileName(bookFolderPath, imageInfo, isJpeg);
 					var dest = Path.Combine(bookFolderPath, imageFileName);
