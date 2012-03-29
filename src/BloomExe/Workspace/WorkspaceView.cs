@@ -120,7 +120,7 @@ namespace Bloom.Workspace
 			_tabControl.ImageList.ColorDepth = ColorDepth.Depth24Bit;
 			_tabControl.ImageList.ImageSize = new Size(32, 32);
 			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library32x32.png")));
 			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit.png")));
 			_tabControl.ImageList.Images.Add(

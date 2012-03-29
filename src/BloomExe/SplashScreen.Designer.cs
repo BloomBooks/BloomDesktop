@@ -41,10 +41,10 @@
 			// 
 			// pictureBox1
 			// 
-			this.pictureBox1.Image = global::Bloom.Properties.Resources.Logo300x78;
+			this.pictureBox1.Image = global::Bloom.Properties.Resources.Logo217x79;
 			this.pictureBox1.Location = new System.Drawing.Point(16, 12);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(520, 87);
+			this.pictureBox1.Size = new System.Drawing.Size(520, 79);
 			this.pictureBox1.TabIndex = 0;
 			this.pictureBox1.TabStop = false;
 			// 

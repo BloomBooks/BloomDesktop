@@ -501,6 +501,18 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Favicon16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\library16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Logo217x79.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\library32x32.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)
