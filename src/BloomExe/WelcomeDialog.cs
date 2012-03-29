@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.NewLibrary;
+using Bloom.Properties;
 using Bloom.ToPalaso;
 using Palaso.IO;
 
@@ -14,8 +15,8 @@ namespace Bloom
 		{
 			InitializeComponent();
 			_versionInfo.Text = Shell.GetVersionInfo();
-			_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
-			_welcomeControl.TemplateButton.Image = this.Icon.ToBitmap();
+			//_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
+			_welcomeControl.TemplateButton.Image = Resources.library32x32;
 			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
 			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibrarys(),
 				"Create new library",

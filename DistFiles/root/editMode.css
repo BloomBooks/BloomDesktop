@@ -59,6 +59,7 @@ BUTTON.changeImageButton
 	-moz-border-radius: 9px;
 	-webkit-border-radius: 9px;
 	-khtml-border-radius: 9px;
+	border-radius: 9px;
 	border-radius: 9px 9px 9px 9px;
 }
 BUTTON.moveButton

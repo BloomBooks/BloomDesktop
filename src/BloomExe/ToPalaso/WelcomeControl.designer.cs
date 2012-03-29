@@ -33,10 +33,10 @@ namespace Bloom.ToPalaso
 			this._imageList = new System.Windows.Forms.ImageList(this.components);
 			this._debounceListIndexChangedEvent = new System.Windows.Forms.Timer(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._templateButton = new System.Windows.Forms.Button();
 			this._templateLabel = new System.Windows.Forms.Label();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
+			this._templateButton = new System.Windows.Forms.Button();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			//
@@ -44,39 +44,21 @@ namespace Bloom.ToPalaso
 			//
 			this._imageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_imageList.ImageStream")));
 			this._imageList.TransparentColor = System.Drawing.Color.Magenta;
-			this._imageList.Images.SetKeyName(0, "browse");
-			this._imageList.Images.SetKeyName(1, "getFromUsb");
-			this._imageList.Images.SetKeyName(2, "wesayProject");
-			this._imageList.Images.SetKeyName(3, "getFromInternet");
-			this._imageList.Images.SetKeyName(4, "newProject");
-			this._imageList.Images.SetKeyName(5, "flex");
+			this._imageList.Images.SetKeyName(0, "getFromUsb");
+			this._imageList.Images.SetKeyName(1, "wesayProject");
+			this._imageList.Images.SetKeyName(2, "getFromInternet");
+			this._imageList.Images.SetKeyName(3, "newLibrary");
+			this._imageList.Images.SetKeyName(4, "browse");
 			//
 			// toolTip1
 			//
 			this.toolTip1.AutomaticDelay = 300;
 			//
-			// _templateButton
-			//
-			this._templateButton.FlatAppearance.BorderSize = 0;
-			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._templateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._templateButton.ImageKey = "wesayProject";
-			this._templateButton.ImageList = this._imageList;
-			this._templateButton.Location = new System.Drawing.Point(51, 0);
-			this._templateButton.Name = "_templateButton";
-			this._templateButton.Size = new System.Drawing.Size(351, 23);
-			this._templateButton.TabIndex = 6;
-			this._templateButton.Text = "   templateButton";
-			this._templateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._templateButton.UseVisualStyleBackColor = true;
-			this._templateButton.Visible = false;
-			//
 			// _templateLabel
 			//
 			this._templateLabel.AutoSize = true;
 			this._templateLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._templateLabel.ForeColor = System.Drawing.Color.DarkOliveGreen;
+			this._templateLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(12)))), ((int)(((byte)(133)))), ((int)(((byte)(151)))));
 			this._templateLabel.Location = new System.Drawing.Point(426, 3);
 			this._templateLabel.Name = "_templateLabel";
 			this._templateLabel.Size = new System.Drawing.Size(112, 20);
@@ -87,8 +69,8 @@ namespace Bloom.ToPalaso
 			// flowLayoutPanel1
 			//
 			this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Left)
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.flowLayoutPanel1.Controls.Add(this.label1);
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(27, -11);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -103,6 +85,23 @@ namespace Bloom.ToPalaso
 			this.label1.Size = new System.Drawing.Size(35, 13);
 			this.label1.TabIndex = 0;
 			this.label1.Text = "label1";
+			//
+			// _templateButton
+			//
+			this._templateButton.FlatAppearance.BorderSize = 0;
+			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._templateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this._templateButton.ImageKey = "newLibrary";
+			this._templateButton.ImageList = this._imageList;
+			this._templateButton.Location = new System.Drawing.Point(51, 0);
+			this._templateButton.Name = "_templateButton";
+			this._templateButton.Size = new System.Drawing.Size(351, 43);
+			this._templateButton.TabIndex = 6;
+			this._templateButton.Text = "   templateButton";
+			this._templateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this._templateButton.UseVisualStyleBackColor = true;
+			this._templateButton.Visible = false;
 			//
 			// WelcomeControl
 			//

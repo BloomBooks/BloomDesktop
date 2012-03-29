@@ -97,7 +97,8 @@ namespace Bloom.ToPalaso
 			var button = new Button();
 			button.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
-			button.Width = _templateButton.Width;//review
+			button.Width = _templateButton.Width;
+			button.Height = _templateButton.Height;
 			button.Font = new Font(StringCatalog.LabelFont.FontFamily, _templateButton.Font.Size, _templateButton.Font.Style);
 			if (imageKey == "template") // this is used for the MRU list, the client can set it by changing the template
 			{
