@@ -37,7 +37,11 @@ namespace Bloom.Library
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete; }
 
 		}
+		public bool CanUpdateSelection
+		{
+			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanUpdate; }
 
+		}
 		public IEnumerable<BookCollection> GetBookCollections()
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);

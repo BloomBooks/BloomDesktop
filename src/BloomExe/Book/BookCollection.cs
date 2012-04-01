@@ -164,7 +164,7 @@ namespace Bloom.Book
 					{
 						e = e.InnerException;
 					}
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not load " + path);
+					_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
 				}
 			}
 		}

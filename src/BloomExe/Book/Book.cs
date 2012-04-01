@@ -23,6 +23,83 @@ using Palaso.Xml;
 
 namespace Bloom.Book
 {
+	public class ErrorBook : Book
+	{
+		private readonly Exception _exception;
+		private readonly string _folderPath;
+		private bool _canDelete;
+
+		/// <summary>
+		/// this is a bit of a hack to handle representing a book for which we got an exception while loading the storage... a better architecture wouldn't have this...
+		/// </summary>
+		public ErrorBook(Exception exception, string folderPath, bool canDelete)
+		{
+			_exception = exception;
+			_folderPath = folderPath;
+			Id = folderPath;
+			_canDelete = canDelete;
+		}
+
+		public override string Title
+		{
+			get
+			{
+				return Path.GetFileName(FolderPath);//actually gives us the leaf directory name
+			}
+		}
+		public override string FolderPath
+		{
+			get { return _folderPath; }
+		}
+
+		public override bool CanDelete
+		{
+			get { return _canDelete; }
+		}
+
+
+		public override void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
+		{
+			callback(Resources.Error70x70);
+		}
+
+		public XmlDocument GetEditableHtmlDomForPage(IPage page)
+		{
+			return GetErrorDOM();
+		}
+
+		public override bool CanUpdate
+		{
+			get { return false; }
+		}
+
+		public override bool HasFatalError
+		{
+			get { return true; }
+		}
+		private XmlDocument GetErrorDOM()
+		{
+			var dom = new XmlDocument();
+			var builder = new StringBuilder();
+			builder.Append("<html><body>");
+			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
+			builder.AppendLine(
+				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+
+			builder.Append(_exception.Message.Replace(Environment.NewLine,"<br/>"));
+
+			builder.Append("</body></html>");
+			dom.LoadXml(builder.ToString());
+			return dom;
+		}
+
+		public override XmlDocument GetPreviewHtmlFileForWholeBook()
+		{
+			return GetErrorDOM();
+		}
+
+	}
+
 	public class Book
 	{
 		//public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
@@ -53,6 +130,8 @@ namespace Bloom.Book
 
 		//for moq'ing only
 		public Book(){}
+
+
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 		   LibrarySettings librarySettings, HtmlThumbNailer thumbnailProvider,
@@ -179,7 +258,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
+		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
 		{
 			try
 			{
@@ -209,7 +288,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public XmlDocument GetEditableHtmlDomForPage(IPage page)
+		public virtual XmlDocument GetEditableHtmlDomForPage(IPage page)
 		{
 			if (_log.ErrorEncountered)
 			{
@@ -399,13 +478,14 @@ namespace Bloom.Book
 			return dom;
 		}
 
+		public virtual string StoragePageFolder { get { return _storage.FolderPath; } }
 
 		private XmlDocument GetPageListingErrorsWithBook(string contents)
 		{
 			var dom = new XmlDocument();
 			var builder = new StringBuilder();
 			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book ("+_storage.FolderPath+") has errors.");
+			builder.AppendLine("<p>This book (" + StoragePageFolder + ") has errors.");
 			builder.AppendLine(
 				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
 
@@ -423,7 +503,7 @@ namespace Bloom.Book
 			var dom = new XmlDocument();
 			var builder = new StringBuilder();
 			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + _storage.FolderPath + ") has errors.");
+			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
 			builder.AppendLine(
 				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
 
@@ -435,7 +515,7 @@ namespace Bloom.Book
 		}
 
 
-		public bool CanDelete
+		public virtual bool CanDelete
 		{
 			get { return IsInEditableLibrary; }
 		}
@@ -511,7 +591,7 @@ namespace Bloom.Book
 
 		public virtual string Id { get; set; }
 
-		public XmlDocument GetPreviewHtmlFileForWholeBook()
+		public virtual XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
 			if (_log.ErrorEncountered)
 			{
@@ -631,7 +711,7 @@ namespace Bloom.Book
 
 
 
-		public bool HasFatalError
+		public virtual bool HasFatalError
 		{
 			get { return _log.ErrorEncountered; }
 		}
@@ -660,6 +740,11 @@ namespace Bloom.Book
 		public string ThumbnailPath
 		{
 			get { return Path.Combine(FolderPath, "thumbnail.png"); }
+		}
+
+		public virtual bool CanUpdate
+		{
+			get { return IsInEditableLibrary; }
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)

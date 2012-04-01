@@ -204,8 +204,8 @@ namespace Bloom.Library
 				book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
-				_updateThumbnailMenu.Visible = _model.CanDeleteSelection;
-				_updateFrontMatterToolStripMenu.Visible = _model.CanDeleteSelection;
+				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
+				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
 			catch (Exception err)
 			{

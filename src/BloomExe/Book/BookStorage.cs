@@ -73,7 +73,20 @@ namespace Bloom.Book
 			RequireThat.Directory(folderPath).Exists();
 			if (!File.Exists(PathToExistingHtml))
 			{
-				throw new ApplicationException("Could not determine which html file in the folder to use.");
+				var files = new List<string>(Directory.GetFiles(folderPath));
+				var b = new StringBuilder();
+				b.AppendLine("Could not determine which html file in the folder to use.");
+				if (files.Count == 0)
+					b.AppendLine("***There are no files.");
+				else
+				{
+					b.AppendLine("Files in this book are:");
+					foreach (var f in files)
+					{
+						b.AppendLine("  "+f);
+					}
+				}
+				throw new ApplicationException(b.ToString());
 			}
 			else
 			{
