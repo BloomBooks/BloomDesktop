@@ -16,4 +16,7 @@
   <File Id="languageDisplay.css2" Guid="d5caebdd-b609-4613-961a-2339894b801c" />
   <File Id="placeHolder.png3" Guid="3ba7932e-494c-4fb0-8fb3-3df097c5288d" />
   <File Id="thumbnail.png2" Guid="e2aa64cc-969b-465c-8d5c-09a341a4939c" />
+  <File Id="basicBook.css" Guid="208d6856-5ea0-4c76-99f7-c40444f968f5" />
+  <File Id="languageDisplay.css3" Guid="5a869f3a-f2cf-4348-9bae-f47936c12bff" />
+  <File Id="placeHolder.png4" Guid="6cd789db-09ce-496a-a3eb-2204eb302241" />
 </InstallerMetadata>

@@ -102,8 +102,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Interop.WIA.dll" Name="Interop.WIA.dll" KeyPath="yes" Source="..\..\output\release\Interop.WIA.dll" />
 		  </Component>
 		  <!-- web browser-->
-		  <Component Id="Skybound.Gecko.dll" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
-			<File Id="Skybound.Gecko.dll" Name="Skybound.Gecko.dll" KeyPath="yes" Source="..\..\output\release\Skybound.Gecko.dll" />
+		  <Component Id="GeckoFx" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
+			<File Id="geckofx-11.dll" Name="geckofx-11.dll" KeyPath="yes" Source="..\..\output\release\geckofx-11.dll" />
 		  </Component>
 		  <Component Id="libtidy.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
 			<File Id="libtidy.dll" Name="libtidy.dll" KeyPath="yes" Source="..\..\output\release\libtidy.dll" />
@@ -150,7 +150,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="tidymanaged.dll"/>
 	  <ComponentRef Id="libtidy.dll"/>
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
-	  <ComponentRef Id="Skybound.Gecko.dll" />
+	  <ComponentRef Id="GeckoFx" />
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />

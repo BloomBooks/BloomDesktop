@@ -30,4 +30,21 @@
   <File Id="languageDisplayTemplate.css" Guid="72b34549-186d-4546-bbf9-226e3ddafa4e" />
   <File Id="pdfPrintingTests.js" Guid="94780c05-0349-415e-9d62-d03ceebc4f5b" />
   <File Id="previewMode.css3" Guid="891c98ed-ebf8-42cf-b5ca-869f269360c9" />
+  <File Id="alignmentTest.css" Guid="645dca65-f1a9-4287-aafd-5bfc5564281f" />
+  <File Id="alignmentTest.html" Guid="6620b6d0-2e38-4e85-b5e1-cc211511b4d3" />
+  <File Id="BasePage.css5" Guid="2954c9a9-fce1-43fd-b0d5-861051bf11df" />
+  <File Id="bloomEditing_copy.js" Guid="11e01300-11ae-47cb-8bee-b274eedd31b5" />
+  <File Id="bloomPreview.js" Guid="22025455-d839-413a-b4b6-a01acb8d8786" />
+  <File Id="bloomPreviewBootstrap.js" Guid="561f7120-82e3-49e4-adc2-d643d9c38667" />
+  <File Id="book.png" Guid="a713fa28-0591-4047-ba72-4af42cbc0bdc" />
+  <File Id="changeImageButton.png" Guid="7b434568-c33a-4192-b7b7-dc36d3e9138d" />
+  <File Id="jquery.myimgscale.js" Guid="ceffb7f7-d0fc-4d04-8350-7602dfc24860" />
+  <File Id="jquery.qtip.css.orig" Guid="2c7d10df-75e5-4764-bbfd-8703b579199c" />
+  <File Id="jquery.resize.js" Guid="fab25176-5f81-4543-a5e6-94773507647d" />
+  <File Id="jquery.resizeX.js" Guid="ae9833f4-e6ba-438e-8226-dd81540f5ff9" />
+  <File Id="library.css" Guid="4ecf1ee1-5f6d-4221-b97d-2f80906776a3" />
+  <File Id="library.htm" Guid="56d81f6c-17db-4cd6-9c4a-cc393e8d1b50" />
+  <File Id="library.js" Guid="26be7d19-6ddc-4ee5-80ed-989a6e714df7" />
+  <File Id="moveDivButton.png" Guid="0e52f265-15d2-4c5a-947c-1a4a0c047241" />
+  <File Id="previewMode.css5" Guid="6ffb05a2-9715-4827-91df-1ff0ddf948a0" />
 </InstallerMetadata>
