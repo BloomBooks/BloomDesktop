@@ -7,8 +7,8 @@ using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
+using Gecko;
 using Palaso.IO;
-using Skybound.Gecko;
 
 namespace Bloom.Edit
 {
@@ -75,7 +75,7 @@ namespace Bloom.Edit
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
 
-			var b = new Skybound.Gecko.GeckoWebBrowser();
+			var b = new GeckoWebBrowser();
 			var neededToMakeThingsWork = b.Handle;
 			b.Navigate(bookPath);
 			Application.DoEvents();

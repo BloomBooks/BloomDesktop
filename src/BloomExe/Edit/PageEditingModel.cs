@@ -8,7 +8,7 @@ using System.Text;
 using System.Xml;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
-using Skybound.Gecko;
+using Gecko;
 
 namespace Bloom.Edit
 {
