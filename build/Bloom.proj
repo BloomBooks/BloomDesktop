@@ -131,7 +131,7 @@
 
   <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
   <ItemGroup>
-	<XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-8.0.en-US.win32\xulrunner\**\*.*"/>
+	<XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-11.0.en-US.win32\xulrunner\**\*.*"/>
 	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
   </ItemGroup>
 
