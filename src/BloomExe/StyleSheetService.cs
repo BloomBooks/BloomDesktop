@@ -1,5 +1,5 @@
 ﻿using System;
-using Skybound.Gecko;
+using Gecko;
 using System.Runtime.InteropServices;
 
 namespace Skybound.Gecko
