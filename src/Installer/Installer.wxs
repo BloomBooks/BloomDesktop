@@ -103,7 +103,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  </Component>
 		  <!-- web browser-->
 		  <Component Id="GeckoFx" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
-			<File Id="geckofx-11.dll" Name="geckofx-11.dll" KeyPath="yes" Source="..\..\output\release\geckofx-11.dll" />
+			<File Id="GeckoFx" Name="geckofx-11.dll" KeyPath="yes" Source="..\..\output\release\geckofx-11.dll" />
 		  </Component>
 		  <Component Id="libtidy.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
 			<File Id="libtidy.dll" Name="libtidy.dll" KeyPath="yes" Source="..\..\output\release\libtidy.dll" />
