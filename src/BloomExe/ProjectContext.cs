@@ -170,9 +170,12 @@ namespace Bloom
 				yield return dir;
 			}
 
-			foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
+			if (Directory.Exists(InstalledCollectionsDirectory))
 			{
-				yield return dir;
+				foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
+				{
+					yield return dir;
+				}
 			}
 
 
@@ -199,8 +202,8 @@ namespace Bloom
 				//we want this path of directories sitting there, waiting for the user
 				var d = GetBloomAppDataFolder();
 				var collections = d.CombineForPath("Collections");
-				if (!Directory.Exists(d))
-					Directory.CreateDirectory(d);
+				if (!Directory.Exists(collections))
+					Directory.CreateDirectory(collections);
 				return collections;
 			}
 		}
