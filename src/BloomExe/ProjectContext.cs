@@ -153,9 +153,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
-			yield return FactoryCollectionsDirectory;
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
-
 
 			yield return templatesDir;  //currently, this is where factory-xmatter.htm lives
 
@@ -163,7 +161,22 @@ namespace Bloom
 			{
 				yield return templateDir;
 			}
-//			TODO: Add, in the list of places we look, this libary's "regional libary" (when such a concept comes into being)
+
+			yield return FactoryCollectionsDirectory;
+			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
+
+			foreach (var dir in Directory.GetDirectories(samplesDir))
+			{
+				yield return dir;
+			}
+
+			foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
+			{
+				yield return dir;
+			}
+
+
+//			TODO: Add, in the list of places we look, this library's "regional library" (when such a concept comes into being)
 //			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
 //			var templateCollectionList = parentContainer.Resolve<StoreCollectionList>();
 //			foreach (var repo in templateCollectionList.RepositoryFolders)

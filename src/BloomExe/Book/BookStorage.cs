@@ -135,7 +135,7 @@ namespace Bloom.Book
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
 				var file = Path.GetFileName(path);
-				if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
+				//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
 					UpdateIfNewer(file);
 			}
 
@@ -154,7 +154,7 @@ namespace Bloom.Book
 				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
-					Logger.WriteEvent("BookStorage.UpdateIfNewer() Copying mising file {0} to {1}", factoryPath, documentPath);
+					Logger.WriteEvent("BookStorage.UpdateIfNewer() Copying missing file {0} to {1}", factoryPath, documentPath);
 					File.Copy(factoryPath, documentPath);
 					return;
 				}
