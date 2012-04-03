@@ -41,11 +41,10 @@
 			this._deletePageButton = new System.Windows.Forms.ToolStripButton();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._browser1 = new Bloom.Browser();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this._browser1 = new Bloom.Browser();
-			this.OpenInStylizer = new System.Windows.Forms.ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -111,8 +110,7 @@
             this._undoButton,
             this._deletePageButton,
             this._contentLanguagesDropdown,
-            this._pageSizeAndOrientationChoices,
-            this.OpenInStylizer});
+            this._pageSizeAndOrientationChoices});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
 			this.toolStrip1.Size = new System.Drawing.Size(809, 25);
@@ -203,6 +201,20 @@
 			this._pageSizeAndOrientationChoices.ToolTipText = "Choose language to make this a bilingual or trilingual book";
 			this._pageSizeAndOrientationChoices.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._pageSizeAndOrientationChoices_DropDownItemClicked);
 			// 
+			// _browser1
+			// 
+			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this._browser1.Location = new System.Drawing.Point(0, 31);
+			this._browser1.Margin = new System.Windows.Forms.Padding(5);
+			this._browser1.Name = "_browser1";
+			this._browser1.Size = new System.Drawing.Size(809, 711);
+			this._browser1.TabIndex = 1;
+			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
+			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
+			// 
 			// _splitTemplateAndSource
 			// 
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -223,32 +235,6 @@
 			// _handleMessageTimer
 			// 
 			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
-			// 
-			// _browser1
-			// 
-			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.Location = new System.Drawing.Point(0, 31);
-			this._browser1.Margin = new System.Windows.Forms.Padding(5);
-			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(809, 711);
-			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
-			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
-			// 
-			// OpenInStylizer
-			// 
-			this.OpenInStylizer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this.OpenInStylizer.ForeColor = System.Drawing.SystemColors.ActiveCaption;
-			this.OpenInStylizer.Image = ((System.Drawing.Image)(resources.GetObject("OpenInStylizer.Image")));
-			this.OpenInStylizer.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.OpenInStylizer.Margin = new System.Windows.Forms.Padding(30, 1, 0, 2);
-			this.OpenInStylizer.Name = "toolStripButton1";
-			this.OpenInStylizer.Size = new System.Drawing.Size(93, 22);
-			this.OpenInStylizer.Text = "Open in Stylizer";
-			this.OpenInStylizer.Click += new System.EventHandler(this.OnClickOpenInStylizer);
 			// 
 			// EditingView
 			// 
@@ -290,7 +276,6 @@
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _pageSizeAndOrientationChoices;
-		private System.Windows.Forms.ToolStripButton OpenInStylizer;
 
 
     }

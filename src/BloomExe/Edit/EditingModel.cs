@@ -369,20 +369,21 @@ namespace Bloom.Edit
 		{
 			return CurrentBook.GetSizeAndOrientation().ToString();
 		}
+//
+//    	public static string GetPathToStylizer()
+//    	{
+//    		return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
+//    	}
+//
+//    	public void OpenPageInStylizer()
+//    	{
+//			string path = Path.GetTempFileName();
+//    		var dom = GetXmlDocumentForCurrentPage();
+//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+//    		XmlHtmlConverter.SaveDOMAsHtml5(dom, path);
+//			Process.Start(GetPathToStylizer(), path);
+//    	}
 
-		public static string GetPathToStylizer()
-		{
-			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
-		}
-
-		public void OpenPageInStylizer()
-		{
-			string path = Path.GetTempFileName();
-			var dom = GetXmlDocumentForCurrentPage();
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			XmlHtmlConverter.SaveDOMAsHtml5(dom, path);
-			Process.Start(GetPathToStylizer(), path);
-		}
 	}
 
 		//_book.DeletePage(_pageSelection.CurrentSelection);

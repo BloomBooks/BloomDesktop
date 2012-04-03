@@ -19,6 +19,7 @@ using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
+using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -77,6 +78,15 @@ namespace Bloom.Book
 		{
 			get { return true; }
 		}
+
+		public override bool Delete()
+		{
+			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+			if(didDelete)
+				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
+			return didDelete;
+		}
+
 		private XmlDocument GetErrorDOM()
 		{
 			var dom = new XmlDocument();
@@ -673,6 +683,8 @@ namespace Bloom.Book
 				//	var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
 				//	return node.Count ==0;
 
+				//relevent things to think about here, as we review it, include the calendar, which isn't a translation, but you shouldn't be able add new months
+
 				//I know, this is simplistic too... eventually we might need to allow, for example, addition of font/back-matter
 				return !LockedExceptForTranslation;
 			}
@@ -1203,7 +1215,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool Delete()
+		public virtual bool Delete()
 		{
 			return _storage.DeleteBook();
 		}

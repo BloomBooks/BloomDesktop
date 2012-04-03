@@ -25,6 +25,7 @@ namespace Bloom.Edit
 		private void ConfigurationDialog_Load(object sender, EventArgs e)
 		{
 			_browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
+		//	this fires, but leave us in a state withtout a cursor			_browser.WebBrowser.DocumentCompleted += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
 
 			_browser.Navigate(_filePath, false);
 

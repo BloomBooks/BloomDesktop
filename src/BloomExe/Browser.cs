@@ -147,20 +147,22 @@ namespace Bloom
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
+			_browser.NoDefaultContextMenu = true;
+			_browser.ShowContextMenu += new EventHandler<GeckoContextMenuEventArgs>(OnShowContextMenu);
 
 			_browser.Navigating += new EventHandler<GeckoNavigatingEventArgs>(_browser_Navigating);
 		   // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
 			//necessarily need).  When I comment this out, I get an error if the href had, for example,
 			//"bloom" for the protocol.  We could probably install that as a protocol, rather than
 			//using the click to just get a target and go from there, if we wanted.
-			_browser.DomClick += new GeckoDomEventHandler(OnBrowser_DomClick);
+			_browser.DomClick += new EventHandler<GeckoDomEventArgs>(OnBrowser_DomClick);
 
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
-			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
+			//_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
 			var errorsToHide = new List<string>();
@@ -191,10 +193,33 @@ namespace Bloom
 			RaiseGeckoReady();
 	   }
 
-		void _browser_DocumentCompleted(object sender, EventArgs e)
+		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
+			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
+			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
 		}
+
+		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
+		{
+			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
+			File.Copy(_url, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			Process.Start(temp.Path);
+		}
+
+		public void OnOpenPageInStylizer(object sender, EventArgs e)
+		{
+			string path = Path.GetTempFileName();
+			File.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			Process.Start(GetPathToStylizer(), path);
+		}
+		public static string GetPathToStylizer()
+		{
+			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
+		}
+
+
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
 		{

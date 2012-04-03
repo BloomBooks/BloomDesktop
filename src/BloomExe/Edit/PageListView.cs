@@ -29,20 +29,8 @@ namespace Bloom.Edit
 			_thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
-
-#if DEBUG
-			var showSourceMenu = new System.Windows.Forms.ToolStripMenuItem("Show Source");
-			showSourceMenu.Click += new EventHandler(showSourceMenu_Click);
-			contextMenuStrip1.Items.Add(showSourceMenu);
-#endif
 		}
 
-		void showSourceMenu_Click(object sender, EventArgs e)
-		{
-			var t = Palaso.IO.TempFile.WithExtension(".htm");
-			File.WriteAllText(t.Path, _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
-			Process.Start(t.Path);
-		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
 		{

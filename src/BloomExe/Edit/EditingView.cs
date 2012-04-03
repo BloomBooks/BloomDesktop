@@ -50,7 +50,7 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 			_model.UpdatePageList += new EventHandler(_model_UpdatePageList);
-			OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
+			//OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
 
 		}
 
@@ -543,14 +543,10 @@ namespace Bloom.Edit
 			_browser1.Navigate("about:blank",false);
 		}
 
-		private void OnClickOpenInStylizer(object sender, EventArgs e)
-		{
-			_model.OpenPageInStylizer();
-		}
+//		private void OnClickOpenInStylizer(object sender, EventArgs e)
+//		{
+//			_model.OpenPageInStylizer();
+//		}
 
-		private void EditingView_Load(object sender, EventArgs e)
-		{
-			ParentForm.Activated += new EventHandler(ParentForm_Activated);
-		}
 	}
 }
