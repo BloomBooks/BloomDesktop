@@ -580,21 +580,26 @@ namespace Bloom.Book
             var newFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
             newFolderPath = GetUniqueFolderPath(newFolderPath);
 
+			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath,newFolderPath);
+
             //next, rename the file
             File.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
                        
              //next, rename the enclosing folder
             try
             {
-                Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
+				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
+				
+				Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
 
 				_fileLocator.RemovePath(FolderPath);
 				_fileLocator.AddPath(newFolderPath); 
 				
 				_folderPath = newFolderPath;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+				Logger.WriteEvent("Failed folder rename: "+e.Message);
                 Debug.Fail("(debug mode only): could not rename the folder");
             }
 
