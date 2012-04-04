@@ -134,15 +134,15 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				if (_librarySettings.IsShellLibrary)
-				{
-					return true;
-				}
-				else
-				{
-				   // return !ShowTranslationPanel;
-					return _bookSelection.CurrentSelection.NormallyHasTemplatePages;
-				}
+//                if (_librarySettings.IsShellLibrary)
+//                {
+//                    return true;
+//                }
+//                else
+//                {
+
+					return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
+//                }
 			}
 		}
 
@@ -151,7 +151,8 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook!=null && !_currentlyDisplayedBook.LockedExceptForTranslation;
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook!=null
+					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
 			}
 
 		}
@@ -361,7 +362,7 @@ namespace Bloom.Edit
 
 		public bool CanChangeImages()
 		{
-			return !_currentlyDisplayedBook.LockedExceptForTranslation;
+			return _currentlyDisplayedBook.CanChangeImages;
 		}
 
 

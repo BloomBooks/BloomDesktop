@@ -202,7 +202,12 @@ namespace Bloom.Edit
 
 			if (_model.ShowTemplatePanel)        //Templates only
 			{
+				_splitContainer2.Panel2Collapsed = false;
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
+			}
+			else
+			{
+				_splitContainer2.Panel2Collapsed = true;
 			}
 		}
 
@@ -305,7 +310,11 @@ namespace Bloom.Edit
 		private void OnClickOnImage(GeckoDomEventArgs ge)
 		{
 			if (!_model.CanChangeImages())
+			{
+				MessageBox.Show(
+					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
 				return;
+			}
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 

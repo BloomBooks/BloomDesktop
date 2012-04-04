@@ -309,7 +309,7 @@ namespace Bloom.Book
 			BookStorage.RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
-			if(LockedExceptForTranslation)
+			if(LockedDown)
 			{
 				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
 			}
@@ -672,35 +672,111 @@ namespace Bloom.Book
 
 		}
 
+		/*
+		 *					Basic Book		Shellbook		Calendar		Picture Dictionary		Picture Dictionary Premade
+		 *	Change Images		y				n				y					y					y
+		 *	UseSrcForTmpPgs		y				n				n					y					y
+		 *	remove pages		y				n				n					y					y
+		 *	change orig creds	y				n				n					y					no?
+		 *	change license		y				n				y					y					no?
+		 */
 
-		public bool NormallyHasTemplatePages
+		/*
+		 *  The current design: for all these settings, put them in meta, except, override them all with the "LockDownForShell" setting, which can be specified in a meta tag.
+		 *  The default for all permissions is 'true', so don't specify them in a document unless you want to withhold the permission.
+		 *  See UseSourceForTemplatePages for one the exception.
+		 */
+
+		/// <summary>
+		/// This one is a bit different becuase we just imply that it's false unless at least one pageTemplateSource is specified.
+		/// </summary>
+		public bool UseSourceForTemplatePages
 		{
-			//review: my thinking here (nov 2011) is definitely fuzzy
 			get
 			{
-				//default is "true"
-				//had this, but it seems impracticle unless bloom takes responsbility for setting it.  I can't remember what motivated it...
-				//	var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='normallyShowTemplatePages' and @content='false']"));
-				//	return node.Count ==0;
+				if (LockedDown)
+					return false;
 
-				//relevent things to think about here, as we review it, include the calendar, which isn't a translation, but you shouldn't be able add new months
-
-				//I know, this is simplistic too... eventually we might need to allow, for example, addition of font/back-matter
-				return !LockedExceptForTranslation;
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='pageTemplateSource']"));
+				return node.Count > 0;
 			}
 		}
 
 		/// <summary>
-		/// Is this a shell we're translating? And if so, is this a shell-making project?
+		/// Don't allow (or at least don't encourage) changing the images
 		/// </summary>
-		public bool LockedExceptForTranslation
+		/// <remarks>In April 2012, we don't yet have an example of a book which would explicitly
+		/// restrict changing images. Shells do, of course, but do so by virtue of their lockedDownAsShell being set to 'true'.</remarks>
+		public bool CanChangeImages
 		{
 			get
 			{
-				return !_librarySettings.IsShellLibrary &&
-					   RawDom.SafeSelectNodes("//meta[@name='editability' and @content='translationOnly']").Count > 0;
+				if (LockedDown)
+					return false;
+
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeImages' and @content='false']"));
+				return node.Count == 0;
 			}
 		}
+
+		/// <summary>
+		/// This is useful if you are allowing people to make major changes, but want to insist that derivatives carry the same license
+		/// </summary>
+		public bool CanChangeLicense
+		{
+			get
+			{
+				if (LockedDown)
+					return false;
+
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeLicense' and @content='false']"));
+				return node.Count == 0;
+			}
+		}
+
+
+		/// <summary>
+		/// This is useful if you are allowing people to make major changes, but want to preserve acknowledments, for example, for the jscript programmers on Wall Calendar, or
+		/// the person who put together a starter picture-dictionary.
+		/// </summary>
+		public bool CanChangeOriginalAcknowledgments
+		{
+			get
+			{
+				if (LockedDown)
+					return false;
+
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeOriginalAcknowledgments' and @content='false']"));
+				return node.Count == 0;
+			}
+		}
+
+		/// <summary>
+		/// A book is lockedDown if it says it is AND we're not in a shell-making library
+		/// </summary>
+		public bool LockedDown
+		{
+			get
+			{
+				if(_librarySettings.IsShellLibrary) //nothing is locked if we're in a shell-making library
+					return false;
+
+				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
+				return node.Count > 0;
+			}
+		}
+
+//		/// <summary>
+//        /// Is this a shell we're translating? And if so, is this a shell-making project?
+//        /// </summary>
+//        public bool LockedExceptForTranslation
+//        {
+//            get
+//            {
+//            	return !_librarySettings.IsShellLibrary &&
+//            	       RawDom.SafeSelectNodes("//meta[@name='editability' and @content='translationOnly']").Count > 0;
+//            }
+//        }
 
 		public string CategoryForUsageReporting
 		{
@@ -710,7 +786,7 @@ namespace Bloom.Book
 				{
 					return "ShellEditing";
 				}
-				else if (LockedExceptForTranslation)
+				else if (LockedDown)
 				{
 					return "ShellTranslating";
 				}

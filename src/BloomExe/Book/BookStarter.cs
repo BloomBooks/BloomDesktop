@@ -178,11 +178,11 @@ namespace Bloom.Book
 		{
 
 			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
-			//created book is translationOnly. Any derivatives will then act as shells.  But it won't
+			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
 			//prevent us from editing it while in a shell-making library, since we don't honor this
 			//tag in shell-making libraries.
 			if(_isShellLibrary)
-				BookStorage.UpdateMetaElement(storage.Dom, "editability", "translationOnly");
+				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
 
 			//otherwise, stick with whatever it came in with.  All shells will come in with translationOnly,
 			//all templates will come in with 'open'.
