@@ -512,6 +512,9 @@
   <ItemGroup>
     <None Include="Resources\library32x32.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings16x16.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)

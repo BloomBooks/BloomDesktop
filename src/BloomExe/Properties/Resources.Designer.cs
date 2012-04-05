@@ -186,6 +186,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap settings16x16 {
+            get {
+                object obj = ResourceManager.GetObject("settings16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap spinner {
             get {
                 object obj = ResourceManager.GetObject("spinner", resourceCulture);

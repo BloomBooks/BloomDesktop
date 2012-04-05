@@ -41,6 +41,7 @@
 			this._infoButton = new System.Windows.Forms.Button();
 			this._openButton1 = new System.Windows.Forms.Button();
 			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
 			this._tabControl.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -113,7 +114,7 @@
 			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._feedbackButton.ForeColor = System.Drawing.Color.White;
 			this._feedbackButton.Image = ((System.Drawing.Image)(resources.GetObject("_feedbackButton.Image")));
-			this._feedbackButton.Location = new System.Drawing.Point(504, 13);
+			this._feedbackButton.Location = new System.Drawing.Point(584, 13);
 			this._feedbackButton.Name = "_feedbackButton";
 			this._feedbackButton.Size = new System.Drawing.Size(86, 23);
 			this._feedbackButton.TabIndex = 14;
@@ -130,8 +131,8 @@
 			this._settingsButton.FlatAppearance.BorderSize = 0;
 			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._settingsButton.ForeColor = System.Drawing.Color.White;
-			this._settingsButton.Image = global::Bloom.Properties.Resources.settings;
-			this._settingsButton.Location = new System.Drawing.Point(593, 11);
+			this._settingsButton.Image = global::Bloom.Properties.Resources.settings16x16;
+			this._settingsButton.Location = new System.Drawing.Point(498, 11);
 			this._settingsButton.Name = "_settingsButton";
 			this._settingsButton.Size = new System.Drawing.Size(80, 23);
 			this._settingsButton.TabIndex = 12;
@@ -139,7 +140,7 @@
 			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
 			this._settingsButton.UseVisualStyleBackColor = false;
-			this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
+			this._settingsButton.Click += new System.EventHandler(this.OnSettingsButton_Click);
 			// 
 			// _infoButton
 			// 
@@ -217,6 +218,7 @@
         private System.Windows.Forms.Button _openButton1;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Button _feedbackButton;
+		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper _settingsLauncherHelper;
 
 
     }
