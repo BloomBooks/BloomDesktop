@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SIL International")]
-[assembly: AssemblyProduct("BloomApp")]
-[assembly: AssemblyCopyright("Copyright © SIL International  2011")]
+[assembly: AssemblyProduct("Bloom")]
+[assembly: AssemblyCopyright("Copyright © SIL International  2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

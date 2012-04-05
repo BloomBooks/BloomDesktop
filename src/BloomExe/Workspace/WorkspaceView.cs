@@ -44,6 +44,7 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
+			_settingsLauncherHelper.CustomSettingsControl = _settingsButton;
 
 			editBookCommand.Subscribe(OnEditBook);
 
@@ -185,12 +186,15 @@ namespace Bloom.Workspace
 			_previouslySelectedControl = (Control) _tabControl.SelectedTab.Controls[0];
 		}
 
-		private void _settingsButton_Click(object sender, EventArgs e)
+		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
-			using (var dlg = _settingsDialogFactory())
-			{
-				dlg.ShowDialog();
-			}
+			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
+																	{
+																		using (var dlg = _settingsDialogFactory())
+																		{
+																			return dlg.ShowDialog();
+																		}
+																	});
 		}
 
 		private void _feedbackButton_Click(object sender, EventArgs e)

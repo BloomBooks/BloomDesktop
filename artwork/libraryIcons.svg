@@ -448,10 +448,10 @@
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1357"
-     inkscape:window-height="878"
-     inkscape:window-x="1912"
-     inkscape:window-y="556"
+     inkscape:window-width="1920"
+     inkscape:window-height="1058"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3539">
@@ -662,5 +662,14 @@
         </g>
       </g>
     </g>
+    <path
+       style="fill:#0c8597;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m -66.663058,46.496882 c 0,0 -7.834869,7.64304 -7.976319,8.908769 -0.78533,2.83031 3.380819,5.58758 4.861679,4.55486 1.02121,-0.48177 7.86505,-8.09806 7.86505,-8.09806 5.20529,0.75771 8.81586,-2.76684 8.76692,-6.754679 l -5.9571,1.89336 -1.81776,-2.02059 0.36932,-2.858061 5.39043,-1.71325 c -5.67255,-4.53582 -11.83072,-0.558 -11.50222,6.087641 z"
+       id="path7263-6-4-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="C:\dev\Bloom\artwork\settings16x16.png"
+       inkscape:export-xdpi="63.799999"
+       inkscape:export-ydpi="63.799999" />
   </g>
 </svg>

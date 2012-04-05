@@ -52,8 +52,8 @@
 			this.label5 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
 			this._okButton = new System.Windows.Forms.Button();
-			this.checkBox1 = new System.Windows.Forms.CheckBox();
 			this._restartMessage = new System.Windows.Forms.Label();
+			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -310,29 +310,25 @@
 			this._okButton.UseVisualStyleBackColor = true;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
 			// 
-			// checkBox1
-			// 
-			this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.checkBox1.AutoSize = true;
-			this.checkBox1.Enabled = false;
-			this.checkBox1.Location = new System.Drawing.Point(12, 352);
-			this.checkBox1.Name = "checkBox1";
-			this.checkBox1.Size = new System.Drawing.Size(278, 17);
-			this.checkBox1.TabIndex = 3;
-			this.checkBox1.Text = "Require Shift-click to open these settings in the future";
-			this.checkBox1.UseVisualStyleBackColor = true;
-			// 
 			// _restartMessage
 			// 
 			this._restartMessage.AutoSize = true;
 			this._restartMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._restartMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-			this._restartMessage.Location = new System.Drawing.Point(8, 382);
+			this._restartMessage.Location = new System.Drawing.Point(9, 388);
 			this._restartMessage.Name = "_restartMessage";
 			this._restartMessage.Size = new System.Drawing.Size(383, 20);
 			this._restartMessage.TabIndex = 19;
 			this._restartMessage.Text = "Restart or re-open project to use new settings.";
 			this._restartMessage.Visible = false;
+			// 
+			// settingsProtectionLauncherButton1
+			// 
+			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 349);
+			this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
+			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
+			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
+			this.settingsProtectionLauncherButton1.TabIndex = 20;
 			// 
 			// SettingsDialog
 			// 
@@ -340,8 +336,8 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(621, 417);
+			this.Controls.Add(this.settingsProtectionLauncherButton1);
 			this.Controls.Add(this._restartMessage);
-			this.Controls.Add(this.checkBox1);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this.tabControl1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -377,7 +373,6 @@
 		protected System.Windows.Forms.Label _nationalLanguage1Label;
 		protected System.Windows.Forms.Label label4;
 		protected System.Windows.Forms.Label _vernacularLanguageName;
-		private System.Windows.Forms.CheckBox checkBox1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ComboBox _xmatterPackCombo;
 		private System.Windows.Forms.TextBox _districtText;
@@ -388,5 +383,6 @@
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.LinkLabel _removeSecondNationalLanguageButton;
 		private System.Windows.Forms.Label _restartMessage;
+		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 	}
 }
