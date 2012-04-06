@@ -29,7 +29,10 @@ namespace Bloom.Library
 			_thumbnailProvider = thumbnailProvider;
 			_bookSelection = bookSelection;
 			InitializeComponent();
-			_listView.BackColor = Color.FromArgb(0xe5, 0xee, 0xf6);
+			_listView.BackColor = Color.FromArgb(64, 64, 64);//(0xe5, 0xee, 0xf6);
+			_listView.ForeColor = Color.White;
+
+
 			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
 			_listView.OwnerDraw = true;
 			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);

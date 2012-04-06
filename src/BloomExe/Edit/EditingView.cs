@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Newtonsoft.Json.Linq;
@@ -447,6 +448,18 @@ namespace Bloom.Edit
 
 				_pageSizeAndOrientationChoices.Text = currentPageSizeAndOrientation;
 
+				switch (_model.NumberOfDisplayedLanguages)
+				{
+					case 1:
+						_contentLanguagesDropdown.Text = "Monolingual";
+						break;
+					case 2:
+						_contentLanguagesDropdown.Text = "Bilingual";
+						break;
+					case 3:
+						_contentLanguagesDropdown.Text = "Trilingual";
+						break;
+				}
 			}
 			catch (Exception error)
 			{
@@ -524,10 +537,6 @@ namespace Bloom.Edit
 			_deletePageCommand.Execute();
 		}
 
-		private void _contentLanguagesDropdown_Click(object sender, EventArgs e)
-		{
-
-		}
 
 		private void _contentLanguagesDropdown_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
 		{
