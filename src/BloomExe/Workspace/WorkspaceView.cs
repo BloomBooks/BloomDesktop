@@ -123,9 +123,9 @@ namespace Bloom.Workspace
 			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library32x32.png")));
 			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit32x32.png")));
 			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish.png")));
+				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish32x32.png")));
 			_tabControl.ImageList.Images.Add(
 				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "info.png")));
 			_libraryTabPage.ImageIndex = 0;

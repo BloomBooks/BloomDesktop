@@ -515,6 +515,21 @@
   <ItemGroup>
     <None Include="Resources\settings16x16.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\feedback24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenCreateLibrary24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\help24x24.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)
