@@ -16,17 +16,21 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
+		private readonly LibrarySettings _librarySettings;
 		private readonly StoreCollectionList _storeCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
+		private IEnumerable<BookCollection> _bookCollections;
 
-		public LibraryModel(string pathToLibrary, BookSelection bookSelection,
+		public LibraryModel(string pathToLibrary, LibrarySettings librarySettings,
+			BookSelection bookSelection,
 			StoreCollectionList storeCollectionList,
 			BookCollection.Factory bookCollectionFactory,
 			EditBookCommand editBookCommand)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
+			_librarySettings = librarySettings;
 			_storeCollectionList = storeCollectionList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -42,7 +46,20 @@ namespace Bloom.Library
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanUpdate; }
 
 		}
+
+		public string LanguageName
+		{
+			get { return _librarySettings.VernacularLanguageName; }
+		}
+
 		public IEnumerable<BookCollection> GetBookCollections()
+		{
+			if(_bookCollections ==null)
+				_bookCollections = GetBookCollectionsOnce();
+			return _bookCollections;
+		}
+
+		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 

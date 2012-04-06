@@ -72,7 +72,7 @@
 			// 
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
 			this._splitContainer1.Size = new System.Drawing.Size(1200, 738);
-			this._splitContainer1.SplitterDistance = 213;
+			this._splitContainer1.SplitterDistance = 299;
 			this._splitContainer1.SplitterWidth = 1;
 			this._splitContainer1.TabIndex = 0;
 			// 
@@ -92,8 +92,8 @@
 			// 
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
-			this._splitContainer2.Size = new System.Drawing.Size(986, 738);
-			this._splitContainer2.SplitterDistance = 809;
+			this._splitContainer2.Size = new System.Drawing.Size(900, 738);
+			this._splitContainer2.SplitterDistance = 738;
 			this._splitContainer2.SplitterWidth = 1;
 			this._splitContainer2.TabIndex = 0;
 			// 
@@ -113,7 +113,7 @@
             this._pageSizeAndOrientationChoices});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(809, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(738, 25);
 			this.toolStrip1.TabIndex = 2;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -215,7 +215,7 @@
 			// _splitTemplateAndSource.Panel2
 			// 
 			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(176, 738);
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(161, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
 			this._splitTemplateAndSource.SplitterWidth = 5;
 			this._splitTemplateAndSource.TabIndex = 0;
@@ -238,7 +238,7 @@
 			this._browser1.Location = new System.Drawing.Point(0, 31);
 			this._browser1.Margin = new System.Windows.Forms.Padding(5);
 			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(809, 711);
+			this._browser1.Size = new System.Drawing.Size(738, 711);
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);

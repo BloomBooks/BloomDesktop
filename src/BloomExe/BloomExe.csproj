@@ -141,6 +141,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="Library\ListHeader.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Library\ListHeader.Designer.cs">
+      <DependentUpon>ListHeader.cs</DependentUpon>
+    </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +295,9 @@
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\ListHeader.resx">
+      <DependentUpon>ListHeader.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>

@@ -19,23 +19,31 @@ namespace Bloom.Library
 		public delegate LibraryListView Factory();//autofac uses this
 
 		private readonly LibraryModel _model;
-		private readonly HtmlThumbNailer _thumbnailProvider;
 		private readonly BookSelection _bookSelection;
-		private bool _reshowPending = false;
+		private Pen _boundsPen;
+		private Font _headerFont;
+		private Font _editableBookFont;
+		private Font _collectionBookFont;
+		private bool _reshowPending;
 
-		public LibraryListView(LibraryModel model, HtmlThumbNailer thumbnailProvider, BookSelection bookSelection)
+		public LibraryListView(LibraryModel model,  BookSelection bookSelection)
 		{
 			_model = model;
-			_thumbnailProvider = thumbnailProvider;
 			_bookSelection = bookSelection;
 			InitializeComponent();
-			_listView.BackColor = Color.FromArgb(64, 64, 64);//(0xe5, 0xee, 0xf6);
-			_listView.ForeColor = Color.White;
+			_libraryFlow.HorizontalScroll.Visible = false;
 
+			_libraryFlow.Controls.Clear();
+			_libraryFlow.HorizontalScroll.Visible = false;
+			_collectionFlow.Controls.Clear();
+			_collectionFlow.HorizontalScroll.Visible = false;
 
-			_listView.Font = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0);
-			_listView.OwnerDraw = true;
-			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
+			_headerFont = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0, FontStyle.Bold);
+			_editableBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);//, FontStyle.Bold);
+			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
+
+			//_listView.OwnerDraw = true;
+			 //_listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
 			_boundsPen = new Pen(Brushes.DarkGray, 2);
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
@@ -54,46 +62,78 @@ namespace Bloom.Library
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			foreach (ListViewItem item in _listView.Items)
-			{
-				if(item.Tag == _bookSelection.CurrentSelection)
-				{
-					item.Selected = true;
-					break;
-				}
-			}
+//TODO
+//            foreach (ListViewItem item in _listView.Items)
+//            {
+//                if(item.Tag == _bookSelection.CurrentSelection)
+//                {
+//                    item.Selected = true;
+//                    break;
+//                }
+//            }
 		}
 
 		public int PreferredWidth
 		{
-			get { return 200; }
+			get { return 300; }
 		}
 
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
 
-			Application.Idle += new EventHandler(Application_Idle);
+			Application.Idle += new EventHandler(LoadCollectionsAtIdleTime);
 
 		}
 
-		void Application_Idle(object sender, EventArgs e)
+		void LoadCollectionsAtIdleTime(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(Application_Idle);
-			_listView.Groups.Clear();
-			foreach (BookCollection collection in _model.GetBookCollections())
+			Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime);
+			_libraryFlow.Controls.Clear();
+
+			var collections = _model.GetBookCollections();
+
+			var library = collections.First();
+			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+			var invisibleHackPartner = new Label() { Text = "", Width = 0 };
+			_libraryFlow.Controls.Add(invisibleHackPartner);
+			var libraryHeader = new ListHeader() {ForeColor = Color.White};
+			libraryHeader.Label.Text = string.Format("{0} Books", _model.LanguageName);
+			//libraryHeader.BorderStyle = BorderStyle.FixedSingle;
+			_libraryFlow.Controls.Add(libraryHeader);
+			_libraryFlow.SetFlowBreak(libraryHeader, true);
+			LoadOneCollection(library, _libraryFlow);
+
+			var bookSourcesHeader = new ListHeader() { ForeColor = Color.White };
+			bookSourcesHeader.Label.Text = "Sources For New Books";
+			 invisibleHackPartner = new Label() { Text = "", Width = 0 };
+			 _collectionFlow.Controls.Add(invisibleHackPartner);
+			 _collectionFlow.Controls.Add(bookSourcesHeader);
+			_collectionFlow.SetFlowBreak(bookSourcesHeader,true);
+
+			foreach (BookCollection collection in _model.GetBookCollections().Skip(1))
 			{
-				ListViewGroup group = new ListViewGroup(collection.Name);
+				if (_collectionFlow.Controls.Count > 0)
+					_collectionFlow.SetFlowBreak(_collectionFlow.Controls[_collectionFlow.Controls.Count - 1], true);
 
-				_listView.Groups.Add(group);
+				//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+				 invisibleHackPartner = new Label() { Text = "", Width=0 };
+				_collectionFlow.Controls.Add(invisibleHackPartner);
 
-				LoadOneCollection(collection, group);
+				var collectionHeader = new Label() {Text = collection.Name, ForeColor=Color.White, Padding=new Padding(10,0,0,0)};
+				//collectionHeader.Height = 15;
+				collectionHeader.Margin = new Padding(0, 10, 0, 0);
+				collectionHeader.Font = _headerFont;
+				_collectionFlow.Controls.Add(collectionHeader);
+				_collectionFlow.SetFlowBreak(collectionHeader, true);
+
+				LoadOneCollection(collection, _collectionFlow);
 			}
 		}
 
-		private void LoadOneCollection(BookCollection collection, ListViewGroup group)
+		private void LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
 		{
-			if (group.Tag == collection)
+		/*	if (group.Tag == collection)
 			{
 				//this code I wrote is so lame...
 				var x = new List<ListViewItem>();
@@ -119,11 +159,14 @@ namespace Bloom.Library
 				}
 				group.Tag = collection;
 			}
+		 */
+			collection.CollectionChanged += OnCollectionChanged;
+
 			foreach (Book.Book book in collection.GetBooks())
 			{
 				try
 				{
-					AddOneBook(group, book);
+					AddOneBook(book, flowLayoutPanel);
 				}
 				catch (Exception error)
 				{
@@ -131,35 +174,42 @@ namespace Bloom.Library
 				}
 
 			}
-			if(group.Items.Count ==0)
-			{
-				ListViewItem item = new ListViewItem(" ", 0);
-				item.Tag=null;
-				item.ImageIndex = -1;
-				item.Group = group;
-				_listView.Items.Add(item);
-			}
+//			if(group.Items.Count ==0)
+//			{
+//    			ListViewItem item = new ListViewItem(" ", 0);
+//    			item.Tag=null;
+//				item.ImageIndex = -1;
+//    			item.Group = group;
+//				_listView.Items.Add(item);
+//			}
 		}
 
-		private void AddOneBook(ListViewGroup group, Book.Book book)
+		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)
 		{
-			ListViewItem item = new ListViewItem(book.Title, 0);
+			var item = new Button(){Size=new Size(90,110)};
+			item.Text = book.Title;
+			item.TextImageRelation = TextImageRelation.ImageAboveText;
+			item.FlatStyle = FlatStyle.Flat;
+			item.ForeColor = Color.White;
+			item.FlatAppearance.BorderSize = 0;
+			item.ContextMenuStrip = contextMenuStrip1;
+			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
+
+			item.Font = book.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
+
+
 			item.Tag=book;
-			item.Group = group;
 
 
 			Image thumbnail = Resources.PagePlaceHolder;;
 			_bookThumbnails.Images.Add(book.Id, thumbnail);
 			item.ImageIndex = _bookThumbnails.Images.Count - 1;
-			_listView.Items.Add(item);
+			flowLayoutPanel.Controls.Add(item);
 
-				book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,
+			book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,
 												  image => RefreshOneThumbnail(book, image));
 
 		}
-
-		private Pen _boundsPen;
-
 
 		/// <summary>
 		/// Make the result look like it's on a colored paper, or make it transparent for composing on top
@@ -177,27 +227,29 @@ namespace Bloom.Library
 
 		private void OnCollectionChanged(object sender, EventArgs e)
 		{
-			foreach (ListViewGroup group in _listView.Groups)
-			{
-				if(group.Tag == sender)
-				{
-					LoadOneCollection((BookCollection) sender, group);
-					break;
-				}
-			}
+			Application.Idle += new EventHandler(LoadCollectionsAtIdleTime);
+//    		foreach (ListViewGroup group in _listView.Groups)
+//    		{
+//    			if(group.Tag == sender)
+//    			{
+//    				LoadOneCollection((BookCollection) sender, group);
+//    			    break;
+//    			}
+//    		}
 		}
 
-		private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+		private void OnClickBook(object sender, EventArgs e)
 		{
 			try
 			{
-				if (_listView.SelectedItems.Count == 0)
-				{
-					return;
-				}
-				Book.Book book = SelectedBook;
+//				if (_listView.SelectedItems.Count == 0)
+//				{
+//					return;
+//				}
+				Book.Book book = ((Button)sender).Tag as Book.Book;
 				if (book == null)
 					return;
+				SelectedBook = book;
 				contextMenuStrip1.Enabled = true;
 				Debug.WriteLine("before selecting " + book.Title);
 				_model.SelectBook(book);
@@ -218,12 +270,14 @@ namespace Bloom.Library
 
 		private Book.Book SelectedBook
 		{
-			get
+			set
 			{
-				if (_listView.SelectedItems.Count == 0)
-					return null;
-				return (Book.Book) _listView.SelectedItems[0].Tag;
+				foreach (var btn in AllBookButtons())
+				{
+					btn.BackColor = btn.Tag==value ? Color.DarkGray : _libraryFlow.BackColor;
+				}
 			}
+			get { return _bookSelection.CurrentSelection; }
 		}
 
 		/// <summary>
@@ -236,7 +290,7 @@ namespace Bloom.Library
 
 		private void OnBackColorChanged(object sender, EventArgs e)
 		{
-			_listView.BackColor = BackColor;
+			_libraryFlow.BackColor = BackColor;
 		}
 
 		private void OnVisibleChanged(object sender, EventArgs e)
@@ -249,16 +303,17 @@ namespace Bloom.Library
 
 				//we don't currently have a "reshow" flag for just updating the title
 				//update the label from the title
-				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
-				Debug.Assert(listItem!=null);
-				if (listItem!=null)
-					listItem.Text = book.Title;
-
-				if (_reshowPending)
-				{
-					_reshowPending = false;
-					RecreateOneThumbnail(book);
-				}
+ //TODO
+//				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
+//                Debug.Assert(listItem!=null);
+//                if (listItem!=null)
+//                    listItem.Text = book.Title;
+//
+//                if (_reshowPending)
+//                {
+//                	_reshowPending = false;
+//                	RecreateOneThumbnail(book);
+//                }
 			}
 		}
 
@@ -270,15 +325,36 @@ namespace Bloom.Library
 			if (imageIndex > -1)
 			{
 				_bookThumbnails.Images[imageIndex] = image;
-				//_listView.Refresh();
-				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
-				if(listItem!=null)
-				{
-					listItem.Text = book.Title;
-					_listView.Invalidate(listItem.Bounds);
-				}
+				var button = FindBookButton(book);
+				button.Image = image;
+//    			//_listView.Refresh();
+//				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
+//				if(listItem!=null)
+//				{
+//					listItem.Text = book.Title;
+//					_listView.Invalidate(listItem.Bounds);
+//				}
 			}
 		}
+
+		private Button FindBookButton(Book.Book book)
+		{
+			return AllBookButtons().FirstOrDefault(b => b.Tag == book);
+		}
+
+		private IEnumerable<Button> AllBookButtons()
+		{
+			foreach(var btn in _libraryFlow.Controls.OfType<Button>())
+			{
+				yield return btn;
+			}
+
+			foreach (var btn in _collectionFlow.Controls.OfType<Button>())
+			{
+				yield return btn;
+			}
+		}
+
 		private void RecreateOneThumbnail(Book.Book book)
 		{
 			_model.UpdateThumbnailAsync(RefreshOneThumbnail);
@@ -286,12 +362,13 @@ namespace Bloom.Library
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)
 		{
-			BookCollection collection = _listView.SelectedItems[0].Group.Tag as BookCollection;
-			if (collection != null)
-			{
-				_model.DeleteBook((Book.Book) _listView.SelectedItems[0].Tag, collection);
-				//_listView.SelectedItems.Clear();
-			}
+//TODO
+//			BookCollection collection = _listView.SelectedItems[0].Group.Tag as BookCollection;
+//            if (collection != null)
+//            {
+//                _model.DeleteBook((Book.Book) _listView.SelectedItems[0].Tag, collection);
+//                //_listView.SelectedItems.Clear();
+//            }
 		}
 
 		private void _listView_MouseEnter(object sender, EventArgs e)
@@ -306,7 +383,8 @@ namespace Bloom.Library
 
 		private void _updateThumbnailMenu_Click(object sender, EventArgs e)
 		{
-			RecreateOneThumbnail((Book.Book)_listView.SelectedItems[0].Tag);
+			//TODO
+//			RecreateOneThumbnail((Book.Book)_listView.SelectedItems[0].Tag);
 		}
 
 		private void _updateFrontMatterToolStripMenu_Click(object sender, EventArgs e)
@@ -321,7 +399,8 @@ namespace Bloom.Library
 
 		private void _listView_MouseDown(object sender, MouseEventArgs e)
 		{
-			contextMenuStrip1.Enabled = _listView.SelectedItems.Count > 0 && _listView.SelectedItems[0].Tag !=null /*dummy item when collection is empty */;
+			//TODO
+//			contextMenuStrip1.Enabled = _listView.SelectedItems.Count > 0 && _listView.SelectedItems[0].Tag != null /*dummy item when collection is empty */;
 		}
 	}
 }
