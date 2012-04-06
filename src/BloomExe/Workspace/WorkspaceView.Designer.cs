@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorkspaceView));
 			this._tabControl = new System.Windows.Forms.TabControl();
 			this._libraryTabPage = new System.Windows.Forms.TabPage();
 			this._editTabPage = new System.Windows.Forms.TabPage();
@@ -40,8 +39,8 @@
 			this._settingsButton = new System.Windows.Forms.Button();
 			this._infoButton = new System.Windows.Forms.Button();
 			this._openButton1 = new System.Windows.Forms.Button();
-			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
+			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this._tabControl.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -72,7 +71,8 @@
 			this._libraryTabPage.Name = "_libraryTabPage";
 			this._libraryTabPage.Size = new System.Drawing.Size(877, 490);
 			this._libraryTabPage.TabIndex = 0;
-			this._libraryTabPage.ToolTipText = "View Libaries";
+			this._libraryTabPage.Text = "Library";
+			this._libraryTabPage.ToolTipText = "View Library";
 			this._libraryTabPage.UseVisualStyleBackColor = true;
 			// 
 			// _editTabPage
@@ -83,6 +83,7 @@
 			this._editTabPage.Name = "_editTabPage";
 			this._editTabPage.Size = new System.Drawing.Size(877, 490);
 			this._editTabPage.TabIndex = 1;
+			this._editTabPage.Text = "Edit";
 			this._editTabPage.ToolTipText = "Edit Book";
 			this._editTabPage.UseVisualStyleBackColor = true;
 			// 
@@ -94,6 +95,7 @@
 			this._publishTabPage.Padding = new System.Windows.Forms.Padding(3);
 			this._publishTabPage.Size = new System.Drawing.Size(877, 490);
 			this._publishTabPage.TabIndex = 2;
+			this._publishTabPage.Text = "Publish";
 			this._publishTabPage.ToolTipText = "Publish Book";
 			this._publishTabPage.UseVisualStyleBackColor = true;
 			// 
@@ -104,6 +106,7 @@
 			this._infoTabPage.Padding = new System.Windows.Forms.Padding(3);
 			this._infoTabPage.Size = new System.Drawing.Size(877, 490);
 			this._infoTabPage.TabIndex = 3;
+			this._infoTabPage.Text = "Info";
 			this._infoTabPage.UseVisualStyleBackColor = true;
 			// 
 			// _feedbackButton
@@ -113,10 +116,10 @@
 			this._feedbackButton.FlatAppearance.BorderSize = 0;
 			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._feedbackButton.ForeColor = System.Drawing.Color.White;
-			this._feedbackButton.Image = ((System.Drawing.Image)(resources.GetObject("_feedbackButton.Image")));
-			this._feedbackButton.Location = new System.Drawing.Point(584, 13);
+			this._feedbackButton.Image = global::Bloom.Properties.Resources.feedback24x24;
+			this._feedbackButton.Location = new System.Drawing.Point(536, 3);
 			this._feedbackButton.Name = "_feedbackButton";
-			this._feedbackButton.Size = new System.Drawing.Size(86, 23);
+			this._feedbackButton.Size = new System.Drawing.Size(101, 31);
 			this._feedbackButton.TabIndex = 14;
 			this._feedbackButton.Text = "Feedback";
 			this._feedbackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -131,10 +134,10 @@
 			this._settingsButton.FlatAppearance.BorderSize = 0;
 			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._settingsButton.ForeColor = System.Drawing.Color.White;
-			this._settingsButton.Image = global::Bloom.Properties.Resources.settings16x16;
-			this._settingsButton.Location = new System.Drawing.Point(498, 11);
+			this._settingsButton.Image = global::Bloom.Properties.Resources.settings24x24;
+			this._settingsButton.Location = new System.Drawing.Point(435, 3);
 			this._settingsButton.Name = "_settingsButton";
-			this._settingsButton.Size = new System.Drawing.Size(80, 23);
+			this._settingsButton.Size = new System.Drawing.Size(101, 31);
 			this._settingsButton.TabIndex = 12;
 			this._settingsButton.Text = "Settings";
 			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -149,10 +152,10 @@
 			this._infoButton.FlatAppearance.BorderSize = 0;
 			this._infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._infoButton.ForeColor = System.Drawing.Color.White;
-			this._infoButton.Image = global::Bloom.Properties.Resources.info16x16;
-			this._infoButton.Location = new System.Drawing.Point(804, 11);
+			this._infoButton.Image = global::Bloom.Properties.Resources.help24x24;
+			this._infoButton.Location = new System.Drawing.Point(772, 3);
 			this._infoButton.Name = "_infoButton";
-			this._infoButton.Size = new System.Drawing.Size(75, 23);
+			this._infoButton.Size = new System.Drawing.Size(101, 31);
 			this._infoButton.TabIndex = 12;
 			this._infoButton.Text = "Help";
 			this._infoButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -167,10 +170,10 @@
 			this._openButton1.FlatAppearance.BorderSize = 0;
 			this._openButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._openButton1.ForeColor = System.Drawing.Color.White;
-			this._openButton1.Image = global::Bloom.Properties.Resources.open;
-			this._openButton1.Location = new System.Drawing.Point(675, 10);
+			this._openButton1.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
+			this._openButton1.Location = new System.Drawing.Point(638, 3);
 			this._openButton1.Name = "_openButton1";
-			this._openButton1.Size = new System.Drawing.Size(128, 23);
+			this._openButton1.Size = new System.Drawing.Size(148, 31);
 			this._openButton1.TabIndex = 13;
 			this._openButton1.Text = "Open/Create Library";
 			this._openButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
