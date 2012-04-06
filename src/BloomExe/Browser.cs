@@ -143,7 +143,7 @@ namespace Bloom
             }
 
             _browser = new GeckoWebBrowser();
-
+        	
             _browser.Parent = this;
             _browser.Dock = DockStyle.Fill;
             Controls.Add(_browser);
