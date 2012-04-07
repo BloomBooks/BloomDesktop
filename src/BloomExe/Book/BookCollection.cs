@@ -78,6 +78,7 @@ namespace Bloom.Book
 
 				ListOfBooksIsOutOfDate();
 				NotifyCollectionChanged();
+				GetBooks();//loads up the _books
 				var newBook = _books.Find(b => b.FolderPath == newBookFolder);
 
 				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else

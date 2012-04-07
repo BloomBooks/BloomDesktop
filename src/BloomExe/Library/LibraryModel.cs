@@ -20,7 +20,7 @@ namespace Bloom.Library
 		private readonly StoreCollectionList _storeCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
-		private IEnumerable<BookCollection> _bookCollections;
+		private List<BookCollection> _bookCollections;
 
 		public LibraryModel(string pathToLibrary, LibrarySettings librarySettings,
 			BookSelection bookSelection,
@@ -52,11 +52,16 @@ namespace Bloom.Library
 			get { return _librarySettings.VernacularLanguageName; }
 		}
 
-		public IEnumerable<BookCollection> GetBookCollections()
+		public List<BookCollection> GetBookCollections()
 		{
 			if(_bookCollections ==null)
-				_bookCollections = GetBookCollectionsOnce();
+				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 			return _bookCollections;
+		}
+
+		private BookCollection TheOneEditableCollection
+		{
+			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
@@ -73,7 +78,7 @@ namespace Bloom.Library
 			 _bookSelection.SelectBook(book);
 		}
 
-		public void DeleteBook(Book.Book book, BookCollection collection)
+		public void DeleteBook(Book.Book book)//, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
 
@@ -81,7 +86,7 @@ namespace Bloom.Library
 			{
 				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",_bookSelection.CurrentSelection.Title )))
 				{
-					collection.DeleteBook(book);
+					TheOneEditableCollection.DeleteBook(book);
 					_bookSelection.SelectBook(null);
 				}
 			}

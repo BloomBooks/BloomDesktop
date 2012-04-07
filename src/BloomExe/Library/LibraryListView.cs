@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
-using Palaso.IO;
 
 
 namespace Bloom.Library
@@ -25,6 +22,7 @@ namespace Bloom.Library
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
 		private bool _reshowPending;
+		private DateTime _lastClickTime;
 
 		public LibraryListView(LibraryModel model,  BookSelection bookSelection)
 		{
@@ -99,7 +97,6 @@ namespace Bloom.Library
 			_libraryFlow.Controls.Add(invisibleHackPartner);
 			var libraryHeader = new ListHeader() {ForeColor = Color.White};
 			libraryHeader.Label.Text = string.Format("{0} Books", _model.LanguageName);
-			//libraryHeader.BorderStyle = BorderStyle.FixedSingle;
 			_libraryFlow.Controls.Add(libraryHeader);
 			_libraryFlow.SetFlowBreak(libraryHeader, true);
 			LoadOneCollection(library, _libraryFlow);
@@ -120,8 +117,7 @@ namespace Bloom.Library
 				 invisibleHackPartner = new Label() { Text = "", Width=0 };
 				_collectionFlow.Controls.Add(invisibleHackPartner);
 
-				var collectionHeader = new Label() {Text = collection.Name, ForeColor=Color.White, Padding=new Padding(10,0,0,0)};
-				//collectionHeader.Height = 15;
+				var collectionHeader = new Label() {Text = collection.Name, Size=new Size(_collectionFlow.Width-20,15), ForeColor=Color.White, Padding=new Padding(10,0,0,0)};
 				collectionHeader.Margin = new Padding(0, 10, 0, 0);
 				collectionHeader.Font = _headerFont;
 				_collectionFlow.Controls.Add(collectionHeader);
@@ -133,33 +129,6 @@ namespace Bloom.Library
 
 		private void LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
 		{
-		/*	if (group.Tag == collection)
-			{
-				//this code I wrote is so lame...
-				var x = new List<ListViewItem>();
-				foreach (ListViewItem item in _listView.Items)
-				{
-					x.Add(item);
-				}
-
-				foreach (var listViewItem in x)
-				{
-					if(listViewItem.Group == group)
-					{
-						_listView.Items.Remove(listViewItem);
-					}
-				}
-				group.Items.Clear(); //we are just updating this group
-			}
-			else
-			{
-				if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
-				{
-					collection.CollectionChanged += OnCollectionChanged;
-				}
-				group.Tag = collection;
-			}
-		 */
 			collection.CollectionChanged += OnCollectionChanged;
 
 			foreach (Book.Book book in collection.GetBooks())
@@ -174,14 +143,7 @@ namespace Bloom.Library
 				}
 
 			}
-//			if(group.Items.Count ==0)
-//			{
-//    			ListViewItem item = new ListViewItem(" ", 0);
-//    			item.Tag=null;
-//				item.ImageIndex = -1;
-//    			item.Group = group;
-//				_listView.Items.Add(item);
-//			}
+
 		}
 
 		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)
@@ -194,6 +156,7 @@ namespace Bloom.Library
 			item.FlatAppearance.BorderSize = 0;
 			item.ContextMenuStrip = contextMenuStrip1;
 			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
+			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
 			item.Font = book.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
 
@@ -242,13 +205,18 @@ namespace Bloom.Library
 		{
 			try
 			{
-//				if (_listView.SelectedItems.Count == 0)
-//				{
-//					return;
-//				}
 				Book.Book book = ((Button)sender).Tag as Book.Book;
 				if (book == null)
 					return;
+
+				//I couldn't get the DoubleClick event to work, so I rolled my own
+				if(Control.MouseButtons == MouseButtons.Left && book==SelectedBook && DateTime.Now.Subtract(_lastClickTime).Milliseconds<500)
+				{
+					_model.DoubleClickedBook();
+					return;
+				}
+				_lastClickTime = DateTime.Now;
+
 				SelectedBook = book;
 				contextMenuStrip1.Enabled = true;
 				Debug.WriteLine("before selecting " + book.Title);
@@ -327,13 +295,6 @@ namespace Bloom.Library
 				_bookThumbnails.Images[imageIndex] = image;
 				var button = FindBookButton(book);
 				button.Image = image;
-//    			//_listView.Refresh();
-//				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
-//				if(listItem!=null)
-//				{
-//					listItem.Text = book.Title;
-//					_listView.Invalidate(listItem.Bounds);
-//				}
 			}
 		}
 
@@ -362,29 +323,12 @@ namespace Bloom.Library
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)
 		{
-//TODO
-//			BookCollection collection = _listView.SelectedItems[0].Group.Tag as BookCollection;
-//            if (collection != null)
-//            {
-//                _model.DeleteBook((Book.Book) _listView.SelectedItems[0].Tag, collection);
-//                //_listView.SelectedItems.Clear();
-//            }
-		}
-
-		private void _listView_MouseEnter(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _listView_DoubleClick(object sender, EventArgs e)
-		{
-			_model.DoubleClickedBook();
+			_model.DeleteBook(SelectedBook);
 		}
 
 		private void _updateThumbnailMenu_Click(object sender, EventArgs e)
 		{
-			//TODO
-//			RecreateOneThumbnail((Book.Book)_listView.SelectedItems[0].Tag);
+		RecreateOneThumbnail(SelectedBook);
 		}
 
 		private void _updateFrontMatterToolStripMenu_Click(object sender, EventArgs e)
@@ -395,12 +339,6 @@ namespace Bloom.Library
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
 		{
 			_model.OpenFolderOnDisk();
-		}
-
-		private void _listView_MouseDown(object sender, MouseEventArgs e)
-		{
-			//TODO
-//			contextMenuStrip1.Enabled = _listView.SelectedItems.Count > 0 && _listView.SelectedItems[0].Tag != null /*dummy item when collection is empty */;
 		}
 	}
 }
