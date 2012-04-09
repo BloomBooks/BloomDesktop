@@ -42,7 +42,7 @@
 			this.Label.Name = "Label";
 			this.Label.Size = new System.Drawing.Size(81, 21);
 			this.Label.TabIndex = 14;
-			this.Label.Text = "{0} Books";
+			this.Label.Text = "Vernacular Library Name Phrase";
 			// 
 			// ListHeader
 			// 
