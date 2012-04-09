@@ -224,7 +224,7 @@ namespace BloomTests.Edit
 
 		private BookStorage Get_NotYetConfigured_CalendardBookStorage()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells", "Wall Calendar");
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
 			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator);
 			return bs;
