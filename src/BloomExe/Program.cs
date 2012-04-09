@@ -18,7 +18,6 @@ namespace Bloom
 		/// properly dispose of various things when the project is closed.
 		/// </summary>
 		private static ProjectContext _projectContext;
-
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
 
@@ -41,13 +40,11 @@ namespace Bloom
 				StartUpWithFirstOrNewVersionBehavior = true;
 			}
 
-
 			SetUpErrorHandling();
 			Logger.Init();
 			Splasher.Show();
 			SetUpReporting();
 			Settings.Default.Save();
-
 
 			_applicationContainer = new ApplicationContainer();
 
@@ -57,22 +54,16 @@ namespace Bloom
 			SetUpErrorHandling();
 #endif
 
+			StartUpShellBasedOnMostRecentUsedIfPossible();
+			Application.Idle += new EventHandler(Application_Idle);
+			Application.Run();
 
-				StartUpShellBasedOnMostRecentUsedIfPossible();
-				Application.Idle += new EventHandler(Application_Idle);
-				Application.Run();
+			Settings.Default.Save();
 
+			Logger.ShutDown();
 
-
-				Settings.Default.Save();
-
-				Logger.ShutDown();
-
-				if (_projectContext != null)
-					_projectContext.Dispose();
-
-
-
+			if (_projectContext != null)
+				_projectContext.Dispose();
 		}
 
 
@@ -213,7 +204,6 @@ namespace Bloom
 				false
 #endif
 				);
-
 		}
 
 		public static void TimeBomb()
@@ -226,7 +216,7 @@ namespace Bloom
 				//if (DateTime.UtcNow.Subtract(fi.CreationTimeUtc).Seconds > 100)
 				{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-					"Sorry, this experimental version of Bloom is now over 30 days old.  Please get a new version at bloom.palaso.org");
+					"Sorry, this developmental version of Bloom is now over 30 days old.  Please get a new version at bloom.palaso.org");
 					Process.GetCurrentProcess().Kill();
 			}
 

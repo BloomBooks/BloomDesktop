@@ -452,7 +452,6 @@ namespace Bloom.Book
 			return bookDom;
 		}
 
-
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
 		{
 			bool onFirst = true;
@@ -466,6 +465,7 @@ namespace Bloom.Book
 			}
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//script"))
 			{
+				//TODO: this removes image scaling, which is ok so long as it's already scaled with width/height attributes
 				node.ParentNode.RemoveChild(node);
 			}
 		}

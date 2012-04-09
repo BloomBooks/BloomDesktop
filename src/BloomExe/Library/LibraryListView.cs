@@ -23,6 +23,7 @@ namespace Bloom.Library
 		private Font _collectionBookFont;
 		private bool _reshowPending;
 		private DateTime _lastClickTime;
+		private bool _collectionLoadPending;
 
 		public LibraryListView(LibraryModel model,  BookSelection bookSelection)
 		{
@@ -80,13 +81,16 @@ namespace Bloom.Library
 		{
 			base.OnLoad(e);
 
+			_collectionLoadPending = true;
 			Application.Idle += new EventHandler(LoadCollectionsAtIdleTime);
-
 		}
 
 		void LoadCollectionsAtIdleTime(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime);
+			if (!_collectionLoadPending)
+				return;
+			_collectionLoadPending = false;
+
 			_libraryFlow.Controls.Clear();
 
 			var collections = _model.GetBookCollections();
@@ -190,15 +194,7 @@ namespace Bloom.Library
 
 		private void OnCollectionChanged(object sender, EventArgs e)
 		{
-			Application.Idle += new EventHandler(LoadCollectionsAtIdleTime);
-//    		foreach (ListViewGroup group in _listView.Groups)
-//    		{
-//    			if(group.Tag == sender)
-//    			{
-//    				LoadOneCollection((BookCollection) sender, group);
-//    			    break;
-//    			}
-//    		}
+			_collectionLoadPending = true;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)
@@ -248,6 +244,14 @@ namespace Bloom.Library
 			get { return _bookSelection.CurrentSelection; }
 		}
 
+		private Button SelectedButton
+		{
+			get
+			{
+				return AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook);
+			}
+		}
+
 		/// <summary>
 		/// The image to show on the cover might have changed. Just make a note ot re-show it next time we're visible
 		/// </summary>
@@ -266,22 +270,16 @@ namespace Bloom.Library
 			if(Visible )
 			{
 				Book.Book book = SelectedBook;
-				if (book == null)
+				if (book == null || SelectedButton ==null)
 					return;
 
-				//we don't currently have a "reshow" flag for just updating the title
-				//update the label from the title
- //TODO
-//				var listItem = (from ListViewItem i in _listView.Items where i.Tag == book select i).FirstOrDefault();
-//                Debug.Assert(listItem!=null);
-//                if (listItem!=null)
-//                    listItem.Text = book.Title;
-//
-//                if (_reshowPending)
-//                {
-//                	_reshowPending = false;
-//                	RecreateOneThumbnail(book);
-//                }
+				SelectedButton.Text = book.Title;
+
+				if (_reshowPending)
+				{
+					_reshowPending = false;
+					RecreateOneThumbnail(book);
+				}
 			}
 		}
 
