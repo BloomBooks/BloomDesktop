@@ -149,7 +149,7 @@ namespace Bloom.Book
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent)
 		{
-			IsInEditableLibrary = projectIsEditable && storage.LooksOk;
+			IsInEditableLibrary = projectIsEditable;
 			Id = Guid.NewGuid().ToString();
 			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 
@@ -165,7 +165,7 @@ namespace Bloom.Book
 			_bookRefreshEvent = bookRefreshEvent;
 
 
-			if (IsInEditableLibrary)
+			if (IsInEditableLibrary && !HasFatalError)
 			{
 				UpdateFieldsAndVariables(RawDom);
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
@@ -532,7 +532,7 @@ namespace Bloom.Book
 
 		public bool CanPublish
 		{
-			get { return IsInEditableLibrary; }
+			get { return IsInEditableLibrary && !HasFatalError; }
 		}
 
 		/// <summary>
@@ -832,7 +832,7 @@ namespace Bloom.Book
 
 		public virtual bool CanUpdate
 		{
-			get { return IsInEditableLibrary; }
+			get { return IsInEditableLibrary && !HasFatalError; }
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
