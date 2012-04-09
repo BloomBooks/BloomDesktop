@@ -29,93 +29,29 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			this._tabControl = new System.Windows.Forms.TabControl();
-			this._libraryTabPage = new System.Windows.Forms.TabPage();
-			this._editTabPage = new System.Windows.Forms.TabPage();
-			this._publishTabPage = new System.Windows.Forms.TabPage();
-			this._infoTabPage = new System.Windows.Forms.TabPage();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._feedbackButton = new System.Windows.Forms.Button();
 			this._settingsButton = new System.Windows.Forms.Button();
 			this._infoButton = new System.Windows.Forms.Button();
 			this._openButton1 = new System.Windows.Forms.Button();
 			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
+			this._containerPanel = new System.Windows.Forms.Panel();
+			this._tabStrip = new Messir.Windows.Forms.TabStrip();
+			this._libraryTab = new Messir.Windows.Forms.TabStripButton();
+			this._editTab = new Messir.Windows.Forms.TabStripButton();
+			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this._infoTab = new Messir.Windows.Forms.TabStripButton();
 			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
-			this._tabControl.SuspendLayout();
+			this._tabStrip.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// _tabControl
-			// 
-			this._tabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._tabControl.Controls.Add(this._libraryTabPage);
-			this._tabControl.Controls.Add(this._editTabPage);
-			this._tabControl.Controls.Add(this._publishTabPage);
-			this._tabControl.Controls.Add(this._infoTabPage);
-			this._tabControl.ItemSize = new System.Drawing.Size(43, 40);
-			this._tabControl.Location = new System.Drawing.Point(0, 2);
-			this._tabControl.Margin = new System.Windows.Forms.Padding(0);
-			this._tabControl.Name = "_tabControl";
-			this._tabControl.Padding = new System.Drawing.Point(0, 0);
-			this._tabControl.SelectedIndex = 0;
-			this._tabControl.Size = new System.Drawing.Size(885, 538);
-			this._tabControl.TabIndex = 10;
-			this._tabControl.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
-			// 
-			// _libraryTabPage
-			// 
-			this._libraryTabPage.ImageIndex = 2;
-			this._libraryTabPage.Location = new System.Drawing.Point(4, 44);
-			this._libraryTabPage.Margin = new System.Windows.Forms.Padding(0);
-			this._libraryTabPage.Name = "_libraryTabPage";
-			this._libraryTabPage.Size = new System.Drawing.Size(877, 490);
-			this._libraryTabPage.TabIndex = 0;
-			this._libraryTabPage.Text = "Library";
-			this._libraryTabPage.ToolTipText = "View Library";
-			this._libraryTabPage.UseVisualStyleBackColor = true;
-			// 
-			// _editTabPage
-			// 
-			this._editTabPage.ImageIndex = 1;
-			this._editTabPage.Location = new System.Drawing.Point(4, 44);
-			this._editTabPage.Margin = new System.Windows.Forms.Padding(0);
-			this._editTabPage.Name = "_editTabPage";
-			this._editTabPage.Size = new System.Drawing.Size(877, 490);
-			this._editTabPage.TabIndex = 1;
-			this._editTabPage.Text = "Edit";
-			this._editTabPage.ToolTipText = "Edit Book";
-			this._editTabPage.UseVisualStyleBackColor = true;
-			// 
-			// _publishTabPage
-			// 
-			this._publishTabPage.ImageIndex = 0;
-			this._publishTabPage.Location = new System.Drawing.Point(4, 44);
-			this._publishTabPage.Name = "_publishTabPage";
-			this._publishTabPage.Padding = new System.Windows.Forms.Padding(3);
-			this._publishTabPage.Size = new System.Drawing.Size(877, 490);
-			this._publishTabPage.TabIndex = 2;
-			this._publishTabPage.Text = "Publish";
-			this._publishTabPage.ToolTipText = "Publish Book";
-			this._publishTabPage.UseVisualStyleBackColor = true;
-			// 
-			// _infoTabPage
-			// 
-			this._infoTabPage.Location = new System.Drawing.Point(4, 44);
-			this._infoTabPage.Name = "_infoTabPage";
-			this._infoTabPage.Padding = new System.Windows.Forms.Padding(3);
-			this._infoTabPage.Size = new System.Drawing.Size(877, 490);
-			this._infoTabPage.TabIndex = 3;
-			this._infoTabPage.Text = "Info";
-			this._infoTabPage.UseVisualStyleBackColor = true;
 			// 
 			// _feedbackButton
 			// 
 			this._feedbackButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._feedbackButton.BackColor = System.Drawing.Color.Transparent;
+			this._feedbackButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._feedbackButton.FlatAppearance.BorderSize = 0;
 			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._feedbackButton.ForeColor = System.Drawing.Color.White;
+			this._feedbackButton.ForeColor = System.Drawing.Color.Black;
 			this._feedbackButton.Image = global::Bloom.Properties.Resources.feedback24x24;
 			this._feedbackButton.Location = new System.Drawing.Point(536, 3);
 			this._feedbackButton.Name = "_feedbackButton";
@@ -130,10 +66,10 @@
 			// _settingsButton
 			// 
 			this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._settingsButton.BackColor = System.Drawing.Color.Transparent;
+			this._settingsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._settingsButton.FlatAppearance.BorderSize = 0;
 			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._settingsButton.ForeColor = System.Drawing.Color.White;
+			this._settingsButton.ForeColor = System.Drawing.Color.Black;
 			this._settingsButton.Image = global::Bloom.Properties.Resources.settings24x24;
 			this._settingsButton.Location = new System.Drawing.Point(435, 3);
 			this._settingsButton.Name = "_settingsButton";
@@ -148,10 +84,10 @@
 			// _infoButton
 			// 
 			this._infoButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._infoButton.BackColor = System.Drawing.Color.Transparent;
+			this._infoButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._infoButton.FlatAppearance.BorderSize = 0;
 			this._infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._infoButton.ForeColor = System.Drawing.Color.White;
+			this._infoButton.ForeColor = System.Drawing.Color.Black;
 			this._infoButton.Image = global::Bloom.Properties.Resources.help24x24;
 			this._infoButton.Location = new System.Drawing.Point(772, 3);
 			this._infoButton.Name = "_infoButton";
@@ -166,10 +102,10 @@
 			// _openButton1
 			// 
 			this._openButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._openButton1.BackColor = System.Drawing.Color.Transparent;
+			this._openButton1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._openButton1.FlatAppearance.BorderSize = 0;
 			this._openButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._openButton1.ForeColor = System.Drawing.Color.White;
+			this._openButton1.ForeColor = System.Drawing.Color.Black;
 			this._openButton1.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
 			this._openButton1.Location = new System.Drawing.Point(638, 3);
 			this._openButton1.Name = "_openButton1";
@@ -180,6 +116,105 @@
 			this.toolTip1.SetToolTip(this._openButton1, "Open or Create Another Library");
 			this._openButton1.UseVisualStyleBackColor = false;
 			this._openButton1.Click += new System.EventHandler(this._openButton1_Click);
+			// 
+			// _containerPanel
+			// 
+			this._containerPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._containerPanel.Location = new System.Drawing.Point(0, 74);
+			this._containerPanel.Name = "_containerPanel";
+			this._containerPanel.Size = new System.Drawing.Size(885, 463);
+			this._containerPanel.TabIndex = 16;
+			// 
+			// _tabStrip
+			// 
+			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._tabStrip.FlipButtons = false;
+			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._libraryTab,
+            this._editTab,
+            this._publishTab,
+            this._infoTab});
+			this._tabStrip.Location = new System.Drawing.Point(0, 0);
+			this._tabStrip.Name = "_tabStrip";
+			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.Custom;
+			this._tabStrip.SelectedTab = this._infoTab;
+			this._tabStrip.Size = new System.Drawing.Size(885, 71);
+			this._tabStrip.TabIndex = 15;
+			this._tabStrip.Text = "tabStrip1";
+			this._tabStrip.UseVisualStyles = false;
+			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
+			// 
+			// _libraryTab
+			// 
+			this._libraryTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._libraryTab.ForeColor = System.Drawing.Color.Black;
+			this._libraryTab.HotTextColor = System.Drawing.Color.Black;
+			this._libraryTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._libraryTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._libraryTab.IsSelected = false;
+			this._libraryTab.Margin = new System.Windows.Forms.Padding(0);
+			this._libraryTab.Name = "_libraryTabPage";
+			this._libraryTab.Padding = new System.Windows.Forms.Padding(0);
+			this._libraryTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._libraryTab.SelectedTextColor = System.Drawing.Color.White;
+			this._libraryTab.Size = new System.Drawing.Size(80, 71);
+			this._libraryTab.Text = "Library";
+			this._libraryTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
+			// _editTab
+			// 
+			this._editTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._editTab.ForeColor = System.Drawing.Color.Black;
+			this._editTab.HotTextColor = System.Drawing.Color.Black;
+			this._editTab.Image = global::Bloom.Properties.Resources.edit;
+			this._editTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._editTab.IsSelected = false;
+			this._editTab.Margin = new System.Windows.Forms.Padding(0);
+			this._editTab.Name = "_editTabPage";
+			this._editTab.Padding = new System.Windows.Forms.Padding(0);
+			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._editTab.SelectedTextColor = System.Drawing.Color.White;
+			this._editTab.Size = new System.Drawing.Size(69, 71);
+			this._editTab.Text = "Edit";
+			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
+			// _publishTab
+			// 
+			this._publishTab.ForeColor = System.Drawing.Color.Black;
+			this._publishTab.HotTextColor = System.Drawing.Color.Black;
+			this._publishTab.Image = global::Bloom.Properties.Resources.publish32x32;
+			this._publishTab.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._publishTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._publishTab.IsSelected = false;
+			this._publishTab.Margin = new System.Windows.Forms.Padding(0);
+			this._publishTab.Name = "_publishTabPage";
+			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
+			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._publishTab.SelectedTextColor = System.Drawing.Color.White;
+			this._publishTab.Size = new System.Drawing.Size(83, 71);
+			this._publishTab.Text = "Publish";
+			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
+			// _infoTab
+			// 
+			this._infoTab.Checked = true;
+			this._infoTab.ForeColor = System.Drawing.Color.Black;
+			this._infoTab.HotTextColor = System.Drawing.SystemColors.ControlText;
+			this._infoTab.Image = global::Bloom.Properties.Resources.helpTab32x32;
+			this._infoTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._infoTab.IsSelected = true;
+			this._infoTab.Margin = new System.Windows.Forms.Padding(0);
+			this._infoTab.Name = "_infoTabPage";
+			this._infoTab.Padding = new System.Windows.Forms.Padding(0);
+			this._infoTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._infoTab.SelectedTextColor = System.Drawing.Color.White;
+			this._infoTab.Size = new System.Drawing.Size(69, 71);
+			this._infoTab.Text = "Help";
+			this._infoTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+
 			// 
 			// toolStripButton1
 			// 
@@ -196,32 +231,36 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this._containerPanel);
 			this.Controls.Add(this._feedbackButton);
 			this.Controls.Add(this._settingsButton);
 			this.Controls.Add(this._infoButton);
 			this.Controls.Add(this._openButton1);
-			this.Controls.Add(this._tabControl);
+			this.Controls.Add(this._tabStrip);
 			this.Name = "WorkspaceView";
 			this.Size = new System.Drawing.Size(885, 540);
-			this._tabControl.ResumeLayout(false);
+			this._tabStrip.ResumeLayout(false);
+			this._tabStrip.PerformLayout();
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.TabControl _tabControl;
-        private System.Windows.Forms.TabPage _libraryTabPage;
-        private System.Windows.Forms.TabPage _editTabPage;
-        private System.Windows.Forms.TabPage _publishTabPage;
 		private System.Windows.Forms.ToolStripButton toolStripButton1;
-        private System.Windows.Forms.TabPage _infoTabPage;
 		private System.Windows.Forms.Button _settingsButton; 
 		private System.Windows.Forms.Button _infoButton;
         private System.Windows.Forms.Button _openButton1;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Button _feedbackButton;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper _settingsLauncherHelper;
+		private Messir.Windows.Forms.TabStrip _tabStrip;
+		private Messir.Windows.Forms.TabStripButton _libraryTab;
+		private Messir.Windows.Forms.TabStripButton _editTab;
+		private Messir.Windows.Forms.TabStripButton _publishTab;
+		private Messir.Windows.Forms.TabStripButton _infoTab;
+		private System.Windows.Forms.Panel _containerPanel;
 
 
     }

@@ -70,7 +70,7 @@
 			this._editBookButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._editBookButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
-			this._editBookButton.Location = new System.Drawing.Point(12, 51);
+			this._editBookButton.Location = new System.Drawing.Point(12, 3);
 			this._editBookButton.Name = "_editBookButton";
 			this._editBookButton.Size = new System.Drawing.Size(147, 42);
 			this._editBookButton.TabIndex = 2;

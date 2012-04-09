@@ -116,6 +116,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap helpTab32x32 {
+            get {
+                object obj = ResourceManager.GetObject("helpTab32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap info16x16 {
             get {
                 object obj = ResourceManager.GetObject("info16x16", resourceCulture);
@@ -189,6 +196,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap PagePlaceHolder {
             get {
                 object obj = ResourceManager.GetObject("PagePlaceHolder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap publish32x32 {
+            get {
+                object obj = ResourceManager.GetObject("publish32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

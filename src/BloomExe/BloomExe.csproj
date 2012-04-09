@@ -277,6 +277,10 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="StoreCollectionList.cs" />
+    <Compile Include="Workspace\TabStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
       <SubType>UserControl</SubType>
@@ -538,6 +542,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\help24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\publish32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\helpTab32x32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
