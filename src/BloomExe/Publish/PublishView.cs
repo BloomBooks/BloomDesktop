@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
@@ -21,6 +23,8 @@ namespace Bloom.Publish
 			try
 			{
 				InitializeComponent();
+				Controls.Remove(_saveButton);//our parent will retrieve this
+				Controls.Remove(_printButton);//our parent will retrieve this
 			}
 			catch (Exception error)
 			{
@@ -59,6 +63,17 @@ namespace Bloom.Publish
 			//TODO: find a way to call this just once, at the right time:
 
 			//			UsageReporter.SendNavigationNotice("Publish");
+
+
+		}
+
+		public IEnumerable<Control> TopBarButtons
+		{
+			get
+			{
+				yield return _saveButton;
+				yield return _printButton;
+			}
 		}
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
@@ -108,6 +123,7 @@ namespace Bloom.Publish
 						var path = _model.PdfFilePath;
 						_workingIndicator.Visible = false;
 						_adobeReader.Hide();
+						_adobeReader.BackColor = Color.FromArgb(64, 64, 64);
 
 						// can't handle non-ascii names _adobeReader.LoadFile(path);
 						_adobeReader.src = path;
@@ -153,7 +169,7 @@ namespace Bloom.Publish
 			_makePdfBackgroundWorker.RunWorkerAsync();
 		}
 
-		private void button1_Click(object sender, EventArgs e)
+		private void OnPrint_Click(object sender, EventArgs e)
 		{
 			_adobeReader.printAll();
 		}
@@ -164,7 +180,7 @@ namespace Bloom.Publish
 			_model.LoadBook(e);
 		}
 
-		private void _saveButton_Click(object sender, EventArgs e)
+		private void OnSave_Click(object sender, EventArgs e)
 		{
 			_model.Save();
 		}

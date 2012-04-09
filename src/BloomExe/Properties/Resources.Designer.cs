@@ -200,6 +200,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap print {
+            get {
+                object obj = ResourceManager.GetObject("print", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap publish32x32 {
             get {
                 object obj = ResourceManager.GetObject("publish32x32", resourceCulture);
@@ -245,6 +252,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap spinner {
             get {
                 object obj = ResourceManager.GetObject("spinner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Usb {
+            get {
+                object obj = ResourceManager.GetObject("Usb", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

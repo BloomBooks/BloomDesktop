@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.Library;
@@ -173,6 +174,13 @@ namespace Bloom.Workspace
 			view.Dock = DockStyle.Fill;
 			_containerPanel.Controls.Add(view);
 			_previouslySelectedControl = view;
+
+			_toolSpecificButtonsTable.Controls.Clear();
+			if (view is PublishView)
+			{
+				_toolSpecificButtonsTable.Controls.AddRange(_publishView.TopBarButtons.ToArray());
+			}
+
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
 											{
 												From = _previouslySelectedControl,
@@ -190,7 +198,7 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
 		{
-			_topButtonPanel.BackColor = _tabStrip.BackColor;
+			_toolSpecificButtonsTable.BackColor = _topBarButtonTable.BackColor = _tabStrip.BackColor;
 		}
 
 
