@@ -158,7 +158,9 @@ namespace Bloom
 						try
 						{
 							var docImage = browser.GetBitmap((uint) browser.Width, (uint) browser.Height);
-							//docImage.Save(@"c:\dev\temp\zzzz.bmp");
+#if DEBUG
+							docImage.Save(@"c:\dev\temp\zzzz.bmp");
+#endif
 							if (_disposed)
 								return;
 							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,

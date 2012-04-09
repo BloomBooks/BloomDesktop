@@ -57,8 +57,8 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(376, 72);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "This is an Alpha (developmental) version of Bloom. It should not be used for revi" +
-    "ew or training.  Please wait for a Beta version.";
+			this.label1.Text = "This is an Alpha (developmental) version of Bloom. It should not be used for evaluation " +
+    "or training.  Please wait for a Beta version.";
 			this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// _fadeOutTimer
