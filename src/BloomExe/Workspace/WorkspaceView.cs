@@ -80,10 +80,6 @@ namespace Bloom.Workspace
 			this._infoView = infoViewFactory();
 			this._infoView.Dock = System.Windows.Forms.DockStyle.Fill;
 
-			_libraryTab.Tag = this._tabStrip.Items.IndexOf(_libraryTab); //remember initial location
-			_publishTab.Tag = this._tabStrip.Items.IndexOf(_publishTab); //remember initial location
-			_infoTab.Tag = this._tabStrip.Items.IndexOf(_infoTab); //remember initial location
-
 			_libraryTab.Tag = _libraryView;
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
@@ -120,25 +116,6 @@ namespace Bloom.Workspace
 			//            Cursor = Cursors.Default;
 		}
 
-//		private void SetupTabIcons()
-//		{
-//			_tabStrip.ImageList = new ImageList();
-//			_tabStrip.ImageList.ColorDepth = ColorDepth.Depth24Bit;
-//			_tabStrip.ImageList.ImageSize = new Size(32, 32);
-//			_tabStrip.ImageList.Images.Add(
-//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library32x32.png")));
-//			_tabStrip.ImageList.Images.Add(
-//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit32x32.png")));
-//			_tabStrip.ImageList.Images.Add(
-//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish32x32.png")));
-//			_tabStrip.ImageList.Images.Add(
-//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "info.png")));
-//			_libraryTab.ImageIndex = 0;
-//			_libraryTab.ImageIndex = 1;
-//			_publishTab.ImageIndex = 2;
-//			_infoTab.ImageIndex = 3;
-//		}
-
 		private void OnUpdateDisplay(object sender, System.EventArgs e)
 		{
 			SetTabVisibility(_editTab, _model.ShowEditPage);
@@ -148,24 +125,9 @@ namespace Bloom.Workspace
 		private void SetTabVisibility(TabStripButton page, bool visible)
 		{
 			page.Visible = visible;
-//			if (!visible)
-//			{
-//				if (_tabStrip.Items.Contains(page))
-//				{
-//					_tabStrip.Items.Remove(page);
-//				}
-//			}
-//			else
-//			{
-//				if (!_tabStrip.Items.Contains(page))
-//				{
-//					//var index = _tabStrip.Items; //(int)page.Tag;
-//					_tabStrip.Items.Add(page);
-//				}
-//			}
 		}
 
-		private void _openButton1_Click(object sender, EventArgs e)
+		private void OnOpenCreateLibrary_Click(object sender, EventArgs e)
 		{
 			if (_model.CloseRequested())
 			{
@@ -173,24 +135,11 @@ namespace Bloom.Workspace
 			}
 		}
 
-		private void _infoButton_Click(object sender, EventArgs e)
+		private void OnInfoButton_Click(object sender, EventArgs e)
 		{
 			SetTabVisibility(_infoTab, true);
 			_tabStrip.SelectedTab = _infoTab;
 		}
-
-//		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
-//		{
-//			if (_tabStrip.SelectedTab != _infoTab)
-//				SetTabVisibility(_infoTab, false); //we always hide this after it is used
-//
-//			_selectedTabChangedEvent.Raise(new TabChangedDetails()
-//			                               	{
-//			                               		From = _previouslySelectedControl,
-//			                               		To = (Control) _tabStrip.SelectedTab.Controls[0]
-//			                               	});
-//			_previouslySelectedControl = (Control) _tabStrip.SelectedTab.Controls[0];
-//		}
 
 		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
@@ -216,6 +165,8 @@ namespace Bloom.Workspace
 		{
 			SetTabVisibility(_infoTab, false); //we always hide this after it is used
 
+
+
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
 
@@ -228,30 +179,20 @@ namespace Bloom.Workspace
 												To = view
 											});
 		}
-//
-//		private void _libraryTabPage_Click(object sender, EventArgs e)
-//		{
-//			SelectPage(_libraryView);
-//		}
-//
-//		private void _editTabPage_Click(object sender, EventArgs e)
-//		{
-//			SelectPage(_editingView);
-//		}
-//
-//		private void _publishTabPage_Click(object sender, EventArgs e)
-//		{
-//			SelectPage(_publishView);
-//		}
-//
-//		private void _infoTabPage_Click(object sender, EventArgs e)
-//		{
-//			SelectPage(_infoView);
-//		}
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
+			TabStripButton btn = (TabStripButton)e.SelectedTab;
+			_tabStrip.BackColor = btn.BarColor;
+
 			SelectPage((Control) e.SelectedTab.Tag);
 		}
+
+		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
+		{
+			_topButtonPanel.BackColor = _tabStrip.BackColor;
+		}
+
+
 	}
 }

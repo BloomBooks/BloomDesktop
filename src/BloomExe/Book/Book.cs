@@ -135,7 +135,7 @@ namespace Bloom.Book
 //		}
 
 		static private int _coverColorIndex = 0;
-		private  Color[] kCoverColors= new Color[]{Color.LightCoral, Color.LightBlue, Color.LightGreen};
+		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(15,173,197), Color.FromArgb(152,208,185), Color.FromArgb(194,166,191)};
 		private IProgress _log= new StringBuilderProgress();
 
 		//for moq'ing only

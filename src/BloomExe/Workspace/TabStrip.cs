@@ -307,6 +307,10 @@ namespace Messir.Windows.Forms
 		private Color m_HotTextColor = Control.DefaultForeColor;
 
 		[Category("Appearance")]
+		[Description("Top bar color when this tab is checked")]
+		public Color BarColor { get; set; }
+
+		[Category("Appearance")]
 		[Description("Text color when TabButton is highlighted")]
 		public Color HotTextColor
 		{
