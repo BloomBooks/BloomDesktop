@@ -13,18 +13,21 @@ namespace Bloom.Library
 		private readonly BookSelection _bookSelection;
 		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
 		private readonly EditBookCommand _editBookCommand;
+		private readonly LibrarySettings _librarySettings;
 		private bool _reshowPending = false;
 
 		public delegate LibraryBookView Factory();//autofac uses this
 
 		public LibraryBookView(BookSelection bookSelection,
 			CreateFromTemplateCommand createFromTemplateCommand,
-			EditBookCommand editBookCommand)
+			EditBookCommand editBookCommand,
+			LibrarySettings librarySettings)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
 			_createFromTemplateCommand = createFromTemplateCommand;
 			_editBookCommand = editBookCommand;
+			_librarySettings = librarySettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
 			_addToLibraryButton_MouseLeave(this, null);
@@ -104,7 +107,7 @@ namespace Bloom.Library
 
 		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
 		{
-			_addToLibraryButton.Text = "Add this book to my library";
+			_addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularLibraryNamePhrase);
 			_addToLibraryButton.Width = 250;
 		}
 

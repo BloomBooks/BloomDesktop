@@ -100,7 +100,7 @@ namespace Bloom.Library
 			var invisibleHackPartner = new Label() { Text = "", Width = 0 };
 			_libraryFlow.Controls.Add(invisibleHackPartner);
 			var libraryHeader = new ListHeader() {ForeColor = Color.White};
-			libraryHeader.Label.Text = string.Format("{0} Books", _model.LanguageName);
+			libraryHeader.Label.Text = _model.VernacularLibraryNamePhrase;
 			_libraryFlow.Controls.Add(libraryHeader);
 			_libraryFlow.SetFlowBreak(libraryHeader, true);
 			LoadOneCollection(library, _libraryFlow);

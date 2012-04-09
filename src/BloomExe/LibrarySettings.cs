@@ -191,6 +191,11 @@ namespace Bloom
 		virtual public string Province { get; set; }
 		virtual public string District { get; set; }
 
+		public string VernacularLibraryNamePhrase
+		{
+			get {return string.Format("{0} Books", VernacularLanguageName); }
+		}
+
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
 		{

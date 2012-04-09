@@ -71,6 +71,11 @@ namespace Bloom.Library
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
 
+		public string VernacularLibraryNamePhrase
+		{
+			get { return _librarySettings.VernacularLibraryNamePhrase; }
+		}
+
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
