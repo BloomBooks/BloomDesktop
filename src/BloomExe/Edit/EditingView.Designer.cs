@@ -59,6 +59,7 @@
 			// 
 			// _splitContainer1
 			// 
+			this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
 			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
@@ -93,7 +94,7 @@
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
 			this._splitContainer2.Size = new System.Drawing.Size(920, 738);
-			this._splitContainer2.SplitterDistance = 754;
+			this._splitContainer2.SplitterDistance = 753;
 			this._splitContainer2.SplitterWidth = 1;
 			this._splitContainer2.TabIndex = 0;
 			// 
@@ -113,7 +114,7 @@
             this._pageSizeAndOrientationChoices});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(754, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(753, 25);
 			this.toolStrip1.TabIndex = 2;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -149,6 +150,8 @@
 			// 
 			// toolStripSeparator1
 			// 
+			this.toolStripSeparator1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this.toolStripSeparator1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
 			this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
 			// 
@@ -208,14 +211,14 @@
 			this._browser1.Location = new System.Drawing.Point(0, 31);
 			this._browser1.Margin = new System.Windows.Forms.Padding(5);
 			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(754, 711);
+			this._browser1.Size = new System.Drawing.Size(753, 711);
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
 			// 
 			// _splitTemplateAndSource
 			// 
-			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
 			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
@@ -229,7 +232,7 @@
 			// _splitTemplateAndSource.Panel2
 			// 
 			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(165, 738);
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(166, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
 			this._splitTemplateAndSource.SplitterWidth = 5;
 			this._splitTemplateAndSource.TabIndex = 0;
