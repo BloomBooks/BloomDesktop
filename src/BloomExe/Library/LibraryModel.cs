@@ -16,17 +16,21 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
+		private readonly LibrarySettings _librarySettings;
 		private readonly StoreCollectionList _storeCollectionList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
+		private List<BookCollection> _bookCollections;
 
-		public LibraryModel(string pathToLibrary, BookSelection bookSelection,
+		public LibraryModel(string pathToLibrary, LibrarySettings librarySettings,
+			BookSelection bookSelection,
 			StoreCollectionList storeCollectionList,
 			BookCollection.Factory bookCollectionFactory,
 			EditBookCommand editBookCommand)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
+			_librarySettings = librarySettings;
 			_storeCollectionList = storeCollectionList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -42,7 +46,32 @@ namespace Bloom.Library
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanUpdate; }
 
 		}
-		public IEnumerable<BookCollection> GetBookCollections()
+
+		public string LanguageName
+		{
+			get { return _librarySettings.VernacularLanguageName; }
+		}
+
+		public List<BookCollection> GetBookCollections()
+		{
+			if(_bookCollections ==null)
+			{
+				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+
+				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+				var templates = _bookCollections.First(c => c.Name.ToLower() == "templates");
+				_bookCollections.Remove(templates);
+				_bookCollections.Insert(1,templates);
+			}
+			return _bookCollections;
+		}
+
+		private BookCollection TheOneEditableCollection
+		{
+			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
+		}
+
+		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 
@@ -56,7 +85,7 @@ namespace Bloom.Library
 			 _bookSelection.SelectBook(book);
 		}
 
-		public void DeleteBook(Book.Book book, BookCollection collection)
+		public void DeleteBook(Book.Book book)//, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
 
@@ -64,7 +93,7 @@ namespace Bloom.Library
 			{
 				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",_bookSelection.CurrentSelection.Title )))
 				{
-					collection.DeleteBook(book);
+					TheOneEditableCollection.DeleteBook(book);
 					_bookSelection.SelectBook(null);
 				}
 			}

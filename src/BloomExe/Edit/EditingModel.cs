@@ -197,9 +197,15 @@ namespace Bloom.Edit
 					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_librarySettings.NationalLanguage1Iso639Code;
 
 
-				_contentLanguages.Where(l => l.Iso639Code == _librarySettings.NationalLanguage2Iso639Code).First().Selected =
+				var contentLanguageMatchingNatLan2 =
+					_contentLanguages.Where(l => l.Iso639Code == _librarySettings.NationalLanguage2Iso639Code).FirstOrDefault();
+
+				if(contentLanguageMatchingNatLan2!=null)
+				{
+					contentLanguageMatchingNatLan2.Selected =
 					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_librarySettings.NationalLanguage2Iso639Code
 					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _librarySettings.NationalLanguage2Iso639Code;
+				}
 
 
 				return _contentLanguages;

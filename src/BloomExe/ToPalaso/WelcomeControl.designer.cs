@@ -47,8 +47,8 @@ namespace Bloom.ToPalaso
 			this._imageList.Images.SetKeyName(0, "getFromUsb");
 			this._imageList.Images.SetKeyName(1, "wesayProject");
 			this._imageList.Images.SetKeyName(2, "getFromInternet");
-			this._imageList.Images.SetKeyName(3, "newLibrary");
-			this._imageList.Images.SetKeyName(4, "browse");
+			this._imageList.Images.SetKeyName(3, "browse");
+			this._imageList.Images.SetKeyName(4, "newLibrary");
 			//
 			// toolTip1
 			//
@@ -102,6 +102,7 @@ namespace Bloom.ToPalaso
 			this._templateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._templateButton.UseVisualStyleBackColor = true;
 			this._templateButton.Visible = false;
+			this._templateButton.Click += new System.EventHandler(this._templateButton_Click);
 			//
 			// WelcomeControl
 			//

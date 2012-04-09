@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 
@@ -67,9 +68,12 @@ namespace Bloom.Library
 			if (_bookSelection.CurrentSelection == null)
 			{
 				_browser.Navigate("about:blank", false);
+				_browser.Visible = false;
+				BackColor = Color.FromArgb(64,64,64);
 			}
 			else
 			{
+				_browser.Visible = true;
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				_editBookButton.Visible = _bookSelection.CurrentSelection.IsInEditableLibrary && !_bookSelection.CurrentSelection.HasFatalError;

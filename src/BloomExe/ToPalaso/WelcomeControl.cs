@@ -288,6 +288,11 @@ namespace Bloom.ToPalaso
 			return string.Format(fmt, ver.Major, ver.Minor,
 				ver.Revision, bldDate.ToString("dd-MMM-yyyy"));
 		}
+
+		private void _templateButton_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 
 
