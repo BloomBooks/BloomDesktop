@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Publish;
+using Messir.Windows.Forms;
 using Palaso.IO;
 
 namespace Bloom.Workspace
@@ -52,60 +53,64 @@ namespace Bloom.Workspace
 			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
 
-			SetupTabIcons();
+			//SetupTabIcons();
 
 			//
 			// _libraryView
 			//
 			this._libraryView = libraryView;
 			this._libraryView.Dock = System.Windows.Forms.DockStyle.Fill;
-			_libraryTabPage.Controls.Add(_libraryView);
 
 			//
 			// _editingView
 			//
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = System.Windows.Forms.DockStyle.Fill;
-			_editTabPage.Controls.Add(_editingView);
+
 			//
 			// _pdfView
 			//
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
-			_publishTabPage.Controls.Add(_publishView);
+
 
 			//
 			// info view
 			//
 			this._infoView = infoViewFactory();
 			this._infoView.Dock = System.Windows.Forms.DockStyle.Fill;
-			_infoTabPage.Controls.Add(_infoView);
 
-			_editTabPage.Tag = this._tabControl.TabPages.IndexOf(_editTabPage); //remember initial location
-			_publishTabPage.Tag = this._tabControl.TabPages.IndexOf(_publishTabPage); //remember initial location
-			_infoTabPage.Tag = this._tabControl.TabPages.IndexOf(_infoTabPage); //remember initial location
+			_libraryTab.Tag = this._tabStrip.Items.IndexOf(_libraryTab); //remember initial location
+			_publishTab.Tag = this._tabStrip.Items.IndexOf(_publishTab); //remember initial location
+			_infoTab.Tag = this._tabStrip.Items.IndexOf(_infoTab); //remember initial location
 
-			//NB: don't optimize this without testing... it's something of a hack to get it to display correctly
+			_libraryTab.Tag = _libraryView;
+			_publishTab.Tag = _publishView;
+			_editTab.Tag = _editingView;
+			_infoTab.Tag = _infoView;
+
 			if (!Program.StartUpWithFirstOrNewVersionBehavior)
-				SetTabVisibility(_infoTabPage, false);
-			SetTabVisibility(_publishTabPage, false);
-			SetTabVisibility(_editTabPage, false);
-
-			this._libraryTabPage.Controls.Add(_libraryView);
-			this._editTabPage.Controls.Add(this._editingView);
-			this._publishTabPage.Controls.Add(this._publishView);
-			this._infoTabPage.Controls.Add(this._infoView);
+				SetTabVisibility(_infoTab, false);
+			SetTabVisibility(_publishTab, false);
+			SetTabVisibility(_editTab, false);
 
 			if (Program.StartUpWithFirstOrNewVersionBehavior)
 			{
-				_tabControl.SelectedTab = _infoTabPage;
+				_tabStrip.SelectedTab = _infoTab;
+				SelectPage(_infoView);
 			}
+			else
+			{
+				_tabStrip.SelectedTab = _libraryTab;
+				SelectPage(_libraryView);
+			}
+
 		}
 
 
 		private void OnEditBook(Book.Book book)
 		{
-			_tabControl.SelectedTab = _editTabPage;
+			_tabStrip.SelectedTab = _editTab;
 		}
 
 		private void Application_Idle(object sender, EventArgs e)
@@ -115,48 +120,49 @@ namespace Bloom.Workspace
 			//            Cursor = Cursors.Default;
 		}
 
-		private void SetupTabIcons()
-		{
-			_tabControl.ImageList = new ImageList();
-			_tabControl.ImageList.ColorDepth = ColorDepth.Depth24Bit;
-			_tabControl.ImageList.ImageSize = new Size(32, 32);
-			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library32x32.png")));
-			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit32x32.png")));
-			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish32x32.png")));
-			_tabControl.ImageList.Images.Add(
-				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "info.png")));
-			_libraryTabPage.ImageIndex = 0;
-			_editTabPage.ImageIndex = 1;
-			_publishTabPage.ImageIndex = 2;
-			_infoTabPage.ImageIndex = 3;
-		}
+//		private void SetupTabIcons()
+//		{
+//			_tabStrip.ImageList = new ImageList();
+//			_tabStrip.ImageList.ColorDepth = ColorDepth.Depth24Bit;
+//			_tabStrip.ImageList.ImageSize = new Size(32, 32);
+//			_tabStrip.ImageList.Images.Add(
+//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "library32x32.png")));
+//			_tabStrip.ImageList.Images.Add(
+//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "edit32x32.png")));
+//			_tabStrip.ImageList.Images.Add(
+//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "publish32x32.png")));
+//			_tabStrip.ImageList.Images.Add(
+//				Image.FromFile(FileLocator.GetFileDistributedWithApplication("Images", "info.png")));
+//			_libraryTab.ImageIndex = 0;
+//			_libraryTab.ImageIndex = 1;
+//			_publishTab.ImageIndex = 2;
+//			_infoTab.ImageIndex = 3;
+//		}
 
 		private void OnUpdateDisplay(object sender, System.EventArgs e)
 		{
-			SetTabVisibility(_editTabPage, _model.ShowEditPage);
-			SetTabVisibility(_publishTabPage, _model.ShowPublishPage);
+			SetTabVisibility(_editTab, _model.ShowEditPage);
+			SetTabVisibility(_publishTab, _model.ShowPublishPage);
 		}
 
-		private void SetTabVisibility(TabPage page, bool visible)
+		private void SetTabVisibility(TabStripButton page, bool visible)
 		{
-			if (!visible)
-			{
-				if (_tabControl.TabPages.Contains(page))
-				{
-					_tabControl.TabPages.Remove(page);
-				}
-			}
-			else
-			{
-				if (!_tabControl.TabPages.Contains(page))
-				{
-					var index = _tabControl.TabCount; //(int)page.Tag;
-					_tabControl.TabPages.Insert(index, page);
-				}
-			}
+			page.Visible = visible;
+//			if (!visible)
+//			{
+//				if (_tabStrip.Items.Contains(page))
+//				{
+//					_tabStrip.Items.Remove(page);
+//				}
+//			}
+//			else
+//			{
+//				if (!_tabStrip.Items.Contains(page))
+//				{
+//					//var index = _tabStrip.Items; //(int)page.Tag;
+//					_tabStrip.Items.Add(page);
+//				}
+//			}
 		}
 
 		private void _openButton1_Click(object sender, EventArgs e)
@@ -169,22 +175,22 @@ namespace Bloom.Workspace
 
 		private void _infoButton_Click(object sender, EventArgs e)
 		{
-			SetTabVisibility(_infoTabPage, true);
-			_tabControl.SelectedTab = _infoTabPage;
+			SetTabVisibility(_infoTab, true);
+			_tabStrip.SelectedTab = _infoTab;
 		}
 
-		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_tabControl.SelectedTab != _infoTabPage)
-				SetTabVisibility(_infoTabPage, false); //we always hide this after it is used
-
-			_selectedTabChangedEvent.Raise(new TabChangedDetails()
-											{
-												From = _previouslySelectedControl,
-												To = (Control) _tabControl.SelectedTab.Controls[0]
-											});
-			_previouslySelectedControl = (Control) _tabControl.SelectedTab.Controls[0];
-		}
+//		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+//		{
+//			if (_tabStrip.SelectedTab != _infoTab)
+//				SetTabVisibility(_infoTab, false); //we always hide this after it is used
+//
+//			_selectedTabChangedEvent.Raise(new TabChangedDetails()
+//			                               	{
+//			                               		From = _previouslySelectedControl,
+//			                               		To = (Control) _tabStrip.SelectedTab.Controls[0]
+//			                               	});
+//			_previouslySelectedControl = (Control) _tabStrip.SelectedTab.Controls[0];
+//		}
 
 		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
@@ -203,6 +209,49 @@ namespace Bloom.Workspace
 			{
 				x.Show();
 			}
+		}
+
+
+		private void SelectPage(Control view)
+		{
+			SetTabVisibility(_infoTab, false); //we always hide this after it is used
+
+			if(_previouslySelectedControl !=null)
+				_containerPanel.Controls.Remove(_previouslySelectedControl);
+
+			view.Dock = DockStyle.Fill;
+			_containerPanel.Controls.Add(view);
+			_previouslySelectedControl = view;
+			_selectedTabChangedEvent.Raise(new TabChangedDetails()
+											{
+												From = _previouslySelectedControl,
+												To = view
+											});
+		}
+//
+//		private void _libraryTabPage_Click(object sender, EventArgs e)
+//		{
+//			SelectPage(_libraryView);
+//		}
+//
+//		private void _editTabPage_Click(object sender, EventArgs e)
+//		{
+//			SelectPage(_editingView);
+//		}
+//
+//		private void _publishTabPage_Click(object sender, EventArgs e)
+//		{
+//			SelectPage(_publishView);
+//		}
+//
+//		private void _infoTabPage_Click(object sender, EventArgs e)
+//		{
+//			SelectPage(_infoView);
+//		}
+
+		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
+		{
+			SelectPage((Control) e.SelectedTab.Tag);
 		}
 	}
 }
