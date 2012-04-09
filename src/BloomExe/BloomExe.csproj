@@ -555,6 +555,15 @@
   <ItemGroup>
     <None Include="Resources\print.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\coverOnly.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\insideBookletPages.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\simplePages.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)

@@ -74,6 +74,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap coverOnly {
+            get {
+                object obj = ResourceManager.GetObject("coverOnly", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap DeleteMessageBoxButtonImage {
             get {
                 object obj = ResourceManager.GetObject("DeleteMessageBoxButtonImage", resourceCulture);
@@ -126,6 +133,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap info16x16 {
             get {
                 object obj = ResourceManager.GetObject("info16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap insideBookletPages {
+            get {
+                object obj = ResourceManager.GetObject("insideBookletPages", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -245,6 +259,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap settings32x32 {
             get {
                 object obj = ResourceManager.GetObject("settings32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap simplePages {
+            get {
+                object obj = ResourceManager.GetObject("simplePages", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

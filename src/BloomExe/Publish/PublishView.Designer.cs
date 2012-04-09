@@ -35,9 +35,9 @@
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-			this._noBookletRadio = new System.Windows.Forms.RadioButton();
-			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
+			this._coverRadio = new System.Windows.Forms.RadioButton();
+			this._noBookletRadio = new System.Windows.Forms.RadioButton();
 			this._saveButton = new System.Windows.Forms.Button();
 			this._printButton = new System.Windows.Forms.Button();
 			this._workingIndicatorGif = new System.Windows.Forms.PictureBox();
@@ -97,38 +97,44 @@
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(100, 540);
 			this.tableLayoutPanel1.TabIndex = 10;
 			// 
-			// _noBookletRadio
-			// 
-			this._noBookletRadio.AutoSize = true;
-			this._noBookletRadio.Location = new System.Drawing.Point(3, 3);
-			this._noBookletRadio.Name = "_noBookletRadio";
-			this._noBookletRadio.Size = new System.Drawing.Size(94, 17);
-			this._noBookletRadio.TabIndex = 3;
-			this._noBookletRadio.TabStop = true;
-			this._noBookletRadio.Text = "One page per piece of paper";
-			this._noBookletRadio.UseVisualStyleBackColor = true;
-			// 
-			// _coverRadio
-			// 
-			this._coverRadio.AutoSize = true;
-			this._coverRadio.Location = new System.Drawing.Point(3, 26);
-			this._coverRadio.Name = "_coverRadio";
-			this._coverRadio.Size = new System.Drawing.Size(94, 17);
-			this._coverRadio.TabIndex = 4;
-			this._coverRadio.TabStop = true;
-			this._coverRadio.Text = "Booklet Cover Page";
-			this._coverRadio.UseVisualStyleBackColor = true;
-			// 
 			// _bodyRadio
 			// 
-			this._bodyRadio.AutoSize = true;
-			this._bodyRadio.Location = new System.Drawing.Point(3, 49);
+			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
+			this._bodyRadio.Location = new System.Drawing.Point(3, 233);
 			this._bodyRadio.Name = "_bodyRadio";
-			this._bodyRadio.Size = new System.Drawing.Size(94, 17);
+			this._bodyRadio.Size = new System.Drawing.Size(94, 104);
 			this._bodyRadio.TabIndex = 5;
 			this._bodyRadio.TabStop = true;
 			this._bodyRadio.Text = "Booklet Inside Pages";
+			this._bodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bodyRadio.UseVisualStyleBackColor = true;
+			this._bodyRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
+			// 
+			// _coverRadio
+			// 
+			this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
+			this._coverRadio.Location = new System.Drawing.Point(3, 116);
+			this._coverRadio.Name = "_coverRadio";
+			this._coverRadio.Size = new System.Drawing.Size(94, 111);
+			this._coverRadio.TabIndex = 4;
+			this._coverRadio.TabStop = true;
+			this._coverRadio.Text = "Booklet Cover Page";
+			this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._coverRadio.UseVisualStyleBackColor = true;
+			this._coverRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
+			// 
+			// _noBookletRadio
+			// 
+			this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
+			this._noBookletRadio.Location = new System.Drawing.Point(3, 3);
+			this._noBookletRadio.Name = "_noBookletRadio";
+			this._noBookletRadio.Size = new System.Drawing.Size(94, 107);
+			this._noBookletRadio.TabIndex = 3;
+			this._noBookletRadio.TabStop = true;
+			this._noBookletRadio.Text = "One page per piece of paper";
+			this._noBookletRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._noBookletRadio.UseVisualStyleBackColor = true;
+			this._noBookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
 			// 
 			// _saveButton
 			// 
@@ -141,9 +147,9 @@
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
 			this._saveButton.Location = new System.Drawing.Point(240, 21);
 			this._saveButton.Name = "_saveButton";
-			this._saveButton.Size = new System.Drawing.Size(104, 71);
+			this._saveButton.Size = new System.Drawing.Size(185, 71);
 			this._saveButton.TabIndex = 13;
-			this._saveButton.Text = "&Save...";
+			this._saveButton.Text = "&Save Acrobat PDF...";
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
 			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
@@ -190,7 +196,6 @@
 			this._workingIndicator.ResumeLayout(false);
 			this._workingIndicator.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
-			this.tableLayoutPanel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).EndInit();
 			this.ResumeLayout(false);
 

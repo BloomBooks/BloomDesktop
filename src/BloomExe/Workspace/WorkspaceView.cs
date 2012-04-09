@@ -201,6 +201,11 @@ namespace Bloom.Workspace
 			_toolSpecificButtonsTable.BackColor = _topBarButtonTable.BackColor = _tabStrip.BackColor;
 		}
 
+		private void _infoButton_Enter(object sender, EventArgs e)
+		{
+
+		}
+
 
 	}
 }
