@@ -16,9 +16,9 @@
    version="1.1"
    inkscape:version="0.48.0 r9654"
    sodipodi:docname="tab icons.svg"
-   inkscape:export-filename="C:\dev\Bloom\artwork\print.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-filename="C:\dev\Bloom\src\BloomExe\Resources\print.png"
+   inkscape:export-xdpi="135"
+   inkscape:export-ydpi="135">
   <defs
      id="defs3761"><linearGradient
    id="linearGradient7175">
@@ -1021,7 +1021,7 @@
      id="stop2584" />
 </linearGradient>
 <linearGradient
-   gradientTransform="matrix(0.08365823,0,0,0.08365823,-1451.1592,297.19414)"
+   gradientTransform="matrix(0.08365823,0,0,0.08365823,-1491.463,169.97679)"
    gradientUnits="userSpaceOnUse"
    xlink:href="#linearGradient2580-4"
    id="linearGradient2649-1"
@@ -1077,8 +1077,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="5.6000001"
-     inkscape:cx="-26.366835"
-     inkscape:cy="-17.188828"
+     inkscape:cx="-80.409039"
+     inkscape:cy="-30.14399"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1978,11 +1978,11 @@
     </g>
     <g
        transform="matrix(0.12893902,-0.01009122,0.00116534,0.17721833,-36.874663,1095.3815)"
-       style="fill:#a03c50;fill-opacity:1;stroke:#31425a;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       style="fill:#a03c50;fill-opacity:1;stroke:#000000;stroke-width:5.00042629000000010;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
        id="g3716"
        inkscape:label="Cover">
       <path
-         style="fill:#a03c50;fill-opacity:1;stroke:#31425a;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#a03c50;fill-opacity:1;stroke:#000000;stroke-width:5.00042629000000010;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
          id="path3718"
          sodipodi:nodetypes="ccccccc"
@@ -1991,21 +1991,15 @@
          sodipodi:nodetypes="ccccccc"
          id="path3720"
          d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
-         style="fill:#0c8597;fill-opacity:1;stroke:#054149;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#0c8597;fill-opacity:1;stroke:#000000;stroke-width:5.00042629000000010;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          inkscape:connector-curvature="0" />
     </g>
-    <path
-       inkscape:connector-curvature="0"
-       style="fill:#eeeeec;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m -31.868705,1099.3173 18.498325,0.013 c 0.984862,0 1.785232,1.175 1.794556,2.633 l 0.193931,30.327 c 0.0093,1.4579 -0.776034,2.6312 -1.760896,2.6304 l -18.498325,-0.013 -0.227586,-35.5905 z"
-       id="path3726"
-       sodipodi:nodetypes="ccccccc" />
     <path
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccccc"
        id="path3734"
        d="m -31.876583,1099.5253 17.269061,2.1865 c 0.919411,0.1164 1.667306,1.3842 1.676895,2.8425 l 0.199467,30.3334 c 0.0096,1.4582 -0.722867,2.5386 -1.642279,2.4221 l -17.269061,-2.1865 -0.234083,-35.598 z"
-       style="fill:#0c8597;fill-opacity:1;stroke:#054149;stroke-width:1.13411355;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:#0c8597;fill-opacity:1;stroke:#000000;stroke-width:1.13411354999999990;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
     <g
        inkscape:label="Cover"
        id="g3716-4-3-0-1-5"
@@ -2933,7 +2927,7 @@
       </g>
     </g>
     <g
-       transform="matrix(0.6513038,0,0,0.6513038,0.34078974,1020.3041)"
+       transform="matrix(0.6513038,0,0,0.6513038,26.590789,1103.1612)"
        id="layer1-5-5"
        inkscape:export-filename="C:\dev\Bloom\artwork\Usb.png"
        inkscape:export-xdpi="90"
@@ -3062,7 +3056,7 @@
     </g>
     <g
        id="g5990-4"
-       transform="matrix(0.8441025,0,0,0.8441025,680.09806,39.028931)">
+       transform="matrix(0.8441025,0,0,0.8441025,457.77664,102.60036)">
       <path
          style="fill:#0c8597;fill-opacity:1;stroke:#000000;stroke-width:1.18469012;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:none"
          d="m -818.17938,1241.3604 c 0.93654,-0.071 3.04374,3.0031 3.01774,4.172 -0.0276,1.2409 0.007,11.0823 0,12.013 -0.007,0.9219 -0.30553,0.9725 -0.8715,1.5108 -0.56597,0.5384 -34.01093,0.5418 -34.61291,0 -0.60197,-0.5419 -0.92315,-0.3556 -0.93655,-1.295 -0.0149,-1.0411 -0.007,-10.8386 0,-12.2288 0.007,-1.3894 2.12915,-4.3412 3.12181,-4.3161 0.95586,0.026 29.34632,0.2159 30.28141,0.1441 z"
@@ -3088,5 +3082,65 @@
          sodipodi:nodetypes="cccc"
          inkscape:connector-curvature="0" />
     </g>
+    <g
+       transform="matrix(0.12893902,-0.01009122,0.00116534,0.17721833,-204.18117,1094.9499)"
+       style="fill:#a03c50;fill-opacity:1;stroke:#31425a;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="g3716-7"
+       inkscape:label="Cover">
+      <path
+         style="fill:#a03c50;fill-opacity:1;stroke:#31425a;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+         id="path3718-0"
+         sodipodi:nodetypes="ccccccc"
+         inkscape:connector-curvature="0" />
+      <path
+         sodipodi:nodetypes="ccccccc"
+         id="path3720-5"
+         d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+         style="fill:#0c8597;fill-opacity:1;stroke:#054149;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         inkscape:connector-curvature="0" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#eeeeec;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m -199.17521,1098.8857 18.49832,0.013 c 0.98486,0 1.78523,1.175 1.79456,2.633 l 0.19393,30.327 c 0.009,1.4579 -0.77603,2.6312 -1.7609,2.6304 l -18.49832,-0.013 -0.22759,-35.5905 z"
+       id="path3726-8"
+       sodipodi:nodetypes="ccccccc" />
+    <path
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       id="path3734-1"
+       d="m -199.18309,1099.0937 17.26906,2.1865 c 0.91941,0.1164 1.66731,1.3842 1.6769,2.8425 l 0.19946,30.3334 c 0.01,1.4582 -0.72286,2.5386 -1.64228,2.4221 l -17.26906,-2.1865 -0.23408,-35.598 z"
+       style="fill:#0c8597;fill-opacity:1;stroke:#054149;stroke-width:1.13411355;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <g
+       transform="matrix(0.12893902,-0.01009122,0.00116534,0.17721833,-106.32344,1104.5119)"
+       style="fill:#a03c50;fill-opacity:1;stroke:#000000;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="g3716-4"
+       inkscape:label="Cover"
+       inkscape:export-filename="C:\dev\Bloom\artwork\coverOnly.png"
+       inkscape:export-xdpi="135"
+       inkscape:export-ydpi="135">
+      <path
+         style="fill:#a03c50;fill-opacity:1;stroke:#000000;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+         id="path3718-6"
+         sodipodi:nodetypes="ccccccc"
+         inkscape:connector-curvature="0" />
+      <path
+         sodipodi:nodetypes="ccccccc"
+         id="path3720-0"
+         d="m 36.696307,25.038562 154.511333,0 c 8.22626,0 14.84884,6.622581 14.84884,14.848836 l 0,171.109382 c 0,8.22628 -6.62258,14.84884 -14.84884,14.84884 l -154.511333,0 0,-200.807058 z"
+         style="fill:#0c8597;fill-opacity:1;stroke:#000000;stroke-width:5.00042629;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         inkscape:connector-curvature="0" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       id="path3734-8"
+       d="m -101.32536,1108.6557 13.564464,2.1865 c 0.722176,0.1164 1.309631,1.3842 1.317163,2.8425 l 0.156677,30.3334 c 0.0075,1.4582 -0.567796,2.5386 -1.289974,2.4221 l -13.56446,-2.1865 -0.18387,-35.598 z"
+       style="fill:#0fa8bf;fill-opacity:1;stroke:#000000;stroke-width:1.13411355;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       inkscape:export-filename="C:\dev\Bloom\artwork\coverOnly.png"
+       inkscape:export-xdpi="135"
+       inkscape:export-ydpi="135" />
   </g>
 </svg>
