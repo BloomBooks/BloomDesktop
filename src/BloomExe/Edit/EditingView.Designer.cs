@@ -41,10 +41,10 @@
 			this._deletePageButton = new System.Windows.Forms.ToolStripButton();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._browser1 = new Bloom.Browser();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this._browser1 = new Bloom.Browser();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -72,7 +72,7 @@
 			// 
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
 			this._splitContainer1.Size = new System.Drawing.Size(1200, 738);
-			this._splitContainer1.SplitterDistance = 299;
+			this._splitContainer1.SplitterDistance = 279;
 			this._splitContainer1.SplitterWidth = 1;
 			this._splitContainer1.TabIndex = 0;
 			// 
@@ -92,8 +92,8 @@
 			// 
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
-			this._splitContainer2.Size = new System.Drawing.Size(900, 738);
-			this._splitContainer2.SplitterDistance = 738;
+			this._splitContainer2.Size = new System.Drawing.Size(920, 738);
+			this._splitContainer2.SplitterDistance = 754;
 			this._splitContainer2.SplitterWidth = 1;
 			this._splitContainer2.TabIndex = 0;
 			// 
@@ -113,7 +113,7 @@
             this._pageSizeAndOrientationChoices});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(738, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(754, 25);
 			this.toolStrip1.TabIndex = 2;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -199,6 +199,20 @@
 			this._pageSizeAndOrientationChoices.ToolTipText = "Choose language to make this a bilingual or trilingual book";
 			this._pageSizeAndOrientationChoices.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._pageSizeAndOrientationChoices_DropDownItemClicked);
 			// 
+			// _browser1
+			// 
+			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this._browser1.Location = new System.Drawing.Point(0, 31);
+			this._browser1.Margin = new System.Windows.Forms.Padding(5);
+			this._browser1.Name = "_browser1";
+			this._browser1.Size = new System.Drawing.Size(754, 711);
+			this._browser1.TabIndex = 1;
+			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
+			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
+			// 
 			// _splitTemplateAndSource
 			// 
 			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -215,7 +229,7 @@
 			// _splitTemplateAndSource.Panel2
 			// 
 			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(161, 738);
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(165, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
 			this._splitTemplateAndSource.SplitterWidth = 5;
 			this._splitTemplateAndSource.TabIndex = 0;
@@ -228,20 +242,6 @@
 			// _handleMessageTimer
 			// 
 			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
-			// 
-			// _browser1
-			// 
-			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.Location = new System.Drawing.Point(0, 31);
-			this._browser1.Margin = new System.Windows.Forms.Padding(5);
-			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(738, 711);
-			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
-			this._browser1.Validating += new System.ComponentModel.CancelEventHandler(this._browser1_Validating);
 			// 
 			// EditingView
 			// 
