@@ -55,7 +55,14 @@ namespace Bloom.Library
 		public List<BookCollection> GetBookCollections()
 		{
 			if(_bookCollections ==null)
+			{
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+
+				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+				var templates = _bookCollections.First(c => c.Name.ToLower() == "templates");
+				_bookCollections.Remove(templates);
+				_bookCollections.Insert(1,templates);
+			}
 			return _bookCollections;
 		}
 
