@@ -46,6 +46,7 @@ namespace Bloom.Library
 			_boundsPen = new Pen(Brushes.DarkGray, 2);
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+
 		}
 
 		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
@@ -225,6 +226,8 @@ namespace Bloom.Library
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
+
+
 			}
 			catch (Exception err)
 			{
@@ -337,6 +340,30 @@ namespace Bloom.Library
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
 		{
 			_model.OpenFolderOnDisk();
+		}
+
+		/// <summary>
+		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.
+		/// You can see it happen because the title bar of the application changes to the Windows unselected color (lighter).
+		/// And then, if you click on a tab, the click is swallowed selecting the app, and you have to click again.
+		///
+		/// So, this occasionally checks that the Workspace control has focus, and if it doesn't, pulls it back here.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void _keepFocusTimer_Tick(object sender, EventArgs e)
+		{
+			if(Visible)
+			{
+				var findForm = FindForm();//visible is worthless, but FindForm() happily does fail when we aren't visible.
+
+				if (findForm != null && !findForm.ContainsFocus)
+				{
+					Focus();
+
+					Debug.WriteLine("Grabbing back focus");
+				}
+			}
 		}
 	}
 }
