@@ -67,13 +67,9 @@ namespace Bloom.Publish
 
 		}
 
-		public IEnumerable<Control> TopBarButtons
+		public Control TopBarControl
 		{
-			get
-			{
-				yield return _saveButton;
-				yield return _printButton;
-			}
+			get { return _topBarPanel; }
 		}
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)

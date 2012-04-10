@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -51,8 +52,28 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 			_model.UpdatePageList += new EventHandler(_model_UpdatePageList);
-			//OpenInStylizer.Visible = !string.IsNullOrEmpty(EditingModel.GetPathToStylizer());
 
+			_menusToolStrip.Renderer = new FixedToolStripRenderer();
+
+			//we're giving it to the parent control through the TopBarControls property
+			Controls.Remove(_topBarPanel);
+		}
+
+		public Control TopBarControl
+		{
+			get
+			{
+				return _topBarPanel;
+			}
+		}
+
+
+		public class FixedToolStripRenderer : ToolStripSystemRenderer
+		{
+			protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+			{
+				//just don't draw a boarder
+			}
 		}
 
 		void ParentForm_Activated(object sender, EventArgs e)

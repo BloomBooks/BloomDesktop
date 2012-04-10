@@ -166,8 +166,6 @@ namespace Bloom.Workspace
 		{
 			SetTabVisibility(_infoTab, false); //we always hide this after it is used
 
-
-
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
 
@@ -175,10 +173,19 @@ namespace Bloom.Workspace
 			_containerPanel.Controls.Add(view);
 			_previouslySelectedControl = view;
 
-			_toolSpecificButtonsTable.Controls.Clear();
+			_toolSpecificPanel.Controls.Clear();
+
 			if (view is PublishView)
 			{
-				_toolSpecificButtonsTable.Controls.AddRange(_publishView.TopBarButtons.ToArray());
+				_publishView.TopBarControl.BackColor = _tabStrip.BackColor;
+				_publishView.TopBarControl.Dock = DockStyle.Left;
+				_toolSpecificPanel.Controls.Add(_publishView.TopBarControl);
+			}
+			else if (view is EditingView)
+			{
+				_editingView.TopBarControl.BackColor = _tabStrip.BackColor;
+				_editingView.TopBarControl.Dock = DockStyle.Left;
+				_toolSpecificPanel.Controls.Add(_editingView.TopBarControl);
 			}
 
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
@@ -198,29 +205,7 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
 		{
-			_toolSpecificButtonsTable.BackColor = _topBarButtonTable.BackColor = _tabStrip.BackColor;
+			_toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
-
-		private void _infoButton_Enter(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _libraryTab_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _editTab_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _editTab_MouseDown(object sender, MouseEventArgs e)
-		{
-
-		}
-
-
 	}
 }

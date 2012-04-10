@@ -37,17 +37,13 @@
 			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable = new System.Windows.Forms.TableLayoutPanel();
-			this._toolSpecificButtonsTable = new System.Windows.Forms.TableLayoutPanel();
-			this._printButton = new System.Windows.Forms.Button();
-			this._saveButton = new System.Windows.Forms.Button();
-			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._libraryTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
 			this._infoTab = new Messir.Windows.Forms.TabStripButton();
+			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable.SuspendLayout();
-			this._toolSpecificButtonsTable.SuspendLayout();
 			this._tabStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -130,7 +126,6 @@
 			this.toolTip1.SetToolTip(this._infoButton, "Get Information About Bloom");
 			this._infoButton.UseVisualStyleBackColor = false;
 			this._infoButton.Click += new System.EventHandler(this.OnInfoButton_Click);
-			this._infoButton.Enter += new System.EventHandler(this._infoButton_Enter);
 			// 
 			// _containerPanel
 			// 
@@ -139,7 +134,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._containerPanel.Location = new System.Drawing.Point(0, 74);
 			this._containerPanel.Name = "_containerPanel";
-			this._containerPanel.Size = new System.Drawing.Size(959, 463);
+			this._containerPanel.Size = new System.Drawing.Size(1098, 463);
 			this._containerPanel.TabIndex = 16;
 			// 
 			// _topBarButtonTable
@@ -157,79 +152,13 @@
 			this._topBarButtonTable.Controls.Add(this._openButton1, 1, 0);
 			this._topBarButtonTable.Controls.Add(this._infoButton, 0, 0);
 			this._topBarButtonTable.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.AddColumns;
-			this._topBarButtonTable.Location = new System.Drawing.Point(651, 3);
+			this._topBarButtonTable.Location = new System.Drawing.Point(790, 3);
 			this._topBarButtonTable.Name = "_topBarButtonTable";
 			this._topBarButtonTable.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
 			this._topBarButtonTable.RowCount = 1;
 			this._topBarButtonTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this._topBarButtonTable.Size = new System.Drawing.Size(305, 60);
 			this._topBarButtonTable.TabIndex = 0;
-			// 
-			// _toolSpecificButtonsTable
-			// 
-			this._toolSpecificButtonsTable.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._toolSpecificButtonsTable.ColumnCount = 2;
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 114F));
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this._toolSpecificButtonsTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this._toolSpecificButtonsTable.Controls.Add(this._printButton, 1, 0);
-			this._toolSpecificButtonsTable.Controls.Add(this._saveButton, 0, 0);
-			this._toolSpecificButtonsTable.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.AddColumns;
-			this._toolSpecificButtonsTable.Location = new System.Drawing.Point(331, 0);
-			this._toolSpecificButtonsTable.Name = "_toolSpecificButtonsTable";
-			this._toolSpecificButtonsTable.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolSpecificButtonsTable.RowCount = 1;
-			this._toolSpecificButtonsTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this._toolSpecificButtonsTable.Size = new System.Drawing.Size(305, 71);
-			this._toolSpecificButtonsTable.TabIndex = 27;
-			// 
-			// _printButton
-			// 
-			this._printButton.AutoSize = true;
-			this._printButton.BackColor = System.Drawing.Color.Transparent;
-			this._printButton.FlatAppearance.BorderSize = 0;
-			this._printButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._printButton.ForeColor = System.Drawing.Color.Black;
-			this._printButton.Image = global::Bloom.Properties.Resources.print;
-			this._printButton.Location = new System.Drawing.Point(194, 3);
-			this._printButton.Name = "_printButton";
-			this._printButton.Size = new System.Drawing.Size(105, 64);
-			this._printButton.TabIndex = 15;
-			this._printButton.Text = "&Print...";
-			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._printButton.UseVisualStyleBackColor = false;
-			// 
-			// _saveButton
-			// 
-			this._saveButton.AutoSize = true;
-			this._saveButton.BackColor = System.Drawing.Color.Transparent;
-			this._saveButton.FlatAppearance.BorderSize = 0;
-			this._saveButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._saveButton.ForeColor = System.Drawing.Color.Black;
-			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-			this._saveButton.Location = new System.Drawing.Point(3, 3);
-			this._saveButton.Name = "_saveButton";
-			this._saveButton.Size = new System.Drawing.Size(185, 65);
-			this._saveButton.TabIndex = 14;
-			this._saveButton.Text = "&Save Acrobat PDF...";
-			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._saveButton.UseVisualStyleBackColor = false;
-			// 
-			// toolStripButton1
-			// 
-			this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.toolStripButton1.Image = global::Bloom.Properties.Resources.menuButton;
-			this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.toolStripButton1.Name = "toolStripButton1";
-			this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
-			this.toolStripButton1.Text = "toolStripButton1";
-			this.toolStripButton1.ToolTipText = "Open a library for a different language, or create a new library.";
 			// 
 			// _tabStrip
 			// 
@@ -245,7 +174,7 @@
 			this._tabStrip.Name = "_tabStrip";
 			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.Custom;
 			this._tabStrip.SelectedTab = this._infoTab;
-			this._tabStrip.Size = new System.Drawing.Size(959, 71);
+			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
 			this._tabStrip.TabIndex = 15;
 			this._tabStrip.Text = "tabStrip1";
 			this._tabStrip.UseVisualStyles = false;
@@ -325,20 +254,28 @@
 			this._infoTab.Text = "Help";
 			this._infoTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
+			// _toolSpecificPanel
+			// 
+			this._toolSpecificPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._toolSpecificPanel.Location = new System.Drawing.Point(316, 4);
+			this._toolSpecificPanel.Name = "_toolSpecificPanel";
+			this._toolSpecificPanel.Size = new System.Drawing.Size(474, 66);
+			this._toolSpecificPanel.TabIndex = 17;
+			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._toolSpecificButtonsTable);
+			this.Controls.Add(this._toolSpecificPanel);
 			this.Controls.Add(this._topBarButtonTable);
 			this.Controls.Add(this._containerPanel);
 			this.Controls.Add(this._tabStrip);
 			this.Name = "WorkspaceView";
-			this.Size = new System.Drawing.Size(959, 540);
+			this.Size = new System.Drawing.Size(1098, 540);
 			this._topBarButtonTable.ResumeLayout(false);
 			this._topBarButtonTable.PerformLayout();
-			this._toolSpecificButtonsTable.ResumeLayout(false);
-			this._toolSpecificButtonsTable.PerformLayout();
 			this._tabStrip.ResumeLayout(false);
 			this._tabStrip.PerformLayout();
 			this.ResumeLayout(false);
@@ -348,7 +285,6 @@
 
         #endregion
 
-		private System.Windows.Forms.ToolStripButton toolStripButton1;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper _settingsLauncherHelper;
 		private Messir.Windows.Forms.TabStrip _tabStrip;
@@ -362,9 +298,7 @@
 		private System.Windows.Forms.Button _settingsButton;
 		private System.Windows.Forms.Button _openButton1;
 		private System.Windows.Forms.Button _infoButton;
-		private System.Windows.Forms.TableLayoutPanel _toolSpecificButtonsTable;
-		private System.Windows.Forms.Button _saveButton;
-		private System.Windows.Forms.Button _printButton;
+		private System.Windows.Forms.Panel _toolSpecificPanel;
 
 
     }
