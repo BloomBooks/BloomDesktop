@@ -69,6 +69,7 @@
 			this._feedbackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.toolTip1.SetToolTip(this._feedbackButton, "Settings");
 			this._feedbackButton.UseVisualStyleBackColor = false;
+			this._feedbackButton.Click += new System.EventHandler(this._feedbackButton_Click);
 			// 
 			// _settingsButton
 			// 
@@ -88,6 +89,7 @@
 			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
 			this._settingsButton.UseVisualStyleBackColor = false;
+			this._settingsButton.Click += new System.EventHandler(this.OnSettingsButton_Click);
 			// 
 			// _openButton1
 			// 
@@ -107,6 +109,7 @@
 			this._openButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.toolTip1.SetToolTip(this._openButton1, "Open or Create Another Library");
 			this._openButton1.UseVisualStyleBackColor = false;
+			this._openButton1.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
 			// 
 			// _infoButton
 			// 
@@ -126,6 +129,7 @@
 			this._infoButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.toolTip1.SetToolTip(this._infoButton, "Get Information About Bloom");
 			this._infoButton.UseVisualStyleBackColor = false;
+			this._infoButton.Click += new System.EventHandler(this.OnInfoButton_Click);
 			this._infoButton.Enter += new System.EventHandler(this._infoButton_Enter);
 			// 
 			// _containerPanel
