@@ -67,6 +67,8 @@ namespace Bloom.Edit
 			//enhance: this might be more reliable than the current EditingView.OnVisibleChanged() for detecting when we move *to* this control.
 
 			_visible = details.To == _view;
+
+			_view.OnVisibleChanged(_visible);
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)

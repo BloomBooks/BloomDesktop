@@ -228,12 +228,12 @@ namespace Bloom.Edit
 		}
 
 
-		protected override void OnVisibleChanged(EventArgs e)
+
+		/// <summary>
+	   /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
+		/// </summary>
+		public void OnVisibleChanged(bool visible)
 		{
-			//review: we might be better switching to the EditingModel.OnTagChanged for this detection as visibility is flakey
-
-			base.OnVisibleChanged(e);
-
 			if (Visible)
 			{
 				if(_model.GetBookHasChanged())
@@ -441,12 +441,13 @@ namespace Bloom.Edit
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem) _pageSizeAndOrientationChoices.DropDownItems.Add(l);
 					item.Tag = l;
+					item.Text = SizeAndOrientation.GetDisplayName(l);
 					item.Checked = l.ToLower() == currentPageSizeAndOrientation;
 					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 
-				_pageSizeAndOrientationChoices.Text = currentPageSizeAndOrientation;
+				_pageSizeAndOrientationChoices.Text = SizeAndOrientation.GetDisplayName(currentPageSizeAndOrientation);
 
 				switch (_model.NumberOfDisplayedLanguages)
 				{
