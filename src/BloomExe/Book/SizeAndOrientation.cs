@@ -7,6 +7,7 @@ using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Xml;
+using Palaso.Extensions;
 
 namespace Bloom.Book
 {
@@ -73,6 +74,17 @@ namespace Bloom.Book
 		public override string ToString()
 		{
 			return PageSizeName + OrientationName;
+		}
+
+		/// <summary>
+		/// THe normal descriptors are things like "a5portrait". This would turn that in "A5 Portrait" (in the current UI lang, eventually)
+		/// </summary>
+		/// <param name="sizeAndOrientationDescriptor"></param>
+		/// <returns></returns>
+		public static string GetDisplayName(string sizeAndOrientationDescriptor)
+		{
+			var so = FromString(sizeAndOrientationDescriptor);
+			return so.PageSizeName.ToUpperFirstLetter() + " " + so.OrientationName.ToUpperFirstLetter();
 		}
 
 		public static SizeAndOrientation FromString(string name)
