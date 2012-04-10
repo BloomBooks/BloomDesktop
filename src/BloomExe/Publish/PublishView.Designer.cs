@@ -34,17 +34,19 @@
 			this._adobeReader = new AxAcroPDFLib.AxAcroPDF();
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
+			this._workingIndicatorGif = new System.Windows.Forms.PictureBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
+			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._saveButton = new System.Windows.Forms.Button();
 			this._printButton = new System.Windows.Forms.Button();
-			this._workingIndicatorGif = new System.Windows.Forms.PictureBox();
 			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).BeginInit();
 			this._workingIndicator.SuspendLayout();
-			this.tableLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
+			this.tableLayoutPanel1.SuspendLayout();
+			this._topBarPanel.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _adobeReader
@@ -70,13 +72,22 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
-			this._workingIndicator.Controls.Add(this._saveButton);
-			this._workingIndicator.Controls.Add(this._printButton);
+			this._workingIndicator.Controls.Add(this._topBarPanel);
 			this._workingIndicator.Controls.Add(this._workingIndicatorGif);
 			this._workingIndicator.Location = new System.Drawing.Point(103, 0);
 			this._workingIndicator.Name = "_workingIndicator";
 			this._workingIndicator.Size = new System.Drawing.Size(730, 540);
 			this._workingIndicator.TabIndex = 8;
+			// 
+			// _workingIndicatorGif
+			// 
+			this._workingIndicatorGif.BackColor = System.Drawing.Color.White;
+			this._workingIndicatorGif.Image = global::Bloom.Properties.Resources.spinner;
+			this._workingIndicatorGif.Location = new System.Drawing.Point(316, 148);
+			this._workingIndicatorGif.Name = "_workingIndicatorGif";
+			this._workingIndicatorGif.Size = new System.Drawing.Size(179, 141);
+			this._workingIndicatorGif.TabIndex = 8;
+			this._workingIndicatorGif.TabStop = false;
 			// 
 			// tableLayoutPanel1
 			// 
@@ -136,6 +147,15 @@
 			this._noBookletRadio.UseVisualStyleBackColor = true;
 			this._noBookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
 			// 
+			// _topBarPanel
+			// 
+			this._topBarPanel.Controls.Add(this._saveButton);
+			this._topBarPanel.Controls.Add(this._printButton);
+			this._topBarPanel.Location = new System.Drawing.Point(296, 320);
+			this._topBarPanel.Name = "_topBarPanel";
+			this._topBarPanel.Size = new System.Drawing.Size(297, 70);
+			this._topBarPanel.TabIndex = 14;
+			// 
 			// _saveButton
 			// 
 			this._saveButton.AutoSize = true;
@@ -145,14 +165,13 @@
 			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._saveButton.ForeColor = System.Drawing.Color.Black;
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-			this._saveButton.Location = new System.Drawing.Point(240, 21);
+			this._saveButton.Location = new System.Drawing.Point(111, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
-			this._saveButton.TabIndex = 13;
+			this._saveButton.TabIndex = 15;
 			this._saveButton.Text = "&Save Acrobat PDF...";
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
-			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
 			// 
 			// _printButton
 			// 
@@ -163,24 +182,13 @@
 			this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._printButton.ForeColor = System.Drawing.Color.Black;
 			this._printButton.Image = global::Bloom.Properties.Resources.print;
-			this._printButton.Location = new System.Drawing.Point(28, 21);
+			this._printButton.Location = new System.Drawing.Point(0, 0);
 			this._printButton.Name = "_printButton";
 			this._printButton.Size = new System.Drawing.Size(105, 64);
-			this._printButton.TabIndex = 12;
+			this._printButton.TabIndex = 14;
 			this._printButton.Text = "&Print...";
 			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._printButton.UseVisualStyleBackColor = false;
-			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
-			// 
-			// _workingIndicatorGif
-			// 
-			this._workingIndicatorGif.BackColor = System.Drawing.Color.White;
-			this._workingIndicatorGif.Image = global::Bloom.Properties.Resources.spinner;
-			this._workingIndicatorGif.Location = new System.Drawing.Point(316, 148);
-			this._workingIndicatorGif.Name = "_workingIndicatorGif";
-			this._workingIndicatorGif.Size = new System.Drawing.Size(179, 141);
-			this._workingIndicatorGif.TabIndex = 8;
-			this._workingIndicatorGif.TabStop = false;
 			// 
 			// PublishView
 			// 
@@ -194,9 +202,10 @@
 			this.Size = new System.Drawing.Size(833, 540);
 			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).EndInit();
 			this._workingIndicator.ResumeLayout(false);
-			this._workingIndicator.PerformLayout();
-			this.tableLayoutPanel1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).EndInit();
+			this.tableLayoutPanel1.ResumeLayout(false);
+			this._topBarPanel.ResumeLayout(false);
+			this._topBarPanel.PerformLayout();
 			this.ResumeLayout(false);
 
         }
@@ -212,6 +221,7 @@
 		private System.Windows.Forms.RadioButton _bodyRadio;
 		private System.Windows.Forms.RadioButton _coverRadio;
 		private System.Windows.Forms.RadioButton _noBookletRadio;
+		private System.Windows.Forms.Panel _topBarPanel;
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
     }

@@ -95,6 +95,20 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap deletePage16x16 {
+            get {
+                object obj = ResourceManager.GetObject("deletePage16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap deletePage24x24 {
+            get {
+                object obj = ResourceManager.GetObject("deletePage24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap edit {
             get {
                 object obj = ResourceManager.GetObject("edit", resourceCulture);
