@@ -199,7 +199,7 @@
 			this._pageSizeAndOrientationChoices.Name = "_pageSizeAndOrientationChoices";
 			this._pageSizeAndOrientationChoices.Size = new System.Drawing.Size(50, 22);
 			this._pageSizeAndOrientationChoices.Text = "Paper";
-			this._pageSizeAndOrientationChoices.ToolTipText = "Choose language to make this a bilingual or trilingual book";
+			this._pageSizeAndOrientationChoices.ToolTipText = "Choose a page size and orientation";
 			this._pageSizeAndOrientationChoices.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._pageSizeAndOrientationChoices_DropDownItemClicked);
 			// 
 			// _browser1
