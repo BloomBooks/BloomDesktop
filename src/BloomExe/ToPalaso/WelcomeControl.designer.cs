@@ -47,8 +47,8 @@ namespace Bloom.ToPalaso
 			this._imageList.Images.SetKeyName(0, "getFromUsb");
 			this._imageList.Images.SetKeyName(1, "wesayProject");
 			this._imageList.Images.SetKeyName(2, "getFromInternet");
-			this._imageList.Images.SetKeyName(3, "browse");
-			this._imageList.Images.SetKeyName(4, "newLibrary");
+			this._imageList.Images.SetKeyName(3, "newLibrary");
+			this._imageList.Images.SetKeyName(4, "browse");
 			//
 			// toolTip1
 			//
@@ -74,7 +74,7 @@ namespace Bloom.ToPalaso
 			this.flowLayoutPanel1.Controls.Add(this.label1);
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(27, -11);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(557, 349);
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(557, 327);
 			this.flowLayoutPanel1.TabIndex = 8;
 			//
 			// label1
@@ -113,7 +113,7 @@ namespace Bloom.ToPalaso
 			this.Controls.Add(this._templateButton);
 			this.Controls.Add(this.flowLayoutPanel1);
 			this.Name = "WelcomeControl";
-			this.Size = new System.Drawing.Size(587, 338);
+			this.Size = new System.Drawing.Size(587, 316);
 			this.Load += new System.EventHandler(this.OnLoad);
 			this.flowLayoutPanel1.ResumeLayout(false);
 			this.flowLayoutPanel1.PerformLayout();

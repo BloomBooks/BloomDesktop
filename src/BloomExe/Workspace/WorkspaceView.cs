@@ -206,6 +206,21 @@ namespace Bloom.Workspace
 
 		}
 
+		private void _libraryTab_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _editTab_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _editTab_MouseDown(object sender, MouseEventArgs e)
+		{
+
+		}
+
 
 	}
 }
