@@ -451,13 +451,13 @@ namespace Bloom.Edit
 				switch (_model.NumberOfDisplayedLanguages)
 				{
 					case 1:
-						_contentLanguagesDropdown.Text = "Monolingual";
+						_contentLanguagesDropdown.Text = "One Language";
 						break;
 					case 2:
-						_contentLanguagesDropdown.Text = "Bilingual";
+						_contentLanguagesDropdown.Text = "Two Languages";
 						break;
 					case 3:
-						_contentLanguagesDropdown.Text = "Trilingual";
+						_contentLanguagesDropdown.Text = "Three Languages";
 						break;
 				}
 			}
