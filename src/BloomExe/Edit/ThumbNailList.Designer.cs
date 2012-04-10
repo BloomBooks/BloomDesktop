@@ -44,6 +44,7 @@
 			// _listView
 			// 
 			this._listView.BackColor = System.Drawing.SystemColors.MenuHighlight;
+			this._listView.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._listView.ForeColor = System.Drawing.Color.White;
 			this._listView.LargeImageList = this._thumbnailImageList;
@@ -56,9 +57,9 @@
 			this._listView.UseCompatibleStateImageBehavior = false;
 			this._listView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this._listView_DrawItem);
 			this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
-			this._listView.MouseUp += new System.Windows.Forms.MouseEventHandler(this._listView_MouseUp);
-			this._listView.MouseMove += new System.Windows.Forms.MouseEventHandler(this._listView_MouseMove);
 			this._listView.MouseDown += new System.Windows.Forms.MouseEventHandler(this._listView_MouseDown);
+			this._listView.MouseMove += new System.Windows.Forms.MouseEventHandler(this._listView_MouseMove);
+			this._listView.MouseUp += new System.Windows.Forms.MouseEventHandler(this._listView_MouseUp);
 			// 
 			// ThumbNailList
 			// 
