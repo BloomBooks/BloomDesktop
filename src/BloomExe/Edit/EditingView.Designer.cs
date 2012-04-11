@@ -33,19 +33,19 @@
 			this._splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this._splitContainer2 = new System.Windows.Forms.SplitContainer();
 			this._topBarPanel = new System.Windows.Forms.Panel();
-			this._deletePageButton = new System.Windows.Forms.Button();
-			this._undoButton = new System.Windows.Forms.Button();
-			this._pasteButton = new System.Windows.Forms.Button();
-			this._copyButton = new System.Windows.Forms.Button();
-			this._cutButton = new System.Windows.Forms.Button();
-			this.label1 = new System.Windows.Forms.Label();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
-			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._deletePageButton = new System.Windows.Forms.Button();
+			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._undoButton = new System.Windows.Forms.Button();
+			this._pasteButton = new System.Windows.Forms.Button();
+			this._copyButton = new System.Windows.Forms.Button();
+			this._cutButton = new System.Windows.Forms.Button();
 			this._browser1 = new Bloom.Browser();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
@@ -109,85 +109,11 @@
 			this._topBarPanel.Controls.Add(this._pasteButton);
 			this._topBarPanel.Controls.Add(this._copyButton);
 			this._topBarPanel.Controls.Add(this._cutButton);
-			this._topBarPanel.Controls.Add(this.label1);
-			this._topBarPanel.Location = new System.Drawing.Point(97, 235);
+			this._topBarPanel.Location = new System.Drawing.Point(97, 225);
 			this._topBarPanel.Name = "_topBarPanel";
-			this._topBarPanel.Size = new System.Drawing.Size(563, 64);
+			this._topBarPanel.Size = new System.Drawing.Size(563, 66);
 			this._topBarPanel.TabIndex = 3;
-			// 
-			// _deletePageButton
-			// 
-			this._deletePageButton.FlatAppearance.BorderSize = 0;
-			this._deletePageButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._deletePageButton.Font = new System.Drawing.Font("Segoe UI", 9F);
-			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._deletePageButton.Image = global::Bloom.Properties.Resources.deletePage24x24;
-			this._deletePageButton.Location = new System.Drawing.Point(430, 14);
-			this._deletePageButton.Name = "_deletePageButton";
-			this._deletePageButton.Size = new System.Drawing.Size(92, 49);
-			this._deletePageButton.TabIndex = 5;
-			this._deletePageButton.Text = "Remove Page";
-			this._deletePageButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._deletePageButton.UseVisualStyleBackColor = true;
-			// 
-			// _undoButton
-			// 
-			this._undoButton.FlatAppearance.BorderSize = 0;
-			this._undoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._undoButton.Location = new System.Drawing.Point(94, 16);
-			this._undoButton.Name = "_undoButton";
-			this._undoButton.Size = new System.Drawing.Size(28, 23);
-			this._undoButton.TabIndex = 4;
-			this._undoButton.Text = "undo";
-			this._undoButton.UseVisualStyleBackColor = true;
-			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
-			// 
-			// _pasteButton
-			// 
-			this._pasteButton.FlatAppearance.BorderSize = 0;
-			this._pasteButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._pasteButton.Location = new System.Drawing.Point(59, 16);
-			this._pasteButton.Name = "_pasteButton";
-			this._pasteButton.Size = new System.Drawing.Size(28, 23);
-			this._pasteButton.TabIndex = 3;
-			this._pasteButton.Text = "paste";
-			this._pasteButton.UseVisualStyleBackColor = true;
-			this._pasteButton.Click += new System.EventHandler(this._pasteButton_Click);
-			// 
-			// _copyButton
-			// 
-			this._copyButton.FlatAppearance.BorderSize = 0;
-			this._copyButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._copyButton.Location = new System.Drawing.Point(31, 16);
-			this._copyButton.Name = "_copyButton";
-			this._copyButton.Size = new System.Drawing.Size(28, 23);
-			this._copyButton.TabIndex = 2;
-			this._copyButton.Text = "cop";
-			this._copyButton.UseVisualStyleBackColor = true;
-			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
-			// 
-			// _cutButton
-			// 
-			this._cutButton.FlatAppearance.BorderSize = 0;
-			this._cutButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._cutButton.Location = new System.Drawing.Point(7, 16);
-			this._cutButton.Name = "_cutButton";
-			this._cutButton.Size = new System.Drawing.Size(28, 23);
-			this._cutButton.TabIndex = 1;
-			this._cutButton.Text = "cut";
-			this._cutButton.UseVisualStyleBackColor = true;
-			this._cutButton.Click += new System.EventHandler(this._cutButton_Click);
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
-			this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.label1.Location = new System.Drawing.Point(20, 43);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(105, 15);
-			this.label1.TabIndex = 0;
-			this.label1.Text = "Editing Operations";
+			this._topBarPanel.Paint += new System.Windows.Forms.PaintEventHandler(this._topBarPanel_Paint);
 			// 
 			// _splitTemplateAndSource
 			// 
@@ -232,6 +158,38 @@
 			this._contentLanguagesDropdown.DropDownClosed += new System.EventHandler(this._contentLanguagesDropdown_DropDownClosed);
 			this._contentLanguagesDropdown.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._contentLanguagesDropdown_DropDownItemClicked);
 			// 
+			// _menusToolStrip
+			// 
+			this._menusToolStrip.AutoSize = false;
+			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._menusToolStrip.CanOverflow = false;
+			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._contentLanguagesDropdown,
+            this._pageSizeAndOrientationChoices});
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this._menusToolStrip.Location = new System.Drawing.Point(195, 3);
+			this._menusToolStrip.Name = "_menusToolStrip";
+			this._menusToolStrip.Size = new System.Drawing.Size(226, 42);
+			this._menusToolStrip.TabIndex = 2;
+			this._menusToolStrip.Text = "toolStrip1";
+			// 
+			// _deletePageButton
+			// 
+			this._deletePageButton.FlatAppearance.BorderSize = 0;
+			this._deletePageButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._deletePageButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._deletePageButton.Image = global::Bloom.Properties.Resources.deletePage24x24;
+			this._deletePageButton.Location = new System.Drawing.Point(430, 0);
+			this._deletePageButton.Name = "_deletePageButton";
+			this._deletePageButton.Size = new System.Drawing.Size(92, 49);
+			this._deletePageButton.TabIndex = 5;
+			this._deletePageButton.Text = "Remove Page";
+			this._deletePageButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._deletePageButton.UseVisualStyleBackColor = true;
+			// 
 			// _pageSizeAndOrientationChoices
 			// 
 			this._pageSizeAndOrientationChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -245,22 +203,70 @@
 			this._pageSizeAndOrientationChoices.ToolTipText = "Choose a page size and orientation";
 			this._pageSizeAndOrientationChoices.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._pageSizeAndOrientationChoices_DropDownItemClicked);
 			// 
-			// _menusToolStrip
+			// _undoButton
 			// 
-			this._menusToolStrip.AutoSize = false;
-			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._menusToolStrip.CanOverflow = false;
-			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
-			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._contentLanguagesDropdown,
-            this._pageSizeAndOrientationChoices});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-			this._menusToolStrip.Location = new System.Drawing.Point(156, 16);
-			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(226, 42);
-			this._menusToolStrip.TabIndex = 2;
-			this._menusToolStrip.Text = "toolStrip1";
+			this._undoButton.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._undoButton.FlatAppearance.BorderSize = 0;
+			this._undoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._undoButton.Image = global::Bloom.Properties.Resources.undo32x32;
+			this._undoButton.Location = new System.Drawing.Point(125, -3);
+			this._undoButton.Name = "_undoButton";
+			this._undoButton.Size = new System.Drawing.Size(51, 59);
+			this._undoButton.TabIndex = 4;
+			this._undoButton.Text = "Undo";
+			this._undoButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolTip1.SetToolTip(this._undoButton, "Undo (Ctrl-z)");
+			this._undoButton.UseVisualStyleBackColor = true;
+			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
+			// 
+			// _pasteButton
+			// 
+			this._pasteButton.FlatAppearance.BorderSize = 0;
+			this._pasteButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._pasteButton.Image = global::Bloom.Properties.Resources.paste32x32;
+			this._pasteButton.Location = new System.Drawing.Point(3, 3);
+			this._pasteButton.Name = "_pasteButton";
+			this._pasteButton.Size = new System.Drawing.Size(44, 55);
+			this._pasteButton.TabIndex = 3;
+			this._pasteButton.Text = "Paste";
+			this._pasteButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl-v)");
+			this._pasteButton.UseVisualStyleBackColor = true;
+			this._pasteButton.Click += new System.EventHandler(this._pasteButton_Click);
+			// 
+			// _copyButton
+			// 
+			this._copyButton.FlatAppearance.BorderSize = 0;
+			this._copyButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._copyButton.Image = global::Bloom.Properties.Resources.Copy16x16;
+			this._copyButton.Location = new System.Drawing.Point(53, 27);
+			this._copyButton.Name = "_copyButton";
+			this._copyButton.Size = new System.Drawing.Size(69, 23);
+			this._copyButton.TabIndex = 2;
+			this._copyButton.Text = "  Copy";
+			this._copyButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.toolTip1.SetToolTip(this._copyButton, "Copy (Ctrl-c)");
+			this._copyButton.UseVisualStyleBackColor = true;
+			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
+			// 
+			// _cutButton
+			// 
+			this._cutButton.FlatAppearance.BorderSize = 0;
+			this._cutButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._cutButton.Image = global::Bloom.Properties.Resources.Cut16x16;
+			this._cutButton.Location = new System.Drawing.Point(53, 5);
+			this._cutButton.Name = "_cutButton";
+			this._cutButton.Size = new System.Drawing.Size(69, 23);
+			this._cutButton.TabIndex = 1;
+			this._cutButton.Text = "  Cut";
+			this._cutButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.toolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
+			this._cutButton.UseVisualStyleBackColor = true;
+			this._cutButton.Click += new System.EventHandler(this._cutButton_Click);
 			// 
 			// _browser1
 			// 
@@ -291,7 +297,6 @@
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).EndInit();
 			this._splitContainer2.ResumeLayout(false);
 			this._topBarPanel.ResumeLayout(false);
-			this._topBarPanel.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._splitTemplateAndSource)).EndInit();
 			this._splitTemplateAndSource.ResumeLayout(false);
 			this._menusToolStrip.ResumeLayout(false);
@@ -313,12 +318,12 @@
 		private System.Windows.Forms.Button _pasteButton;
 		private System.Windows.Forms.Button _copyButton;
 		private System.Windows.Forms.Button _cutButton;
-		private System.Windows.Forms.Label label1;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper settingsLauncherHelper1;
 		private System.Windows.Forms.Button _deletePageButton;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _pageSizeAndOrientationChoices;
+		private System.Windows.Forms.ToolTip toolTip1;
 
 
     }
