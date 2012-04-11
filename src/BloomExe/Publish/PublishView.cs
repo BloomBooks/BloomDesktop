@@ -97,22 +97,26 @@ namespace Bloom.Publish
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
             _bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
             _noBookletRadio.Checked = _model.BookletPortion== PublishModel.BookletPortions.None;
-        }
+
+            }
 
         public void SetDisplayMode(PublishModel.DisplayModes displayMode)
         {
             switch (displayMode)
             {
                 case PublishModel.DisplayModes.NoBook:
-                    Cursor = Cursors.Default;
+                    _printButton.Enabled = _saveButton.Enabled = false;
+					Cursor = Cursors.Default;
                     break;
                 case PublishModel.DisplayModes.Working:
+            		_printButton.Enabled = _saveButton.Enabled = false;
                     _workingIndicator.Cursor = Cursors.WaitCursor;
                     Cursor = Cursors.WaitCursor;
             		_workingIndicator.Visible = true;
                     break;
                 case PublishModel.DisplayModes.ShowPdf:
-                    Cursor = Cursors.Default;
+                    _printButton.Enabled = _saveButton.Enabled = true;
+					Cursor = Cursors.Default;
                     if (File.Exists(_model.PdfFilePath))
                     {
 						//http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
