@@ -74,9 +74,23 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap Copy16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Copy16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap coverOnly {
             get {
                 object obj = ResourceManager.GetObject("coverOnly", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Cut16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Cut16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -228,6 +242,27 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap Paste16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Paste16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap paste24x24 {
+            get {
+                object obj = ResourceManager.GetObject("paste24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap paste32x32 {
+            get {
+                object obj = ResourceManager.GetObject("paste32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap print {
             get {
                 object obj = ResourceManager.GetObject("print", resourceCulture);
@@ -287,6 +322,20 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap spinner {
             get {
                 object obj = ResourceManager.GetObject("spinner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Undo16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Undo16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap undo32x32 {
+            get {
+                object obj = ResourceManager.GetObject("undo32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -570,6 +570,27 @@
   <ItemGroup>
     <None Include="Resources\deletePage24x24.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cut16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Paste16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Undo16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\undo32x32.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)

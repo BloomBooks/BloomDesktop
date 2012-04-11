@@ -205,7 +205,7 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
 		{
-			_toolSpecificPanel.BackColor =  _tabStrip.BackColor;
+			_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
 	}
 }

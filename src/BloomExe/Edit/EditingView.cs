@@ -583,6 +583,11 @@ namespace Bloom.Edit
 			_browser1.Navigate("about:blank",false);
 		}
 
+		private void _topBarPanel_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
+
 //		private void OnClickOpenInStylizer(object sender, EventArgs e)
 //		{
 //			_model.OpenPageInStylizer();
