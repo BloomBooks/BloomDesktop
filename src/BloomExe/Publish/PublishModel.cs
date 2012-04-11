@@ -153,10 +153,22 @@ namespace Bloom.Publish
 		public BookletPortions BookletPortion
 		{ get; set; }
 
+
 		public void Save()
 		{
 			try
 			{
+				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.
+
+				if (string.IsNullOrEmpty(_lastDirectory) || !Directory.Exists(_lastDirectory))
+				{
+					var drives = Palaso.UsbDrive.UsbDriveInfo.GetDrives();
+					if (drives != null && drives.Count > 0)
+					{
+						_lastDirectory = drives[0].RootDirectory.FullName;
+					}
+				}
+
 				using (var dlg = new SaveFileDialog())
 				{
 					if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
@@ -178,6 +190,7 @@ namespace Bloom.Publish
 					}
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath), _librarySettings.GetVernacularName("en"),portion);
 					dlg.FileName = suggestedName;
+					dlg.Filter = "PDF|*.pdf";
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);

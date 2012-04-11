@@ -64,6 +64,7 @@
 			// 
 			this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
 			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
 			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
 			this._splitContainer1.Name = "_splitContainer1";
