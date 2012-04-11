@@ -112,6 +112,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Design" />
     <Reference Include="System.Reactive">
       <HintPath>..\..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
     </Reference>
@@ -146,6 +147,12 @@
     </Compile>
     <Compile Include="Library\ListHeader.Designer.cs">
       <DependentUpon>ListHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\BetterToolTip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>

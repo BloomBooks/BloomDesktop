@@ -303,22 +303,6 @@ namespace Bloom.Edit
 			_pageListView.SetBook(_model.CurrentBook);
 		}
 
-		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			if (_model.HaveCurrentEditableBook)
-			{
-				//try
-				{
-//					_model.SaveNow();
-				}
-//				catch()
-//				{
-//					//there is an error here where we're getting a save
-//				}
-			}
-		}
-
-
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
 			var ge = e as GeckoDomEventArgs;
@@ -399,27 +383,6 @@ namespace Bloom.Edit
 			Cursor = Cursors.Default;
 		}
 
-
-//        private string MakePngOrJpgTempFileForImage(Image image)
-//        {
-//            var path = Path.GetTempFileName();
-//            File.Delete(path);
-//            string pathWithoutExtension = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
-//            if (new[] { ImageFormat.Png, ImageFormat.Bmp, ImageFormat.Gif,ImageFormat.Tiff, ImageFormat.MemoryBmp}.Contains(image.RawFormat))
-//            {
-//                string filename = pathWithoutExtension + ".png";
-//                image.Save(filename, ImageFormat.Png);
-//                return filename;
-//            }
-//            if (new[] { ImageFormat.Jpeg }.Contains(image.RawFormat))
-//            {
-//                string filename = pathWithoutExtension + ".jpg";
-//                image.Save(filename, ImageFormat.Jpeg);
-//                return filename;
-//            }
-//            throw new ApplicationException("Bloom cannot handle this kind of image: "+image.RawFormat.ToString());
-//        }
-
 		/// <summary>
 		/// this started as an experiment, where our textareas were not being read when we saved because of the need
 		/// to change the picture
@@ -493,11 +456,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void _pageSizeAndOrientationChoices_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
-		{
-
-		}
-
 		void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
 		{
 			var item = (ToolStripMenuItem)sender;
@@ -528,20 +486,6 @@ namespace Bloom.Edit
 		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
 		{
 			UpdateEditButtons();
-//
-//			if (ActiveControl == null)
-//				return;
-//
-//        	StringBuilder b = new StringBuilder();
-//			b.AppendLine("tactive control: " + ActiveControl.Name);
-//			b.AppendLine("_splitContainer1 container's control: " + _splitContainer1.ActiveControl.Name);
-//			if(_splitContainer2.ActiveControl!=null)
-//				b.AppendLine("_splitContainer2 container's control: " + _splitContainer2.ActiveControl.Name);
-//			b.AppendLine("t_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
-//			b.AppendLine("t_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
-//			b.AppendLine("t_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
-//        	_focusSpy.Text = b.ToString();
-
 		}
 
 		private void _cutButton_Click(object sender, EventArgs e)
@@ -554,44 +498,20 @@ namespace Bloom.Edit
 			_undoCommand.Execute();
 		}
 
-		private void _deletePageButton_Click(object sender, EventArgs e)
-		{
-			_deletePageCommand.Execute();
-		}
-
-
-		private void _contentLanguagesDropdown_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
-		{
-//			if (_updatingDisplay)
-//				return;
-//
-//			//looking for checks here didn't work... apparently the checking happens after this even is raised
-		}
-
-		private void _contentLanguagesDropdown_DropDownClosed(object sender, EventArgs e)
-		{
-//			foreach (ToolStripMenuItem item in _contentLanguagesDropdown.DropDownItems)
-//			{
-//				((EditingModel.ContentLanguage) item.Tag).Selected = item.Checked;
-//			}
-//			_model.ContentLanguagesSelectionChanged();
-		}
-
 		public void ClearOutDisplay()
 		{
 			_pageListView.Clear();
 			_browser1.Navigate("about:blank",false);
 		}
 
-		private void _topBarPanel_Paint(object sender, PaintEventArgs e)
+		private void _deletePageButton_Click_1(object sender, EventArgs e)
+		{
+			_deletePageCommand.Execute();
+		}
+
+		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 
 		}
-
-//		private void OnClickOpenInStylizer(object sender, EventArgs e)
-//		{
-//			_model.OpenPageInStylizer();
-//		}
-
 	}
 }
