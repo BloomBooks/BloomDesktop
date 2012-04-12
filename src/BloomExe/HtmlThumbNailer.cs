@@ -195,6 +195,8 @@ namespace Bloom
 
 				pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
 
+				Debug.WriteLine("THumbnail browser ({0},{1})", browser.Width, browser.Height);
+
 				try
 				//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
 				{
