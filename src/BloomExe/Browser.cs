@@ -77,7 +77,10 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = () => _browser.Paste();
+			_pasteCommand.Implementer = () =>
+											{
+												_browser.Paste();
+											};
 			_undoCommand.Implementer = () => _browser.Undo();
 
 			//none of these worked
@@ -157,6 +160,7 @@ namespace Bloom
 			//using the click to just get a target and go from there, if we wanted.
 			_browser.DomClick += new EventHandler<GeckoDomEventArgs>(OnBrowser_DomClick);
 
+			_browser.DomKeyPress += new EventHandler<GeckoDomKeyEventArgs>(OnDomKeyPress);
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
@@ -192,6 +196,19 @@ namespace Bloom
 			};
 			RaiseGeckoReady();
 	   }
+
+		/// <summary>
+		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
+		{
+			if(e.CtrlKey && e.KeyChar=='v' && !_pasteCommand.Enabled)
+			{
+				e.PreventDefault();
+			}
+		}
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
