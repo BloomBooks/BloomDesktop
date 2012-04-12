@@ -106,6 +106,7 @@ namespace Bloom.Library
 			_libraryFlow.SetFlowBreak(libraryHeader, true);
 			LoadOneCollection(library, _libraryFlow);
 
+			_collectionFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() { ForeColor = Color.White };
 			bookSourcesHeader.Label.Text = "Sources For New Books";
 			 invisibleHackPartner = new Label() { Text = "", Width = 0 };

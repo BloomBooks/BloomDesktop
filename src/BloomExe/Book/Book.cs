@@ -39,6 +39,7 @@ namespace Bloom.Book
 			_folderPath = folderPath;
 			Id = folderPath;
 			_canDelete = canDelete;
+			Logger.WriteEvent("Created ErrorBook with exception message: " + _exception.Message);
 		}
 
 		public override string Title
@@ -108,6 +109,18 @@ namespace Bloom.Book
 			return GetErrorDOM();
 		}
 
+		public override XmlDocument RawDom
+		{
+			get
+			{
+				throw new ApplicationException("An ErrorBook was asked for a RawDom. The ErrorBook's exception message is "+_exception.Message);
+			}
+		}
+
+		public override void SetTitle(string t)
+		{
+			Logger.WriteEvent("An ErrorBook was asked to set title.  The ErrorBook's exception message is "+_exception.Message);
+		}
 	}
 
 	public class Book
@@ -589,7 +602,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public XmlDocument RawDom
+		public virtual XmlDocument RawDom
 		{
 			get {return  _storage.Dom; }
 		}
@@ -1165,7 +1178,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public void SetTitle(string t)
+		public virtual void SetTitle(string t)
 		{
 			if (!string.IsNullOrEmpty(t.Trim()))
 			{
