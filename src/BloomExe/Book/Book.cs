@@ -1487,6 +1487,9 @@ namespace Bloom.Book
 					if (node.Name.ToLower() == "img")
 					{
 						value = node.GetAttribute("src");
+						//Make the name of the image safe for showing up in raw html (not just in the relatively safe confines of the src attribut),
+						//becuase it's going to show up between <div> tags.  E.g. "Land & Water.png" as the cover page used to kill us.
+						value = WebUtility.HtmlEncode(WebUtility.HtmlDecode(value));
 					}
 					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
@@ -1545,7 +1548,8 @@ namespace Bloom.Book
 					{
 						if (node.Name.ToLower() == "img")
 						{
-							node.SetAttribute("src", data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+							var imageName = WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+							node.SetAttribute("src", imageName);
 						}
 						else
 						{
