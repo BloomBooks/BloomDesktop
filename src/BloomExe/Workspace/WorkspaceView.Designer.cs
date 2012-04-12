@@ -194,7 +194,7 @@
 			this._libraryTab.Name = "_libraryTab";
 			this._libraryTab.Padding = new System.Windows.Forms.Padding(0);
 			this._libraryTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._libraryTab.SelectedTextColor = System.Drawing.Color.White;
+			this._libraryTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
 			this._libraryTab.Size = new System.Drawing.Size(80, 71);
 			this._libraryTab.Text = "Library";
 			this._libraryTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -212,7 +212,7 @@
 			this._editTab.Name = "_editTab";
 			this._editTab.Padding = new System.Windows.Forms.Padding(0);
 			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._editTab.SelectedTextColor = System.Drawing.Color.White;
+			this._editTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
 			this._editTab.Size = new System.Drawing.Size(69, 71);
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -231,7 +231,7 @@
 			this._publishTab.Name = "_publishTab";
 			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
 			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._publishTab.SelectedTextColor = System.Drawing.Color.White;
+			this._publishTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -249,7 +249,7 @@
 			this._infoTab.Name = "_infoTab";
 			this._infoTab.Padding = new System.Windows.Forms.Padding(0);
 			this._infoTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._infoTab.SelectedTextColor = System.Drawing.Color.White;
+			this._infoTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
 			this._infoTab.Size = new System.Drawing.Size(69, 71);
 			this._infoTab.Text = "Help";
 			this._infoTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;

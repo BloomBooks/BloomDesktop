@@ -46,7 +46,7 @@
 			this._listView.BackColor = System.Drawing.SystemColors.MenuHighlight;
 			this._listView.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._listView.ForeColor = System.Drawing.Color.White;
+			this._listView.ForeColor = Palette.TextAgainstDarkBackground;
 			this._listView.LargeImageList = this._thumbnailImageList;
 			this._listView.Location = new System.Drawing.Point(0, 0);
 			this._listView.MultiSelect = false;
