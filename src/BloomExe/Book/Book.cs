@@ -26,7 +26,7 @@ namespace Bloom.Book
 {
 	public class ErrorBook : Book
 	{
-		private readonly Exception _exception;
+		public readonly Exception Exception;
 		private readonly string _folderPath;
 		private bool _canDelete;
 
@@ -35,11 +35,11 @@ namespace Bloom.Book
 		/// </summary>
 		public ErrorBook(Exception exception, string folderPath, bool canDelete)
 		{
-			_exception = exception;
+			Exception = exception;
 			_folderPath = folderPath;
 			Id = folderPath;
 			_canDelete = canDelete;
-			Logger.WriteEvent("Created ErrorBook with exception message: " + _exception.Message);
+			Logger.WriteEvent("Created ErrorBook with exception message: " + Exception.Message);
 		}
 
 		public override string Title
@@ -97,7 +97,7 @@ namespace Bloom.Book
 			builder.AppendLine(
 				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
 
-			builder.Append(_exception.Message.Replace(Environment.NewLine,"<br/>"));
+			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
 
 			builder.Append("</body></html>");
 			dom.LoadXml(builder.ToString());
@@ -113,13 +113,13 @@ namespace Bloom.Book
 		{
 			get
 			{
-				throw new ApplicationException("An ErrorBook was asked for a RawDom. The ErrorBook's exception message is "+_exception.Message);
+				throw new ApplicationException("An ErrorBook was asked for a RawDom. The ErrorBook's exception message is "+Exception.Message);
 			}
 		}
 
 		public override void SetTitle(string t)
 		{
-			Logger.WriteEvent("An ErrorBook was asked to set title.  The ErrorBook's exception message is "+_exception.Message);
+			Logger.WriteEvent("An ErrorBook was asked to set title.  The ErrorBook's exception message is "+Exception.Message);
 		}
 	}
 

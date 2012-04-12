@@ -81,6 +81,11 @@ namespace Bloom.Book
 				GetBooks();//loads up the _books
 				var newBook = _books.Find(b => b.FolderPath == newBookFolder);
 
+				if(newBook is ErrorBook)
+				{
+					throw ((ErrorBook)newBook).Exception;
+				}
+
 				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
 				var name = Path.GetFileName(newBook.FolderPath); // this way, we get "my book 1", "my book 2", etc.
 				newBook.SetTitle(name);
