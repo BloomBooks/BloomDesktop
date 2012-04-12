@@ -100,14 +100,14 @@ namespace Bloom.Library
 			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
 			var invisibleHackPartner = new Label() { Text = "", Width = 0 };
 			_libraryFlow.Controls.Add(invisibleHackPartner);
-			var libraryHeader = new ListHeader() {ForeColor = Color.White};
+			var libraryHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 			libraryHeader.Label.Text = _model.VernacularLibraryNamePhrase;
 			_libraryFlow.Controls.Add(libraryHeader);
 			_libraryFlow.SetFlowBreak(libraryHeader, true);
 			LoadOneCollection(library, _libraryFlow);
 
 			_collectionFlow.Controls.Clear();
-			var bookSourcesHeader = new ListHeader() { ForeColor = Color.White };
+			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground };
 			bookSourcesHeader.Label.Text = "Sources For New Books";
 			 invisibleHackPartner = new Label() { Text = "", Width = 0 };
 			 _collectionFlow.Controls.Add(invisibleHackPartner);
@@ -123,7 +123,7 @@ namespace Bloom.Library
 				 invisibleHackPartner = new Label() { Text = "", Width=0 };
 				_collectionFlow.Controls.Add(invisibleHackPartner);
 
-				var collectionHeader = new Label() {Text = collection.Name, Size=new Size(_collectionFlow.Width-20,15), ForeColor=Color.White, Padding=new Padding(10,0,0,0)};
+				var collectionHeader = new Label() { Text = collection.Name, Size = new Size(_collectionFlow.Width - 20, 15), ForeColor = Palette.TextAgainstDarkBackground, Padding = new Padding(10, 0, 0, 0) };
 				collectionHeader.Margin = new Padding(0, 10, 0, 0);
 				collectionHeader.Font = _headerFont;
 				_collectionFlow.Controls.Add(collectionHeader);
@@ -158,7 +158,7 @@ namespace Bloom.Library
 			item.Text = book.Title;
 			item.TextImageRelation = TextImageRelation.ImageAboveText;
 			item.FlatStyle = FlatStyle.Flat;
-			item.ForeColor = Color.White;
+			item.ForeColor = Palette.TextAgainstDarkBackground;
 			item.FlatAppearance.BorderSize = 0;
 			item.ContextMenuStrip = contextMenuStrip1;
 			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book

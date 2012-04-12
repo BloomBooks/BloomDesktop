@@ -942,7 +942,7 @@ namespace Bloom.Book
 				{
 					//review: we want to show titles for template books, numbers for other books.
 					//this here requires that titles be removed when the page is inserted, kind of a hack.
-					var caption = pageNode.GetAttribute("title");
+					var caption = GetPageLabelFromDiv(pageNode);
 					if (String.IsNullOrEmpty(caption))
 					{
 						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
@@ -966,15 +966,20 @@ namespace Bloom.Book
 
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
-				//todo: try to get the one with the current UI language
-				//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
-
-				var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
-				var caption = (englishDiv==null)? string.Empty : englishDiv.InnerText;
-
+				var caption = GetPageLabelFromDiv(pageNode);
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
 				yield return CreatePageDecriptor(pageNode, caption, iso639CodeToShow);
 			}
+		}
+
+		private static string GetPageLabelFromDiv(XmlElement pageNode)
+		{
+//todo: try to get the one with the current UI language
+			//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
+
+			var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
+			var caption = (englishDiv == null) ? string.Empty : englishDiv.InnerText;
+			return caption;
 		}
 
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)//, Action<Image> thumbNailReadyCallback)

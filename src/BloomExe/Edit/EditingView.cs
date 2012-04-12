@@ -178,9 +178,9 @@ namespace Bloom.Edit
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								dlg.Metadata.CopyrightNotice,
+								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
 								"license.png",
-								dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement, dlg.Metadata.License.GetDescription("en"));
+								dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement.Replace("'", "\\'"), dlg.Metadata.License.GetDescription("en").Replace("'", "\\'"));
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 					}
 				}

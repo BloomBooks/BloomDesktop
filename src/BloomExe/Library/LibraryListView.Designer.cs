@@ -178,7 +178,7 @@
 			this.label3.AutoSize = true;
 			this._libraryFlow.SetFlowBreak(this.label3, true);
 			this.label3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label3.ForeColor = System.Drawing.Color.White;
+			this.label3.ForeColor = Palette.TextAgainstDarkBackground;
 			this.label3.Location = new System.Drawing.Point(0, 13);
 			this.label3.Margin = new System.Windows.Forms.Padding(0);
 			this.label3.Name = "label3";
@@ -300,7 +300,7 @@
 			this.label8.AutoSize = true;
 			this._collectionFlow.SetFlowBreak(this.label8, true);
 			this.label8.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label8.ForeColor = System.Drawing.Color.White;
+			this.label8.ForeColor = Palette.TextAgainstDarkBackground;
 			this.label8.Location = new System.Drawing.Point(0, 0);
 			this.label8.Margin = new System.Windows.Forms.Padding(0);
 			this.label8.Name = "label8";

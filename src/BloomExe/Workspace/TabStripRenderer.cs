@@ -2,8 +2,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using Messir.Windows.Forms;
 
-namespace Messir.Windows.Forms
+namespace Bloom.Workspace
 {
 	/// <summary>
 	/// Represents a renderer class for TabStrip control
@@ -288,7 +289,7 @@ namespace Messir.Windows.Forms
 
 					if (selected || hovered)
 					{
-						Color fill = (hovered) ? Color.WhiteSmoke : Color.FromArgb(64, 64, 64);
+						Color fill = (hovered) ? Palette.TextAgainstDarkBackground : Color.FromArgb(64, 64, 64);
 						if (_renderMode == ToolStripRenderMode.Professional)
 						{
 							fill = (hovered) ? ProfessionalColors.ButtonCheckedGradientBegin : ProfessionalColors.ButtonCheckedGradientEnd;

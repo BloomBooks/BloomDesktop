@@ -148,6 +148,7 @@
     <Compile Include="Library\ListHeader.Designer.cs">
       <DependentUpon>ListHeader.cs</DependentUpon>
     </Compile>
+    <Compile Include="Palette.cs" />
     <Compile Include="ToPalaso\BetterToolTip.cs">
       <SubType>Component</SubType>
     </Compile>

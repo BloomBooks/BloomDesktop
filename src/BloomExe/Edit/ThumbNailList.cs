@@ -142,7 +142,7 @@ namespace Bloom.Edit
 			_listView.Items.Add(item);
 			if (!(page is PlaceHolderPage))
 			{
-				Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page), Color.White,
+				Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page), Palette.TextAgainstDarkBackground,
 											  false, image => RefreshOneThumbnailCallback(page, image));
 			}
 		}
