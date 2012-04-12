@@ -966,7 +966,12 @@ namespace Bloom.Book
 
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
-				var caption = pageNode.GetAttribute("title");
+				//todo: try to get the one with the current UI language
+				//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
+
+				var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
+				var caption = (englishDiv==null)? string.Empty : englishDiv.InnerText;
+
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
 				yield return CreatePageDecriptor(pageNode, caption, iso639CodeToShow);
 			}

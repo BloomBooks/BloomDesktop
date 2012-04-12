@@ -37,7 +37,15 @@ namespace Bloom.Book
 			Caption = caption;
 			ReadClasses(sourcePage);
 			ReadPageTags(sourcePage);
+			//ReadPageLabel(sourcePage);
 		}
+//
+//    	private void ReadPageLabel(XmlElement sourcePage)
+//    	{
+//    		PageLabel = "Foobar";
+//    	}
+
+//    	protected string PageLabel { get; set; }
 
 		private void ReadClasses(XmlElement sourcePage)
 		{
