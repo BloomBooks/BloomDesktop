@@ -558,10 +558,8 @@ namespace Bloom.Book
 			get { return GetPages().First(); }
 		}
 
-		public Book TemplateBook
+		public Book FindTemplateBook()
 		{
-			get
-			{
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
 				if(Type!=BookType.Publication)
 					return null;
@@ -571,6 +569,10 @@ namespace Bloom.Book
 				if (!String.IsNullOrEmpty(templateKey))
 				{
 					book = _templateFinder.FindTemplateBook(templateKey);
+					if(book==null)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
+					}
 				}
 				if(book==null)
 				{
@@ -580,7 +582,6 @@ namespace Bloom.Book
 					return this;
 				}
 				return book;
-			}
 		}
 
 		private string GetMetaValue(string name, string defaultValue)

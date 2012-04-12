@@ -36,13 +36,20 @@ namespace Bloom.Edit
 			//user is on another tab right now
 			Debug.Assert(Visible, "Shouldn't be slowing things down by calling this when it isn't visible");
 
-			if (_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.TemplateBook==null)
+			if (_bookSelection.CurrentSelection == null)
 			{
 			   Clear();
+				return;
+			}
+
+			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			if(templateBook ==null)
+			{
+				Clear();
 			}
 			else
 			{
-				_thumbNailList.SetItems(((Book.Book) _bookSelection.CurrentSelection.TemplateBook).GetTemplatePages());
+				_thumbNailList.SetItems(templateBook.GetTemplatePages());
 			}
 		}
 

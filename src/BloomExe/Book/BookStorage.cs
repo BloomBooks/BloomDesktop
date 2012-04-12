@@ -63,6 +63,7 @@ namespace Bloom.Book
 
 		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator)
 		{
+			Debug.WriteLine(string.Format("BookStorage({0})", folderPath));
 			_folderPath = folderPath;
 			//the fileLocator we get doesn't know anything about this particular book
 			_fileLocator = baseFileLocator;
@@ -97,6 +98,7 @@ namespace Bloom.Book
 //                    var ex = new XmlSyntaxException(ErrorMessages);
 //                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
 					Dom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
+					Logger.WriteEvent("{0}: There is a problem with the html structure of this book which will require expert help: {1}", PathToExistingHtml, ErrorMessages);
 			   }
 				else
 				{
