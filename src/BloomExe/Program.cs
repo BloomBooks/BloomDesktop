@@ -45,6 +45,14 @@ namespace Bloom
 
 				SetUpErrorHandling();
 				Logger.Init();
+
+
+				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+				{
+					BloomPack.Install(args[0]);
+					return;
+				}
+
 				Splasher.Show();
 				SetUpReporting();
 				Settings.Default.Save();

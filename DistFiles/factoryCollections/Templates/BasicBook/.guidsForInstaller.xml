@@ -19,4 +19,7 @@
   <File Id="basicBook.css" Guid="208d6856-5ea0-4c76-99f7-c40444f968f5" />
   <File Id="languageDisplay.css3" Guid="5a869f3a-f2cf-4348-9bae-f47936c12bff" />
   <File Id="placeHolder.png4" Guid="6cd789db-09ce-496a-a3eb-2204eb302241" />
+  <File Id="basePage.css1" Guid="874fb3b0-0937-459c-a6b3-0a38e835e8f5" />
+  <File Id="languageDisplay.css1" Guid="cd2332ba-049d-49dc-919c-c28606c8eb9a" />
+  <File Id="previewMode.css1" Guid="d859aafc-4d31-4216-a01f-90a73d505afd" />
 </InstallerMetadata>

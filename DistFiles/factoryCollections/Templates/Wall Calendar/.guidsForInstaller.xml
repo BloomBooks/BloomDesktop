@@ -28,4 +28,9 @@
   <File Id="previewMode.css2" Guid="9edc2187-af07-4e8c-b160-6687bc1f9d05" />
   <File Id="thumbnail.png2" Guid="0674494e-3336-4779-9249-25d8717960a4" />
   <File Id="wallCalendar.css" Guid="a1022f26-2e43-4aed-a794-d93c39fd510c" />
+  <File Id="basePage.css3" Guid="4039894f-d4d6-4a1c-8600-3cbe67693bad" />
+  <File Id="languageDisplay.css3" Guid="cd352731-7c69-4d80-abab-2ff9dfd4d74b" />
+  <File Id="placeHolder.png4" Guid="aa93c579-e3af-4512-bf2b-04cc67155d52" />
+  <File Id="previewMode.css3" Guid="f7d5272e-6df9-4d40-ae4c-ac8e15e61ba4" />
+  <File Id="thumbnail.png3" Guid="fe70cc63-6370-4290-b1b9-d877bf1cbc7a" />
 </InstallerMetadata>
