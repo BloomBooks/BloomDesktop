@@ -360,13 +360,17 @@ jQuery(document).ready(function() {
 
     //make images look click-able when you cover over them
     jQuery(".bloom-imageContainer").mouseenter(function() {
+        $(this).prepend("<button class='pasteImageButton' title='Paste Image'></button>");
         $(this).prepend("<button class='changeImageButton' title='Change Image'></button>");
         $(this).addClass('hoverUp');
     }).mouseleave(function() {
-        $(this).removeClass('hoverUp')
+        $(this).removeClass('hoverUp');
         $(this).find(".changeImageButton").each(function() {
             $(this).remove()
         });
+        $(this).find(".pasteImageButton").each(function() {
+            $(this).remove()
+            });
     });
     
     jQuery(".bloom-draggable").mouseenter(function() {
