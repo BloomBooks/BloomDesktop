@@ -310,10 +310,55 @@ namespace Bloom.Edit
 				return;//I've seen this happen
 
 			if (ge.Target.ClassName == "changeImageButton")
-				OnClickOnImage(ge);
+				OnChangeImage(ge);
+			if (ge.Target.ClassName == "pasteImageButton")
+				OnPasteImage(ge);
 		}
 
-		private void OnClickOnImage(GeckoDomEventArgs ge)
+
+		private void OnPasteImage(GeckoDomEventArgs ge)
+		{
+			if (!_model.CanChangeImages())
+			{
+				MessageBox.Show(
+					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
+				return;
+			}
+			if (!Clipboard.ContainsImage())
+				return;
+
+			if (ge.Target.ClassName.Contains("licenseImage"))
+				return;
+
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
+				return;
+
+			var image = new PalasoImage(Clipboard.GetImage());
+			_model.ChangePicture(imageElement, image);
+		}
+
+		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
+		{
+			GeckoElement imageElement = null;
+			foreach (var n in ge.Target.Parent.ChildNodes)
+			{
+				if (n is GeckoElement && ((GeckoElement) n).TagName.ToLower() == "img")
+				{
+					imageElement = (GeckoElement) n;
+					break;
+				}
+			}
+
+			if (imageElement == null)
+			{
+				Debug.Fail("Could not find image element");
+				return null;
+			}
+			return imageElement;
+		}
+
+		private void OnChangeImage(GeckoDomEventArgs ge)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -324,21 +369,10 @@ namespace Bloom.Edit
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 
-			GeckoElement imageElement = null;
-			foreach(var n in ge.Target.Parent.ChildNodes)
-			{
-				if (n is GeckoElement && ((GeckoElement)n).TagName.ToLower() == "img")
-				{
-					imageElement = (GeckoElement) n;
-					break;
-				}
-			}
 
-			if(imageElement ==null)
-			{
-				Debug.Fail("Could not find image element");
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
 				return;
-			}
 
 			 Cursor = Cursors.WaitCursor;
 			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");

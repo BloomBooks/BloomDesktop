@@ -65,7 +65,7 @@
        xlink:href="#linearGradient4564-3-7"
        id="linearGradient11089"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(6.3304555,0,0,3.2848479,-2003.852,174.51941)"
+       gradientTransform="matrix(6.3304555,0,0,3.2848479,-1676.8271,173.21652)"
        x1="32.769352"
        y1="96.974602"
        x2="5.3701138"
@@ -75,21 +75,11 @@
        xlink:href="#linearGradient4580-1-5"
        id="linearGradient11091"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(3.5809249,0,0,5.8070426,-2003.852,174.51941)"
+       gradientTransform="matrix(3.5809249,0,0,5.8070426,-1676.8271,173.21652)"
        x1="156.43378"
        y1="31.494879"
        x2="125.34739"
        y2="59.78624" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4564-3-7-8"
-       id="linearGradient11089-8"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(6.3304555,0,0,3.2848479,-2274.5271,106.13163)"
-       x1="32.769352"
-       y1="96.974602"
-       x2="5.3701138"
-       y2="120.56913" />
     <linearGradient
        id="linearGradient4564-3-7-8">
       <stop
@@ -122,16 +112,6 @@
          offset="1"
          stop-color="#ad9457" />
     </linearGradient>
-    <linearGradient
-       y2="59.78624"
-       x2="125.34739"
-       y1="31.494879"
-       x1="156.43378"
-       gradientTransform="matrix(3.5809249,0,0,5.8070426,-2274.5271,106.13163)"
-       gradientUnits="userSpaceOnUse"
-       id="linearGradient11474"
-       xlink:href="#linearGradient4580-1-5-2"
-       inkscape:collect="always" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -140,17 +120,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.5"
-     inkscape:cx="-60.611864"
-     inkscape:cy="22.214275"
+     inkscape:zoom="1.75"
+     inkscape:cx="74.597274"
+     inkscape:cy="43.467551"
      inkscape:current-layer="g5448"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      inkscape:window-width="1357"
      inkscape:window-height="878"
-     inkscape:window-x="1912"
-     inkscape:window-y="556"
+     inkscape:window-x="-30080"
+     inkscape:window-y="-31436"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata6459">
@@ -173,7 +153,7 @@
        transform="matrix(0.29254465,0,0,0.29254465,565.95421,-177.5713)">
       <g
          id="g11074"
-         transform="matrix(0.74960542,0,0,0.74960542,-460.32962,185.80946)">
+         transform="matrix(0.74960542,0,0,0.74960542,-705.46924,186.78611)">
         <path
            style="fill:#79673d;fill-rule:nonzero;stroke-width:1px"
            inkscape:connector-curvature="0"
@@ -183,7 +163,7 @@
         <g
            transform="matrix(1.4246775,0,0,1.6423727,490.5971,-1974.2344)"
            id="g4933-4-3-1-0"
-           style="fill:#0c8597;fill-opacity:1;stroke:#ffffff;stroke-width:2.98113060000000020;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">
+           style="fill:#0c8597;fill-opacity:1;stroke:#ffffff;stroke-width:2.9811306;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">
           <rect
              ry="0"
              y="1546.9679"
@@ -191,7 +171,7 @@
              height="92.656059"
              width="73.366287"
              id="rect4791-1-1-4-2-7"
-             style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.98113060000000020;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+             style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.9811306;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
         </g>
         <rect
            y="573.07446"
@@ -203,7 +183,7 @@
         <g
            transform="matrix(1.4246775,0,0,1.6423727,504.03303,-1965.0845)"
            id="g4933-4-3-1"
-           style="fill:#0c8597;fill-opacity:1;stroke:#ffffff;stroke-width:2.98113060000000020;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">
+           style="fill:#0c8597;fill-opacity:1;stroke:#ffffff;stroke-width:2.9811306;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">
           <rect
              ry="0"
              y="1546.9679"
@@ -211,7 +191,7 @@
              height="92.656059"
              width="73.366287"
              id="rect4791-1-1-4-2"
-             style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.98113060000000020;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+             style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.9811306;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
         </g>
         <rect
            ry="0"
@@ -220,12 +200,12 @@
            height="132.02185"
            width="104.52329"
            id="rect4793-3-8-4-6"
-           style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:4.56010770999999960;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+           style="fill:#0c8597;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:4.56010771;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
         <path
            inkscape:connector-curvature="0"
            id="path10-8-1-3-4-7-0-0-5-4-2-0-8-0-3-1-4-9-4-2-6"
            d="m -1870.4004,610.95939 0,34.55486 c 0,19.08046 15.4853,34.54345 34.5789,34.54345 19.0935,0 34.5665,-15.46299 34.5665,-34.54345 l 0,-34.55486 c -19.0936,0 -34.5665,15.47457 -34.5665,34.55486 0,-19.08029 -15.4849,-34.55486 -34.5789,-34.55486 z"
-           style="fill:#0c8597;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:9.12021541999999920;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+           style="fill:#0c8597;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:9.12021542;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
         <path
            style="fill:#79673d;fill-opacity:1;fill-rule:evenodd;stroke-width:0.50321198px"
            inkscape:connector-curvature="0"

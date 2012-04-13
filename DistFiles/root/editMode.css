@@ -43,6 +43,25 @@ DIV.hoverUp
 	width: 37px !important;
 	height: 37px !important;
 }
+BUTTON.pasteImageButton
+{
+	z-index: 100;
+	width: 70px;
+	height: 52px;
+	background-image: url("pasteImageButton.png") !important;
+	background-repeat: no-repeat;
+	/*+placement:anchor-top-left 2px 2px;*/
+	position: absolute;
+	left: 2px;
+	top: 2px;
+	background-position: 13px 3px;
+	/*+border-radius:9px;*/
+	-moz-border-radius: 9px;
+	-webkit-border-radius: 9px;
+	-khtml-border-radius: 9px;
+	border-radius: 9px;
+	border-radius: 9px 9px 9px 9px;
+}
 BUTTON.changeImageButton
 {
 	z-index: 100;
