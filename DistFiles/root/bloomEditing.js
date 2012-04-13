@@ -254,6 +254,11 @@ jQuery(document).ready(function() {
         };
     }
 
+    $("*[title]").qtip({ position: {at: 'right center',
+                my: 'left center'
+            },
+            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
+
     //put hint bubbles next to elements which call for them.
 	//show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
     $("*[data-hint]").each(function() {
@@ -269,7 +274,7 @@ jQuery(document).ready(function() {
             my: 'left center'
         };
         
-        var whatToSay = $(this).data("hint");
+        var whatToSay = $(this).data("hint")+$(this).data("shyhint");
         var dictionary = GetDictionary();
         for (key in dictionary) {
             if (key.startsWith("{"))
