@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Palaso.Reporting;
@@ -20,50 +21,57 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
-
+		private static Mutex _oneInstancePerProjectMutex;
 
 		[STAThread]
-		static void Main()
+		static void Main(string[] args)
 		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-
-			TimeBomb();
-
-			//bring in settings from any previous version
-			if (Settings.Default.NeedUpgrade)
+			try
 			{
-				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-				Settings.Default.Upgrade();
-				Settings.Default.NeedUpgrade = false;
+				Application.EnableVisualStyles();
+				Application.SetCompatibleTextRenderingDefault(false);
+
+				TimeBomb();
+
+				//bring in settings from any previous version
+				if (Settings.Default.NeedUpgrade)
+				{
+					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+					Settings.Default.Upgrade();
+					Settings.Default.NeedUpgrade = false;
+					Settings.Default.Save();
+					StartUpWithFirstOrNewVersionBehavior = true;
+				}
+
+				SetUpErrorHandling();
+				Logger.Init();
+				Splasher.Show();
+				SetUpReporting();
 				Settings.Default.Save();
-				StartUpWithFirstOrNewVersionBehavior = true;
-			}
 
-			SetUpErrorHandling();
-			Logger.Init();
-			Splasher.Show();
-			SetUpReporting();
-			Settings.Default.Save();
+				_applicationContainer = new ApplicationContainer();
 
-			_applicationContainer = new ApplicationContainer();
-
-			Browser.SetUpXulRunner();
+				Browser.SetUpXulRunner();
 
 #if !DEBUG
 			SetUpErrorHandling();
 #endif
 
-			StartUpShellBasedOnMostRecentUsedIfPossible();
-			Application.Idle += new EventHandler(Application_Idle);
-			Application.Run();
+				StartUpShellBasedOnMostRecentUsedIfPossible();
+				Application.Idle += new EventHandler(Application_Idle);
+				Application.Run();
 
-			Settings.Default.Save();
+				Settings.Default.Save();
 
-			Logger.ShutDown();
+				Logger.ShutDown();
 
-			if (_projectContext != null)
-				_projectContext.Dispose();
+				if (_projectContext != null)
+					_projectContext.Dispose();
+			}
+			finally
+			{
+				ReleaseMutexForThisProject();
+			}
 		}
 
 
@@ -72,6 +80,72 @@ namespace Bloom
 		{
 			Application.Idle -= new EventHandler(Application_Idle);
 			Splasher.Close();
+		}
+
+
+		private static bool GrabTokenForThisProject(string pathToProject)
+		{
+			//ok, here's how this complex method works...
+			//First, we try to get the mutex quickly and quitely.
+			//If that fails, we put up a dialog and wait a number of seconds,
+			//while we wait for the mutex to come free.
+
+
+			string mutexId = pathToProject;
+			mutexId = mutexId.Replace(Path.DirectorySeparatorChar, '-');
+			mutexId = mutexId.Replace(Path.VolumeSeparatorChar, '-');
+			bool mutexAcquired = false;
+			try
+			{
+				_oneInstancePerProjectMutex = Mutex.OpenExisting(mutexId);
+				mutexAcquired = _oneInstancePerProjectMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
+			}
+			catch (WaitHandleCannotBeOpenedException e)//doesn't exist, we're the first.
+			{
+				_oneInstancePerProjectMutex = new Mutex(true, mutexId, out mutexAcquired);
+				mutexAcquired = true;
+			}
+			catch (AbandonedMutexException e)
+			{
+				//that's ok, we'll get it below
+			}
+
+			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
+			{
+				dlg.Show();
+				try
+				{
+					_oneInstancePerProjectMutex = Mutex.OpenExisting(mutexId);
+					mutexAcquired = _oneInstancePerProjectMutex.WaitOne(TimeSpan.FromMilliseconds(10 * 1000), false);
+				}
+				catch (AbandonedMutexException e)
+				{
+					_oneInstancePerProjectMutex = new Mutex(true, mutexId, out mutexAcquired);
+					mutexAcquired = true;
+				}
+				catch (Exception e)
+				{
+					ErrorReport.NotifyUserOfProblem(e,
+						"There was a problem starting Bloom which might require that you restart your computer.");
+				}
+			}
+
+			if (!mutexAcquired) // cannot acquire?
+			{
+				_oneInstancePerProjectMutex = null;
+				ErrorReport.NotifyUserOfProblem("Another copy of Bloom is already open with " + pathToProject + ". If you cannot find that Bloom, restart your computer.");
+				return false;
+			}
+			return true;
+		}
+
+		public static void ReleaseMutexForThisProject()
+		{
+			if (_oneInstancePerProjectMutex != null)
+			{
+				_oneInstancePerProjectMutex.ReleaseMutex();
+				_oneInstancePerProjectMutex = null;
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -92,6 +166,11 @@ namespace Bloom
 
 			try
 			{
+				if (!GrabTokenForThisProject(projectPath))
+				{
+					return false;
+				}
+
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;

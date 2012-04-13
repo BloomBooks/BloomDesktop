@@ -55,10 +55,10 @@
 			this.label1.Location = new System.Drawing.Point(87, 163);
 			this.label1.MaximumSize = new System.Drawing.Size(400, 0);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(376, 72);
+			this.label1.Size = new System.Drawing.Size(392, 72);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "This is an Alpha (developmental) version of Bloom. It should not be used for evaluation " +
-    "or training.  Please wait for a Beta version.";
+			this.label1.Text = "This is an Alpha (developmental) version of Bloom. It should not be used for eval" +
+    "uation or training.  Please wait for a Beta version.";
 			this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// _fadeOutTimer
@@ -117,7 +117,6 @@
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "SplashScreen";
-			this.TopMost = true;
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			this.ResumeLayout(false);
