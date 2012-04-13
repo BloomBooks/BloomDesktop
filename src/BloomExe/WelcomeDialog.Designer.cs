@@ -71,7 +71,7 @@ namespace Bloom
 			// 
 			this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
 			this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-			this.pictureBox1.Image = global::Bloom.Properties.Resources.Logo217x79;
+			this.pictureBox1.Image = global::Bloom.Properties.Resources.LogoForLibraryChoosingDialog;
 			this.pictureBox1.InitialImage = null;
 			this.pictureBox1.Location = new System.Drawing.Point(33, 12);
 			this.pictureBox1.Name = "pictureBox1";

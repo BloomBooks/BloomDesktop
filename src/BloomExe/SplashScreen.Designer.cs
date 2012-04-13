@@ -41,18 +41,20 @@
 			// 
 			// pictureBox1
 			// 
-			this.pictureBox1.Image = global::Bloom.Properties.Resources.Logo217x79;
+			this.pictureBox1.Image = global::Bloom.Properties.Resources.LogoForSplashScreen;
 			this.pictureBox1.Location = new System.Drawing.Point(16, 12);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(520, 79);
+			this.pictureBox1.Size = new System.Drawing.Size(396, 116);
 			this.pictureBox1.TabIndex = 0;
 			this.pictureBox1.TabStop = false;
 			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
+			this.label1.BackColor = System.Drawing.Color.Transparent;
 			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(87, 163);
+			this.label1.ForeColor = System.Drawing.Color.WhiteSmoke;
+			this.label1.Location = new System.Drawing.Point(69, 163);
 			this.label1.MaximumSize = new System.Drawing.Size(400, 0);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(392, 72);
@@ -70,8 +72,9 @@
 			this._versionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._versionInfo.AutoSize = true;
 			this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 8.25F);
+			this._versionInfo.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this._versionInfo.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this._versionInfo.Location = new System.Drawing.Point(13, 287);
+			this._versionInfo.Location = new System.Drawing.Point(70, 287);
 			this._versionInfo.Name = "_versionInfo";
 			this._versionInfo.Size = new System.Drawing.Size(70, 13);
 			this._versionInfo.TabIndex = 13;
@@ -81,8 +84,8 @@
 			// 
 			this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label2.AutoSize = true;
-			this.label2.ForeColor = System.Drawing.Color.Maroon;
-			this.label2.Location = new System.Drawing.Point(320, 286);
+			this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(251)))), ((int)(((byte)(205)))), ((int)(((byte)(56)))));
+			this.label2.Location = new System.Drawing.Point(343, 287);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(183, 13);
 			this.label2.TabIndex = 14;
@@ -91,7 +94,7 @@
 			// pictureBox2
 			// 
 			this.pictureBox2.Image = global::Bloom.Properties.Resources.construction;
-			this.pictureBox2.Location = new System.Drawing.Point(12, 163);
+			this.pictureBox2.Location = new System.Drawing.Point(457, 164);
 			this.pictureBox2.Name = "pictureBox2";
 			this.pictureBox2.Size = new System.Drawing.Size(69, 71);
 			this.pictureBox2.TabIndex = 15;
@@ -101,8 +104,8 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackColor = System.Drawing.SystemColors.ActiveCaption;
-			this.ClientSize = new System.Drawing.Size(548, 309);
+			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(42)))), ((int)(((byte)(42)))));
+			this.ClientSize = new System.Drawing.Size(561, 309);
 			this.ControlBox = false;
 			this.Controls.Add(this.pictureBox2);
 			this.Controls.Add(this.label2);

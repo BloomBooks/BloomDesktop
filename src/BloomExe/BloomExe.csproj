@@ -504,9 +504,6 @@
     <None Include="Resources\uservoice16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Logo300x78.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\construction.png" />
   </ItemGroup>
   <ItemGroup>
@@ -536,9 +533,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\library16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Logo217x79.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\library32x32.png" />
@@ -614,6 +608,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\newBook1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LogoForSplashScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LogoForLibraryChoosingDialog.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
