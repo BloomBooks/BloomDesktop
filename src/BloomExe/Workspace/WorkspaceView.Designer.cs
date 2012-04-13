@@ -30,13 +30,14 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._infoButton = new System.Windows.Forms.Button();
 			this._feedbackButton = new System.Windows.Forms.Button();
 			this._settingsButton = new System.Windows.Forms.Button();
 			this._openButton1 = new System.Windows.Forms.Button();
-			this._infoButton = new System.Windows.Forms.Button();
 			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable = new System.Windows.Forms.TableLayoutPanel();
+			this._advancedButtonsPanel = new System.Windows.Forms.TableLayoutPanel();
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._libraryTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
@@ -44,68 +45,9 @@
 			this._infoTab = new Messir.Windows.Forms.TabStripButton();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable.SuspendLayout();
+			this._advancedButtonsPanel.SuspendLayout();
 			this._tabStrip.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// _feedbackButton
-			// 
-			this._feedbackButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._feedbackButton.AutoSize = true;
-			this._feedbackButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._feedbackButton.BackColor = System.Drawing.Color.Transparent;
-			this._feedbackButton.FlatAppearance.BorderSize = 0;
-			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._feedbackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._feedbackButton.Image = global::Bloom.Properties.Resources.feedback24x24;
-			this._feedbackButton.Location = new System.Drawing.Point(73, 3);
-			this._feedbackButton.Name = "_feedbackButton";
-			this._feedbackButton.Size = new System.Drawing.Size(65, 47);
-			this._feedbackButton.TabIndex = 26;
-			this._feedbackButton.Text = "Feedback";
-			this._feedbackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolTip1.SetToolTip(this._feedbackButton, "Settings");
-			this._feedbackButton.UseVisualStyleBackColor = false;
-			this._feedbackButton.Click += new System.EventHandler(this._feedbackButton_Click);
-			// 
-			// _settingsButton
-			// 
-			this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._settingsButton.AutoSize = true;
-			this._settingsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._settingsButton.BackColor = System.Drawing.Color.Transparent;
-			this._settingsButton.FlatAppearance.BorderSize = 0;
-			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._settingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._settingsButton.Image = global::Bloom.Properties.Resources.settings24x24;
-			this._settingsButton.Location = new System.Drawing.Point(12, 3);
-			this._settingsButton.Name = "_settingsButton";
-			this._settingsButton.Size = new System.Drawing.Size(55, 47);
-			this._settingsButton.TabIndex = 25;
-			this._settingsButton.Text = "Settings";
-			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
-			this._settingsButton.UseVisualStyleBackColor = false;
-			this._settingsButton.Click += new System.EventHandler(this.OnSettingsButton_Click);
-			// 
-			// _openButton1
-			// 
-			this._openButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._openButton1.AutoSize = true;
-			this._openButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._openButton1.BackColor = System.Drawing.Color.Transparent;
-			this._openButton1.FlatAppearance.BorderSize = 0;
-			this._openButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._openButton1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._openButton1.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
-			this._openButton1.Location = new System.Drawing.Point(144, 3);
-			this._openButton1.Name = "_openButton1";
-			this._openButton1.Size = new System.Drawing.Size(113, 47);
-			this._openButton1.TabIndex = 24;
-			this._openButton1.Text = "Open/Create Library";
-			this._openButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolTip1.SetToolTip(this._openButton1, "Open or Create Another Library");
-			this._openButton1.UseVisualStyleBackColor = false;
-			this._openButton1.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
 			// 
 			// _infoButton
 			// 
@@ -127,6 +69,66 @@
 			this._infoButton.UseVisualStyleBackColor = false;
 			this._infoButton.Click += new System.EventHandler(this.OnInfoButton_Click);
 			// 
+			// _feedbackButton
+			// 
+			this._feedbackButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._feedbackButton.AutoSize = true;
+			this._feedbackButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._feedbackButton.BackColor = System.Drawing.Color.Transparent;
+			this._feedbackButton.FlatAppearance.BorderSize = 0;
+			this._feedbackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._feedbackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._feedbackButton.Image = global::Bloom.Properties.Resources.feedback24x24;
+			this._feedbackButton.Location = new System.Drawing.Point(67, 3);
+			this._feedbackButton.Name = "_feedbackButton";
+			this._feedbackButton.Size = new System.Drawing.Size(65, 47);
+			this._feedbackButton.TabIndex = 29;
+			this._feedbackButton.Text = "Feedback";
+			this._feedbackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolTip1.SetToolTip(this._feedbackButton, "Settings");
+			this._feedbackButton.UseVisualStyleBackColor = false;
+			this._feedbackButton.Click += new System.EventHandler(this._feedbackButton_Click);
+			// 
+			// _settingsButton
+			// 
+			this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._settingsButton.AutoSize = true;
+			this._settingsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._settingsButton.BackColor = System.Drawing.Color.Transparent;
+			this._settingsButton.FlatAppearance.BorderSize = 0;
+			this._settingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._settingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._settingsButton.Image = global::Bloom.Properties.Resources.settings24x24;
+			this._settingsButton.Location = new System.Drawing.Point(3, 3);
+			this._settingsButton.Name = "_settingsButton";
+			this._settingsButton.Size = new System.Drawing.Size(55, 47);
+			this._settingsButton.TabIndex = 28;
+			this._settingsButton.Text = "Settings";
+			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolTip1.SetToolTip(this._settingsButton, "Settings");
+			this._settingsButton.UseVisualStyleBackColor = false;
+			this._settingsButton.Click += new System.EventHandler(this.OnSettingsButton_Click);
+			// 
+			// _openButton1
+			// 
+			this._openButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._openButton1.AutoSize = true;
+			this._openButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._openButton1.BackColor = System.Drawing.Color.Transparent;
+			this._openButton1.FlatAppearance.BorderSize = 0;
+			this._openButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._openButton1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._openButton1.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
+			this._openButton1.Location = new System.Drawing.Point(138, 3);
+			this._openButton1.Name = "_openButton1";
+			this._openButton1.Size = new System.Drawing.Size(113, 47);
+			this._openButton1.TabIndex = 27;
+			this._openButton1.Text = "Open/Create Library";
+			this._openButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolTip1.SetToolTip(this._openButton1, "Open or Create Another Library");
+			this._openButton1.UseVisualStyleBackColor = false;
+			this._openButton1.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
+			// 
 			// _containerPanel
 			// 
 			this._containerPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -141,16 +143,15 @@
 			// 
 			this._topBarButtonTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._topBarButtonTable.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._topBarButtonTable.ColumnCount = 5;
+			this._topBarButtonTable.ColumnCount = 6;
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-			this._topBarButtonTable.Controls.Add(this._feedbackButton, 2, 0);
-			this._topBarButtonTable.Controls.Add(this._settingsButton, 2, 0);
-			this._topBarButtonTable.Controls.Add(this._openButton1, 1, 0);
+			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 260F));
 			this._topBarButtonTable.Controls.Add(this._infoButton, 0, 0);
+			this._topBarButtonTable.Controls.Add(this._advancedButtonsPanel, 5, 0);
 			this._topBarButtonTable.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.AddColumns;
 			this._topBarButtonTable.Location = new System.Drawing.Point(790, 3);
 			this._topBarButtonTable.Name = "_topBarButtonTable";
@@ -159,6 +160,23 @@
 			this._topBarButtonTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this._topBarButtonTable.Size = new System.Drawing.Size(305, 60);
 			this._topBarButtonTable.TabIndex = 0;
+			// 
+			// _advancedButtonsPanel
+			// 
+			this._advancedButtonsPanel.AccessibleDescription = "This may be hidden by Settings Protection";
+			this._advancedButtonsPanel.ColumnCount = 3;
+			this._advancedButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+			this._advancedButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+			this._advancedButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+			this._advancedButtonsPanel.Controls.Add(this._openButton1, 0, 0);
+			this._advancedButtonsPanel.Controls.Add(this._settingsButton, 2, 0);
+			this._advancedButtonsPanel.Controls.Add(this._feedbackButton, 1, 0);
+			this._advancedButtonsPanel.Location = new System.Drawing.Point(3, 3);
+			this._advancedButtonsPanel.Name = "_advancedButtonsPanel";
+			this._advancedButtonsPanel.RowCount = 1;
+			this._advancedButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this._advancedButtonsPanel.Size = new System.Drawing.Size(254, 54);
+			this._advancedButtonsPanel.TabIndex = 27;
 			// 
 			// _tabStrip
 			// 
@@ -194,7 +212,7 @@
 			this._libraryTab.Name = "_libraryTab";
 			this._libraryTab.Padding = new System.Windows.Forms.Padding(0);
 			this._libraryTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._libraryTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
+			this._libraryTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._libraryTab.Size = new System.Drawing.Size(80, 71);
 			this._libraryTab.Text = "Library";
 			this._libraryTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -212,7 +230,7 @@
 			this._editTab.Name = "_editTab";
 			this._editTab.Padding = new System.Windows.Forms.Padding(0);
 			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._editTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
+			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._editTab.Size = new System.Drawing.Size(69, 71);
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -231,7 +249,7 @@
 			this._publishTab.Name = "_publishTab";
 			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
 			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._publishTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
+			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -249,7 +267,7 @@
 			this._infoTab.Name = "_infoTab";
 			this._infoTab.Padding = new System.Windows.Forms.Padding(0);
 			this._infoTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._infoTab.SelectedTextColor = Palette.TextAgainstDarkBackground;
+			this._infoTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._infoTab.Size = new System.Drawing.Size(69, 71);
 			this._infoTab.Text = "Help";
 			this._infoTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
@@ -276,6 +294,8 @@
 			this.Size = new System.Drawing.Size(1098, 540);
 			this._topBarButtonTable.ResumeLayout(false);
 			this._topBarButtonTable.PerformLayout();
+			this._advancedButtonsPanel.ResumeLayout(false);
+			this._advancedButtonsPanel.PerformLayout();
 			this._tabStrip.ResumeLayout(false);
 			this._tabStrip.PerformLayout();
 			this.ResumeLayout(false);
@@ -294,11 +314,12 @@
 		private Messir.Windows.Forms.TabStripButton _infoTab;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.TableLayoutPanel _topBarButtonTable;
-		private System.Windows.Forms.Button _feedbackButton;
-		private System.Windows.Forms.Button _settingsButton;
-		private System.Windows.Forms.Button _openButton1;
-		private System.Windows.Forms.Button _infoButton;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
+		private System.Windows.Forms.Button _infoButton;
+		private System.Windows.Forms.TableLayoutPanel _advancedButtonsPanel;
+		private System.Windows.Forms.Button _openButton1;
+		private System.Windows.Forms.Button _settingsButton;
+		private System.Windows.Forms.Button _feedbackButton;
 
 
     }

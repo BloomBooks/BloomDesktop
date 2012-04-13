@@ -46,7 +46,8 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-			_settingsLauncherHelper.CustomSettingsControl = _settingsButton;
+			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
+			_settingsLauncherHelper.CustomSettingsControl = _advancedButtonsPanel;
 
 			editBookCommand.Subscribe(OnEditBook);
 
@@ -130,10 +131,14 @@ namespace Bloom.Workspace
 
 		private void OnOpenCreateLibrary_Click(object sender, EventArgs e)
 		{
-			if (_model.CloseRequested())
+			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
-				Invoke(CloseCurrentProject);
-			}
+				if (_model.CloseRequested())
+				{
+					Invoke(CloseCurrentProject);
+				}
+				return DialogResult.OK;
+			});
 		}
 
 		private void OnInfoButton_Click(object sender, EventArgs e)
