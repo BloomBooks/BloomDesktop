@@ -18,6 +18,7 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 			 UpgradeCode="$(var.Property_UpgradeCode)">
 
 	<Package  Compressed="yes" InstallerVersion="200" />
+  <!--  <Icon Id="BloomPackIcon.BloomPack" SourceFile="..\..\artwork\BloomPack.ico" /> -->
 
 	<Upgrade Id ="$(var.Property_UpgradeCode)" >
 	  <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
@@ -66,6 +67,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
 
 			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
+			<File Id="BloomPackIcon" Name="BloomPackIcon.ico" Source="..\..\artwork\BloomPack.ico" />
+			<File Id="BloomCollectionIcon" Name="BloomCollectionIcon.ico" Source="..\..\artwork\BloomCollectionIcon.ico" />
+
 			<!--- todo: icons for Bloom files -->
 
 			<!--- connect file types to icons and program to launch -->
@@ -78,6 +82,37 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
 			<!-- another way:                 <Registry Id='LuaReg8' Root='HKCR' Key='VisualStudio.luaproj.8.0\Shell\Open\Command' Action='write'
 					 Type='string' Value='"[ENVPATH_2005]" "%1"'/> -->
+
+			<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Bloom.BloomPack" Name="FriendlyTypeName" Value="Bloom Book Pack" Type="string" />
+
+			<!-- Bloom Collection Files -->
+			<ProgId Id='Bloom.BloomCollectionFile' Description='BloomPack file' >
+			  <Extension Id='BloomCollectionFile' ContentType='application/bloom'>
+				<!-- I know application/bloom looks weird, but it copies MSword docs -->
+				<Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
+			  </Extension>
+			</ProgId>
+
+			<Registry  Id='BloomCollectionIcon1' Root='HKCR' Key='.BloomLibrary' Action='write'
+			  Type='string' Value='Bloom.BloomCollectionFile' />
+			<Registry Id='BloomCollectionIcon2' Root='HKCR' Key='Bloom.BloomCollectionFile' Action='write'
+			  Type='string' Value='Bloom Book Collection' />
+			<Registry Id='BloomCollectionIcon3' Root='HKCR' Key='Bloom.BloomCollectionFile\DefaultIcon' Action='write'
+			  Type='string' Value='[!BloomPackIcon], 0' />
+
+			<!-- Bloom Pack Files -->
+			<ProgId Id='Bloom.BloomPackFile' Description='BloomPack file' >
+			  <Extension Id='BloomPackFile' ContentType='application/bloom'>  <!-- I know application/bloom looks weird, but it copies MSword docs -->
+				<Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
+			  </Extension>
+			</ProgId>
+
+			<Registry  Id='BloomPackIcon1' Root='HKCR' Key='.BloomPack' Action='write'
+			  Type='string' Value='Bloom.BloomPackFile' />
+			<Registry Id='BloomPackIcon2' Root='HKCR' Key='Bloom.BloomPackFile' Action='write'
+			  Type='string' Value='Bloom Book Collection' />
+			<Registry Id='BloomPackIcon3' Root='HKCR' Key='Bloom.BloomPackFile\DefaultIcon' Action='write'
+			  Type='string' Value='[!BloomPackIcon], 0' />
 
 			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
 				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
@@ -127,6 +162,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="AxInterop.AcroPDFLib.dll" Name="AxInterop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\AxInterop.AcroPDFLib.dll" />
 		  </Component>
 
+		  <Component Id="Ionic.Zip.Reduced.dll" Guid="{D40A976F-244D-4C0E-924D-AB98040649F6}">
+			<File Id="Ionic.Zip.Reduced.dll" Name="Ionic.Zip.Reduced.dll" KeyPath="yes" Source="..\..\output\release\Ionic.Zip.Reduced.dll" />
+		  </Component>
+
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
@@ -151,6 +190,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="libtidy.dll"/>
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
 	  <ComponentRef Id="GeckoFx" />
+	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />

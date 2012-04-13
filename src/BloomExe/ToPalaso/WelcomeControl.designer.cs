@@ -47,8 +47,8 @@ namespace Bloom.ToPalaso
 			this._imageList.Images.SetKeyName(0, "getFromUsb");
 			this._imageList.Images.SetKeyName(1, "wesayProject");
 			this._imageList.Images.SetKeyName(2, "getFromInternet");
-			this._imageList.Images.SetKeyName(3, "newLibrary");
-			this._imageList.Images.SetKeyName(4, "browse");
+			this._imageList.Images.SetKeyName(3, "browse");
+			this._imageList.Images.SetKeyName(4, "newLibrary");
 			//
 			// toolTip1
 			//
@@ -91,9 +91,9 @@ namespace Bloom.ToPalaso
 			this._templateButton.FlatAppearance.BorderSize = 0;
 			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._templateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._templateButton.Image = global::Bloom.Properties.Resources.newLibrary32x32;
 			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._templateButton.ImageKey = "newLibrary";
-			this._templateButton.ImageList = this._imageList;
 			this._templateButton.Location = new System.Drawing.Point(51, 0);
 			this._templateButton.Name = "_templateButton";
 			this._templateButton.Size = new System.Drawing.Size(351, 43);

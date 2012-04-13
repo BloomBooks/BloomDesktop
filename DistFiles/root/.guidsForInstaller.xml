@@ -47,4 +47,6 @@
   <File Id="library.js" Guid="26be7d19-6ddc-4ee5-80ed-989a6e714df7" />
   <File Id="moveDivButton.png" Guid="0e52f265-15d2-4c5a-947c-1a4a0c047241" />
   <File Id="previewMode.css5" Guid="6ffb05a2-9715-4827-91df-1ff0ddf948a0" />
+  <File Id="BasePage.css4" Guid="83c24883-6ad6-40e1-9565-336a4fd64383" />
+  <File Id="previewMode.css4" Guid="b88e184d-2fb6-4c37-aeb4-539a5127c0b4" />
 </InstallerMetadata>

@@ -19,4 +19,7 @@
   <File Id="open.png" Guid="c7c67a19-e007-43a9-87ee-23fe5f944688" />
   <File Id="wait30transparent.gif" Guid="46a22562-e187-440b-9c00-8c6e903d121e" />
   <File Id="library32x32.png" Guid="6910df94-e5f4-4da3-aca8-b0446afb8937" />
+  <File Id="edit32x32.png" Guid="d28cc2c3-a582-40c3-afc4-7cc10b2e731c" />
+  <File Id="publish32x32.png" Guid="67aca047-5ec9-49b8-b4ca-d99c9278e066" />
+  <File Id="newLibrary32x32.png" Guid="b36e9c2e-f7ea-4fed-b371-60e056537fd9" />
 </InstallerMetadata>

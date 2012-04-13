@@ -137,7 +137,7 @@
 
 
   <Target Name="GetXulRunnerIntoLib">
-	<RemoveDir Directories="..\lib\xulrunner" />
+	<!--   <RemoveDir Directories="..\lib\xulrunner" />-->
 
 	<!-- we expect this has only one element, named "xulrunner"-->
 	<!-- always dies with errors in the unzipper

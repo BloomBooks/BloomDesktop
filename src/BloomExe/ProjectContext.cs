@@ -195,7 +195,7 @@ namespace Bloom
 			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}
 
-		private static string InstalledCollectionsDirectory
+		public static string InstalledCollectionsDirectory
 		{
 			get
 			{
