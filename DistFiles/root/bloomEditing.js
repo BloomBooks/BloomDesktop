@@ -274,7 +274,7 @@ jQuery(document).ready(function() {
             my: 'left center'
         };
 
-        var whatToSay = $(this).data("hint")+$(this).data("shyhint");
+        var whatToSay = $(this).data("hint");
         var dictionary = GetDictionary();
         for (key in dictionary) {
             if (key.startsWith("{"))
