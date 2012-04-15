@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Library.BloomPack;
 using Bloom.Properties;
 using Palaso.Reporting;
 
@@ -49,7 +50,10 @@ namespace Bloom
 
 				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 				{
-					BloomPack.Install(args[0]);
+					using (var dlg = new BloomPackInstallDialog(args[0]))
+					{
+						dlg.ShowDialog();
+					}
 					return;
 				}
 
