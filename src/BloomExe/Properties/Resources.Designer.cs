@@ -67,6 +67,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap BloomPack64x64 {
+            get {
+                object obj = ResourceManager.GetObject("BloomPack64x64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap construction {
             get {
                 object obj = ResourceManager.GetObject("construction", resourceCulture);
@@ -133,6 +140,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap Error70x70 {
             get {
                 object obj = ResourceManager.GetObject("Error70x70", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Error70x701 {
+            get {
+                object obj = ResourceManager.GetObject("Error70x701", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

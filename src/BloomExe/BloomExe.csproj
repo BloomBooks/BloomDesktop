@@ -135,7 +135,6 @@
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
-    <Compile Include="BloomPack.cs" />
     <Compile Include="Book\SizeAndOrientation.cs" />
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />
@@ -143,6 +142,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="Library\BloomPack\BloomPackInstallDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Library\BloomPack\BloomPackInstallDialog.Designer.cs">
+      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -314,6 +319,9 @@
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\BloomPack\BloomPackInstallDialog.resx">
+      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\ListHeader.resx">
       <DependentUpon>ListHeader.cs</DependentUpon>
@@ -614,6 +622,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\LogoForLibraryChoosingDialog.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BloomPack64x64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Error70x701.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

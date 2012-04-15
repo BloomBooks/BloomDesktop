@@ -85,7 +85,7 @@
 			this._topBarPanel.Controls.Add(this._printButton);
 			this._topBarPanel.Location = new System.Drawing.Point(296, 320);
 			this._topBarPanel.Name = "_topBarPanel";
-			this._topBarPanel.Size = new System.Drawing.Size(297, 70);
+			this._topBarPanel.Size = new System.Drawing.Size(327, 70);
 			this._topBarPanel.TabIndex = 14;
 			// 
 			// _saveButton
@@ -97,7 +97,7 @@
 			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._saveButton.ForeColor = System.Drawing.Color.Black;
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-			this._saveButton.Location = new System.Drawing.Point(111, 0);
+			this._saveButton.Location = new System.Drawing.Point(127, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
 			this._saveButton.TabIndex = 15;
