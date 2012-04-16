@@ -50,10 +50,10 @@ BUTTON.pasteImageButton
 	height: 52px;
 	background-image: url("pasteImageButton.png") !important;
 	background-repeat: no-repeat;
-	/*+placement:anchor-top-left 2px 2px;*/
+	/*+placement:anchor-bottom-right 2px 2px;*/
 	position: absolute;
-	left: 2px;
-	top: 2px;
+	right: 2px;
+	bottom: 2px;
 	background-position: 13px 3px;
 	/*+border-radius:9px;*/
 	-moz-border-radius: 9px;
@@ -81,19 +81,21 @@ BUTTON.changeImageButton
 	border-radius: 9px;
 	border-radius: 9px 9px 9px 9px;
 }
+/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually limit itself to this button, using the 'handle' option. But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 BUTTON.moveButton
 {
-	/*+placement:anchor-top-left 5px 6px;*/
+	/*+placement:anchor-top-left -19px -17px;*/
 	position: absolute;
-	left: 5px;
-	top: 6px;
+	left: -19px;
+	top: -17px;
 	background-image: url("moveDivButton.png") !important;
 	background-repeat: no-repeat;
 	background-color: transparent;
-	width: 42px;
-	height: 40px;
+	width: 16px;
+	height: 16px;
 	border: 0 hidden #000000;
 	z-index: 1000;
+	background-size: contain;
 }
 TEXTAREA, DIV.bloom-editable
 {

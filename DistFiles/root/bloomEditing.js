@@ -374,7 +374,7 @@ jQuery(document).ready(function() {
     });
     
     jQuery(".bloom-draggable").mouseenter(function() {
-        $(this).prepend("<button class='moveButton' title='Move'></button>")
+        $(this).prepend("<button class='moveButton' title='Move'></button>");
         $(this).find(".moveButton").mousedown(function(e) {
             $(this).parent().trigger(e);
         });
@@ -439,8 +439,9 @@ jQuery(document).ready(function() {
 
 
     //add drag and resize ability where elements call for it
-    $(".bloom-draggable").draggable({containment: "parent"});
-
+ //   $(".bloom-draggable").draggable({containment: "parent"});
+    $(".bloom-draggable").draggable({containment: "parent",
+            handle: '.bloom-imageContainer' });//without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
 
     $(".bloom-resizable").each(function() {
         var imgContainer = $(this).find(".bloom-imageContainer");
@@ -467,13 +468,7 @@ jQuery(document).ready(function() {
         }
 
     });
-//    $(".bloom-resizable").each(function() {
-//        var paternus = $(this).parent();
-//        $(this).resizable({handles: 'nw, ne, sw, se', alsoResize: paternus});
-//    });
-    //$(".bloom-resizable").resizable({handles: 'nw, ne, sw, se', alsoResize: $(this).parent});
-//    $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se', alsoResize: 'closest(.wordAndPicture)'});
-    //$(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
+
     $(".bloom-resizable").mouseenter(function() {
         $(this).addClass("ui-mouseOver")
     }).mouseleave(function() {
