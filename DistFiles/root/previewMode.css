@@ -91,6 +91,14 @@ DIV.numberedPage:after
 {
 	content: counter(pageNumber);
 }
+/*I don't know why specifying placement of the page number was needed for the picture dictionary, but not basic book*/
+DIV.numberedPage.A5Portrait:after
+{
+	/*+placement:shift 261px 654px;*/
+	position: relative;
+	left: 261px;
+	top: 654px;
+}
 TEXTAREA.coverColor
 {
 	background-color: #D8ADAD;
@@ -118,7 +126,6 @@ a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 {
 	visibility: hidden;
 }
-
 DIV.coverBottomBookTopic DIV.topicN1
 {
 	border: none;

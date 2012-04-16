@@ -440,7 +440,40 @@ jQuery(document).ready(function() {
 
     //add drag and resize ability where elements call for it
     $(".bloom-draggable").draggable({containment: "parent"});
-    $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
+
+
+    $(".bloom-resizable").each(function() {
+        var imgContainer = $(this).find(".bloom-imageContainer");
+         /* The case here is that the thing with this class actually has an
+         inner image, as is the case for the Picture Dictionary.
+         The key, non-obvious, difficult requirement is keeping the text below
+         a picture dictionary item centered underneath the image.  I'd be
+         surprised if this wasn't possible in CSS, but I'm not expert enough.
+         So, I switched from having the image container be resizable, to having the
+         whole div (image+headwords) be resizable, then use the "alsoResize"
+         parameter to make the imageContainer resize.  Then, in order to make
+         the image resize in real-time as you're dragging, I use the "resize"
+         event to scale the image up proportionally (and centered) inside the
+         newly resized container.
+        */
+        if(imgContainer != null)        {
+            var img = $(this).find(".bloom-imageContainer img");
+            $(this).resizable({handles: 'nw, ne, sw, se', alsoResize: imgContainer,
+            resize: function(event,ui){img.scaleImage({scale: "fit"})}});
+        }
+        /* just a normal image within a <div class='imageContainer' */
+        else {
+            $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
+        }
+
+    });
+//    $(".bloom-resizable").each(function() {
+//        var paternus = $(this).parent();
+//        $(this).resizable({handles: 'nw, ne, sw, se', alsoResize: paternus});
+//    });
+    //$(".bloom-resizable").resizable({handles: 'nw, ne, sw, se', alsoResize: $(this).parent});
+//    $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se', alsoResize: 'closest(.wordAndPicture)'});
+    //$(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
     $(".bloom-resizable").mouseenter(function() {
         $(this).addClass("ui-mouseOver")
     }).mouseleave(function() {

@@ -6,40 +6,32 @@
 BODY
 {
 }
-TEXTAREA
-{
-	text-align: center;
-	margin-bottom: 0;
-	padding-bottom: 0px;
-	padding-top: 0px;
-	margin-top: 0px;
-	height: 39px;
-}
-DIV.wordsDiv TEXTAREA.contentLanguage1
+DIV.wordsDiv DIV.contentLanguage1
 {
 	font-weight: bold;
 }
-DIV.wordsDiv TEXTAREA
+DIV.wordsDiv DIV
 {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
 	height: 24px;
-	width: 188px;
+	width: 100%;
 	display: inline;
 	line-height: 0.9;
-	text-align: left;
+	text-align: center;
 }
 DIV.bloom-imageContainer
 {
 	height: 114px;
-	width: 188px;
+	width: 100%;
 	display: block;
 	margin-bottom: 4px;
 	padding-bottom: 0px;
 	padding-top: 0px;
 	margin-top: 0px;
+	border: 1px solid #3D7E4D;
 }
 DIV.wordsDiv
 {
@@ -86,7 +78,7 @@ DIV.domain DIV.bloom-content3
 DIV.wordAndPicture
 {
 	width: 144px;
-	text-align: center;
+	border: 1px solid #080AC4;
 }
 DIV.Images6 IMG
 {
@@ -94,6 +86,7 @@ DIV.Images6 IMG
 	padding-top: 0px;
 	padding-bottom: 1px;
 	margin-bottom: 0px;
+	border: 1px solid #000000;
 }
 /*NB: Child(1) is actually the domain title. So we start with 2*/
 DIV.wordAndPicture:nth-child(2)
@@ -137,9 +130,4 @@ DIV.wordAndPicture:nth-child(7)
 	position: absolute;
 	right: 69px;
 	top: 559px;
-}
-TD
-{
-	vertical-align: middle;
-	text-align: center;
 }
