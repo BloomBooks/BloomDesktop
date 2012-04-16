@@ -37,12 +37,6 @@ DIV.hoverUp
 {
 	background-color: #D5D5E4;
 }
-.moveButtonIcon
-{
-	background-image: url("moveDivButton.png") !important;
-	width: 37px !important;
-	height: 37px !important;
-}
 BUTTON.pasteImageButton
 {
 	z-index: 100;
@@ -81,7 +75,13 @@ BUTTON.changeImageButton
 	border-radius: 9px;
 	border-radius: 9px 9px 9px 9px;
 }
-/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually limit itself to this button, using the 'handle' option. But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
+/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
+.moveButtonIcon
+{
+	background-image: url("moveDivButton.png") !important;
+	width: 37px !important;
+	height: 37px !important;
+}
 BUTTON.moveButton
 {
 	/*+placement:anchor-top-left -19px -17px;*/
