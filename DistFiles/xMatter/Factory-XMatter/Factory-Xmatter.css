@@ -1,6 +1,6 @@
 /*Cover Page
 ....Title*/
-.A5Portrait.cover .bloom-translationGroup
+.A5Portrait.cover .bloom-translationGroup.coverTitle
 {
 	/*+placement:anchor-top-left 33px 44px;*/
 	position: absolute;
@@ -9,7 +9,7 @@
 	width: 475px;
 	text-align: center;
 }
-.A5Landscape.cover .bloom-translationGroup
+.A5Landscape.cover .bloom-translationGroup.coverTitle
 {
 	/*+placement:anchor-top-left 37px 30px;*/
 	position: absolute;
@@ -18,7 +18,7 @@
 	width: 728px;
 	text-align: center;
 }
-.A4Landscape.cover .bloom-translationGroup
+.A4Landscape.cover .bloom-translationGroup.coverTitle
 {
 	/*+placement:anchor-top-left 112px 44px;*/
 	position: absolute;
@@ -131,25 +131,37 @@
 /*.......Topic*/
 DIV.coverBottomBookTopic
 {
-	overflow: hidden;
+	/*[disabled]overflow:hidden;*/
 	text-align: right;
-	width: 237px;
-	height: 58px;
+	width: 274px;
+	height: 84px;
 	/*+placement:anchor-bottom-right 29px 17px;*/
 	position: absolute;
 	right: 29px;
 	bottom: 17px;
 	min-height: 20px;
 	display: table;
+	border: 1px solid #5C5757;
 }
-DIV.coverBottomBookTopic DIV.topicN1
+DIV.coverBottomBookTopic DIV.bloom-contentNational1
+{
+	height: 44px;
+	min-height: 20px;
+	width: 100%;
+	display: table-row;
+	vertical-align: bottom;
+	border: none !important;
+	/*[disabled]display:block;*/
+}
+DIV.coverBottomBookTopic DIV.bloom-contentNational2
 {
 	/*[disabled]height:106px;*/
 	min-height: 20px;
 	width: 100%;
-	display: table-cell;
+	display: table-row;
 	vertical-align: bottom;
-	border: 1px solid #5C5757;
+	display: block;
+	border: none !important;
 }
 /*.......Language Name*/
 DIV.coverBottomLangName DIV

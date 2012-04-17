@@ -17,7 +17,8 @@ namespace Bloom
 	public class LibrarySettings
 	{
 		private string _vernacularIso639Code;
-
+		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
+		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
 		#region Persisted roperties
 
@@ -40,8 +41,7 @@ namespace Bloom
 
 		public string GetVernacularName(string inLanguage)
 		{
-			var lookup = new LookupIsoCodeModel();
-			Iso639LanguageCode exactLanguageMatch = lookup.GetExactLanguageMatch(VernacularIso639Code);
+			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(VernacularIso639Code);
 			if (exactLanguageMatch == null)
 				return "???";
 			return exactLanguageMatch.Name;
@@ -49,17 +49,29 @@ namespace Bloom
 
 		public string GetNationalLanguage1Name(string inLanguage)
 		{
-			var lookup = new LookupIsoCodeModel();
 			//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 			//So, we'd rather have GetBestLanguageMatch()
-			return lookup.GetExactLanguageMatch(NationalLanguage1Iso639Code).Name;
+
+
+			//profiling showed we were spending a lot of time looking this up, hence the cache
+			if (!_isoToLangNameDictionary.ContainsKey(NationalLanguage1Iso639Code))
+			{
+				_isoToLangNameDictionary.Add(NationalLanguage1Iso639Code, _lookupIsoCode.GetExactLanguageMatch(NationalLanguage1Iso639Code).Name);
+			}
+			return _isoToLangNameDictionary[NationalLanguage1Iso639Code];
 		}
+
 		public string GetNationalLanguage2Name(string inLanguage)
 		{
 			if(string.IsNullOrEmpty(NationalLanguage2Iso639Code))
 				return string.Empty;
-			var lookup = new LookupIsoCodeModel();
-			return lookup.GetExactLanguageMatch(NationalLanguage2Iso639Code).Name;
+
+			//profiling showed we were spending a lot of time looking this up, hence the cache
+			if (!_isoToLangNameDictionary.ContainsKey(NationalLanguage2Iso639Code))
+			{
+				_isoToLangNameDictionary.Add(NationalLanguage2Iso639Code,_lookupIsoCode.GetExactLanguageMatch(NationalLanguage2Iso639Code).Name);
+			}
+			return _isoToLangNameDictionary[NationalLanguage2Iso639Code];
 		}
 		#endregion
 

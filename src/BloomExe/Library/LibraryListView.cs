@@ -91,6 +91,10 @@ namespace Bloom.Library
 			if (!_collectionLoadPending)
 				return;
 			_collectionLoadPending = false;
+			Cursor = Cursors.WaitCursor;
+			Application.DoEvents();//needed to get the wait cursor to show
+
+			_libraryFlow.SuspendLayout();
 
 			_libraryFlow.Controls.Clear();
 
@@ -131,6 +135,8 @@ namespace Bloom.Library
 
 				LoadOneCollection(collection, _collectionFlow);
 			}
+			_libraryFlow.ResumeLayout();
+			Cursor = Cursors.Default;
 		}
 
 		private void LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)

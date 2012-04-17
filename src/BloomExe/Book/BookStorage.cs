@@ -91,7 +91,10 @@ namespace Bloom.Book
 			}
 			else
 			{
-				ErrorMessages = ValidateBook(PathToExistingHtml);
+				//Validating here was taking a 1/3 of the startup time
+				// eventually, we need to restructure so that this whole Storage isn't created until actually needed, then maybe this can come back
+				//			ErrorMessages = ValidateBook(PathToExistingHtml);
+
 				if (!string.IsNullOrEmpty(ErrorMessages))
 				{
 					//hack so we can package this for palaso reporting

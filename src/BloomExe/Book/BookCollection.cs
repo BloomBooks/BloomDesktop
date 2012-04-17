@@ -76,9 +76,11 @@ namespace Bloom.Book
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
 				}
 
-				ListOfBooksIsOutOfDate();
+				//ListOfBooksIsOutOfDate();
+				//GetBooks();//loads up the _books
+				AddBook(newBookFolder);
 				NotifyCollectionChanged();
-				GetBooks();//loads up the _books
+
 				var newBook = _books.Find(b => b.FolderPath == newBookFolder);
 
 				if(newBook is ErrorBook)
@@ -158,23 +160,26 @@ namespace Bloom.Book
 			{
 				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
 					continue;
-				try
-				{
-					var book = _bookFactory(_storageFactory(path), Type== CollectionType.TheOneEditableCollection);
-					Debug.WriteLine(book.Title);
-					_books.Add(book);
-				}
-				catch(Exception e)
-				{
-					if (e.InnerException != null)
-					{
-						e = e.InnerException;
-					}
-					_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
-				}
+				AddBook(path);
 			}
 		}
 
-
+		private void AddBook(string path)
+		{
+			try
+			{
+				var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
+				Debug.WriteLine(book.Title);
+				_books.Add(book);
+			}
+			catch (Exception e)
+			{
+				if (e.InnerException != null)
+				{
+					e = e.InnerException;
+				}
+				_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
+			}
+		}
 	}
 }
