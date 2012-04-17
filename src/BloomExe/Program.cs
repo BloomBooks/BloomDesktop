@@ -71,7 +71,18 @@ namespace Bloom
 
 				StartUpShellBasedOnMostRecentUsedIfPossible();
 				Application.Idle += new EventHandler(Application_Idle);
-				Application.Run();
+
+				try
+				{
+					Application.Run();
+				}
+				catch (System.Exception nasty)
+				{
+					//did this special becuase we don't have an event loop to drive the error reporting dialog if Application.Run() dies
+					Debug.WriteLine(Logger.LogText);
+					Application.Run(new SimpleMessageDialog(nasty.Message + "\r\n" + nasty.StackTrace + "\r\n" + Logger.LogText));
+				}
+
 
 				Settings.Default.Save();
 

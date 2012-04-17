@@ -332,10 +332,10 @@ DIV.verso DIV
 {
 	height: 156px;
 	width: 475px;
-	/*+placement:shift 45px 18px;*/
+	/*+placement:shift -51px 50px;*/
 	position: relative;
-	left: 45px;
-	top: 18px;
+	left: -51px;
+	top: 50px;
 }
 .A5Landscape DIV.originalAcknowledgments
 {
@@ -383,10 +383,10 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 .A5Portrait DIV#versoLicenseAndCopyright
 {
-	/*+placement:shift 6px 53px;*/
+	/*+placement:shift -3px 80px;*/
 	position: relative;
-	left: 6px;
-	top: 53px;
+	left: -3px;
+	top: 80px;
 	margin-left: 83px;
 	width: 432px;
 	height: 129px;
@@ -426,10 +426,10 @@ IMG.licenseImage
 }
 BUTTON#editCopyrightAndLicense
 {
-	/*+placement:anchor-top-left 148px -25px;*/
+	/*+placement:anchor-top-left 96px 3px;*/
 	position: absolute;
-	left: 148px;
-	top: -25px;
+	left: 96px;
+	top: 3px;
 	font-size: 9pt;
 	/*[disabled]display:block;*/
 }
