@@ -6,10 +6,14 @@ BODY
 }
 DIV.pageLabel
 {
-	width: 205px;
 	text-align: left;
 	color: #96A9B3;
 	margin-left: 5px;
+	/*+placement:float-left 0px 0px;*/
+	float: left;
+	position: relative;
+	left: 0px;
+	top: 0px;
 }
 DIV.ui-tooltip-title
 {

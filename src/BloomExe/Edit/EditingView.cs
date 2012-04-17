@@ -175,12 +175,14 @@ namespace Bloom.Edit
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 
+						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
+						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
 								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
 								"license.png",
-								dlg.Metadata.License.Url, dlg.Metadata.License.RightsStatement.Replace("'", "\\'"), dlg.Metadata.License.GetDescription("en").Replace("'", "\\'"));
+								dlg.Metadata.License.Url, rights, description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 					}
 				}
