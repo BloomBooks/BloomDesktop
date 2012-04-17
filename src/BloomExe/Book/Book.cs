@@ -291,12 +291,16 @@ namespace Bloom.Book
 				}
 				Image thumb;
 				if (_storage.TryGetPremadeThumbnail(out thumb))
+				{
 					callback(thumb);
+					return;
+				}
 
 				var dom = GetPreviewXmlDocumentForFirstPage();
 				if (dom == null)
 				{
 					callback(Resources.Error70x70);
+					return;
 				}
 				string folderForCachingThumbnail = null;
 
