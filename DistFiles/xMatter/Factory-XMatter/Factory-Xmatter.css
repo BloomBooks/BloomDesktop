@@ -128,7 +128,8 @@
 	left: 109px;
 	top: 154px;
 }
-/*.......Topic*/
+/*.......Topic
+This is done with display='table' and 'table-row' so that if there is just one lang for topic, it goes at the bottom. If there are 2, they stack going upwards.*/
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
@@ -141,7 +142,6 @@ DIV.coverBottomBookTopic
 	bottom: 17px;
 	min-height: 20px;
 	display: table;
-	border: 1px solid #5C5757;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
