@@ -29,3 +29,18 @@ DIV.bloom-metaData TEXTAREA
 	cursor: pointer;
 /*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
 }
+/*This is here instead of Factor-XMatter.css so that it only shows when it is editable*/
+DIV.coverBottomBookTopic
+{
+	/*[disabled]overflow:hidden;*/
+	text-align: right;
+	width: 274px;
+	height: 84px;
+	/*+placement:anchor-bottom-right 29px 17px;*/
+	position: absolute;
+	right: 29px;
+	bottom: 17px;
+	min-height: 20px;
+	display: table;
+	border: 1px solid #5C5757;
+}

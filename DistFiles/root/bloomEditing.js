@@ -566,6 +566,10 @@ function FindOrCreateTopicDialogDiv() {
 }
 function SetupTopicDialog() {
     $("div[data-book='topic']").click(function() {
+
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+
         // url = GetDictionary().urlOfUIFiles + "/topicDialog.htm";
         var dialogContents = FindOrCreateTopicDialogDiv();
         var dlg = $(dialogContents).dialog({
@@ -577,7 +581,7 @@ function SetupTopicDialog() {
                     var t = $("ol#topics li.ui-selected");
                     if (t.length)
                     {
-                        $("div[data-book='topic']").text(t[0].innerHTML);
+                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
                     }
                     $(this).dialog("close");
                 }
