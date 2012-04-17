@@ -12,15 +12,13 @@ namespace Bloom.Edit
 	public partial class PageListView : UserControl
 	{
 		private readonly PageSelection _pageSelection;
-		private readonly DeletePageCommand _deletePageCommand;
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider)
+		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider)
 		{
 			_pageSelection = pageSelection;
-			_deletePageCommand = deletePageCommand;
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
@@ -69,12 +67,6 @@ namespace Bloom.Edit
 				}
 			}
 		}
-
-		private void deletePageToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			_deletePageCommand.Execute();
-		}
-
 
 		public void Clear()
 		{
