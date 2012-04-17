@@ -64,13 +64,6 @@
 			this.contextMenuStrip1.Size = new System.Drawing.Size(137, 26);
 			this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
 			// 
-			// deletePageToolStripMenuItem
-			// 
-			this.deletePageToolStripMenuItem.Name = "deletePageToolStripMenuItem";
-			this.deletePageToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
-			this.deletePageToolStripMenuItem.Text = "&Delete Page";
-			this.deletePageToolStripMenuItem.Click += new System.EventHandler(this.deletePageToolStripMenuItem_Click);
-			// 
 			// _thumbNailList
 			// 
 			this._thumbNailList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
