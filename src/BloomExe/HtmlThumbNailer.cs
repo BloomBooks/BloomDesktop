@@ -157,19 +157,40 @@ namespace Bloom
 
 						try
 						{
+							//trying to get more information on http://jira.palaso.org/issues/browse/BL-134, which had an exception that somehow
+							//was not caught, even though try/catch was in place
+							Logger.WriteMinorEvent("HtmlThumNailer: browser.GetBitmap({0},{1})", browser.Width, (uint)browser.Height);
 							var docImage = browser.GetBitmap((uint) browser.Width, (uint) browser.Height);
+
+							Logger.WriteMinorEvent("	HtmlThumNailer: finished GetBitmap(");
 #if DEBUG
-							docImage.Save(@"c:\dev\temp\zzzz.bmp");
+//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
 #endif
 							if (_disposed)
 								return;
 							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,
 															 order.DrawBorderDashed);
 						}
-							// ReSharper disable EmptyGeneralCatchClause
-						catch
-							// ReSharper restore EmptyGeneralCatchClause
+						catch(Exception error)
 						{
+#if DEBUG
+							Debug.Fail(error.Message);
+#endif
+							Logger.WriteEvent("HtmlThumNailer got "+error.Message);
+							Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
+							foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
+							{
+								try
+								{
+									Logger.WriteEvent("Disposing of browser {0}", browserCacheForDifferentPaperSize.Key);
+									browserCacheForDifferentPaperSize.Value.Dispose();
+								}
+								catch (Exception e2)
+								{
+									Logger.WriteEvent("While trying to dispose of thumnailer browsers as a result of an exception, go another: "+e2.Message);
+								}
+							}
+							_browserCacheForDifferentPaperSizes.Clear();
 						}
 					}
 				}
@@ -237,6 +258,7 @@ namespace Bloom
 				}
 				return b;
 		}
+
 
 		private GeckoWebBrowser MakeNewBrowser()
 		{
