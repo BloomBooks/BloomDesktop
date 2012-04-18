@@ -155,6 +155,7 @@ namespace Bloom.Edit
 					metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
 				}
 
+				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
@@ -186,6 +187,7 @@ namespace Bloom.Edit
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 					}
 				}
+				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
 			}
 			catch (Exception error)
 			{
@@ -393,6 +395,7 @@ namespace Bloom.Edit
 					//todo: log this
 				}
 			};
+			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
 			using(var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				if(DialogResult.OK== dlg.ShowDialog())
@@ -416,6 +419,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
+			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
 		}
 

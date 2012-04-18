@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Library.BloomPack;
@@ -25,6 +26,7 @@ namespace Bloom
 		private static Mutex _oneInstancePerProjectMutex;
 
 		[STAThread]
+		[HandleProcessCorruptedStateExceptions]
 		static void Main(string[] args)
 		{
 			try
@@ -72,17 +74,16 @@ namespace Bloom
 				StartUpShellBasedOnMostRecentUsedIfPossible();
 				Application.Idle += new EventHandler(Application_Idle);
 
+
 				try
 				{
 					Application.Run();
 				}
-				catch (System.Exception nasty)
+				catch (System.AccessViolationException nasty)
 				{
-					//did this special becuase we don't have an event loop to drive the error reporting dialog if Application.Run() dies
-					Debug.WriteLine(Logger.LogText);
-					Application.Run(new SimpleMessageDialog(nasty.Message + "\r\n" + nasty.StackTrace + "\r\n" + Logger.LogText));
+					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+					Environment.FailFast("Bloom hit a really nasty error. You should see a log record window open. Please send the the contents of that to the developers.");
 				}
-
 
 				Settings.Default.Save();
 
