@@ -360,8 +360,14 @@ jQuery(document).ready(function() {
 
     //make images look click-able when you cover over them
     jQuery(".bloom-imageContainer").mouseenter(function() {
-        $(this).prepend("<button class='pasteImageButton' title='Paste Image'></button>");
-        $(this).prepend("<button class='changeImageButton' title='Change Image'></button>");
+//        var pasteButtonClass = 'pasteImageButton';
+//        var chooseButtonClass = 'changeImageButton';
+        var buttonModifier="largeImageButton";
+        if($(this).height() < 80) {
+            buttonModifier = 'smallImageButton';
+        }
+        $(this).prepend("<button class='pasteImageButton "+buttonModifier+"' title='Paste Image'></button>");
+        $(this).prepend("<button class='changeImageButton "+buttonModifier+"' title='Change Image'></button>");
         $(this).addClass('hoverUp');
     }).mouseleave(function() {
         $(this).removeClass('hoverUp');
@@ -569,7 +575,7 @@ function SetupTopicDialog() {
 
         if ($(this).css('cursor') == 'not-allowed')
             return;
-        
+
         // url = GetDictionary().urlOfUIFiles + "/topicDialog.htm";
         var dialogContents = FindOrCreateTopicDialogDiv();
         var dlg = $(dialogContents).dialog({

@@ -41,43 +41,65 @@ DIV.hoverUp
 {
 	background-color: #D5D5E4;
 }
-BUTTON.pasteImageButton
+BUTTON.smallImageButton
 {
+	width: 40px;
+	height: 40%;
+	/*+border-radius:0;*/
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	-khtml-border-radius: 0;
+	border-radius: 0;
+	border-radius: 0 0 0 0;
 	z-index: 100;
+	background-repeat: no-repeat;
+}
+BUTTON.largeImageButton
+{
 	width: 70px;
 	height: 52px;
-	background-image: url("pasteImageButton.png") !important;
-	background-repeat: no-repeat;
-	/*+placement:anchor-bottom-right 2px 2px;*/
-	position: absolute;
-	right: 2px;
-	bottom: 2px;
-	background-position: 13px 3px;
 	/*+border-radius:9px;*/
 	-moz-border-radius: 9px;
 	-webkit-border-radius: 9px;
 	-khtml-border-radius: 9px;
 	border-radius: 9px;
-	border-radius: 9px 9px 9px 9px;
+	z-index: 100;
+	background-repeat: no-repeat;
+	background-position: 12px 4px;
+}
+BUTTON.pasteImageButton.smallImageButton
+{
+	background-image: url("pasteImageButtonSmall.png") !important;
+	background-position: 7px 0px;
+}
+BUTTON.pasteImageButton.largeImageButton
+{
+	background-image: url("pasteImageButtonLarge.png") !important;
+}
+BUTTON.changeImageButton.smallImageButton
+{
+	background-image: url("changeImageButtonSmall.png") !important;
+	background-position: 7px 0px;
+}
+BUTTON.changeImageButton.largeImageButton
+{
+	background-image: url("changeImageButtonLarge.png") !important;
 }
 BUTTON.changeImageButton
 {
-	z-index: 100;
-	width: 70px;
-	height: 52px;
-	background-image: url("changeImageButton.png") !important;
-	background-repeat: no-repeat;
 	/*+placement:anchor-top-right 2px 2px;*/
 	position: absolute;
 	right: 2px;
 	top: 2px;
-	background-position: 13px 3px;
-	/*+border-radius:9px;*/
-	-moz-border-radius: 9px;
-	-webkit-border-radius: 9px;
-	-khtml-border-radius: 9px;
-	border-radius: 9px;
-	border-radius: 9px 9px 9px 9px;
+	/*[disabled]background-position:13px 3px;*/
+}
+BUTTON.pasteImageButton
+{
+	/*+placement:anchor-bottom-right 2px 2px;*/
+	position: absolute;
+	right: 2px;
+	bottom: 2px;
+	/*[disabled]background-position:13px 3px;*/
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon
