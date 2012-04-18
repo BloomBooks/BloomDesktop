@@ -119,6 +119,8 @@ namespace Bloom
 
 			lock (this)
 			{
+				Logger.WriteMinorEvent("HtmlThumNailer: staring work on thumbnail ({0})", order.ThumbNailFilePath);
+
 				_backgroundColorOfResult = order.BackgroundColorOfResult;
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
 
@@ -143,14 +145,18 @@ namespace Bloom
 							return;
 						if (!order.Done)
 						{
+							Logger.WriteEvent("HtmlThumNailer: Timed out on ({0})", order.ThumbNailFilePath);
 							Debug.Fail("(debug only) Make thumbnail timed out");
 							return;
 						}
 
 						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
-						var div = browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").First();
+						var div = browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
 						if (div == null)
-							throw new ApplicationException("thumbnails found now div with a class of bloom-Page");
+						{
+							Logger.WriteEvent("HtmlThumNailer:  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath);
+							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
+						}
 
 						browser.Height = div.ScrollHeight;
 						browser.Width = div.ScrollWidth;
@@ -231,10 +237,10 @@ namespace Bloom
 					//not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
 				}
 			}
-			Debug.WriteLine("Created new thumbnail: "+order.Key);
 			//order.ResultingThumbnail = pendingThumbnail;
 			if (_disposed)
 				return;
+			Logger.WriteMinorEvent("HtmlThumNailer: finished work on thumbnail ({0})", order.ThumbNailFilePath);
 			order.Callback(pendingThumbnail);
 		}
 
