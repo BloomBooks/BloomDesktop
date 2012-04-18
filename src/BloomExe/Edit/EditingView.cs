@@ -313,9 +313,9 @@ namespace Bloom.Edit
 			if (ge.Target == null)
 				return;//I've seen this happen
 
-			if (ge.Target.ClassName == "changeImageButton")
+			if (ge.Target.ClassName.Contains("changeImageButton"))
 				OnChangeImage(ge);
-			if (ge.Target.ClassName == "pasteImageButton")
+			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
 		}
 
@@ -329,7 +329,11 @@ namespace Bloom.Edit
 				return;
 			}
 			if (!Clipboard.ContainsImage())
+
+			{
+				MessageBox.Show("Before you can paste and image, copy one onto your 'clipboard', from another program.");
 				return;
+			}
 
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;

@@ -73,11 +73,6 @@ DIV.pageLabel
 {
 	display: none;
 }
-/*pages with page numbers*/
-DIV.numberedPage
-{
-	counter-increment: pageNumber;
-}
 /*the title page is page 1, but we just don't show it (hence, no Div.titlePge:after section)*/
 DIV.titlePage
 {
@@ -86,10 +81,6 @@ DIV.titlePage
 P
 {
 	border: 1px solid transparent !important;
-}
-DIV.numberedPage:after
-{
-	content: counter(pageNumber);
 }
 TEXTAREA.coverColor
 {
@@ -108,18 +99,42 @@ DIV.bloom-page.cover:after
 	visibility: hidden;
 /*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
 }
-DIV.bloom-startPageNumbering
-{
-	counter-reset: pageNumber;
-}
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing
 {
 	visibility: hidden;
 }
-
 DIV.coverBottomBookTopic DIV.topicN1
 {
 	border: none;
+}
+/*------Page Numbering------*/
+DIV.bloom-startPageNumbering
+{
+	counter-reset: pageNumber;
+}
+DIV.numberedPage
+{
+	counter-increment: pageNumber;
+}
+DIV.numberedPage:nth-of-type(even):after
+{
+	content: counter(pageNumber);
+	font-size: 60%;
+	padding: 0 1pc;
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+}
+DIV.numberedPage:nth-of-type(odd):after
+{
+	content: counter(pageNumber);
+	font-size: 60%;
+	padding: 0 1pc;
+	/*+placement:anchor-bottom-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
 }

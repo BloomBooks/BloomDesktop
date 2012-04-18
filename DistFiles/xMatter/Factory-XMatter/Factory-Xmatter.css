@@ -360,6 +360,10 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 	height: 100%;
 	width: 100%;
 	display: block;
+	/*+placement:anchor-top-left 82px 9px;*/
+	position: absolute;
+	left: 82px;
+	top: 9px;
 }
 /*................license and copyright*/
 .A5Landscape DIV.versionAcknowledgments
