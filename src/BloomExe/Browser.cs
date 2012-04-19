@@ -204,9 +204,23 @@ namespace Bloom
 		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
 		{
-			if(e.CtrlKey && e.KeyChar=='v' && !_pasteCommand.Enabled)
+			if (e.CtrlKey && e.KeyChar == 'v')
 			{
-				e.PreventDefault();
+				if (!_pasteCommand.Enabled)
+				{
+					e.PreventDefault();
+				}
+				else if(_browser.CanPaste && Clipboard.ContainsText())
+				{
+					e.PreventDefault(); //we'll take it from here, thank you very much
+
+					//filter whatever's on there down to just simple text.
+					//While it's tempting to allow formatted pasting, if you're making a shell, that's just
+					//kidding yourself; the translator won't get to have that formatting too.
+					var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+					Clipboard.SetText(originalText,TextDataFormat.UnicodeText);
+					_browser.Paste();
+				}
 			}
 		}
 
