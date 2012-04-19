@@ -292,6 +292,7 @@
 			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 738);
+			this.Load += new System.EventHandler(this.EditingView_Load);
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
 			this._splitContainer1.ResumeLayout(false);
