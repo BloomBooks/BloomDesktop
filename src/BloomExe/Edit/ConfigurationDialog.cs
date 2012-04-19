@@ -24,6 +24,8 @@ namespace Bloom.Edit
 
         private void ConfigurationDialog_Load(object sender, EventArgs e)
         {
+			this.Activated += new EventHandler(On_Activated);
+
 			_browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
 		//	this fires, but leave us in a state withtout a cursor			_browser.WebBrowser.DocumentCompleted += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
 
@@ -31,7 +33,19 @@ namespace Bloom.Edit
 
         }
 
-		void NavigateFinishedNotifier_NavigateFinished(object sender, EventArgs e)
+    	private void On_Activated(object sender, EventArgs e)
+    	{
+			/* The problem this solves is that when you're switching between this dialog and some
+			 * other application (don't know why, but people did it)... when you come back, the browser would
+			 * be all confused and sometimes you couldn't type at all.
+			 * So now, when we come back to Bloom (this activated event), we *deselect* the browser, then reselect it, and it's happy.
+			 */
+
+			_okButton.Select();
+			_browser.Select();
+    	}
+
+    	void NavigateFinishedNotifier_NavigateFinished(object sender, EventArgs e)
 		{
 			_browser.AddScriptSource("jquery-1.6.4.js");
 			_browser.AddScriptSource("form2object.js");
