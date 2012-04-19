@@ -31,7 +31,6 @@ DIV.bloom-imageContainer
 	padding-bottom: 0px;
 	padding-top: 0px;
 	margin-top: 0px;
-	border: 1px solid #3D7E4D;
 }
 DIV.wordsDiv
 {
@@ -78,15 +77,6 @@ DIV.domain DIV.bloom-content3
 DIV.wordAndPicture
 {
 	width: 144px;
-	border: 1px solid #080AC4;
-}
-DIV.Images6 IMG
-{
-	margin-top: 0px;
-	padding-top: 0px;
-	padding-bottom: 1px;
-	margin-bottom: 0px;
-	border: 1px solid #000000;
 }
 /*NB: Child(1) is actually the domain title. So we start with 2*/
 DIV.wordAndPicture:nth-child(2)

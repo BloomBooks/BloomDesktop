@@ -63,7 +63,20 @@ namespace Bloom.Publish
 				var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this
 				File.Delete(tempOutput.Path);
 
-
+				/*--------------------------------DEVELOPERS -----------------------------
+				 *
+				 *	Are you trying to debug a disparity between the HTML preview and
+				 *	the PDF output, which should be identical? Some notes:
+				 *
+				 * 1) Wkhtmltopdf requires different handling of file names for the local
+				 * file system than firefox. So if you open this html, do so in Chrome
+				 * instead of Firefox.
+				 *
+				 * 2) Wkhtmltopdf violates the HTML requirement that classes are case
+				 * sensitive. So it could be that it is using a rule you forgot you
+				 * had, and which is not being triggered by the better browsers.
+				 *
+				 */
 				string exePath = FindWkhtmlToPdf();
 				var arguments = string.Format(
 					"--print-media-type " +
