@@ -49,4 +49,8 @@
   <File Id="previewMode.css5" Guid="6ffb05a2-9715-4827-91df-1ff0ddf948a0" />
   <File Id="BasePage.css4" Guid="83c24883-6ad6-40e1-9565-336a4fd64383" />
   <File Id="previewMode.css4" Guid="b88e184d-2fb6-4c37-aeb4-539a5127c0b4" />
+  <File Id="changeImageButtonLarge.png" Guid="2a4fd627-cc11-47f3-9e56-a0f51b1b3f63" />
+  <File Id="changeImageButtonSmall.png" Guid="1a2eb3aa-c33d-43f8-8d37-8535e3d6c3e0" />
+  <File Id="pasteImageButtonLarge.png" Guid="9f5b7a5b-2095-43ec-b193-dbff959bf309" />
+  <File Id="pasteImageButtonSmall.png" Guid="6faee5a8-539f-4bf6-8af0-e0802f17fd61" />
 </InstallerMetadata>
