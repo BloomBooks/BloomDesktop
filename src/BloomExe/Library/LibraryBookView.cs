@@ -30,7 +30,7 @@ namespace Bloom.Library
 			_librarySettings = librarySettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
-			_addToLibraryButton_MouseLeave(this, null);
+			//_addToLibraryButton_MouseLeave(this, null);
 
 			_editBookButton.Visible = false;
 		}
@@ -107,14 +107,14 @@ namespace Bloom.Library
 
 		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
 		{
-			_addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularLibraryNamePhrase);
-			_addToLibraryButton.Width = 250;
+//            _addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularLibraryNamePhrase);
+//            _addToLibraryButton.Width = 250;
 		}
 
 		private void _addToLibraryButton_MouseLeave(object sender, EventArgs e)
 		{
-			_addToLibraryButton.Text="";
-			_addToLibraryButton.Width = 50;
+//            _addToLibraryButton.Text="";
+//            _addToLibraryButton.Width = 50;
 		}
 
 		private void _editBookButton_Click(object sender, EventArgs e)

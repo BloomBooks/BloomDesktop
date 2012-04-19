@@ -59,7 +59,11 @@ namespace Bloom.Publish
 			using(var tempInput = TempFile.WithExtension(".htm"))
 			{
 				File.Delete(tempInput.Path);
-				File.Copy(inputHtmlPath, tempInput.Path);
+				var source = File.ReadAllText(inputHtmlPath);
+				//hide all placeholders
+
+				File.WriteAllText(tempInput.Path, source.Replace("placeholder.png", "").Replace("placeHolder.png", ""));
+				//File.Copy(inputHtmlPath, tempInput.Path);
 				var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this
 				File.Delete(tempOutput.Path);
 
