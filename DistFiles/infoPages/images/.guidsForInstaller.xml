@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="image00.png" Guid="c66b43a2-08bb-45a0-a5aa-0528979cb316" />
+  <File Id="image01.png" Guid="9fc82b87-1e54-479b-ac4b-6bd6c23219cd" />
+  <File Id="image02.png" Guid="6b61433d-6c26-408b-a246-abf81fa6c7c7" />
+  <File Id="image03.png" Guid="bed83762-1883-4367-bac1-a2962893b2e8" />
+  <File Id="image04.png" Guid="847f9aa1-1c5d-4f5c-857b-462b253687a3" />
+</InstallerMetadata>

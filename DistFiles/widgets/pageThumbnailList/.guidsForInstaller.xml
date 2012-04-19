@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="pageThumbnailList.css1" Guid="cd6a55de-b37e-41ff-8da6-c83c44681a81" />
+  <File Id="pageThumbnailList.html1" Guid="86ab4869-ca93-4f27-9751-673267209e42" />
+  <File Id="pageThumbnailList.js1" Guid="4b98a985-14b5-4180-807f-07c32bfe7ef7" />
+</InstallerMetadata>
