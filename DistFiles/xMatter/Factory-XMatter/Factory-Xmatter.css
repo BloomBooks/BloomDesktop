@@ -128,40 +128,44 @@
 	left: 109px;
 	top: 154px;
 }
-/*.......Topic
-This is done with display='table' and 'table-row' so that if there is just one lang for topic, it goes at the bottom. If there are 2, they stack going upwards.*/
+/*.......Topic*/
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
 	text-align: right;
 	width: 274px;
-	height: 84px;
-	/*+placement:anchor-bottom-right 29px 17px;*/
+	height: 67px;
+	/*+placement:anchor-bottom-right 18px 3px;*/
 	position: absolute;
-	right: 29px;
-	bottom: 17px;
+	right: 18px;
+	bottom: 3px;
 	min-height: 20px;
-	display: table;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
 	height: 44px;
 	min-height: 20px;
 	width: 100%;
-	display: table-row;
-	vertical-align: bottom;
+	display: block;
 	border: none !important;
-	/*[disabled]display:block;*/
+	/*+placement:anchor-top-right -3px 14px;*/
+	position: absolute;
+	right: -3px;
+	top: 14px;
+	margin-top: 5px;
+	margin-right: 20px;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational2
 {
 	/*[disabled]height:106px;*/
 	min-height: 20px;
 	width: 100%;
-	display: table-row;
-	vertical-align: bottom;
 	display: block;
 	border: none !important;
+	/*+placement:anchor-top-right 16px -3px;*/
+	position: absolute;
+	right: 16px;
+	top: -3px;
 }
 /*.......Language Name*/
 DIV.coverBottomLangName DIV

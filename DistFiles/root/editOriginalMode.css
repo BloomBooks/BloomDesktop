@@ -33,14 +33,11 @@ DIV.bloom-metaData TEXTAREA
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
-	text-align: right;
-	width: 274px;
-	height: 84px;
-	/*+placement:anchor-bottom-right 29px 17px;*/
-	position: absolute;
-	right: 29px;
-	bottom: 17px;
-	min-height: 20px;
-	display: table;
+	/*[disabled]text-align:right;*/
+	/*[disabled]width:274px;*/
+	/*[disabled]height:84px;*/
+	/*[disabled]+placement:anchor-bottom-right 29px 17px;*/
+	/*[disabled]min-height:20px;*/
+	/*[disabled]display:table;*/
 	border: 1px solid #5C5757;
 }
