@@ -553,9 +553,9 @@ namespace Bloom.Edit
 			_deletePageCommand.Execute();
 		}
 
-		private void _browser1_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+		private void EditingView_Load(object sender, EventArgs e)
 		{
-
+			ParentForm.Activated += new EventHandler(ParentForm_Activated);
 		}
 	}
 }
