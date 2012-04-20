@@ -83,6 +83,15 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	top: 21px;
 	height: 385px;
 }
+DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
+{
+	width: 490px;
+	/*+placement:anchor-top-left 34px 21px;*/
+	position: absolute;
+	left: 34px;
+	top: 21px;
+	height: 266px !important;
+}
 .imageOnTop.A4Landscape DIV.bloom-imageContainer
 {
 	width: 511px;
@@ -92,12 +101,6 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	top: 52px;
 	height: 692px;
 	border: 1px solid #000000;
-}
-DIV.imageOnTop.bloom-trilingual DIV.bloom-imageContainer
-{
-	height: 8cm;
-	text-align: center;
-	margin-top: 1cm;
 }
 DIV.imageOnTop DIV.bloom-translationGroup
 {
@@ -122,13 +125,13 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 {
 	height: 222px;
 }
-DIV.imageOnTop.bloom-trilingual DIV.bloom-translationGroup
+DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 {
 	height: 357px;
-	/*+placement:anchor-top-left 40px 398px;*/
+	/*+placement:anchor-top-left 40px 334px;*/
 	position: absolute;
 	left: 40px;
-	top: 398px;
+	top: 334px;
 }
 .imageOnTop.bloom-monolingual DIV.bloom-editable
 {
