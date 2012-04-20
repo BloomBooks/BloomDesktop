@@ -5,7 +5,7 @@ jQuery(document).ready(function () {
     $('textarea').focus(function () { $(this).attr('readonly', 'readonly'); });
 
     //make images scale up to their container without distorting their proportions, while being centered within it.
-    $("img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+    $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
 
     $(".bloom-page").mouseenter(function(){$(this).addClass("disabledVisual")});
     $(".bloom-page").mouseleave(function(){$(this).removeClass("disabledVisual")});
