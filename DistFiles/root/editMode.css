@@ -1,5 +1,9 @@
-/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.
-There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
+/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+DIV.bloom-imageContainer
+{
+	border: 1px solid #C0B9B9;
+}
+/*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
 	background-color: #363333;

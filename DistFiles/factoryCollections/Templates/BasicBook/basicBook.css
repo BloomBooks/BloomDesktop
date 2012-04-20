@@ -100,7 +100,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 	left: 27px;
 	top: 52px;
 	height: 692px;
-	border: 1px solid #000000;
+	/*[disabled]border:1px solid #000000;*/
 }
 DIV.imageOnTop DIV.bloom-translationGroup
 {

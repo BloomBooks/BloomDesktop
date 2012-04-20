@@ -54,5 +54,11 @@ namespace Bloom.Edit
 		{
 			get { return null; } set { }
 		}
+
+		public string GetCaptionOrPageNumber(ref int pageNumber)
+		{
+			return Caption;
+
+		}
 	}
 }

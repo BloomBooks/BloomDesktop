@@ -90,6 +90,7 @@ namespace Bloom.Edit
 			_thumbnailImageList.Images.Clear();
 
 			_numberofEmptyListItemsAtStart = 0;
+			int pageNumber = 0;
 			foreach (IPage page in items)
 			{
 				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
@@ -122,16 +123,16 @@ namespace Bloom.Edit
 //                    return;
 //                _listView.Items.Add(item);
 
-				AddOnePage(page);
+				AddOnePage(page, ref pageNumber);
 			}
 			_listView.EndUpdate();
 			ResumeLayout();
 		}
 
 
-		private void AddOnePage(IPage page)
+		private void AddOnePage(IPage page, ref int pageNumber)
 		{
-			ListViewItem item = new ListViewItem(page.Caption, 0);
+			ListViewItem item = new ListViewItem(page.GetCaptionOrPageNumber(ref pageNumber), 0);
 			item.Tag = page;
 
 			Image thumbnail = Resources.PagePlaceHolder; ;

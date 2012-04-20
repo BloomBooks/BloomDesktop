@@ -17,6 +17,7 @@ namespace Bloom.Book
 		bool Required { get; }
 		bool CanRelocate { get;}
 		Book Book { get; set; }
+		string GetCaptionOrPageNumber(ref int pageNumber);
 	}
 
 	public class Page : IPage
@@ -78,6 +79,23 @@ namespace Bloom.Book
 		}
 
 		public Book Book { get; set; }
+
+		public string GetCaptionOrPageNumber(ref int pageNumber)
+		{
+			string outerXml = _getDivNodeForThisPageMethod(this).OuterXml;
+
+			//at the moment, I can't remember why this is even needed (it works fine without it), but we might as well honor it in code
+			if (outerXml.Contains("bloom-startPageNumbering"))
+			{
+				pageNumber = 1;
+			}
+			if (outerXml.Contains("numberedPage"))
+			{
+				pageNumber++;
+				return pageNumber.ToString();
+			}
+			return Caption;
+		}
 
 		public string Id{get { return _id; }}
 
