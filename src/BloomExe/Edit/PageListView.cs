@@ -89,12 +89,6 @@ namespace Bloom.Edit
 			_thumbNailList.SetPageInsertionPoint(_model.DeterminePageWhichWouldPrecedeNextInsertion());
 		}
 
-
-		private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			deletePageToolStripMenuItem.Enabled = !SelectedPage.Required;
-		}
-
 		protected IPage SelectedPage
 		{
 			get { return _pageWeThinkShouldBeSelected; }
