@@ -82,7 +82,7 @@ namespace Bloom
 				catch (System.AccessViolationException nasty)
 				{
 					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					Environment.FailFast("Bloom hit a really nasty error. You should see a log record window open. Please send the the contents of that to the developers.");
+					return;
 				}
 
 				Settings.Default.Save();
