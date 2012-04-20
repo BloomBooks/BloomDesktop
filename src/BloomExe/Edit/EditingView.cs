@@ -178,11 +178,12 @@ namespace Bloom.Edit
 
 						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
+						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
 								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
-								"license.png",
+								licenseImageName,
 								dlg.Metadata.License.Url, rights, description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 					}
