@@ -98,30 +98,6 @@ namespace Bloom.Edit
 
 				if (page is PlaceHolderPage)
 					++_numberofEmptyListItemsAtStart;
-//
-//                var item = new ListViewItem(page.Caption);
-//                item.Tag = page;
-//                //nb IndexOf is not supported, throws exception
-//                var index = 0;
-//                item.ImageIndex = -1;
-//                foreach (var image in _thumbnailImageList.Images)
-//                {
-//                    if (image == page.Thumbnail)
-//                    {
-//                        item.ImageIndex = index;
-//                        break;
-//                    }
-//                    index++;
-//                }
-//                if (item.ImageIndex < 0)
-//                {
-//                    _thumbnailImageList.Images.Add(page.Thumbnail);
-//                    item.ImageIndex = _thumbnailImageList.Images.Count - 1;
-//                }
-//
-//                if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
-//                    return;
-//                _listView.Items.Add(item);
 
 				AddOnePage(page, ref pageNumber);
 			}
@@ -129,6 +105,18 @@ namespace Bloom.Edit
 			ResumeLayout();
 		}
 
+		public void UpdateThumbnailCaptions()
+		{
+			_listView.BeginUpdate();
+			_numberofEmptyListItemsAtStart = 0;
+			int pageNumber = 0;
+			foreach (ListViewItem item in _listView.Items)
+			{
+				IPage page = (IPage) item.Tag;
+				item.Text = page.GetCaptionOrPageNumber(ref pageNumber);
+			}
+			_listView.EndUpdate();
+		}
 
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
@@ -282,6 +270,8 @@ namespace Bloom.Edit
 				_listView.EndUpdate();
 				_currentTarget = null;
 				_currentDraggingItem = null;
+
+				UpdateThumbnailCaptions();
 				_listView.Invalidate();
 			}
 			else
