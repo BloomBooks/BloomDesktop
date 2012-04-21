@@ -13,12 +13,14 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
@@ -1655,6 +1657,44 @@ namespace Bloom.Book
 		public void SetPaperSizeAndOrientation(string paperSizeAndOrientationName)
 		{
 			SizeAndOrientation.SetPaperSizeAndOrientation(RawDom, paperSizeAndOrientationName);
+		}
+
+		public Metadata GetMetadata()
+		{
+			var data = new DataSet();
+			GatherDataItemsFromDom(data,"*", RawDom);
+			var metadata = new Metadata();
+			DataItem d;
+			if(data.TextVariables.TryGetValue("copyright", out d))
+			{
+				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
+			}
+			string licenseUrl="";
+			if (data.TextVariables.TryGetValue("licenseUrl", out d))
+			{
+				licenseUrl = d.TextAlternatives.GetFirstAlternative();
+			}
+
+			//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+			if (licenseUrl == null || licenseUrl.Trim() == "")
+			{
+				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+				if (data.TextVariables.TryGetValue("licenseNotes", out d))
+				{
+					var licenseNotes = d.TextAlternatives.GetFirstAlternative();
+
+					metadata.License = new CustomLicense() {RightsStatement = licenseNotes};
+				}
+				else
+				{
+					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+				}
+			}
+			else
+			{
+				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+			}
+			return metadata;
 		}
 	}
 }

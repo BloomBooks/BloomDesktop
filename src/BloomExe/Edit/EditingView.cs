@@ -117,43 +117,48 @@ namespace Bloom.Edit
 			//bloomEditing.js raises this textGroupFocussed event
 			_browser1.WebBrowser.AddMessageEventListener("textGroupFocused", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
 
-			_browser1.WebBrowser.AddMessageEventListener("divClicked", (data =>
-																			{
-																				//I found that while in this handler, we can't call any javacript back, so we
-																				//instead just return and handle it momentarily
-																				_handleMessageTimer.Enabled = true;
-																				_pendingMessageHandler = (()=>OnClickCopyrightAndLicenseDiv(data));
-																			}));
+//    		_browser1.WebBrowser.AddMessageEventListener("divClicked", (data =>
+//    		                                                            	{
+//																				//I found that while in this handler, we can't call any javacript back, so we
+//																				//instead just return and handle it momentarily
+//    		                                                            		_handleMessageTimer.Enabled = true;
+//																				_pendingMessageHandler = (() =>
+//																				                          	{
+//																				                          		OnClickCopyrightAndLicenseDiv(data);
+//																				                          	});
+//    		                                                            	}));
 		}
 
-		private void OnClickCopyrightAndLicenseDiv(string data)
+		private void OnClickCopyrightAndLicenseDiv()
 		{
 			try
 			{
+				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
+				Metadata metadata = _model.CurrentBook.GetMetadata();
 
-				JObject existing = JObject.Parse(data.ToString());
+				//JObject existing = JObject.Parse(data.ToString());
 
-				Metadata metadata = new Metadata();
-				metadata.CopyrightNotice = existing["copyright"].Value<string>();
-				var url = existing["licenseUrl"].Value<string>();
-				//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
-				if (url == null || url.Trim() == "")
-				{
-					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-					JToken licenseNotes;
-					if (existing.TryGetValue("licenseNotes", out licenseNotes))
-					{
-						metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
-					}
-					else
-					{
-						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-					}
-				}
-				else
-				{
-					metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
-				}
+//				//Metadata metadata = new Metadata();
+//				metadata.CopyrightNotice = existing["copyright"].Value<string>();
+//				var url = existing["licenseUrl"].Value<string>();
+//				//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
+//				if (url == null || url.Trim() == "")
+//				{
+//					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+//					JToken licenseNotes;
+//					if (existing.TryGetValue("licenseNotes", out licenseNotes))
+//					{
+//						metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
+//					}
+//					else
+//					{
+//						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+//					}
+//				}
+//				else
+//				{
+//					metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
+//				}
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
@@ -318,6 +323,8 @@ namespace Bloom.Edit
 				OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
+			if (ge.Target.ClassName.Contains("bloom-metaData") || ge.Target.ParentElement.ClassName.Contains("bloom-metaData"))
+				OnClickCopyrightAndLicenseDiv();
 		}
 
 

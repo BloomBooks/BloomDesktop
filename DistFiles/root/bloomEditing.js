@@ -424,24 +424,25 @@ jQuery(document).ready(function() {
 
 
 
-    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
+// this is gone because of a memory violation bug in geckofx 11 with messaging. Now we just notice the click from within c#
+//    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-    $('div.bloom-metaData').each(function() {
-        if ($(this).css('cursor') == 'pointer') {
-            $(this).click(function() {
-                event = document.createEvent('MessageEvent');
-                var origin = window.location.protocol + '//' + window.location.host;
-                var obj = {};
-                $(this).find("*[data-book]").each(function() {
-                    obj[$(this).attr("data-book")] = $(this).text();
-                })
-                var json = obj; //.get();
-                json = JSON.stringify(json);
-                event.initMessageEvent('divClicked', true, true, json, origin, 1234, window, null);
-                document.dispatchEvent(event);
-            })
-        }
-    });
+//    $('div.bloom-metaData').each(function() {
+//        if ($(this).css('cursor') == 'pointer') {
+//            $(this).click(function() {
+//                event = document.createEvent('MessageEvent');
+//                var origin = window.location.protocol + '//' + window.location.host;
+//                var obj = {};
+//                $(this).find("*[data-book]").each(function() {
+//                    obj[$(this).attr("data-book")] = $(this).text();
+//                })
+//                var json = obj; //.get();
+//                json = JSON.stringify(json);
+//                event.initMessageEvent('divClicked', true, true, json, origin, "", window, null);
+//                document.dispatchEvent(event);
+//            })
+//        }
+//    });
 
 
     //add drag and resize ability where elements call for it
