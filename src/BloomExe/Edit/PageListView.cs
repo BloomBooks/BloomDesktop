@@ -24,6 +24,7 @@ namespace Bloom.Edit
 			InitializeComponent();
 			_thumbNailList.Thumbnailer = thumbnailProvider;
 			_thumbNailList.CanSelect = true;
+			_thumbNailList.PreferPageNumbers = true;
 			_thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);

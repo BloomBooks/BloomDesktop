@@ -120,7 +120,8 @@ namespace Bloom.Edit
 
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
-			ListViewItem item = new ListViewItem(page.GetCaptionOrPageNumber(ref pageNumber), 0);
+			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
+			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;
 
 			Image thumbnail = Resources.PagePlaceHolder; ;
@@ -154,6 +155,7 @@ namespace Bloom.Edit
 
 
 		public bool CanSelect { get; set; }
+		public bool PreferPageNumbers { get; set; }
 
 		public RelocatePageEvent RelocatePageEvent { get; set; }
 
