@@ -168,7 +168,18 @@ function MakeSourceTextDivForGroup(group) {
 }
 
 
-jQuery(document).ready(function() {
+ function GetLocalizedHint(element) {
+     var whatToSay = $(element).data("hint");
+     var dictionary = GetDictionary();
+     for (key in dictionary) {
+         if (key.startsWith("{"))
+             whatToSay = whatToSay.replace(key, dictionary[key]);
+
+         whatToSay = whatToSay.replace("{lang}", dictionary[$(element).attr('lang')]);
+     }
+     return whatToSay;
+ }
+ jQuery(document).ready(function() {
 
 
 
@@ -273,17 +284,8 @@ jQuery(document).ready(function() {
         pos = {at: 'right center',
             my: 'left center'
         };
-        
-        var whatToSay = $(this).data("hint");
-        var dictionary = GetDictionary();
-        for (key in dictionary) {
-            if (key.startsWith("{"))
-                whatToSay = whatToSay.replace(key, dictionary[key]);
-            
-            whatToSay = whatToSay.replace("{lang}", dictionary[$(this).attr('lang')]);
-        }
-		
-		var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
+        var whatToSay = GetLocalizedHint(this);
+        var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
 		var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
         $(this).qtip({
             content: whatToSay,
@@ -298,22 +300,6 @@ jQuery(document).ready(function() {
             style: {
                 classes: theClasses
             }
-            //the following is to limit how much stuff qtip leaves in our DOM
-            //since we actually save the dom, we dont' want this stuff
-            //1) we're using data-hint instead of title. That makes it easy
-            //to clean up (with title, qtip moves it to oldtitle, and if we
-            //move it back below, well now we also get standard browser tooltips.
-            //2) we prerender
-            //3) after the render, we clean up this aria-describedby attr
-            //4) somebody needs to call the qtipCleanupFunction to remove the div
-  //          prerender: true,
-  //          events: {
-  //              render: function(event, api) {
-  //                  $('*[oldtitle]').each(function() {
-  //                      $(this)[0].removeAttribute('aria-describedby');
-  //                  });
-  //              }
-   //         }
         });
     });
     
@@ -326,7 +312,9 @@ jQuery(document).ready(function() {
     };
 
     //Show data on fields
+   /* disabled to see if we can do fine without it
     $("*[data-book], *[data-library], *[lang]").each(function() {
+
         var data = " ";
         if ($(this).hasAttr("data-book")) {
             data = $(this).attr("data-book");
@@ -352,7 +340,7 @@ jQuery(document).ready(function() {
             }
         });
     });
-
+*/
 
 
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
@@ -409,6 +397,33 @@ jQuery(document).ready(function() {
 			//review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
         }
     });
+
+
+    // If the user moves over something they can't edit, show a tooltip explaining why not
+    $('*[data-hint]').each(function() {
+            if ($(this).css('cursor') == 'not-allowed') {
+                var whyDisabled = "You cannot change these because this is not the original copy.";
+                if($(this).hasClass('bloom-readOnlyInEditMode')){
+                    whyDisabled = "You cannot put anything in there while making an original.";
+                }
+
+                var whatToSay = GetLocalizedHint(this)+" <br/>"+whyDisabled;
+                var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
+                var pos = {at: 'right center',
+                            my: 'left center'
+                        };
+                $(this).qtip({
+                            content: whatToSay,
+                            position: pos,
+                            show: {
+                                event: " focusin mouseenter"
+                            },
+                            style: {
+                                classes: theClasses
+                            }
+                        });
+            }
+        });
 
     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
