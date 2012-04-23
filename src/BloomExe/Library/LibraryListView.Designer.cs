@@ -343,7 +343,6 @@
 			this.Name = "LibraryListView";
 			this.Size = new System.Drawing.Size(350, 562);
 			this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
-			this.VisibleChanged += new System.EventHandler(this.OnVisibleChanged);
 			this.contextMenuStrip1.ResumeLayout(false);
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);

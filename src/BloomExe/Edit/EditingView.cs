@@ -260,7 +260,7 @@ namespace Bloom.Edit
         	Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
         	Cursor = Cursors.WaitCursor;
-        	_model.ActualVisibiltyChanged(true);
+        	_model.ViewVisibleNowDoSlowStuff();
         	Cursor = Cursors.Default;
         }
 
@@ -271,7 +271,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
         {
-            if (Visible)
+            if (visible)
             {
                 if(_model.GetBookHasChanged())
                 {
@@ -286,7 +286,8 @@ namespace Bloom.Edit
                 UsageReporter.SendNavigationNotice("Editing");
             }
             else
-            {
+			{
+				Application.Idle -= new EventHandler(VisibleNowAddSlowContents);//make sure
                 _browser1.Navigate("about:blank", false);//so we don't see the old one for moment, the next time we open this tab
             }
         }

@@ -17,7 +17,8 @@ namespace Bloom.Library
 
         private readonly LibraryModel _model;
         private readonly BookSelection _bookSelection;
-		private Pen _boundsPen;
+    	private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
+    	private Pen _boundsPen;
 		private Font _headerFont;
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
@@ -25,10 +26,11 @@ namespace Bloom.Library
     	private DateTime _lastClickTime;
     	private bool _collectionLoadPending;
 
-    	public LibraryListView(LibraryModel model,  BookSelection bookSelection)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent)
         {
             _model = model;
             _bookSelection = bookSelection;
+			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_libraryFlow.HorizontalScroll.Visible = false;
 
@@ -49,18 +51,7 @@ namespace Bloom.Library
 			
         }
 
-        void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            if(e.Item.Selected )
-            {
-                var r = e.Bounds;
-                r.Inflate(-1,-1);
-                e.Graphics.DrawRectangle(_boundsPen,r);
-            }
-            e.DrawDefault = true;
-        }
-
-        private void OnBookSelectionChanged(object sender, EventArgs e)
+    	private void OnBookSelectionChanged(object sender, EventArgs e)
         {
 //TODO
 //            foreach (ListViewItem item in _listView.Items)
@@ -275,23 +266,25 @@ namespace Bloom.Library
             _libraryFlow.BackColor = BackColor;
         }
 
-        private void OnVisibleChanged(object sender, EventArgs e)
-        {
-            if(Visible )
-            {
-                Book.Book book = SelectedBook;
-                if (book == null || SelectedButton ==null)
-                    return;
 
-            	SelectedButton.Text = book.Title;
+		private void OnSelectedTabChanged(TabChangedDetails obj)
+		{
+			if(obj.To is LibraryView)
+			{
+				Book.Book book = SelectedBook;
+				if (book == null || SelectedButton == null)
+					return;
 
-                if (_reshowPending)
-                {
-                	_reshowPending = false;
-                	RecreateOneThumbnail(book);
-                }
-            }
-        }
+				SelectedButton.Text = book.Title;
+
+				if (_reshowPending)
+				{
+					_reshowPending = false;
+					RecreateOneThumbnail(book);
+				}
+			}
+		}
+
 
     	private void RefreshOneThumbnail(Book.Book book, Image image)
     	{
