@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using BloomTemp;
+using Palaso.Reporting;
 
 namespace Bloom.Edit
 {
@@ -68,6 +69,15 @@ namespace Bloom.Edit
                 }
             }
         }
+
+		public void UpdateThumbnailAsync(IPage page)
+		{
+			Logger.WriteMinorEvent("Updating thumbnail for page"); 
+			
+			//else, it just gives us the cached copy
+			_thumbNailList.Thumbnailer.PageChanged(page.Id);
+			_thumbNailList.UpdateThumbnailAsync(page);
+		}
 
         public void Clear()
         {
