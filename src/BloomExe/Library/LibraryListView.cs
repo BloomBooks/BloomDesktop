@@ -17,6 +17,7 @@ namespace Bloom.Library
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
+		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private Pen _boundsPen;
 		private Font _headerFont;
 		private Font _editableBookFont;
@@ -25,10 +26,11 @@ namespace Bloom.Library
 		private DateTime _lastClickTime;
 		private bool _collectionLoadPending;
 
-		public LibraryListView(LibraryModel model,  BookSelection bookSelection)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
+			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_libraryFlow.HorizontalScroll.Visible = false;
 
@@ -47,17 +49,6 @@ namespace Bloom.Library
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
-		}
-
-		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
-		{
-			if(e.Item.Selected )
-			{
-				var r = e.Bounds;
-				r.Inflate(-1,-1);
-				e.Graphics.DrawRectangle(_boundsPen,r);
-			}
-			e.DrawDefault = true;
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -275,12 +266,13 @@ namespace Bloom.Library
 			_libraryFlow.BackColor = BackColor;
 		}
 
-		private void OnVisibleChanged(object sender, EventArgs e)
+
+		private void OnSelectedTabChanged(TabChangedDetails obj)
 		{
-			if(Visible )
+			if(obj.To is LibraryView)
 			{
 				Book.Book book = SelectedBook;
-				if (book == null || SelectedButton ==null)
+				if (book == null || SelectedButton == null)
 					return;
 
 				SelectedButton.Text = book.Title;
@@ -292,6 +284,7 @@ namespace Bloom.Library
 				}
 			}
 		}
+
 
 		private void RefreshOneThumbnail(Book.Book book, Image image)
 		{

@@ -90,7 +90,6 @@
 			this.Controls.Add(this._browser);
 			this.Name = "LibraryBookView";
 			this.Size = new System.Drawing.Size(900, 450);
-			this.VisibleChanged += new System.EventHandler(this.LibraryBookView_VisibleChanged);
 			this.ResumeLayout(false);
 
         }

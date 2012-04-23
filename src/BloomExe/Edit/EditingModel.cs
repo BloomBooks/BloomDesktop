@@ -37,6 +37,7 @@ namespace Bloom.Edit
 			BookRefreshEvent bookRefreshEvent,
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
+			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			LibraryClosing libraryClosingEvent,
 			LibrarySettings librarySettings)
 		{
@@ -51,6 +52,7 @@ namespace Bloom.Edit
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
+			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			deletePageCommand.Implementer=OnDeletePage;
 			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
 			relocatePageEvent.Subscribe(OnRelocatePage);
@@ -58,16 +60,22 @@ namespace Bloom.Edit
 			_contentLanguages = new List<ContentLanguage>();
 		}
 
-		private void OnTabChanged(TabChangedDetails details)
+
+		/// <summary>
+		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
+		/// </summary>
+		/// <param name="details"></param>
+		private void OnTabAboutToChange(TabChangedDetails details)
 		{
-			if(details.From == _view)
+			if (details.From == _view)
 			{
 				SaveNow();
 			}
-			//enhance: this might be more reliable than the current EditingView.OnVisibleChanged() for detecting when we move *to* this control.
+		}
 
+		private void OnTabChanged(TabChangedDetails details)
+		{
 			_visible = details.To == _view;
-
 			_view.OnVisibleChanged(_visible);
 		}
 
@@ -289,36 +297,25 @@ namespace Bloom.Edit
 			return _currentlyDisplayedBook != CurrentBook;
 		}
 
-		public void ActualVisibiltyChanged(bool unused)
+		public void ViewVisibleNowDoSlowStuff()
 		{
-			//I don't trust this value in. I'm relying instead on setting this via the SelectedTabChangedEvent.
-			//_visible = visible;
-
-			Debug.WriteLine("EditingModel._visible =" + _visible);
-			if (!_visible || _currentlyDisplayedBook == CurrentBook)
-			{
-				//review: it's not clear when this is needed... the browser validating also calls save, but it doesn't always validate.
-				//perhaps we should drop that validating call, and just use this?
-				SaveNow();
-				return;
-			}
-
 			if(_currentlyDisplayedBook != CurrentBook)
 			{
 				CurrentBook.PrepareForEditing();
 			}
 
 			_currentlyDisplayedBook = CurrentBook;
-			//if (_bookSelection.CurrentSelection.Type == Book.BookType.Publication)
-			{
-				var page = _bookSelection.CurrentSelection.FirstPage;
-				if (page != null)
-					_pageSelection.SelectPage(page);
-			}
+
+			var page = _bookSelection.CurrentSelection.FirstPage;
+			if (page != null)
+				_pageSelection.SelectPage(page);
+
 			if (_view != null)
 			{
 				if(ShowTemplatePanel)
+				{
 					_view.UpdateTemplateList();
+				}
 				_view.UpdatePageList();
 			}
 		}
@@ -330,13 +327,11 @@ namespace Bloom.Edit
 				if(_domForCurrentPage!=null)
 					SaveNow();
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-				//_view.ClearSourceText();
 			}
 		}
 
 		public XmlDocument GetXmlDocumentForCurrentPage()
 		{
-
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			return _domForCurrentPage;
 		}
@@ -356,18 +351,9 @@ namespace Bloom.Edit
 
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
-			//We have a problem where if we save at this point, any text changes are lost.
-			//The hypothesis is that the "onblur" javascript has not run, so the value of the textareas have not yet changed.
-
-			//_view.ReadEditableAreasNow();
-
-			//SaveNow();//have to save now because we're going to reload the page to show the new picture
-
-			//review: this is spagetti
+		   //review: this is spagetti
 			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
 
-			//_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			//InvokeUpdatePageList();
 			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 
@@ -414,24 +400,7 @@ namespace Bloom.Edit
 		{
 			return CurrentBook.GetSizeAndOrientation().ToString();
 		}
-//
-//    	public static string GetPathToStylizer()
-//    	{
-//    		return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
-//    	}
-//
-//    	public void OpenPageInStylizer()
-//    	{
-//			string path = Path.GetTempFileName();
-//    		var dom = GetXmlDocumentForCurrentPage();
-//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-//    		XmlHtmlConverter.SaveDOMAsHtml5(dom, path);
-//			Process.Start(GetPathToStylizer(), path);
-//    	}
-
 	}
-
-		//_book.DeletePage(_pageSelection.CurrentSelection);
 
 	public class TemplateInsertionCommand
 	{

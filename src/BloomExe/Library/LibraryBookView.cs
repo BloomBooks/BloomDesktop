@@ -13,25 +13,30 @@ namespace Bloom.Library
 		private readonly BookSelection _bookSelection;
 		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
 		private readonly EditBookCommand _editBookCommand;
-		private readonly LibrarySettings _librarySettings;
 		private bool _reshowPending = false;
+		private bool _visible;
 
 		public delegate LibraryBookView Factory();//autofac uses this
 
 		public LibraryBookView(BookSelection bookSelection,
 			CreateFromTemplateCommand createFromTemplateCommand,
 			EditBookCommand editBookCommand,
-			LibrarySettings librarySettings)
+			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
 			_createFromTemplateCommand = createFromTemplateCommand;
 			_editBookCommand = editBookCommand;
-			_librarySettings = librarySettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
-			//_addToLibraryButton_MouseLeave(this, null);
-
+			selectedTabChangedEvent.Subscribe(c =>
+												{
+													_visible = c.To is LibraryView;
+													if(_reshowPending)
+													{
+														ShowBook();
+													}
+												});
 			_editBookButton.Visible = false;
 		}
 
@@ -58,7 +63,7 @@ namespace Bloom.Library
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
 		{
-			if( Visible)
+			if(_visible)
 				ShowBook();
 			else
 			{
@@ -97,12 +102,6 @@ namespace Bloom.Library
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that book to the library.");
 				}
 			}
-		}
-
-		private void LibraryBookView_VisibleChanged(object sender, EventArgs e)
-		{
-			if(Visible && _reshowPending)
-				ShowBook();// changed while we were hidden
 		}
 
 		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)

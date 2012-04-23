@@ -37,6 +37,13 @@ namespace Bloom
 		public Control From;
 		public Control To;
 	}
+
+	/// <summary>
+	/// called before the actual change
+	/// </summary>
+	public class SelectedTabAboutToChangeEvent : Event<TabChangedDetails>
+	{ }
+
 	/// <summary>
 	/// Gives the first control in the tab
 	/// </summary>

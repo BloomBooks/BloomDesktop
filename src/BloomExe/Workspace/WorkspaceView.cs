@@ -14,6 +14,7 @@ namespace Bloom.Workspace
 	{
 		private readonly WorkspaceModel _model;
 		private readonly SettingsDialog.Factory _settingsDialogFactory;
+		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private Control _libraryView;
@@ -35,12 +36,14 @@ namespace Bloom.Workspace
 							 InfoView.Factory infoViewFactory,
 							 SettingsDialog.Factory settingsDialogFactory,
 							 EditBookCommand editBookCommand,
-							 SelectedTabChangedEvent selectedTabChangedEvent,
+							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
+							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory
 			)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
+			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
@@ -176,7 +179,6 @@ namespace Bloom.Workspace
 
 			view.Dock = DockStyle.Fill;
 			_containerPanel.Controls.Add(view);
-			_previouslySelectedControl = view;
 
 			_toolSpecificPanel.Controls.Clear();
 
@@ -193,11 +195,20 @@ namespace Bloom.Workspace
 				_toolSpecificPanel.Controls.Add(_editingView.TopBarControl);
 			}
 
+			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
+			{
+				From = _previouslySelectedControl,
+				To = view
+			});
+
+
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
 											{
 												From = _previouslySelectedControl,
 												To = view
 											});
+
+			_previouslySelectedControl = view;
 		}
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
