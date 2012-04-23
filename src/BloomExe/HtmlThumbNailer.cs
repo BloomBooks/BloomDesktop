@@ -70,8 +70,10 @@ namespace Bloom
         public void GetThumbnailAsync(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed, Action<Image> callback)
         {
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
-			
-			string thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+
+    		string thumbNailFilePath = null;
+			if(!string.IsNullOrEmpty(folderForThumbNailCache))
+				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
 			
 			//In our cache?
 			Image image;
