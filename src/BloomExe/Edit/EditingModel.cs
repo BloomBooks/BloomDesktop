@@ -19,7 +19,7 @@ namespace Bloom.Edit
 		private readonly LanguageSettings _languageSettings;
 		private readonly LibrarySettings _librarySettings;
 		private XmlDocument _domForCurrentPage;
-		private bool _visible;
+		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
 		private List<ContentLanguage> _contentLanguages;
@@ -75,8 +75,8 @@ namespace Bloom.Edit
 
 		private void OnTabChanged(TabChangedDetails details)
 		{
-			_visible = details.To == _view;
-			_view.OnVisibleChanged(_visible);
+			Visible = details.To == _view;
+			_view.OnVisibleChanged(Visible);
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -348,12 +348,11 @@ namespace Bloom.Edit
 		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
 		{
 			var editor = new PageEditingModel();
-
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
-		   //review: this is spagetti
-			_bookSelection.CurrentSelection.UpdatePagePreview(_pageSelection.CurrentSelection);
-
+			//we have to save so that when asked by the thumnailer, the book will give the proper image
+			SaveNow();
+			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 

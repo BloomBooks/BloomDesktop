@@ -96,8 +96,6 @@ namespace Bloom.Edit
 
 			_splitContainer1.Select();
 			_browser1.Select();
-
-//			Debug.WriteLine("active control: " + ActiveControl.Name);
 		}
 
 		void _model_UpdatePageList(object sender, EventArgs e)
@@ -114,19 +112,6 @@ namespace Bloom.Edit
 
 		private void OnGeckoReady(object sender, EventArgs e)
 		{
-			//bloomEditing.js raises this textGroupFocussed event
-			_browser1.WebBrowser.AddMessageEventListener("textGroupFocused", (translationsInAllLanguages => OnTextGroupFocussed(translationsInAllLanguages)));
-
-//    		_browser1.WebBrowser.AddMessageEventListener("divClicked", (data =>
-//    		                                                            	{
-//																				//I found that while in this handler, we can't call any javacript back, so we
-//																				//instead just return and handle it momentarily
-//    		                                                            		_handleMessageTimer.Enabled = true;
-//																				_pendingMessageHandler = (() =>
-//																				                          	{
-//																				                          		OnClickCopyrightAndLicenseDiv(data);
-//																				                          	});
-//    		                                                            	}));
 		}
 
 		private void OnClickCopyrightAndLicenseDiv()
@@ -141,30 +126,6 @@ namespace Bloom.Edit
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 				Metadata metadata = _model.CurrentBook.GetMetadata();
-
-				//JObject existing = JObject.Parse(data.ToString());
-
-//				//Metadata metadata = new Metadata();
-//				metadata.CopyrightNotice = existing["copyright"].Value<string>();
-//				var url = existing["licenseUrl"].Value<string>();
-//				//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
-//				if (url == null || url.Trim() == "")
-//				{
-//					//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-//					JToken licenseNotes;
-//					if (existing.TryGetValue("licenseNotes", out licenseNotes))
-//					{
-//						metadata.License = new CustomLicense() {RightsStatement = licenseNotes.Value<string>()};
-//					}
-//					else
-//					{
-//						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-//					}
-//				}
-//				else
-//				{
-//					metadata.License = CreativeCommonsLicense.FromLicenseUrl(url);
-//				}
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
@@ -209,16 +170,6 @@ namespace Bloom.Edit
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
 		}
-
-
-		/// <summary>
-		/// called when jscript raisese the textGroupFocussed event.  That jscript lives (at the moment) in initScript.js
-		/// </summary>
-		private void OnTextGroupFocussed(string translationsInAllLanguages)
-		{
-
-		}
-
 
 		private void SetupThumnailLists()
 		{
@@ -294,21 +245,21 @@ namespace Bloom.Edit
 
 		public void UpdateSingleDisplayedPage(IPage page)
 		{
-		   if(!Visible)
-		   {
-			   return;
-		   }
+			if (!_model.Visible)
+			{
+				return;
+			}
 
-		   if (_model.HaveCurrentEditableBook)
-		   {
-			   _pageListView.SelectThumbnailWithoutSendingEvent(page);
+			if (_model.HaveCurrentEditableBook)
+			{
+				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				var dom = _model.GetXmlDocumentForCurrentPage();
-			   _browser1.Focus();
-			   _browser1.Navigate(dom);
+				_browser1.Focus();
+				_browser1.Navigate(dom);
 				_pageListView.Focus();
-			   _browser1.Focus();
-		   }
-		UpdateDisplay();
+				_browser1.Focus();
+			}
+			UpdateDisplay();
 		}
 
 		public void UpdateTemplateList()
@@ -440,6 +391,11 @@ namespace Bloom.Edit
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+		}
+
+		public void UpdateThumbnailAsync(IPage page)
+		{
+			_pageListView.UpdateThumbnailAsync(page);
 		}
 
 		/// <summary>

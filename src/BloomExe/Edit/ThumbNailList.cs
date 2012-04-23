@@ -23,9 +23,6 @@ namespace Bloom.Edit
 		private int _numberofEmptyListItemsAtStart;
 		public HtmlThumbNailer Thumbnailer;
 		private Image _placeHolderImage;
-		//private Point _mouseDownLocation;
-
-		//public Action<Page> PageSelectedMethod { get; set; }
 		public event EventHandler PageSelectedChanged;
 
 		public ThumbNailList()
@@ -132,9 +129,16 @@ namespace Bloom.Edit
 			_listView.Items.Add(item);
 			if (!(page is PlaceHolderPage))
 			{
-				Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page), Palette.TextAgainstDarkBackground,
-											  false, image => RefreshOneThumbnailCallback(page, image));
+				UpdateThumbnailAsync(page);
 			}
+		}
+
+		public void UpdateThumbnailAsync(IPage page)
+		{
+
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page),
+													  Palette.TextAgainstDarkBackground,
+													  false, image => RefreshOneThumbnailCallback(page, image));
 		}
 
 		private void RefreshOneThumbnailCallback(IPage page, Image image)
@@ -148,7 +152,9 @@ namespace Bloom.Edit
 				//_listView.Refresh();
 				var listItem = (from ListViewItem i in _listView.Items where i.Tag == page select i).FirstOrDefault();
 				if(listItem!=null)//saw this happen once
+				{
 					_listView.Invalidate(listItem.Bounds);
+				}
 
 			}
 		}

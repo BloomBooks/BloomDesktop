@@ -1309,18 +1309,6 @@ namespace Bloom.Book
 			InvokeContentsChanged(null);
 		}
 
-		public void UpdatePagePreview(IPage currentSelection)
-		{
-			_thumbnailProvider.PageChanged(currentSelection.Id);
-
-			//this is for the library view, so that, so long as it asks us, we'll give it a new
-			//thumbnail when it is shown again.
-			if(currentSelection.Id==FirstPage.Id)
-			{
-				_thumbnailProvider.PageChanged(_storage.Key);
-			}
-		}
-
 		public virtual bool Delete()
 		{
 			return _storage.DeleteBook();
