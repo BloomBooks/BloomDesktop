@@ -259,6 +259,12 @@ namespace Bloom.Edit
 			get { return ContentLanguages.Where(l => l.Selected).Count(); }
 		}
 
+		public bool CanEditCopyrightAndLicense
+		{
+			get { return CurrentBook.CanChangeLicense; }
+
+		}
+
 		public class ContentLanguage
 		{
 			public readonly string Iso639Code;
