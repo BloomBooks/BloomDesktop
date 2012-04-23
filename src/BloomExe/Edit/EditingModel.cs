@@ -23,9 +23,10 @@ namespace Bloom.Edit
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
 		private List<ContentLanguage> _contentLanguages;
+		private IPage _previouslySelectedPage;
 
 
-		public event EventHandler UpdatePageList;
+		//public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
 
@@ -54,7 +55,7 @@ namespace Bloom.Edit
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			deletePageCommand.Implementer=OnDeletePage;
-			pageListChangedEvent.Subscribe(x => InvokeUpdatePageList());
+			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
 			relocatePageEvent.Subscribe(OnRelocatePage);
 			libraryClosingEvent.Subscribe(o=>SaveNow());
 			_contentLanguages = new List<ContentLanguage>();
@@ -75,6 +76,7 @@ namespace Bloom.Edit
 
 		private void OnTabChanged(TabChangedDetails details)
 		{
+			_previouslySelectedPage = null;
 			Visible = details.To == _view;
 			_view.OnVisibleChanged(Visible);
 		}
@@ -87,14 +89,14 @@ namespace Bloom.Edit
 			_currentlyDisplayedBook = null;
 			_view.ClearOutDisplay();
 			if(!wasNull)
-				InvokeUpdatePageList();
+				_view.UpdatePageList(false);
 		}
 
 		private void OnDeletePage()
 		{
 			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
 			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
-			_view.UpdatePageList();
+			_view.UpdatePageList(false);
 			UsageReporter.SendNavigationNotice("DeletePage");
 		}
 
@@ -107,7 +109,7 @@ namespace Bloom.Edit
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
 			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
-			_view.UpdatePageList();
+			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
 			UsageReporter.SendNavigationNotice("InsertTemplatePage");
 		}
@@ -233,6 +235,8 @@ namespace Bloom.Edit
 			CurrentBook.SetPaperSizeAndOrientation(paperSizeAndOrientationName);
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+
+			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 		}
 
 		/// <summary>
@@ -260,6 +264,7 @@ namespace Bloom.Edit
 			CurrentBook.SetMultilingualContentLanguages(l2, l3);
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -316,7 +321,7 @@ namespace Bloom.Edit
 				{
 					_view.UpdateTemplateList();
 				}
-				_view.UpdatePageList();
+				_view.UpdatePageList(false);
 			}
 		}
 
@@ -324,8 +329,12 @@ namespace Bloom.Edit
 		{
 			if (_view != null)
 			{
-				if(_domForCurrentPage!=null)
+				if (_previouslySelectedPage!=null && _domForCurrentPage != null)
+				{
 					SaveNow();
+					_view.UpdateThumbnailAsync(_previouslySelectedPage);
+				}
+				_previouslySelectedPage = _pageSelection.CurrentSelection;
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			}
 		}
@@ -356,13 +365,13 @@ namespace Bloom.Edit
 			UsageReporter.SendNavigationNotice("ChangePicture");
 		}
 
-		private void InvokeUpdatePageList()
-		{
-			if (UpdatePageList != null)
-			{
-				UpdatePageList(this, null);
-			}
-		}
+//        private void InvokeUpdatePageList()
+//        {
+//            if (UpdatePageList != null)
+//            {
+//                UpdatePageList(this, null);
+//            }
+//        }
 
 		public void SetView(EditingView view)
 		{
@@ -399,6 +408,15 @@ namespace Bloom.Edit
 		{
 			return CurrentBook.GetSizeAndOrientation().ToString();
 		}
+
+#if TooExpensive
+		public void BrowserFocusChanged()
+		{
+			//review: will this be too slow on some machines? It's just a luxury to update the thumbnail even when you tab to a different field
+			SaveNow();
+			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+		}
+#endif
 	}
 
 	public class TemplateInsertionCommand

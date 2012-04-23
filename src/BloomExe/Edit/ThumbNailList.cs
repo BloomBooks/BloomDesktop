@@ -149,11 +149,19 @@ namespace Bloom.Edit
 			if (imageIndex > -1)
 			{
 				_thumbnailImageList.Images[imageIndex] = image;
-				//_listView.Refresh();
-				var listItem = (from ListViewItem i in _listView.Items where i.Tag == page select i).FirstOrDefault();
-				if(listItem!=null)//saw this happen once
+
+				//at one time the page we just inserted would have the same id, but be a different IPage object.
+				//Now, the above checks for id equality too (never did track down why the objects change, but this is robust, so I'm not worried about it)
+
+				var listItem = (from ListViewItem i in _listView.Items where ((i.Tag == page) || ((IPage)i.Tag).Id == page.Id) select i).FirstOrDefault();
+				if(listItem!=null)
 				{
 					_listView.Invalidate(listItem.Bounds);
+				}
+				else
+				{
+					Debug.Fail("Did not find a matching page."); //theoretically, this could happen if you managed to delete the page before its thumnbail could be built
+					var lastPage = _listView.Items[_listView.Items.Count - 1];
 				}
 
 			}
@@ -379,6 +387,17 @@ namespace Bloom.Edit
 		public void SetPageInsertionPoint(IPage pageBeforeInsertion)
 		{
 			ItemWhichWouldPrecedeANewPageInsertion = _listView.Items.OfType<ListViewItem>().FirstOrDefault(i => i.Tag == pageBeforeInsertion);
+		}
+
+		public void EmptyThumbnailCache()
+		{
+			foreach (ListViewItem item in _listView.Items)
+			{
+
+				var pageId = (item.Tag as IPage).Id;
+				if(!(item.Tag is PlaceHolderPage))
+					Thumbnailer.PageChanged(pageId);
+			}
 		}
 	}
 

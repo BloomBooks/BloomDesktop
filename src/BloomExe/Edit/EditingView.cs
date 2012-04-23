@@ -51,13 +51,25 @@ namespace Bloom.Edit
 			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
-			_model.UpdatePageList += new EventHandler(_model_UpdatePageList);
+
+
 
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
 		}
+
+#if TooExpensive
+		void OnBrowserFocusChanged(object sender, GeckoDomEventArgs e)
+		{
+			//prevent recursion
+			_browser1.WebBrowser.DomFocus -= new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
+			_model.BrowserFocusChanged();
+			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
+
+		}
+#endif
 
 		public Control TopBarControl
 		{
@@ -98,10 +110,6 @@ namespace Bloom.Edit
 			_browser1.Select();
 		}
 
-		void _model_UpdatePageList(object sender, EventArgs e)
-		{
-			UpdatePageList();
-		}
 
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
 		{
@@ -112,6 +120,9 @@ namespace Bloom.Edit
 
 		private void OnGeckoReady(object sender, EventArgs e)
 		{
+#if TooExpensive
+			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
+#endif
 		}
 
 		private void OnClickCopyrightAndLicenseDiv()
@@ -266,8 +277,10 @@ namespace Bloom.Edit
 		{
 			_templatePagesView.Update();
 		}
-		public void UpdatePageList()
+		public void UpdatePageList(bool emptyThumbnailCache)
 		{
+			if (emptyThumbnailCache)
+				_pageListView.EmptyThumbnailCache();
 			_pageListView.SetBook(_model.CurrentBook);
 		}
 

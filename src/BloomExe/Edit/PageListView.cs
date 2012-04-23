@@ -104,5 +104,10 @@ namespace Bloom.Edit
 		{
 			get { return _pageWeThinkShouldBeSelected; }
 		}
+
+		public void EmptyThumbnailCache()
+		{
+			_thumbNailList.EmptyThumbnailCache();
+		}
 	}
 }

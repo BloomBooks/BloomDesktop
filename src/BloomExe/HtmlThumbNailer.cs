@@ -71,7 +71,9 @@ namespace Bloom
 		{
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
 
-			string thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+			string thumbNailFilePath = null;
+			if(!string.IsNullOrEmpty(folderForThumbNailCache))
+				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
 
 			//In our cache?
 			Image image;
