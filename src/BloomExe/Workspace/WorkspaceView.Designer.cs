@@ -38,12 +38,12 @@
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable = new System.Windows.Forms.TableLayoutPanel();
 			this._advancedButtonsPanel = new System.Windows.Forms.TableLayoutPanel();
+			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._libraryTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
 			this._infoTab = new Messir.Windows.Forms.TabStripButton();
-			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._topBarButtonTable.SuspendLayout();
 			this._advancedButtonsPanel.SuspendLayout();
 			this._tabStrip.SuspendLayout();
@@ -141,7 +141,8 @@
 			// 
 			// _topBarButtonTable
 			// 
-			this._topBarButtonTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._topBarButtonTable.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this._topBarButtonTable.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._topBarButtonTable.ColumnCount = 6;
 			this._topBarButtonTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
@@ -177,6 +178,14 @@
 			this._advancedButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this._advancedButtonsPanel.Size = new System.Drawing.Size(254, 54);
 			this._advancedButtonsPanel.TabIndex = 27;
+			// 
+			// _toolSpecificPanel
+			// 
+			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._toolSpecificPanel.Location = new System.Drawing.Point(275, 4);
+			this._toolSpecificPanel.Name = "_toolSpecificPanel";
+			this._toolSpecificPanel.Size = new System.Drawing.Size(474, 66);
+			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _tabStrip
 			// 
@@ -271,16 +280,6 @@
 			this._infoTab.Size = new System.Drawing.Size(69, 71);
 			this._infoTab.Text = "Help";
 			this._infoTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			// 
-			// _toolSpecificPanel
-			// 
-			this._toolSpecificPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._toolSpecificPanel.Location = new System.Drawing.Point(316, 4);
-			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(474, 66);
-			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// WorkspaceView
 			// 

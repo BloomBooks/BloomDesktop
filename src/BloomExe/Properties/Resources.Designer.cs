@@ -88,6 +88,20 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap copyDisable16x16 {
+            get {
+                object obj = ResourceManager.GetObject("copyDisable16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap copyDisable16x161 {
+            get {
+                object obj = ResourceManager.GetObject("copyDisable16x161", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap coverOnly {
             get {
                 object obj = ResourceManager.GetObject("coverOnly", resourceCulture);
@@ -98,6 +112,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap Cut16x16 {
             get {
                 object obj = ResourceManager.GetObject("Cut16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap cutDisable16x16 {
+            get {
+                object obj = ResourceManager.GetObject("cutDisable16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -126,6 +147,27 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap deletePage24x24 {
             get {
                 object obj = ResourceManager.GetObject("deletePage24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap DeletePage32x32 {
+            get {
+                object obj = ResourceManager.GetObject("DeletePage32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap DeletePageDisabled24x24 {
+            get {
+                object obj = ResourceManager.GetObject("DeletePageDisabled24x24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap DeletePageDisabled32x32 {
+            get {
+                object obj = ResourceManager.GetObject("DeletePageDisabled32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -291,6 +333,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap pasteDisabled32x32 {
+            get {
+                object obj = ResourceManager.GetObject("pasteDisabled32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap print {
             get {
                 object obj = ResourceManager.GetObject("print", resourceCulture);
@@ -364,6 +413,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap undo32x32 {
             get {
                 object obj = ResourceManager.GetObject("undo32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap undoDisabled32x32 {
+            get {
+                object obj = ResourceManager.GetObject("undoDisabled32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
