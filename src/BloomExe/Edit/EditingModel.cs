@@ -17,7 +17,8 @@ namespace Bloom.Edit
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
         private readonly LanguageSettings _languageSettings;
-        private readonly LibrarySettings _librarySettings;
+    	private readonly DeletePageCommand _deletePageCommand;
+    	private readonly LibrarySettings _librarySettings;
         private XmlDocument _domForCurrentPage;
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
@@ -45,7 +46,8 @@ namespace Bloom.Edit
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
             _languageSettings = languageSettings;
-            _librarySettings = librarySettings;
+        	_deletePageCommand = deletePageCommand;
+        	_librarySettings = librarySettings;
 
             bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
             pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -336,6 +338,7 @@ namespace Bloom.Edit
                 }
             	_previouslySelectedPage = _pageSelection.CurrentSelection;
                 _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+            	_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
             }
         }
 

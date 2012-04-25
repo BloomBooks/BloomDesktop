@@ -28,7 +28,10 @@ namespace Bloom.Edit
 		private GeckoElement _previousClickElement;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
-        public delegate EditingView Factory();//autofac uses this
+		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
+    	private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
+
+    	public delegate EditingView Factory();//autofac uses this
 
         
         public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
@@ -503,15 +506,22 @@ namespace Bloom.Edit
 
     	public void UpdateEditButtons()
         {
-            _cutButton.Enabled = _cutCommand != null && _cutCommand.Enabled;
-            _copyButton.Enabled = _copyCommand != null && _copyCommand.Enabled;
-            _pasteButton.Enabled = _pasteCommand != null && _pasteCommand.Enabled;
-            _undoButton.Enabled = _undoCommand != null && _undoCommand.Enabled;
+    		UpdateButtonEnabled(_cutButton, _cutCommand);
+			UpdateButtonEnabled(_copyButton, _copyCommand);
+			UpdateButtonEnabled(_pasteButton,_pasteCommand);
+			UpdateButtonEnabled(_undoButton, _undoCommand);
+			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
+		}
 
-            _deletePageButton.Enabled = _deletePageCommand.Enabled = _model.CanDeletePage;
-        }
+    	private void UpdateButtonEnabled(Button button, Command command)
+    	{
+			button.Enabled = command != null && command.Enabled;
+    		//doesn't work becuase the forecolor is ignored when disabled...   
+			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor;//.DimGray;
+    		button.Invalidate(); 
+    	}
 
-        private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
+    	private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
         {
             UpdateEditButtons();
         }

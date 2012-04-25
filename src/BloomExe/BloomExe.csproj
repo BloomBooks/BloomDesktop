@@ -454,7 +454,9 @@
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Resources\x-office-document.png" />
   </ItemGroup>
   <ItemGroup>
@@ -628,6 +630,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Error70x701.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copyDisable16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pasteDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copyDisable16x161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\undoDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePageDisabled24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePageDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePage32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cutDisable16x16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
