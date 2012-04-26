@@ -17,21 +17,21 @@ namespace Bloom.Library
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
 		private readonly LibrarySettings _librarySettings;
-		private readonly StoreCollectionList _storeCollectionList;
+		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
 		private List<BookCollection> _bookCollections;
 
 		public LibraryModel(string pathToLibrary, LibrarySettings librarySettings,
 			BookSelection bookSelection,
-			StoreCollectionList storeCollectionList,
+			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
 			EditBookCommand editBookCommand)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
 			_librarySettings = librarySettings;
-			_storeCollectionList = storeCollectionList;
+			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
 		}
@@ -80,7 +80,7 @@ namespace Bloom.Library
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 
-			foreach (var bookCollection in _storeCollectionList.GetStoreCollections())
+			foreach (var bookCollection in _sourceCollectionsList.GetStoreCollections())
 				yield return bookCollection;
 		}
 

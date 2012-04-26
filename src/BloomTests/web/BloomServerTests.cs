@@ -22,7 +22,7 @@ namespace BloomTests.web
 		private FileLocator _fileLocator;
 		private Mock<BookCollection> _vernacularLibraryCollection;
 		private List<Bloom.Book.Book> _bookList;
-		private Mock<StoreCollectionList> _storeCollectionList;
+		private Mock<SourceCollectionsList> _storeCollectionList;
 		private Mock<LibrarySettings> _librarySettings;
 
 		[SetUp]
@@ -38,7 +38,7 @@ namespace BloomTests.web
 			_vernacularLibraryCollection = new Moq.Mock<BookCollection>();
 			_bookList = new List<Bloom.Book.Book>();
 			_vernacularLibraryCollection.Setup(x => x.GetBooks()).Returns(_bookList);
-			_storeCollectionList = new Mock<StoreCollectionList>();
+			_storeCollectionList = new Mock<SourceCollectionsList>();
 			_storeCollectionList.Setup(x => x.GetStoreCollections()).Returns(() => GetStoreCollections());
 			_librarySettings = new Mock<LibrarySettings>();
 			_librarySettings.Setup(x => x.LibraryName).Returns(() => "Foo");

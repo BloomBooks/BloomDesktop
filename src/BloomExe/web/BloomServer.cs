@@ -16,16 +16,16 @@ namespace Bloom.web
 	{
 		private readonly LibrarySettings _librarySettings;
 		private readonly BookCollection _booksInProjectLibrary;
-		private readonly StoreCollectionList _storeCollectionsList;
+		private readonly SourceCollectionsList _sourceCollectionsesList;
 		private readonly HtmlThumbNailer _thumbNailer;
 		private HttpListener _listener;
 
 		public BloomServer(LibrarySettings librarySettings, BookCollection booksInProjectLibrary,
-						   StoreCollectionList storeCollectionsList, HtmlThumbNailer thumbNailer)
+						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
 		{
 			_librarySettings = librarySettings;
 			_booksInProjectLibrary = booksInProjectLibrary;
-			_storeCollectionsList = storeCollectionsList;
+			_sourceCollectionsesList = sourceCollectionsesList;
 			_thumbNailer = thumbNailer;
 		}
 
@@ -77,7 +77,7 @@ namespace Bloom.web
 			{
 				info.WriteCompleteOutput(_librarySettings.LibraryName + " Library");
 			}
-			else if (r.Contains("storeCollectionList"))
+			else if (r.Contains("SourceCollectionsList"))
 			{
 				GetStoreBooks(info);
 			}
@@ -130,7 +130,7 @@ namespace Bloom.web
 			//enhance: it will eventually work better to do sorting client-side, according to user's current prefs
 			var reply = new StringBuilder();
 			var list = new List<BookCollection>();
-			list.AddRange(_storeCollectionsList.GetStoreCollections());
+			list.AddRange(_sourceCollectionsesList.GetStoreCollections());
 
 			list.Sort(CompareBookCollections);
 

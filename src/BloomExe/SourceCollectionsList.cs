@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Bloom.Book;
-using Bloom.Library;
-using Bloom.web;
 
 namespace Bloom
 {
@@ -12,21 +10,22 @@ namespace Bloom
 		Book.Book FindTemplateBook(string key);
 	}
 
-	public class StoreCollectionList : ITemplateFinder
+	public class SourceCollectionsList : ITemplateFinder
 	{
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookCollection.Factory _bookCollectionFactory;
+		private readonly string _editableVernacularCollectionDirectory;
 
 		//for moq'ing
-		public StoreCollectionList(){}
+		public SourceCollectionsList(){}
 
-		public StoreCollectionList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory)
+		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory, string editableVernacularCollectionDirectory)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_bookCollectionFactory = bookCollectionFactory;
-
+			_editableVernacularCollectionDirectory = editableVernacularCollectionDirectory;
 		}
 
 		public IEnumerable<string> RepositoryFolders
@@ -65,7 +64,7 @@ namespace Bloom
 
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-					if (Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
+					if (dir == _editableVernacularCollectionDirectory || Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
 						continue;
 					yield return _bookCollectionFactory(dir, BookCollection.CollectionType.TemplateCollection);
 				}
@@ -74,7 +73,7 @@ namespace Bloom
 				foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
 				{
 					var path = ResolveShortcut.Resolve(shortcut);
-					if (Directory.Exists(path))
+					if (path!=_editableVernacularCollectionDirectory && Directory.Exists(path))
 						yield return _bookCollectionFactory(path, BookCollection.CollectionType.TemplateCollection);
 				}
 			}

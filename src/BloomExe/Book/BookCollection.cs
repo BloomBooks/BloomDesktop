@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
+using Bloom.Library;
 using Palaso.Reporting;
 
 namespace Bloom.Book

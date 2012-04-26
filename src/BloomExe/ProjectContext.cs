@@ -33,11 +33,14 @@ namespace Bloom
 
 			ProjectWindow = _scope.Resolve <Shell>();
 
+			string vernacularCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+			AddShortCutInComputersBloomCollections(vernacularCollectionDirectory);
+
 			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
 			{
-				var libraryCollection =_scope.Resolve<BookCollection.Factory>()(Path.GetDirectoryName(projectSettingsPath), BookCollection.CollectionType.TheOneEditableCollection);
-				var storeCollectionList = _scope.Resolve<StoreCollectionList>();
-				_bloomServer = new BloomServer(_scope.Resolve<LibrarySettings>(), libraryCollection, storeCollectionList, _scope.Resolve<HtmlThumbNailer>());
+				BookCollection editableVernacularCollection = _scope.Resolve<BookCollection.Factory>()(vernacularCollectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+				_bloomServer = new BloomServer(_scope.Resolve<LibrarySettings>(), editableVernacularCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
 		}
@@ -45,7 +48,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
-			var rootDirectoryPath = Path.GetDirectoryName(projectSettingsPath);
+			var editableVernacularCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 			_scope = parentContainer.BeginLifetimeScope(builder =>
 			{
 				//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
@@ -84,7 +87,7 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(rootDirectoryPath, c.Resolve<LibrarySettings>(), c.Resolve<BookSelection>(), c.Resolve<StoreCollectionList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(editableVernacularCollectionDirectory, c.Resolve<LibrarySettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
 				//builder.Register<BookCollection>(c => c.Resolve<BookCollection>());
 
@@ -112,22 +115,22 @@ namespace Bloom
 															return new XMatterPackFinder(locations);
 														});
 
-				builder.Register<StoreCollectionList>(c =>
+				builder.Register<SourceCollectionsList>(c =>
 					 {
-						 var l = new StoreCollectionList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),c.Resolve<BookCollection.Factory>());
+						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableVernacularCollectionDirectory);
 						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
 
 				builder.Register<ITemplateFinder>(c =>
 					 {
-						 return c.Resolve<StoreCollectionList>();
+						 return c.Resolve<SourceCollectionsList>();
 					 }).InstancePerLifetimeScope();
 
 				//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
 				//so we're doing this
-				builder.Register(c=>rootDirectoryPath).InstancePerLifetimeScope();
+				builder.Register(c=>editableVernacularCollectionDirectory).InstancePerLifetimeScope();
 
 				builder.RegisterType<CreateFromTemplateCommand>().InstancePerLifetimeScope();
 
@@ -182,7 +185,7 @@ namespace Bloom
 
 //			TODO: Add, in the list of places we look, this library's "regional library" (when such a concept comes into being)
 //			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
-//			var templateCollectionList = parentContainer.Resolve<StoreCollectionList>();
+//			var templateCollectionList = parentContainer.Resolve<SourceCollectionsList>();
 //			foreach (var repo in templateCollectionList.RepositoryFolders)
 //			{
 //				foreach (var directory in Directory.GetDirectories(repo))
@@ -245,5 +248,26 @@ namespace Bloom
 			_scope = null;
 		}
 
+		/// <summary>
+		/// The idea here is that if someone is editing a shell collection, then next thing they are likely to do is
+		/// open a vernacular library and try it out.  By adding this link, well they'll see this collection like
+		/// they probably expect.
+		/// </summary>
+		private void AddShortCutInComputersBloomCollections(string vernacularCollectionDirectory)
+		{
+			if (!Directory.Exists(ProjectContext.InstalledCollectionsDirectory))
+				return;//well, that would be a bug, I suppose...
+
+			try
+			{
+				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.InstalledCollectionsDirectory);
+			}
+			catch (Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Could not add a link for this shell library in the user collections directory");
+			}
+
+		}
 	}
 }
