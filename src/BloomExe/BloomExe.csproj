@@ -154,6 +154,7 @@
     <Compile Include="Library\ListHeader.Designer.cs">
       <DependentUpon>ListHeader.cs</DependentUpon>
     </Compile>
+    <Compile Include="Library\ShortcutMaker.cs" />
     <Compile Include="Palette.cs" />
     <Compile Include="SimpleMessageDialog.cs">
       <SubType>Form</SubType>
@@ -296,7 +297,7 @@
     </Compile>
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
-    <Compile Include="StoreCollectionList.cs" />
+    <Compile Include="SourceCollectionsList.cs" />
     <Compile Include="Workspace\TabStrip.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -654,6 +655,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\cutDisable16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="IWshRuntimeLibrary">
+      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
