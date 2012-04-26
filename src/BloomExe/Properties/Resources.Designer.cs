@@ -305,6 +305,20 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap PackageFlat32x32 {
+            get {
+                object obj = ResourceManager.GetObject("PackageFlat32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PackageFlat48x47 {
+            get {
+                object obj = ResourceManager.GetObject("PackageFlat48x47", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap PagePlaceHolder {
             get {
                 object obj = ResourceManager.GetObject("PagePlaceHolder", resourceCulture);
