@@ -855,6 +855,17 @@ namespace Bloom.Book
 			get { return IsInEditableLibrary && !HasFatalError; }
 		}
 
+		/// <summary>
+		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
+		/// </summary>
+		public bool IsSuitableFOrMakingShells
+		{
+			get
+			{
+				return true; // at the moment, this is a decent proxy for this question
+			}
+		}
+
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			if (language2Code == _librarySettings.VernacularIso639Code) //can't have the vernacular twice

@@ -138,6 +138,12 @@ namespace Bloom.Book
 			get { return Path.GetFileName(_path); }
 		}
 
+		public string PathToDirectory
+		{
+			get { return _path; }
+
+		}
+
 		private List<Book> _books;
 		private void ListOfBooksIsOutOfDate()
 		{

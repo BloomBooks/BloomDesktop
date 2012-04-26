@@ -54,8 +54,12 @@
 			this.Controls.Add(this.betterLabel1);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.Name = "SimpleMessageDialog";
+			this.ShowIcon = false;
+			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Bloom";
+			this.TopMost = true;
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

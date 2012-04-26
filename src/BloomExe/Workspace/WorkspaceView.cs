@@ -17,7 +17,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
-		private Control _libraryView;
+		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private InfoView _infoView;
@@ -63,7 +63,7 @@ namespace Bloom.Workspace
 			//
 			// _libraryView
 			//
-			this._libraryView = libraryView;
+			this._libraryView = (LibraryView) libraryView;
 			this._libraryView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			//
@@ -89,6 +89,8 @@ namespace Bloom.Workspace
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 			_infoTab.Tag = _infoView;
+
+			this._libraryTab.Text = _libraryView.LibraryTabLabel;
 
 			if (!Program.StartUpWithFirstOrNewVersionBehavior)
 				SetTabVisibility(_infoTab, false);
@@ -194,7 +196,12 @@ namespace Bloom.Workspace
 				_editingView.TopBarControl.Dock = DockStyle.Left;
 				_toolSpecificPanel.Controls.Add(_editingView.TopBarControl);
 			}
-
+			else if (view is LibraryView)
+			{
+				_libraryView.TopBarControl.BackColor = _tabStrip.BackColor;
+				_libraryView.TopBarControl.Dock = DockStyle.Left;
+				_toolSpecificPanel.Controls.Add(_libraryView.TopBarControl);
+			}
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
 			{
 				From = _previouslySelectedControl,

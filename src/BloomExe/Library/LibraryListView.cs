@@ -103,7 +103,7 @@ namespace Bloom.Library
 
 			_collectionFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground };
-			bookSourcesHeader.Label.Text = "Sources For New Books";
+			bookSourcesHeader.Label.Text = _model.IsShellProject ? "Sources For New Shells" : "Sources For New Books";
 			 invisibleHackPartner = new Label() { Text = "", Width = 0 };
 			 _collectionFlow.Controls.Add(invisibleHackPartner);
 			 _collectionFlow.Controls.Add(bookSourcesHeader);
@@ -138,6 +138,7 @@ namespace Bloom.Library
 			{
 				try
 				{
+					if(!_model.IsShellProject || book.IsSuitableFOrMakingShells)
 					AddOneBook(book, flowLayoutPanel);
 				}
 				catch (Exception error)
