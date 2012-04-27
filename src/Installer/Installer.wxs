@@ -151,6 +151,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="msvcr100.dll" Name="msvcr100.dll" KeyPath="yes" Source="..\..\output\release\msvcr100.dll" />
 		  </Component>
 
+		  <!-- for making windows shortcuts -->
+		  <Component Id="Interop.IWshRuntimeLibrary.dll" Guid="{11A19AC1-255B-4702-9817-061B1C415435}">
+			<File Id="Interop.IWshRuntimeLibrary.dll" Name="Interop.IWshRuntimeLibrary.dll" KeyPath="yes" Source="..\..\output\release\Interop.IWshRuntimeLibrary.dll" />
+		  </Component>
+
 		  <!-- For embedding Adobe Reader -->
 		  <Component Id="Interop.Acrobat.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D6}">
 			<File Id="Interop.Acrobat.dll" Name="Interop.Acrobat.dll" KeyPath="yes" Source="..\..\output\release\Interop.Acrobat.dll" />
@@ -191,6 +196,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
 	  <ComponentRef Id="GeckoFx" />
 	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
+	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
