@@ -154,7 +154,9 @@ namespace Bloom.Library
 						Cursor.Current = Cursors.WaitCursor;
 						using (var zip = new ZipFile())
 						{
-							zip.AddDirectory(TheOneEditableCollection.PathToDirectory);
+							string dir = TheOneEditableCollection.PathToDirectory;
+							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
+							zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
 							zip.Save(path);
 						}
 						//show it
