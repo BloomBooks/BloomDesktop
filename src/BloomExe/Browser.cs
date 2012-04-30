@@ -352,12 +352,10 @@ namespace Bloom
 			if (_pageDom == null)
 				return;
 
-			//TODO: this made us have a blank screen most of the time, even if the we didn't run any script at all. Tom is looking into an alternative way to jscript
-			//RunJavaScript("cleanup()");
-
-			//this is to force an onblur so that we can get at the actual user-edited value
+			//this is to force an onblur so that we can get at the actual user-edited value [review: still needed? maybe for textareas]
 			_browser.WebBrowserFocus.Deactivate();
 			_browser.WebBrowserFocus.Activate();
+
 
 			var body = _browser.Document.GetElementsByTagName("body");
 			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
@@ -393,14 +391,14 @@ namespace Bloom
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
-				{
-					j.ParentNode.RemoveChild(j);
-				}
-				foreach (XmlAttribute j in _pageDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
-				{
-					j.OwnerElement.RemoveAttributeNode(j);
-				}
+//				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+//				{
+//					j.ParentNode.RemoveChild(j);
+//				}
+//				foreach (XmlAttribute j in _pageDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+//				{
+//					j.OwnerElement.RemoveAttributeNode(j);
+//				}
 
 			}
 			catch(Exception e)
@@ -433,7 +431,12 @@ namespace Bloom
 		/// </summary>
 		public void ReadEditableAreasNow()
 		{
-			LoadPageDomFromBrowser();
+			if (_url != "about:blank")
+			{
+				RunJavaScript("Cleanup()");
+					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
+				LoadPageDomFromBrowser();
+			}
 		}
 
 		public void Copy()
