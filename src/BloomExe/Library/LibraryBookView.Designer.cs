@@ -42,7 +42,7 @@
 			this._addToLibraryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._addToLibraryButton.Image = global::Bloom.Properties.Resources.newBook1;
 			this._addToLibraryButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._addToLibraryButton.Location = new System.Drawing.Point(12, 51);
+			this._addToLibraryButton.Location = new System.Drawing.Point(12, 3);
 			this._addToLibraryButton.Name = "_addToLibraryButton";
 			this._addToLibraryButton.Size = new System.Drawing.Size(250, 42);
 			this._addToLibraryButton.TabIndex = 0;

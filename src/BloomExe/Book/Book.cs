@@ -21,7 +21,6 @@ using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -84,7 +83,7 @@ namespace Bloom.Book
 
 		public override bool Delete()
 		{
-			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+			var didDelete= Palaso.UI.WindowsForms.FileSystem.ConfirmRecycleDialog.Recycle(_folderPath);
 			if(didDelete)
 				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
 			return didDelete;

@@ -142,6 +142,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="Edit\ConfirmRemovePageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
+      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Library\BloomPack\BloomPackInstallDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -320,6 +326,9 @@
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
+      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
@@ -672,6 +681,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PackageFlat48x47.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete-wordLarge.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

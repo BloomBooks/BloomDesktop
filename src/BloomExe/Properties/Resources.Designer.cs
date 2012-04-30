@@ -123,6 +123,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap delete_wordLarge {
+            get {
+                object obj = ResourceManager.GetObject("delete-wordLarge", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap DeleteMessageBoxButtonImage {
             get {
                 object obj = ResourceManager.GetObject("DeleteMessageBoxButtonImage", resourceCulture);

@@ -544,7 +544,10 @@ namespace Bloom.Edit
 
 		private void _deletePageButton_Click_1(object sender, EventArgs e)
 		{
-			_deletePageCommand.Execute();
+			if(ConfirmRemovePageDialog.Confirm())
+			{
+				_deletePageCommand.Execute();
+			}
 		}
 
 		private void EditingView_Load(object sender, EventArgs e)
