@@ -124,22 +124,29 @@ namespace Bloom.Library
 				_collectionFlow.Controls.Add(collectionHeader);
 				_collectionFlow.SetFlowBreak(collectionHeader, true);
 
-				LoadOneCollection(collection, _collectionFlow);
+				if(!LoadOneCollection(collection, _collectionFlow))
+				{
+					//it was empty, or now books matched the filter, e.g. this is a shell library and none were found suitable for making shells
+					_collectionFlow.Controls.Remove(collectionHeader);
+				}
 			}
 			_libraryFlow.ResumeLayout();
 			Cursor = Cursors.Default;
 		}
 
-		private void LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
+		private bool LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
 		{
 			collection.CollectionChanged += OnCollectionChanged;
-
+			bool loadedAtLeastOneBook = false;
 			foreach (Book.Book book in collection.GetBooks())
 			{
 				try
 				{
-					if(!_model.IsShellProject || book.IsSuitableFOrMakingShells)
-					AddOneBook(book, flowLayoutPanel);
+					if(!_model.IsShellProject || book.IsSuitableForMakingShells)
+					{
+						loadedAtLeastOneBook = true;
+						AddOneBook(book, flowLayoutPanel);
+					}
 				}
 				catch (Exception error)
 				{
@@ -147,7 +154,7 @@ namespace Bloom.Library
 				}
 
 			}
-
+			return loadedAtLeastOneBook;
 		}
 
 		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)

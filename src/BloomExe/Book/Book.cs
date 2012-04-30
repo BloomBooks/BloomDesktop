@@ -864,12 +864,9 @@ namespace Bloom.Book
 		/// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
 		/// </summary>
-		public bool IsSuitableFOrMakingShells
+		public bool IsSuitableForMakingShells
 		{
-			get
-			{
-				return true; // at the moment, this is a decent proxy for this question
-			}
+			get { return GetMetaValue("SuitableForMakingShells", "unsuitable") == "definitely"; }//we imaging a future "unlikely"
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
@@ -1664,7 +1661,7 @@ namespace Bloom.Book
 			SizeAndOrientation.SetPaperSizeAndOrientation(RawDom, paperSizeAndOrientationName);
 		}
 
-		public Metadata GetMetadata()
+		public Metadata GetLicenseMetadata()
 		{
 			var data = new DataSet();
 			GatherDataItemsFromDom(data,"*", RawDom);

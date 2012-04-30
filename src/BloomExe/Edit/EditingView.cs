@@ -139,7 +139,7 @@ namespace Bloom.Edit
 				}
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
-				Metadata metadata = _model.CurrentBook.GetMetadata();
+				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
