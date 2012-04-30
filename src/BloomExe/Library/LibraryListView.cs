@@ -153,8 +153,11 @@ namespace Bloom.Library
 		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)
 		{
 			var item = new Button(){Size=new Size(90,110)};
-			item.Text = book.Title;
+			int kMaxCaptionLetters=20;
+			item.Text = book.Title.Length > kMaxCaptionLetters ? book.Title.Substring(0, kMaxCaptionLetters) + "…" : book.Title;
 			item.TextImageRelation = TextImageRelation.ImageAboveText;
+			item.ImageAlign = ContentAlignment.TopCenter;
+			item.TextAlign = ContentAlignment.BottomCenter;
 			item.FlatStyle = FlatStyle.Flat;
 			item.ForeColor = Palette.TextAgainstDarkBackground;
 			item.FlatAppearance.BorderSize = 0;
