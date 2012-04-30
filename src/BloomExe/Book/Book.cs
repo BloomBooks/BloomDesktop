@@ -1302,7 +1302,7 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 
-			var pages = _storage.Dom.SafeSelectNodes("/html/body/div");
+			var pages = _storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
 			var pageDiv = FindPageDiv(page);
 			var body = pageDiv.ParentNode;
 				body.RemoveChild(pageDiv);
