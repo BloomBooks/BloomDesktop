@@ -54,6 +54,8 @@
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartMessage = new System.Windows.Forms.Label();
 			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
+			this.button1 = new System.Windows.Forms.Button();
+			this.button2 = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -77,6 +79,7 @@
 			// 
 			// tabPage1
 			// 
+			this.tabPage1.Controls.Add(this.button1);
 			this.tabPage1.Controls.Add(this._removeSecondNationalLanguageButton);
 			this.tabPage1.Controls.Add(this._national2ChangeLink);
 			this.tabPage1.Controls.Add(this._national1ChangeLink);
@@ -155,9 +158,9 @@
 			this.label6.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label6.Location = new System.Drawing.Point(26, 198);
 			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(277, 19);
+			this.label6.Size = new System.Drawing.Size(308, 19);
 			this.label6.TabIndex = 13;
-			this.label6.Text = "Regional / National Language 2 (Optional)";
+			this.label6.Text = "Language 2 (Optional) (e.g. Regional Language)";
 			// 
 			// _nationalLanguage1Label
 			// 
@@ -175,9 +178,10 @@
 			this.label4.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label4.Location = new System.Drawing.Point(26, 113);
 			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(139, 19);
+			this.label4.Size = new System.Drawing.Size(227, 19);
 			this.label4.TabIndex = 10;
-			this.label4.Text = "National Language 1";
+			this.label4.Text = "Language 1 (e.g. Nation Language)";
+			this.label4.Click += new System.EventHandler(this.label4_Click);
 			// 
 			// _vernacularLanguageName
 			// 
@@ -201,6 +205,7 @@
 			// 
 			// tabPage2
 			// 
+			this.tabPage2.Controls.Add(this.button2);
 			this.tabPage2.Controls.Add(this.label1);
 			this.tabPage2.Controls.Add(this._xmatterPackCombo);
 			this.tabPage2.Location = new System.Drawing.Point(4, 26);
@@ -317,9 +322,9 @@
 			this._restartMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
 			this._restartMessage.Location = new System.Drawing.Point(9, 388);
 			this._restartMessage.Name = "_restartMessage";
-			this._restartMessage.Size = new System.Drawing.Size(383, 20);
+			this._restartMessage.Size = new System.Drawing.Size(290, 20);
 			this._restartMessage.TabIndex = 19;
-			this._restartMessage.Text = "Restart or re-open project to use new settings.";
+			this._restartMessage.Text = "Restart Bloom to use new settings.";
 			this._restartMessage.Visible = false;
 			// 
 			// settingsProtectionLauncherButton1
@@ -329,6 +334,34 @@
 			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
 			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
 			this.settingsProtectionLauncherButton1.TabIndex = 20;
+			// 
+			// button1
+			// 
+			this.button1.FlatAppearance.BorderSize = 0;
+			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.button1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.button1.Image = global::Bloom.Properties.Resources.help24x24;
+			this.button1.Location = new System.Drawing.Point(478, 24);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(113, 73);
+			this.button1.TabIndex = 19;
+			this.button1.Text = "Help With Language Settings";
+			this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button1.UseVisualStyleBackColor = true;
+			// 
+			// button2
+			// 
+			this.button2.FlatAppearance.BorderSize = 0;
+			this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.button2.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.button2.Image = global::Bloom.Properties.Resources.help24x24;
+			this.button2.Location = new System.Drawing.Point(468, 30);
+			this.button2.Name = "button2";
+			this.button2.Size = new System.Drawing.Size(113, 73);
+			this.button2.TabIndex = 20;
+			this.button2.Text = "Help With Book Making Settings";
+			this.button2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button2.UseVisualStyleBackColor = true;
 			// 
 			// SettingsDialog
 			// 
@@ -384,5 +417,7 @@
 		private System.Windows.Forms.LinkLabel _removeSecondNationalLanguageButton;
 		private System.Windows.Forms.Label _restartMessage;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
+		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.Button button2;
 	}
 }

@@ -85,34 +85,35 @@ namespace Bloom.Edit
 			}
 		}
 
-		/// <summary>
-		/// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
-		/// in order to differentiate from what is already there. We don't try and be smart somehow and
-		/// know when to just replace the existing one with the same name... some other process will have
-		/// to remove unused images.
-		/// </summary>
+
 		private static string GetImageFileName(string bookFolderPath, PalasoImage imageInfo, bool isJpeg)
 		{
 			string s;
 			if(string.IsNullOrEmpty(imageInfo.FileName))
 			{
+				// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
+				// in order to differentiate from what is already there. We don't try and be smart somehow and
+				// know when to just replace the existing one with the same name... some other process will have
+				// to remove unused images.
+
 				s = "image";
+				int i = 0;
+				string suffix = "";
+				string extension = isJpeg ? ".jpg" : ".png";
+
+				while (File.Exists(Path.Combine(bookFolderPath, s + suffix + extension)))
+				{
+					++i;
+					suffix = i.ToString();
+				}
+
+				return s + suffix + extension;
 			}
 			else
 			{
-				s = Path.GetFileNameWithoutExtension(imageInfo.FileName);
+				var extension = isJpeg ? ".jpg" : ".png";
+				return Path.GetFileNameWithoutExtension(imageInfo.FileName) + extension;
 			}
-
-			int i = 0;
-			string suffix = "";
-			string extension = isJpeg ? ".jpg" : ".png";
-			while (File.Exists(Path.Combine(bookFolderPath, s + suffix+extension)))
-			{
-				++i;
-				suffix = i.ToString();
-			}
-
-			return s + suffix + extension;
 		}
 
 

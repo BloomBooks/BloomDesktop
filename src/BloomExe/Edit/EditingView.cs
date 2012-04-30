@@ -297,7 +297,7 @@ namespace Bloom.Edit
 				OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
-			if (ge.Target.ClassName.Contains("bloom-metaData") || ge.Target.ParentElement.ClassName.Contains("bloom-metaData"))
+			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 				OnClickCopyrightAndLicenseDiv();
 		}
 
