@@ -62,14 +62,15 @@ BUTTON.largeImageButton
 {
 	width: 70px;
 	height: 52px;
-	/*+border-radius:9px;*/
-	-moz-border-radius: 9px;
-	-webkit-border-radius: 9px;
-	-khtml-border-radius: 9px;
-	border-radius: 9px;
+	/*+border-radius:3px;*/
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
 	z-index: 100;
 	background-repeat: no-repeat;
 	background-position: 12px 4px;
+	border: 2px outset #716666;
 }
 BUTTON.pasteImageButton.smallImageButton
 {
@@ -96,6 +97,7 @@ BUTTON.changeImageButton
 	right: 2px;
 	top: 2px;
 	/*[disabled]background-position:13px 3px;*/
+	background-color: #96668F;
 }
 BUTTON.pasteImageButton
 {
@@ -104,6 +106,7 @@ BUTTON.pasteImageButton
 	right: 2px;
 	bottom: 2px;
 	/*[disabled]background-position:13px 3px;*/
+	background-color: #0C8597;
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon
