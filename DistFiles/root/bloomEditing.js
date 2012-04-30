@@ -238,7 +238,7 @@ function MakeSourceTextDivForGroup(group) {
         }
     });
     jQuery("div.bloom-editable").keypress(function() {
-        var overflowing = this.scrollHeight > $(this).maxSize().height;
+        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
         if ($(this).hasClass('overflow') && !overflowing) {
             $(this).removeClass('overflow');
         }

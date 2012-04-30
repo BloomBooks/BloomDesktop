@@ -175,6 +175,10 @@ namespace Bloom.Book
 		{
 			try
 			{
+				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
+				if (Directory.GetFiles(path, "*.htm").Length == 0)
+					return;
+
 				var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
 				Debug.WriteLine(book.Title);
 				_books.Add(book);

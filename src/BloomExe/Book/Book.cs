@@ -622,7 +622,8 @@ namespace Bloom.Book
 
 		public virtual XmlDocument GetPreviewHtmlFileForWholeBook()
 		{
-			if (_log.ErrorEncountered)
+			//we may already know we have an error (we might not discover until later)
+			if (HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -631,6 +632,12 @@ namespace Bloom.Book
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
 			var dom= GetBookDomWithStyleSheet("previewMode.css");
+
+			//We may have just run into an error for the first time
+			if (HasFatalError)
+			{
+				return GetErrorDom();
+			}
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
