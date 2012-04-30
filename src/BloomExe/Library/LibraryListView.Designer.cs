@@ -178,7 +178,7 @@
 			this.label3.AutoSize = true;
 			this._libraryFlow.SetFlowBreak(this.label3, true);
 			this.label3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label3.ForeColor = Palette.TextAgainstDarkBackground;
+			this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this.label3.Location = new System.Drawing.Point(0, 13);
 			this.label3.Margin = new System.Windows.Forms.Padding(0);
 			this.label3.Name = "label3";
@@ -194,11 +194,13 @@
 			this.button1.FlatAppearance.BorderSize = 0;
 			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button1.Image = global::Bloom.Properties.Resources.edit;
+			this.button1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
 			this.button1.Location = new System.Drawing.Point(3, 45);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 57);
+			this.button1.Size = new System.Drawing.Size(211, 68);
 			this.button1.TabIndex = 1;
-			this.button1.Text = "button1";
+			this.button1.Text = "The amazing adventures\r\nof aunt altimony";
+			this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.button1.UseVisualStyleBackColor = true;
 			// 
@@ -209,7 +211,7 @@
 			this.button4.FlatAppearance.BorderSize = 0;
 			this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button4.Image = global::Bloom.Properties.Resources.edit;
-			this.button4.Location = new System.Drawing.Point(84, 45);
+			this.button4.Location = new System.Drawing.Point(220, 45);
 			this.button4.Name = "button4";
 			this.button4.Size = new System.Drawing.Size(75, 57);
 			this.button4.TabIndex = 7;
@@ -225,7 +227,7 @@
 			this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._libraryFlow.SetFlowBreak(this.button5, true);
 			this.button5.Image = global::Bloom.Properties.Resources.edit;
-			this.button5.Location = new System.Drawing.Point(165, 45);
+			this.button5.Location = new System.Drawing.Point(3, 119);
 			this.button5.Name = "button5";
 			this.button5.Size = new System.Drawing.Size(75, 57);
 			this.button5.TabIndex = 8;
@@ -237,7 +239,7 @@
 			// 
 			this.label4.AutoSize = true;
 			this.label4.ForeColor = System.Drawing.Color.White;
-			this.label4.Location = new System.Drawing.Point(0, 105);
+			this.label4.Location = new System.Drawing.Point(0, 179);
 			this.label4.Margin = new System.Windows.Forms.Padding(0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(0, 13);
@@ -248,7 +250,7 @@
 			this.label5.AutoSize = true;
 			this._libraryFlow.SetFlowBreak(this.label5, true);
 			this.label5.ForeColor = System.Drawing.Color.White;
-			this.label5.Location = new System.Drawing.Point(0, 105);
+			this.label5.Location = new System.Drawing.Point(0, 179);
 			this.label5.Margin = new System.Windows.Forms.Padding(0);
 			this.label5.Name = "label5";
 			this.label5.Padding = new System.Windows.Forms.Padding(0, 20, 0, 0);
@@ -264,7 +266,7 @@
 			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._libraryFlow.SetFlowBreak(this.button6, true);
 			this.button6.Image = global::Bloom.Properties.Resources.edit;
-			this.button6.Location = new System.Drawing.Point(3, 141);
+			this.button6.Location = new System.Drawing.Point(3, 215);
 			this.button6.Name = "button6";
 			this.button6.Size = new System.Drawing.Size(75, 57);
 			this.button6.TabIndex = 11;
@@ -300,7 +302,7 @@
 			this.label8.AutoSize = true;
 			this._collectionFlow.SetFlowBreak(this.label8, true);
 			this.label8.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label8.ForeColor = Palette.TextAgainstDarkBackground;
+			this.label8.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this.label8.Location = new System.Drawing.Point(0, 0);
 			this.label8.Margin = new System.Windows.Forms.Padding(0);
 			this.label8.Name = "label8";
