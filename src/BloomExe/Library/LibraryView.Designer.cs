@@ -30,11 +30,11 @@
         {
 			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-			this.TopBarControl = new System.Windows.Forms.Panel();
+			this._topBarControl = new System.Windows.Forms.Panel();
 			this._makeBloomPackButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.SuspendLayout();
-			this.TopBarControl.SuspendLayout();
+			this._topBarControl.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// splitContainer1
@@ -47,13 +47,13 @@
 			this.splitContainer1.SplitterDistance = 333;
 			this.splitContainer1.TabIndex = 0;
 			// 
-			// TopBarControl
+			// _topBarControl
 			// 
-			this.TopBarControl.Controls.Add(this._makeBloomPackButton);
-			this.TopBarControl.Location = new System.Drawing.Point(223, 224);
-			this.TopBarControl.Name = "TopBarControl";
-			this.TopBarControl.Size = new System.Drawing.Size(327, 70);
-			this.TopBarControl.TabIndex = 15;
+			this._topBarControl.Controls.Add(this._makeBloomPackButton);
+			this._topBarControl.Location = new System.Drawing.Point(223, 224);
+			this._topBarControl.Name = "_topBarControl";
+			this._topBarControl.Size = new System.Drawing.Size(327, 70);
+			this._topBarControl.TabIndex = 15;
 			// 
 			// _makeBloomPackButton
 			// 
@@ -94,14 +94,14 @@
 			// LibraryView
 			// 
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.Controls.Add(this.TopBarControl);
+			this.Controls.Add(this._topBarControl);
 			this.Controls.Add(this.splitContainer1);
 			this.Name = "LibraryView";
 			this.Size = new System.Drawing.Size(773, 518);
 			this.VisibleChanged += new System.EventHandler(this.LibraryView_VisibleChanged);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
-			this.TopBarControl.ResumeLayout(false);
+			this._topBarControl.ResumeLayout(false);
 			this.ResumeLayout(false);
 
         }
@@ -110,7 +110,7 @@
 
 		private System.Windows.Forms.SplitContainer splitContainer1;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _makeBloomPackButton;
-		public System.Windows.Forms.Panel TopBarControl;
+		public System.Windows.Forms.Panel _topBarControl;
 
 
     }

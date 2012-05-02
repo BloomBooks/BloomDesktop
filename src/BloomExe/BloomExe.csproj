@@ -155,6 +155,7 @@
     <Compile Include="Library\BloomPack\BloomPackInstallDialog.Designer.cs">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Library\IBloomTabArea.cs" />
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
     </Compile>
