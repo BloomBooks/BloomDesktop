@@ -573,6 +573,8 @@ namespace Bloom.Book
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
 				{
+					if (templateKey.ToLower() == "basicbook")//catch this pre-beta spelling with no space
+						templateKey = "Basic Book";
 					book = _templateFinder.FindTemplateBook(templateKey);
 					if(book==null)
 					{
