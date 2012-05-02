@@ -148,6 +148,7 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="HelpLauncher.cs" />
     <Compile Include="Library\BloomPack\BloomPackInstallDialog.cs">
       <SubType>Form</SubType>
     </Compile>
