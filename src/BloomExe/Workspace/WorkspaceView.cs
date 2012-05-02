@@ -148,7 +148,8 @@ namespace Bloom.Workspace
 
 		private void OnInfoButton_Click(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this);
+
+			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
 
 //			SetTabVisibility(_infoTab, true);
 //			_tabStrip.SelectedTab = _infoTab;
@@ -176,6 +177,7 @@ namespace Bloom.Workspace
 
 		private void SelectPage(Control view)
 		{
+			CurrentTabView = (IBloomTabArea)view;
 			SetTabVisibility(_infoTab, false); //we always hide this after it is used
 
 			if(_previouslySelectedControl !=null)
@@ -186,30 +188,15 @@ namespace Bloom.Workspace
 
 			_toolSpecificPanel.Controls.Clear();
 
-			if (view is PublishView)
-			{
-				_publishView.TopBarControl.BackColor = _tabStrip.BackColor;
-				_publishView.TopBarControl.Dock = DockStyle.Left;
-				_toolSpecificPanel.Controls.Add(_publishView.TopBarControl);
-			}
-			else if (view is EditingView)
-			{
-				_editingView.TopBarControl.BackColor = _tabStrip.BackColor;
-				_editingView.TopBarControl.Dock = DockStyle.Left;
-				_toolSpecificPanel.Controls.Add(_editingView.TopBarControl);
-			}
-			else if (view is LibraryView)
-			{
-				_libraryView.TopBarControl.BackColor = _tabStrip.BackColor;
-				_libraryView.TopBarControl.Dock = DockStyle.Left;
-				_toolSpecificPanel.Controls.Add(_libraryView.TopBarControl);
-			}
+			CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
+			CurrentTabView.TopBarControl.Dock = DockStyle.Left;
+			_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
+
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
 			{
 				From = _previouslySelectedControl,
 				To = view
 			});
-
 
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
 											{
@@ -219,6 +206,8 @@ namespace Bloom.Workspace
 
 			_previouslySelectedControl = view;
 		}
+
+		protected IBloomTabArea CurrentTabView { get; set; }
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
@@ -232,5 +221,6 @@ namespace Bloom.Workspace
 		{
 			_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
+
 	}
 }

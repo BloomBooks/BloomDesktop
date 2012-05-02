@@ -5,7 +5,7 @@ using Palaso.Reporting;
 
 namespace Bloom.Library
 {
-	public partial class LibraryView : UserControl
+	public partial class LibraryView :  UserControl, IBloomTabArea
 	{
 		private readonly LibraryModel _model;
 		//public delegate LibraryView Factory();//autofac uses this
@@ -59,6 +59,16 @@ namespace Bloom.Library
 				}
 				_model.MakeBloomPack(dlg.FileName);
 			}
+		}
+
+		public string HelpTopicUrl
+		{
+			get { return "/Tasks/ProjectLibraryLevel_Tasks/Project_or_Library_level_tasks_overview.htm"; }
+		}
+
+		public Control TopBarControl
+		{
+			get { return _topBarControl; }
 		}
 	}
 }

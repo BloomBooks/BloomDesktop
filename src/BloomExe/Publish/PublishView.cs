@@ -10,7 +10,7 @@ using Palaso.Reporting;
 
 namespace Bloom.Publish
 {
-	public partial class PublishView : UserControl
+	public partial class PublishView : UserControl, IBloomTabArea
 	{
 
 		private readonly PublishModel _model;
@@ -183,6 +183,10 @@ namespace Bloom.Publish
 		private void OnSave_Click(object sender, EventArgs e)
 		{
 			_model.Save();
+		}
+		public string HelpTopicUrl
+		{
+			get { return "/Tasks/BookPageLevel_Tasks/Save_as_PDF_file.htm"; }
 		}
 	}
 }

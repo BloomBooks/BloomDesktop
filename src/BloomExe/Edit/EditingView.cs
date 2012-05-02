@@ -15,7 +15,7 @@ using Gecko;
 
 namespace Bloom.Edit
 {
-	public partial class EditingView : UserControl
+	public partial class EditingView : UserControl, IBloomTabArea
 	{
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
@@ -553,6 +553,11 @@ namespace Bloom.Edit
 		private void EditingView_Load(object sender, EventArgs e)
 		{
 			ParentForm.Activated += new EventHandler(ParentForm_Activated);
+		}
+
+		public string HelpTopicUrl
+		{
+			get { return "/Tasks/BookPageLevel_Tasks/Edit_a_book.htm"; }
 		}
 	}
 }
