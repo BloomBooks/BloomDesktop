@@ -26,7 +26,9 @@ namespace Bloom.Library
 			InitializeComponent();
 			if(_librarySettings.IsShellLibrary)
 			{
-				_vernacularOrShellLanguageLabel.Text = "Language you are entering into shells";
+				_language1Label.Text = "Language 1";
+				_language2Label.Text = "Language 2";
+				_language3Label.Text = "Language 3";
 			}
 			UpdateDisplay();
 		}
@@ -113,16 +115,24 @@ namespace Bloom.Library
 			Close();
 		}
 
-		private void checkBox1_CheckedChanged(object sender, EventArgs e)
-		{
-
-		}
-
 		private void label4_Click(object sender, EventArgs e)
 		{
 
 		}
 
+		private void OnAboutLanguageSettings(object sender, EventArgs e)
+		{
+			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Language_Settings.htm");
+		}
 
+		private void OnAboutBookMakingSettings(object sender, EventArgs e)
+		{
+			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Book_Making_Settings.htm");
+		}
+
+		private void OnAboutProjectInformationSetingsButton_Click(object sender, EventArgs e)
+		{
+			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Project_Information_Settings.htm");
+		}
 	}
 }

@@ -148,8 +148,10 @@ namespace Bloom.Workspace
 
 		private void OnInfoButton_Click(object sender, EventArgs e)
 		{
-			SetTabVisibility(_infoTab, true);
-			_tabStrip.SelectedTab = _infoTab;
+			HelpLauncher.Show(this);
+
+//			SetTabVisibility(_infoTab, true);
+//			_tabStrip.SelectedTab = _infoTab;
 		}
 
 		private void OnSettingsButton_Click(object sender, EventArgs e)
