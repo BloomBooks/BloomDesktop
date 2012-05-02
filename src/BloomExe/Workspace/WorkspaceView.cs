@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -20,7 +21,6 @@ namespace Bloom.Workspace
 		private LibraryView _libraryView;
 		private EditingView _editingView;
 		private PublishView _publishView;
-		private InfoView _infoView;
 		private Control _previouslySelectedControl;
 
 		public event EventHandler CloseCurrentProject;
@@ -33,7 +33,6 @@ namespace Bloom.Workspace
 							 Control libraryView,
 							 EditingView.Factory editingViewFactory,
 							 PublishView.Factory pdfViewFactory,
-							 InfoView.Factory infoViewFactory,
 							 SettingsDialog.Factory settingsDialogFactory,
 							 EditBookCommand editBookCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
@@ -49,8 +48,9 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
+			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-			_settingsLauncherHelper.CustomSettingsControl = _advancedButtonsPanel;
+			_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 
 			editBookCommand.Subscribe(OnEditBook);
 
@@ -79,34 +79,28 @@ namespace Bloom.Workspace
 			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 
-			//
-			// info view
-			//
-			this._infoView = infoViewFactory();
-			this._infoView.Dock = System.Windows.Forms.DockStyle.Fill;
+
 
 			_libraryTab.Tag = _libraryView;
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
-			_infoTab.Tag = _infoView;
+
 
 			this._libraryTab.Text = _libraryView.LibraryTabLabel;
 
-			if (!Program.StartUpWithFirstOrNewVersionBehavior)
-				SetTabVisibility(_infoTab, false);
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-			if (Program.StartUpWithFirstOrNewVersionBehavior)
-			{
-				_tabStrip.SelectedTab = _infoTab;
-				SelectPage(_infoView);
-			}
-			else
-			{
+//			if (Program.StartUpWithFirstOrNewVersionBehavior)
+//			{
+//				_tabStrip.SelectedTab = _infoTab;
+//				SelectPage(_infoView);
+//			}
+//			else
+//			{
 				_tabStrip.SelectedTab = _libraryTab;
 				SelectPage(_libraryView);
-			}
+//			}
 
 		}
 
@@ -146,15 +140,6 @@ namespace Bloom.Workspace
 			});
 		}
 
-		private void OnInfoButton_Click(object sender, EventArgs e)
-		{
-
-			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
-
-//			SetTabVisibility(_infoTab, true);
-//			_tabStrip.SelectedTab = _infoTab;
-		}
-
 		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
@@ -166,19 +151,10 @@ namespace Bloom.Workspace
 																	});
 		}
 
-		private void _feedbackButton_Click(object sender, EventArgs e)
-		{
-			using(var x = _feedbackDialogFactory())
-			{
-				x.Show();
-			}
-		}
-
-
 		private void SelectPage(Control view)
 		{
-			CurrentTabView = (IBloomTabArea)view;
-			SetTabVisibility(_infoTab, false); //we always hide this after it is used
+			CurrentTabView = view as IBloomTabArea;
+			//SetTabVisibility(_infoTab, false); //we always hide this after it is used
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -188,9 +164,10 @@ namespace Bloom.Workspace
 
 			_toolSpecificPanel.Controls.Clear();
 
-			CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
+			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
 			CurrentTabView.TopBarControl.Dock = DockStyle.Left;
-			_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
+			if(CurrentTabView!=null)//can remove when we get rid of info view
+				_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
 
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
 			{
@@ -213,14 +190,55 @@ namespace Bloom.Workspace
 		{
 			TabStripButton btn = (TabStripButton)e.SelectedTab;
 			_tabStrip.BackColor = btn.BarColor;
-
+			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
 			SelectPage((Control) e.SelectedTab.Tag);
 		}
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
 		{
-			_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
+			//_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
 
+		private void toolStripMenuItem1_Click(object sender, EventArgs e)
+		{
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "1 About.htm"));
+		}
+
+
+		private void toolStripMenuItem3_Click(object sender, EventArgs e)
+		{
+			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+		}
+
+		private void _webSiteMenuItem_Click(object sender, EventArgs e)
+		{
+			Process.Start("http://bloom.palaso.org");
+		}
+
+		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
+		{
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages","0 Release Notes.htm"));
+		}
+
+		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var x = _feedbackDialogFactory())
+			{
+				x.Show();
+			}
+		}
+
+		private void OnHelpButtonClick(object sender, MouseEventArgs e)
+		{
+			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+		}
+
+
+
+	}
+
+	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
+	{
+		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
 	}
 }

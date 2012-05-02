@@ -122,17 +122,17 @@ namespace Bloom.Library
 
 		private void OnAboutLanguageSettings(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Language_Settings.htm");
+			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Change_languages.htm");
 		}
 
 		private void OnAboutBookMakingSettings(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Book_Making_Settings.htm");
+			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
 		}
 
 		private void OnAboutProjectInformationSetingsButton_Click(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/User_Interface/Dialog_boxes/Project_Information_Settings.htm");
+			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Enter_project_information.htm");
 		}
 	}
 }

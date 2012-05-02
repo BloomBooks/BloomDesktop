@@ -213,12 +213,6 @@
     <Compile Include="Edit\SourceTextControl.Designer.cs">
       <DependentUpon>SourceTextControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="InfoView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="InfoView.Designer.cs">
-      <DependentUpon>InfoView.cs</DependentUpon>
-    </Compile>
     <Compile Include="LanguageSettings.cs" />
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
@@ -358,9 +352,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="InfoView.resx">
-      <DependentUpon>InfoView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
