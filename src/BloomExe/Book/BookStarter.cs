@@ -465,6 +465,8 @@ namespace Bloom.Book
 				//better to not just copy the old thumbnail, as the on in the library may well need to look different
 				if (Path.GetFileNameWithoutExtension(filePath).ToLower() == "thumbnail")
 					continue;
+				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
+					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
