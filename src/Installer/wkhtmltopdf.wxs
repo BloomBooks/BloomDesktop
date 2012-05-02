@@ -6,10 +6,10 @@
 			<Component Id="wkhtmltopdf.exe" Guid="88B995AF-E137-4776-B7A0-A091E4E72C75">
 			  <File Id="wkhtmltopdf.exe" Name="wkhtmltopdf.exe" Source="..\..\lib\wkhtmltopdf\wkhtmltopdf.exe" />
 			</Component>
-			<Component Id="wkhtmltoimage.exe" Guid="88B995AF-E137-4776-B7A0-A091E4E72C76">
+<!--            <Component Id="wkhtmltoimage.exe" Guid="88B995AF-E137-4776-B7A0-A091E4E72C76">
 			  <File Id="wkhtmltoimage.exe" Name="wkhtmltoimage.exe" Source="..\..\lib\wkhtmltopdf\wkhtmltoimage.exe" />
 			</Component>
-			<Component Id="libeay32.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C77">
+-->            <Component Id="libeay32.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C77">
 			  <File Id="libeay32.dll" Name="libeay32.dll" Source="..\..\lib\wkhtmltopdf\libeay32.dll" />
 			</Component>
 			<Component Id="libgcc_s_dw21.dll" Guid="88B995AF-E137-4776-B7A0-A091E4E72C78">
@@ -26,7 +26,7 @@
 		</DirectoryRef>
 		<ComponentGroup Id="wkhtmltopdf">
 		  <ComponentRef Id="wkhtmltopdf.exe" />
-		  <ComponentRef Id="wkhtmltoimage.exe" />
+   <!--       <ComponentRef Id="wkhtmltoimage.exe" />-->
 		  <ComponentRef Id="libeay32.dll" />
 		  <ComponentRef Id="libgcc_s_dw21.dll" />
 		  <ComponentRef Id="mingwm10.dll" />
