@@ -57,10 +57,9 @@
 			this.label1.Location = new System.Drawing.Point(69, 163);
 			this.label1.MaximumSize = new System.Drawing.Size(400, 0);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(392, 72);
+			this.label1.Size = new System.Drawing.Size(323, 24);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "This is an Alpha (developmental) version of Bloom. It should not be used for eval" +
-    "uation or training.  Please wait for a Beta version.";
+			this.label1.Text = "This is an Beta Test version of Bloom.";
 			this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// _fadeOutTimer
@@ -71,12 +70,12 @@
 			// 
 			this._versionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._versionInfo.AutoSize = true;
-			this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 8.25F);
+			this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 12F);
 			this._versionInfo.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this._versionInfo.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this._versionInfo.Location = new System.Drawing.Point(70, 287);
+			this._versionInfo.Location = new System.Drawing.Point(70, 281);
 			this._versionInfo.Name = "_versionInfo";
-			this._versionInfo.Size = new System.Drawing.Size(70, 13);
+			this._versionInfo.Size = new System.Drawing.Size(94, 21);
 			this._versionInfo.TabIndex = 13;
 			this._versionInfo.Text = "Version Info";
 			// 
