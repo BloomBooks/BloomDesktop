@@ -1,6 +1,6 @@
-﻿namespace Bloom.NewLibrary
+﻿namespace Bloom.NewCollection
 {
-    partial class KindOfLibraryControl
+    partial class KindOfCollectionControl
     {
         /// <summary> 
         /// Required designer variable.
