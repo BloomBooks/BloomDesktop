@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
@@ -27,7 +28,7 @@ namespace BloomTests.Book
 		public void Setup()
 		{
 			_librarySettings = new Moq.Mock<CollectionSettings>();
-			_librarySettings.SetupGet(x => x.IsShellLibrary).Returns(false);
+			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(false);
 			_librarySettings.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
 			_librarySettings.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("fr");
 			_librarySettings.SetupGet(x => x.NationalLanguage2Iso639Code).Returns("es");
@@ -203,7 +204,7 @@ namespace BloomTests.Book
 //		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
 //		{
 //			//var library = new Moq.Mock<CollectionSettings>();
-//			_librarySettings.SetupGet(x => x.IsShellLibrary).Returns(true);
+//			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(true);
 //			//_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 //			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 //			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
@@ -213,7 +214,7 @@ namespace BloomTests.Book
 //		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
 //		{
 //			var library = new Moq.Mock<CollectionSettings>();
-//			library.SetupGet(x => x.IsShellLibrary).Returns(false);
+//			library.SetupGet(x => x.IsSourceCollection).Returns(false);
 //			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 //			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 //			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");

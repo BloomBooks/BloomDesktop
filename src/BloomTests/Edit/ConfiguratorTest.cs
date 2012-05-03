@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using NUnit.Framework;
 using Palaso.IO;
@@ -30,7 +31,7 @@ namespace BloomTests.Edit
 		public void Setup()
 		{
 			var library = new Moq.Mock<CollectionSettings>();
-			library.SetupGet(x => x.IsShellLibrary).Returns(false);
+			library.SetupGet(x => x.IsSourceCollection).Returns(false);
 			library.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("en");
 			library.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
 			library.SetupGet(x => x.XMatterPackName).Returns("Factory");

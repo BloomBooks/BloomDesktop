@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Xml;
+using Bloom.Collection;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;

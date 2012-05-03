@@ -1,6 +1,6 @@
-﻿namespace Bloom.Library
+﻿namespace Bloom.Collection
 {
-	partial class SettingsDialog
+	partial class CollectionSettingsDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CollectionSettingsDialog));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this._aboutLanguageSettingsButton = new System.Windows.Forms.Button();
@@ -385,7 +385,7 @@
 			this._aboutProjectInformationSetingsButton.UseVisualStyleBackColor = true;
 			this._aboutProjectInformationSetingsButton.Click += new System.EventHandler(this.OnAboutProjectInformationSetingsButton_Click);
 			// 
-			// SettingsDialog
+			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -398,7 +398,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "SettingsDialog";
+			this.Name = "CollectionSettingsDialog";
 			this.Text = "Settings";
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);

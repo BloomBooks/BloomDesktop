@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.NewCollection;
 using Bloom.Properties;
 using Bloom.ToPalaso;

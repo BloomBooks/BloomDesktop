@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Publish;
@@ -14,7 +15,7 @@ namespace Bloom.Workspace
 	public partial class WorkspaceView : UserControl
 	{
 		private readonly WorkspaceModel _model;
-		private readonly SettingsDialog.Factory _settingsDialogFactory;
+		private readonly CollectionSettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
@@ -33,7 +34,7 @@ namespace Bloom.Workspace
 							 Control libraryView,
 							 EditingView.Factory editingViewFactory,
 							 PublishView.Factory pdfViewFactory,
-							 SettingsDialog.Factory settingsDialogFactory,
+							 CollectionSettingsDialog.Factory settingsDialogFactory,
 							 EditBookCommand editBookCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
@@ -231,6 +232,11 @@ namespace Bloom.Workspace
 		private void OnHelpButtonClick(object sender, MouseEventArgs e)
 		{
 			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+		}
+
+		private void deepBloomPaperToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
 		}
 
 

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Workspace;

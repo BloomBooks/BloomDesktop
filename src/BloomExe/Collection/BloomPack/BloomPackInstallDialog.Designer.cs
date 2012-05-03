@@ -1,4 +1,4 @@
-﻿namespace Bloom.Library.BloomPack
+﻿namespace Bloom.Collection.BloomPack
 {
 	partial class BloomPackInstallDialog
 	{

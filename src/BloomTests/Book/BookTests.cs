@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish;
 using Moq;

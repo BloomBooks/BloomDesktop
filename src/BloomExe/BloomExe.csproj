@@ -149,10 +149,10 @@
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="HelpLauncher.cs" />
-    <Compile Include="Library\BloomPack\BloomPackInstallDialog.cs">
+    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Library\BloomPack\BloomPackInstallDialog.Designer.cs">
+    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.Designer.cs">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Library\IBloomTabArea.cs" />
@@ -162,7 +162,7 @@
     <Compile Include="Library\ListHeader.Designer.cs">
       <DependentUpon>ListHeader.cs</DependentUpon>
     </Compile>
-    <Compile Include="Library\ShortcutMaker.cs" />
+    <Compile Include="Collection\ShortcutMaker.cs" />
     <Compile Include="Palette.cs" />
     <Compile Include="SimpleMessageDialog.cs">
       <SubType>Form</SubType>
@@ -217,14 +217,14 @@
     <Compile Include="Library\FlyingImage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Library\SettingsDialog.cs">
+    <Compile Include="Collection\CollectionSettingsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Library\SettingsDialog.Designer.cs">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    <Compile Include="Collection\CollectionSettingsDialog.Designer.cs">
+      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ProjectContext.cs" />
-    <Compile Include="CollectionSettings.cs" />
+    <Compile Include="Collection\CollectionSettings.cs" />
     <Compile Include="Publish\PdfMaker.cs" />
     <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
@@ -326,7 +326,7 @@
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\BloomPack\BloomPackInstallDialog.resx">
+    <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\ListHeader.resx">
@@ -362,8 +362,8 @@
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\SettingsDialog.resx">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    <EmbeddedResource Include="Collection\CollectionSettingsDialog.resx">
+      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PublishView.resx">
       <DependentUpon>PublishView.cs</DependentUpon>
@@ -677,6 +677,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\delete-wordLarge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uservoice16x161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pdf16x16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Workspace;
 using Palaso.Reporting;
 
@@ -50,7 +51,7 @@ namespace Bloom
 		private void SetWindowText()
 		{
 			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
-			if(_collectionSettings.IsShellLibrary)
+			if(_collectionSettings.IsSourceCollection)
 			{
 				Text += " SHELL MAKING PROJECT";
 			}

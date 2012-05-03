@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.IO;
 using IWshRuntimeLibrary;
 using File = System.IO.File;
 
-namespace Bloom.Library
+namespace Bloom.Collection
 {
 	class ShortcutMaker
 	{

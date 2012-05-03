@@ -2,6 +2,7 @@
 using System.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using NUnit.Framework;
 using Palaso.IO;

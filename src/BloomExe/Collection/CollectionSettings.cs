@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
 
-namespace Bloom
+namespace Bloom.Collection
 {
 	/// <summary>
 	/// A library corresponds to a single folder (with subfolders) on the disk.
@@ -37,7 +36,7 @@ namespace Bloom
 		public virtual string NationalLanguage2Iso639Code { get; set; }
 		public virtual string VernacularLanguageName { get; set; }
 
-		public virtual bool IsShellLibrary { get; set; }
+		public virtual bool IsSourceCollection { get; set; }
 
 		public string GetVernacularName(string inLanguage)
 		{
@@ -91,7 +90,7 @@ namespace Bloom
 			NationalLanguage1Iso639Code = collectionInfo.NationalLanguage1Iso639Code;
 			NationalLanguage2Iso639Code = collectionInfo.NationalLanguage2Iso639Code;
 			VernacularLanguageName = collectionInfo.LanguageName;
-			IsShellLibrary = collectionInfo.IsShellLibary;
+			IsSourceCollection = collectionInfo.IsShellLibary;
 			XMatterPackName = collectionInfo.XMatterPackName;
 			Save();
 		}
@@ -124,13 +123,13 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Save()
 		{
-			XElement library = new XElement("Library");
+			XElement library = new XElement("Collection");
 			library.Add(new XAttribute("version", "0.1"));
 			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
 			library.Add(new XElement("National1Iso639Code", NationalLanguage1Iso639Code));
 			library.Add(new XElement("National2Iso639Code", NationalLanguage2Iso639Code));
 			library.Add(new XElement("LanguageName", VernacularLanguageName));
-			library.Add(new XElement("IsShellLibrary", IsShellLibrary.ToString()));
+			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
@@ -149,10 +148,10 @@ namespace Bloom
 				NationalLanguage2Iso639Code = GetValue(library, "National2Iso639Code", "");
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 				VernacularLanguageName = GetValue(library, "LanguageName", "");
-				Country = GetValue(library, "Country","");
+				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");
-				IsShellLibrary = GetBoolValue(library, "IsShellLibrary", false);
+				IsSourceCollection = GetBoolValue(library, "IsSourceCollection", GetBoolValue(library, "IsShellLibrary" /*the old name*/, GetBoolValue(library, "IsShellMakingProject" /*an even older name*/, false)));
 			}
 			catch (Exception e)
 			{
@@ -205,7 +204,7 @@ namespace Bloom
 
 		public string VernacularLibraryNamePhrase
 		{
-			get {return IsShellLibrary? CollectionName : string.Format("{0} Books", VernacularLanguageName); }
+			get {return IsSourceCollection? CollectionName : string.Format("{0} Books", VernacularLanguageName); }
 		}
 
 

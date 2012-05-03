@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Web;
 using System.Xml;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
@@ -187,7 +188,7 @@ namespace Bloom.Book
 			}
 
 			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
-			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsShellLibrary;
+			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsSourceCollection;
 
 		}
 
@@ -786,7 +787,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if(_collectionSettings.IsShellLibrary) //nothing is locked if we're in a shell-making library
+				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
 
 				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
@@ -801,7 +802,7 @@ namespace Bloom.Book
 //        {
 //            get
 //            {
-//            	return !_librarySettings.IsShellLibrary &&
+//            	return !_librarySettings.IsSourceCollection &&
 //            	       RawDom.SafeSelectNodes("//meta[@name='editability' and @content='translationOnly']").Count > 0;
 //            }
 //        }
@@ -810,7 +811,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (_collectionSettings.IsShellLibrary)
+				if (_collectionSettings.IsSourceCollection)
 				{
 					return "ShellEditing";
 				}

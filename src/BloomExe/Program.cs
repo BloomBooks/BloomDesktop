@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
-using Bloom.Library.BloomPack;
+using Bloom.Collection.BloomPack;
 using Bloom.Properties;
 using Palaso.Reporting;
 

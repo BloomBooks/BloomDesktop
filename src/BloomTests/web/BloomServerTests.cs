@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.web;
 using Moq;

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.Collection;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -32,7 +33,7 @@ namespace Bloom.Book
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
 			_collectionSettings = collectionSettings;
-			_isShellLibrary = collectionSettings.IsShellLibrary;
+			_isShellLibrary = collectionSettings.IsSourceCollection;
 		}
 
 		public bool TestingSoSkipAddingXMatter { get; set; }

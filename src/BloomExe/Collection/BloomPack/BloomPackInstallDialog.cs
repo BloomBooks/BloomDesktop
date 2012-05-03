@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using Ionic.Zip;
 
-namespace Bloom.Library.BloomPack
+namespace Bloom.Collection.BloomPack
 {
 	/// <summary>
 	/// A BloomPack is just a zipped collection folder (a folder full of book folders).

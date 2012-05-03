@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Ionic.Zip;
 using Palaso.UI.WindowsForms.FileSystem;
 
@@ -79,7 +80,7 @@ namespace Bloom.Library
 
 		public bool IsShellProject
 		{
-			get { return _collectionSettings.IsShellLibrary; }
+			get { return _collectionSettings.IsSourceCollection; }
 		}
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()

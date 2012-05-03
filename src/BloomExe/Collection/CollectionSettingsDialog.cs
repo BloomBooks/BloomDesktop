@@ -1,30 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Palaso.UI.WindowsForms.WritingSystems;
 
-namespace Bloom.Library
+namespace Bloom.Collection
 {
-	public partial class SettingsDialog : Form
+	public partial class CollectionSettingsDialog : Form
 	{
-		public delegate SettingsDialog Factory();//autofac uses this
+		public delegate CollectionSettingsDialog Factory();//autofac uses this
 
 		private readonly CollectionSettings _collectionSettings;
 		private XMatterPackFinder _xmatterPackFinder;
 		private bool _restartMightBeNeeded;
 
-		public SettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			InitializeComponent();
-			if(_collectionSettings.IsShellLibrary)
+			if(_collectionSettings.IsSourceCollection)
 			{
 				_language1Label.Text = "Language 1";
 				_language2Label.Text = "Language 2";

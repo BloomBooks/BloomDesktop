@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Bloom.Collection;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -148,7 +149,7 @@ namespace Bloom.Edit
 		{
 			get
 			{
-//                if (_librarySettings.IsShellLibrary)
+//                if (_librarySettings.IsSourceCollection)
 //                {
 //                    return true;
 //                }
