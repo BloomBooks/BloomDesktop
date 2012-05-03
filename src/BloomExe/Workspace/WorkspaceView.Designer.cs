@@ -35,16 +35,18 @@
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
+			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._creditsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this._tabStrip = new Messir.Windows.Forms.TabStrip();
+			this._creditsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.deepBloomPaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
@@ -98,89 +100,6 @@
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			// 
-			// toolStripButton1
-			// 
-			this.toolStripButton1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.toolStripButton1.Image = global::Bloom.Properties.Resources.settings24x24;
-			this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.toolStripButton1.Name = "toolStripButton1";
-			this.toolStripButton1.Size = new System.Drawing.Size(53, 43);
-			this.toolStripButton1.Text = "Settings";
-			this.toolStripButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolStripButton1.Click += new System.EventHandler(this.OnSettingsButton_Click);
-			// 
-			// toolStripButton2
-			// 
-			this.toolStripButton2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.toolStripButton2.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
-			this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.toolStripButton2.Name = "toolStripButton2";
-			this.toolStripButton2.Size = new System.Drawing.Size(118, 43);
-			this.toolStripButton2.Text = "Open/Create Collection";
-			this.toolStripButton2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolStripButton2.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
-			// 
-			// _helpMenu
-			// 
-			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._documentationMenuItem,
-            this.toolStripSeparator1,
-            this._creditsMenuItem,
-            this._makeASuggestionMenuItem,
-            this._releaseNotesMenuItem,
-            this._webSiteMenuItem});
-			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._helpMenu.Image = global::Bloom.Properties.Resources.help24x24;
-			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._helpMenu.Name = "_helpMenu";
-			this._helpMenu.Size = new System.Drawing.Size(45, 43);
-			this._helpMenu.Text = "Help";
-			this._helpMenu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._helpMenu.ToolTipText = "Get Help";
-			// 
-			// _documentationMenuItem
-			// 
-			this._documentationMenuItem.Name = "_documentationMenuItem";
-			this._documentationMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._documentationMenuItem.Text = "Documentation";
-			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
-			// 
-			// _creditsMenuItem
-			// 
-			this._creditsMenuItem.Name = "_creditsMenuItem";
-			this._creditsMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._creditsMenuItem.Text = "Credits";
-			this._creditsMenuItem.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
-			// 
-			// _makeASuggestionMenuItem
-			// 
-			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
-			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
-			this._makeASuggestionMenuItem.Click += new System.EventHandler(this._makeASuggestionMenuItem_Click);
-			// 
-			// _releaseNotesMenuItem
-			// 
-			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
-			this._releaseNotesMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._releaseNotesMenuItem.Text = "Release Notes";
-			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
-			// 
-			// _webSiteMenuItem
-			// 
-			this._webSiteMenuItem.Name = "_webSiteMenuItem";
-			this._webSiteMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._webSiteMenuItem.Text = "Web Site";
-			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
-			// 
-			// toolStripSeparator1
-			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(171, 6);
-			// 
 			// _tabStrip
 			// 
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
@@ -201,6 +120,106 @@
 			this._tabStrip.UseVisualStyles = false;
 			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
 			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
+			// 
+			// toolStripButton1
+			// 
+			this.toolStripButton1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.toolStripButton1.Image = global::Bloom.Properties.Resources.settings24x24;
+			this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.toolStripButton1.Name = "toolStripButton1";
+			this.toolStripButton1.Size = new System.Drawing.Size(53, 43);
+			this.toolStripButton1.Text = "Settings";
+			this.toolStripButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolStripButton1.Click += new System.EventHandler(this.OnSettingsButton_Click);
+			// 
+			// toolStripButton2
+			// 
+			this.toolStripButton2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.toolStripButton2.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
+			this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.toolStripButton2.Name = "toolStripButton2";
+			this.toolStripButton2.Size = new System.Drawing.Size(136, 43);
+			this.toolStripButton2.Text = "Open/Create Collection";
+			this.toolStripButton2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolStripButton2.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
+			// 
+			// _helpMenu
+			// 
+			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._documentationMenuItem,
+            this.deepBloomPaperToolStripMenuItem,
+            this.toolStripSeparator1,
+            this._creditsMenuItem,
+            this._releaseNotesMenuItem,
+            this.toolStripSeparator2,
+            this._makeASuggestionMenuItem,
+            this._webSiteMenuItem});
+			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._helpMenu.Image = global::Bloom.Properties.Resources.help24x24;
+			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._helpMenu.Name = "_helpMenu";
+			this._helpMenu.Size = new System.Drawing.Size(45, 43);
+			this._helpMenu.Text = "Help";
+			this._helpMenu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._helpMenu.ToolTipText = "Get Help";
+			// 
+			// _documentationMenuItem
+			// 
+			this._documentationMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
+			this._documentationMenuItem.Name = "_documentationMenuItem";
+			this._documentationMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._documentationMenuItem.Text = "Documentation";
+			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
+			// 
+			// toolStripSeparator1
+			// 
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(171, 6);
+			// 
+			// _creditsMenuItem
+			// 
+			this._creditsMenuItem.Name = "_creditsMenuItem";
+			this._creditsMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._creditsMenuItem.Text = "Credits";
+			this._creditsMenuItem.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+			// 
+			// _releaseNotesMenuItem
+			// 
+			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
+			this._releaseNotesMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._releaseNotesMenuItem.Text = "Release Notes";
+			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
+			// 
+			// deepBloomPaperToolStripMenuItem
+			// 
+			this.deepBloomPaperToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this.deepBloomPaperToolStripMenuItem.Name = "deepBloomPaperToolStripMenuItem";
+			this.deepBloomPaperToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+			this.deepBloomPaperToolStripMenuItem.Text = "Deep Bloom Paper";
+			this.deepBloomPaperToolStripMenuItem.Click += new System.EventHandler(this.deepBloomPaperToolStripMenuItem_Click);
+			// 
+			// toolStripSeparator2
+			// 
+			this.toolStripSeparator2.Name = "toolStripSeparator2";
+			this.toolStripSeparator2.Size = new System.Drawing.Size(171, 6);
+			// 
+			// _makeASuggestionMenuItem
+			// 
+			this._makeASuggestionMenuItem.Image = global::Bloom.Properties.Resources.uservoice16x161;
+			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
+			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
+			this._makeASuggestionMenuItem.Click += new System.EventHandler(this._makeASuggestionMenuItem_Click);
+			// 
+			// _webSiteMenuItem
+			// 
+			this._webSiteMenuItem.Name = "_webSiteMenuItem";
+			this._webSiteMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._webSiteMenuItem.Text = "Web Site";
+			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
 			// 
 			// _collectionTab
 			// 
@@ -300,6 +319,8 @@
 		private Messir.Windows.Forms.TabStrip _tabStrip;
 		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripMenuItem deepBloomPaperToolStripMenuItem;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 
 
     }

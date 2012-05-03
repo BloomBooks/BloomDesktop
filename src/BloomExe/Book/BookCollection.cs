@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Library;
 using Palaso.Reporting;
@@ -64,7 +65,7 @@ namespace Bloom.Book
 
 			try
 			{
-				//var x = _librarySettings.IsShellLibrary; //need to differentiate between template and shell, as well our our mode
+				//var x = _librarySettings.IsSourceCollection; //need to differentiate between template and shell, as well our our mode
 				var starter = _bookStarterFactory();
 				newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
 				if (Configurator.IsConfigurable(newBookFolder))

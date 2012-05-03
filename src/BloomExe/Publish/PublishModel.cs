@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
+using Bloom.Collection;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;

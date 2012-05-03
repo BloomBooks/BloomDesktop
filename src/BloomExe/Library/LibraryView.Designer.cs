@@ -72,7 +72,7 @@
 			this._makeBloomPackButton.ImageBorderEnabled = false;
 			this._makeBloomPackButton.ImageDropShadow = false;
 			this._makeBloomPackButton.ImageFocused = null;
-			this._makeBloomPackButton.ImageInactive = global::Bloom.Properties.Resources.DeletePageDisabled32x32;
+			this._makeBloomPackButton.ImageInactive = null;
 			this._makeBloomPackButton.ImageMouseOver = null;
 			this._makeBloomPackButton.ImageNormal = global::Bloom.Properties.Resources.PackageFlat48x47;
 			this._makeBloomPackButton.ImagePressed = null;

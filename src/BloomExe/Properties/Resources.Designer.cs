@@ -361,6 +361,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap pdf16x16 {
+            get {
+                object obj = ResourceManager.GetObject("pdf16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap print {
             get {
                 object obj = ResourceManager.GetObject("print", resourceCulture);
@@ -455,6 +462,13 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap uservoice16x16 {
             get {
                 object obj = ResourceManager.GetObject("uservoice16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap uservoice16x161 {
+            get {
+                object obj = ResourceManager.GetObject("uservoice16x161", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
