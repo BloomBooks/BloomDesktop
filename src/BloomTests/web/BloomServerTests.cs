@@ -23,13 +23,13 @@ namespace BloomTests.web
 		private Mock<BookCollection> _vernacularLibraryCollection;
 		private List<Bloom.Book.Book> _bookList;
 		private Mock<SourceCollectionsList> _storeCollectionList;
-		private Mock<LibrarySettings> _librarySettings;
+		private Mock<CollectionSettings> _librarySettings;
 
 		[SetUp]
 		public void Setup()
 		{
 			_folder = new TemporaryFolder("BookCollectionTests");
-			//			_fileLocator = new BloomFileLocator(new LibrarySettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+			//			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 //			_vernacularLibraryCollection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
@@ -40,8 +40,8 @@ namespace BloomTests.web
 			_vernacularLibraryCollection.Setup(x => x.GetBooks()).Returns(_bookList);
 			_storeCollectionList = new Mock<SourceCollectionsList>();
 			_storeCollectionList.Setup(x => x.GetStoreCollections()).Returns(() => GetStoreCollections());
-			_librarySettings = new Mock<LibrarySettings>();
-			_librarySettings.Setup(x => x.LibraryName).Returns(() => "Foo");
+			_librarySettings = new Mock<CollectionSettings>();
+			_librarySettings.Setup(x => x.CollectionName).Returns(() => "Foo");
 
 		}
 
@@ -59,7 +59,7 @@ namespace BloomTests.web
 
 		Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		{
-			return new Bloom.Book.Book(storage, true, null, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"), VernacularIso639Code = "xyz" }), null,
+			return new Bloom.Book.Book(storage, true, null, new CollectionSettings(new NewCollectionInfo() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"), VernacularIso639Code = "xyz" }), null,
 													 new PageSelection(),
 													 new PageListChangedEvent(), new BookRefreshEvent());
 		}

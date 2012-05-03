@@ -15,13 +15,13 @@ namespace Bloom
 {
 	public partial class Shell : Form
 	{
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-		public Shell(Func<WorkspaceView> projectViewFactory, LibrarySettings librarySettings, LibraryClosing libraryClosingEvent)
+		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent)
 		{
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
@@ -50,7 +50,7 @@ namespace Bloom
 		private void SetWindowText()
 		{
 			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
-			if(_librarySettings.IsShellLibrary)
+			if(_collectionSettings.IsShellLibrary)
 			{
 				Text += " SHELL MAKING PROJECT";
 			}

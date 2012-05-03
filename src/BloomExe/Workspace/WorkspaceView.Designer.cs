@@ -43,11 +43,11 @@
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this._libraryTab = new Messir.Windows.Forms.TabStripButton();
+			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			this._tabStrip.SuspendLayout();
@@ -118,7 +118,7 @@
 			this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolStripButton2.Name = "toolStripButton2";
 			this.toolStripButton2.Size = new System.Drawing.Size(118, 43);
-			this.toolStripButton2.Text = "Open/Create Library";
+			this.toolStripButton2.Text = "Open/Create Collection";
 			this.toolStripButton2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.toolStripButton2.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
 			// 
@@ -176,6 +176,11 @@
 			this._webSiteMenuItem.Text = "Web Site";
 			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
 			// 
+			// toolStripSeparator1
+			// 
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(171, 6);
+			// 
 			// _tabStrip
 			// 
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
@@ -183,7 +188,7 @@
 			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
 			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._libraryTab,
+            this._collectionTab,
             this._editTab,
             this._publishTab});
 			this._tabStrip.Location = new System.Drawing.Point(0, 0);
@@ -197,23 +202,23 @@
 			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
 			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
 			// 
-			// _libraryTab
+			// _collectionTab
 			// 
-			this._libraryTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._libraryTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._libraryTab.ForeColor = System.Drawing.Color.Black;
-			this._libraryTab.HotTextColor = System.Drawing.Color.Black;
-			this._libraryTab.Image = global::Bloom.Properties.Resources.library32x32;
-			this._libraryTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._libraryTab.IsSelected = false;
-			this._libraryTab.Margin = new System.Windows.Forms.Padding(0);
-			this._libraryTab.Name = "_libraryTab";
-			this._libraryTab.Padding = new System.Windows.Forms.Padding(0);
-			this._libraryTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._libraryTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._libraryTab.Size = new System.Drawing.Size(80, 71);
-			this._libraryTab.Text = "Library";
-			this._libraryTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._collectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._collectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._collectionTab.ForeColor = System.Drawing.Color.Black;
+			this._collectionTab.HotTextColor = System.Drawing.Color.Black;
+			this._collectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._collectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._collectionTab.IsSelected = false;
+			this._collectionTab.Margin = new System.Windows.Forms.Padding(0);
+			this._collectionTab.Name = "_collectionTab";
+			this._collectionTab.Padding = new System.Windows.Forms.Padding(0);
+			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._collectionTab.Size = new System.Drawing.Size(98, 71);
+			this._collectionTab.Text = "Collection";
+			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
 			// _editTab
 			// 
@@ -253,11 +258,6 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
-			// toolStripSeparator1
-			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(171, 6);
-			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -294,7 +294,7 @@
 		private System.Windows.Forms.ToolStripMenuItem _makeASuggestionMenuItem;
 		private System.Windows.Forms.ToolStripButton toolStripButton1;
 		private System.Windows.Forms.ToolStripButton toolStripButton2;
-		private Messir.Windows.Forms.TabStripButton _libraryTab;
+		private Messir.Windows.Forms.TabStripButton _collectionTab;
 		private Messir.Windows.Forms.TabStripButton _editTab;
 		private Messir.Windows.Forms.TabStripButton _publishTab;
 		private Messir.Windows.Forms.TabStrip _tabStrip;

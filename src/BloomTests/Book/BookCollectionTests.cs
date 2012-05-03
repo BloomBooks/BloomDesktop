@@ -20,7 +20,7 @@ namespace BloomTests.Book
 		{
 			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
 			_folder  =new TemporaryFolder("BookCollectionTests");
-//			_fileLocator = new BloomFileLocator(new LibrarySettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+//			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
@@ -29,7 +29,7 @@ namespace BloomTests.Book
 
 		 Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		 {
-			 return new Bloom.Book.Book(storage, true, null, new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
+			 return new Bloom.Book.Book(storage, true, null, new CollectionSettings(new NewCollectionInfo() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  VernacularIso639Code = "xyz" }), null,
 													  new PageSelection(),
 													  new PageListChangedEvent(), new BookRefreshEvent());
 		 }

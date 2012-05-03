@@ -224,7 +224,7 @@
       <DependentUpon>SettingsDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ProjectContext.cs" />
-    <Compile Include="LibrarySettings.cs" />
+    <Compile Include="CollectionSettings.cs" />
     <Compile Include="Publish\PdfMaker.cs" />
     <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
@@ -234,18 +234,18 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewLibrary\KindOfLibraryControl.cs">
+    <Compile Include="NewCollection\KindOfCollectionControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewLibrary\KindOfLibraryControl.Designer.cs">
-      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
+    <Compile Include="NewCollection\KindOfCollectionControl.Designer.cs">
+      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="NewLibrary\NewLibraryDialog.cs">
+    <Compile Include="NewCollection\NewCollectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewLibrary\NewLibraryDialog.designer.cs">
-      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
+    <Compile Include="NewCollection\NewCollectionDialog.designer.cs">
+      <DependentUpon>NewCollectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\WelcomeControl.cs">
       <SubType>UserControl</SubType>
@@ -392,11 +392,11 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewLibrary\KindOfLibraryControl.resx">
-      <DependentUpon>KindOfLibraryControl.cs</DependentUpon>
+    <EmbeddedResource Include="NewCollection\KindOfCollectionControl.resx">
+      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewLibrary\NewLibraryDialog.resx">
-      <DependentUpon>NewLibraryDialog.cs</DependentUpon>
+    <EmbeddedResource Include="NewCollection\NewCollectionDialog.resx">
+      <DependentUpon>NewCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>

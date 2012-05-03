@@ -17,13 +17,13 @@ namespace Bloom.Library
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
 		private List<BookCollection> _bookCollections;
 
-		public LibraryModel(string pathToLibrary, LibrarySettings librarySettings,
+		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
@@ -31,7 +31,7 @@ namespace Bloom.Library
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -50,7 +50,7 @@ namespace Bloom.Library
 
 		public string LanguageName
 		{
-			get { return _librarySettings.VernacularLanguageName; }
+			get { return _collectionSettings.VernacularLanguageName; }
 		}
 
 		public List<BookCollection> GetBookCollections()
@@ -74,12 +74,12 @@ namespace Bloom.Library
 
 		public string VernacularLibraryNamePhrase
 		{
-			get { return _librarySettings.VernacularLibraryNamePhrase; }
+			get { return _collectionSettings.VernacularLibraryNamePhrase; }
 		}
 
 		public bool IsShellProject
 		{
-			get { return _librarySettings.IsShellLibrary; }
+			get { return _collectionSettings.IsShellLibrary; }
 		}
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()

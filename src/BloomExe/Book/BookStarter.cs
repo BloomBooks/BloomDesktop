@@ -21,18 +21,18 @@ namespace Bloom.Book
 		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private LanguageSettings _languageSettings;
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private bool _isShellLibrary;
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(IChangeableFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, LibrarySettings librarySettings)
+		public BookStarter(IChangeableFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, CollectionSettings collectionSettings)
 		{
 			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
-			_librarySettings = librarySettings;
-			_isShellLibrary = librarySettings.IsShellLibrary;
+			_collectionSettings = collectionSettings;
+			_isShellLibrary = collectionSettings.IsShellLibrary;
 		}
 
 		public bool TestingSoSkipAddingXMatter { get; set; }
@@ -123,12 +123,12 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
-				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.VernacularIso639Code));
-				Debug.Assert(!string.IsNullOrEmpty(_librarySettings.NationalLanguage1Iso639Code));
-				data.WritingSystemCodes.Add("V", _librarySettings.VernacularIso639Code);
-				data.WritingSystemCodes.Add("N1", _librarySettings.NationalLanguage1Iso639Code);
-				data.WritingSystemCodes.Add("N2", _librarySettings.NationalLanguage2Iso639Code);
-				var helper = new XMatterHelper(storage.Dom,_librarySettings.XMatterPackName, _fileLocator);
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.VernacularIso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.NationalLanguage1Iso639Code));
+				data.WritingSystemCodes.Add("V", _collectionSettings.VernacularIso639Code);
+				data.WritingSystemCodes.Add("N1", _collectionSettings.NationalLanguage1Iso639Code);
+				data.WritingSystemCodes.Add("N2", _collectionSettings.NationalLanguage2Iso639Code);
+				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
 			}
@@ -138,7 +138,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				SetupIdAndLineage(div, div);
-				SetupPage(div, _librarySettings, null, null);
+				SetupPage(div, _collectionSettings, null, null);
 			}
 
 	//		SizeAndOrientation.SetPaperSizeAndOrientation(storage.Dom, sizeAndOrientation.ToString());
@@ -193,9 +193,9 @@ namespace Bloom.Book
 		}
 
 
-		public static void SetupPage(XmlElement pageDiv, LibrarySettings librarySettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
+		public static void SetupPage(XmlElement pageDiv, CollectionSettings collectionSettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
-			PrepareElementsInPageOrDocument(pageDiv, librarySettings);//, inShellMode);
+			PrepareElementsInPageOrDocument(pageDiv, collectionSettings);//, inShellMode);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -238,17 +238,17 @@ namespace Bloom.Book
 		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="node"></param>
-		public static void PrepareElementsInPageOrDocument(XmlNode node, LibrarySettings librarySettings)//, bool inShellMode)
+		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)//, bool inShellMode)
 		{
-			PrepareElementsOnPageOneLanguage(node, librarySettings.VernacularIso639Code);
+			PrepareElementsOnPageOneLanguage(node, collectionSettings.VernacularIso639Code);
 
 			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
-			BookStarter.PrepareElementsOnPageOneLanguage(node,librarySettings.NationalLanguage1Iso639Code);
+			BookStarter.PrepareElementsOnPageOneLanguage(node,collectionSettings.NationalLanguage1Iso639Code);
 
 			//nb: really we need to have a place where we list the bilgual/triligual desires, and that may be book specific
-			if(!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code))
+			if(!string.IsNullOrEmpty(collectionSettings.NationalLanguage2Iso639Code))
 			{
-				BookStarter.PrepareElementsOnPageOneLanguage(node, librarySettings.NationalLanguage2Iso639Code);
+				BookStarter.PrepareElementsOnPageOneLanguage(node, collectionSettings.NationalLanguage2Iso639Code);
 			}
 		}
 

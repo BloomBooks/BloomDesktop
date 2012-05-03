@@ -21,12 +21,12 @@ namespace BloomTests.Book
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _projectFolder;
-		private Mock<LibrarySettings> _librarySettings;
+		private Mock<CollectionSettings> _librarySettings;
 
 		[SetUp]
 		public void Setup()
 		{
-			_librarySettings = new Moq.Mock<LibrarySettings>();
+			_librarySettings = new Moq.Mock<CollectionSettings>();
 			_librarySettings.SetupGet(x => x.IsShellLibrary).Returns(false);
 			_librarySettings.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
 			_librarySettings.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("fr");
@@ -202,7 +202,7 @@ namespace BloomTests.Book
 //		[Test]
 //		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
 //		{
-//			//var library = new Moq.Mock<LibrarySettings>();
+//			//var library = new Moq.Mock<CollectionSettings>();
 //			_librarySettings.SetupGet(x => x.IsShellLibrary).Returns(true);
 //			//_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 //			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
@@ -212,7 +212,7 @@ namespace BloomTests.Book
 //		[Test]
 //		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
 //		{
-//			var library = new Moq.Mock<LibrarySettings>();
+//			var library = new Moq.Mock<CollectionSettings>();
 //			library.SetupGet(x => x.IsShellLibrary).Returns(false);
 //			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
 //			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));

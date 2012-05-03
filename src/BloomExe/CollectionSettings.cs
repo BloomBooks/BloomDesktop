@@ -14,7 +14,7 @@ namespace Bloom
 	/// A library corresponds to a single folder (with subfolders) on the disk.
 	/// In that folder is a file which persists the properties of this class, then a folder for each book
 	/// </summary>
-	public class LibrarySettings
+	public class CollectionSettings
 	{
 		private string _vernacularIso639Code;
 		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
@@ -78,30 +78,30 @@ namespace Bloom
 		/// <summary>
 		/// for moq in unit tests only
 		/// </summary>
-		public LibrarySettings()
+		public CollectionSettings()
 		{
 			XMatterPackName = "Factory";
 			NationalLanguage1Iso639Code = "en";
 		}
 
-		public LibrarySettings(NewLibraryInfo libraryInfo)
-			:this(libraryInfo.PathToSettingsFile)
+		public CollectionSettings(NewCollectionInfo collectionInfo)
+			:this(collectionInfo.PathToSettingsFile)
 		{
-			VernacularIso639Code = libraryInfo.VernacularIso639Code;
-			NationalLanguage1Iso639Code = libraryInfo.NationalLanguage1Iso639Code;
-			NationalLanguage2Iso639Code = libraryInfo.NationalLanguage2Iso639Code;
-			VernacularLanguageName = libraryInfo.LanguageName;
-			IsShellLibrary = libraryInfo.IsShellLibary;
-			XMatterPackName = libraryInfo.XMatterPackName;
+			VernacularIso639Code = collectionInfo.VernacularIso639Code;
+			NationalLanguage1Iso639Code = collectionInfo.NationalLanguage1Iso639Code;
+			NationalLanguage2Iso639Code = collectionInfo.NationalLanguage2Iso639Code;
+			VernacularLanguageName = collectionInfo.LanguageName;
+			IsShellLibrary = collectionInfo.IsShellLibary;
+			XMatterPackName = collectionInfo.XMatterPackName;
 			Save();
 		}
 		/// <summary>
 		/// can be used whether the library exists already, or not
 		/// </summary>
-		public LibrarySettings(string desiredOrExistingSettingsFilePath)
+		public CollectionSettings(string desiredOrExistingSettingsFilePath)
 		{
 			SettingsFilePath = desiredOrExistingSettingsFilePath;
-			LibraryName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
+			CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
 			var parentDirectoryPath = Path.GetDirectoryName(libraryDirectory);
 
@@ -183,7 +183,7 @@ namespace Bloom
 		}
 
 
-		public virtual string LibraryName { get; protected set; }
+		public virtual string CollectionName { get; protected set; }
 
 		[XmlIgnore]
 		public string FolderPath
@@ -205,17 +205,17 @@ namespace Bloom
 
 		public string VernacularLibraryNamePhrase
 		{
-			get {return string.Format("{0} Books", VernacularLanguageName); }
+			get {return IsShellLibrary? CollectionName : string.Format("{0} Books", VernacularLanguageName); }
 		}
 
 
-		public static string GetPathForNewSettings(string parentFolderPath, string newLibraryName)
+		public static string GetPathForNewSettings(string parentFolderPath, string newCollectinoName)
 		{
-			return Path.Combine(parentFolderPath, newLibraryName + ".bloomLibrary");
+			return Path.Combine(parentFolderPath, newCollectinoName + ".bloomCollection");
 		}
 	}
 
-	public class NewLibraryInfo
+	public class NewCollectionInfo
 	{
 		public string PathToSettingsFile;
 		public string VernacularIso639Code;

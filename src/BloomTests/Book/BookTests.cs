@@ -28,7 +28,7 @@ namespace BloomTests.Book
 		private XmlDocument _documentDom;
 		private TemporaryFolder _testFolder;
 		private TemporaryFolder _tempFolder;
-		private LibrarySettings _librarySettings;
+		private CollectionSettings _collectionSettings;
 
 		[SetUp]
 		public void Setup()
@@ -81,9 +81,9 @@ namespace BloomTests.Book
 
 		private Bloom.Book.Book CreateBook()
 		{
-			_librarySettings = new LibrarySettings(new NewLibraryInfo() { PathToSettingsFile = LibrarySettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz", NationalLanguage1Iso639Code = "en", NationalLanguage2Iso639Code = "fr" });
+			_collectionSettings = new CollectionSettings(new NewCollectionInfo() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz", NationalLanguage1Iso639Code = "en", NationalLanguage2Iso639Code = "fr" });
 			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object,
-				_librarySettings,
+				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
@@ -258,7 +258,7 @@ namespace BloomTests.Book
 
 			//now switch the national language to Tok Pisin
 
-			_librarySettings.NationalLanguage1Iso639Code = "tpi";
+			_collectionSettings.NationalLanguage1Iso639Code = "tpi";
 			book.UpdateFieldsAndVariables(dom);
 			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);

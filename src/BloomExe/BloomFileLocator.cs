@@ -10,19 +10,19 @@ namespace Bloom
 {
 	public class BloomFileLocator : FileLocator
 	{
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private readonly XMatterPackFinder _xMatterPackFinder;
 
-		public BloomFileLocator(LibrarySettings librarySettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> searchPaths)
+		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> searchPaths)
 			: base(searchPaths)
 		{
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			_xMatterPackFinder = xMatterPackFinder;
 		}
 
 		protected override IEnumerable<string> GetSearchPaths()
 		{
-			var xMatterFolder = _xMatterPackFinder.FindByKey(_librarySettings.XMatterPackName);
+			var xMatterFolder = _xMatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
 			if(null == xMatterFolder)
 				xMatterFolder = _xMatterPackFinder.FindByKey("Factory");
 
@@ -33,7 +33,7 @@ namespace Bloom
 
 		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
 		{
-			return new BloomFileLocator(_librarySettings, _xMatterPackFinder, new List<string>(_searchPaths.Concat(addedSearchPaths)));
+			return new BloomFileLocator(_collectionSettings, _xMatterPackFinder, new List<string>(_searchPaths.Concat(addedSearchPaths)));
 		}
 	}
 }

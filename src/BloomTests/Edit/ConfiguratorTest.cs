@@ -29,7 +29,7 @@ namespace BloomTests.Edit
 		[SetUp]
 		public void Setup()
 		{
-			var library = new Moq.Mock<LibrarySettings>();
+			var library = new Moq.Mock<CollectionSettings>();
 			library.SetupGet(x => x.IsShellLibrary).Returns(false);
 			library.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("en");
 			library.SetupGet(x => x.VernacularIso639Code).Returns("xyz");

@@ -40,7 +40,7 @@ namespace Bloom
 			{
 				BookCollection editableVernacularCollection = _scope.Resolve<BookCollection.Factory>()(vernacularCollectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<LibrarySettings>(), editableVernacularCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
+				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableVernacularCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
 		}
@@ -79,7 +79,7 @@ namespace Bloom
 			  //  LibrarySettings = new LibrarySettings(projectSettingsPath);
 				try
 				{
-					builder.Register<LibrarySettings>(c => new LibrarySettings(projectSettingsPath)).InstancePerLifetimeScope();
+					builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
 				}
 				catch(Exception)
 				{
@@ -87,18 +87,18 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableVernacularCollectionDirectory, c.Resolve<LibrarySettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(editableVernacularCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
 				//builder.Register<BookCollection>(c => c.Resolve<BookCollection>());
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<LibrarySettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
+				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{
-														var librarySettings = c.Resolve<LibrarySettings>();
+														var librarySettings = c.Resolve<CollectionSettings>();
 														var preferredSourceLanguagesInOrder = new List<string>();
 														preferredSourceLanguagesInOrder.Add(librarySettings.NationalLanguage1Iso639Code);
 														if (!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code)

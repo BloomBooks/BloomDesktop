@@ -27,7 +27,7 @@ namespace Bloom.Book
 		private readonly BookStarter.Factory _bookStarterFactory;
 		private readonly BookSelection _bookSelection;
 		private readonly EditBookCommand _editBookCommand;
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 
 
 		//for moq only

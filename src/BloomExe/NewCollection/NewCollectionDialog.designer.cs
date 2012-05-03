@@ -1,6 +1,6 @@
-namespace Bloom.NewLibrary
+namespace Bloom.NewCollection
 {
-	partial class NewLibraryDialog
+	partial class NewCollectionDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@ namespace Bloom.NewLibrary
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewLibraryDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewCollectionDialog));
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
@@ -37,7 +37,7 @@ namespace Bloom.NewLibrary
 			this.label2 = new System.Windows.Forms.Label();
 			this._chooseLanguageButton = new System.Windows.Forms.Button();
 			this._languageInfoLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._kindOfLibraryControl1 = new KindOfLibraryControl();
+			this._kindOfCollectionControl1 = new KindOfCollectionControl();
 			this.SuspendLayout();
 			//
 			// label1
@@ -46,9 +46,9 @@ namespace Bloom.NewLibrary
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.Location = new System.Drawing.Point(25, 113);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(213, 15);
+			this.label1.Size = new System.Drawing.Size(232, 15);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "What would you like to call this library?";
+			this.label1.Text = "What would you like to call this collection?";
 			//
 			// btnOK
 			//
@@ -130,14 +130,14 @@ namespace Bloom.NewLibrary
 			this._languageInfoLabel.TabIndex = 8;
 			this._languageInfoLabel.TabStop = false;
 			//
-			// _kindOfLibraryControl1
+			// _kindOfCollectionControl1
 			//
-			this._kindOfLibraryControl1.Location = new System.Drawing.Point(403, 18);
-			this._kindOfLibraryControl1.Name = "_kindOfLibraryControl1";
-			this._kindOfLibraryControl1.Size = new System.Drawing.Size(76, 292);
-			this._kindOfLibraryControl1.TabIndex = 9;
+			this._kindOfCollectionControl1.Location = new System.Drawing.Point(339, 18);
+			this._kindOfCollectionControl1.Name = "_kindOfCollectionControl1";
+			this._kindOfCollectionControl1.Size = new System.Drawing.Size(140, 292);
+			this._kindOfCollectionControl1.TabIndex = 9;
 			//
-			// NewLibraryDialog
+			// NewCollectionDialog
 			//
 			this.AcceptButton = this.btnOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -145,7 +145,7 @@ namespace Bloom.NewLibrary
 			this.AutoScroll = true;
 			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(491, 320);
-			this.Controls.Add(this._kindOfLibraryControl1);
+			this.Controls.Add(this._kindOfCollectionControl1);
 			this.Controls.Add(this._languageInfoLabel);
 			this.Controls.Add(this._chooseLanguageButton);
 			this.Controls.Add(this.label2);
@@ -157,8 +157,8 @@ namespace Bloom.NewLibrary
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "NewLibraryDialog";
-			this.Text = "New Library";
+			this.Name = "NewCollectionDialog";
+			this.Text = "New Collection";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -174,6 +174,6 @@ namespace Bloom.NewLibrary
 		protected System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _chooseLanguageButton;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _languageInfoLabel;
-		private KindOfLibraryControl _kindOfLibraryControl1;
+		private KindOfCollectionControl _kindOfCollectionControl1;
 	}
 }

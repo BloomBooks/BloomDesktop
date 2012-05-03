@@ -5,29 +5,29 @@ using System.Windows.Forms;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 
-namespace Bloom.NewLibrary
+namespace Bloom.NewCollection
 {
-	public partial class NewLibraryDialog: Form
+	public partial class NewCollectionDialog: Form
 	{
 		private readonly string _destinationDirectory;
 		public string Iso639Code;
 		public string LanguageName;
 
-		public NewLibraryDialog(string destinationDirectory)
+		public NewCollectionDialog(string destinationDirectory)
 		{
 			_destinationDirectory = destinationDirectory;
 			InitializeComponent();
 			Icon = Application.OpenForms[0].Icon;
 			btnOK.Enabled = false;
 			_pathLabel.Text = "";
-			_kindOfLibraryControl1.Left = _chooseLanguageButton.Left;
-			_kindOfLibraryControl1.Width = btnCancel.Right - _kindOfLibraryControl1.Left;
-			_kindOfLibraryControl1._nextButton.Click += new EventHandler(_nextButton_Click);
+			_kindOfCollectionControl1.Left = _chooseLanguageButton.Left;
+			_kindOfCollectionControl1.Width = btnCancel.Right - _kindOfCollectionControl1.Left;
+			_kindOfCollectionControl1._nextButton.Click += new EventHandler(_nextButton_Click);
 		}
 
 		void _nextButton_Click(object sender, EventArgs e)
 		{
-			_kindOfLibraryControl1.Visible = false;
+			_kindOfCollectionControl1.Visible = false;
 		}
 
 		protected virtual bool EnableOK
@@ -44,7 +44,7 @@ namespace Bloom.NewLibrary
 				if (dirs.Length > 1)
 				{
 					string root = Path.Combine(dirs[dirs.Length - 3], dirs[dirs.Length - 2]);
-					_pathLabel.Text = String.Format("Library will be created at: {0}",
+					_pathLabel.Text = String.Format("Collection will be created at: {0}",
 													Path.Combine(root, dirs[dirs.Length - 1]));
 				}
 
@@ -55,7 +55,7 @@ namespace Bloom.NewLibrary
 			{
 				if (_textLibraryName.Text.Length > 0)
 				{
-					_pathLabel.Text = "Unable to create a new library there.";
+					_pathLabel.Text = "Unable to create a new collection there.";
 				}
 				else
 				{
@@ -120,7 +120,7 @@ namespace Bloom.NewLibrary
 		{
 			get
 			{
-				return _kindOfLibraryControl1._radioShellbookLibrary.Checked;
+				return _kindOfCollectionControl1._radioShellbookLibrary.Checked;
 			}
 
 		}

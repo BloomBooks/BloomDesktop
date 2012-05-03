@@ -15,16 +15,16 @@ namespace Bloom.Library
 	{
 		public delegate SettingsDialog Factory();//autofac uses this
 
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private XMatterPackFinder _xmatterPackFinder;
 		private bool _restartMightBeNeeded;
 
-		public SettingsDialog(LibrarySettings librarySettings, XMatterPackFinder xmatterPackFinder)
+		public SettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
 		{
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			InitializeComponent();
-			if(_librarySettings.IsShellLibrary)
+			if(_collectionSettings.IsShellLibrary)
 			{
 				_language1Label.Text = "Language 1";
 				_language2Label.Text = "Language 2";
@@ -35,55 +35,55 @@ namespace Bloom.Library
 
 		private void UpdateDisplay()
 		{
-			_vernacularLanguageName.Text = string.Format("{0} ({1})", _librarySettings.GetVernacularName("en"), _librarySettings.VernacularIso639Code);
-			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _librarySettings.GetNationalLanguage1Name("en"), _librarySettings.NationalLanguage1Iso639Code);
+			_vernacularLanguageName.Text = string.Format("{0} ({1})", _collectionSettings.GetVernacularName("en"), _collectionSettings.VernacularIso639Code);
+			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _collectionSettings.GetNationalLanguage1Name("en"), _collectionSettings.NationalLanguage1Iso639Code);
 
-			if (string.IsNullOrEmpty(_librarySettings.NationalLanguage2Iso639Code))
+			if (string.IsNullOrEmpty(_collectionSettings.NationalLanguage2Iso639Code))
 			{
 				_nationalLanguage2Label.Text = "--";
 				_removeSecondNationalLanguageButton.Visible = false;
 			}
 			else
 			{
-				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _librarySettings.GetNationalLanguage2Name("en"), _librarySettings.NationalLanguage2Iso639Code);
+				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _collectionSettings.GetNationalLanguage2Name("en"), _collectionSettings.NationalLanguage2Iso639Code);
 				_removeSecondNationalLanguageButton.Visible = true;
 			}
 
-			_countryText.Text = _librarySettings.Country;
-			_provinceText.Text = _librarySettings.Province;
-			_districtText.Text = _librarySettings.District;
+			_countryText.Text = _collectionSettings.Country;
+			_provinceText.Text = _collectionSettings.Province;
+			_districtText.Text = _collectionSettings.District;
 			_restartMessage.Visible = _restartMightBeNeeded;
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());
-			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_librarySettings.XMatterPackName);
+			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
 			if (_xmatterPackCombo.SelectedItem == null) //if something goes wrong
 				_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FactoryDefault;
 		}
 
 		private void _vernacularChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_librarySettings.VernacularIso639Code = ChangeLanguage(_librarySettings.VernacularIso639Code);
+			_collectionSettings.VernacularIso639Code = ChangeLanguage(_collectionSettings.VernacularIso639Code);
 
 			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 		private void _national1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_librarySettings.NationalLanguage1Iso639Code = ChangeLanguage( _librarySettings.NationalLanguage1Iso639Code);
+			_collectionSettings.NationalLanguage1Iso639Code = ChangeLanguage( _collectionSettings.NationalLanguage1Iso639Code);
 			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 
 		private void _national2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_librarySettings.NationalLanguage2Iso639Code = ChangeLanguage(_librarySettings.NationalLanguage2Iso639Code);
+			_collectionSettings.NationalLanguage2Iso639Code = ChangeLanguage(_collectionSettings.NationalLanguage2Iso639Code);
 			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_librarySettings.NationalLanguage2Iso639Code = null;
+			_collectionSettings.NationalLanguage2Iso639Code = null;
 			_restartMightBeNeeded = true;
 			UpdateDisplay();
 		}
@@ -102,16 +102,16 @@ namespace Bloom.Library
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
-			_librarySettings.XMatterPackName = ((XMatterInfo) _xmatterPackCombo.SelectedItem).Key;
-			_librarySettings.Country = _countryText.Text.Trim();
-			_librarySettings.Province = _provinceText.Text.Trim();
-			_librarySettings.District = _districtText.Text.Trim();
+			_collectionSettings.XMatterPackName = ((XMatterInfo) _xmatterPackCombo.SelectedItem).Key;
+			_collectionSettings.Country = _countryText.Text.Trim();
+			_collectionSettings.Province = _provinceText.Text.Trim();
+			_collectionSettings.District = _districtText.Text.Trim();
 
 			//no point in letting them have the Nat lang 2 be the same as 1
-			if (_librarySettings.NationalLanguage1Iso639Code == _librarySettings.NationalLanguage2Iso639Code)
-				_librarySettings.NationalLanguage2Iso639Code = null;
+			if (_collectionSettings.NationalLanguage1Iso639Code == _collectionSettings.NationalLanguage2Iso639Code)
+				_collectionSettings.NationalLanguage2Iso639Code = null;
 
-			_librarySettings.Save();
+			_collectionSettings.Save();
 			Close();
 		}
 
@@ -122,17 +122,17 @@ namespace Bloom.Library
 
 		private void OnAboutLanguageSettings(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Change_languages.htm");
+			HelpLauncher.Show(this, "Tasks/Basic_tasks/Change_languages.htm");
 		}
 
 		private void OnAboutBookMakingSettings(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
+			HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
 		}
 
 		private void OnAboutProjectInformationSetingsButton_Click(object sender, EventArgs e)
 		{
-			HelpLauncher.Show(this, "/Tasks/ProjectLibraryLevel_Tasks/Enter_project_information.htm");
+			HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
 		}
 	}
 }

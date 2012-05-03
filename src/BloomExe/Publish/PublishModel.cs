@@ -40,15 +40,15 @@ namespace Bloom.Publish
 		private readonly BookSelection _bookSelection;
 		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, LibrarySettings librarySettings)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
 		{
 			BookSelection = bookSelection;
 			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			BookletPortion = BookletPortions.BookletPages;
 		}
@@ -188,7 +188,7 @@ namespace Bloom.Publish
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
-					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath), _librarySettings.GetVernacularName("en"),portion);
+					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath), _collectionSettings.GetVernacularName("en"),portion);
 					dlg.FileName = suggestedName;
 					dlg.Filter = "PDF|*.pdf";
 					if (DialogResult.OK == dlg.ShowDialog())

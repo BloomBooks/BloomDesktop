@@ -18,7 +18,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
-		private LibraryView _libraryView;
+		private LibraryView _collectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private Control _previouslySelectedControl;
@@ -61,10 +61,10 @@ namespace Bloom.Workspace
 			//SetupTabIcons();
 
 			//
-			// _libraryView
+			// _collectionView
 			//
-			this._libraryView = (LibraryView) libraryView;
-			this._libraryView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._collectionView = (LibraryView) libraryView;
+			this._collectionView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			//
 			// _editingView
@@ -81,12 +81,12 @@ namespace Bloom.Workspace
 
 
 
-			_libraryTab.Tag = _libraryView;
+			_collectionTab.Tag = _collectionView;
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
 
-			this._libraryTab.Text = _libraryView.LibraryTabLabel;
+			this._collectionTab.Text = _collectionView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
@@ -98,8 +98,8 @@ namespace Bloom.Workspace
 //			}
 //			else
 //			{
-				_tabStrip.SelectedTab = _libraryTab;
-				SelectPage(_libraryView);
+				_tabStrip.SelectedTab = _collectionTab;
+				SelectPage(_collectionView);
 //			}
 
 		}

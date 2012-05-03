@@ -41,7 +41,7 @@ namespace Bloom.Book
 		//string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
-		void UpdateBookFileAndFolderName(LibrarySettings settings);
+		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		void RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
 	}
@@ -624,7 +624,7 @@ namespace Bloom.Book
 			return ValidateBook(PathToExistingHtml);
 		}
 
-		public void UpdateBookFileAndFolderName(LibrarySettings librarySettings)
+		public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
 		{
 			var title = XmlUtilities.GetTitleOfHtml(Dom, null);
 			if (title != null)

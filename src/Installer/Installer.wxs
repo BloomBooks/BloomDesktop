@@ -93,7 +93,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			  </Extension>
 			</ProgId>
 
-			<Registry  Id='BloomCollectionIcon1' Root='HKCR' Key='.BloomLibrary' Action='write'
+			<Registry  Id='BloomCollectionIcon1' Root='HKCR' Key='.BloomCollection' Action='write'
 			  Type='string' Value='Bloom.BloomCollectionFile' />
 			<Registry Id='BloomCollectionIcon2' Root='HKCR' Key='Bloom.BloomCollectionFile' Action='write'
 			  Type='string' Value='Bloom Book Collection' />

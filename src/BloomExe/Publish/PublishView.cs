@@ -186,7 +186,7 @@ namespace Bloom.Publish
 		}
 		public string HelpTopicUrl
 		{
-			get { return "/Tasks/BookPageLevel_Tasks/Save_as_PDF_file.htm"; }
+			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
 		}
 	}
 }

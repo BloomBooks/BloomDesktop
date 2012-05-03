@@ -8,10 +8,9 @@ namespace Bloom.Library
 	public partial class LibraryView :  UserControl, IBloomTabArea
 	{
 		private readonly LibraryModel _model;
-		//public delegate LibraryView Factory();//autofac uses this
 
 
-		private LibraryListView libraryListView1;
+		private LibraryListView _collectionListView;
 		private LibraryBookView _bookView;
 
 		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, LibraryBookView.Factory templateBookViewFactory)
@@ -19,21 +18,21 @@ namespace Bloom.Library
 			_model = model;
 			InitializeComponent();
 
-			libraryListView1 = libraryListViewFactory();
-			libraryListView1.Dock = DockStyle.Fill;
-			splitContainer1.Panel1.Controls.Add(libraryListView1);
+			_collectionListView = libraryListViewFactory();
+			_collectionListView.Dock = DockStyle.Fill;
+			splitContainer1.Panel1.Controls.Add(_collectionListView);
 
 			_bookView = templateBookViewFactory();
 			_bookView.Dock = DockStyle.Fill;
 			splitContainer1.Panel2.Controls.Add(_bookView);
 
-			splitContainer1.SplitterDistance = libraryListView1.PreferredWidth;
+			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
 		}
 
-		public string LibraryTabLabel
+		public string CollectionTabLabel
 		{
-			get { return _model.IsShellProject ? "Shell Collection" : "Library"; }
+			get { return "Library"; }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 
@@ -63,7 +62,7 @@ namespace Bloom.Library
 
 		public string HelpTopicUrl
 		{
-			get { return "/Tasks/ProjectLibraryLevel_Tasks/Project_or_Library_level_tasks_overview.htm"; }
+			get { return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collections_tasks_overview.htm"; }
 		}
 
 		public Control TopBarControl

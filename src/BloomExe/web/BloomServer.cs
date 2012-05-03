@@ -14,16 +14,16 @@ namespace Bloom.web
 {
 	public class BloomServer : IDisposable
 	{
-		private readonly LibrarySettings _librarySettings;
+		private readonly CollectionSettings _collectionSettings;
 		private readonly BookCollection _booksInProjectLibrary;
 		private readonly SourceCollectionsList _sourceCollectionsesList;
 		private readonly HtmlThumbNailer _thumbNailer;
 		private HttpListener _listener;
 
-		public BloomServer(LibrarySettings librarySettings, BookCollection booksInProjectLibrary,
+		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
 		{
-			_librarySettings = librarySettings;
+			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;
 			_sourceCollectionsesList = sourceCollectionsesList;
 			_thumbNailer = thumbNailer;
@@ -75,7 +75,7 @@ namespace Bloom.web
 			}
 			else if (r == "libraryName")
 			{
-				info.WriteCompleteOutput(_librarySettings.LibraryName + " Library");
+				info.WriteCompleteOutput(_collectionSettings.CollectionName + " Library");
 			}
 			else if (r.Contains("SourceCollectionsList"))
 			{

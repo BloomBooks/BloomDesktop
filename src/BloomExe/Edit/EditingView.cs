@@ -557,7 +557,7 @@ namespace Bloom.Edit
 
 		public string HelpTopicUrl
 		{
-			get { return "/Tasks/BookPageLevel_Tasks/Edit_a_book.htm"; }
+			get { return "/Tasks/Edit_tasks/Edit_tasks_overview.htm"; }
 		}
 	}
 }
