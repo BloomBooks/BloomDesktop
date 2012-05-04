@@ -77,7 +77,7 @@ namespace Bloom
 				StartUpShellBasedOnMostRecentUsedIfPossible();
 				Application.Idle += new EventHandler(Application_Idle);
 
-
+				Localization.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
 				try
 				{
 					Application.Run();
