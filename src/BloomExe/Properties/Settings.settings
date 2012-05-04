@@ -14,5 +14,8 @@
     <Setting Name="Reporting" Type="Palaso.Reporting.ReportingSettings" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="UserInterfaceLanguage" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

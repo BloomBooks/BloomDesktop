@@ -30,29 +30,34 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._addToLibraryButton = new System.Windows.Forms.Button();
+			this._addToCollectionButton = new System.Windows.Forms.Button();
 			this._browser = new Bloom.Browser();
 			this._editBookButton = new System.Windows.Forms.Button();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// _addToLibraryButton
+			// _addToCollectionButton
 			// 
-			this._addToLibraryButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this._addToLibraryButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._addToLibraryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._addToLibraryButton.Image = global::Bloom.Properties.Resources.newBook1;
-			this._addToLibraryButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._addToLibraryButton.Location = new System.Drawing.Point(12, 3);
-			this._addToLibraryButton.Name = "_addToLibraryButton";
-			this._addToLibraryButton.Size = new System.Drawing.Size(250, 42);
-			this._addToLibraryButton.TabIndex = 0;
-			this._addToLibraryButton.Text = "Make a book using this template";
-			this._addToLibraryButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this.toolTip1.SetToolTip(this._addToLibraryButton, "Create a book in my language using this template");
-			this._addToLibraryButton.UseVisualStyleBackColor = false;
-			this._addToLibraryButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
-			this._addToLibraryButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
-			this._addToLibraryButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
+			this._addToCollectionButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
+			this._addToCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook1;
+			this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this._addToCollectionButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._addToCollectionButton, null);
+			this.localizationExtender1.SetLocalizingId(this._addToCollectionButton, "LibraryBookView._addToLibraryButton");
+			this._addToCollectionButton.Location = new System.Drawing.Point(12, 3);
+			this._addToCollectionButton.Name = "_addToCollectionButton";
+			this._addToCollectionButton.Size = new System.Drawing.Size(250, 42);
+			this._addToCollectionButton.TabIndex = 0;
+			this._addToCollectionButton.Text = "Make a book using this template";
+			this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.toolTip1.SetToolTip(this._addToCollectionButton, "Create a book in my language using this template");
+			this._addToCollectionButton.UseVisualStyleBackColor = false;
+			this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
+			this._addToCollectionButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
+			this._addToCollectionButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
 			// 
 			// _browser
 			// 
@@ -60,6 +65,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._browser.BackColor = System.Drawing.Color.DarkGray;
+			this.localizationExtender1.SetLocalizableToolTip(this._browser, null);
+			this.localizationExtender1.SetLocalizationComment(this._browser, null);
+			this.localizationExtender1.SetLocalizingId(this._browser, "LibraryBookView.Browser");
 			this._browser.Location = new System.Drawing.Point(0, 3);
 			this._browser.Name = "_browser";
 			this._browser.Size = new System.Drawing.Size(897, 447);
@@ -71,6 +79,9 @@
 			this._editBookButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._editBookButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
+			this.localizationExtender1.SetLocalizableToolTip(this._editBookButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._editBookButton, null);
+			this.localizationExtender1.SetLocalizingId(this._editBookButton, "LibraryBookView._editBookButton");
 			this._editBookButton.Location = new System.Drawing.Point(12, 3);
 			this._editBookButton.Name = "_editBookButton";
 			this._editBookButton.Size = new System.Drawing.Size(147, 42);
@@ -80,25 +91,34 @@
 			this._editBookButton.UseVisualStyleBackColor = false;
 			this._editBookButton.Click += new System.EventHandler(this._editBookButton_Click);
 			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
 			// LibraryBookView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this._editBookButton);
-			this.Controls.Add(this._addToLibraryButton);
+			this.Controls.Add(this._addToCollectionButton);
 			this.Controls.Add(this._browser);
+			this.localizationExtender1.SetLocalizableToolTip(this, null);
+			this.localizationExtender1.SetLocalizationComment(this, null);
+			this.localizationExtender1.SetLocalizingId(this, "LibraryBookView.LibraryBookView");
 			this.Name = "LibraryBookView";
 			this.Size = new System.Drawing.Size(900, 450);
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button _addToLibraryButton;
+        private System.Windows.Forms.Button _addToCollectionButton;
         private Browser _browser;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button _editBookButton;
+		private Localization.UI.LocalizationExtender localizationExtender1;
     }
 }

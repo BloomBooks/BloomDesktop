@@ -228,7 +228,7 @@ namespace Bloom
 			}
 		}
 
-		private static string GetBloomAppDataFolder()
+		public static string GetBloomAppDataFolder()
 		{
 			var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
 			if (!Directory.Exists(d))
