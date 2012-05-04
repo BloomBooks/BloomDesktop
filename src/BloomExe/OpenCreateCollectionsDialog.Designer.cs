@@ -2,7 +2,7 @@
 
 namespace Bloom
 {
-	partial class WelcomeDialog
+	partial class OpenCreateCollectionsDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -30,7 +30,7 @@ namespace Bloom
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WelcomeDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenCreateCollectionsDialog));
 			this._broughtToYouBy = new System.Windows.Forms.LinkLabel();
 			this._versionInfo = new System.Windows.Forms.Label();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -106,7 +106,7 @@ namespace Bloom
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "WelcomeDialog";
-			this.Text = "Bloom Libraries";
+			this.Text = "Open/Create Collections";
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();

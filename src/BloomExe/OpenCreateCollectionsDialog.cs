@@ -10,9 +10,9 @@ using Palaso.IO;
 
 namespace Bloom
 {
-	public partial class WelcomeDialog : Form
+	public partial class OpenCreateCollectionsDialog : Form
 	{
-		public WelcomeDialog(MostRecentPathsList mruLibraryPaths)
+		public OpenCreateCollectionsDialog(MostRecentPathsList mruLibraryPaths)
 		{
 			InitializeComponent();
 			_versionInfo.Text = Shell.GetVersionInfo();
