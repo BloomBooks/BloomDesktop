@@ -75,7 +75,7 @@ namespace Bloom.Library
 
 		public string VernacularLibraryNamePhrase
 		{
-			get { return _collectionSettings.VernacularLibraryNamePhrase; }
+			get { return _collectionSettings.VernacularCollectionNamePhrase; }
 		}
 
 		public bool IsShellProject

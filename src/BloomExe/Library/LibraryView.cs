@@ -32,7 +32,7 @@ namespace Bloom.Library
 
 		public string CollectionTabLabel
 		{
-			get { return "Library"; }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return "Collections"; }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 

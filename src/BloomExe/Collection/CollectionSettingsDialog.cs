@@ -36,18 +36,18 @@ namespace Bloom.Collection
 			if (string.IsNullOrEmpty(_collectionSettings.NationalLanguage2Iso639Code))
 			{
 				_nationalLanguage2Label.Text = "--";
-				_removeSecondNationalLanguageButton.Visible = false;
+				_removeLanguage3Link.Visible = false;
 			}
 			else
 			{
 				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _collectionSettings.GetNationalLanguage2Name("en"), _collectionSettings.NationalLanguage2Iso639Code);
-				_removeSecondNationalLanguageButton.Visible = true;
+				_removeLanguage3Link.Visible = true;
 			}
 
 			_countryText.Text = _collectionSettings.Country;
 			_provinceText.Text = _collectionSettings.Province;
 			_districtText.Text = _collectionSettings.District;
-			_restartMessage.Visible = _restartMightBeNeeded;
+			_restartReminder.Visible = _restartMightBeNeeded;
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());

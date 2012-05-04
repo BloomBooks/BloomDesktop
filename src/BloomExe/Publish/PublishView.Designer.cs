@@ -42,11 +42,13 @@
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).BeginInit();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _adobeReader
@@ -55,6 +57,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._adobeReader.Enabled = true;
+			this.localizationExtender1.SetLocalizableToolTip(this._adobeReader, null);
+			this.localizationExtender1.SetLocalizationComment(this._adobeReader, null);
+			this.localizationExtender1.SetLocalizingId(this._adobeReader, "PublishView._adobeReader");
 			this._adobeReader.Location = new System.Drawing.Point(103, 3);
 			this._adobeReader.Name = "_adobeReader";
 			this._adobeReader.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("_adobeReader.OcxState")));
@@ -97,6 +102,9 @@
 			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._saveButton.ForeColor = System.Drawing.Color.Black;
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
+			this.localizationExtender1.SetLocalizableToolTip(this._saveButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._saveButton, null);
+			this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishView._saveButton");
 			this._saveButton.Location = new System.Drawing.Point(127, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
@@ -115,6 +123,9 @@
 			this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._printButton.ForeColor = System.Drawing.Color.Black;
 			this._printButton.Image = global::Bloom.Properties.Resources.print;
+			this.localizationExtender1.SetLocalizableToolTip(this._printButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._printButton, null);
+			this.localizationExtender1.SetLocalizingId(this._printButton, "PublishView._printButton");
 			this._printButton.Location = new System.Drawing.Point(0, 0);
 			this._printButton.Name = "_printButton";
 			this._printButton.Size = new System.Drawing.Size(105, 64);
@@ -128,6 +139,9 @@
 			// 
 			this._workingIndicatorGif.BackColor = System.Drawing.Color.White;
 			this._workingIndicatorGif.Image = global::Bloom.Properties.Resources.spinner;
+			this.localizationExtender1.SetLocalizableToolTip(this._workingIndicatorGif, null);
+			this.localizationExtender1.SetLocalizationComment(this._workingIndicatorGif, null);
+			this.localizationExtender1.SetLocalizingId(this._workingIndicatorGif, "PublishView._workingIndicatorGif");
 			this._workingIndicatorGif.Location = new System.Drawing.Point(316, 148);
 			this._workingIndicatorGif.Name = "_workingIndicatorGif";
 			this._workingIndicatorGif.Size = new System.Drawing.Size(179, 141);
@@ -156,6 +170,9 @@
 			// _bodyRadio
 			// 
 			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
+			this.localizationExtender1.SetLocalizableToolTip(this._bodyRadio, null);
+			this.localizationExtender1.SetLocalizationComment(this._bodyRadio, null);
+			this.localizationExtender1.SetLocalizingId(this._bodyRadio, "PublishView._bodyRadio");
 			this._bodyRadio.Location = new System.Drawing.Point(3, 233);
 			this._bodyRadio.Name = "_bodyRadio";
 			this._bodyRadio.Size = new System.Drawing.Size(94, 104);
@@ -169,6 +186,9 @@
 			// _coverRadio
 			// 
 			this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
+			this.localizationExtender1.SetLocalizableToolTip(this._coverRadio, null);
+			this.localizationExtender1.SetLocalizationComment(this._coverRadio, null);
+			this.localizationExtender1.SetLocalizingId(this._coverRadio, "PublishView._coverRadio");
 			this._coverRadio.Location = new System.Drawing.Point(3, 116);
 			this._coverRadio.Name = "_coverRadio";
 			this._coverRadio.Size = new System.Drawing.Size(94, 111);
@@ -182,6 +202,9 @@
 			// _noBookletRadio
 			// 
 			this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
+			this.localizationExtender1.SetLocalizableToolTip(this._noBookletRadio, null);
+			this.localizationExtender1.SetLocalizationComment(this._noBookletRadio, null);
+			this.localizationExtender1.SetLocalizingId(this._noBookletRadio, "PublishView._noBookletRadio");
 			this._noBookletRadio.Location = new System.Drawing.Point(3, 3);
 			this._noBookletRadio.Name = "_noBookletRadio";
 			this._noBookletRadio.Size = new System.Drawing.Size(94, 107);
@@ -192,6 +215,10 @@
 			this._noBookletRadio.UseVisualStyleBackColor = true;
 			this._noBookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
 			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -200,6 +227,9 @@
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this._workingIndicator);
 			this.Controls.Add(this._adobeReader);
+			this.localizationExtender1.SetLocalizableToolTip(this, null);
+			this.localizationExtender1.SetLocalizationComment(this, null);
+			this.localizationExtender1.SetLocalizingId(this, "PublishView.PublishView");
 			this.Name = "PublishView";
 			this.Size = new System.Drawing.Size(833, 540);
 			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).EndInit();
@@ -208,6 +238,7 @@
 			this._topBarPanel.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).EndInit();
 			this.tableLayoutPanel1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -226,5 +257,6 @@
 		private System.Windows.Forms.Panel _topBarPanel;
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
+		private Localization.UI.LocalizationExtender localizationExtender1;
     }
 }

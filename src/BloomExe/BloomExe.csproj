@@ -87,6 +87,10 @@
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
+    <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LocalizationManager.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Server.Common">
       <HintPath>..\..\packages\JsonValue.0.5.0\lib\40\Microsoft.Server.Common.dll</HintPath>

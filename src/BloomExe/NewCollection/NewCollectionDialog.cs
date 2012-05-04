@@ -18,7 +18,7 @@ namespace Bloom.NewCollection
 			_destinationDirectory = destinationDirectory;
 			InitializeComponent();
 			Icon = Application.OpenForms[0].Icon;
-			btnOK.Enabled = false;
+			_okButton.Enabled = false;
 			_pathLabel.Text = "";
 			_kindOfCollectionControl1.Left = _chooseLanguageButton.Left;
 			_kindOfCollectionControl1.Width = btnCancel.Right - _kindOfCollectionControl1.Left;
@@ -37,8 +37,8 @@ namespace Bloom.NewCollection
 
 		protected void _textLibraryName_TextChanged(object sender, EventArgs e)
 		{
-			btnOK.Enabled = EnableOK;
-			if (btnOK.Enabled)
+			_okButton.Enabled = EnableOK;
+			if (_okButton.Enabled)
 			{
 				string[] dirs = PathToNewLibraryDirectory.Split(Path.DirectorySeparatorChar);
 				if (dirs.Length > 1)
@@ -120,7 +120,7 @@ namespace Bloom.NewCollection
 		{
 			get
 			{
-				return _kindOfCollectionControl1._radioShellbookLibrary.Checked;
+				return _kindOfCollectionControl1._radioSourceCollection.Checked;
 			}
 
 		}

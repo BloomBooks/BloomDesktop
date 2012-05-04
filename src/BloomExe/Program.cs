@@ -7,6 +7,8 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.Properties;
+using Localization;
+using Palaso.IO;
 using Palaso.Reporting;
 
 namespace Bloom
@@ -47,6 +49,7 @@ namespace Bloom
 				}
 
 				SetUpErrorHandling();
+				SetUpLocalization();
 				Logger.Init();
 
 
@@ -283,6 +286,19 @@ namespace Bloom
 				Application.Exit();
 			}
 		}
+		public static void SetUpLocalization()
+		{
+			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			installedStringFileFolder = Path.GetDirectoryName(installedStringFileFolder);
+
+			LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+				"Bloom", "Bloom", Application.ProductVersion,
+				installedStringFileFolder, ProjectContext.GetBloomAppDataFolder(), "Bloom");
+
+			Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+		}
+
+
 
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()

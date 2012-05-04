@@ -53,7 +53,7 @@ namespace Bloom.Library
 
 		private void LoadBook()
 		{
-			_editBookButton.Visible = _addToLibraryButton.Visible =  _addToLibraryButton.Enabled = _bookSelection.CurrentSelection != null;
+			_editBookButton.Visible = _addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
 			ShowBook();
 			if (_bookSelection.CurrentSelection != null)
 			{
@@ -83,7 +83,7 @@ namespace Bloom.Library
 			{
 				_browser.Visible = true;
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
-				_addToLibraryButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
+				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				_editBookButton.Visible = _bookSelection.CurrentSelection.IsInEditableLibrary && !_bookSelection.CurrentSelection.HasFatalError;
 				_reshowPending = false;
 			}
@@ -106,7 +106,7 @@ namespace Bloom.Library
 
 		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
 		{
-//            _addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularLibraryNamePhrase);
+//            _addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularCollectionNamePhrase);
 //            _addToLibraryButton.Width = 250;
 		}
 

@@ -103,7 +103,10 @@ namespace Bloom.Library
 
 			_collectionFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground };
-			bookSourcesHeader.Label.Text = _model.IsShellProject ? "Sources For New Shells" : "Sources For New Books";
+
+			string shellSourceHeading = Localization.LocalizationManager.GetString("sourcesForNewShellsHeading", "Sources For New Shells");
+			string bookSourceHeading = Localization.LocalizationManager.GetString("bookSourceHeading", "Sources For New Books");
+			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			 invisibleHackPartner = new Label() { Text = "", Width = 0 };
 			 _collectionFlow.Controls.Add(invisibleHackPartner);
 			 _collectionFlow.Controls.Add(bookSourcesHeader);

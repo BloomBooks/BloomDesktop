@@ -28,13 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
+			this.components = new System.ComponentModel.Container();
 			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this._topBarControl = new System.Windows.Forms.Panel();
 			this._makeBloomPackButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.SuspendLayout();
 			this._topBarControl.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// splitContainer1
@@ -79,6 +82,10 @@
 			this._makeBloomPackButton.InnerBorderColor = System.Drawing.Color.Transparent;
 			this._makeBloomPackButton.InnerBorderColor_Focus = System.Drawing.Color.Transparent;
 			this._makeBloomPackButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
+			this.localizationExtender1.SetLocalizableToolTip(this._makeBloomPackButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._makeBloomPackButton, null);
+			this.localizationExtender1.SetLocalizationPriority(this._makeBloomPackButton, Localization.LocalizationPriority.Medium);
+			this.localizationExtender1.SetLocalizingId(this._makeBloomPackButton, "LibraryView._makeBloomPackButton");
 			this._makeBloomPackButton.Location = new System.Drawing.Point(19, 0);
 			this._makeBloomPackButton.Name = "_makeBloomPackButton";
 			this._makeBloomPackButton.OffsetPressedContent = true;
@@ -91,17 +98,25 @@
 			this._makeBloomPackButton.UseVisualStyleBackColor = false;
 			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
 			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
 			// LibraryView
 			// 
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._topBarControl);
 			this.Controls.Add(this.splitContainer1);
+			this.localizationExtender1.SetLocalizableToolTip(this, null);
+			this.localizationExtender1.SetLocalizationComment(this, null);
+			this.localizationExtender1.SetLocalizingId(this, "LibraryView.LibraryView");
 			this.Name = "LibraryView";
 			this.Size = new System.Drawing.Size(773, 518);
 			this.VisibleChanged += new System.EventHandler(this.LibraryView_VisibleChanged);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this._topBarControl.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -111,6 +126,7 @@
 		private System.Windows.Forms.SplitContainer splitContainer1;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _makeBloomPackButton;
 		public System.Windows.Forms.Panel _topBarControl;
+		private Localization.UI.LocalizationExtender localizationExtender1;
 
 
     }

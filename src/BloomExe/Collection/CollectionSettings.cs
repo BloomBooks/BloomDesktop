@@ -202,9 +202,15 @@ namespace Bloom.Collection
 		virtual public string Province { get; set; }
 		virtual public string District { get; set; }
 
-		public string VernacularLibraryNamePhrase
+		public string VernacularCollectionNamePhrase
 		{
-			get {return IsSourceCollection? CollectionName : string.Format("{0} Books", VernacularLanguageName); }
+			get
+			{
+				if(IsSourceCollection)
+					return CollectionName;
+				var fmt = Localization.LocalizationManager.GetString("Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
+				return string.Format(fmt, VernacularLanguageName);
+			}
 		}
 
 
