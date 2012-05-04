@@ -35,9 +35,9 @@ namespace Bloom
 				_container = builder.Build();
 			}
 
-			public WelcomeDialog CreateWelcomeDialog()
+			public OpenCreateCollectionsDialog CreateWelcomeDialog()
 			{
-				return _container.Resolve<WelcomeDialog>();
+				return _container.Resolve<OpenCreateCollectionsDialog>();
 			}
 
 			public void Dispose()
