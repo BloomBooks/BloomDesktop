@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Library;
+using Bloom.Properties;
 using Bloom.Publish;
+using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
 
@@ -103,6 +106,39 @@ namespace Bloom.Workspace
 				SelectPage(_collectionView);
 //			}
 
+			SetupUILanguageMenu();
+		}
+
+		private void SetupUILanguageMenu()
+		{
+			_uiLanguageMenu.DropDownItems.Clear();
+			foreach (var lang in Localization.LocalizationManager.GetUILanguages(true))
+			{
+				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName);
+				item.Tag = lang;
+				item.Click += new EventHandler((a, b) =>
+												{
+													Localization.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
+													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
+													item.Select();
+													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+												});
+				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
+				{
+					//doesn't do anything item.Select();
+
+					_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+				}
+			}
+
+
+			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
+			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("menuToBringUpLocalizationDialog","More..."));
+			menu.Click += new EventHandler((a, b) =>
+											{
+												Localization.LocalizationManager.ShowLocalizationDialogBox();
+												SetupUILanguageMenu();
+											});
 		}
 
 

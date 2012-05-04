@@ -688,6 +688,9 @@
   <ItemGroup>
     <None Include="Resources\pdf16x16.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\multilingualSettings.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)

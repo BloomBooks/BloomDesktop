@@ -277,6 +277,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap multilingualSettings {
+            get {
+                object obj = ResourceManager.GetObject("multilingualSettings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap newBook {
             get {
                 object obj = ResourceManager.GetObject("newBook", resourceCulture);

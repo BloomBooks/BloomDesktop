@@ -53,7 +53,7 @@ namespace Bloom
 			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
 			if(_collectionSettings.IsSourceCollection)
 			{
-				Text += " SHELL MAKING PROJECT";
+				Text += "SOURCE COLLECTION";
 			}
 		}
 
