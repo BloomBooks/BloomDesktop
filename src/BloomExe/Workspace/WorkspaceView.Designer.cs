@@ -35,8 +35,6 @@
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
-			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -49,9 +47,11 @@
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
+			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			this._tabStrip.SuspendLayout();
@@ -100,6 +100,7 @@
 			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
 			this.localizationExtender1.SetLocalizableToolTip(this._toolStrip, null);
 			this.localizationExtender1.SetLocalizationComment(this._toolStrip, null);
+			this.localizationExtender1.SetLocalizationPriority(this._toolStrip, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
 			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
@@ -107,34 +108,6 @@
 			this._toolStrip.Size = new System.Drawing.Size(272, 68);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
-			// 
-			// _tabStrip
-			// 
-			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._tabStrip.FlipButtons = false;
-			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
-			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._collectionTab,
-            this._editTab,
-            this._publishTab});
-			this.localizationExtender1.SetLocalizableToolTip(this._tabStrip, null);
-			this.localizationExtender1.SetLocalizationComment(this._tabStrip, null);
-			this.localizationExtender1.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
-			this._tabStrip.Location = new System.Drawing.Point(0, 0);
-			this._tabStrip.Name = "_tabStrip";
-			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-			this._tabStrip.SelectedTab = this._publishTab;
-			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
-			this._tabStrip.TabIndex = 15;
-			this._tabStrip.Text = "tabStrip1";
-			this._tabStrip.UseVisualStyles = false;
-			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
-			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
-			// 
-			// localizationExtender1
-			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
 			// _settingsButton
 			// 
@@ -144,7 +117,7 @@
 			this._settingsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.localizationExtender1.SetLocalizableToolTip(this._settingsButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._settingsButton, null);
-			this.localizationExtender1.SetLocalizingId(this._settingsButton, ".toolStripButton1");
+			this.localizationExtender1.SetLocalizingId(this._settingsButton, "SettingsButton");
 			this._settingsButton.Name = "_settingsButton";
 			this._settingsButton.Size = new System.Drawing.Size(53, 43);
 			this._settingsButton.Text = "Settings";
@@ -159,7 +132,7 @@
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.localizationExtender1.SetLocalizableToolTip(this._openCreateCollectionButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._openCreateCollectionButton, null);
-			this.localizationExtender1.SetLocalizingId(this._openCreateCollectionButton, ".toolStripButton2");
+			this.localizationExtender1.SetLocalizingId(this._openCreateCollectionButton, "Open/CreateCollectionButton");
 			this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(136, 43);
 			this._openCreateCollectionButton.Text = "Open/Create Collection";
@@ -183,7 +156,7 @@
 			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.localizationExtender1.SetLocalizableToolTip(this._helpMenu, null);
 			this.localizationExtender1.SetLocalizationComment(this._helpMenu, null);
-			this.localizationExtender1.SetLocalizingId(this._helpMenu, "._helpMenu");
+			this.localizationExtender1.SetLocalizingId(this._helpMenu, "Help Menu");
 			this._helpMenu.Name = "_helpMenu";
 			this._helpMenu.Size = new System.Drawing.Size(45, 43);
 			this._helpMenu.Text = "Help";
@@ -270,10 +243,35 @@
 			this._uiLanguageMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.localizationExtender1.SetLocalizableToolTip(this._uiLanguageMenu, null);
 			this.localizationExtender1.SetLocalizationComment(this._uiLanguageMenu, null);
+			this.localizationExtender1.SetLocalizationPriority(this._uiLanguageMenu, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._uiLanguageMenu, ".toolStripDropDownButton1");
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
 			this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
 			this._uiLanguageMenu.Text = "English";
+			// 
+			// _tabStrip
+			// 
+			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._tabStrip.FlipButtons = false;
+			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._collectionTab,
+            this._editTab,
+            this._publishTab});
+			this.localizationExtender1.SetLocalizableToolTip(this._tabStrip, null);
+			this.localizationExtender1.SetLocalizationComment(this._tabStrip, null);
+			this.localizationExtender1.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
+			this._tabStrip.Location = new System.Drawing.Point(0, 0);
+			this._tabStrip.Name = "_tabStrip";
+			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
+			this._tabStrip.SelectedTab = this._publishTab;
+			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
+			this._tabStrip.TabIndex = 15;
+			this._tabStrip.Text = "tabStrip1";
+			this._tabStrip.UseVisualStyles = false;
+			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
+			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
 			// 
 			// _collectionTab
 			// 
@@ -286,14 +284,14 @@
 			this._collectionTab.IsSelected = false;
 			this.localizationExtender1.SetLocalizableToolTip(this._collectionTab, null);
 			this.localizationExtender1.SetLocalizationComment(this._collectionTab, null);
-			this.localizationExtender1.SetLocalizingId(this._collectionTab, "._collectionTab");
+			this.localizationExtender1.SetLocalizingId(this._collectionTab, "Tabs.Collections");
 			this._collectionTab.Margin = new System.Windows.Forms.Padding(0);
 			this._collectionTab.Name = "_collectionTab";
 			this._collectionTab.Padding = new System.Windows.Forms.Padding(0);
 			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._collectionTab.Size = new System.Drawing.Size(98, 71);
-			this._collectionTab.Text = "Collection";
+			this._collectionTab.Size = new System.Drawing.Size(103, 71);
+			this._collectionTab.Text = "Collections";
 			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
 			// _editTab
@@ -307,7 +305,7 @@
 			this._editTab.IsSelected = false;
 			this.localizationExtender1.SetLocalizableToolTip(this._editTab, null);
 			this.localizationExtender1.SetLocalizationComment(this._editTab, null);
-			this.localizationExtender1.SetLocalizingId(this._editTab, "._editTab");
+			this.localizationExtender1.SetLocalizingId(this._editTab, "Tabs.Edit");
 			this._editTab.Margin = new System.Windows.Forms.Padding(0);
 			this._editTab.Name = "_editTab";
 			this._editTab.Padding = new System.Windows.Forms.Padding(0);
@@ -330,7 +328,7 @@
 			this._publishTab.IsSelected = true;
 			this.localizationExtender1.SetLocalizableToolTip(this._publishTab, null);
 			this.localizationExtender1.SetLocalizationComment(this._publishTab, null);
-			this.localizationExtender1.SetLocalizingId(this._publishTab, "._publishTab");
+			this.localizationExtender1.SetLocalizingId(this._publishTab, "Tabs.Publish");
 			this._publishTab.Margin = new System.Windows.Forms.Padding(0);
 			this._publishTab.Name = "_publishTab";
 			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
@@ -339,6 +337,10 @@
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
 			// WorkspaceView
 			// 

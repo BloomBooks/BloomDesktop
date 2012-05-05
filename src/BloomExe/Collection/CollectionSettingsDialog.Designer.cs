@@ -131,7 +131,7 @@
 			this.localizationExtender1.SetLocalizableToolTip(this._removeLanguage3Link, null);
 			this.localizationExtender1.SetLocalizationComment(this._removeLanguage3Link, null);
 			this.localizationExtender1.SetLocalizationPriority(this._removeLanguage3Link, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog._removeSecondNationalLanguageButton");
+			this.localizationExtender1.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog._removeLanguageLink");
 			this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
 			this._removeLanguage3Link.Name = "_removeLanguage3Link";
 			this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -146,7 +146,7 @@
 			this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage3Link, null);
 			this.localizationExtender1.SetLocalizationComment(this._changeLanguage3Link, null);
 			this.localizationExtender1.SetLocalizationPriority(this._changeLanguage3Link, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog._national2ChangeLink");
+			this.localizationExtender1.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.ChangeLink");
 			this._changeLanguage3Link.Location = new System.Drawing.Point(27, 243);
 			this._changeLanguage3Link.Name = "_changeLanguage3Link";
 			this._changeLanguage3Link.Size = new System.Drawing.Size(65, 19);
@@ -161,7 +161,7 @@
 			this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage2Link, null);
 			this.localizationExtender1.SetLocalizationComment(this._changeLanguage2Link, null);
 			this.localizationExtender1.SetLocalizationPriority(this._changeLanguage2Link, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog._national1ChangeLink");
+			this.localizationExtender1.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.ChangeLink");
 			this._changeLanguage2Link.Location = new System.Drawing.Point(27, 158);
 			this._changeLanguage2Link.Name = "_changeLanguage2Link";
 			this._changeLanguage2Link.Size = new System.Drawing.Size(65, 19);
@@ -176,7 +176,7 @@
 			this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage1Link, null);
 			this.localizationExtender1.SetLocalizationComment(this._changeLanguage1Link, null);
 			this.localizationExtender1.SetLocalizationPriority(this._changeLanguage1Link, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog._vernacularChangeLink");
+			this.localizationExtender1.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.ChangeLink");
 			this._changeLanguage1Link.Location = new System.Drawing.Point(27, 69);
 			this._changeLanguage1Link.Name = "_changeLanguage1Link";
 			this._changeLanguage1Link.Size = new System.Drawing.Size(65, 19);
@@ -191,7 +191,7 @@
 			this._nationalLanguage2Label.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._nationalLanguage2Label, null);
 			this.localizationExtender1.SetLocalizationComment(this._nationalLanguage2Label, null);
-			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage2Label, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage2Label, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._nationalLanguage2Label, "CollectionSettingsDialog._nationalLanguage2Label");
 			this._nationalLanguage2Label.Location = new System.Drawing.Point(26, 218);
 			this._nationalLanguage2Label.Name = "_nationalLanguage2Label";
@@ -219,7 +219,7 @@
 			this._nationalLanguage1Label.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._nationalLanguage1Label, null);
 			this.localizationExtender1.SetLocalizationComment(this._nationalLanguage1Label, null);
-			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage1Label, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage1Label, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._nationalLanguage1Label, "CollectionSettingsDialog._nationalLanguage1Label");
 			this._nationalLanguage1Label.Location = new System.Drawing.Point(26, 133);
 			this._nationalLanguage1Label.Name = "_nationalLanguage1Label";
@@ -248,7 +248,7 @@
 			this._vernacularLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._vernacularLanguageName, null);
 			this.localizationExtender1.SetLocalizationComment(this._vernacularLanguageName, null);
-			this.localizationExtender1.SetLocalizationPriority(this._vernacularLanguageName, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this._vernacularLanguageName, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._vernacularLanguageName, "CollectionSettingsDialog._vernacularLanguageName");
 			this._vernacularLanguageName.Location = new System.Drawing.Point(26, 44);
 			this._vernacularLanguageName.Name = "_vernacularLanguageName";
@@ -451,7 +451,7 @@
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._okButton, null);
-			this.localizationExtender1.SetLocalizingId(this._okButton, "CollectionSettingsDialog._okButton");
+			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
 			this._okButton.Location = new System.Drawing.Point(534, 382);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
