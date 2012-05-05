@@ -204,7 +204,7 @@
 			this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this.localizationExtender1.SetLocalizableToolTip(this.label3, null);
 			this.localizationExtender1.SetLocalizationComment(this.label3, null);
-			this.localizationExtender1.SetLocalizationPriority(this.label3, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this.label3, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.label3, "LibraryListView.label3");
 			this.label3.Location = new System.Drawing.Point(0, 13);
 			this.label3.Margin = new System.Windows.Forms.Padding(0);
@@ -224,6 +224,7 @@
 			this.button1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
 			this.localizationExtender1.SetLocalizableToolTip(this.button1, null);
 			this.localizationExtender1.SetLocalizationComment(this.button1, null);
+			this.localizationExtender1.SetLocalizationPriority(this.button1, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.button1, "LibraryListView.button1");
 			this.button1.Location = new System.Drawing.Point(3, 45);
 			this.button1.Name = "button1";
@@ -243,6 +244,7 @@
 			this.button4.Image = global::Bloom.Properties.Resources.edit;
 			this.localizationExtender1.SetLocalizableToolTip(this.button4, null);
 			this.localizationExtender1.SetLocalizationComment(this.button4, null);
+			this.localizationExtender1.SetLocalizationPriority(this.button4, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.button4, "LibraryListView.button4");
 			this.button4.Location = new System.Drawing.Point(220, 45);
 			this.button4.Name = "button4";
@@ -262,6 +264,7 @@
 			this.button5.Image = global::Bloom.Properties.Resources.edit;
 			this.localizationExtender1.SetLocalizableToolTip(this.button5, null);
 			this.localizationExtender1.SetLocalizationComment(this.button5, null);
+			this.localizationExtender1.SetLocalizationPriority(this.button5, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.button5, "LibraryListView.button5");
 			this.button5.Location = new System.Drawing.Point(3, 119);
 			this.button5.Name = "button5";
@@ -291,7 +294,7 @@
 			this.label5.ForeColor = System.Drawing.Color.White;
 			this.localizationExtender1.SetLocalizableToolTip(this.label5, null);
 			this.localizationExtender1.SetLocalizationComment(this.label5, null);
-			this.localizationExtender1.SetLocalizationPriority(this.label5, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this.label5, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.label5, "LibraryListView.label5");
 			this.label5.Location = new System.Drawing.Point(0, 179);
 			this.label5.Margin = new System.Windows.Forms.Padding(0);
@@ -311,6 +314,7 @@
 			this.button6.Image = global::Bloom.Properties.Resources.edit;
 			this.localizationExtender1.SetLocalizableToolTip(this.button6, null);
 			this.localizationExtender1.SetLocalizationComment(this.button6, null);
+			this.localizationExtender1.SetLocalizationPriority(this.button6, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.button6, "LibraryListView.button6");
 			this.button6.Location = new System.Drawing.Point(3, 215);
 			this.button6.Name = "button6";
@@ -354,7 +358,7 @@
 			this.pretendLabel.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this.localizationExtender1.SetLocalizableToolTip(this.pretendLabel, null);
 			this.localizationExtender1.SetLocalizationComment(this.pretendLabel, null);
-			this.localizationExtender1.SetLocalizationPriority(this.pretendLabel, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this.pretendLabel, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this.pretendLabel, "LibraryListView.label8");
 			this.pretendLabel.Location = new System.Drawing.Point(0, 0);
 			this.pretendLabel.Margin = new System.Windows.Forms.Padding(0);

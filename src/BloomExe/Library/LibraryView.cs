@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Ionic.Zip;
+using Localization;
 using Palaso.Reporting;
 
 namespace Bloom.Library
@@ -32,7 +33,7 @@ namespace Bloom.Library
 
 		public string CollectionTabLabel
 		{
-			get { return "Collections"; }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("FirstTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 

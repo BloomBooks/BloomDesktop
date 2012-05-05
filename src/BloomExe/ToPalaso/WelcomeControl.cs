@@ -234,7 +234,7 @@ namespace Bloom.ToPalaso
 
 			using (var dlg = new OpenFileDialog())
 			{
-				dlg.Title = "Open Library";
+				dlg.Title = "Open Collection";
 
 				dlg.Filter = _filterString;
 				//dlg.InitialDirectory = _defaultParentDirectoryForLibrarys;

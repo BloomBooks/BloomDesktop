@@ -56,6 +56,10 @@ namespace Bloom.Workspace
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
 			_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 
+			_uiLanguageMenu.Visible = false; // not ready for users
+#if DEBUG
+			_uiLanguageMenu.Visible = true;
+#endif
 			editBookCommand.Subscribe(OnEditBook);
 
 			//Cursor = Cursors.AppStarting;
@@ -82,13 +86,9 @@ namespace Bloom.Workspace
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
 
-
-
-
 			_collectionTab.Tag = _collectionView;
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
-
 
 			this._collectionTab.Text = _collectionView.CollectionTabLabel;
 

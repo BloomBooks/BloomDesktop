@@ -58,7 +58,7 @@ namespace Bloom.NewCollection
 			this._okButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._okButton, null);
-			this.localizationExtender1.SetLocalizingId(this._okButton, "NewCollectionDialog.btnOK");
+			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
 			this._okButton.Location = new System.Drawing.Point(273, 281);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(91, 29);
@@ -74,7 +74,7 @@ namespace Bloom.NewCollection
 			this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this.btnCancel, null);
 			this.localizationExtender1.SetLocalizationComment(this.btnCancel, null);
-			this.localizationExtender1.SetLocalizingId(this.btnCancel, "NewCollectionDialog.btnCancel");
+			this.localizationExtender1.SetLocalizingId(this.btnCancel, "Common.CancelButton");
 			this.btnCancel.Location = new System.Drawing.Point(383, 281);
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(88, 27);
@@ -102,7 +102,7 @@ namespace Bloom.NewCollection
 			this._pathLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
 			this.localizationExtender1.SetLocalizableToolTip(this._pathLabel, null);
 			this.localizationExtender1.SetLocalizationComment(this._pathLabel, null);
-			this.localizationExtender1.SetLocalizationPriority(this._pathLabel, Localization.LocalizationPriority.InternalUseOnly);
+			this.localizationExtender1.SetLocalizationPriority(this._pathLabel, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._pathLabel, "NewCollectionDialog._pathLabel");
 			this._pathLabel.Location = new System.Drawing.Point(29, 163);
 			this._pathLabel.Name = "_pathLabel";
@@ -158,7 +158,7 @@ namespace Bloom.NewCollection
 			//
 			this.localizationExtender1.SetLocalizableToolTip(this._kindOfCollectionControl1, null);
 			this.localizationExtender1.SetLocalizationComment(this._kindOfCollectionControl1, null);
-			this.localizationExtender1.SetLocalizingId(this._kindOfCollectionControl1, "NewCollectionDialog.KidOfProjectControl");
+			this.localizationExtender1.SetLocalizingId(this._kindOfCollectionControl1, "NewCollectionDialog.KindOfProjectControl");
 			this._kindOfCollectionControl1.Location = new System.Drawing.Point(339, 18);
 			this._kindOfCollectionControl1.Name = "_kindOfCollectionControl1";
 			this._kindOfCollectionControl1.Size = new System.Drawing.Size(140, 292);

@@ -41,7 +41,7 @@
 			this._nextButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.localizationExtender1.SetLocalizableToolTip(this._nextButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._nextButton, null);
-			this.localizationExtender1.SetLocalizingId(this._nextButton, "KindOfCollectionControl._nextButton");
+			this.localizationExtender1.SetLocalizingId(this._nextButton, "Common.NextButton");
 			this._nextButton.Location = new System.Drawing.Point(277, 112);
 			this._nextButton.Name = "_nextButton";
 			this._nextButton.Size = new System.Drawing.Size(93, 29);
@@ -55,6 +55,7 @@
 			this._radioSourceCollection.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._radioSourceCollection, null);
 			this.localizationExtender1.SetLocalizationComment(this._radioSourceCollection, null);
+			this.localizationExtender1.SetLocalizationPriority(this._radioSourceCollection, Localization.LocalizationPriority.Medium);
 			this.localizationExtender1.SetLocalizingId(this._radioSourceCollection, "KindOfCollectionControl._radioShellbookLibrary");
 			this._radioSourceCollection.Location = new System.Drawing.Point(0, 47);
 			this._radioSourceCollection.Name = "_radioSourceCollection";

@@ -40,7 +40,7 @@
 			this._creatingThePdfDocumentLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._creatingThePdfDocumentLabel, null);
 			this.localizationExtender1.SetLocalizationComment(this._creatingThePdfDocumentLabel, null);
-			this.localizationExtender1.SetLocalizingId(this._creatingThePdfDocumentLabel, "PleaseWait.label1");
+			this.localizationExtender1.SetLocalizingId(this._creatingThePdfDocumentLabel, "Publish.PleaseWaitForPDFMessage");
 			this._creatingThePdfDocumentLabel.Location = new System.Drawing.Point(34, 22);
 			this._creatingThePdfDocumentLabel.Name = "_creatingThePdfDocumentLabel";
 			this._creatingThePdfDocumentLabel.Size = new System.Drawing.Size(219, 20);
@@ -61,7 +61,7 @@
 			this.Controls.Add(this._creatingThePdfDocumentLabel);
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "PleaseWait.WindowTitle");
+			this.localizationExtender1.SetLocalizingId(this, "Publish.PleaseWaitForPDFWindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "PleaseWait";

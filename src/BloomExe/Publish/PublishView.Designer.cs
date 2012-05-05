@@ -104,7 +104,7 @@
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
 			this.localizationExtender1.SetLocalizableToolTip(this._saveButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._saveButton, null);
-			this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishView._saveButton");
+			this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishView.SaveButton");
 			this._saveButton.Location = new System.Drawing.Point(127, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
@@ -125,7 +125,7 @@
 			this._printButton.Image = global::Bloom.Properties.Resources.print;
 			this.localizationExtender1.SetLocalizableToolTip(this._printButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._printButton, null);
-			this.localizationExtender1.SetLocalizingId(this._printButton, "PublishView._printButton");
+			this.localizationExtender1.SetLocalizingId(this._printButton, "PublishView.PrintButton");
 			this._printButton.Location = new System.Drawing.Point(0, 0);
 			this._printButton.Name = "_printButton";
 			this._printButton.Size = new System.Drawing.Size(105, 64);
@@ -172,7 +172,7 @@
 			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
 			this.localizationExtender1.SetLocalizableToolTip(this._bodyRadio, null);
 			this.localizationExtender1.SetLocalizationComment(this._bodyRadio, null);
-			this.localizationExtender1.SetLocalizingId(this._bodyRadio, "PublishView._bodyRadio");
+			this.localizationExtender1.SetLocalizingId(this._bodyRadio, "PublishView.BodyOnlyRadio");
 			this._bodyRadio.Location = new System.Drawing.Point(3, 233);
 			this._bodyRadio.Name = "_bodyRadio";
 			this._bodyRadio.Size = new System.Drawing.Size(94, 104);
@@ -188,7 +188,7 @@
 			this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
 			this.localizationExtender1.SetLocalizableToolTip(this._coverRadio, null);
 			this.localizationExtender1.SetLocalizationComment(this._coverRadio, null);
-			this.localizationExtender1.SetLocalizingId(this._coverRadio, "PublishView._coverRadio");
+			this.localizationExtender1.SetLocalizingId(this._coverRadio, "PublishView.CoverOnlyRadio");
 			this._coverRadio.Location = new System.Drawing.Point(3, 116);
 			this._coverRadio.Name = "_coverRadio";
 			this._coverRadio.Size = new System.Drawing.Size(94, 111);
@@ -203,8 +203,8 @@
 			// 
 			this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
 			this.localizationExtender1.SetLocalizableToolTip(this._noBookletRadio, null);
-			this.localizationExtender1.SetLocalizationComment(this._noBookletRadio, null);
-			this.localizationExtender1.SetLocalizingId(this._noBookletRadio, "PublishView._noBookletRadio");
+			this.localizationExtender1.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
+			this.localizationExtender1.SetLocalizingId(this._noBookletRadio, "PublishView.OnPagePerPaperRadio");
 			this._noBookletRadio.Location = new System.Drawing.Point(3, 3);
 			this._noBookletRadio.Name = "_noBookletRadio";
 			this._noBookletRadio.Size = new System.Drawing.Size(94, 107);

@@ -293,7 +293,7 @@ namespace Bloom
 
 			LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 				"Bloom", "Bloom", Application.ProductVersion,
-				installedStringFileFolder, ProjectContext.GetBloomAppDataFolder(), "Bloom");
+				installedStringFileFolder, Path.Combine(ProjectContext.GetBloomAppDataFolder(),"Localizations"), "Bloom");
 
 			Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 		}
