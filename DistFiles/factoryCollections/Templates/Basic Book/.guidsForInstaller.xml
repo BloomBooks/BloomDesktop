@@ -22,4 +22,5 @@
   <File Id="basePage.css1" Guid="874fb3b0-0937-459c-a6b3-0a38e835e8f5" />
   <File Id="languageDisplay.css1" Guid="cd2332ba-049d-49dc-919c-c28606c8eb9a" />
   <File Id="previewMode.css1" Guid="d859aafc-4d31-4216-a01f-90a73d505afd" />
+  <File Id="Basic_Book.css" Guid="a9c96452-1b11-4c31-880a-7ce43ab1dc44" />
 </InstallerMetadata>

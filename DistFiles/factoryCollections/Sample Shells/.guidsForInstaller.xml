@@ -3,4 +3,5 @@
 <InstallerMetadata>
   <File Id="SampleShells.bloomLibrary" Guid="31e21879-ab33-44f8-9278-2ef8d5ef890b" />
   <File Id="A5_Wall_Calendar.zip" Guid="814e1f53-a163-48b3-b332-54d187915d19" />
+  <File Id="SampleShells.BloomCollection" Guid="2fb135cd-61c9-473f-9160-682c40c2a464" />
 </InstallerMetadata>
