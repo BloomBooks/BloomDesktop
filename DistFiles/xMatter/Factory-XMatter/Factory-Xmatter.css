@@ -183,6 +183,8 @@ DIV.coverBottomLangName
 	text-align: left;
 	width: 8.4cm;
 	display: table;
+	font-weight: normal;
+	font-size: 14pt;
 }
 /*Title Page*/
 DIV.titlePage
