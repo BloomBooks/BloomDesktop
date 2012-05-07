@@ -49,6 +49,8 @@ namespace Bloom.Library
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
+			_settingsProtectionHelper.ManageComponent(_openFolderOnDisk);
+
 		}
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)

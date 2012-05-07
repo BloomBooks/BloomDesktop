@@ -12,6 +12,7 @@ using Bloom.Publish;
 using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
+using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
 {
@@ -54,7 +55,20 @@ namespace Bloom.Workspace
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-			_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
+			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
+
+			_settingsLauncherHelper.ManageComponent(_settingsButton);
+
+			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
+			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
+			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
+			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
+			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
+			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+
+			OnSettingsProtectionChanged(this, null);//initial setup
+			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
+
 
 			_uiLanguageMenu.Visible = false; // not ready for users
 #if DEBUG
@@ -107,6 +121,14 @@ namespace Bloom.Workspace
 //			}
 
 			SetupUILanguageMenu();
+		}
+
+		void OnSettingsProtectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
+
+			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog =
+				!SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
 		private void SetupUILanguageMenu()

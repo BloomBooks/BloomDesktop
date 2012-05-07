@@ -49,7 +49,7 @@
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
+			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
@@ -454,7 +454,7 @@
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper settingsLauncherHelper1;
+		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _pageSizeAndOrientationChoices;
