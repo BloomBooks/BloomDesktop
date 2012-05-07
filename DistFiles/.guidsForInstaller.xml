@@ -11,4 +11,6 @@
   <File Id="exiftool.exe" Guid="88927445-4852-4020-9b6c-61e28d9f2854" />
   <File Id="spinner.gif" Guid="1b644ff0-ce6b-43ea-b48d-636e470b058b" />
   <File Id="Feedback.html" Guid="d440dcd8-e9b5-4da6-9224-5fa2d482d595" />
+  <File Id="Bloom.chw" Guid="64a937aa-553e-44c7-b8b6-db99b3f2b7f8" />
+  <File Id="Bloom.chm" Guid="eb15415f-7651-456a-81ff-41427eb7cda4" />
 </InstallerMetadata>
