@@ -553,7 +553,7 @@ function FindOrCreateTopicDialogDiv() {
     if (!dialogContents.length) {
         //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
         dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
-        var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Science", "Tradition"];
+        var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
         dialogContents.append("<ol id='topics'></ol>");
         for (i in topics) {
