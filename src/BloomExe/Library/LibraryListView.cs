@@ -48,6 +48,8 @@ namespace Bloom.Library
             _boundsPen = new Pen(Brushes.DarkGray, 2);
             //enhance: move to model
         	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+
+			_settingsProtectionHelper.ManageComponent(_openFolderOnDisk);
 			
         }
 

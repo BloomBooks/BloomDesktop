@@ -30,7 +30,7 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper(this.components);
+			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
@@ -47,15 +47,15 @@
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
-			this._tabStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+			this._tabStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _containerPanel
@@ -249,6 +249,10 @@
 			this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
 			this._uiLanguageMenu.Text = "English";
 			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
 			// _tabStrip
 			// 
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
@@ -338,10 +342,6 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
-			// localizationExtender1
-			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
-			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -359,9 +359,9 @@
 			this._panelHoldingToolStrip.PerformLayout();
 			this._toolStrip.ResumeLayout(false);
 			this._toolStrip.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this._tabStrip.ResumeLayout(false);
 			this._tabStrip.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -370,7 +370,7 @@
         #endregion
 
 		private System.Windows.Forms.ToolTip toolTip1;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsLauncherHelper _settingsLauncherHelper;
+		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
 		private System.Windows.Forms.Panel _panelHoldingToolStrip;
