@@ -85,15 +85,18 @@ namespace Bloom.Edit
     	}
 
     	private void OnBookSelectionChanged(object sender, EventArgs e)
-        {
-            //prevent trying to save this page in whatever comes next
+    	{
+    		//prevent trying to save this page in whatever comes next
     		var wasNull = _domForCurrentPage == null;
-			_domForCurrentPage = null;
+    		_domForCurrentPage = null;
     		_currentlyDisplayedBook = null;
-    		_view.ClearOutDisplay();
-			if(!wasNull)
-				_view.UpdatePageList(false);
-        }
+			if (Visible)
+			{
+				_view.ClearOutDisplay();
+				if (!wasNull)
+					_view.UpdatePageList(false);
+			}
+    	}
 
         private void OnDeletePage()
         {

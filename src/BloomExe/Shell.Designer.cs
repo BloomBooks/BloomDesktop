@@ -43,6 +43,8 @@
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Bloom";
 			this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+			this.Activated += new System.EventHandler(this.Shell_Activated);
+			this.Deactivate += new System.EventHandler(this.Shell_Deactivate);
 			this.ResumeLayout(false);
 
         }

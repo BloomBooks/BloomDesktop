@@ -394,8 +394,8 @@
 			// 
 			// _keepFocusTimer
 			// 
-			this._keepFocusTimer.Enabled = true;
-			this._keepFocusTimer.Tick += new System.EventHandler(this._keepFocusTimer_Tick);
+			//this._keepFocusTimer.Enabled = true;
+			//this._keepFocusTimer.Tick += new System.EventHandler(this._keepFocusTimer_Tick);
 			// 
 			// _localizationExtender
 			// 

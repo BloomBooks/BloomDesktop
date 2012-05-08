@@ -64,7 +64,10 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
+
+#if DEBUG //this would turn it on when we want it hidden until localization is more complete
 			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+#endif
 
 			OnSettingsProtectionChanged(this, null);//initial setup
 			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
