@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -70,6 +71,16 @@ namespace Bloom
 		}
 
 		public bool UserWantsToOpenADifferentProject { get; set; }
+
+		private void Shell_Activated(object sender, EventArgs e)
+		{
+
+		}
+
+		private void Shell_Deactivate(object sender, EventArgs e)
+		{
+			Debug.WriteLine("Shell Deativated");
+		}
 
 	}
 }

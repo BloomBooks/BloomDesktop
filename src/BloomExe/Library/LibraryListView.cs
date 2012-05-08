@@ -367,19 +367,19 @@ namespace Bloom.Library
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void _keepFocusTimer_Tick(object sender, EventArgs e)
-		{
-			if(Visible)
-			{
-				var findForm = FindForm();//visible is worthless, but FindForm() happily does fail when we aren't visible.
-
-				if (findForm != null && !findForm.ContainsFocus)
-				{
-					Focus();
-
-					Debug.WriteLine("Grabbing back focus");
-				}
-			}
-		}
+//		private void _keepFocusTimer_Tick(object sender, EventArgs e)
+//		{
+//			if(Visible)
+//			{
+//				var findForm = FindForm();//visible is worthless, but FindForm() happily does fail when we aren't visible.
+//
+//				if (findForm != null && !findForm.ContainsFocus)
+//				{
+//				//	Focus();
+//
+//					//Debug.WriteLine("Grabbing back focus");
+//				}
+//			}
+//		}
 	}
 }

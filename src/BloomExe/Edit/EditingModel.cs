@@ -90,9 +90,12 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			_view.ClearOutDisplay();
-			if(!wasNull)
-				_view.UpdatePageList(false);
+			if (Visible)
+			{
+				_view.ClearOutDisplay();
+				if (!wasNull)
+					_view.UpdatePageList(false);
+			}
 		}
 
 		private void OnDeletePage()

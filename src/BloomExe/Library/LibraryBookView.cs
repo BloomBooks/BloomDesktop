@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -75,12 +76,15 @@ namespace Bloom.Library
 		{
 			if (_bookSelection.CurrentSelection == null)
 			{
+				Debug.WriteLine("LibraryBookView.ShowBook() currentselection is null");
 				_browser.Navigate("about:blank", false);
 				_browser.Visible = false;
 				BackColor = Color.FromArgb(64,64,64);
 			}
 			else
 			{
+				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
+
 				_browser.Visible = true;
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
