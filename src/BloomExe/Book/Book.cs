@@ -370,6 +370,10 @@ namespace Bloom.Book
 
 			//REVIEW: this is deviating a bit from the normal use of the dictionary...
 			d.Add("urlOfUIFiles", "file:///"+ _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
+			if (!string.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
+			{
+				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
+			}
 
 			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
