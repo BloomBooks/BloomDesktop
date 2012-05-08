@@ -59,7 +59,7 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(323, 24);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "This is an Beta Test version of Bloom.";
+			this.label1.Text = "This is a Beta Test version of Bloom. A baby. Expect problems and joy!";
 			this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// _fadeOutTimer

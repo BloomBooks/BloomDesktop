@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Properties;
 using Newtonsoft.Json.Linq;
 using Palaso.Extensions;
 using Palaso.Reporting;
@@ -293,12 +294,24 @@ namespace Bloom.Edit
 			if (ge.Target == null)
 				return;//I've seen this happen
 
+			if (ge.Target.ClassName.Contains("sourceTextTab"))
+			{
+				RememberSourceTabChoice(ge.Target);
+			}
 			if (ge.Target.ClassName.Contains("changeImageButton"))
 				OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
 			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 				OnClickCopyrightAndLicenseDiv();
+		}
+
+		private void RememberSourceTabChoice(GeckoElement target)
+		{
+			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
+			var start = 1+ target.OuterHtml.IndexOf("#");
+			var end = target.OuterHtml.IndexOf("\">");
+			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
 

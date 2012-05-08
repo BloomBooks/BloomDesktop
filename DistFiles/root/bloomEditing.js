@@ -84,6 +84,7 @@ function MakeSourceTextDivForGroup(group) {
 
     $(this).after(divForBubble);
 
+    var selectorOfDefaultTab="li:first-child";
 
     //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
     $(divForBubble).each(function() {
@@ -114,10 +115,12 @@ function MakeSourceTextDivForGroup(group) {
                 languageName = iso;
             var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-
-            // in translatino mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+            if(iso=== dictionary.defaultSourceLanguage) {
+                selectorOfDefaultTab="li:#"+iso;
+            }
+            // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (shellEditingMode || !shouldShowOnPage) {
-                $(list).append('<li><a href="#' + iso + '">' + languageName + '</a></li>');
+                $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
             }
         });
     });
@@ -125,8 +128,13 @@ function MakeSourceTextDivForGroup(group) {
     //now turn that new div into a set of tabs
     if ($(divForBubble).find("li").length > 0) {
         $(divForBubble).easytabs({
-            animate: false
+            animate: false,
+            defaultTab: selectorOfDefaultTab
         })
+//        $(divForBubble).bind('easytabs:after', function(event, tab, panel, settings){
+//            alert(panel.selector)
+//        });
+
   }
   else {
     $(divForBubble).remove();//no tabs, so hide the bubble
@@ -281,8 +289,10 @@ function MakeSourceTextDivForGroup(group) {
             return; //don't put tips if they can't see it.
         }
         theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-        pos = {at: 'right center',
-            my: 'left center'
+        pos = {
+//            at: 'right center',
+            my: 'left center',
+            viewport: $(window)
         };
         var whatToSay = GetLocalizedHint(this);
         var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
@@ -297,9 +307,11 @@ function MakeSourceTextDivForGroup(group) {
             hide: {
         event:hideEvents
       },
+            adjust: { method: "flip shift"},
             style: {
                 classes: theClasses
-            }
+            },
+            adjust:{screen:true, resize:true}
         });
     });
 
