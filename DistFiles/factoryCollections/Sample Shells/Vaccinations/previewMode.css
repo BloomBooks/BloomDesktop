@@ -118,23 +118,28 @@ DIV.numberedPage
 {
 	counter-increment: pageNumber;
 }
-DIV.numberedPage:nth-of-type(even):after
-{
-	content: counter(pageNumber);
-	font-size: 60%;
-	padding: 0 1pc;
-	/*+placement:anchor-bottom-left 0px 0px;*/
-	position: absolute;
-	left: 0px;
-	bottom: 0px;
-}
 DIV.numberedPage:nth-of-type(odd):after
 {
 	content: counter(pageNumber);
-	font-size: 60%;
-	padding: 0 1pc;
-	/*+placement:anchor-bottom-right 0px 0px;*/
+	font-size: 14pt;
+	/*+placement:anchor-bottom-left 59px 53px;*/
 	position: absolute;
-	right: 0px;
-	bottom: 0px;
+	left: 59px;
+	bottom: 53px;
+	margin-top: -7mm;
+}
+DIV.numberedPage:nth-of-type(even):after
+{
+	content: counter(pageNumber);
+	font-size: 14pt;
+	/*+placement:anchor-bottom-right 60px 2px;*/
+	position: absolute;
+	right: 60px;
+	bottom: 2px;
+	text-align: right;
+	margin-top: -7mm;
+}
+DIV.marginBox
+{
+	/*[disabled]border:1px solid #98A30C;*/
 }

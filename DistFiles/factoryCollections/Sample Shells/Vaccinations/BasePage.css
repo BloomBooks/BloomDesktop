@@ -136,18 +136,23 @@ DIV.bloom-page.A4Portrait
 	min-height: 297mm;
 	max-height: 297mm;
 }
-DIV.marginBox
-{
-	border: thin dotted rgba(133, 133, 193, 0.9);
-}
+/*Margins*/
 .A5Portrait DIV.marginBox
 {
 	width: 108mm;
-	/*+placement:anchor-top-left 20mm 14mm;*/
-	position: absolute;
-	left: 20mm;
-	top: 14mm;
 	height: 175mm;
+	/*+placement:anchor-top-left 0 15mm;*/
+	position: absolute;
+	left: 0;
+	top: 15mm;
+}
+DIV.bloom-page:nth-of-type(odd).A5Portrait DIV.marginBox
+{
+	margin-left: 15mm;
+}
+DIV.bloom-page:nth-of-type(even).A5Portrait DIV.marginBox
+{
+	margin-left: 25mm;
 }
 .A5Landscape DIV.marginBox
 {
