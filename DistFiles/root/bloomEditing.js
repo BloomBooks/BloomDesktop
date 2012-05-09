@@ -290,8 +290,8 @@ function MakeSourceTextDivForGroup(group) {
         }
         theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
         pos = {
-//            at: 'right center',
-            my: 'left center',
+           at: 'right bottom', //I like this, but it doesn't reposition well -->'right center',
+          my: 'top left', //I like this, but it doesn't reposition well-->  'left center',
             viewport: $(window)
         };
         var whatToSay = GetLocalizedHint(this);
@@ -303,15 +303,16 @@ function MakeSourceTextDivForGroup(group) {
             show: {
                 event: " focusin mouseenter",
                 ready:  shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
-            },
-            hide: {
+            }
+            ,tip:  {corner : "left center"}
+            ,hide: {
 				event:hideEvents
 			},
-            adjust: { method: "flip shift"},
+            adjust: { method: "flip none"},
             style: {
                 classes: theClasses
-            },
-            adjust:{screen:true, resize:true}
+            }
+//            ,adjust:{screen:true, resize:true}
         });
     });
     
