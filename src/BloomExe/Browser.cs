@@ -194,6 +194,10 @@ namespace Bloom
 				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 			};
+
+			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
+			GeckoPreferences.User["browser.zoom.full"] = true;
+
 			RaiseGeckoReady();
 	   }
 
