@@ -131,7 +131,7 @@ namespace Bloom.web
 			//enhance: it will eventually work better to do sorting client-side, according to user's current prefs
 			var reply = new StringBuilder();
 			var list = new List<BookCollection>();
-			list.AddRange(_sourceCollectionsesList.GetStoreCollections());
+			list.AddRange(_sourceCollectionsesList.GetSourceCollections());
 
 			list.Sort(CompareBookCollections);
 

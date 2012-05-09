@@ -36,6 +36,9 @@ namespace Bloom.Collection
 		public virtual string NationalLanguage2Iso639Code { get; set; }
 		public virtual string VernacularLanguageName { get; set; }
 
+		/// <summary>
+		/// Intended for making shell books and templates, not vernacular
+		/// </summary>
 		public virtual bool IsSourceCollection { get; set; }
 
 		public string GetVernacularName(string inLanguage)
