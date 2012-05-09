@@ -25,10 +25,28 @@
 			<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
 		</div>
 	</div >
+	<!-- Inside Front Cover VERSO PAGE --->
+	<div class="bloom-page verso coverColor bloom-frontMatter  A5Portrait" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
+		<div class="marginBox"></div>
+		<div class="pageLabel" lang="en">Credits Page</div>
+		   <div class="bloom-translationGroup originalAcknowledgments" >
+			  <div contenteditable="true"  data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments" class = "bloom-editable bloom-readOnlyInTranslationMode" >{Original Acknowledgments}</div>
+		   </div>
+		<div class="bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
+			<button id="editCopyrightAndLicense">Edit Copyright &amp; License</button>
+			<div data-book="copyright" class="copyright " lang="*">{copyright}</div>
+			<img data-book="licenseImage" class="licenseImage" src=""/>
+			<div data-book="licenseUrl" class="licenseUrl" lang="en">{License Url}</div>
+			<div data-book="licenseNotes" class="licenseNotes" lang="en">{License Notes}</div> <!--might need to change -->
+			<div data-book="licenseDescription" class="licenseDescription" lang="en">{License Description}</div>
+		</div>
+		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
+		<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode" lang="N1" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}"></div>
+	</div>
 
 	 <!-- TITLE PAGE --->
-	<div class="bloom-page titlePage bloom-frontMatter  A5Portrait" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
-		<div class="pageLabel" lang="en">Title Page</div>
+	<div class="bloom-page titlePage bloom-frontMatter bloom-startPageNumbering A5Portrait" data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
+		 <div class="pageLabel" lang="en">Title Page</div>
 		<div id="titePageTitleBlock" class="bloom-translationGroup"  >
 			<div data-book='bookTitle' class="bloom-editable" data-hint="Book title in {lang}"></div>
 		</div>
@@ -36,7 +54,7 @@
 		 <div class="bloom-translationGroup">
 			  <div data-book="originalContributions" class="credits bloom-editable bloom-readOnlyInTranslationMode" data-hint="The contributions made by writers, illustrators, editors, etc., in {lang}"> </div>
 		  </div>
-		<div class="ISBNContainer" data-hint="International Standard Book Number">
+		<div class="ISBNContainer" data-hint="International Standard Book Number. Leave blank if you don't have one of these.">
 			<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN" class="bloom-editable" lang="*"> </div>
 		</div>
 
@@ -53,22 +71,6 @@
 		</div>
 	</div>
 
-	<!-- VERSO PAGE --->
-	<div class="bloom-page verso bloom-frontMatter  A5Portrait" data-page="required singleton" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
-		<div class="pageLabel" lang="en">Verso Page</div>
-		   <div class="bloom-translationGroup originalAcknowledgments" >
-			  <div contenteditable="true"  data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments" class = "bloom-editable bloom-readOnlyInTranslationMode" >{Original Acknowledgments}</div>
-		   </div>
-		<div class="bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
-			<button id="editCopyrightAndLicense">Edit Copyright &amp; License</button>
-			<div data-book="copyright" class="copyright " lang="*">{copyright}</div>
-			<img data-book="licenseImage" class="licenseImage" src=""/>
-			<div data-book="licenseUrl" class="licenseUrl" lang="en">{License Url}</div>
-			<div data-book="licenseNotes" class="licenseNotes" lang="en">{License Notes}</div> <!--might need to change -->
-			<div data-book="licenseDescription" class="licenseDescription" lang="en">{License Description}</div>
-		</div>
-		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
-		<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode" lang="N1" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}"></div>
-	</div>
+
 	</body>
 </html>
