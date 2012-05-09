@@ -16,7 +16,7 @@ namespace Bloom.Book
 		public enum CollectionType
 		{
 			TheOneEditableCollection,
-			TemplateCollection
+			SourceCollection
 		}
 		public delegate BookCollection Factory(string path, CollectionType collectionType);//autofac uses this
 

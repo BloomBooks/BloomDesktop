@@ -34,14 +34,20 @@ namespace Bloom
 
 			ProjectWindow = _scope.Resolve <Shell>();
 
-			string vernacularCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
-			AddShortCutInComputersBloomCollections(vernacularCollectionDirectory);
+			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+
+			//should we save a link to this in the list of collections?
+			var collectionSettings = _scope.Resolve<CollectionSettings>();
+			if(collectionSettings.IsSourceCollection)
+			{
+				AddShortCutInComputersBloomCollections(collectionDirectory);
+			}
 
 			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
 			{
-				BookCollection editableVernacularCollection = _scope.Resolve<BookCollection.Factory>()(vernacularCollectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableVernacularCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
+				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
 		}
@@ -49,7 +55,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
-			var editableVernacularCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+			var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 			_scope = parentContainer.BeginLifetimeScope(builder =>
 			{
 				//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
@@ -75,9 +81,10 @@ namespace Bloom
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
 
-
-				///LibrarySettings = _scope.Resolve<Func<string, LibrarySettings>>()(projectSettingsPath);
-			  //  LibrarySettings = new LibrarySettings(projectSettingsPath);
+				//This deserves some explanation:
+				//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
+				//That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
+				//settings file of the collections we're using for sources.
 				try
 				{
 					builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
@@ -88,9 +95,7 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableVernacularCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
-				//builder.Register<PublishModel>(c => new PublishModel(c.Resolve<BookSelection>())).InstancePerLifetimeScope();
-				//builder.Register<BookCollection>(c => c.Resolve<BookCollection>());
+				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 
@@ -118,7 +123,7 @@ namespace Bloom
 
 				builder.Register<SourceCollectionsList>(c =>
 					 {
-						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableVernacularCollectionDirectory);
+						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
 						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
 						 return l;
 					 }).InstancePerLifetimeScope();
@@ -131,7 +136,7 @@ namespace Bloom
 				//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
 				//so we're doing this
-				builder.Register(c=>editableVernacularCollectionDirectory).InstancePerLifetimeScope();
+				builder.Register(c=>editableCollectionDirectory).InstancePerLifetimeScope();
 
 				builder.RegisterType<CreateFromTemplateCommand>().InstancePerLifetimeScope();
 

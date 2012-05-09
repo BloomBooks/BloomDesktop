@@ -87,7 +87,7 @@ namespace Bloom.Library
 		{
 			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 
-			foreach (var bookCollection in _sourceCollectionsList.GetStoreCollections())
+			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollections())
 				yield return bookCollection;
 		}
 

@@ -15,17 +15,17 @@ namespace Bloom
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookCollection.Factory _bookCollectionFactory;
-		private readonly string _editableVernacularCollectionDirectory;
+		private readonly string _editableCollectionDirectory;
 
 		//for moq'ing
 		public SourceCollectionsList(){}
 
-		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory, string editableVernacularCollectionDirectory)
+		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory, string editableCollectionDirectory)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_bookCollectionFactory = bookCollectionFactory;
-			_editableVernacularCollectionDirectory = editableVernacularCollectionDirectory;
+			_editableCollectionDirectory = editableCollectionDirectory;
 		}
 
 		public IEnumerable<string> RepositoryFolders
@@ -55,7 +55,7 @@ namespace Bloom
 			return null;
 		}
 
-		public virtual IEnumerable<BookCollection> GetStoreCollections()
+		public virtual IEnumerable<BookCollection> GetSourceCollections()
 		{
 			foreach (var root in RepositoryFolders)
 			{
@@ -64,17 +64,17 @@ namespace Bloom
 
 				foreach (var dir in Directory.GetDirectories(root))
 				{
-					if (dir == _editableVernacularCollectionDirectory || Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
+					if (dir == _editableCollectionDirectory || Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
 						continue;
-					yield return _bookCollectionFactory(dir, BookCollection.CollectionType.TemplateCollection);
+					yield return _bookCollectionFactory(dir, BookCollection.CollectionType.SourceCollection);
 				}
 
 				//follow shortcuts
 				foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
 				{
 					var path = ResolveShortcut.Resolve(shortcut);
-					if (path!=_editableVernacularCollectionDirectory && Directory.Exists(path))
-						yield return _bookCollectionFactory(path, BookCollection.CollectionType.TemplateCollection);
+					if (path!=_editableCollectionDirectory && Directory.Exists(path))
+						yield return _bookCollectionFactory(path, BookCollection.CollectionType.SourceCollection);
 				}
 			}
 		}

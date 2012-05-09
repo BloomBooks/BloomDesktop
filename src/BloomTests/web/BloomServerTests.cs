@@ -40,7 +40,7 @@ namespace BloomTests.web
 			_bookList = new List<Bloom.Book.Book>();
 			_vernacularLibraryCollection.Setup(x => x.GetBooks()).Returns(_bookList);
 			_storeCollectionList = new Mock<SourceCollectionsList>();
-			_storeCollectionList.Setup(x => x.GetStoreCollections()).Returns(() => GetStoreCollections());
+			_storeCollectionList.Setup(x => x.GetSourceCollections()).Returns(() => GetStoreCollections());
 			_librarySettings = new Mock<CollectionSettings>();
 			_librarySettings.Setup(x => x.CollectionName).Returns(() => "Foo");
 
