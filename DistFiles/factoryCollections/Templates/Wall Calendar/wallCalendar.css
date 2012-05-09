@@ -6,22 +6,18 @@
 /*Top with Picture and a little text*/
 .calendarMonthTop .bloom-imageContainer
 {
-	width: 711px;
+	width: 100%;
 	height: 363px;
-	/*+placement:anchor-top-left 35px 36px;*/
-	position: absolute;
-	left: 35px;
-	top: 36px;
 }
 .bloom-translationGroup.calendarBelowBigPictureText
 {
-	/*+placement:anchor-bottom-left 32px 13px;*/
+	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
-	left: 32px;
-	bottom: 13px;
+	left: 0;
+	bottom: 0;
 	text-align: center;
-	width: 724px;
-	height: 111px;
+	width: 100%;
+	height: 64px;
 	display: table !important;
 }
 DIV.calendarBelowBigPictureText DIV.bloom-content1
@@ -61,10 +57,10 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarMonthBottom TABLE
 {
-	/*+placement:shift 45px 25px;*/
-	position: relative;
-	left: 45px;
-	top: 25px;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
 }
 .calendarMonthBottom TH
 {
@@ -73,8 +69,8 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarMonthBottom TD
 {
-	width: 97px;
-	height: 78px;
+	width: 96px;
+	height: 74px;
 	border: 1px solid #000000;
 	margin: 0;
 	padding: 0 0 0 2px;
@@ -82,8 +78,8 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarMonthBottom TD TEXTAREA
 {
-	width: 88px;
-	height: 49px;
+	width: 90%;
+	height: 62%;
 	font-size: 9pt;
 	/*+placement:shift 4px -9px;*/
 	position: relative;
@@ -94,13 +90,9 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarBottomPageHeader
 {
-	/*+placement:shift -29px 14px;*/
-	position: relative;
-	left: -29px;
-	top: 14px;
 	text-align: center;
 	font: 35.3pt sans-serif;
-	width: 777px;
+	width: 100%;
 	height: 64px;
 }
 .calendarMonthBottom TD P

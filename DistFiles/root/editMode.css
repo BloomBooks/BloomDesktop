@@ -8,16 +8,24 @@ BODY
 {
 	background-color: #363333;
 }
+/*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
+.marginBox DIV.pageLabel
+{
+	/*+placement:anchor-top-left -1px -29px;*/
+	position: absolute;
+	left: -1px;
+	top: -29px;
+}
 DIV.pageLabel
 {
 	text-align: left;
 	color: #96A9B3;
 	margin-left: 5px;
-	/*+placement:float-left 0px 0px;*/
+	/*+placement:anchor-top-left 71px 19px;*/
+	position: absolute;
+	left: 71px;
+	top: 19px;
 	float: left;
-	position: relative;
-	left: 0px;
-	top: 0px;
 }
 DIV.ui-tooltip-title
 {
@@ -252,4 +260,8 @@ DIV.textWholePage UL
 {
 	/*[disabled]bottom:-5px;*/
 	/*[disabled]right:-5px;*/
+}
+DIV.marginBox
+{
+	border: thin dotted rgba(133, 133, 193, 0.9);
 }

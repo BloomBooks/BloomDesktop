@@ -76,12 +76,9 @@ DIV.bloom-page:after
 /*Image On Top*/
 DIV.imageOnTop DIV.bloom-imageContainer
 {
-	width: 490px;
-	/*+placement:anchor-top-left 34px 21px;*/
-	position: absolute;
-	left: 34px;
-	top: 21px;
-	height: 385px;
+	width: 100%;
+	/*[disabled]+placement:anchor-top-left 34px 21px;*/
+	height: 45%;
 }
 DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 {
@@ -104,13 +101,13 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 }
 DIV.imageOnTop DIV.bloom-translationGroup
 {
-	height: 291px;
-	/*+placement:anchor-top-left 39px 442px;*/
-	position: absolute;
-	left: 39px;
-	top: 442px;
-	width: 464px;
+	height: 45% !important;
+	width: 100%;
 	display: table;
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
 }
 DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 {

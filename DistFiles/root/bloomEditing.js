@@ -190,10 +190,10 @@ function MakeSourceTextDivForGroup(group) {
  jQuery(document).ready(function() {
 
 
-     //add a marginBox if it's missing
+     //add a marginBox if it's missing. We introduced it early in the first beta
      $(".bloom-page").each(function(){
         if($(this).find(".marginBox").length == 0){
-            $(this).append("<div class='marginBox'></div>");
+            $(this).wrapInner("<div class='marginBox'></div>");
         }
      });
 
