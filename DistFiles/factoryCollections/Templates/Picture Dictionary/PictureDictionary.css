@@ -24,7 +24,7 @@ DIV.wordsDiv DIV
 }
 DIV.bloom-imageContainer
 {
-	height: 114px;
+	height: 99px;
 	width: 100%;
 	display: block;
 	margin-bottom: 4px;
@@ -39,30 +39,22 @@ DIV.domain
 {
 	font: 24pt sans-serif;
 	text-align: center;
-	margin-top: 14px;
-	margin-left: 20px;
-	margin-right: 23px;
 }
 DIV.domain DIV
 {
-	/*[disabled]display:block;*/
+	/*[disabled]display:inline;*/
 	min-width: 50px;
 	height: 41px;
-	padding-bottom: 0px;
-	margin-bottom: 0px;
-	margin-top: 0px;
-	padding-top: 0px;
-	/*[empty]margin-right:;*/
 }
 DIV.domain DIV.bloom-content2
 {
 	font-style: italic;
-	font-size: 18pt;
-	vertical-align: baseline;
+	font-size: 14pt;
+	/*[disabled]vertical-align:baseline;*/
 	/*[disabled]+placement:shift 0px -8px;*/
-	display: inline-block;
-	min-width: 159px;
-	margin-right: 14px;
+	display: inline;
+	/*[disabled]min-width:159px;*/
+	width: 48%;
 }
 .bloom-trilingual DIV.domain DIV.bloom-content3:before
 {
@@ -70,9 +62,15 @@ DIV.domain DIV.bloom-content2
 }
 DIV.domain DIV.bloom-content3
 {
-	font-size: 18pt;
-	display: inline-block;
-	min-width: 157px;
+	font-size: 14pt;
+	display: inline;
+	/*[disabled]min-width:157px;*/
+	width: 48%;
+	/*+placement:anchor-top-right 0px 44px;*/
+	position: absolute;
+	right: 0px;
+	top: 44px;
+	text-align: left;
 }
 DIV.wordAndPicture
 {
@@ -81,43 +79,43 @@ DIV.wordAndPicture
 /*NB: Child(1) is actually the domain title. So we start with 2*/
 DIV.wordAndPicture:nth-child(2)
 {
-	/*+placement:anchor-top-right 349px 116px;*/
+	/*+placement:anchor-top-left 0 95px;*/
 	position: absolute;
-	right: 349px;
-	top: 116px;
+	left: 0;
+	top: 95px;
 }
 DIV.wordAndPicture:nth-child(3)
 {
-	/*+placement:anchor-top-right 75px 114px;*/
+	/*+placement:anchor-top-right 0 95px;*/
 	position: absolute;
-	right: 75px;
-	top: 114px;
+	right: 0;
+	top: 95px;
 }
 DIV.wordAndPicture:nth-child(4)
 {
-	/*+placement:anchor-top-right 349px 332px;*/
+	/*+placement:anchor-top-left 0 290px;*/
 	position: absolute;
-	right: 349px;
-	top: 332px;
+	left: 0;
+	top: 290px;
 }
 DIV.wordAndPicture:nth-child(5)
 {
-	/*+placement:anchor-top-right 75px 338px;*/
+	/*+placement:anchor-top-right 0 290px;*/
 	position: absolute;
-	right: 75px;
-	top: 338px;
+	right: 0;
+	top: 290px;
 }
 DIV.wordAndPicture:nth-child(6)
 {
-	/*+placement:anchor-top-right 349px 549px;*/
+	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
-	right: 349px;
-	top: 549px;
+	left: 0;
+	bottom: 0;
 }
 DIV.wordAndPicture:nth-child(7)
 {
-	/*+placement:anchor-top-right 69px 559px;*/
+	/*+placement:anchor-bottom-right 0px 0px;*/
 	position: absolute;
-	right: 69px;
-	top: 559px;
+	right: 0px;
+	bottom: 0px;
 }
