@@ -27,6 +27,12 @@ namespace Bloom
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
+#if DEBUG
+			WindowState = FormWindowState.Normal;
+			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
+
+			Size = new Size(1024,720);
+#endif
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
 													{
