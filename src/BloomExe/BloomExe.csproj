@@ -152,6 +152,12 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\FlowThumbNailList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\FlowThumbNailList.Designer.cs">
+      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </Compile>
     <Compile Include="HelpLauncher.cs" />
     <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
       <SubType>Form</SubType>
@@ -332,6 +338,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
+      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Library\ListHeader.resx">
       <DependentUpon>ListHeader.cs</DependentUpon>
@@ -690,6 +699,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\multilingualSettings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\thumbnail.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

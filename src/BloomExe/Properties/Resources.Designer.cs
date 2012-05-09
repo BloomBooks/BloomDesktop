@@ -438,6 +438,13 @@ namespace Bloom.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap thumbnail {
+            get {
+                object obj = ResourceManager.GetObject("thumbnail", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap Undo16x16 {
             get {
                 object obj = ResourceManager.GetObject("Undo16x16", resourceCulture);
