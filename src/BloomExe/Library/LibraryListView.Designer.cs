@@ -35,7 +35,6 @@
 			this._updateFrontMatterToolStripMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
-			this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -43,12 +42,8 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
-			this.button1 = new System.Windows.Forms.Button();
-			this.button4 = new System.Windows.Forms.Button();
-			this.button5 = new System.Windows.Forms.Button();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
-			this.button6 = new System.Windows.Forms.Button();
 			this._collectionFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label7 = new System.Windows.Forms.Label();
 			this.pretendLabel = new System.Windows.Forms.Label();
@@ -57,6 +52,11 @@
 			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
 			this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
 			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this.button1 = new System.Windows.Forms.Button();
+			this.button4 = new System.Windows.Forms.Button();
+			this.button5 = new System.Windows.Forms.Button();
+			this.button6 = new System.Windows.Forms.Button();
+			this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.contextMenuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
@@ -79,7 +79,7 @@
 			this._localizationExtender.SetLocalizationComment(this.contextMenuStrip1, null);
 			this._localizationExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(182, 120);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(182, 98);
 			// 
 			// _updateThumbnailMenu
 			// 
@@ -115,17 +115,6 @@
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
 			this.toolStripMenuItem2.Size = new System.Drawing.Size(178, 6);
-			// 
-			// deleteMenuItem
-			// 
-			this.deleteMenuItem.Image = global::Bloom.Properties.Resources.DeleteMessageBoxButtonImage;
-			this._localizationExtender.SetLocalizableToolTip(this.deleteMenuItem, null);
-			this._localizationExtender.SetLocalizationComment(this.deleteMenuItem, null);
-			this._localizationExtender.SetLocalizingId(this.deleteMenuItem, ".deleteMenuItem");
-			this.deleteMenuItem.Name = "deleteMenuItem";
-			this.deleteMenuItem.Size = new System.Drawing.Size(181, 22);
-			this.deleteMenuItem.Text = "Delete";
-			this.deleteMenuItem.Click += new System.EventHandler(this.deleteMenuItem_Click);
 			// 
 			// _bookThumbnails
 			// 
@@ -215,66 +204,6 @@
 			this.label3.TabIndex = 6;
 			this.label3.Text = "Header";
 			// 
-			// button1
-			// 
-			this.button1.AutoSize = true;
-			this.button1.Dock = System.Windows.Forms.DockStyle.Top;
-			this.button1.FlatAppearance.BorderSize = 0;
-			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button1.Image = global::Bloom.Properties.Resources.edit;
-			this.button1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._localizationExtender.SetLocalizableToolTip(this.button1, null);
-			this._localizationExtender.SetLocalizationComment(this.button1, null);
-			this._localizationExtender.SetLocalizationPriority(this.button1, Localization.LocalizationPriority.NotLocalizable);
-			this._localizationExtender.SetLocalizingId(this.button1, "LibraryListView.button1");
-			this.button1.Location = new System.Drawing.Point(3, 45);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(211, 68);
-			this.button1.TabIndex = 1;
-			this.button1.Text = "The amazing adventures\r\nof aunt altimony";
-			this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.button1.UseVisualStyleBackColor = true;
-			// 
-			// button4
-			// 
-			this.button4.AutoSize = true;
-			this.button4.Dock = System.Windows.Forms.DockStyle.Top;
-			this.button4.FlatAppearance.BorderSize = 0;
-			this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button4.Image = global::Bloom.Properties.Resources.edit;
-			this._localizationExtender.SetLocalizableToolTip(this.button4, null);
-			this._localizationExtender.SetLocalizationComment(this.button4, null);
-			this._localizationExtender.SetLocalizationPriority(this.button4, Localization.LocalizationPriority.NotLocalizable);
-			this._localizationExtender.SetLocalizingId(this.button4, "LibraryListView.button4");
-			this.button4.Location = new System.Drawing.Point(220, 45);
-			this.button4.Name = "button4";
-			this.button4.Size = new System.Drawing.Size(75, 57);
-			this.button4.TabIndex = 7;
-			this.button4.Text = "button4";
-			this.button4.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.button4.UseVisualStyleBackColor = true;
-			// 
-			// button5
-			// 
-			this.button5.AutoSize = true;
-			this.button5.Dock = System.Windows.Forms.DockStyle.Top;
-			this.button5.FlatAppearance.BorderSize = 0;
-			this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._libraryFlow.SetFlowBreak(this.button5, true);
-			this.button5.Image = global::Bloom.Properties.Resources.edit;
-			this._localizationExtender.SetLocalizableToolTip(this.button5, null);
-			this._localizationExtender.SetLocalizationComment(this.button5, null);
-			this._localizationExtender.SetLocalizationPriority(this.button5, Localization.LocalizationPriority.NotLocalizable);
-			this._localizationExtender.SetLocalizingId(this.button5, "LibraryListView.button5");
-			this.button5.Location = new System.Drawing.Point(3, 119);
-			this.button5.Name = "button5";
-			this.button5.Size = new System.Drawing.Size(75, 57);
-			this.button5.TabIndex = 8;
-			this.button5.Text = "button5";
-			this.button5.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.button5.UseVisualStyleBackColor = true;
-			// 
 			// label4
 			// 
 			this.label4.AutoSize = true;
@@ -304,26 +233,6 @@
 			this.label5.Size = new System.Drawing.Size(42, 33);
 			this.label5.TabIndex = 10;
 			this.label5.Text = "Header";
-			// 
-			// button6
-			// 
-			this.button6.AutoSize = true;
-			this.button6.Dock = System.Windows.Forms.DockStyle.Top;
-			this.button6.FlatAppearance.BorderSize = 0;
-			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._libraryFlow.SetFlowBreak(this.button6, true);
-			this.button6.Image = global::Bloom.Properties.Resources.edit;
-			this._localizationExtender.SetLocalizableToolTip(this.button6, null);
-			this._localizationExtender.SetLocalizationComment(this.button6, null);
-			this._localizationExtender.SetLocalizationPriority(this.button6, Localization.LocalizationPriority.NotLocalizable);
-			this._localizationExtender.SetLocalizingId(this.button6, "LibraryListView.button6");
-			this.button6.Location = new System.Drawing.Point(3, 215);
-			this.button6.Name = "button6";
-			this.button6.Size = new System.Drawing.Size(75, 57);
-			this.button6.TabIndex = 11;
-			this.button6.Text = "button6";
-			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.button6.UseVisualStyleBackColor = true;
 			// 
 			// _collectionFlow
 			// 
@@ -392,14 +301,100 @@
 			this._dividerPanel.Size = new System.Drawing.Size(350, 1);
 			this._dividerPanel.TabIndex = 6;
 			// 
-			// _keepFocusTimer
-			// 
-			//this._keepFocusTimer.Enabled = true;
-			//this._keepFocusTimer.Tick += new System.EventHandler(this._keepFocusTimer_Tick);
-			// 
 			// _localizationExtender
 			// 
 			this._localizationExtender.LocalizationManagerId = "Bloom";
+			// 
+			// button1
+			// 
+			this.button1.AutoSize = true;
+			this.button1.Dock = System.Windows.Forms.DockStyle.Top;
+			this.button1.FlatAppearance.BorderSize = 0;
+			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.button1.Image = global::Bloom.Properties.Resources.edit;
+			this.button1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
+			this._localizationExtender.SetLocalizableToolTip(this.button1, null);
+			this._localizationExtender.SetLocalizationComment(this.button1, null);
+			this._localizationExtender.SetLocalizationPriority(this.button1, Localization.LocalizationPriority.NotLocalizable);
+			this._localizationExtender.SetLocalizingId(this.button1, "LibraryListView.button1");
+			this.button1.Location = new System.Drawing.Point(3, 45);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(211, 68);
+			this.button1.TabIndex = 1;
+			this.button1.Text = "The amazing adventures\r\nof aunt altimony";
+			this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button1.UseVisualStyleBackColor = true;
+			// 
+			// button4
+			// 
+			this.button4.AutoSize = true;
+			this.button4.Dock = System.Windows.Forms.DockStyle.Top;
+			this.button4.FlatAppearance.BorderSize = 0;
+			this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.button4.Image = global::Bloom.Properties.Resources.edit;
+			this._localizationExtender.SetLocalizableToolTip(this.button4, null);
+			this._localizationExtender.SetLocalizationComment(this.button4, null);
+			this._localizationExtender.SetLocalizationPriority(this.button4, Localization.LocalizationPriority.NotLocalizable);
+			this._localizationExtender.SetLocalizingId(this.button4, "LibraryListView.button4");
+			this.button4.Location = new System.Drawing.Point(220, 45);
+			this.button4.Name = "button4";
+			this.button4.Size = new System.Drawing.Size(75, 57);
+			this.button4.TabIndex = 7;
+			this.button4.Text = "button4";
+			this.button4.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button4.UseVisualStyleBackColor = true;
+			// 
+			// button5
+			// 
+			this.button5.AutoSize = true;
+			this.button5.Dock = System.Windows.Forms.DockStyle.Top;
+			this.button5.FlatAppearance.BorderSize = 0;
+			this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._libraryFlow.SetFlowBreak(this.button5, true);
+			this.button5.Image = global::Bloom.Properties.Resources.edit;
+			this._localizationExtender.SetLocalizableToolTip(this.button5, null);
+			this._localizationExtender.SetLocalizationComment(this.button5, null);
+			this._localizationExtender.SetLocalizationPriority(this.button5, Localization.LocalizationPriority.NotLocalizable);
+			this._localizationExtender.SetLocalizingId(this.button5, "LibraryListView.button5");
+			this.button5.Location = new System.Drawing.Point(3, 119);
+			this.button5.Name = "button5";
+			this.button5.Size = new System.Drawing.Size(75, 57);
+			this.button5.TabIndex = 8;
+			this.button5.Text = "button5";
+			this.button5.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button5.UseVisualStyleBackColor = true;
+			// 
+			// button6
+			// 
+			this.button6.AutoSize = true;
+			this.button6.Dock = System.Windows.Forms.DockStyle.Top;
+			this.button6.FlatAppearance.BorderSize = 0;
+			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._libraryFlow.SetFlowBreak(this.button6, true);
+			this.button6.Image = global::Bloom.Properties.Resources.edit;
+			this._localizationExtender.SetLocalizableToolTip(this.button6, null);
+			this._localizationExtender.SetLocalizationComment(this.button6, null);
+			this._localizationExtender.SetLocalizationPriority(this.button6, Localization.LocalizationPriority.NotLocalizable);
+			this._localizationExtender.SetLocalizingId(this.button6, "LibraryListView.button6");
+			this.button6.Location = new System.Drawing.Point(3, 215);
+			this.button6.Name = "button6";
+			this.button6.Size = new System.Drawing.Size(75, 57);
+			this.button6.TabIndex = 11;
+			this.button6.Text = "button6";
+			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.button6.UseVisualStyleBackColor = true;
+			// 
+			// deleteMenuItem
+			// 
+			this.deleteMenuItem.Image = global::Bloom.Properties.Resources.DeleteMessageBoxButtonImage;
+			this._localizationExtender.SetLocalizableToolTip(this.deleteMenuItem, null);
+			this._localizationExtender.SetLocalizationComment(this.deleteMenuItem, null);
+			this._localizationExtender.SetLocalizingId(this.deleteMenuItem, ".deleteMenuItem");
+			this.deleteMenuItem.Name = "deleteMenuItem";
+			this.deleteMenuItem.Size = new System.Drawing.Size(181, 22);
+			this.deleteMenuItem.Text = "Delete";
+			this.deleteMenuItem.Click += new System.EventHandler(this.deleteMenuItem_Click);
 			// 
 			// LibraryListView
 			// 
