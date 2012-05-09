@@ -39,5 +39,14 @@ DIV.coverBottomBookTopic
 	/*[disabled]+placement:anchor-bottom-right 29px 17px;*/
 	/*[disabled]min-height:20px;*/
 	/*[disabled]display:table;*/
-	border: 1px solid #5C5757;
+	border: 1px solid #C0B9B9;
+}
+DIV.marginBox
+{
+	width: 108mm;
+	/*+placement:anchor-top-left 20mm 14mm;*/
+	position: absolute;
+	left: 20mm;
+	top: 14mm;
+	height: 175mm;
 }

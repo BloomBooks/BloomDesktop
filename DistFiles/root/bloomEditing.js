@@ -190,6 +190,12 @@ function MakeSourceTextDivForGroup(group) {
  jQuery(document).ready(function() {
 
 
+     //add a marginBox if it's missing
+     $(".bloom-page").each(function(){
+        if($(this).find(".marginBox").length == 0){
+            $(this).append("<div class='marginBox'></div>");
+        }
+     });
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     jQuery("textarea").blur(function() {
