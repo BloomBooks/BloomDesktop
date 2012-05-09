@@ -145,3 +145,16 @@ DIV.bloom-page.A4Portrait
 	min-height: 297mm;
 	max-height: 297mm;
 }
+DIV.marginBox
+{
+	border: thin dotted rgba(133, 133, 193, 0.3);
+}
+.A5Portrait DIV.marginBox
+{
+	width: 108mm;
+	/*+placement:anchor-top-left 20mm 14mm;*/
+	position: absolute;
+	left: 20mm;
+	top: 14mm;
+	height: 175mm;
+}
