@@ -337,11 +337,11 @@ DIV.verso DIV
 .A5Portrait DIV.originalAcknowledgments
 {
 	height: 156px;
-	width: 475px;
-	/*+placement:shift -51px 50px;*/
-	position: relative;
-	left: -51px;
-	top: 50px;
+	width: 108mm;
+	/*+placement:anchor-top-left 20mm 14mm;*/
+	position: absolute;
+	left: 20mm;
+	top: 14mm;
 }
 .A5Landscape DIV.originalAcknowledgments
 {
@@ -366,10 +366,6 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 	height: 100%;
 	width: 100%;
 	display: block;
-	/*+placement:anchor-top-left 82px 9px;*/
-	position: absolute;
-	left: 82px;
-	top: 9px;
 }
 /*................license and copyright*/
 .A5Landscape DIV.versionAcknowledgments
@@ -393,12 +389,11 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 .A5Portrait DIV#versoLicenseAndCopyright
 {
-	/*+placement:shift -3px 80px;*/
-	position: relative;
-	left: -3px;
-	top: 80px;
-	margin-left: 83px;
-	width: 432px;
+	/*+placement:anchor-top-left 20mm 259px;*/
+	position: absolute;
+	left: 20mm;
+	top: 259px;
+	width: 108mm;
 	height: 129px;
 }
 .A5Landscape DIV#versoLicenseAndCopyright
@@ -413,11 +408,11 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left 63px 56px;*/
+	/*+placement:anchor-top-left 0px 56px;*/
 	position: absolute;
-	left: 63px;
+	left: 0px;
 	top: 56px;
-	width: 342px;
+	width: 100%;
 	height: 29px;
 }
 DIV.copyright
@@ -429,32 +424,28 @@ IMG.licenseImage
 {
 	/*[disabled]width:114px;*/
 	/*[disabled]height:34px;*/
-	/*+placement:anchor-top-left -39px 100px;*/
+	/*+placement:anchor-top-left 150px 67px;*/
 	position: absolute;
-	left: -39px;
-	top: 100px;
+	left: 150px;
+	top: 67px;
 }
 BUTTON#editCopyrightAndLicense
 {
-	/*+placement:anchor-top-left 96px 3px;*/
+	/*+placement:anchor-top-left 125px 3px;*/
 	position: absolute;
-	left: 96px;
+	left: 125px;
 	top: 3px;
 	font-size: 9pt;
-	/*[disabled]display:block;*/
 }
 DIV.licenseDescription
 {
 	font-size: 8pt !important;
-	margin-left: 35px;
-	margin-right: 77px;
-	text-align: left !important;
 	width: 84%;
 	height: 57px;
-	/*+placement:shift 28px 63px;*/
-	position: relative;
-	left: 28px;
-	top: 63px;
+	/*+placement:anchor-top-left 35px 110px;*/
+	position: absolute;
+	left: 35px;
+	top: 110px;
 }
 DIV.licenseUrl
 {
@@ -463,10 +454,10 @@ DIV.licenseUrl
 /*...................version acknowledgments*/
 DIV.versionAcknowledgments
 {
-	/*+placement:anchor-bottom-left 58px 38px;*/
+	/*+placement:anchor-bottom-left 20mm 78px;*/
 	position: absolute;
-	left: 58px;
-	bottom: 38px;
+	left: 20mm;
+	bottom: 78px;
 	height: 204px !important;
-	width: 457px;
+	width: 108mm;
 }
