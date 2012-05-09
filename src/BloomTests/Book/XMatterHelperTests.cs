@@ -55,8 +55,8 @@ namespace BloomTests.Book
 			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, "A5Portrait");
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'titlePage')]", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'verso')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'titlePage')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'verso')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][@id='firstPage']", 1);
 		}
 
