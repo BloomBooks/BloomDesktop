@@ -73,18 +73,9 @@ DIV#bloomDataDiv
 		border: 1px solid #000000;
 	}
 }
-DIV.imageWholePage DIV.bloom-imageContainer
-{
-	/*+placement:shift 44px 50px;*/
-	position: relative;
-	left: 44px;
-	top: 50px;
-	width: 465px;
-}
 .centered
 {
 	text-align: center;
-	margin-left: 1cm;
 }
 .centerJustify
 {
@@ -145,10 +136,6 @@ DIV.bloom-page.A4Portrait
 	min-height: 297mm;
 	max-height: 297mm;
 }
-DIV.marginBox
-{
-	border: thin dotted rgba(133, 133, 193, 0.3);
-}
 .A5Portrait DIV.marginBox
 {
 	width: 108mm;
@@ -157,4 +144,22 @@ DIV.marginBox
 	left: 20mm;
 	top: 14mm;
 	height: 175mm;
+}
+.A5Landscape DIV.marginBox
+{
+	width: 176.6mm;
+	/*+placement:anchor-top-left 13.8mm 12.8mm;*/
+	position: absolute;
+	left: 13.8mm;
+	top: 12.8mm;
+	height: 119mm;
+}
+.A4Landscape DIV.marginBox
+{
+	width: 266.1mm;
+	/*+placement:anchor-top-left 13.8mm 12.8mm;*/
+	position: absolute;
+	left: 13.8mm;
+	top: 12.8mm;
+	height: 178.5mm;
 }
