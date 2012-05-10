@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Palaso.IO;
 
 
 namespace Bloom.Library
@@ -147,7 +148,8 @@ namespace Bloom.Library
 			{
 				try
 				{
-					if(!_model.IsShellProject || book.IsSuitableForMakingShells)
+					if(collection.Type== BookCollection.CollectionType.TheOneEditableCollection //don't exclude anything from the editable collection
+						||  (!_model.IsShellProject || book.IsSuitableForMakingShells))
 					{
 						loadedAtLeastOneBook = true;
 						AddOneBook(book, flowLayoutPanel);
@@ -356,6 +358,11 @@ namespace Bloom.Library
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
 		{
 			_model.OpenFolderOnDisk();
+		}
+
+		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
+		{
+			Process.Start(ProjectContext.InstalledCollectionsDirectory);
 		}
 
 		/// <summary>

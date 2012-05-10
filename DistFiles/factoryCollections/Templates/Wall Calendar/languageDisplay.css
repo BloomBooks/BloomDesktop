@@ -3,12 +3,12 @@ Its purpose is to hide elements that are in languages that will not be printed i
 
 
 /* Hide all textareas and other editable fields in translation groups which aren't in the current vernacular */
-/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang="okm"])
+/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang=""])
 {
 	display: none;
 }
 
-DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="okm"])
+DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang=""])
 {
    display: none;
 }
@@ -18,19 +18,19 @@ DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="okm"])
 /* NB: we must explicitly specify DIV and Textarea as the final element, else <br> in a div will be marked as display:none, leaving us with just one line in the div */
 .bloom-monolingual *.bloom-translationGroup DIV:not(.bloom-content1), .bloom-monolingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1)
 {
-	display: none;
+	display: none !important;
 }
 .bloom-bilingual *.bloom-translationGroup DIV:not(.bloom-content1):not(.bloom-content2), .bloom-bilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2)
 {
-	display: none;
+	display: none !important;
 }
 .bloom-trilingual *.bloom-translationGroup DIV:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3), .bloom-trilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3)
 {
-	display: none;
+	display: none !important;
 }
 
 
 *[lang="N2"] /* anything left with an N2, well we dont' have a language for it */
 {
-	display: none;
+	display: none !important;
 }
