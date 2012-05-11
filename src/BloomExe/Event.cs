@@ -50,7 +50,7 @@ namespace Bloom
 	public class SelectedTabChangedEvent : Event<TabChangedDetails>
 	{ }
 
-	public class CreateFromTemplateCommand: Event<Book.Book>
+	public class CreateFromSourceBookCommand: Event<Book.Book>
 	{}
 
 

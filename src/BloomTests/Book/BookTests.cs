@@ -259,7 +259,7 @@ namespace BloomTests.Book
 
 			//now switch the national language to Tok Pisin
 
-			_collectionSettings.NationalLanguage1Iso639Code = "tpi";
+			_collectionSettings.Language2Iso639Code = "tpi";
 			book.UpdateFieldsAndVariables(dom);
 			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);

@@ -39,7 +39,7 @@ namespace Bloom.Book
 		public BookCollection(string path, CollectionType collectionType,
 			Book.Factory bookFactory, BookStorage.Factory storageFactory,
 			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
-			CreateFromTemplateCommand createFromTemplateCommand,
+			CreateFromSourceBookCommand createFromSourceBookCommand,
 			  EditBookCommand editBookCommand)
 		{
 			_path = path;
@@ -53,21 +53,20 @@ namespace Bloom.Book
 			//we only pay attention if we are the editable collection 'round here.
 			if (collectionType == CollectionType.TheOneEditableCollection)
 			{
-				createFromTemplateCommand.Subscribe(CreateFromTemplate);
+				createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 			}
 		}
 
 		public CollectionType Type { get; private set; }
 
-		private void CreateFromTemplate(Book templateBook)
+		private void CreateFromSourceBook(Book sourceBook)
 		{
 			string newBookFolder = null;
 
 			try
 			{
-				//var x = _librarySettings.IsSourceCollection; //need to differentiate between template and shell, as well our our mode
 				var starter = _bookStarterFactory();
-				newBookFolder = starter.CreateBookOnDiskFromTemplate(templateBook.FolderPath, _path);
+				newBookFolder = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, _path);
 				if (Configurator.IsConfigurable(newBookFolder))
 				{
 					var c = new Configurator(_path);
@@ -78,8 +77,6 @@ namespace Bloom.Book
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
 				}
 
-				//ListOfBooksIsOutOfDate();
-				//GetBooks();//loads up the _books
 				AddBook(newBookFolder);
 				NotifyCollectionChanged();
 
@@ -99,9 +96,9 @@ namespace Bloom.Book
 					_bookSelection.SelectBook(newBook);
 				}
 				//enhance: would be nice to know if this is a new shell
-				if (templateBook.IsShellOrTemplate)
+				if (sourceBook.IsShellOrTemplate)
 				{
-					UsageReporter.SendNavigationNotice("Create/" + templateBook.CategoryForUsageReporting + "/" + templateBook.Title);
+					UsageReporter.SendNavigationNotice("Create/" + sourceBook.CategoryForUsageReporting + "/" + sourceBook.Title);
 				}
 
 				_editBookCommand.Raise(newBook);

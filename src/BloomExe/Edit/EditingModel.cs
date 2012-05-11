@@ -185,44 +185,44 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
-					_contentLanguages.Add(new ContentLanguage(_collectionSettings.VernacularIso639Code,
+					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
 															  _collectionSettings.GetVernacularName("en"))
 											{Locked = true, Selected = true});
 
 					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_collectionSettings.NationalLanguage1Iso639Code,
+					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
 													_collectionSettings.GetNationalLanguage1Name("en"))
 									{
 //					            		Selected =
 //					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
-//					            			_librarySettings.NationalLanguage1Iso639Code
+//					            			_librarySettings.Language2Iso639Code
 									};
 					_contentLanguages.Add(item2);
-					if (!String.IsNullOrEmpty(_collectionSettings.NationalLanguage2Iso639Code))
+					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 					{
 						//NB: this could be the 2nd language (when the national 1 language is not selected)
 //						bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
-//						                _librarySettings.NationalLanguage2Iso639Code ||
+//						                _librarySettings.Language3Iso639Code ||
 //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
-//						                _librarySettings.NationalLanguage2Iso639Code;
-						var item3 = new ContentLanguage(_collectionSettings.NationalLanguage2Iso639Code,
+//						                _librarySettings.Language3Iso639Code;
+						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
 														_collectionSettings.GetNationalLanguage2Name("en"));// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}
 				//update the selections
-				_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.NationalLanguage1Iso639Code).First().Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.NationalLanguage1Iso639Code;
+				_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).First().Selected =
+					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
 
 
 				var contentLanguageMatchingNatLan2 =
-					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.NationalLanguage2Iso639Code).FirstOrDefault();
+					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
 
 				if(contentLanguageMatchingNatLan2!=null)
 				{
 					contentLanguageMatchingNatLan2.Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.NationalLanguage2Iso639Code
-					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.NationalLanguage2Iso639Code;
+					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
+					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
 				}
 
 

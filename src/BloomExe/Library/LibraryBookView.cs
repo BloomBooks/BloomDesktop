@@ -12,7 +12,7 @@ namespace Bloom.Library
 	public partial class LibraryBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly CreateFromTemplateCommand _createFromTemplateCommand;
+		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
 		private bool _reshowPending = false;
 		private bool _visible;
@@ -20,13 +20,13 @@ namespace Bloom.Library
 		public delegate LibraryBookView Factory();//autofac uses this
 
 		public LibraryBookView(BookSelection bookSelection,
-			CreateFromTemplateCommand createFromTemplateCommand,
+			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
-			_createFromTemplateCommand = createFromTemplateCommand;
+			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
@@ -99,7 +99,7 @@ namespace Bloom.Library
 			{
 				try
 				{
-					_createFromTemplateCommand.Raise(_bookSelection.CurrentSelection);
+					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
 				}
 				catch(Exception error)
 				{

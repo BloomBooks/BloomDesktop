@@ -32,8 +32,8 @@ namespace BloomTests.Edit
 		{
 			var library = new Moq.Mock<CollectionSettings>();
 			library.SetupGet(x => x.IsSourceCollection).Returns(false);
-			library.SetupGet(x => x.NationalLanguage1Iso639Code).Returns("en");
-			library.SetupGet(x => x.VernacularIso639Code).Returns("xyz");
+			library.SetupGet(x => x.Language2Iso639Code).Returns("en");
+			library.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
 			library.SetupGet(x => x.XMatterPackName).Returns("Factory");
 
 			ErrorReport.IsOkToInteractWithUser = false;

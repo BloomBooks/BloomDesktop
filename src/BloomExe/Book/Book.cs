@@ -270,7 +270,7 @@ namespace Bloom.Book
 //                    if (node == null)
 //                        return "unknown";
 //                    return (node.InnerText);
-					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.VernacularIso639Code);
+					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Language1Iso639Code);
 					var s = XmlUtilities.GetTitleOfHtml(RawDom, null);
 					if(s==null)
 						return Path.GetFileName(_storage.FolderPath);
@@ -339,7 +339,7 @@ namespace Bloom.Book
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
-			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.VernacularIso639Code, _collectionSettings.NationalLanguage1Iso639Code, _collectionSettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			return dom;
 		}
 
@@ -357,16 +357,16 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("type", "text/javascript");
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
-			d.Add(_collectionSettings.VernacularIso639Code, _collectionSettings.VernacularLanguageName);
-			if (!string.IsNullOrEmpty(_collectionSettings.NationalLanguage1Iso639Code) && !d.ContainsKey(_collectionSettings.NationalLanguage1Iso639Code))
-				d.Add(_collectionSettings.NationalLanguage1Iso639Code, _collectionSettings.GetNationalLanguage1Name(_collectionSettings.NationalLanguage1Iso639Code));
-			if (!string.IsNullOrEmpty(_collectionSettings.NationalLanguage2Iso639Code) && !d.ContainsKey(_collectionSettings.NationalLanguage2Iso639Code))
-				d.Add(_collectionSettings.NationalLanguage2Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.NationalLanguage2Iso639Code));
+			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.VernacularLanguageName);
+			if (!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
+				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code));
+			if (!string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
+				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
-			d.Add("vernacularLang", _collectionSettings.VernacularIso639Code);//use for making the vernacular the first tab
+			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _collectionSettings.VernacularLanguageName);
-			d.Add("{N1}", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.NationalLanguage1Iso639Code));
-			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.NationalLanguage2Iso639Code));
+			d.Add("{N1}", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code));
+			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
 			//REVIEW: this is deviating a bit from the normal use of the dictionary...
 			d.Add("urlOfUIFiles", "file:///"+ _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
@@ -651,11 +651,11 @@ namespace Bloom.Book
 				RebuildXMatter(dom);
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
-			var primaryLanguage = _collectionSettings.VernacularIso639Code;
+			var primaryLanguage = _collectionSettings.Language1Iso639Code;
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
-				primaryLanguage = _collectionSettings.NationalLanguage1Iso639Code;
+				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-			BookStarter.UpdateContentLanguageClasses(dom, primaryLanguage, _collectionSettings.NationalLanguage1Iso639Code, _collectionSettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(dom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			AddCoverColor(dom, CoverColor);
 
 			AddPreviewJScript(dom);
@@ -699,7 +699,7 @@ namespace Bloom.Book
 			get
 			{
 				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
-				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _collectionSettings.VernacularIso639Code));
+				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _collectionSettings.Language1Iso639Code));
 				return x.Count > 0;
 			}
 
@@ -878,9 +878,9 @@ namespace Bloom.Book
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
-			if (language2Code == _collectionSettings.VernacularIso639Code) //can't have the vernacular twice
+			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
 				language2Code = null;
-			if (language3Code == _collectionSettings.VernacularIso639Code)
+			if (language3Code == _collectionSettings.Language1Iso639Code)
 				language3Code = null;
 			if (language2Code == language3Code)	//can't use the same lang twice
 				language3Code = null;
@@ -904,7 +904,7 @@ namespace Bloom.Book
 			RemoveDataDivElement("contentLanguage1");
 			RemoveDataDivElement("contentLanguage2");
 			RemoveDataDivElement("contentLanguage3");
-			AddDataDivBookVariable("contentLanguage1", "*", _collectionSettings.VernacularIso639Code);
+			AddDataDivBookVariable("contentLanguage1", "*", _collectionSettings.Language1Iso639Code);
 			if (MultilingualContentLanguage2 != null)
 			{
 				AddDataDivBookVariable("contentLanguage2", "*", language2Code);
@@ -974,7 +974,7 @@ namespace Bloom.Book
 					{
 						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 					}
-					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _collectionSettings.VernacularIso639Code));
+					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _collectionSettings.Language1Iso639Code));
 					++pageNumber;
 				}
 			}
@@ -1045,7 +1045,7 @@ namespace Bloom.Book
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.VernacularIso639Code));
+			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
 			_storage.Save();
 			if (_pageListChangedEvent != null)
@@ -1058,7 +1058,7 @@ namespace Bloom.Book
 
 		private void ClearEditableValues(XmlElement newPageElement)
 		{
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.VernacularIso639Code)))
+			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
 			{
 				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
 				{
@@ -1211,7 +1211,7 @@ namespace Bloom.Book
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
 				XmlUtilities.GetOrCreateElement(RawDom,"//html", "head");
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_collectionSettings.VernacularIso639Code});
+				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_collectionSettings.Language1Iso639Code});
 				SetTitle(t);
 			}
 		}
@@ -1251,13 +1251,13 @@ namespace Bloom.Book
 			var data = new DataSet();
 
 
-			data.WritingSystemCodes.Add("N1", _collectionSettings.NationalLanguage1Iso639Code);
-			data.WritingSystemCodes.Add("N2", _collectionSettings.NationalLanguage2Iso639Code);
+			data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
+			data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
 
 			if (makeGeneric)
 			{
-				data.WritingSystemCodes.Add("V", _collectionSettings.NationalLanguage1Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-				data.AddGenericLanguageString("iso639Code", _collectionSettings.VernacularIso639Code, true); //review: maybe this should be, like 'xyz"
+				data.WritingSystemCodes.Add("V", _collectionSettings.Language2Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
+				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true); //review: maybe this should be, like 'xyz"
 				data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
 				data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
 				data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
@@ -1268,11 +1268,11 @@ namespace Bloom.Book
 			}
 			else
 			{
-				data.WritingSystemCodes.Add("V", _collectionSettings.VernacularIso639Code);
+				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.VernacularLanguageName, true);
-				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.NationalLanguage1Iso639Code), true);
-				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.NationalLanguage1Iso639Code), true);
-				data.AddGenericLanguageString("iso639Code", _collectionSettings.VernacularIso639Code, true);
+				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code), true);
+				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language2Iso639Code), true);
+				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);
 				data.AddGenericLanguageString("country", _collectionSettings.Country, true);
 				data.AddGenericLanguageString("province", _collectionSettings.Province, true);
 				data.AddGenericLanguageString("district", _collectionSettings.District, true);
@@ -1389,7 +1389,7 @@ namespace Bloom.Book
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);
-			File.WriteAllText(path, template.Replace("VERNACULAR", _collectionSettings.VernacularIso639Code).Replace("NATIONAL", _collectionSettings.NationalLanguage1Iso639Code));
+			File.WriteAllText(path, template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code).Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
@@ -1408,7 +1408,7 @@ namespace Bloom.Book
 			Debug.WriteLine("before update: " + dataDiv.OuterXml);
 
 			var data = UpdateFieldsAndVariables(domToRead);
-			data.UpdateGenericLanguageString("contentLanguage1",_collectionSettings.VernacularIso639Code, false);
+			data.UpdateGenericLanguageString("contentLanguage1",_collectionSettings.Language1Iso639Code, false);
 			data.UpdateGenericLanguageString("contentLanguage2", string.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
 			data.UpdateGenericLanguageString("contentLanguage3", string.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
 
@@ -1633,7 +1633,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				BookStarter.PrepareElementsInPageOrDocument(div, _collectionSettings);
-				BookStarter.UpdateContentLanguageClasses(div, _collectionSettings.VernacularIso639Code, _collectionSettings.NationalLanguage1Iso639Code, _collectionSettings.NationalLanguage2Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+				BookStarter.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			}
 
 		}

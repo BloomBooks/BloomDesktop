@@ -106,12 +106,12 @@ namespace Bloom
 													{
 														var librarySettings = c.Resolve<CollectionSettings>();
 														var preferredSourceLanguagesInOrder = new List<string>();
-														preferredSourceLanguagesInOrder.Add(librarySettings.NationalLanguage1Iso639Code);
-														if (!string.IsNullOrEmpty(librarySettings.NationalLanguage2Iso639Code)
-															&& librarySettings.NationalLanguage2Iso639Code != librarySettings.NationalLanguage1Iso639Code)
-															preferredSourceLanguagesInOrder.Add(librarySettings.NationalLanguage2Iso639Code);
+														preferredSourceLanguagesInOrder.Add(librarySettings.Language2Iso639Code);
+														if (!string.IsNullOrEmpty(librarySettings.Language3Iso639Code)
+															&& librarySettings.Language3Iso639Code != librarySettings.Language2Iso639Code)
+															preferredSourceLanguagesInOrder.Add(librarySettings.Language3Iso639Code);
 
-														return new LanguageSettings(librarySettings.VernacularIso639Code, preferredSourceLanguagesInOrder);
+														return new LanguageSettings(librarySettings.Language1Iso639Code, preferredSourceLanguagesInOrder);
 													});
 				builder.Register<XMatterPackFinder>(c =>
 														{
@@ -138,7 +138,7 @@ namespace Bloom
 				//so we're doing this
 				builder.Register(c=>editableCollectionDirectory).InstancePerLifetimeScope();
 
-				builder.RegisterType<CreateFromTemplateCommand>().InstancePerLifetimeScope();
+				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>

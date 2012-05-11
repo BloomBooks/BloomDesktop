@@ -15,25 +15,25 @@ namespace Bloom.Collection
 	/// </summary>
 	public class CollectionSettings
 	{
-		private string _vernacularIso639Code;
+		private string _language1Iso639Code;
 		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
 		#region Persisted roperties
 
 		//these are virtual for the sake of the unit test mock framework
-		public virtual string VernacularIso639Code
+		public virtual string Language1Iso639Code
 		{
-			get { return _vernacularIso639Code; }
+			get { return _language1Iso639Code; }
 			set
 			{
-				_vernacularIso639Code = value;
-				VernacularLanguageName = GetVernacularName(NationalLanguage1Iso639Code);
+				_language1Iso639Code = value;
+				VernacularLanguageName = GetVernacularName(Language2Iso639Code);
 			}
 		}
 
-		public virtual string NationalLanguage1Iso639Code { get; set; }
-		public virtual string NationalLanguage2Iso639Code { get; set; }
+		public virtual string Language2Iso639Code { get; set; }
+		public virtual string Language3Iso639Code { get; set; }
 		public virtual string VernacularLanguageName { get; set; }
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace Bloom.Collection
 
 		public string GetVernacularName(string inLanguage)
 		{
-			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(VernacularIso639Code);
+			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
 				return "???";
 			return exactLanguageMatch.Name;
@@ -56,24 +56,24 @@ namespace Bloom.Collection
 
 
 			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(NationalLanguage1Iso639Code))
+			if (!_isoToLangNameDictionary.ContainsKey(Language2Iso639Code))
 			{
-				_isoToLangNameDictionary.Add(NationalLanguage1Iso639Code, _lookupIsoCode.GetExactLanguageMatch(NationalLanguage1Iso639Code).Name);
+				_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
 			}
-			return _isoToLangNameDictionary[NationalLanguage1Iso639Code];
+			return _isoToLangNameDictionary[Language2Iso639Code];
 		}
 
 		public string GetNationalLanguage2Name(string inLanguage)
 		{
-			if(string.IsNullOrEmpty(NationalLanguage2Iso639Code))
+			if(string.IsNullOrEmpty(Language3Iso639Code))
 				return string.Empty;
 
 			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(NationalLanguage2Iso639Code))
+			if (!_isoToLangNameDictionary.ContainsKey(Language3Iso639Code))
 			{
-				_isoToLangNameDictionary.Add(NationalLanguage2Iso639Code,_lookupIsoCode.GetExactLanguageMatch(NationalLanguage2Iso639Code).Name);
+				_isoToLangNameDictionary.Add(Language3Iso639Code,_lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
 			}
-			return _isoToLangNameDictionary[NationalLanguage2Iso639Code];
+			return _isoToLangNameDictionary[Language3Iso639Code];
 		}
 		#endregion
 
@@ -83,15 +83,15 @@ namespace Bloom.Collection
 		public CollectionSettings()
 		{
 			XMatterPackName = "Factory";
-			NationalLanguage1Iso639Code = "en";
+			Language2Iso639Code = "en";
 		}
 
 		public CollectionSettings(NewCollectionInfo collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
-			VernacularIso639Code = collectionInfo.VernacularIso639Code;
-			NationalLanguage1Iso639Code = collectionInfo.NationalLanguage1Iso639Code;
-			NationalLanguage2Iso639Code = collectionInfo.NationalLanguage2Iso639Code;
+			Language1Iso639Code = collectionInfo.VernacularIso639Code;
+			Language2Iso639Code = collectionInfo.NationalLanguage1Iso639Code;
+			Language3Iso639Code = collectionInfo.NationalLanguage2Iso639Code;
 			VernacularLanguageName = collectionInfo.LanguageName;
 			IsSourceCollection = collectionInfo.IsShellLibary;
 			XMatterPackName = collectionInfo.XMatterPackName;
@@ -127,11 +127,11 @@ namespace Bloom.Collection
 		public void Save()
 		{
 			XElement library = new XElement("Collection");
-			library.Add(new XAttribute("version", "0.1"));
-			library.Add(new XElement("VernacularIso639Code", VernacularIso639Code));
-			library.Add(new XElement("National1Iso639Code", NationalLanguage1Iso639Code));
-			library.Add(new XElement("National2Iso639Code", NationalLanguage2Iso639Code));
-			library.Add(new XElement("LanguageName", VernacularLanguageName));
+			library.Add(new XAttribute("version", "0.2"));
+			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
+			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
+			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("Language1Name", VernacularLanguageName));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
@@ -146,11 +146,11 @@ namespace Bloom.Collection
 			try
 			{
 				XElement library = XElement.Load(SettingsFilePath);
-				VernacularIso639Code = GetValue(library, "VernacularIso639Code", "");
-				NationalLanguage1Iso639Code = GetValue(library, "National1Iso639Code", "en");
-				NationalLanguage2Iso639Code = GetValue(library, "National2Iso639Code", "");
+				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "VernacularIso639Code", ""));
+				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
+				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
-				VernacularLanguageName = GetValue(library, "LanguageName", "");
+				VernacularLanguageName = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");

@@ -370,15 +370,7 @@ namespace Bloom.Book
 		}
 
 
-		private string GetMetaValue(string name, string defaultValue)
-		{
-			var nameSuggestion = Dom.SafeSelectNodes("//head/meta[@name='"+name+"']");
-			if (nameSuggestion.Count > 0)
-			{
-				return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
-			}
-			return defaultValue;
-		}
+
 
 		public string Key
 		{

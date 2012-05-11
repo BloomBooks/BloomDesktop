@@ -23,7 +23,7 @@ namespace Bloom.Book
 		private readonly BookStorage.Factory _bookStorageFactory;
 		private LanguageSettings _languageSettings;
 		private readonly CollectionSettings _collectionSettings;
-		private bool _isShellLibrary;
+		private bool _isSourceCollection;
 
 		public delegate BookStarter Factory();//autofac uses this
 
@@ -33,7 +33,7 @@ namespace Bloom.Book
 			_bookStorageFactory = bookStorageFactory;
 			_languageSettings = languageSettings;
 			_collectionSettings = collectionSettings;
-			_isShellLibrary = collectionSettings.IsSourceCollection;
+			_isSourceCollection = collectionSettings.IsSourceCollection;
 		}
 
 		public bool TestingSoSkipAddingXMatter { get; set; }
@@ -46,24 +46,24 @@ namespace Bloom.Book
 		/// <summary>
 		/// Given a template, make a new book
 		/// </summary>
-		/// <param name="sourceTemplateFolder"></param>
+		/// <param name="sourceBookFolder"></param>
 		/// <param name="parentCollectionPath"></param>
 		/// <returns>path to the new book folder</returns>
-		public  string CreateBookOnDiskFromTemplate(string sourceTemplateFolder, string parentCollectionPath)
+		public  string CreateBookOnDiskFromTemplate(string sourceBookFolder, string parentCollectionPath)
 		{
-			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceTemplateFolder, parentCollectionPath);
+			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
 			//TODO: is this meta value at odds with with data-book="bookTitle" somewhere in the book?
 			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
 			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
 
-			string initialBookName = GetInitialName(sourceTemplateFolder, parentCollectionPath);
+			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
-			CopyFolder(sourceTemplateFolder, newBookFolder);
+			CopyFolder(sourceBookFolder, newBookFolder);
 			//if something bad happens from here on out, we need to delete that folder we just made
 			try
 			{
-				var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceTemplateFolder)));
+				var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceBookFolder)));
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
 				File.Move(oldNamedFile, newNamedFile);
 
@@ -98,6 +98,16 @@ namespace Bloom.Book
 
 		}
 
+		private string GetMetaValue(XmlDocument Dom, string name, string defaultValue)
+		{
+			var nameSuggestion = Dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			if (nameSuggestion.Count > 0)
+			{
+				return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+			}
+			return defaultValue;
+		}
+
 		private string SetupNewDocumentContents(string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
@@ -124,23 +134,30 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.VernacularIso639Code));
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.NationalLanguage1Iso639Code));
-				data.WritingSystemCodes.Add("V", _collectionSettings.VernacularIso639Code);
-				data.WritingSystemCodes.Add("N1", _collectionSettings.NationalLanguage1Iso639Code);
-				data.WritingSystemCodes.Add("N2", _collectionSettings.NationalLanguage2Iso639Code);
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1Iso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code));
+				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
+				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
+				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
 				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
 			}
 
 
-			//If this is a shell book, make elements to hold the vernacular
+			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
+			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom, "defaultMultilingualLevel", "1"));
+			SetInitialMultilingualSetting(storage.Dom, multilingualLevel);
+
+
+					//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				SetupIdAndLineage(div, div);
 				SetupPage(div, _collectionSettings, null, null);
 			}
+
+
 
 	//		SizeAndOrientation.SetPaperSizeAndOrientation(storage.Dom, sizeAndOrientation.ToString());
 
@@ -180,17 +197,10 @@ namespace Bloom.Book
 
 			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
 			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
-			//prevent us from editing it while in a shell-making library, since we don't honor this
-			//tag in shell-making libraries.
-			if(_isShellLibrary)
+			//prevent us from editing it while in a shell-making collections, since we don't honor this
+			//tag in shell-making collections.
+			if(_isSourceCollection)
 				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
-
-			//otherwise, stick with whatever it came in with.  All shells will come in with translationOnly,
-			//all templates will come in with 'open'.
-//			else
-//			{
-//				n.SetAttribute("content", "open");
-//			}
 		}
 
 
@@ -241,16 +251,78 @@ namespace Bloom.Book
 		/// <param name="node"></param>
 		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)//, bool inShellMode)
 		{
-			PrepareElementsOnPageOneLanguage(node, collectionSettings.VernacularIso639Code);
+			PrepareElementsOnPageOneLanguage(node, collectionSettings.Language1Iso639Code);
 
 			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
-			BookStarter.PrepareElementsOnPageOneLanguage(node,collectionSettings.NationalLanguage1Iso639Code);
+			BookStarter.PrepareElementsOnPageOneLanguage(node,collectionSettings.Language2Iso639Code);
 
 			//nb: really we need to have a place where we list the bilgual/triligual desires, and that may be book specific
-			if(!string.IsNullOrEmpty(collectionSettings.NationalLanguage2Iso639Code))
+			if(!string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 			{
-				BookStarter.PrepareElementsOnPageOneLanguage(node, collectionSettings.NationalLanguage2Iso639Code);
+				BookStarter.PrepareElementsOnPageOneLanguage(node, collectionSettings.Language3Iso639Code);
 			}
+		}
+
+		private void SetDataDivElement(XmlNode dom, string key, string value)
+		{
+			var dataDiv = GetOrCreateDataDiv(dom);
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			{
+				dataDiv.RemoveChild(e);
+			}
+
+			var d = dataDiv.OwnerDocument.CreateElement("div");
+			d.SetAttribute("data-book", key);
+			d.InnerXml = value;
+			dataDiv.AppendChild(d);
+		}
+
+
+		/// <summary>
+		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
+		/// then everytime someone created a new book based on it, it too would be trilingual.
+		/// </summary>
+		/// <param name="pageDivOrDocumentDom"></param>
+		/// <param name="oneTwoOrThreeContentLanguages"></param>
+		public  void SetInitialMultilingualSetting(XmlDocument documentDom, int oneTwoOrThreeContentLanguages)
+		{
+			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
+
+			if(oneTwoOrThreeContentLanguages < 3)
+				RemoveDataDivElement(documentDom, "contentLanguage3");
+			if (oneTwoOrThreeContentLanguages < 2)
+				RemoveDataDivElement(documentDom, "contentLanguage2");
+
+			SetDataDivElement(documentDom, "contentLanguage1", _collectionSettings.Language1Iso639Code);
+			if (oneTwoOrThreeContentLanguages > 1)
+				SetDataDivElement(documentDom, "contentLanguage2", _collectionSettings.Language2Iso639Code);
+			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+				SetDataDivElement(documentDom, "contentLanguage3", _collectionSettings.Language3Iso639Code);
+
+			/* these are fine but not needed
+
+			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
+			foreach (
+				XmlElement pageDiv in
+					documentDom.SafeSelectNodes(
+						"//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter'))]"))
+			{
+				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
+				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
+				RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
+				AddClassIfMissing(pageDiv, multilingualClass);
+			}
+
+			//now, if those old content classes are still around, some other code might try to "fix" our multilingual setting. So let's just clear them out
+			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
+			{
+				foreach (XmlElement e in group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
+				{
+					RemoveClassesBeginingWith(e, "bloom-content");
+				}
+			}
+
+			 */
 		}
 
 		/// <summary>
