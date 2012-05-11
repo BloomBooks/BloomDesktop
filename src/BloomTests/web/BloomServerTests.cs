@@ -34,7 +34,7 @@ namespace BloomTests.web
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 //			_vernacularLibraryCollection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-//				BookStorageFactory, null, null, new CreateFromTemplateCommand(), new EditBookCommand());
+//				BookStorageFactory, null, null, new CreateFromSourceBookCommand(), new EditBookCommand());
 
 			_vernacularLibraryCollection = new Moq.Mock<BookCollection>();
 			_bookList = new List<Bloom.Book.Book>();
