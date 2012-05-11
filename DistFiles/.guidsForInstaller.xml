@@ -13,4 +13,5 @@
   <File Id="Feedback.html" Guid="d440dcd8-e9b5-4da6-9224-5fa2d482d595" />
   <File Id="Bloom.chw" Guid="64a937aa-553e-44c7-b8b6-db99b3f2b7f8" />
   <File Id="Bloom.chm" Guid="eb15415f-7651-456a-81ff-41427eb7cda4" />
+  <File Id="license.rtf" Guid="a29dfa51-8a32-41f5-8a24-65cb2bde5fe5" />
 </InstallerMetadata>
