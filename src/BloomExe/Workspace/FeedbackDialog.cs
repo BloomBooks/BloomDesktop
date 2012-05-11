@@ -39,7 +39,6 @@ namespace Bloom.Workspace
 
 		private void FeedbackDialog_Load(object sender, EventArgs e)
 		{
-			//_browser.Navigate(_fileLocator.LocateFile("feedback.html"), false);
 			_browser.Navigate("http://bloombooks.uservoice.com/forums/153625-general",false);
 		}
 

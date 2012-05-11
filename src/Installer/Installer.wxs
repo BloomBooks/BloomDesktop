@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.  this value should be B U I  LD_SCRIPT_MUST_REPLACE_AT_RUNTIME (in quotes) -->
-<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
+<?define Property_ProductVersion = "0.8.36" ?>
 <!--this is replaced at build time by the msbuild 'package' target -->
 <?define Property_ProductCode = "*" ?>
 <!-- auto-generate a new guid each time -->
@@ -24,6 +24,15 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 	  <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
 	  <UpgradeVersion Minimum ="0.0.0" IncludeMinimum ="yes" Maximum ="$(var.Property_ProductVersion)" IncludeMaximum ="no" Property ="OLDERVERSIONBEINGUPGRADED" />
 	</Upgrade >
+
+	<!-- show the license page -->
+	<UIRef Id="WixUI_Minimal"/>
+	<!-- Top banner / 493 × 58 -->
+	<WixVariable Id='WixUIBannerBmp' Value='installerBanner.jpg' />
+	<!-- Background bitmap used on the welcome and completion dialogs / 493 × 312 -->
+	<WixVariable Id='WixUIDialogBmp' Value='installerBackground.jpg' />
+	<WixVariable Id="WixUILicenseRtf" Value="..\..\distfiles\License.rtf" />
+
 
 	<!--
 	"from the list: Don't use Advertise="yes" Advertised shortcuts are designed to allow

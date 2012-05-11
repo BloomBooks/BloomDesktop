@@ -61,7 +61,7 @@
 			this._radioSourceCollection.Name = "_radioSourceCollection";
 			this._radioSourceCollection.Size = new System.Drawing.Size(384, 19);
 			this._radioSourceCollection.TabIndex = 7;
-			this._radioSourceCollection.Text = "I will be making shell books in a national language for use by others.";
+			this._radioSourceCollection.Text = "I will be making shell books in one or more languages of wider communication, for use by others.";
 			this._radioSourceCollection.UseVisualStyleBackColor = true;
 			// 
 			// _radioNormalVernacularCollection
