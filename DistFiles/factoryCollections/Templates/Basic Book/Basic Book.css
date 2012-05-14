@@ -165,12 +165,8 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
 }
 DIV.imageInMiddle DIV.bloom-translationGroup.top
 {
-	height: 5.3cm;
-	width: 488px;
-	/*+placement:anchor-top-left 26px 30px;*/
-	position: absolute;
-	left: 26px;
-	top: 30px;
+	height: 30%;
+	width: 100%;
 }
 DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
 {
@@ -180,14 +176,6 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
 	position: absolute;
 	left: 26px;
 	top: 30px;
-}
-DIV.imageInMiddle DIV.bloom-imageContainer
-{
-	/*+placement:anchor-top-left 31px 242px;*/
-	position: absolute !important;
-	left: 31px !important;
-	top: 242px !important;
-	border: 1px solid #000000;
 }
 DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
 {
@@ -200,12 +188,12 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
 }
 DIV.imageInMiddle DIV.bloom-translationGroup.bottom
 {
-	height: 5.4cm;
-	width: 478px;
-	/*+placement:anchor-top-left 33px 543px;*/
+	height: 30%;
+	width: 100%;
+	/*+placement:anchor-bottom-left;*/
 	position: absolute;
-	left: 33px;
-	top: 543px;
+	left: 0;
+	bottom: 0;
 }
 DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
 {
@@ -219,22 +207,21 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
 /*Image On Bottom*/
 DIV.imageOnBottom DIV.bloom-translationGroup
 {
-	width: 459px;
-	height: 319px;
-	/*+placement:anchor-top-left 22px 44px;*/
+	width: 100%;
+	height: 50%;
+	/*+placement:anchor-top-left;*/
 	position: absolute;
-	left: 22px;
-	top: 44px;
+	left: 0;
+	top: 0;
 }
 .imageOnBottom DIV.bloom-translationGroup DIV
 {
-	height: 50%;
+	height: 100%;
 	width: 100%;
-	margin-top: 17px;
 }
 .imageOnBottom.bloom-bilingual DIV.bloom-translationGroup DIV
 {
-	height: 100%;
+	height: 50%;
 	width: 100%;
 }
 .imageOnBottom.bloom-trilingual DIV.bloom-translationGroup DIV
@@ -245,45 +232,28 @@ DIV.imageOnBottom DIV.bloom-translationGroup
 .imageOnBottom DIV.bloom-imageContainer
 {
 	height: 8.4cm;
-	width: 454px;
-	/*+placement:anchor-top-left 62px 441px;*/
+	width: 100%;
+	/*+placement:anchor-bottom-left 0px 0px;*/
 	position: absolute;
-	left: 62px;
-	top: 441px;
+	left: 0px;
+	bottom: 0px;
 }
 /*Image Whole Page*/
 DIV.imageWholePage DIV.bloom-imageContainer
 {
-	/*+placement:shift 20px 68px;*/
-	position: relative;
-	left: 20px;
-	top: 68px;
-	width: 520px;
-	height: 668px;
+	width: 100%;
+	height: 100%;
 }
 DIV.imageInMiddle DIV.bloom-imageContainer
 {
-	/*+placement:shift 49px 72px;*/
-	position: relative;
-	left: 49px;
-	top: 72px;
-	width: 479px;
-	height: 279px;
+	width: 100%;
+	height: 30%;
+	margin-top: 30px;
 }
 .textWholePage TEXTAREA
 {
 	height: 18.9cm;
 	margin-top: 1cm;
-}
-.imageWholePage DIV.bloom-imageContainer
-{
-	height: 18.6cm;
-	width: 12cm;
-	/*+placement:anchor-top-left 0px 0px;*/
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	margin-top: 43px;
 }
 DIV.imageWholePage IMG
 {

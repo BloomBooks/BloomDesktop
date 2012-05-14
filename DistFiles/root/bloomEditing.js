@@ -51,6 +51,78 @@ function Cleanup() {
 	});
 }
 
+ //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
+ //onto the page
+function AddToolbox(){
+    $('div.bloom-page.showToolbox').each(function() {
+             $(this).find('.marginBox').droppable({
+                 hoverClass: "ui-state-hover",
+                 accept: function() { return true; },
+                 drop: function(event, ui) {
+                             //is it being dragged in from a toolbox, or just moved around?
+                    if($(ui.draggable).hasClass('prototype')){
+                         var x = $(ui.draggable).clone();
+                        //    $(x).text("");
+                        $(this).append($(x));
+                        $(this).find('.prototype.bloom-imageContainer')
+                             .each(function(){SetupImageContainer(this)});
+
+                     $(this).find('.prototype')
+                            .removeAttr("style")
+                            .draggable({containment: "parent"})
+                            .resizable({handles:'nw, ne, sw, se',containment: "parent"})
+                            .removeClass("prototype")
+                           .each(function(){SetupResizableElement(this)});
+                    }
+                 }
+             });
+//This is what we really will want:
+//---->           var translationBox = '<div class="bloom-translationGroup bloom-resizable bloom-draggable prototype"><div class="bloom-editable">11</div></div>';
+//But until we can set up translationGroups dynamically, we just put in a dumb text box:
+            var heading1Box = '<div class="bloom-editable bloom-resizable bloom-draggable heading1 prototype" contenteditable="true">Heading</div>';
+            var textBox = '<div class="bloom-editable bloom-resizable bloom-draggable prototype" contenteditable="true">Text</div>';
+            var imageBox = '<div class="bloom-imageContainer bloom-resizable bloom-draggable prototype"><img src="placeholder.png"></div>';
+
+             $(this).qtip({
+                 content: "<h3>Toolbox</h3><ul class='toolbox'><li>"+heading1Box+"</li><li>"+textBox+"</li><li>"+imageBox+"</li></ul>"
+                 ,show: {ready: true}
+                 ,hide : false
+                 ,position: {at: 'right center',
+                                     my: 'left center'
+                                 }
+                 ,events: {
+                              render: function(event, api) {
+                                  $(this).find('.prototype').draggable({
+                                      //note: this is just used for drawing what you drag around..
+                                      //it isn't what the droppable is actually given
+                                     helper: function(event){
+                                         var tearOff = $(this).clone();
+                                        return tearOff;}
+
+                                  });
+                              }
+                 }
+                 ,style: {
+                        width: 200,
+                        height :300,
+                         classes: 'ui-tooltip-dark',
+                        tip : {corner: false}
+                     }
+            })
+
+        $(this).qtipSecondary({
+                         content: "<h1>Notice</h1>This is just a demonstration of a future template-making feature. You can drag items from the toolbox onto the page. <b>This is not ready to use for real work.</b> In particular, the text boxes are just toys."
+                         ,show: {ready: true}
+                         ,hide : false
+                         ,position: {at: 'right top',
+                                             my: 'left top'
+                                         },
+                        style: { classes: 'ui-tooltip-red',
+                            tip : {corner: false}}
+                    })
+         })
+}
+
 function MakeSourceTextDivForGroup(group) {
     
     var divForBubble = $(group).clone();
@@ -187,6 +259,84 @@ function MakeSourceTextDivForGroup(group) {
      }
      return whatToSay;
  }
+
+ //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
+ //the img to fit the available space
+ function SetupImageContainer(containerDiv) {
+     $(containerDiv).mouseenter(
+         function () {
+             var buttonModifier = "largeImageButton";
+             if ($(this).height() < 80) {
+                 buttonModifier = 'smallImageButton';
+             }
+             $(this).prepend("<button class='pasteImageButton " + buttonModifier + "' title='Paste Image'></button>");
+             $(this).prepend("<button class='changeImageButton " + buttonModifier + "' title='Change Image'></button>");
+             $(this).addClass('hoverUp');
+         })
+         .mouseleave(function () {
+             $(this).removeClass('hoverUp');
+             $(this).find(".changeImageButton").each(function () {
+                 $(this).remove()
+             });
+             $(this).find(".pasteImageButton").each(function () {
+                 $(this).remove()
+             });
+         });
+ }
+
+ function SetupResizableElement(element) {
+
+     $(element).mouseenter(
+         function () {
+             $(this).addClass("ui-mouseOver")
+         }).mouseleave(function () {
+             $(this).removeClass("ui-mouseOver")
+         });
+
+     var childImgContainer = $(element).find(".bloom-imageContainer");
+
+     // A Picture Dictionary Word-And-Image
+     if ($(childImgContainer).length > 0) {
+         /* The case here is that the thing with this class actually has an
+          inner image, as is the case for the Picture Dictionary.
+          The key, non-obvious, difficult requirement is keeping the text below
+          a picture dictionary item centered underneath the image.  I'd be
+          surprised if this wasn't possible in CSS, but I'm not expert enough.
+          So, I switched from having the image container be resizable, to having the
+          whole div (image+headwords) be resizable, then use the "alsoResize"
+          parameter to make the imageContainer resize.  Then, in order to make
+          the image resize in real-time as you're dragging, I use the "resize"
+          event to scale the image up proportionally (and centered) inside the
+          newly resized container.
+          */
+         var img = $(childImgContainer).find("img");
+         $(element).resizable({handles:'nw, ne, sw, se', alsoResize:childImgContainer,
+             resize:function (event, ui) {
+                 img.scaleImage({scale:"fit"})
+             }});
+
+
+     }
+     //An Image Container div (which must have an inner <img>
+     else if ($(element).hasClass('bloom-imageContainer')) {
+         var img = $(element).find("img");
+         $(element).resizable({handles:'nw, ne, sw, se',
+             resize:function (event, ui) {
+                 img.scaleImage({scale:"fit"})
+             }});
+     }
+     // some other kind of resizable
+     else {
+         $(element).resizable({handles:'nw, ne, sw, se',
+             resize:function (event, ui) {
+                 img.scaleImage({scale:"fit"})
+             }});
+
+     }
+ }
+
+ //---------------------------------------------------------------------------------
+
  jQuery(document).ready(function() {
 
 
@@ -196,6 +346,8 @@ function MakeSourceTextDivForGroup(group) {
             $(this).wrapInner("<div class='marginBox'></div>");
         }
      });
+
+     AddToolbox();
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     jQuery("textarea").blur(function() {
@@ -366,25 +518,10 @@ function MakeSourceTextDivForGroup(group) {
     Cleanup();
 
     //make images look click-able when you cover over them
-    jQuery(".bloom-imageContainer").mouseenter(function() {
-//        var pasteButtonClass = 'pasteImageButton';
-//        var chooseButtonClass = 'changeImageButton';
-        var buttonModifier="largeImageButton";
-        if($(this).height() < 80) {
-            buttonModifier = 'smallImageButton';
-        }
-        $(this).prepend("<button class='pasteImageButton "+buttonModifier+"' title='Paste Image'></button>");
-        $(this).prepend("<button class='changeImageButton "+buttonModifier+"' title='Change Image'></button>");
-        $(this).addClass('hoverUp');
-    }).mouseleave(function() {
-        $(this).removeClass('hoverUp');
-        $(this).find(".changeImageButton").each(function() {
-            $(this).remove()
+    jQuery(".bloom-imageContainer").each(function() {
+            SetupImageContainer(this);
         });
-        $(this).find(".pasteImageButton").each(function() {
-            $(this).remove()
-            });
-    });
+
     
     jQuery(".bloom-draggable").mouseenter(function() {
         $(this).prepend("<button class='moveButton' title='Move'></button>");
@@ -444,6 +581,8 @@ function MakeSourceTextDivForGroup(group) {
             }
         });
 
+
+
     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
     // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
@@ -485,36 +624,9 @@ function MakeSourceTextDivForGroup(group) {
             handle: '.bloom-imageContainer' });//without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
 
     $(".bloom-resizable").each(function() {
-        var imgContainer = $(this).find(".bloom-imageContainer");
-         /* The case here is that the thing with this class actually has an
-         inner image, as is the case for the Picture Dictionary.
-         The key, non-obvious, difficult requirement is keeping the text below
-         a picture dictionary item centered underneath the image.  I'd be
-         surprised if this wasn't possible in CSS, but I'm not expert enough.
-         So, I switched from having the image container be resizable, to having the
-         whole div (image+headwords) be resizable, then use the "alsoResize"
-         parameter to make the imageContainer resize.  Then, in order to make
-         the image resize in real-time as you're dragging, I use the "resize"
-         event to scale the image up proportionally (and centered) inside the
-         newly resized container.
-        */
-        if(imgContainer != null)        {
-            var img = $(this).find(".bloom-imageContainer img");
-            $(this).resizable({handles: 'nw, ne, sw, se', alsoResize: imgContainer,
-            resize: function(event,ui){img.scaleImage({scale: "fit"})}});
-        }
-        /* just a normal image within a <div class='imageContainer' */
-        else {
-            $(".bloom-resizable").resizable({handles: 'nw, ne, sw, se'});
-        }
-
+        SetupResizableElement(this);
     });
 
-    $(".bloom-resizable").mouseenter(function() {
-        $(this).addClass("ui-mouseOver")
-    }).mouseleave(function() {
-        $(this).removeClass("ui-mouseOver")
-    });
 
     //focus on the first editable field
     //$(':input:enabled:visible:first').focus();
