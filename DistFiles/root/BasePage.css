@@ -48,6 +48,94 @@ BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
 }
+DIV.ui-tooltip-content
+{
+	overflow: visible !important;
+}
+/*++++ Experimental Toolbox Stuff*/
+UL.toolbox
+{
+	height: 212px;
+	width: 207px;
+	/*+placement:shift -33px -1px;*/
+	position: relative;
+	left: -33px;
+	top: -1px;
+}
+UL.toolbox LI
+{
+	display: inline-block;
+	width: 162px;
+}
+.prototype
+{
+	z-index: 999;
+	background-color: #FFFFFF;
+	color: #000000;
+}
+.prototype.bloom-translationGroup
+{
+	margin-top: 10px;
+	margin-bottom: 13px;
+	margin-left: 13px;
+	margin-right: 10px;
+	height: 44px;
+	background-color: #F4F4F5;
+	color: #000000;
+	text-align: center;
+	padding-bottom: 0px;
+	padding-top: 17px;
+}
+.prototype.bloom-editable
+{
+	margin-top: 10px;
+	margin-bottom: 13px;
+	margin-left: 13px;
+	margin-right: 10px;
+	height: 48px;
+	background-color: #F4F4F5;
+	color: #000000;
+	text-align: left;
+	padding-bottom: 0px;
+}
+.prototype.bloom-editable.heading1
+{
+	font-weight: bold;
+	height: 30px;
+	text-align: center;
+}
+.prototype.bloom-translationGroup DIV
+{
+	display: block !important;
+}
+.prototype.bloom-imageContainer IMG
+{
+	width: 68px;
+	height: 57px;
+	/*+placement:shift 0px -11px;*/
+	position: relative;
+	left: 0px;
+	top: -11px;
+}
+.prototype.bloom-imageContainer
+{
+	margin-top: 10px;
+	margin-bottom: 13px;
+	margin-left: 13px;
+	margin-right: 10px;
+	height: 54px;
+	background-color: #F4F4F5;
+	color: #000000;
+	text-align: center;
+	padding-bottom: 0px;
+	padding-top: 17px;
+	width: 162px;
+}
+/*---- End Experimental Toolbox Stuff*/
+.bloom-imageContainer
+{
+	min-height: 50px;
+}
 TEXTAREA, DIV.bloom-editable
 {
 	resize: none;
@@ -55,6 +143,8 @@ TEXTAREA, DIV.bloom-editable
 	overflow: hidden;
 	font-size: 14pt;
 	line-height: 27.6pt;
+	min-height: 20px;
+	width: 100%;
 }
 DIV.bloom-page
 {
