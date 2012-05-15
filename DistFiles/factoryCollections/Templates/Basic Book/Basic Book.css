@@ -277,18 +277,11 @@ DIV.imageWholePage TABLE
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
 DIV.textWholePage DIV.bloom-translationGroup
 {
-	/*+placement:anchor-top-left 27px 3px;*/
-	position: absolute;
-	left: 27px;
-	top: 3px;
-	width: 498px;
-	max-height: 716px;
+	width: 100%;
+	max-height: 100%;
 }
 DIV.textWholePage DIV.bloom-translationGroup DIV
 {
-	margin-top: 26px;
-	margin-left: 34px;
-	margin-right: 39px;
 	min-height: 67px;
 	height: 30%;
 }
