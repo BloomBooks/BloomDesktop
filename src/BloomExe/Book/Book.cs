@@ -339,12 +339,13 @@ namespace Bloom.Book
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
+			AddUISettings(dom);
 			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			return dom;
 		}
 
 		/// <summary>
-		/// stick in a json with various values we want to make available to the javascript
+		/// stick in a json with various string values/translations we want to make available to the javascript
 		/// </summary>
 		/// <param name="dom"></param>
 		private void AddUIDictionary(XmlDocument dom)
@@ -359,25 +360,45 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.VernacularLanguageName);
 			if (!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
-				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code));
+				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			if (!string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
 				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
 			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _collectionSettings.VernacularLanguageName);
-			d.Add("{N1}", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code));
+			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
-			//REVIEW: this is deviating a bit from the normal use of the dictionary...
-			d.Add("urlOfUIFiles", "file:///"+ _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
+			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
+
+			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+		}
+
+		/// <summary>
+		/// stick in a json with various settings we want to make available to the javascript
+		/// </summary>
+		private void AddUISettings(XmlDocument dom)
+		{
+			XmlElement element = dom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
+			if (element != null)
+				element.ParentNode.RemoveChild(element);
+
+			element = dom.CreateElement("script");
+			element.SetAttribute("type", "text/javascript");
+			element.SetAttribute("id", "ui-settings");
+			var d = new Dictionary<string, string>();
+
+			d.Add("urlOfUIFiles", "file:///" + _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
 			if (!string.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
 
-			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
+			d.Add("languageForNewTextBoxes", _collectionSettings.Language1Iso639Code);
 
-			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+			element.InnerText = string.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
+
+			dom.SelectSingleNode("//head").InsertAfter(element, null);
 		}
 
 		private static void AddDictionaryValue(XmlDocument dom, XmlElement dictionaryDiv, string key, string value)
@@ -1270,7 +1291,7 @@ namespace Bloom.Book
 			{
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.VernacularLanguageName, true);
-				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetNationalLanguage1Name(_collectionSettings.Language2Iso639Code), true);
+				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);
 				data.AddGenericLanguageString("country", _collectionSettings.Country, true);

@@ -54,79 +54,80 @@ function Cleanup() {
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
  //onto the page
 function AddToolbox(){
-    $('div.bloom-page.enablePageCustomization').each(function() {
-             $(this).find('.marginBox').droppable({
-                 hoverClass: "ui-state-hover",
-                 accept: function() { return true; },
-                 drop: function(event, ui) {
-                             //is it being dragged in from a toolbox, or just moved around?
-                    if($(ui.draggable).hasClass('prototype')){
-                         var x = $(ui.draggable).clone();
-                        //    $(x).text("");
-                        $(this).append($(x));
-                        $(this).find('.prototype.bloom-imageContainer')
-                             .each(function(){SetupImageContainer(this)});
+    $('div.bloom-page.enablePageCustomization').each(function () {
+        $(this).find('.marginBox').droppable({
+            hoverClass: "ui-state-hover",
+            accept: function () { return true; },
+            drop: function (event, ui) {
+                //is it being dragged in from a toolbox, or just moved around?
+                if ($(ui.draggable).hasClass('toolbox')) {
+                    var x = $(ui.draggable).clone();
+                    //    $(x).text("");
+                    $(this).append($(x));
+                    $(this).find('.toolbox.bloom-imageContainer')
+                             .each(function () { SetupImageContainer(this) });
 
-                     $(this).find('.prototype')
+                    $(this).find('.toolbox')
                             .removeAttr("style")
-                            .draggable({containment: "parent"})
-                            .resizable({handles:'nw, ne, sw, se',containment: "parent"})
-                            .removeClass("prototype")
-                           .each(function(){SetupResizableElement(this)})
-                           .each(function(){SetupDeletable(this)});
-                    }
-                 }
-             });
-//This is what we really will want:
-//---->           var translationBox = '<div class="bloom-translationGroup bloom-resizable bloom-draggable prototype"><div class="bloom-editable">11</div></div>';
-//But until we can set up translationGroups dynamically, we just put in a dumb text box:
-            var heading1Box = '<div class="bloom-editable bloom-resizable bloom-draggable heading1 bloom-deletable prototype" contenteditable="true">Heading</div>';
-            var textBox = '<div class="bloom-editable bloom-resizable bloom-draggable  bloom-deletable prototype"  contenteditable="true">Text</div>';
-            var imageBox = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable prototype"><img src="placeholder.png"></div>';
+                            .draggable({ containment: "parent" })
+                            .removeClass("toolbox")
+                           .each(function () { SetupResizableElement(this) })
+                           .each(function () { SetupDeletable(this) });
+                }
+            }
+        });
+        var lang1ISO = GetSettings().languageForNewTextBoxes;
+        var translationBox = '<div class="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable toolbox"><div class="bloom-editable bloom-content1" lang="' + lang1ISO + '">Text</div></div>';
+        var heading1Box = '<div class="bloom-translationGroup heading1 bloom-resizable bloom-deletable bloom-draggable toolbox"><div class="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading</div></div>';
+        var imageBox = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable toolbox"><img src="placeholder.png"></div>';
 
-             $(this).qtip({
-                 content: "<h3>Toolbox</h3><ul class='toolbox'><li>"+heading1Box+"</li><li>"+textBox+"</li><li>"+imageBox+"</li></ul>"
-                 ,show: {ready: true}
-                 ,hide : false
-                 ,position: {at: 'right center',
-                                     my: 'left center'
-                                 }
-                 ,events: {
-                              render: function(event, api) {
-                                  $(this).find('.prototype').draggable({
-                                      //note: this is just used for drawing what you drag around..
-                                      //it isn't what the droppable is actually given
-                                     helper: function(event){
-                                         var tearOff = $(this).clone();
-                                        return tearOff;}
-
-                                  });
-                              }
+        $(this).qtip({
+            content: "<h3>Toolbox</h3><ul class='toolbox'><li>" + heading1Box + "</li><li>" + translationBox + "</li><li>" + imageBox + "</li></ul>"
+                 , show: { ready: true }
+                 , hide: false
+                 , position: { at: 'right center',
+                     my: 'left center'
                  }
-                 ,style: {
-                        width: 200,
-                        height :300,
-                         classes: 'ui-tooltip-dark',
-                        tip : {corner: false}
+                 , events: {
+                     render: function (event, api) {
+                         $(this).find('.toolbox').draggable({
+                             //note: this is just used for drawing what you drag around..
+                             //it isn't what the droppable is actually given
+                             helper: function (event) {
+                                 var tearOff = $(this).clone()//.removeClass('toolbox');//by removing this, we show it with the actual size it will be when dropped
+                                 return tearOff;
+                             }
+
+                         });
                      }
-            })
+                 }
+                 , style: {
+                     width: 200,
+                     height: 300,
+                     classes: 'ui-tooltip-dark',
+                     tip: { corner: false }
+                 }
+        })
 
         $(this).qtipSecondary({
-                         content: "<h1>Notice</h1>This is just a demonstration of a future template-making feature. You can drag items from the toolbox onto the page. <b>This is not ready to use for real work.</b> In particular, the text boxes are just toys."
-                         ,show: {ready: true}
-                         ,hide : false
-                         ,position: {at: 'right top',
-                                             my: 'left top'
-                                         },
-                        style: { classes: 'ui-tooltip-red',
-                            tip : {corner: false}}
-                    })
-         })
+            content: "Drag items from the toolbox onto the page.<br/></br><b>Notice</b><br/>This is just a demonstration of a future template-making feature. Much more work is needed before it is ready for real work.</b>"
+                         , show: { ready: true }
+                         , hide: false
+                         , position: { at: 'right top',
+                             my: 'left top'
+                         },
+            style: { classes: 'ui-tooltip-red',
+                tip: { corner: false}
+            }
+        })
+    })
 }
 
+ //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
 
     var divForBubble = $(group).clone();
+    $(divForBubble).removeAttr('style');
 
     //make the source texts in the bubble read-only
     $(divForBubble).find("textarea, div").each(function() {
@@ -188,7 +189,7 @@ function MakeSourceTextDivForGroup(group) {
                 languageName = iso;
             var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            if(iso=== dictionary.defaultSourceLanguage) {
+            if(iso=== GetSettings().defaultSourceLanguage) {
                 selectorOfDefaultTab="li:#"+iso;
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
@@ -349,10 +350,37 @@ function MakeSourceTextDivForGroup(group) {
      else {
          $(element).resizable({
              handles:'nw, ne, sw, se',
-             containment: "parent"
+             containment: "parent",
+              stop: ResizeUsingPercentages,
+             start: function(e,ui){
+                if($(ui.element).css('top')=='0px' && $(ui.element).css('left')=='0px'){
+                    $(ui.element).data('doRestoreRelativePosition', 'true');
+                }
+             }
          });
 
      }
+ }
+
+ //jquery resizable normally uses pixels. This makes it use percentages, which are mor robust across page size/orientation changes
+function ResizeUsingPercentages(e,ui){
+    var parent = ui.element.parent();
+    ui.element.css({
+        width: ui.element.width()/parent.width()*100+"%",
+        height: ui.element.height()/parent.height()*100+"%"
+    });
+
+    //after any resize jquery adds an absolute position, which we don't want unless the user has resized
+    //so this removes it, unless we previously noted that the user had moved it
+    if($(ui.element).data('doRestoreRelativePosition'))
+    {
+        ui.element.css({
+            position: '',
+            top: '',
+            left: ''
+        });
+    }
+    $(ui.element).removeData('hadPreviouslyBeenRelocated');
  }
 
  //---------------------------------------------------------------------------------
@@ -645,7 +673,7 @@ function MakeSourceTextDivForGroup(group) {
 
 
     //only make things deletable if they have the deletable class *and* page customization is enabled
-     $(".enablePageCustomization.bloom-deletable").each(function() {
+     $("DIV.bloom-page.enablePageCustomization DIV.bloom-deletable").each(function() {
              SetupDeletable(this);
          });
 
@@ -750,7 +778,6 @@ function SetupTopicDialog() {
         if ($(this).css('cursor') == 'not-allowed')
             return;
 
-        // url = GetDictionary().urlOfUIFiles + "/topicDialog.htm";
         var dialogContents = FindOrCreateTopicDialogDiv();
         var dlg = $(dialogContents).dialog({
             autoOpen: "true",

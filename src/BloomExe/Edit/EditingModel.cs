@@ -191,7 +191,7 @@ namespace Bloom.Edit
 
 					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
-													_collectionSettings.GetNationalLanguage1Name("en"))
+													_collectionSettings.GetLanguage2Name("en"))
 									{
 //					            		Selected =
 //					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==

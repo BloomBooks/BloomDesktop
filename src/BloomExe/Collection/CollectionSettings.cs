@@ -49,7 +49,7 @@ namespace Bloom.Collection
 			return exactLanguageMatch.Name;
 		}
 
-		public string GetNationalLanguage1Name(string inLanguage)
+		public string GetLanguage2Name(string inLanguage)
 		{
 			//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 			//So, we'd rather have GetBestLanguageMatch()

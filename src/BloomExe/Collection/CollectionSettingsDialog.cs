@@ -31,7 +31,7 @@ namespace Bloom.Collection
 		private void UpdateDisplay()
 		{
 			_vernacularLanguageName.Text = string.Format("{0} ({1})", _collectionSettings.GetVernacularName("en"), _collectionSettings.Language1Iso639Code);
-			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _collectionSettings.GetNationalLanguage1Name("en"), _collectionSettings.Language2Iso639Code);
+			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _collectionSettings.GetLanguage2Name("en"), _collectionSettings.Language2Iso639Code);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{

@@ -57,79 +57,54 @@ UL.toolbox
 {
 	height: 212px;
 	width: 207px;
-	/*+placement:shift -33px -1px;*/
-	position: relative;
-	left: -33px;
-	top: -1px;
+	margin-left: 31px;
+	margin-top: 15px;
+	background-color: transparent;
 }
 UL.toolbox LI
 {
 	display: inline-block;
 	width: 162px;
 }
-.prototype
+.toolbox
 {
 	z-index: 999;
 	background-color: #FFFFFF;
-	color: #000000;
+	width: 100%;
 }
-.prototype.bloom-translationGroup
+.toolbox.bloom-translationGroup
 {
-	margin-top: 10px;
-	margin-bottom: 13px;
-	margin-left: 13px;
-	margin-right: 10px;
-	height: 44px;
-	background-color: #F4F4F5;
-	color: #000000;
-	text-align: center;
-	padding-bottom: 0px;
-	padding-top: 17px;
-}
-.prototype.bloom-editable
-{
-	margin-top: 10px;
-	margin-bottom: 13px;
-	margin-left: 13px;
-	margin-right: 10px;
-	height: 48px;
 	background-color: #F4F4F5;
 	color: #000000;
 	text-align: left;
-	padding-bottom: 0px;
+	height: 57px;
 }
-.bloom-editable.heading1
+.bloom-translationGroup.heading1
 {
 	font-weight: bold;
-	height: 30px;
 	text-align: center;
+	height: 34px;
 }
-.prototype.bloom-translationGroup DIV
+.toolbox.bloom-translationGroup DIV
+{
+	display: block !important;
+	height: 100%;
+}
+.toolbox.bloom-translationGroup.heading1
 {
 	display: block !important;
 }
-.prototype.bloom-imageContainer IMG
+.toolbox.bloom-imageContainer IMG
 {
-	width: 68px;
-	height: 57px;
-	/*+placement:shift 0px -11px;*/
-	position: relative;
-	left: 0px;
-	top: -11px;
+	width: 51%;
+	height: 77px;
 }
-.prototype.bloom-imageContainer
+.toolbox.bloom-imageContainer
 {
-	margin-top: 10px;
-	margin-bottom: 13px;
-	margin-left: 13px;
-	margin-right: 10px;
-	height: 54px;
 	background-color: #F4F4F5;
 	color: #000000;
 	text-align: center;
-	padding-bottom: 0px;
-	padding-top: 17px;
-	width: 162px;
+	height: 91px;
 }
 /*---- End Experimental Toolbox Stuff*/
 .bloom-imageContainer
@@ -176,9 +151,10 @@ P
 	margin-left: 1cm;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV.bloom-translationGroup DIV
+DIV.bloom-translationGroup DIV.bloom-editable
 {
 	display: none;
+	height: 100%;
 }
 /*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
 DIV.bloom-page:not(.bloom-frontMatter) .bloom-content1, DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2, DIV.bloom-page:not(.bloom-frontMatter) .bloom-content3
