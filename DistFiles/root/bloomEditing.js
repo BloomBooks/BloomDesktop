@@ -54,7 +54,7 @@ function Cleanup() {
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
  //onto the page
 function AddToolbox(){
-    $('div.bloom-page.showToolbox').each(function() {
+    $('div.bloom-page.enablePageCustomization').each(function() {
              $(this).find('.marginBox').droppable({
                  hoverClass: "ui-state-hover",
                  accept: function() { return true; },
@@ -72,16 +72,17 @@ function AddToolbox(){
                             .draggable({containment: "parent"})
                             .resizable({handles:'nw, ne, sw, se',containment: "parent"})
                             .removeClass("prototype")
-                           .each(function(){SetupResizableElement(this)});
+                           .each(function(){SetupResizableElement(this)})
+                           .each(function(){SetupDeletable(this)});
                     }
                  }
              });
 //This is what we really will want:
 //---->           var translationBox = '<div class="bloom-translationGroup bloom-resizable bloom-draggable prototype"><div class="bloom-editable">11</div></div>';
 //But until we can set up translationGroups dynamically, we just put in a dumb text box:
-            var heading1Box = '<div class="bloom-editable bloom-resizable bloom-draggable heading1 prototype" contenteditable="true">Heading</div>';
-            var textBox = '<div class="bloom-editable bloom-resizable bloom-draggable prototype" contenteditable="true">Text</div>';
-            var imageBox = '<div class="bloom-imageContainer bloom-resizable bloom-draggable prototype"><img src="placeholder.png"></div>';
+            var heading1Box = '<div class="bloom-editable bloom-resizable bloom-draggable heading1 bloom-deletable prototype" contenteditable="true">Heading</div>';
+            var textBox = '<div class="bloom-editable bloom-resizable bloom-draggable  bloom-deletable prototype"  contenteditable="true">Text</div>';
+            var imageBox = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable prototype"><img src="placeholder.png"></div>';
 
              $(this).qtip({
                  content: "<h3>Toolbox</h3><ul class='toolbox'><li>"+heading1Box+"</li><li>"+textBox+"</li><li>"+imageBox+"</li></ul>"
@@ -260,6 +261,22 @@ function MakeSourceTextDivForGroup(group) {
      return whatToSay;
  }
 
+ //add a delete button which shows up when you hover
+ function SetupDeletable(containerDiv) {
+     $(containerDiv).mouseenter(
+         function () {
+             var button = $("<button class='deleteButton smallImageButton' title='Delete'></button>");
+             $(button).click(function(){
+                 $(containerDiv).remove()});
+             $(this).prepend(button);
+         })
+        .mouseleave(function () {
+            $(this).find(".deleteButton").each(function () {
+                $(this).remove()
+            });
+    });
+ }
+
  //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
  //the img to fit the available space
  function SetupImageContainer(containerDiv) {
@@ -310,8 +327,10 @@ function MakeSourceTextDivForGroup(group) {
           newly resized container.
           */
          var img = $(childImgContainer).find("img");
-         $(element).resizable({handles:'nw, ne, sw, se', alsoResize:childImgContainer,
-             resize:function (event, ui) {
+         $(element).resizable({handles:'nw, ne, sw, se',
+             containment: "parent",
+             alsoResize:childImgContainer,
+            resize:function (event, ui) {
                  img.scaleImage({scale:"fit"})
              }});
 
@@ -321,16 +340,17 @@ function MakeSourceTextDivForGroup(group) {
      else if ($(element).hasClass('bloom-imageContainer')) {
          var img = $(element).find("img");
          $(element).resizable({handles:'nw, ne, sw, se',
+             containment: "parent",
              resize:function (event, ui) {
                  img.scaleImage({scale:"fit"})
              }});
      }
      // some other kind of resizable
      else {
-         $(element).resizable({handles:'nw, ne, sw, se',
-             resize:function (event, ui) {
-                 img.scaleImage({scale:"fit"})
-             }});
+         $(element).resizable({
+             handles:'nw, ne, sw, se',
+             containment: "parent"
+         });
 
      }
  }
@@ -623,7 +643,14 @@ function MakeSourceTextDivForGroup(group) {
     $(".bloom-draggable").draggable({containment: "parent",
             handle: '.bloom-imageContainer' });//without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
 
-    $(".bloom-resizable").each(function() {
+
+    //only make things deletable if they have the deletable class *and* page customization is enabled
+     $(".enablePageCustomization.bloom-deletable").each(function() {
+             SetupDeletable(this);
+         });
+
+
+     $(".bloom-resizable").each(function() {
         SetupResizableElement(this);
     });
 

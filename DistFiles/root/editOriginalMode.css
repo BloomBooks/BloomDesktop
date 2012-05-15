@@ -50,3 +50,11 @@ DIV.marginBox
 	top: 14mm;
 	height: 175mm;
 }
+.enablePageCustomization DIV.marginBox
+{
+	border: thin dotted rgba(133, 133, 193, 0.9) !important;
+}
+DIV.marginBox
+{
+	/*[disabled]border:thin dotted rgba(133, 133, 193, 0.9);*/
+}
