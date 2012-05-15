@@ -116,6 +116,18 @@ BUTTON.pasteImageButton
 	/*[disabled]background-position:13px 3px;*/
 	background-color: #0C8597;
 }
+BUTTON.deleteButton
+{
+	/*+placement:anchor-bottom-left;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	background-image: url("deleteButtonSmall.png") !important;
+	width: 40px;
+	height: 40px;
+	z-index: 100;
+	/*[disabled]background-position:13px 3px;*/
+}
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon
 {
