@@ -130,9 +130,9 @@ namespace Bloom.Library
 			_bookSelection.SelectBook(b);
 		}
 
-		public void UpdateThumbnailAsync(Action<Book.Book,Image> callback)
+		public void UpdateThumbnailAsync(Action<Book.Book, Image> callback, Action<Book.Book, Exception> errorCallback)
 		{
-			_bookSelection.CurrentSelection.RebuildThumbNailAsync(callback);
+			_bookSelection.CurrentSelection.RebuildThumbNailAsync(callback,errorCallback);
 		}
 
 		public void MakeBloomPack(string path)

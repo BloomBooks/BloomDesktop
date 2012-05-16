@@ -62,7 +62,7 @@ namespace Bloom.Book
 		}
 
 
-		public override void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
+		public override void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			callback(Resources.Error70x70);
 		}
@@ -152,6 +152,7 @@ namespace Bloom.Book
 		static private int _coverColorIndex = 0;
 		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(15,173,197), Color.FromArgb(152,208,185), Color.FromArgb(194,166,191)};
 		private IProgress _log= new StringBuilderProgress();
+		private bool _haveCheckedForErrorsAtLeastOnce;
 
 		//for moq'ing only
 		public Book(){}
@@ -283,7 +284,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback)
+		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			try
 			{
@@ -308,7 +309,7 @@ namespace Bloom.Book
 
 				folderForCachingThumbnail = _storage.FolderPath;
 
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback);
+				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback,errorCallback);
 			}
 			catch (Exception err)
 			{
@@ -978,6 +979,11 @@ namespace Bloom.Book
 
 		public IEnumerable<IPage> GetPages()
 		{
+			if (!_haveCheckedForErrorsAtLeastOnce)
+			{
+				CheckForErrors();
+			}
+
 			if (_log.ErrorEncountered)
 				yield break;
 
@@ -1659,11 +1665,30 @@ namespace Bloom.Book
 
 		}
 
-		public void RebuildThumbNailAsync(Action<Book,Image> callback)
+		public void RebuildThumbNailAsync(Action<Book,Image> callback, Action<Book, Exception> errorCallback)
 		{
 			_storage.RemoveBookThumbnail();
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
-			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image));
+			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image),
+				error=>
+					{
+						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
+						//It does help in the case where things are bad, so no thumbnail was created, but by then probably the user has already had some big error.
+						//On the other hand, given that they have this bad book in their collection now, it's good to just remind them that it's broken and not
+						//keep showing green error boxes.
+						CheckForErrors();
+						errorCallback(this, error);
+					});
+		}
+
+		private void CheckForErrors()
+		{
+			var errors = _storage.GetValidateErrors();
+			_haveCheckedForErrorsAtLeastOnce = true;
+			if (!string.IsNullOrEmpty(errors))
+			{
+				_log.WriteError(errors);
+			}
 		}
 
 		public SizeAndOrientation GetSizeAndOrientation()

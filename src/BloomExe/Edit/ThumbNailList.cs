@@ -138,7 +138,16 @@ namespace Bloom.Edit
 
 			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page),
 													  Palette.TextAgainstDarkBackground,
-													  false, image => RefreshOneThumbnailCallback(page, image));
+													  false, image => RefreshOneThumbnailCallback(page, image),
+													  error=> HandleThumbnailerError(page, error));
+		}
+
+		private void HandleThumbnailerError(IPage page, Exception error)
+		{
+#if DEBUG
+			Debug.Fail("Debug only" + error.Message);
+#endif
+			RefreshOneThumbnailCallback(page, Resources.Error70x70);
 		}
 
 		private void RefreshOneThumbnailCallback(IPage page, Image image)

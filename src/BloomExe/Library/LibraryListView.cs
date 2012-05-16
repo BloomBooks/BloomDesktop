@@ -191,7 +191,8 @@ namespace Bloom.Library
 			flowLayoutPanel.Controls.Add(item);
 
 			book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,
-												  image => RefreshOneThumbnail(book, image));
+												  image => RefreshOneThumbnail(book, image),
+												  error=> RefreshOneThumbnail(book, Resources.Error70x70));
 
 		}
 
@@ -337,7 +338,12 @@ namespace Bloom.Library
 
 		private void RecreateOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(RefreshOneThumbnail);
+			_model.UpdateThumbnailAsync(RefreshOneThumbnail, HandleThumbnailerErrror);
+		}
+
+		private void HandleThumbnailerErrror(Book.Book book, Exception error)
+		{
+			RefreshOneThumbnail(book, Resources.Error70x70);
 		}
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)

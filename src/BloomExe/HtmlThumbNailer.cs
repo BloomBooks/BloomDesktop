@@ -47,7 +47,17 @@ namespace Bloom
 		{
 			if (_orders.Count > 0)
 			{
-				ProcessOrder(_orders.Dequeue());
+				ThumbnailOrder thumbnailOrder = _orders.Dequeue();
+				try
+				{
+					ProcessOrder(thumbnailOrder);
+				}
+				catch (Exception error)
+				{
+					//putting up a green box here, because, say, the page was messed up, is bad manners
+					Logger.WriteEvent("HtmlThumbNailer reported exception:{0}",error.Message);
+					thumbnailOrder.ErrorCallback(error);
+				}
 			}
 		}
 
@@ -67,7 +77,7 @@ namespace Bloom
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
 		/// <param name="drawBorderDashed"></param>
 		/// <returns></returns>
-		public void GetThumbnailAsync(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed, Action<Image> callback)
+		public void GetThumbnailAsync(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
 
@@ -106,6 +116,7 @@ namespace Bloom
 								ThumbNailFilePath = thumbNailFilePath,
 								BackgroundColorOfResult = backgroundColorOfResult,
 								Callback = callback,
+								ErrorCallback = errorCallback,
 								Document = document,
 								DrawBorderDashed = drawBorderDashed,
 								FolderForThumbNailCache = folderForThumbNailCache,
@@ -445,6 +456,7 @@ namespace Bloom
 	{
 		public Image ResultingThumbnail;
 		public Action<Image> Callback;
+		public Action<Exception> ErrorCallback;
 		public bool DrawBorderDashed;
 		public XmlDocument Document;
 		public Color BackgroundColorOfResult;
