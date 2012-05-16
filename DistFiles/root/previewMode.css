@@ -132,10 +132,10 @@ DIV.numberedPage:nth-of-type(even):after
 {
 	content: counter(pageNumber);
 	font-size: 14pt;
-	/*+placement:anchor-bottom-right 60px 2px;*/
+	/*+placement:anchor-bottom-right 60px 53px;*/
 	position: absolute;
 	right: 60px;
-	bottom: 2px;
+	bottom: 53px;
 	text-align: right;
 	margin-top: -7mm;
 }
