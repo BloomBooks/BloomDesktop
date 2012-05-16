@@ -405,8 +405,8 @@ namespace BloomTests.Book
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
 			Assert.AreEqual(3, scriptNodes.Count);
-			Assert.IsNotEmpty(scriptNodes[1].Attributes["src"].Value);
-			Assert.IsTrue(scriptNodes[1].Attributes["src"].Value.Contains(".js"));
+			Assert.IsNotEmpty(scriptNodes[2].Attributes["src"].Value);
+			Assert.IsTrue(scriptNodes[2].Attributes["src"].Value.Contains(".js"));
 		}
 
 
