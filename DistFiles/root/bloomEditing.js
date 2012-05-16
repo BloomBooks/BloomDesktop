@@ -479,6 +479,31 @@ function ResizeUsingPercentages(e,ui){
         };
     }
 
+     //Add little language tag bubbles
+     $("div.bloom-editable").each(function(){
+         var key = $(this).attr("lang");
+         var dictionary = GetDictionary();
+         var whatToSay = dictionary[key];
+         if(whatToSay == null)
+            whatToSay = key;//just show the code
+
+         $(this).qtip({
+             content: whatToSay,
+
+             position: {
+                 my: 'center left',
+                 at: 'top right',
+                 adjust: {y: 20}
+             },
+
+             style: {
+                 classes: 'ui-tooltip-blue'
+             }
+         });
+     //     .removeData('qtip');// allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+     });
+
+    //Add popup yellow bubbles to match title attributes
     $("*[title]").qtip({ position: {at: 'right center',
                 my: 'left center'
             },
@@ -498,7 +523,8 @@ function ResizeUsingPercentages(e,ui){
         pos = {
            at: 'right bottom', //I like this, but it doesn't reposition well -->'right center',
           my: 'top left', //I like this, but it doesn't reposition well-->  'left center',
-            viewport: $(window)
+            viewport: $(window),
+            adjust:{y:-20}
         };
         var whatToSay = GetLocalizedHint(this);
         var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
