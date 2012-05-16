@@ -51,6 +51,8 @@ BODY
 DIV.ui-tooltip-content
 {
 	overflow: visible !important;
+	font-size: 9pt;
+	padding: 0px 9px;
 }
 /*++++ Experimental Toolbox Stuff*/
 UL.toolbox

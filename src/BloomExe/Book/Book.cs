@@ -890,6 +890,16 @@ namespace Bloom.Book
 			get { return IsInEditableLibrary && !HasFatalError; }
 		}
 
+
+		/// <summary>
+		/// In a vernacular library, we want to hide books that are meant only for people making shells
+		/// </summary>
+		public bool IsSuitableForVernacularLibrary
+		{
+			get { return GetMetaValue("SuitableForMakingVernacularBooks", "definitely") == "definitely"; }//the 'template maker' says "no"
+		}
+
+
 		/// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
 		/// </summary>

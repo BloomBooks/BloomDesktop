@@ -148,8 +148,10 @@ namespace Bloom.Library
 			{
 				try
 				{
-					if(collection.Type== BookCollection.CollectionType.TheOneEditableCollection //don't exclude anything from the editable collection
-						||  (!_model.IsShellProject || book.IsSuitableForMakingShells))
+					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && book.IsSuitableForMakingShells) ||
+							  (!_model.IsShellProject && book.IsSuitableForVernacularLibrary);
+
+					if(isSuitableSourceForThisEditableCollection || collection.Type== BookCollection.CollectionType.TheOneEditableCollection)
 					{
 						loadedAtLeastOneBook = true;
 						AddOneBook(book, flowLayoutPanel);
