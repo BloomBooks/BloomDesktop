@@ -57,10 +57,6 @@ DIV.calendarMonthTop DIV.imageHolder
 }
 .calendarMonthBottom TABLE
 {
-	/*+placement:anchor-bottom-left 0 0;*/
-	position: absolute;
-	left: 0;
-	bottom: 0;
 }
 .calendarMonthBottom TH
 {
@@ -70,30 +66,37 @@ DIV.calendarMonthTop DIV.imageHolder
 .calendarMonthBottom TD
 {
 	width: 96px;
-	height: 74px;
+	height: 50px;
 	border: 1px solid #000000;
-	margin: 0;
 	padding: 0 0 0 2px;
 	vertical-align: top;
+}
+TD P
+{
+	margin-left: 1cm;
+	/*+placement:shift -35px -1px;*/
+	position: relative !important;
+	left: -35px !important;
+	top: -1px !important;
 }
 .calendarMonthBottom TD TEXTAREA
 {
 	width: 90%;
 	height: 62%;
 	font-size: 9pt;
-	/*+placement:shift 4px -9px;*/
+	/*+placement:shift 5px -3px;*/
 	position: relative;
-	left: 4px;
-	top: -9px;
+	left: 5px;
+	top: -3px;
 	font-size: 10pt;
 	line-height: 11pt;
 }
 .calendarBottomPageHeader
 {
 	text-align: center;
-	font: 35.3pt sans-serif;
+	font: 24pt sans-serif;
 	width: 100%;
-	height: 64px;
+	height: 32px;
 }
 .calendarMonthBottom TD P
 {

@@ -55,9 +55,13 @@ function updateDom(configuration) {
 }
 
 function generateMonth(year, month, monthName, dayAbbreviations) {
+    var marginBox = new Element("div", {
+            "class": "marginBox"});
+
     var monthPage = new Element("div", {
         "class": "bloom-page bloom-required A5Landscape calendarMonthBottom", "data-page": "required"});
-    new CalConf(monthPage).draw(year, month, monthName, dayAbbreviations);
+    new CalConf(marginBox).draw(year, month, monthName, dayAbbreviations);
+    marginBox.inject(monthPage,'top');
     return monthPage;
 }
 
