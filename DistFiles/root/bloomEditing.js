@@ -110,7 +110,7 @@ function AddToolbox(){
         })
 
         $(this).qtipSecondary({
-            content: "Drag items from the toolbox onto the page.<br/></br><b>Notice</b><br/>This is just a demonstration of a future template-making feature. Much more work is needed before it is ready for real work.</b>"
+            content: "<div id='experimentNotice'><img src='file://"+GetSettings().bloomProgramFolder+"/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>"
                          , show: { ready: true }
                          , hide: false
                          , position: { at: 'right top',
