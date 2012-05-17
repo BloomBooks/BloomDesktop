@@ -37,21 +37,21 @@
 			this._splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this._splitContainer2 = new System.Windows.Forms.SplitContainer();
 			this._topBarPanel = new System.Windows.Forms.Panel();
+			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
+			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
+			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
+			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
+			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
+			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+			this._browser1 = new Bloom.Browser();
+			this.betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			this._deletePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._undoButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._cutButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._pasteButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._copyButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
-			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
-			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._browser1 = new Bloom.Browser();
-			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
-			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
-			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
-			this.betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
 			this._splitContainer1.SuspendLayout();
@@ -83,7 +83,7 @@
 			// 
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
 			this._splitContainer1.Size = new System.Drawing.Size(1200, 738);
-			this._splitContainer1.SplitterDistance = 279;
+			this._splitContainer1.SplitterDistance = 225;
 			this._splitContainer1.SplitterWidth = 1;
 			this._splitContainer1.TabIndex = 0;
 			// 
@@ -103,8 +103,8 @@
 			// 
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
-			this._splitContainer2.Size = new System.Drawing.Size(920, 738);
-			this._splitContainer2.SplitterDistance = 753;
+			this._splitContainer2.Size = new System.Drawing.Size(974, 738);
+			this._splitContainer2.SplitterDistance = 815;
 			this._splitContainer2.SplitterWidth = 1;
 			this._splitContainer2.TabIndex = 0;
 			// 
@@ -120,6 +120,102 @@
 			this._topBarPanel.Name = "_topBarPanel";
 			this._topBarPanel.Size = new System.Drawing.Size(478, 66);
 			this._topBarPanel.TabIndex = 3;
+			// 
+			// _menusToolStrip
+			// 
+			this._menusToolStrip.AutoSize = false;
+			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._menusToolStrip.CanOverflow = false;
+			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._contentLanguagesDropdown,
+            this._pageSizeAndOrientationChoices});
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
+			this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
+			this.localizationExtender1.SetLocalizingId(this._menusToolStrip, "EditingView._menusToolStrip");
+			this._menusToolStrip.Location = new System.Drawing.Point(294, 20);
+			this._menusToolStrip.Name = "_menusToolStrip";
+			this._menusToolStrip.Size = new System.Drawing.Size(165, 42);
+			this._menusToolStrip.TabIndex = 2;
+			this._menusToolStrip.Text = "toolStrip1";
+			// 
+			// _contentLanguagesDropdown
+			// 
+			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._contentLanguagesDropdown, null);
+			this.localizationExtender1.SetLocalizationComment(this._contentLanguagesDropdown, null);
+			this.localizationExtender1.SetLocalizingId(this._contentLanguagesDropdown, "._contentLanguagesDropdown");
+			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
+			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
+			this._contentLanguagesDropdown.Text = "Multilingual Settings";
+			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
+			// 
+			// _pageSizeAndOrientationChoices
+			// 
+			this._pageSizeAndOrientationChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._pageSizeAndOrientationChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+			this._pageSizeAndOrientationChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._pageSizeAndOrientationChoices, null);
+			this.localizationExtender1.SetLocalizationComment(this._pageSizeAndOrientationChoices, null);
+			this.localizationExtender1.SetLocalizingId(this._pageSizeAndOrientationChoices, "._pageSizeAndOrientationChoices");
+			this._pageSizeAndOrientationChoices.Name = "_pageSizeAndOrientationChoices";
+			this._pageSizeAndOrientationChoices.Size = new System.Drawing.Size(50, 19);
+			this._pageSizeAndOrientationChoices.Text = "Paper";
+			this._pageSizeAndOrientationChoices.ToolTipText = "Choose a page size and orientation";
+			// 
+			// _splitTemplateAndSource
+			// 
+			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
+			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
+			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
+			this._splitTemplateAndSource.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			// 
+			// _splitTemplateAndSource.Panel1
+			// 
+			this._splitTemplateAndSource.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			// 
+			// _splitTemplateAndSource.Panel2
+			// 
+			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(158, 738);
+			this._splitTemplateAndSource.SplitterDistance = 303;
+			this._splitTemplateAndSource.SplitterWidth = 5;
+			this._splitTemplateAndSource.TabIndex = 0;
+			// 
+			// _editButtonsUpdateTimer
+			// 
+			this._editButtonsUpdateTimer.Enabled = true;
+			this._editButtonsUpdateTimer.Tick += new System.EventHandler(this._editButtonsUpdateTimer_Tick);
+			// 
+			// _handleMessageTimer
+			// 
+			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
+			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
+			// _browser1
+			// 
+			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this.localizationExtender1.SetLocalizableToolTip(this._browser1, null);
+			this.localizationExtender1.SetLocalizationComment(this._browser1, null);
+			this.localizationExtender1.SetLocalizingId(this._browser1, "EditingView.Browser");
+			this._browser1.Location = new System.Drawing.Point(0, 0);
+			this._browser1.Margin = new System.Windows.Forms.Padding(5);
+			this._browser1.Name = "_browser1";
+			this._browser1.Size = new System.Drawing.Size(815, 742);
+			this._browser1.TabIndex = 1;
+			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			// 
 			// _deletePageButton
 			// 
@@ -320,102 +416,6 @@
 			this._copyButton.TextDropShadow = false;
 			this._copyButton.UseVisualStyleBackColor = false;
 			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
-			// 
-			// _menusToolStrip
-			// 
-			this._menusToolStrip.AutoSize = false;
-			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._menusToolStrip.CanOverflow = false;
-			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
-			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._contentLanguagesDropdown,
-            this._pageSizeAndOrientationChoices});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-			this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
-			this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
-			this.localizationExtender1.SetLocalizingId(this._menusToolStrip, "EditingView._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(294, 20);
-			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(165, 42);
-			this._menusToolStrip.TabIndex = 2;
-			this._menusToolStrip.Text = "toolStrip1";
-			// 
-			// _contentLanguagesDropdown
-			// 
-			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.localizationExtender1.SetLocalizableToolTip(this._contentLanguagesDropdown, null);
-			this.localizationExtender1.SetLocalizationComment(this._contentLanguagesDropdown, null);
-			this.localizationExtender1.SetLocalizingId(this._contentLanguagesDropdown, "._contentLanguagesDropdown");
-			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
-			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
-			this._contentLanguagesDropdown.Text = "Multilingual Settings";
-			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
-			// 
-			// _pageSizeAndOrientationChoices
-			// 
-			this._pageSizeAndOrientationChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._pageSizeAndOrientationChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._pageSizeAndOrientationChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.localizationExtender1.SetLocalizableToolTip(this._pageSizeAndOrientationChoices, null);
-			this.localizationExtender1.SetLocalizationComment(this._pageSizeAndOrientationChoices, null);
-			this.localizationExtender1.SetLocalizingId(this._pageSizeAndOrientationChoices, "._pageSizeAndOrientationChoices");
-			this._pageSizeAndOrientationChoices.Name = "_pageSizeAndOrientationChoices";
-			this._pageSizeAndOrientationChoices.Size = new System.Drawing.Size(50, 19);
-			this._pageSizeAndOrientationChoices.Text = "Paper";
-			this._pageSizeAndOrientationChoices.ToolTipText = "Choose a page size and orientation";
-			// 
-			// _browser1
-			// 
-			this._browser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this.localizationExtender1.SetLocalizableToolTip(this._browser1, null);
-			this.localizationExtender1.SetLocalizationComment(this._browser1, null);
-			this.localizationExtender1.SetLocalizingId(this._browser1, "EditingView.Browser");
-			this._browser1.Location = new System.Drawing.Point(0, 0);
-			this._browser1.Margin = new System.Windows.Forms.Padding(5);
-			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(753, 742);
-			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
-			// 
-			// _splitTemplateAndSource
-			// 
-			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
-			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
-			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
-			this._splitTemplateAndSource.Orientation = System.Windows.Forms.Orientation.Horizontal;
-			// 
-			// _splitTemplateAndSource.Panel1
-			// 
-			this._splitTemplateAndSource.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			// 
-			// _splitTemplateAndSource.Panel2
-			// 
-			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(166, 738);
-			this._splitTemplateAndSource.SplitterDistance = 303;
-			this._splitTemplateAndSource.SplitterWidth = 5;
-			this._splitTemplateAndSource.TabIndex = 0;
-			// 
-			// _editButtonsUpdateTimer
-			// 
-			this._editButtonsUpdateTimer.Enabled = true;
-			this._editButtonsUpdateTimer.Tick += new System.EventHandler(this._editButtonsUpdateTimer_Tick);
-			// 
-			// _handleMessageTimer
-			// 
-			this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
-			// 
-			// localizationExtender1
-			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
 			// EditingView
 			// 

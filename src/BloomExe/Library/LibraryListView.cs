@@ -120,20 +120,21 @@ namespace Bloom.Library
 				if (_collectionFlow.Controls.Count > 0)
 					_collectionFlow.SetFlowBreak(_collectionFlow.Controls[_collectionFlow.Controls.Count - 1], true);
 
-				//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-				 invisibleHackPartner = new Label() { Text = "", Width=0 };
-				_collectionFlow.Controls.Add(invisibleHackPartner);
-
-				var collectionHeader = new Label() { Text = collection.Name, Size = new Size(_collectionFlow.Width - 20, 15), ForeColor = Palette.TextAgainstDarkBackground, Padding = new Padding(10, 0, 0, 0) };
-				collectionHeader.Margin = new Padding(0, 10, 0, 0);
-				collectionHeader.Font = _headerFont;
-				_collectionFlow.Controls.Add(collectionHeader);
-				_collectionFlow.SetFlowBreak(collectionHeader, true);
-
-				if(!LoadOneCollection(collection, _collectionFlow))
+				int indexForHeader = _collectionFlow.Controls.Count;
+				if(LoadOneCollection(collection, _collectionFlow))
 				{
-					//it was empty, or now books matched the filter, e.g. this is a shell library and none were found suitable for making shells
-					_collectionFlow.Controls.Remove(collectionHeader);
+					//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+					invisibleHackPartner = new Label() { Text = "", Width = 0 };
+					_collectionFlow.Controls.Add(invisibleHackPartner);
+					_collectionFlow.Controls.SetChildIndex(invisibleHackPartner, indexForHeader);
+
+					//We showed at least one book, so now go back and insert the header
+					var collectionHeader = new Label() { Text = collection.Name, Size = new Size(_collectionFlow.Width - 20, 15), ForeColor = Palette.TextAgainstDarkBackground, Padding = new Padding(10, 0, 0, 0) };
+					collectionHeader.Margin = new Padding(0, 10, 0, 0);
+					collectionHeader.Font = _headerFont;
+					_collectionFlow.Controls.Add(collectionHeader);
+					_collectionFlow.Controls.SetChildIndex(collectionHeader, indexForHeader+1);
+					_collectionFlow.SetFlowBreak(collectionHeader, true);
 				}
 			}
 			_libraryFlow.ResumeLayout();
