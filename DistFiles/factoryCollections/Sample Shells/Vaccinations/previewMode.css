@@ -52,8 +52,10 @@ TEXTAREA
 /*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
 	border: 1px solid transparent;
-	width: 77px !important;
-	margin-top: 4px;
+	/*+placement:anchor-bottom-left 10px -49px;*/
+	position: absolute;
+	left: 10px;
+	bottom: -49px;
 }
 DIV.bloom-page
 {
@@ -139,5 +141,5 @@ DIV.numberedPage:nth-of-type(even):after
 }
 DIV.marginBox
 {
-	border: 1px solid #98A30C;
+	/*[disabled]border:1px solid #98A30C;*/
 }
