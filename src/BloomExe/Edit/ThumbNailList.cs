@@ -120,7 +120,7 @@ namespace Bloom.Edit
 			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
 			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;
-
+			
 			Image thumbnail = Resources.PagePlaceHolder; ;
 			if (page is PlaceHolderPage)
 				thumbnail = _placeHolderImage;

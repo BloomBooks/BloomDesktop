@@ -397,6 +397,8 @@ namespace Bloom.Book
 
 			d.Add("languageForNewTextBoxes", _collectionSettings.Language1Iso639Code);
 
+			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
+
 			element.InnerText = string.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			dom.SelectSingleNode("//head").InsertAfter(element, null);

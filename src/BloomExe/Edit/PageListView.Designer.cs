@@ -62,8 +62,10 @@
 			this._thumbNailList.Font = new System.Drawing.Font("Tahoma", 9F);
 			this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
 			this._thumbNailList.ItemWhichWouldPrecedeANewPageInsertion = null;
-			this._thumbNailList.Location = new System.Drawing.Point(3, 40);
+			this._thumbNailList.Location = new System.Drawing.Point(0, 40);
+			this._thumbNailList.Margin = new System.Windows.Forms.Padding(0, 3, 0, 3);
 			this._thumbNailList.Name = "_thumbNailList";
+			this._thumbNailList.PreferPageNumbers = false;
 			this._thumbNailList.RelocatePageEvent = null;
 			this._thumbNailList.Size = new System.Drawing.Size(113, 173);
 			this._thumbNailList.TabIndex = 2;
