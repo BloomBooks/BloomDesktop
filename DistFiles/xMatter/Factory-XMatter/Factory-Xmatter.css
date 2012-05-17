@@ -303,7 +303,7 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
 	height: 100%;
 	width: 100%;
-	display: block;
+	display: block !important;
 }
 /*................license and copyright*/
 .A5Landscape DIV.versionAcknowledgments
