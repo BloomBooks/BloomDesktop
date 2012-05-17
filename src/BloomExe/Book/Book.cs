@@ -898,7 +898,9 @@ namespace Bloom.Book
 		/// </summary>
 		public bool IsSuitableForVernacularLibrary
 		{
-			get { return GetMetaValue("SuitableForMakingVernacularBooks", "definitely") == "definitely"; }//the 'template maker' says "no"
+			get {
+				string metaValue = GetMetaValue("SuitableForMakingVernacularBooks", "yes");
+				return metaValue == "yes" || metaValue == "definitely"; }//the 'template maker' says "no"
 		}
 
 
@@ -907,7 +909,11 @@ namespace Bloom.Book
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
-			get { return GetMetaValue("SuitableForMakingShells", "unsuitable") == "definitely"; }//we imaging a future "unlikely"
+			get
+			{
+				string metaValue = GetMetaValue("SuitableForMakingShells", "no");
+				return metaValue == "yes" || metaValue == "definitely"; //the 'template maker' says "no|
+			}//we imaging a future "unlikely"
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
