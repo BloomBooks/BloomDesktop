@@ -317,10 +317,11 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 .A4Landscape DIV#versoLicenseAndCopyright
 {
-	/*+placement:shift -4px 44px;*/
-	position: relative;
-	left: -4px;
-	top: 44px;
+	/*+placement:anchor-top-left 0 242px;*/
+	position: absolute;
+	left: 0;
+	top: 242px;
+	width: 100%;
 }
 .A5Portrait DIV#versoLicenseAndCopyright
 {
