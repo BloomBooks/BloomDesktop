@@ -423,7 +423,7 @@ function ResizeUsingPercentages(e,ui){
 
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(".bloom-translationGroup").each(function() {
-        var contentElements = $(this).find("textarea, div");
+        var contentElements = $(this).find("textarea, div.bloom-editable");
         contentElements.sort(function(a, b) {
       //using negatives so that something with none of these labels ends up with a > score and at the end
             var scoreA = $(a).hasClass('bloom-content1')*-3 + ($(a).hasClass('bloom-content2') * -2) + ($(a).hasClass('bloom-content3') * -1);
