@@ -559,10 +559,6 @@ namespace Bloom.Book
 			return didDelete;
 		}
 
-		private static bool ContainsClass(XmlNode element, string className)
-		{
-			return ((XmlElement)element).GetAttribute("class").Contains(className);
-		}
 
 		public void SetBookName(string name)
 		{

@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Palaso.Code;
@@ -360,9 +361,9 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.VernacularLanguageName);
-			if (!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
+			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
 				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
-			if (!string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
+			if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
 				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
 			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
@@ -370,9 +371,50 @@ namespace Bloom.Book
 			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
-			dictionaryScriptElement.InnerText = string.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
+			AddLocalizedHintContentsToDictionary(dom, d);
+			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
 			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+		}
+
+		private void AddLocalizedHintContentsToDictionary(XmlDocument dom, Dictionary<string, string> dictionary)
+		{
+			string idPrefix="";
+			if (GetIsFrontMatterPage(dom))
+			{
+				idPrefix = "FrontMatter." + _collectionSettings.XMatterPackName + ".";
+			}
+			foreach (XmlElement element in dom.SelectNodes("//*[@data-hint]"))
+			{
+				//why aren't we just doing: element.SetAttribute("data-hint", translation);  instead of bothering to write out a dictionary?
+				//because (especially since we're currently just assuming it is in english), we would later save it with the translation, and then next time try to translate that, and poplute the
+				//list of strings that we tell people to translate
+				var key = element.GetAttribute("data-hint");
+				if(!dictionary.ContainsKey(key))
+				{
+					string translation;
+					var id = idPrefix + key;
+					if(key.Contains("{lang}"))
+					{
+						translation = LocalizationManager.GetDynamicString("Bloom", id, key, "Put {lang} in your translation, so it can be replaced by the language name.");
+					}
+					else
+					{
+						translation = LocalizationManager.GetDynamicString("Bloom", id, key);
+					}
+					dictionary.Add(key, translation);
+				}
+			}
+		}
+
+		private static bool GetIsFrontMatterPage(XmlDocument dom)
+		{
+			return dom.SelectSingleNode("//div[contains(@class, 'bloom-frontMatter')]")!=null;
+		}
+
+		private static bool ContainsClass(XmlNode element, string className)
+		{
+			return ((XmlElement)element).GetAttribute("class").Contains(className);
 		}
 
 		/// <summary>
@@ -390,7 +432,7 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 
 			d.Add("urlOfUIFiles", "file:///" + _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
-			if (!string.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
+			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
@@ -399,7 +441,7 @@ namespace Bloom.Book
 
 			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
 
-			element.InnerText = string.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
+			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			dom.SelectSingleNode("//head").InsertAfter(element, null);
 		}
@@ -437,7 +479,7 @@ namespace Bloom.Book
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
 			{
-				throw new ApplicationException(string.Format("The request page {0} from book {1} isn't in this book {2}.", page.Id,
+				throw new ApplicationException(String.Format("The request page {0} from book {1} isn't in this book {2}.", page.Id,
 															 page.Book.FolderPath, page.Book.FolderPath));
 			}
 			var pageDom = dom.ImportNode(divNodeForThisPage, true);
@@ -607,7 +649,7 @@ namespace Bloom.Book
 					book = _templateFinder.FindTemplateBook(templateKey);
 					if(book==null)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
+						ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
 					}
 				}
 				if(book==null)
@@ -925,9 +967,9 @@ namespace Bloom.Book
 			if (language2Code == language3Code)	//can't use the same lang twice
 				language3Code = null;
 
-			if (string.IsNullOrEmpty(language2Code))
+			if (String.IsNullOrEmpty(language2Code))
 			{
-				if(!string.IsNullOrEmpty(language3Code))
+				if(!String.IsNullOrEmpty(language3Code))
 				{
 					language2Code = language3Code; //can't have a 3 without a 2
 					language3Code = null;
@@ -1050,7 +1092,7 @@ namespace Bloom.Book
 			//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
 
 			var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
-			var caption = (englishDiv == null) ? string.Empty : englishDiv.InnerText;
+			var caption = (englishDiv == null) ? String.Empty : englishDiv.InnerText;
 			return caption;
 		}
 
@@ -1263,7 +1305,7 @@ namespace Bloom.Book
 
 		public virtual void SetTitle(string t)
 		{
-			if (!string.IsNullOrEmpty(t.Trim()))
+			if (!String.IsNullOrEmpty(t.Trim()))
 			{
 				var titleNode = XmlUtilities.GetOrCreateElement(RawDom, "//head", "title");
 				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
@@ -1322,14 +1364,14 @@ namespace Bloom.Book
 				data.AddGenericLanguageString("province", _collectionSettings.Province, true);
 				data.AddGenericLanguageString("district", _collectionSettings.District, true);
 				string location = "";
-				if(!string.IsNullOrEmpty(_collectionSettings.Province))
+				if(!String.IsNullOrEmpty(_collectionSettings.Province))
 					location +=  _collectionSettings.Province+@", ";
-				if (!string.IsNullOrEmpty(_collectionSettings.District))
+				if (!String.IsNullOrEmpty(_collectionSettings.District))
 					location +=  _collectionSettings.District;
 
 				location = location.TrimEnd(new[] {' '}).TrimEnd(new[] {','});
 
-				if (!string.IsNullOrEmpty(_collectionSettings.Country))
+				if (!String.IsNullOrEmpty(_collectionSettings.Country))
 				{
 					location += "<br/>"+_collectionSettings.Country;
 				}
@@ -1454,8 +1496,8 @@ namespace Bloom.Book
 
 			var data = UpdateFieldsAndVariables(domToRead);
 			data.UpdateGenericLanguageString("contentLanguage1",_collectionSettings.Language1Iso639Code, false);
-			data.UpdateGenericLanguageString("contentLanguage2", string.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
-			data.UpdateGenericLanguageString("contentLanguage3", string.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
+			data.UpdateGenericLanguageString("contentLanguage2", String.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
+			data.UpdateGenericLanguageString("contentLanguage3", String.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
 
 			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
@@ -1467,7 +1509,7 @@ namespace Bloom.Book
 
 				foreach (var languageForm in v.Value.TextAlternatives.Forms)
 				{
-					XmlNode node = dataDiv.SelectSingleNode(string.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId));
+					XmlNode node = dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId));
 					if (null == node)
 					{
 						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId, languageForm.Form);
@@ -1506,7 +1548,7 @@ namespace Bloom.Book
 		private void RemoveDataDivElement(string key)
 		{
 			var dataDiv = GetOrCreateDataDiv();
-			foreach(XmlNode e in  dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			foreach(XmlNode e in  dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
 			{
 				dataDiv.RemoveChild(e);
 			}
@@ -1580,9 +1622,9 @@ namespace Bloom.Book
 				}
 
 				//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
-				if(string.IsNullOrEmpty(MultilingualContentLanguage2))
+				if(String.IsNullOrEmpty(MultilingualContentLanguage2))
 					MultilingualContentLanguage2 = data.TextVariables.ContainsKey("contentLanguage2") ? data.TextVariables["contentLanguage2"].TextAlternatives["*"] : null;
-				if (string.IsNullOrEmpty(MultilingualContentLanguage3))
+				if (String.IsNullOrEmpty(MultilingualContentLanguage3))
 					MultilingualContentLanguage3 = data.TextVariables.ContainsKey("contentLanguage3") ? data.TextVariables["contentLanguage3"].TextAlternatives["*"] : null;
 			}
 			catch (Exception error)
@@ -1621,7 +1663,7 @@ namespace Bloom.Book
 							var lang = node.GetOptionalStringAttribute("lang", "*");
 							if (lang == "N1" || lang == "N2" || lang == "V")
 								lang = data.WritingSystemCodes[lang];
-							if (!string.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
+							if (!String.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
 								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*"});//, "en", "fr", "es" });//review: I really hate to lose the data, but I admit, this is trying a bit too hard :-)
 
@@ -1683,7 +1725,7 @@ namespace Bloom.Book
 
 		}
 
-		public void RebuildThumbNailAsync(Action<Book,Image> callback, Action<Book, Exception> errorCallback)
+		public void RebuildThumbNailAsync(Action<Book, Image> callback, Action<Book, Exception> errorCallback)
 		{
 			_storage.RemoveBookThumbnail();
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
@@ -1703,7 +1745,7 @@ namespace Bloom.Book
 		{
 			var errors = _storage.GetValidateErrors();
 			_haveCheckedForErrorsAtLeastOnce = true;
-			if (!string.IsNullOrEmpty(errors))
+			if (!String.IsNullOrEmpty(errors))
 			{
 				_log.WriteError(errors);
 			}
