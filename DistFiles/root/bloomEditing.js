@@ -252,7 +252,17 @@ function MakeSourceTextDivForGroup(group) {
 
  function GetLocalizedHint(element) {
      var whatToSay = $(element).data("hint");
+     if(whatToSay.startsWith("*")){
+         whatToSay = whatToSay.substring(1,1000);
+     }
+
      var dictionary = GetDictionary();
+
+     if(whatToSay in dictionary) {
+         whatToSay = dictionary[whatToSay];
+     }
+
+     //stick in the language
      for (key in dictionary) {
          if (key.startsWith("{"))
              whatToSay = whatToSay.replace(key, dictionary[key]);
@@ -487,27 +497,37 @@ function ResizeUsingPercentages(e,ui){
          if(whatToSay == null)
             whatToSay = key;//just show the code
 
+         //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
+         if($(this).width() < 100){
+            return;
+         }
+
          $(this).qtip({
              content: whatToSay,
 
              position: {
-                 my: 'center left',
-                 at: 'top right',
-                 adjust: {y: 20}
+                 my: 'top right',
+                 at: 'bottom right'
+                 ,adjust: {y: -25}
              },
 
              style: {
-                 classes: 'ui-tooltip-blue'
+                 classes: 'ui-languageToolTip'
              }
-         });
-     //     .removeData('qtip');// allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+         })
+            .removeData('qtip');// allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
      });
 
-    //Add popup yellow bubbles to match title attributes
-    $("*[title]").qtip({ position: {at: 'right center',
-                my: 'left center'
-            },
-            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
+// I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
+// say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
+//    $("*[title]").each(function() {
+//        $(this).qtip({ position: {
+//                at: 'right bottom', //I like this, but it doesn't reposition well -->at: 'right center',
+//                my: 'top left', //I like this, but it doesn't reposition well-->  my: 'left center',
+//                viewport: $(window)
+//            },
+//            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
+//    });
 
     //put hint bubbles next to elements which call for them.
   //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
@@ -526,9 +546,18 @@ function ResizeUsingPercentages(e,ui){
             viewport: $(window),
             adjust:{y:-20}
         };
-        var whatToSay = GetLocalizedHint(this);
+
         var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
     var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+
+        //make hints that start with a * only show when the field has focus
+        if($(this).data("hint").startsWith("*")) {
+            shouldShowAlways=false;
+            hideEvents='unfocus mouseleave';
+        }
+
+        var whatToSay = GetLocalizedHint(this);
+
         $(this).qtip({
             content: whatToSay,
             position: pos,
