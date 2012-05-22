@@ -101,53 +101,59 @@
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
-	text-align: right;
-	width: 274px;
-	height: 67px;
+	width: 45%;
 	/*+placement:anchor-bottom-right 0 0;*/
 	position: absolute;
 	right: 0;
 	bottom: 0;
 	min-height: 20px;
-	vertical-align: bottom;
-	display: table;
+	height: 58px;
+}
+DIV.coverBottomBookTopic DIV
+{
+	/*[disabled]overflow:hidden;*/
+	text-align: right;
+	border: none !important;
+	width: 100%;
+	min-height: 20px;
+	font-size: 11pt;
+	display: block !important;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
-	/*[disabled]height:44px;*/
-	min-height: 20px;
-	width: 100%;
-	display: table-cell;
-	border: none !important;
-	vertical-align: text-bottom;
-	/*+placement:anchor-bottom-right 0px -4px;*/
+	height: 44px;
+/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
+	/*+placement:anchor-top-right 0px 0px;*/
 	position: absolute;
 	right: 0px;
-	bottom: -4px;
+	top: 0px;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational2
 {
-	/*[disabled]height:106px;*/
-	min-height: 20px;
-	width: 100%;
-	display: block;
-	border: none !important;
+	height: 106px;
+	/*+placement:anchor-top-right -3px 43px;*/
+	position: absolute;
+	right: -3px;
+	top: 43px;
 }
 /*.......Language Name*/
 DIV.coverBottomLangName DIV
 {
-	display: table-cell;
-	vertical-align: bottom;
+	display: inline;
+	font-size: 11pt !important;
+	/*[disabled]vertical-align:bottom;*/
+/*This placement is to get vertical alignment with the topic*/
+	/*+placement:anchor-top-left 0px 6px;*/
+	position: absolute;
+	left: 0px;
+	top: 6px;
 }
 DIV.coverBottomLangName
 {
-	height: 56px;
+	height: 58px;
 	overflow: hidden;
 	text-align: left;
 	width: 50%;
-	display: table;
-	font-weight: normal;
-	font-size: 14pt;
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
@@ -252,17 +258,22 @@ DIV.titlePage .credits.bloom-contentNational1
 }
 DIV.titlePage DIV#languageInformation
 {
-	/*+placement:anchor-top-left 0 365px;*/
+	/*+placement:anchor-top-left 0 378px;*/
 	position: absolute;
 	left: 0;
-	top: 365px;
+	top: 378px;
 	width: 100%;
 	height: 86px;
 }
-DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational1
+DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
 	display: block;
 	/*[empty]border:;*/
+}
+DIV.titlePage DIV.langName.bloom-content1
+{
+/*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+	display: none;
 }
 DIV.languageLocation
 {
