@@ -17,6 +17,7 @@ namespace Bloom.Book
 	public class SizeAndOrientation
 	{
 		public string PageSizeName;
+		public string AlternativeName { get; set; }
 		public bool IsLandScape { get; set; }
 
 		public string OrientationName
@@ -73,7 +74,7 @@ namespace Bloom.Book
 
 		public override string ToString()
 		{
-			return PageSizeName + OrientationName;
+			return PageSizeName + OrientationName + AlternativeName;
 		}
 
 		/// <summary>
@@ -84,26 +85,34 @@ namespace Bloom.Book
 		public static string GetDisplayName(string sizeAndOrientationDescriptor)
 		{
 			var so = FromString(sizeAndOrientationDescriptor);
-			return so.PageSizeName.ToUpperFirstLetter() + " " + so.OrientationName.ToUpperFirstLetter();
+			return (so.PageSizeName.ToUpperFirstLetter() + " " + so.OrientationName.ToUpperFirstLetter() + " " +
+					so.AlternativeName).Trim();
 		}
 
 		public static SizeAndOrientation FromString(string name)
 		{
-			name = name.ToLower();
-			var startOfOrientationName = Math.Max(name.ToLower().IndexOf("landscape"), name.ToLower().IndexOf("portrait"));
+			var nameLower = name.ToLower();
+			var startOfOrientationName = Math.Max(nameLower.ToLower().IndexOf("landscape"), nameLower.ToLower().IndexOf("portrait"));
 			if(startOfOrientationName == -1)
 			{
-				Debug.Fail("No orientation name found in '"+name+"'");
+				Debug.Fail("No orientation name found in '"+nameLower+"'");
 				return new SizeAndOrientation()
 					{
 						IsLandScape=false,
 						PageSizeName = "A5"
 					};
 			}
+			int startOfAlternativeName=-1;
+			if(nameLower.ToLower().Contains("landscape"))
+				startOfAlternativeName = startOfOrientationName + "landscape".Length;
+			else
+				startOfAlternativeName = startOfOrientationName + "portrait".Length;
+
 			return new SizeAndOrientation()
 					{
-						IsLandScape = name.ToLower().Contains("landscape"),
-						PageSizeName = name.Substring(0, startOfOrientationName).ToUpperFirstLetter()
+						IsLandScape = nameLower.ToLower().Contains("landscape"),
+						PageSizeName = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter(),
+						AlternativeName = name.Substring(startOfAlternativeName, nameLower.Length - startOfAlternativeName)
 					};
 		}
 

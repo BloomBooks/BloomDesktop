@@ -201,6 +201,13 @@ DIV.bloom-page.A4Landscape
 	min-height: 210mm;
 	max-height: 210mm;
 }
+DIV.bloom-page.A4LandscapeSideBySide
+{
+	min-width: 297mm;
+	max-width: 297mm;
+	min-height: 210mm;
+	max-height: 210mm;
+}
 DIV.bloom-page.A4Portrait
 {
 	min-width: 210mm;
@@ -236,6 +243,15 @@ DIV.bloom-page:nth-of-type(even).A5Portrait DIV.marginBox
 	height: 119mm;
 }
 .A4Landscape DIV.marginBox
+{
+	width: 266.1mm;
+	/*+placement:anchor-top-left 13.8mm 12.8mm;*/
+	position: absolute;
+	left: 13.8mm;
+	top: 12.8mm;
+	height: 178.5mm;
+}
+.A4LandscapeSideBySide DIV.marginBox
 {
 	width: 266.1mm;
 	/*+placement:anchor-top-left 13.8mm 12.8mm;*/
