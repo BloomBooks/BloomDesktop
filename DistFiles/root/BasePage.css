@@ -128,6 +128,10 @@ DIV.bloom-page
 	display: block;
 	page-break-after: auto;
 	background-color: #FFFFFF;
+/*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
+the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
+so it just heads down off the page, messing things up.*/
+	overflow: hidden;
 }
 DIV#bloomDataDiv
 {

@@ -5,8 +5,17 @@ $.fn.VAlign = function() {
         var ph = $(this).parent().height();
         var mh = Math.ceil((ph - ah) / 2);
         $(this).css('margin-top', mh);
+
+        ///There is a bug in wkhtmltopdf where it determines the height of these incorrectly, causing, in a multlingual situation, the 1st text box to hog up all the room and
+        //push the other guys off the page. So the hack solution of the moment is to remember the correct height here, in gecko-land, and use it over there to set the max-height.
+        //See bloomPreview.SetMaxHeightForHtmlToPDFBug()
+        $(this).children().each(function(){
+            var h= $(this).height();
+            $(this).attr('data-firefoxHeight', h);
+        });
     });
 };
+
 
 function isBrOrWhitespace(node) {
     return node && ( (node.nodeType == 1 && node.nodeName.toLowerCase() == "br") ||
@@ -397,7 +406,6 @@ function ResizeUsingPercentages(e,ui){
 
  jQuery(document).ready(function() {
 
-
      //add a marginBox if it's missing. We introduced it early in the first beta
      $(".bloom-page").each(function(){
         if($(this).find(".marginBox").length == 0){
@@ -481,6 +489,9 @@ function ResizeUsingPercentages(e,ui){
     $(".bloom-verticalAlign").resize(function() { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
         $(this).VAlign();
     });
+
+
+
 
     /* Defines a starts-with function*/
     if (typeof String.prototype.startsWith != 'function') {

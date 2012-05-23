@@ -279,9 +279,11 @@ DIV.textWholePage DIV.bloom-translationGroup
 {
 	width: 100%;
 	max-height: 100%;
+	/*[disabled]overflow:hidden;*/
 }
 DIV.textWholePage DIV.bloom-translationGroup DIV
 {
 	min-height: 67px;
-	height: 30%;
+	/*[disabled]height:30%;*/
+	border: 1px solid #CAF50F;
 }

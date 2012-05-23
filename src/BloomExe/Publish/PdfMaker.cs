@@ -86,12 +86,18 @@ namespace Bloom.Publish
 					"--print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
+#if DEBUG
+					" --debug-javascript "+
+#endif
 					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
 					"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
 					Path.GetFileName(tempInput.Path), tempOutput.Path);
 
 				var progress = new CancellableNullProgress(doWorkEventArgs);
-				CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(tempInput.Path), 20, progress);
+				var result = CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(tempInput.Path), 20, progress);
+
+				Debug.WriteLine(result.StandardError);
+				Debug.WriteLine(result.StandardOutput);
 
 				if (!File.Exists(tempOutput.Path))
 					throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
