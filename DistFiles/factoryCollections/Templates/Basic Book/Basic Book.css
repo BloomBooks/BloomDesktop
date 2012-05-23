@@ -48,7 +48,7 @@ BODY
 /*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 #bloom-supportedPageConfigurations
 {
-	content: "A5Portrait, A4Landscape";
+	content: "A5Portrait, A4Landscape, A4LandscapeSideBySide";
 }
 /*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
 generic*/
@@ -89,19 +89,29 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 	top: 21px;
 	height: 266px !important;
 }
+.imageOnTop.A4LandscapeSideBySide DIV.bloom-imageContainer
+{
+	width: 48%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	/*[disabled]border:1px solid #000000;*/
+}
 .imageOnTop.A4Landscape DIV.bloom-imageContainer
 {
-	width: 511px;
-	/*+placement:anchor-top-left 27px 52px;*/
+	width: 100%;
+	/*+placement:anchor-top-left 0 0;*/
 	position: absolute;
-	left: 27px;
-	top: 52px;
-	height: 692px;
+	left: 0;
+	top: 0;
+	height: 70%;
 	/*[disabled]border:1px solid #000000;*/
 }
 DIV.imageOnTop DIV.bloom-translationGroup
 {
-	height: 45% !important;
+	height: 48% !important;
 	width: 100%;
 	display: table;
 	/*+placement:anchor-bottom-left 0px 0px;*/
@@ -109,14 +119,23 @@ DIV.imageOnTop DIV.bloom-translationGroup
 	left: 0px;
 	bottom: 0px;
 }
+DIV.imageOnTop.A4LandscapeSideBySide DIV.bloom-translationGroup
+{
+	height: 98% !important;
+	width: 45%;
+	/*+placement:anchor-top-left 549px 2px;*/
+	position: absolute !important;
+	left: 549px !important;
+	top: 2px !important;
+}
 DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 {
-	height: 692px;
-	/*+placement:anchor-top-left 567px 51px;*/
+	height: 25% !important;
+	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
-	left: 567px;
-	top: 51px;
-	width: 511px;
+	left: 0;
+	bottom: 0;
+	width: 100%;
 }
 DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 {
