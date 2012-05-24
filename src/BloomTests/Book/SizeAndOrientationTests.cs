@@ -11,6 +11,39 @@ namespace BloomTests.Book
 	[TestFixture]
 	public class SizeAndOrientationTests
 	{
+		[Test]
+		public void GetConfigurationsFromConfigurationOptionsString_Simple()
+		{
+
+			var x = SizeAndOrientation.GetConfigurationsFromConfigurationOptionsString("{'layouts': ['A4Landscape']}");
+			Assert.AreEqual(1, x.Count());
+			Assert.AreEqual("A4", x.First().SizeAndOrientation.PageSizeName);
+			Assert.IsTrue(x.First().SizeAndOrientation.IsLandScape);
+		}
+
+		[Test]
+		public void GetConfigurationsFromConfigurationOptionsString_Complex()
+		{
+			string json = @"{'layouts': [
+		'A5Portrait',
+		{'A4Landscape' : { 'Styles': ['Default', 'SideBySide']}}
+	]}";
+			var x = SizeAndOrientation.GetConfigurationsFromConfigurationOptionsString(json);
+			Assert.AreEqual(3, x.Count());
+			Assert.AreEqual("A5", x.First().SizeAndOrientation.PageSizeName);
+			Assert.IsFalse(x.First().SizeAndOrientation.IsLandScape);
+			Assert.IsNullOrEmpty(x.First().Style);
+
+			Layout a4landscapeDefault = x.ToArray()[1];
+			Assert.AreEqual("A4", a4landscapeDefault.SizeAndOrientation.PageSizeName);
+			Assert.IsTrue(a4landscapeDefault.SizeAndOrientation.IsLandScape);
+			Assert.AreEqual("Default", a4landscapeDefault.Style);
+
+			Layout a4landscapeSideBySide = x.ToArray()[2];
+			Assert.AreEqual("A4", a4landscapeSideBySide.SizeAndOrientation.PageSizeName);
+			Assert.IsTrue(a4landscapeSideBySide.SizeAndOrientation.IsLandScape);
+			Assert.AreEqual("SideBySide", a4landscapeSideBySide.Style);
+		}
 
 		[Test]
 		public void PageSizeName_USLetter()

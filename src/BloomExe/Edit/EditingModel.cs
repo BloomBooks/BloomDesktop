@@ -230,15 +230,18 @@ namespace Bloom.Edit
 			}
 		}
 
-		public IEnumerable<string> GetPageSizeAndOrientationChoices()
+		public IEnumerable<Layout> GetLayoutChoices()
 		{
-			return CurrentBook.GetPageSizeAndOrientationChoices();
+			foreach(var layout in CurrentBook.GetLayoutChoices())
+			{
+				yield return layout;
+			}
 		}
 
-		public void SetPaperSizeAndOrientation(string paperSizeAndOrientationName)
+		public void SetLayout(Layout layout)
 		{
 			SaveNow();
-			CurrentBook.SetPaperSizeAndOrientation(paperSizeAndOrientationName);
+			CurrentBook.SetLayout(layout);
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
@@ -411,9 +414,9 @@ namespace Bloom.Edit
 		}
 
 
-		public string GetCurrentPageSizeAndOrientation()
+		public Layout GetCurrentLayout()
 		{
-			return CurrentBook.GetSizeAndOrientation().ToString();
+			return CurrentBook.GetLayout();
 		}
 
 #if TooExpensive

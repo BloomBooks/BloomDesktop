@@ -463,19 +463,19 @@ namespace Bloom.Edit
 					item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);
 				}
 
-				_pageSizeAndOrientationChoices.DropDownItems.Clear();
-				var currentPageSizeAndOrientation = _model.GetCurrentPageSizeAndOrientation().ToLower();
-				foreach (var l in _model.GetPageSizeAndOrientationChoices())
+				_layoutChoices.DropDownItems.Clear();
+				var layout = _model.GetCurrentLayout();
+				foreach (var l in _model.GetLayoutChoices())
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem) _pageSizeAndOrientationChoices.DropDownItems.Add(l);
+					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(l.ToString());
 					item.Tag = l;
-					item.Text = SizeAndOrientation.GetDisplayName(l);
-					item.Checked = l.ToLower() == currentPageSizeAndOrientation;
+					item.Text = l.ToString();
+					item.Checked = l.ToString() == layout.ToString();
 					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 
-				_pageSizeAndOrientationChoices.Text = SizeAndOrientation.GetDisplayName(currentPageSizeAndOrientation);
+				_layoutChoices.Text = layout.ToString();
 
 				switch (_model.NumberOfDisplayedLanguages)
 				{
@@ -503,7 +503,7 @@ namespace Bloom.Edit
 		void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
 		{
 			var item = (ToolStripMenuItem)sender;
-			_model.SetPaperSizeAndOrientation((string)item.Tag);
+			_model.SetLayout((Layout)item.Tag);
 			UpdateDisplay();
 		}
 

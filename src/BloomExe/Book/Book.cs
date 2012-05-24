@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -743,8 +744,8 @@ namespace Bloom.Book
 			GatherDataItemsFromDom(data, "*", RawDom);
 			var helper = new XMatterHelper(dom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(dom);
-			var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait");
-			helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation.ToString());
+			Layout layout = Layout.FromDom(dom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+			helper.InjectXMatter(data.WritingSystemCodes, layout);
 			BookStarter.PrepareElementsInPageOrDocument(dom, _collectionSettings);
 			UpdateDomWIthDataItems(data, "*", dom);
 		}
@@ -1751,16 +1752,16 @@ namespace Bloom.Book
 			}
 		}
 
-		public SizeAndOrientation GetSizeAndOrientation()
+		public Layout GetLayout()
 		{
-			return (SizeAndOrientation.GetSizeAndOrientation(RawDom, "A5Portrait"));
+			return Layout.FromDom(RawDom, Layout.A5Portrait);
 		}
 
-		public IEnumerable<string> GetPageSizeAndOrientationChoices()
+		public IEnumerable<Layout> GetLayoutChoices()
 		{
 			try
 			{
-				return SizeAndOrientation.GetPageSizeAndOrientationChoices(RawDom, _storage.GetFileLocator());
+				return SizeAndOrientation.GetLayoutChoices(RawDom, _storage.GetFileLocator());
 			}
 			catch (Exception error)
 			{
@@ -1768,10 +1769,18 @@ namespace Bloom.Book
 				throw error;
 			}
 		}
+//
+//		public IEnumerable GetLayoutChoices()
+//		{
+//			if (choice.Options.TryGetValue("Layout", out layouts))
+//				{
+//					foreach (var layout in layouts)
+//					{
+//		}
 
-		public void SetPaperSizeAndOrientation(string paperSizeAndOrientationName)
+		public void SetLayout(Layout layout)
 		{
-			SizeAndOrientation.SetPaperSizeAndOrientation(RawDom, paperSizeAndOrientationName);
+			SizeAndOrientation.AddClassesForLayout(RawDom, layout);
 		}
 
 		public Metadata GetLicenseMetadata()
@@ -1811,5 +1820,7 @@ namespace Bloom.Book
 			}
 			return metadata;
 		}
+
+
 	}
 }

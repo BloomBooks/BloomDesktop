@@ -414,7 +414,7 @@ namespace BloomTests.Book
 		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
 		{
 			var book = CreateBook();
-			book.SetPaperSizeAndOrientation("A5Portrait");
+			book.SetLayout(new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait") });
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]", 1);
 		}

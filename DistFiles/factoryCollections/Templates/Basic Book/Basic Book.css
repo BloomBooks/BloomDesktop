@@ -45,10 +45,18 @@ BODY
 	line-height: 1.5;
 }
 /*+}*/
-/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+/*The following is json, read by Bloom to get size/orientation options
+STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},
+{"A4Landscape" : { "Styles": ["Default", "SideBySide"]}}]}ENDLAYOUTS
+This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 #bloom-supportedPageConfigurations
 {
-	content: "A5Portrait, A4Landscape, A4LandscapeSideBySide";
+	content: "A5Portrait, A4Landscape (Layout: 'DefaultLayout SideBySideLayout')";
+}
+/*This is a dummy rule used to transmit to bloom what alternative layouts this stylesheet offers*/
+#bloom-a4landscape-alternatives
+{
+	content: Default, SideBySide;
 }
 /*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
 generic*/
@@ -89,7 +97,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 	top: 21px;
 	height: 266px !important;
 }
-.imageOnTop.A4LandscapeSideBySide DIV.bloom-imageContainer
+.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
 	width: 48%;
 	/*+placement:anchor-top-left 0 0;*/
@@ -119,9 +127,9 @@ DIV.imageOnTop DIV.bloom-translationGroup
 	left: 0px;
 	bottom: 0px;
 }
-DIV.imageOnTop.A4LandscapeSideBySide DIV.bloom-translationGroup
+DIV.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
 {
-	height: 98% !important;
+	height: 100% !important;
 	width: 45%;
 	/*+placement:anchor-top-left 549px 2px;*/
 	position: absolute !important;
@@ -154,6 +162,9 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 	height: 100%;
 	width: 100%;
 	display: table-cell !important;
+}
+.imageOnTop.layout-style-BottomAlign DIV.bloom-editable
+{
 	vertical-align: bottom;
 }
 .imageOnTop.bloom-bilingual DIV.bloom-editable

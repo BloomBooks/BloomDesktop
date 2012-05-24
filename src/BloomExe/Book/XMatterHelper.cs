@@ -53,8 +53,8 @@ namespace Bloom.Book
 
 		public string GetStyleSheetFileName()
 		{
-//			var sizeAndOrientation = SizeAndOrientation.FromDom(_dom);
-//			return sizeAndOrientation.PageSizeName + "-" + sizeAndOrientation.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
+//			var layout = SizeAndOrientation.FromDom(_dom);
+//			return layout.PageSizeName + "-" + layout.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
 			return _nameOfXMatterPack + "-XMatter.css";
 		}
 
@@ -79,7 +79,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument FrontMatterDom { get; set; }
 
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, string sizeAndOrientation)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -106,7 +106,7 @@ namespace Bloom.Book
 
 
 				//we want the front matter pages to match what we found in the source book
-				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, sizeAndOrientation.ToString());
+				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, layout);
 
 
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');

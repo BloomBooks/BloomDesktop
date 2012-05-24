@@ -52,7 +52,7 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, "A5Portrait");
+			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'titlePage')]", 1);
@@ -71,7 +71,7 @@ namespace BloomTests.Book
 			var helper = CreateHelper();
 			helper.FrontMatterDom = frontMatterDom;
 
-			helper.InjectXMatter(_dataSet.WritingSystemCodes, "A5Portrait");
+			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
