@@ -39,7 +39,7 @@
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
-			this._pageSizeAndOrientationChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
@@ -130,7 +130,7 @@
 			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._contentLanguagesDropdown,
-            this._pageSizeAndOrientationChoices});
+            this._layoutChoices});
 			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
 			this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
 			this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
@@ -154,18 +154,18 @@
 			this._contentLanguagesDropdown.Text = "Multilingual Settings";
 			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
 			// 
-			// _pageSizeAndOrientationChoices
+			// _layoutChoices
 			// 
-			this._pageSizeAndOrientationChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._pageSizeAndOrientationChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._pageSizeAndOrientationChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.localizationExtender1.SetLocalizableToolTip(this._pageSizeAndOrientationChoices, null);
-			this.localizationExtender1.SetLocalizationComment(this._pageSizeAndOrientationChoices, null);
-			this.localizationExtender1.SetLocalizingId(this._pageSizeAndOrientationChoices, "._pageSizeAndOrientationChoices");
-			this._pageSizeAndOrientationChoices.Name = "_pageSizeAndOrientationChoices";
-			this._pageSizeAndOrientationChoices.Size = new System.Drawing.Size(50, 19);
-			this._pageSizeAndOrientationChoices.Text = "Paper";
-			this._pageSizeAndOrientationChoices.ToolTipText = "Choose a page size and orientation";
+			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._layoutChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
+			this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
+			this.localizationExtender1.SetLocalizingId(this._layoutChoices, "._layoutChoices");
+			this._layoutChoices.Name = "_pageSizeAndOrientationChoices";
+			this._layoutChoices.Size = new System.Drawing.Size(50, 19);
+			this._layoutChoices.Text = "Paper";
+			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
 			// 
 			// _splitTemplateAndSource
 			// 
@@ -457,7 +457,7 @@
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
-		private System.Windows.Forms.ToolStripDropDownButton _pageSizeAndOrientationChoices;
+		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
 		private ToPalaso.BetterToolTip betterToolTip1;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _copyButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _pasteButton;
