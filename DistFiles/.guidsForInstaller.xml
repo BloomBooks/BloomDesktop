@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<!--This file is generated, and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
 <InstallerMetadata>
   <File Id="AppSettings.xml" Guid="d3c74d27-0dcf-4493-93a9-974977092be3" />
   <File Id="DiscourseTypes.xml" Guid="8cc156cb-e24e-4858-aa15-19ae231fd7bb" />
