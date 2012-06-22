@@ -122,6 +122,7 @@
     <Compile Include="Book\SizeAndOrientationTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
+    <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
     <Compile Include="Book\PageTests.cs" />

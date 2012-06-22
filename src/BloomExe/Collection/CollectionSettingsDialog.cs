@@ -30,17 +30,17 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			_vernacularLanguageName.Text = string.Format("{0} ({1})", _collectionSettings.GetVernacularName("en"), _collectionSettings.Language1Iso639Code);
-			_nationalLanguage1Label.Text = string.Format("{0} ({1})",  _collectionSettings.GetLanguage2Name("en"), _collectionSettings.Language2Iso639Code);
+			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetVernacularName("en"), _collectionSettings.Language1Iso639Code);
+			_language2Name.Text = string.Format("{0} ({1})",  _collectionSettings.GetLanguage2Name("en"), _collectionSettings.Language2Iso639Code);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
-				_nationalLanguage2Label.Text = "--";
+				_language3Name.Text = "--";
 				_removeLanguage3Link.Visible = false;
 			}
 			else
 			{
-				_nationalLanguage2Label.Text = string.Format("{0} ({1})", _collectionSettings.GetNationalLanguage2Name("en"), _collectionSettings.Language3Iso639Code);
+				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetNationalLanguage2Name("en"), _collectionSettings.Language3Iso639Code);
 				_removeLanguage3Link.Visible = true;
 			}
 

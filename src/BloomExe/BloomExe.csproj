@@ -64,6 +64,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AeroWizard">
+      <HintPath>..\..\packages\AeroWizard.1.2.1\lib\3.5\AeroWizard.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac, Version=2.2.4.900, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
@@ -90,6 +93,9 @@
     <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\LocalizationManager.dll</HintPath>
+    </Reference>
+    <Reference Include="MayMart.WinFormsWizard">
+      <HintPath>..\..\packages\WinFormsWizard.1.2.0.14\lib\MayMart.WinFormsWizard.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Server.Common">
@@ -165,6 +171,12 @@
     <Compile Include="Collection\BloomPack\BloomPackInstallDialog.Designer.cs">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="HtmlLabel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="HtmlLabel.Designer.cs">
+      <DependentUpon>HtmlLabel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Library\IBloomTabArea.cs" />
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
@@ -173,6 +185,42 @@
       <DependentUpon>ListHeader.cs</DependentUpon>
     </Compile>
     <Compile Include="Collection\ShortcutMaker.cs" />
+    <Compile Include="NewCollection\LanguageLocationControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NewCollection\LanguageLocationControl.Designer.cs">
+      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewCollection\VernacularNameProblemControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NewCollection\VernacularNameProblemControl.Designer.cs">
+      <DependentUpon>VernacularNameProblemControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewCollection\LanguageIdControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NewCollection\LanguageIdControl.Designer.cs">
+      <DependentUpon>LanguageIdControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewCollection\ProjectStorageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NewCollection\ProjectStorageControl.Designer.cs">
+      <DependentUpon>ProjectStorageControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewCollection\NewCollectionWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewCollection\NewCollectionWizard.Designer.cs">
+      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewCollection\ReadyToCreateColectionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NewCollection\ReadyToCreateColectionControl.Designer.cs">
+      <DependentUpon>ReadyToCreateColectionControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Palette.cs" />
     <Compile Include="SimpleMessageDialog.cs">
       <SubType>Form</SubType>
@@ -342,8 +390,29 @@
     <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
       <DependentUpon>FlowThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="HtmlLabel.resx">
+      <DependentUpon>HtmlLabel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Library\ListHeader.resx">
       <DependentUpon>ListHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\LanguageLocationControl.resx">
+      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\VernacularNameProblemControl.resx">
+      <DependentUpon>VernacularNameProblemControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\LanguageIdControl.resx">
+      <DependentUpon>LanguageIdControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\ProjectStorageControl.resx">
+      <DependentUpon>ProjectStorageControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\NewCollectionWizard.resx">
+      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewCollection\ReadyToCreateColectionControl.resx">
+      <DependentUpon>ReadyToCreateColectionControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
