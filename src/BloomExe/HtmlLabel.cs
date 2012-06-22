@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using Gecko;
+using Palaso.Extensions;
 
 namespace Bloom
 {
@@ -19,15 +21,20 @@ namespace Bloom
 			InitializeComponent();
 		}
 
+
 		/// <summary>
 		/// Just a simple html string, no html, head, body tags.
 		/// </summary>
+		[Browsable(true),CategoryAttribute("Text")]
 		public string HTML
 		{
 			get { return _html; }
 			set
 			{
 				_html = value;
+				if (this.DesignModeAtAll())
+					return;
+
 				if (_browser!=null)
 				{
 					_browser.Visible = !string.IsNullOrEmpty(_html);
@@ -42,6 +49,9 @@ namespace Bloom
 
 		private void HtmlLabel_Load(object sender, EventArgs e)
 		{
+			if (this.DesignModeAtAll())
+				return;
+
 			_browser = new GeckoWebBrowser();
 
 			_browser.Parent = this;
@@ -57,6 +67,9 @@ namespace Bloom
 
 		private void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
 		{
+			if (this.DesignModeAtAll())
+				return;
+
 		  var ge = e as GeckoDomEventArgs;
 			if (ge.Target == null)
 				return;
