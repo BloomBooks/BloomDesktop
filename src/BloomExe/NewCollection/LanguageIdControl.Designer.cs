@@ -29,7 +29,7 @@
 		private void InitializeComponent()
 		{
 			this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
-			this._selectedLanguage = new System.Windows.Forms.Label();
+			this._selectedLanguage = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			this.SuspendLayout();
 			// 
 			// _lookupISOControl
@@ -37,28 +37,32 @@
 			this._lookupISOControl.ISOCode = "qaa";
 			this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
 			this._lookupISOControl.Name = "_lookupISOControl";
-			this._lookupISOControl.Size = new System.Drawing.Size(644, 319);
+			this._lookupISOControl.Size = new System.Drawing.Size(242, 252);
 			this._lookupISOControl.TabIndex = 11;
 			this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
 			// 
 			// _selectedLanguage
 			// 
-			this._selectedLanguage.AutoSize = true;
-			this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._selectedLanguage.Location = new System.Drawing.Point(310, 34);
+			this._selectedLanguage.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._selectedLanguage.Enabled = false;
+			this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+			this._selectedLanguage.Location = new System.Drawing.Point(248, 33);
+			this._selectedLanguage.Multiline = true;
 			this._selectedLanguage.Name = "_selectedLanguage";
-			this._selectedLanguage.Size = new System.Drawing.Size(157, 21);
+			this._selectedLanguage.ReadOnly = true;
+			this._selectedLanguage.Size = new System.Drawing.Size(209, 131);
 			this._selectedLanguage.TabIndex = 12;
+			this._selectedLanguage.TabStop = false;
 			this._selectedLanguage.Text = "<Language Name>";
 			// 
-			// LanguageInfoControl
+			// LanguageIdControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this._selectedLanguage);
 			this.Controls.Add(this._lookupISOControl);
-			this.Name = "LanguageInfoControl";
-			this.Size = new System.Drawing.Size(627, 277);
+			this.Name = "LanguageIdControl";
+			this.Size = new System.Drawing.Size(521, 260);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -67,6 +71,6 @@
 		#endregion
 
 		private Palaso.UI.WindowsForms.WritingSystems.LookupISOControl _lookupISOControl;
-		private System.Windows.Forms.Label _selectedLanguage;
+		private Palaso.UI.WindowsForms.Widgets.BetterLabel _selectedLanguage;
 	}
 }

@@ -24,7 +24,7 @@ namespace Bloom
 				"Browse for other collections on this computer...",
 				"Bloom Collections|*.bloomLibrary;*.bloomCollection",
 				dir=>true,
-				CreateNewLibrary);
+				CreateNewCollection);
 
 			_welcomeControl.DoneChoosingOrCreatingLibrary += (x, y) =>
 																{
@@ -38,9 +38,9 @@ namespace Bloom
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
-		private NewCollectionInfo CreateNewLibrary()
+		private NewCollectionSettings CreateNewCollection()
 		{
-			using (var dlg = new NewCollectionWizard(DefaultParentDirectoryForLibraries()))
+			using (var dlg = new NewCollectionWizard(false, DefaultParentDirectoryForLibraries()))
 			{
 				if (DialogResult.OK != dlg.ShowDialog())
 				{

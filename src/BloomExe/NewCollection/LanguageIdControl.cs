@@ -12,7 +12,7 @@ namespace Bloom.NewCollection
 {
 	public partial class LanguageIdControl : UserControl, IPageControl
 	{
-		public NewCollectionInfo _collectionInfo;
+		public CollectionSettings _collectionInfo;
 		private Action<UserControl, bool> _setNextButtonState;
 
 		public LanguageIdControl()
@@ -28,14 +28,14 @@ namespace Bloom.NewCollection
 				return;
 
 			_collectionInfo.Language1Iso639Code = _lookupISOControl.ISOCode;
-			_collectionInfo.LanguageName = _lookupISOControl.ISOCodeAndName==null? string.Empty :_lookupISOControl.ISOCodeAndName.Name;
+			_collectionInfo.Language1Name = _lookupISOControl.ISOCodeAndName==null? string.Empty :_lookupISOControl.ISOCodeAndName.Name;
 
 			_setNextButtonState(this, _lookupISOControl.ISOCodeAndName != null);
-			_selectedLanguage.Text = _collectionInfo.LanguageName;
+			_selectedLanguage.Text = _collectionInfo.Language1Name;
 
 		}
 
-		public void Init(Action<UserControl, bool> setNextButtonState, NewCollectionInfo collectionInfo)
+		public void Init(Action<UserControl, bool> setNextButtonState, CollectionSettings collectionInfo)
 		{
 			_setNextButtonState = setNextButtonState;
 			_collectionInfo = collectionInfo;

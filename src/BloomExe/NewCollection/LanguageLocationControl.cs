@@ -5,7 +5,7 @@ namespace Bloom.NewCollection
 {
 	public partial class LanguageLocationControl : UserControl, IPageControl
 	{
-		private NewCollectionInfo _collectionInfo;
+		private NewCollectionSettings _collectionInfo;
 
 		public LanguageLocationControl()
 		{
@@ -17,14 +17,16 @@ namespace Bloom.NewCollection
 
 		}
 
-		public void Init(NewCollectionInfo collectionInfo)
+		public void Init(NewCollectionSettings collectionInfo)
 		{
 			_collectionInfo = collectionInfo;
 		}
 
 		private void LanguageLocationControl_Leave(object sender, System.EventArgs e)
 		{
-			//_collectionInfo.
+			_collectionInfo.Country = _countryText.Text.Trim();
+			_collectionInfo.Province = _provinceText.Text.Trim();
+			_collectionInfo.District = _districtText.Text.Trim();
 		}
 	}
 }

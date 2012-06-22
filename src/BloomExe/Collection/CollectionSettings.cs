@@ -10,6 +10,12 @@ using Palaso.Extensions;
 
 namespace Bloom.Collection
 {
+
+	public class NewCollectionSettings : CollectionSettings
+	{
+		public string PathToSettingsFile;
+	}
+
 	/// <summary>
 	/// A library corresponds to a single folder (with subfolders) on the disk.
 	/// In that folder is a file which persists the properties of this class, then a folder for each book
@@ -87,13 +93,16 @@ namespace Bloom.Collection
 			Language2Iso639Code = "en";
 		}
 
-		public CollectionSettings(NewCollectionInfo collectionInfo)
+		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
 			Language2Iso639Code = collectionInfo.Language2Iso639Code;
 			Language3Iso639Code = collectionInfo.Language3Iso639Code;
-			Language1Name = collectionInfo.LanguageName;
+			Language1Name = collectionInfo.Language1Name;
+			Country = collectionInfo.Country;
+			Province = collectionInfo.Province;
+			District = collectionInfo.District;
 			IsSourceCollection = collectionInfo.IsSourceCollection;
 			XMatterPackName = collectionInfo.XMatterPackName;
 			Save();
@@ -220,18 +229,18 @@ namespace Bloom.Collection
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newCollectionName)
 		{
-			return parentFolderPath.CombineForPath(newCollectionName + " Books", newCollectionName + " Books" + ".bloomCollection");
+			return parentFolderPath.CombineForPath(newCollectionName, newCollectionName + ".bloomCollection");
 		}
 	}
 
-	public class NewCollectionInfo
-	{
-		public string PathToSettingsFile;
-		public string Language1Iso639Code;
-		public string Language2Iso639Code="en";
-		public string Language3Iso639Code;
-		public string LanguageName;
-		public string XMatterPackName= "Factory";
-		public bool IsSourceCollection;
-	}
+//    public class NewCollectionInfo
+//    {
+//        public string PathToSettingsFile;
+//        public string Language1Iso639Code;
+//		public string Language2Iso639Code="en";
+//		public string Language3Iso639Code;
+//		public string LanguageName;
+//    	public string XMatterPackName= "Factory";
+//        public bool IsSourceCollection;
+//    }
 }

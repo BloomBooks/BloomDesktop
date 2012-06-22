@@ -191,35 +191,23 @@
     <Compile Include="NewCollection\LanguageLocationControl.Designer.cs">
       <DependentUpon>LanguageLocationControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\VernacularNameProblemControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="NewCollection\VernacularNameProblemControl.Designer.cs">
-      <DependentUpon>VernacularNameProblemControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="NewCollection\LanguageIdControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="NewCollection\LanguageIdControl.Designer.cs">
       <DependentUpon>LanguageIdControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\ProjectStorageControl.cs">
+    <Compile Include="NewCollection\CollectionNameControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewCollection\ProjectStorageControl.Designer.cs">
-      <DependentUpon>ProjectStorageControl.cs</DependentUpon>
+    <Compile Include="NewCollection\CollectionNameControl.Designer.cs">
+      <DependentUpon>CollectionNameControl.cs</DependentUpon>
     </Compile>
     <Compile Include="NewCollection\NewCollectionWizard.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="NewCollection\NewCollectionWizard.Designer.cs">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </Compile>
-    <Compile Include="NewCollection\ReadyToCreateColectionControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="NewCollection\ReadyToCreateColectionControl.Designer.cs">
-      <DependentUpon>ReadyToCreateColectionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
     <Compile Include="SimpleMessageDialog.cs">
@@ -299,12 +287,6 @@
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="NewCollection\NewCollectionDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="NewCollection\NewCollectionDialog.designer.cs">
-      <DependentUpon>NewCollectionDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="ToPalaso\WelcomeControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -399,20 +381,14 @@
     <EmbeddedResource Include="NewCollection\LanguageLocationControl.resx">
       <DependentUpon>LanguageLocationControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\VernacularNameProblemControl.resx">
-      <DependentUpon>VernacularNameProblemControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="NewCollection\LanguageIdControl.resx">
       <DependentUpon>LanguageIdControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\ProjectStorageControl.resx">
-      <DependentUpon>ProjectStorageControl.cs</DependentUpon>
+    <EmbeddedResource Include="NewCollection\CollectionNameControl.resx">
+      <DependentUpon>CollectionNameControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="NewCollection\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\ReadyToCreateColectionControl.resx">
-      <DependentUpon>ReadyToCreateColectionControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
@@ -476,9 +452,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="NewCollection\KindOfCollectionControl.resx">
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\NewCollectionDialog.resx">
-      <DependentUpon>NewCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>

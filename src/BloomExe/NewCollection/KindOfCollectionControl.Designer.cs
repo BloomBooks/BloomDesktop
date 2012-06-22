@@ -94,8 +94,6 @@
 			// 
 			// betterLabel2
 			// 
-			this.betterLabel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.betterLabel2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.betterLabel2.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.localizationExtender1.SetLocalizableToolTip(this.betterLabel2, null);

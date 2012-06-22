@@ -9,13 +9,13 @@ namespace Bloom.NewCollection
 	public partial class NewCollectionWizard : Form
 	{
 		private readonly string _pathToNewLibraryDirectory;
-		private NewCollectionInfo _collectionInfo;
+		private NewCollectionSettings _collectionInfo;
 
-		public NewCollectionWizard(string pathToNewLibraryDirectory)
+		public NewCollectionWizard(bool showWelcome, string pathToNewLibraryDirectory)
 		{
 			_pathToNewLibraryDirectory = pathToNewLibraryDirectory;
 			InitializeComponent();
-			_collectionInfo = new NewCollectionInfo();
+			_collectionInfo = new NewCollectionSettings();
 			_kindOfCollectionPage.Tag = kindOfCollectionControl1;
 			kindOfCollectionControl1.Init(SetNextButtonState, _collectionInfo);
 
@@ -25,8 +25,12 @@ namespace Bloom.NewCollection
 			_collectionNamePage.Tag = _collectionNameControl;
 			_collectionNameControl.Init(SetNextButtonState, _collectionInfo, pathToNewLibraryDirectory);
 
-			_vernacularLanguagePage.Tag = vernacularLanguageInfoControl;
-			vernacularLanguageInfoControl.Init(SetNextButtonState, _collectionInfo);
+			_vernacularLanguagePage.Tag = _vernacularLanguageIdControl;
+			_vernacularLanguageIdControl.Init(SetNextButtonState, _collectionInfo);
+
+			_welcomePage.Suppress = !showWelcome;
+			if (showWelcome)
+				_welcomeHtml.HTML = File.ReadAllText(BloomFileLocator.GetFileDistributedWithApplication("welcome.htm"));
 		}
 
 		public void SetNextButtonState(UserControl caller, bool enabled)
@@ -47,8 +51,9 @@ namespace Bloom.NewCollection
 
 			if (caller is LanguageIdControl)
 			{
-				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_pathToNewLibraryDirectory, _collectionInfo.LanguageName);
-
+				var pattern = Localization.LocalizationManager.GetString("NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
+				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_pathToNewLibraryDirectory, string.Format(pattern,_collectionInfo.Language1Name));
+				//_collectionInfo.CollectionName = ;
 
 				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems
 													? _collectionNamePage	//go ahead to the language location page for now, but then divert to the page
@@ -74,7 +79,7 @@ namespace Bloom.NewCollection
 			}
 		}
 
-		public NewCollectionInfo GetNewCollectionSettings()
+		public NewCollectionSettings GetNewCollectionSettings()
 		{
 			return _collectionInfo;
 		}
@@ -113,6 +118,16 @@ namespace Bloom.NewCollection
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
 
+		private void _languageLocationControl_Load(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _finishPage_Initialize(object sender, AeroWizard.WizardPageInitEventArgs e)
+		{
+			var pattern = "OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.";
+			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
+		}
 	}
 
 	internal interface IPageControl

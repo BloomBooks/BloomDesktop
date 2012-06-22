@@ -6,7 +6,7 @@ namespace Bloom.NewCollection
 {
 	public partial class KindOfCollectionControl : UserControl, IPageControl
 	{
-		private NewCollectionInfo _collectionInfo;
+		private CollectionSettings _collectionInfo;
 		private Action<UserControl, bool> _setNextButtonState;
 
 		public KindOfCollectionControl()
@@ -25,7 +25,7 @@ namespace Bloom.NewCollection
 			_setNextButtonState(this,true); //will update where next goes based on this IsSourceCollection value
 		}
 
-		public void Init(Action<UserControl, bool> SetNextButtonState, NewCollectionInfo collectionInfo)
+		public void Init(Action<UserControl, bool> SetNextButtonState, CollectionSettings collectionInfo)
 		{
 			_setNextButtonState = SetNextButtonState;
 			_collectionInfo = collectionInfo;

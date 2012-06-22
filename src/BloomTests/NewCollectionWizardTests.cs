@@ -11,18 +11,28 @@ namespace BloomTests
 	{
 
 		[Test, Ignore("by hand")]
-		public void Run()
+		public void RunWithoutWelcome()
 		{
 			Application.EnableVisualStyles();
 
 			Browser.SetUpXulRunner();
-			using (var dlg = new NewCollectionWizard(DefaultParentDirectoryForLibraries()))
+			using (var dlg = new NewCollectionWizard(false, DefaultParentDirectoryForLibraries()))
 			{
 				dlg.ShowDialog();
 			}
 		}
 
+		[Test, Ignore("by hand")]
+		public void RunWithWelcome()
+		{
+			Application.EnableVisualStyles();
 
+			Browser.SetUpXulRunner();
+			using (var dlg = new NewCollectionWizard(true, DefaultParentDirectoryForLibraries()))
+			{
+				dlg.ShowDialog();
+			}
+		}
 
 		private string DefaultParentDirectoryForLibraries()
 		{

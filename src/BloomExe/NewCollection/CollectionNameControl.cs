@@ -5,17 +5,17 @@ using Bloom.Collection;
 
 namespace Bloom.NewCollection
 {
-	public partial class ProjectStorageControl : UserControl, IPageControl
+	public partial class CollectionNameControl : UserControl, IPageControl
 	{
 		private Action<UserControl, bool> _setNextButtonState;
 		private  string _destinationDirectory;
-		private NewCollectionInfo _collectionInfo;
+		private NewCollectionSettings _collectionInfo;
 
-		public ProjectStorageControl()
+		public CollectionNameControl()
 		{
 			InitializeComponent();
 		}
-		public void Init(Action<UserControl, bool> SetButtonState, NewCollectionInfo collectionInfo, string destinationDirectory)
+		public void Init(Action<UserControl, bool> SetButtonState, NewCollectionSettings collectionInfo, string destinationDirectory)
 		{
 			_setNextButtonState = SetButtonState;
 			_collectionInfo = collectionInfo;
@@ -27,14 +27,18 @@ namespace Bloom.NewCollection
 			_setNextButtonState(this, nameIsOK);
 			if (nameIsOK)
 			{
-				string[] dirs = Path.GetDirectoryName(_collectionInfo.PathToSettingsFile).Split(Path.DirectorySeparatorChar);
-				if (dirs.Length > 2)
-				{
-					htmlLabel1.ColorName = "gray";
-					string root = Path.Combine(dirs[dirs.Length - 3], dirs[dirs.Length - 2]);
-					htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
-													Path.Combine(root, dirs[dirs.Length - 1]));
-				}
+//				string[] dirs = Path.GetDirectoryName(_collectionInfo.PathToSettingsFile).Split(Path.DirectorySeparatorChar);
+//				if (dirs.Length > 2)
+//				{
+//					htmlLabel1.ColorName = "gray";
+//					string root = Path.Combine(dirs[dirs.Length - 3], dirs[dirs.Length - 2]);
+//					htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
+//													Path.Combine(root, dirs[dirs.Length - 1]));
+//				}
+
+				htmlLabel1.ColorName = "gray";
+				htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
+								_collectionInfo.PathToSettingsFile);
 			}
 			else
 			{
@@ -86,6 +90,8 @@ namespace Bloom.NewCollection
 
 		public void NowVisible()
 		{
+			_exampleText.Visible = _collectionInfo.IsSourceCollection;//our examples would just confuse someone if they're doing a vernacular collection
+
 			if(!string.IsNullOrEmpty(_collectionInfo.PathToSettingsFile))
 			{
 				_collectionNameControl.Text = Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile);
