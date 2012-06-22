@@ -51,7 +51,7 @@ namespace Bloom.Library
 
 		public string LanguageName
 		{
-			get { return _collectionSettings.VernacularLanguageName; }
+			get { return _collectionSettings.Language1Name; }
 		}
 
 		public List<BookCollection> GetBookCollections()

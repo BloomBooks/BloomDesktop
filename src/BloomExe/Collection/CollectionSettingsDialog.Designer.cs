@@ -37,11 +37,11 @@
 			this._changeLanguage3Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage2Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage1Link = new System.Windows.Forms.LinkLabel();
-			this._nationalLanguage2Label = new System.Windows.Forms.Label();
+			this._language3Name = new System.Windows.Forms.Label();
 			this._language3Label = new System.Windows.Forms.Label();
-			this._nationalLanguage1Label = new System.Windows.Forms.Label();
+			this._language2Name = new System.Windows.Forms.Label();
 			this._language2Label = new System.Windows.Forms.Label();
-			this._vernacularLanguageName = new System.Windows.Forms.Label();
+			this._language1Name = new System.Windows.Forms.Label();
 			this._language1Label = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this._aboutBookMakingSettingsButton = new System.Windows.Forms.Button();
@@ -88,11 +88,11 @@
 			this.tabPage1.Controls.Add(this._changeLanguage3Link);
 			this.tabPage1.Controls.Add(this._changeLanguage2Link);
 			this.tabPage1.Controls.Add(this._changeLanguage1Link);
-			this.tabPage1.Controls.Add(this._nationalLanguage2Label);
+			this.tabPage1.Controls.Add(this._language3Name);
 			this.tabPage1.Controls.Add(this._language3Label);
-			this.tabPage1.Controls.Add(this._nationalLanguage1Label);
+			this.tabPage1.Controls.Add(this._language2Name);
 			this.tabPage1.Controls.Add(this._language2Label);
-			this.tabPage1.Controls.Add(this._vernacularLanguageName);
+			this.tabPage1.Controls.Add(this._language1Name);
 			this.tabPage1.Controls.Add(this._language1Label);
 			this.localizationExtender1.SetLocalizableToolTip(this.tabPage1, null);
 			this.localizationExtender1.SetLocalizationComment(this.tabPage1, null);
@@ -185,19 +185,19 @@
 			this._changeLanguage1Link.Text = "Change...";
 			this._changeLanguage1Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._vernacularChangeLink_LinkClicked);
 			// 
-			// _nationalLanguage2Label
+			// _language3Name
 			// 
-			this._nationalLanguage2Label.AutoSize = true;
-			this._nationalLanguage2Label.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.localizationExtender1.SetLocalizableToolTip(this._nationalLanguage2Label, null);
-			this.localizationExtender1.SetLocalizationComment(this._nationalLanguage2Label, null);
-			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage2Label, Localization.LocalizationPriority.NotLocalizable);
-			this.localizationExtender1.SetLocalizingId(this._nationalLanguage2Label, "CollectionSettingsDialog._nationalLanguage2Label");
-			this._nationalLanguage2Label.Location = new System.Drawing.Point(26, 218);
-			this._nationalLanguage2Label.Name = "_nationalLanguage2Label";
-			this._nationalLanguage2Label.Size = new System.Drawing.Size(49, 19);
-			this._nationalLanguage2Label.TabIndex = 14;
-			this._nationalLanguage2Label.Text = "foobar";
+			this._language3Name.AutoSize = true;
+			this._language3Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.localizationExtender1.SetLocalizableToolTip(this._language3Name, null);
+			this.localizationExtender1.SetLocalizationComment(this._language3Name, null);
+			this.localizationExtender1.SetLocalizationPriority(this._language3Name, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizingId(this._language3Name, "CollectionSettingsDialog._nationalLanguage2Label");
+			this._language3Name.Location = new System.Drawing.Point(26, 218);
+			this._language3Name.Name = "_language3Name";
+			this._language3Name.Size = new System.Drawing.Size(49, 19);
+			this._language3Name.TabIndex = 14;
+			this._language3Name.Text = "foobar";
 			// 
 			// _language3Label
 			// 
@@ -213,19 +213,19 @@
 			this._language3Label.TabIndex = 13;
 			this._language3Label.Text = "Language 3 (e.g. Regional Language)   (Optional)";
 			// 
-			// _nationalLanguage1Label
+			// _language2Name
 			// 
-			this._nationalLanguage1Label.AutoSize = true;
-			this._nationalLanguage1Label.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.localizationExtender1.SetLocalizableToolTip(this._nationalLanguage1Label, null);
-			this.localizationExtender1.SetLocalizationComment(this._nationalLanguage1Label, null);
-			this.localizationExtender1.SetLocalizationPriority(this._nationalLanguage1Label, Localization.LocalizationPriority.NotLocalizable);
-			this.localizationExtender1.SetLocalizingId(this._nationalLanguage1Label, "CollectionSettingsDialog._nationalLanguage1Label");
-			this._nationalLanguage1Label.Location = new System.Drawing.Point(26, 133);
-			this._nationalLanguage1Label.Name = "_nationalLanguage1Label";
-			this._nationalLanguage1Label.Size = new System.Drawing.Size(49, 19);
-			this._nationalLanguage1Label.TabIndex = 11;
-			this._nationalLanguage1Label.Text = "foobar";
+			this._language2Name.AutoSize = true;
+			this._language2Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.localizationExtender1.SetLocalizableToolTip(this._language2Name, null);
+			this.localizationExtender1.SetLocalizationComment(this._language2Name, null);
+			this.localizationExtender1.SetLocalizationPriority(this._language2Name, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizingId(this._language2Name, "CollectionSettingsDialog._nationalLanguage1Label");
+			this._language2Name.Location = new System.Drawing.Point(26, 133);
+			this._language2Name.Name = "_language2Name";
+			this._language2Name.Size = new System.Drawing.Size(49, 19);
+			this._language2Name.TabIndex = 11;
+			this._language2Name.Text = "foobar";
 			// 
 			// _language2Label
 			// 
@@ -242,19 +242,19 @@
 			this._language2Label.Text = "Language 2 (e.g. National Language)";
 			this._language2Label.Click += new System.EventHandler(this.label4_Click);
 			// 
-			// _vernacularLanguageName
+			// _language1Name
 			// 
-			this._vernacularLanguageName.AutoSize = true;
-			this._vernacularLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.localizationExtender1.SetLocalizableToolTip(this._vernacularLanguageName, null);
-			this.localizationExtender1.SetLocalizationComment(this._vernacularLanguageName, null);
-			this.localizationExtender1.SetLocalizationPriority(this._vernacularLanguageName, Localization.LocalizationPriority.NotLocalizable);
-			this.localizationExtender1.SetLocalizingId(this._vernacularLanguageName, "CollectionSettingsDialog._vernacularLanguageName");
-			this._vernacularLanguageName.Location = new System.Drawing.Point(26, 44);
-			this._vernacularLanguageName.Name = "_vernacularLanguageName";
-			this._vernacularLanguageName.Size = new System.Drawing.Size(49, 19);
-			this._vernacularLanguageName.TabIndex = 8;
-			this._vernacularLanguageName.Text = "foobar";
+			this._language1Name.AutoSize = true;
+			this._language1Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.localizationExtender1.SetLocalizableToolTip(this._language1Name, null);
+			this.localizationExtender1.SetLocalizationComment(this._language1Name, null);
+			this.localizationExtender1.SetLocalizationPriority(this._language1Name, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizingId(this._language1Name, "CollectionSettingsDialog._vernacularLanguageName");
+			this._language1Name.Location = new System.Drawing.Point(26, 44);
+			this._language1Name.Name = "_language1Name";
+			this._language1Name.Size = new System.Drawing.Size(49, 19);
+			this._language1Name.TabIndex = 8;
+			this._language1Name.Text = "foobar";
 			// 
 			// _language1Label
 			// 
@@ -533,11 +533,11 @@
 		private System.Windows.Forms.LinkLabel _changeLanguage3Link;
 		private System.Windows.Forms.LinkLabel _changeLanguage2Link;
 		private System.Windows.Forms.LinkLabel _changeLanguage1Link;
-		protected System.Windows.Forms.Label _nationalLanguage2Label;
+		protected System.Windows.Forms.Label _language3Name;
 		protected System.Windows.Forms.Label _language3Label;
-		protected System.Windows.Forms.Label _nationalLanguage1Label;
+		protected System.Windows.Forms.Label _language2Name;
 		protected System.Windows.Forms.Label _language2Label;
-		protected System.Windows.Forms.Label _vernacularLanguageName;
+		protected System.Windows.Forms.Label _language1Name;
 		private System.Windows.Forms.Label _xmatterPackLabel;
 		private System.Windows.Forms.ComboBox _xmatterPackCombo;
 		private System.Windows.Forms.TextBox _districtText;

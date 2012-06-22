@@ -361,14 +361,14 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("type", "text/javascript");
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
-			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.VernacularLanguageName);
+			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.Language1Name);
 			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
 				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
 				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
 			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
-			d.Add("{V}", _collectionSettings.VernacularLanguageName);
+			d.Add("{V}", _collectionSettings.Language1Name);
 			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
@@ -1357,7 +1357,7 @@ namespace Bloom.Book
 			else
 			{
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
-				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.VernacularLanguageName, true);
+				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.Language1Name, true);
 				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);

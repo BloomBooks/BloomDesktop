@@ -511,7 +511,10 @@ namespace Bloom
 			if (handler != null) handler(this, null);
 		}
 
-
+		public void ShowHtml(string html)
+		{
+			_browser.LoadHtml(html);
+		}
 	}
 
 }

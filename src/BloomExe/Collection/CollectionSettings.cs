@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
+using Palaso.Extensions;
 
 namespace Bloom.Collection
 {
@@ -28,13 +29,13 @@ namespace Bloom.Collection
 			set
 			{
 				_language1Iso639Code = value;
-				VernacularLanguageName = GetVernacularName(Language2Iso639Code);
+				Language1Name = GetVernacularName(Language2Iso639Code);
 			}
 		}
 
 		public virtual string Language2Iso639Code { get; set; }
 		public virtual string Language3Iso639Code { get; set; }
-		public virtual string VernacularLanguageName { get; set; }
+		public virtual string Language1Name { get; set; }
 
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
@@ -89,11 +90,11 @@ namespace Bloom.Collection
 		public CollectionSettings(NewCollectionInfo collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
-			Language1Iso639Code = collectionInfo.VernacularIso639Code;
-			Language2Iso639Code = collectionInfo.NationalLanguage1Iso639Code;
-			Language3Iso639Code = collectionInfo.NationalLanguage2Iso639Code;
-			VernacularLanguageName = collectionInfo.LanguageName;
-			IsSourceCollection = collectionInfo.IsShellLibary;
+			Language1Iso639Code = collectionInfo.Language1Iso639Code;
+			Language2Iso639Code = collectionInfo.Language2Iso639Code;
+			Language3Iso639Code = collectionInfo.Language3Iso639Code;
+			Language1Name = collectionInfo.LanguageName;
+			IsSourceCollection = collectionInfo.IsSourceCollection;
 			XMatterPackName = collectionInfo.XMatterPackName;
 			Save();
 		}
@@ -131,7 +132,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
-			library.Add(new XElement("Language1Name", VernacularLanguageName));
+			library.Add(new XElement("Language1Name", Language1Name));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
@@ -146,11 +147,11 @@ namespace Bloom.Collection
 			try
 			{
 				XElement library = XElement.Load(SettingsFilePath);
-				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "VernacularIso639Code", ""));
+				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
-				VernacularLanguageName = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
+				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");
@@ -212,25 +213,25 @@ namespace Bloom.Collection
 				if(IsSourceCollection)
 					return CollectionName;
 				var fmt = Localization.LocalizationManager.GetString("Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
-				return string.Format(fmt, VernacularLanguageName);
+				return string.Format(fmt, Language1Name);
 			}
 		}
 
 
-		public static string GetPathForNewSettings(string parentFolderPath, string newCollectinoName)
+		public static string GetPathForNewSettings(string parentFolderPath, string newCollectionName)
 		{
-			return Path.Combine(parentFolderPath, newCollectinoName + ".bloomCollection");
+			return parentFolderPath.CombineForPath(newCollectionName + " Books", newCollectionName + " Books" + ".bloomCollection");
 		}
 	}
 
 	public class NewCollectionInfo
 	{
 		public string PathToSettingsFile;
-		public string VernacularIso639Code;
-		public string NationalLanguage1Iso639Code="en";
-		public string NationalLanguage2Iso639Code;
+		public string Language1Iso639Code;
+		public string Language2Iso639Code="en";
+		public string Language3Iso639Code;
 		public string LanguageName;
 		public string XMatterPackName= "Factory";
-		public bool IsShellLibary;
+		public bool IsSourceCollection;
 	}
 }

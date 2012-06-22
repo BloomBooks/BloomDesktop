@@ -19,7 +19,7 @@ namespace Bloom
 			//_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
 			_welcomeControl.TemplateButton.Image = Resources.library32x32;
 			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
-			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibrarys(),
+			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibraries(),
 				"Create new collection",
 				"Browse for other collections on this computer...",
 				"Bloom Collections|*.bloomLibrary;*.bloomCollection",
@@ -33,27 +33,21 @@ namespace Bloom
 																};
 		}
 
-		private string DefaultParentDirectoryForLibrarys()
+		private string DefaultParentDirectoryForLibraries()
 		{
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
 		private NewCollectionInfo CreateNewLibrary()
 		{
-			NewCollectionDialog dlg = new NewCollectionDialog(DefaultParentDirectoryForLibrarys());
-			if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrEmpty(dlg.PathToNewLibraryDirectory))
+			using (var dlg = new NewCollectionWizard(DefaultParentDirectoryForLibraries()))
 			{
-				return null;
+				if (DialogResult.OK != dlg.ShowDialog())
+				{
+					return null;
+				}
+				return dlg.GetNewCollectionSettings();
 			}
-			return new NewCollectionInfo()
-					   {
-						   PathToSettingsFile =
-							   CollectionSettings.GetPathForNewSettings(dlg.PathToNewLibraryDirectory, dlg.LibraryName),
-						   VernacularIso639Code = dlg.Iso639Code,
-						   NationalLanguage1Iso639Code = "en",//TODO
-						   LanguageName = dlg.LanguageName,
-						   IsShellLibary = dlg.IsShellMakingLibrary
-					   };
 		}
 
 		public string SelectedPath

@@ -82,7 +82,7 @@ namespace BloomTests.Book
 
 		private Bloom.Book.Book CreateBook()
 		{
-			_collectionSettings = new CollectionSettings(new NewCollectionInfo() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), VernacularIso639Code = "xyz", NationalLanguage1Iso639Code = "en", NationalLanguage2Iso639Code = "fr" });
+			_collectionSettings = new CollectionSettings(new NewCollectionInfo() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());

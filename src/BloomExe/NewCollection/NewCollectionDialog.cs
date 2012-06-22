@@ -20,9 +20,6 @@ namespace Bloom.NewCollection
 			Icon = Application.OpenForms[0].Icon;
 			_okButton.Enabled = false;
 			_pathLabel.Text = "";
-			_kindOfCollectionControl1.Left = _chooseLanguageButton.Left;
-			_kindOfCollectionControl1.Width = btnCancel.Right - _kindOfCollectionControl1.Left;
-			_kindOfCollectionControl1._nextButton.Click += new EventHandler(_nextButton_Click);
 		}
 
 		void _nextButton_Click(object sender, EventArgs e)
