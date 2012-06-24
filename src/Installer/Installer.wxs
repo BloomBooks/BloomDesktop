@@ -144,6 +144,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="Newtonsoft.Json.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5644}">
 			<File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" KeyPath="yes" Source="..\..\output\release\Newtonsoft.Json.dll" />
 		  </Component>
+
+		  <Component Id="AeroWizard.dll" Guid="{233C4FD2-010D-4263-9679-633E224AA66E}">
+			<File Id="AeroWizard.dll" Name="AeroWizard.dll" KeyPath="yes" Source="..\..\output\release\AeroWizard.dll" />
+		  </Component>
+
 		  <!-- used by PalasoUIWindowsForms for talking to scanner-->
 		  <Component Id="Interop.WIA.dll" Guid="{47038218-2646-4F83-BE95-4F83A8D41811}">
 			<File Id="Interop.WIA.dll" Name="Interop.WIA.dll" KeyPath="yes" Source="..\..\output\release\Interop.WIA.dll" />
@@ -204,6 +209,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
 	  <ComponentRef Id="Interop.WIA.dll" />
 	  <ComponentRef Id="Newtonsoft.Json.dll"/>
+	  <ComponentRef Id="AeroWizard.dll"/>
 	  <ComponentRef Id="tidymanaged.dll"/>
 	  <ComponentRef Id="libtidy.dll"/>
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
