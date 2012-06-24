@@ -2,7 +2,7 @@
 
 namespace Bloom
 {
-	partial class OpenCreateCollectionsDialog
+	partial class OpenAndCreateCollectionDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -30,11 +30,11 @@ namespace Bloom
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenCreateCollectionsDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenAndCreateCollectionDialog));
 			this._broughtToYouBy = new System.Windows.Forms.LinkLabel();
 			this._versionInfo = new System.Windows.Forms.Label();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this._welcomeControl = new Bloom.ToPalaso.WelcomeControl();
+			this._openAndCreateControl = new Bloom.ToPalaso.WelcomeControl();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -81,16 +81,16 @@ namespace Bloom
 			// 
 			// _welcomeControl
 			// 
-			this._welcomeControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this._openAndCreateControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._welcomeControl.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._welcomeControl.BackColor = System.Drawing.Color.White;
-			this._welcomeControl.Font = new System.Drawing.Font("Segoe UI", 9F);
-			this._welcomeControl.Location = new System.Drawing.Point(0, 105);
-			this._welcomeControl.Name = "_welcomeControl";
-			this._welcomeControl.Size = new System.Drawing.Size(768, 278);
-			this._welcomeControl.TabIndex = 0;
+			this._openAndCreateControl.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._openAndCreateControl.BackColor = System.Drawing.Color.White;
+			this._openAndCreateControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._openAndCreateControl.Location = new System.Drawing.Point(0, 105);
+			this._openAndCreateControl.Name = "_openAndCreateControl";
+			this._openAndCreateControl.Size = new System.Drawing.Size(768, 278);
+			this._openAndCreateControl.TabIndex = 0;
 			// 
 			// WelcomeDialog
 			// 
@@ -101,7 +101,7 @@ namespace Bloom
 			this.Controls.Add(this._versionInfo);
 			this.Controls.Add(this._broughtToYouBy);
 			this.Controls.Add(this.pictureBox1);
-			this.Controls.Add(this._welcomeControl);
+			this.Controls.Add(this._openAndCreateControl);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
@@ -115,7 +115,7 @@ namespace Bloom
 
 		#endregion
 
-		private WelcomeControl _welcomeControl;
+		private WelcomeControl _openAndCreateControl;
         private System.Windows.Forms.LinkLabel _broughtToYouBy;
         private System.Windows.Forms.Label _versionInfo;
 		private System.Windows.Forms.PictureBox pictureBox1;

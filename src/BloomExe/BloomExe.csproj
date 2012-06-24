@@ -293,11 +293,11 @@
     <Compile Include="ToPalaso\WelcomeControl.designer.cs">
       <DependentUpon>WelcomeControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="OpenCreateCollectionsDialog.cs">
+    <Compile Include="OpenAndCreateCollectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OpenCreateCollectionsDialog.Designer.cs">
-      <DependentUpon>OpenCreateCollectionsDialog.cs</DependentUpon>
+    <Compile Include="OpenAndCreateCollectionDialog.Designer.cs">
+      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
@@ -456,8 +456,8 @@
     <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
       <DependentUpon>WelcomeControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenCreateCollectionsDialog.resx">
-      <DependentUpon>OpenCreateCollectionsDialog.cs</DependentUpon>
+    <EmbeddedResource Include="OpenAndCreateCollectionDialog.resx">
+      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
