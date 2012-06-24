@@ -104,7 +104,7 @@
 			this._languageLocationPage.NextPage = this._finishPage;
 			this._languageLocationPage.Size = new System.Drawing.Size(637, 310);
 			this._languageLocationPage.TabIndex = 5;
-			this._languageLocationPage.Text = "Language Location";
+			this._languageLocationPage.Text = "Give Language Location";
 			// 
 			// _finishPage
 			// 
@@ -152,7 +152,7 @@
 			// _welcomeHtml
 			// 
 			this._welcomeHtml.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._welcomeHtml.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._welcomeHtml.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._welcomeHtml.HTML = "hi there";
 			this._welcomeHtml.Location = new System.Drawing.Point(0, 0);
 			this._welcomeHtml.Margin = new System.Windows.Forms.Padding(0);

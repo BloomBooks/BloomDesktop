@@ -253,7 +253,19 @@ namespace Bloom
 
 			while (true)
 			{
-				using (var dlg = _applicationContainer.CreateWelcomeDialog())
+				//If it looks like the 1st time, put up the create collection with the welcome.
+				//The user can cancel that if they want to go looking for a collection on disk.
+				if(Settings.Default.MruProjects.Latest == null)
+				{
+					var collection=OpenAndCreateCollectionDialog.CreateNewCollection();
+					if (collection != null)
+					{
+						OpenCollection(collection.PathToSettingsFile);
+						return;
+					}
+				}
+
+				using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
 				{
 					if (dlg.ShowDialog() != DialogResult.OK)
 					{
@@ -261,14 +273,20 @@ namespace Bloom
 						return;
 					}
 
-					if (OpenProjectWindow(dlg.SelectedPath))
-					{
-						Settings.Default.MruProjects.AddNewPath(dlg.SelectedPath);
-						Settings.Default.Save();
-						return;
-					}
+					if (OpenCollection(dlg.SelectedPath)) return;
 				}
 			}
+		}
+
+		private static bool OpenCollection(string path)
+		{
+			if (OpenProjectWindow(path))
+			{
+				Settings.Default.MruProjects.AddNewPath(path);
+				Settings.Default.Save();
+				return true;
+			}
+			return false;
 		}
 
 		/// ------------------------------------------------------------------------------------

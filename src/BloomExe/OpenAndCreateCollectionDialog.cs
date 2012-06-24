@@ -10,38 +10,40 @@ using Palaso.IO;
 
 namespace Bloom
 {
-	public partial class OpenCreateCollectionsDialog : Form
+	public partial class OpenAndCreateCollectionDialog : Form
 	{
-		public OpenCreateCollectionsDialog(MostRecentPathsList mruLibraryPaths)
+		public OpenAndCreateCollectionDialog(MostRecentPathsList mruLibraryPaths)
 		{
 			InitializeComponent();
 			_versionInfo.Text = Shell.GetVersionInfo();
 			//_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
-			_welcomeControl.TemplateButton.Image = Resources.library32x32;
-			_welcomeControl.TemplateButton.Image.Tag = "testfrombloom";
-			_welcomeControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibraries(),
+			_openAndCreateControl.TemplateButton.Image = Resources.library32x32;
+			_openAndCreateControl.TemplateButton.Image.Tag = "testfrombloom";
+			_openAndCreateControl.Init(mruLibraryPaths, DefaultParentDirectoryForLibraries(),
 				"Create new collection",
 				"Browse for other collections on this computer...",
 				"Bloom Collections|*.bloomLibrary;*.bloomCollection",
 				dir=>true,
 				CreateNewCollection);
 
-			_welcomeControl.DoneChoosingOrCreatingLibrary += (x, y) =>
+			_openAndCreateControl.DoneChoosingOrCreatingLibrary += (x, y) =>
 																{
 																	DialogResult = DialogResult.OK;
 																	Close();
 																};
 		}
 
-		private string DefaultParentDirectoryForLibraries()
+		private static string DefaultParentDirectoryForLibraries()
 		{
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
-		private NewCollectionSettings CreateNewCollection()
+		public static NewCollectionSettings CreateNewCollection()
 		{
-			using (var dlg = new NewCollectionWizard(false, DefaultParentDirectoryForLibraries()))
+			bool showWelcomePage = Settings.Default.MruProjects.Latest == null;
+			using (var dlg = new NewCollectionWizard(showWelcomePage, DefaultParentDirectoryForLibraries()))
 			{
+				dlg.ShowInTaskbar = showWelcomePage;//if we're at this stage, there isn't a bloom icon there already.
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					return null;
@@ -52,7 +54,7 @@ namespace Bloom
 
 		public string SelectedPath
 		{
-			get { return _welcomeControl.SelectedPath; }
+			get { return _openAndCreateControl.SelectedPath; }
 		}
 
 		private void _broughtToYouBy_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

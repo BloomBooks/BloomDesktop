@@ -16,7 +16,6 @@ namespace Bloom
 
 		public HtmlLabel()
 		{
-			FontSize = 9;
 			ColorName = "black";
 			InitializeComponent();
 		}
@@ -39,12 +38,11 @@ namespace Bloom
 				{
 					_browser.Visible = !string.IsNullOrEmpty(_html);
 					if(_browser.Visible)
-						_browser.LoadHtml("<span style=\"color:"+ColorName+"; font-family:Segoe UI, Arial; font-size:" + FontSize.ToString() + "pt\">" + _html+"</span>");
+						_browser.LoadHtml("<span style=\"color:"+ColorName+"; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html+"</span>");
 				}
 			}
 		}
 
-		public int FontSize;
 		public string ColorName;
 
 		private void HtmlLabel_Load(object sender, EventArgs e)
