@@ -349,11 +349,11 @@ namespace Bloom
 			var file = asm.CodeBase.Replace("file:", string.Empty);
 			file = file.TrimStart('/');
 			var fi = new FileInfo(file);
-			if(DateTime.UtcNow.Subtract(fi.LastWriteTimeUtc).Days > 30)// nb: "create time" is stuck at may 2011, for some reason. Arrrggghhhh
+			if(DateTime.UtcNow.Subtract(fi.LastWriteTimeUtc).Days > 90)// nb: "create time" is stuck at may 2011, for some reason. Arrrggghhhh
 				//if (DateTime.UtcNow.Subtract(fi.CreationTimeUtc).Seconds > 100)
 				{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-					"Sorry, this developmental version of Bloom is now over 30 days old.  Please get a new version at bloom.palaso.org");
+					"Sorry, this beta version of Bloom is now over 90 days old.  Please get a new version at bloom.palaso.org");
 					Process.GetCurrentProcess().Kill();
 			}
 
