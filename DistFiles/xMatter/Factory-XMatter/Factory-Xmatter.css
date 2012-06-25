@@ -18,7 +18,7 @@
 /*...................Vernacular*/
 .A5Portrait.cover .bookTitle.bloom-content1
 {
-	font-size: 30.3pt;
+	font-size: 300%;
 	height: 3.3cm;
 	width: 100%;
 	display: block;
@@ -26,14 +26,14 @@
 }
 .A5Landscape.cover .bookTitle.bloom-content1
 {
-	font-size: 38.3pt;
+	font-size: 300%;
 	height: 1.5cm;
 	width: 100%;
 	display: block;
 }
 .A4Landscape.cover .bookTitle.bloom-content1
 {
-	font-size: 38.3pt;
+	font-size: 300%;
 	height: 1.5cm;
 	width: 100%;
 	display: block;
@@ -42,14 +42,14 @@
 /*....................National 1*/
 .A5Portrait.cover .bookTitle.bloom-contentNational1
 {
-	font-size: 12pt;
+	font-size: 120%;
 	height: 0.8cm;
 	width: 100%;
 	display: block;
 }
 .A5Landscape.cover .bookTitle.bloom-contentNational1
 {
-	font-size: 12pt;
+	font-size: 120%;
 	height: 0.8cm;
 	width: 100%;
 	/*+placement:anchor-top-left -4px 68px;*/
@@ -60,7 +60,7 @@
 }
 .A4Landscape.cover .bookTitle.bloom-contentNational1
 {
-	font-size: 12pt;
+	font-size: 120%;
 	height: 0.8cm;
 	width: 100%;
 	/*+placement:anchor-top-left -4px 68px;*/
@@ -116,7 +116,7 @@ DIV.coverBottomBookTopic DIV
 	border: none !important;
 	width: 100%;
 	min-height: 20px;
-	font-size: 11pt;
+	font-size: 110%;
 	display: block !important;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
@@ -140,7 +140,7 @@ DIV.coverBottomBookTopic DIV.bloom-contentNational2
 DIV.coverBottomLangName DIV
 {
 	display: inline;
-	font-size: 11pt !important;
+	font-size: 110% !important;
 	/*[disabled]vertical-align:bottom;*/
 /*This placement is to get vertical alignment with the topic*/
 	/*+placement:anchor-top-left 0px 6px;*/
@@ -173,7 +173,7 @@ DIV.titlePage
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV#titePageTitleBlock DIV.bloom-content1
 {
-	font-size: 26.1pt;
+	font-size: 260%;
 	height: 111px;
 	text-align: center;
 	width: 100%;
@@ -215,13 +215,13 @@ DIV.ISBNContainer DIV
 	/*[disabled]+placement:shift 1px 3px;*/
 	min-width: 120px;
 	line-height: normal;
-	font-size: 12pt;
+	font-size: 120%;
 	vertical-align: text-bottom;
 	min-height: 18px;
 }
 .titlePage .titleN1
 {
-	font-size: 14pt;
+	font-size: 140%;
 	text-align: center;
 	/*+placement:anchor-top-left 16px 121px;*/
 	position: absolute;
@@ -232,7 +232,7 @@ DIV.ISBNContainer DIV
 }
 .titlePage .titleN2
 {
-	font-size: 14pt;
+	font-size: 140%;
 	text-align: center;
 	/*+placement:anchor-top-left 16px 168px;*/
 	position: absolute;
@@ -377,11 +377,11 @@ BUTTON#editCopyrightAndLicense
 	position: absolute;
 	left: 125px;
 	top: 3px;
-	font-size: 9pt;
+	font-size: 90%;
 }
 DIV.licenseDescription
 {
-	font-size: 8pt !important;
+	font-size: 80% !important;
 	width: 100%;
 	height: 57px;
 	/*+placement:anchor-top-left 0 123px;*/

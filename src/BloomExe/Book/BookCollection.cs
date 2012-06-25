@@ -54,7 +54,16 @@ namespace Bloom.Book
 			if (collectionType == CollectionType.TheOneEditableCollection)
 			{
 				createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
+				MakeCollectionCSSIfMissing();
 			}
+		}
+
+		private void MakeCollectionCSSIfMissing()
+		{
+			string path = Path.Combine(_path, "collection.css");
+			if(File.Exists(path))
+				return;
+			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("root","collection styles override template.css"),path);
 		}
 
 		public CollectionType Type { get; private set; }

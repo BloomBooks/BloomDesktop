@@ -339,6 +339,7 @@ namespace Bloom.Book
 			{
 				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
 			}
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"collection.css"));
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
@@ -507,6 +508,7 @@ namespace Bloom.Book
 			var dom = GetHtmlDomWithJustOnePage(page);
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
+			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"collection.css"));
 			AddCoverColor(dom, CoverColor);
 			AddPreviewJScript(dom);
 
@@ -1602,6 +1604,8 @@ namespace Bloom.Book
 					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
 						var lang = node.GetOptionalStringAttribute("lang", "*");
+						if (lang == "")//the above doesn't stop a "" from getting through
+							lang = "*";
 						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" || node.GetOptionalStringAttribute("contenteditable", "false") == "true") && (lang == "V" || lang == "N1" || lang == "N2"))
 						{
 							throw new ApplicationException("Editable element (e.g. TextArea) should not have placeholder @lang attributes (V,N1,N2): " + _storage.FileName + "\r\n\r\n" + node.OuterXml);

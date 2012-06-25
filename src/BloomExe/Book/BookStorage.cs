@@ -257,6 +257,7 @@ namespace Bloom.Book
 			RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
+			dom.AddStyleSheet("collection.css");
 		}
 
 		/// <summary>
