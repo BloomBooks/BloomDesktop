@@ -83,18 +83,17 @@ TD P
 {
 	width: 90%;
 	height: 62%;
-	font-size: 9pt;
+	font-size: 90%;
 	/*+placement:shift 5px -3px;*/
 	position: relative;
 	left: 5px;
 	top: -3px;
-	font-size: 10pt;
 	line-height: 11pt;
 }
 .calendarBottomPageHeader
 {
 	text-align: center;
-	font: 24pt sans-serif;
+	font: 240%
 	width: 100%;
 	height: 32px;
 }

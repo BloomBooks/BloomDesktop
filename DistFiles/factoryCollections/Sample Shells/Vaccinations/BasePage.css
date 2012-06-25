@@ -47,6 +47,8 @@ BODY
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.*/
+	font-size: 10pt;
 }
 DIV.ui-tooltip-content
 {
@@ -118,7 +120,7 @@ TEXTAREA, DIV.bloom-editable
 	resize: none;
 /*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: hidden;
-	font-size: 14pt;
+	font-size: 140%;
 	line-height: 27.6pt;
 	min-height: 20px;
 	width: 100%;
