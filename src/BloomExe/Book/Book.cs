@@ -340,6 +340,8 @@ namespace Bloom.Book
 				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
 			}
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"collection.css"));
+			if(File.Exists(FolderPath.CombineForPath("book.css")))
+				dom.AddStyleSheet("book.css");
 			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
@@ -509,6 +511,8 @@ namespace Bloom.Book
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
 			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"collection.css"));
+			if (File.Exists(FolderPath.CombineForPath("book.css")))
+				dom.AddStyleSheet("book.css");
 			AddCoverColor(dom, CoverColor);
 			AddPreviewJScript(dom);
 

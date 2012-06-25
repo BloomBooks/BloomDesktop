@@ -297,7 +297,7 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	font-size: 12pt;
+	font-size: 120%;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments

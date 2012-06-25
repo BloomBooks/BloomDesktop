@@ -252,12 +252,14 @@ namespace Bloom.Book
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private static void MakeCssLinksAppropriateForStoredFile(XmlDocument dom)
+		private static void MakeCssLinksAppropriateForStoredFile(XmlDocument dom, string folderPath)
 		{
 			RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("collection.css");
+			if (File.Exists(Path.Combine(folderPath,"book.css")))
+				dom.AddStyleSheet("book.css");
 		}
 
 		/// <summary>
@@ -435,7 +437,7 @@ namespace Bloom.Book
 		public string SaveHtml(XmlDocument dom)
 		{
 			string tempPath = Path.GetTempFileName();
-			MakeCssLinksAppropriateForStoredFile(dom);
+			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
 			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);

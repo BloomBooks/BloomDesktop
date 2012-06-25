@@ -178,6 +178,8 @@ namespace Bloom
 
 			errorsToHide.Add("PlacesDBUtils"); //happens if you let bloom sit there long enough
 
+			errorsToHide.Add("privatebrowsing"); //no idea why it shows this error sometimes
+
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
