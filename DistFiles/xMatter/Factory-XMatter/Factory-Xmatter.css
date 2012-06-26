@@ -1,5 +1,15 @@
-/*Cover Page
-....Title*/
+/*Cover Page*/
+.A5Portrait DIV.marginBox
+{
+/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 189.4mm;
+}
+.A4Landscape DIV.marginBox
+{
+/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 188.2mm;
+}
+/*....Title*/
 .A5Portrait.cover .bloom-translationGroup.coverTitle
 {
 	width: 100%;
@@ -18,7 +28,7 @@
 /*...................Vernacular*/
 .A5Portrait.cover .bookTitle.bloom-content1
 {
-	font-size: 300%;
+	font-size: 250%;
 	height: 3.3cm;
 	width: 100%;
 	display: block;
@@ -33,8 +43,8 @@
 }
 .A4Landscape.cover .bookTitle.bloom-content1
 {
-	font-size: 300%;
-	height: 1.5cm;
+	font-size: 250%;
+	height: 2.8cm;
 	width: 100%;
 	display: block;
 	line-height: 1.2;
@@ -43,7 +53,7 @@
 .A5Portrait.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 120%;
-	height: 0.8cm;
+	height: 1.3cm;
 	width: 100%;
 	display: block;
 }
@@ -63,16 +73,16 @@
 	font-size: 120%;
 	height: 0.8cm;
 	width: 100%;
-	/*+placement:anchor-top-left -4px 68px;*/
+	/*+placement:anchor-top-left -4px 112px;*/
 	position: absolute;
 	left: -4px;
-	top: 68px;
+	top: 112px;
 	display: block;
 }
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer
 {
-	height: 10.3cm;
+	height: 10cm;
 	width: 100%;
 	/*+placement:shift 1px 19px;*/
 	position: relative;
@@ -90,12 +100,23 @@
 }
 .A4Landscape.cover DIV.bloom-imageContainer
 {
-	height: 12.6cm;
+	height: 11.3cm;
 	width: 100%;
-	/*+placement:anchor-top-left 0px 116px;*/
+	/*+placement:anchor-top-left 0px 158px;*/
 	position: absolute;
 	left: 0px;
-	top: 116px;
+	top: 158px;
+}
+/*.....Small cover credits*/
+DIV.bloom-editable.smallCoverCredits
+{
+	font-size: 100%;
+	text-align: center;
+	/*+placement:anchor-top-left 0px 599px;*/
+	position: absolute;
+	left: 0px;
+	top: 599px;
+	height: 49px;
 }
 /*.......Topic*/
 DIV.coverBottomBookTopic
@@ -118,6 +139,8 @@ DIV.coverBottomBookTopic DIV
 	min-height: 20px;
 	font-size: 110%;
 	display: block !important;
+/*This hack is about pushing it down to line up with the language name over on the left.*/
+	margin-top: 9px;
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
@@ -158,6 +181,10 @@ DIV.coverBottomLangName
 	position: absolute;
 	left: 0;
 	bottom: 0;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0;
+	padding-bottom: 0px;
 }
 /*Title Page*/
 DIV.titlePage
@@ -173,7 +200,7 @@ DIV.titlePage
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV#titePageTitleBlock DIV.bloom-content1
 {
-	font-size: 260%;
+	font-size: 150%;
 	height: 111px;
 	text-align: center;
 	width: 100%;
@@ -258,10 +285,10 @@ DIV.titlePage .credits.bloom-contentNational1
 }
 DIV.titlePage DIV#languageInformation
 {
-	/*+placement:anchor-top-left 0 378px;*/
+	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
-	top: 378px;
+	bottom: 0;
 	width: 100%;
 	height: 86px;
 }
@@ -312,7 +339,7 @@ DIV.verso DIV
 }
 DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
-	height: 100%;
+	height: 2.7cm;
 	width: 100%;
 	display: block !important;
 }
