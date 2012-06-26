@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Palaso.Code;
@@ -45,6 +47,7 @@ namespace Bloom.Book
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		void RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
+		void SortStyleSheetLinks(XmlDocument dom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -195,6 +198,27 @@ namespace Bloom.Book
 			}
 		}
 
+		private void EnsureHasCollectionAndBookStylesheets(XmlDocument dom)
+		{
+			string cssFilePath = _fileLocator.LocateFile(@"collection.css");
+			if (!string.IsNullOrEmpty(cssFilePath))
+				EnsureHasStyleSheet(dom, cssFilePath);
+
+			if (File.Exists(Path.Combine(_folderPath, "book.css")))
+				EnsureHasStyleSheet(dom,"book.css");
+		}
+
+		private void EnsureHasStyleSheet(XmlDocument dom, string path)
+		{
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == path)
+					return;
+			}
+			dom.AddStyleSheet(path);
+		}
+
 		private void UpdateStyleSheetLinkPaths(XmlDocument dom, IFileLocator fileLocator, IProgress log)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
@@ -257,9 +281,6 @@ namespace Bloom.Book
 			RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("collection.css");
-			if (File.Exists(Path.Combine(folderPath,"book.css")))
-				dom.AddStyleSheet("book.css");
 		}
 
 		/// <summary>
@@ -550,8 +571,38 @@ namespace Bloom.Book
 			XmlDocument dom = (XmlDocument)Dom.Clone();
 
 			SetBaseForRelativePaths(dom, _folderPath);
+			EnsureHasCollectionAndBookStylesheets(dom);
 			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
+
 			return dom;
+		}
+
+		public void SortStyleSheetLinks(XmlDocument dom)
+		{
+			List<XmlElement> links = new List<XmlElement>();
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				links.Add(link);
+			}
+			if (links.Count < 2)
+				return;
+
+			var headNode = links[0].ParentNode;
+
+			//clear them out
+			foreach (var xmlElement in links)
+			{
+				headNode.RemoveChild(xmlElement);
+			}
+
+			links.Sort(new StyleSheetLinkSorter());
+
+			//add them back
+			foreach (var xmlElement in links)
+			{
+				headNode.AppendChild(xmlElement);
+			}
+
 		}
 
 		public bool DeleteBook()

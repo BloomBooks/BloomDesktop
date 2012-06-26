@@ -149,6 +149,7 @@
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />
     <Compile Include="Book\DataSet.cs" />
+    <Compile Include="Book\StyleSheetLinkSorter.cs" />
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />

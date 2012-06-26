@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
+using System.Xml;
 using Bloom.Book;
 using NUnit.Framework;
 using Palaso.IO;
@@ -70,6 +71,14 @@ namespace BloomTests.Book
 		private BookStorage GetInitialStorage()
 		{
 			File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+			var storage = new BookStorage(_folder.Path, _fileLocator);
+			storage.Save();
+			return storage;
+		}
+
+		private BookStorage GetInitialStorageWithCustomHead(string head)
+		{
+			File.WriteAllText(_bookPath, "<html><head>"+head+" </head></body></html>");
 			var storage = new BookStorage(_folder.Path, _fileLocator);
 			storage.Save();
 			return storage;
@@ -148,6 +157,61 @@ namespace BloomTests.Book
 			var newPath = newFolder.Combine(newBookName+".htm");
 			Assert.IsTrue(Directory.Exists(newFolder.Path), "Expected folder:" + newFolder.Path);
 			Assert.IsTrue(File.Exists(newPath), "Expected file:" +newPath);
+		}
+
+		[Test]
+		public void SortStyleSheetLinks_LeavesBasePageBeforePreviewMode()
+		{
+			var content =
+			   @"<html><head>
+				<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
+				<link rel='stylesheet' href='basePage.css' type='text/css' />
+				</head></html>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(content);
+			var storage = GetInitialStorage();
+
+			storage.SortStyleSheetLinks(dom);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[1][@href='basePage.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[2][@href='../../previewMode.css']", 1);
+		}
+
+		[Test]
+		public void SortStyleSheetLinks_LeavesOverridesAtEndAndSpecialFilesInMiddle()
+		{
+			var content =
+			   @"<html><head>
+				<link rel='stylesheet' href='my special b.css' type='text/css' />
+				<link rel='stylesheet' href='Factory-Xmatter.css' type='text/css' />
+				<link rel='stylesheet' href='my special a.css' type='text/css' />
+				<link rel='stylesheet' href='my special c.css' type='text/css' />
+				<link rel='stylesheet' href='Basic book.css' type='text/css' />
+				<link rel='stylesheet' href='../collection.css' type='text/css' />
+				<link rel='stylesheet' href='book.css' type='text/css' />
+				<link rel='stylesheet' href='basePage.css' type='text/css' />
+				<link rel='stylesheet' href='languageDisplay.css' type='text/css' />
+				<link rel='stylesheet' href='../../editMode.css' type='text/css' />
+
+				</head></html>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(content);
+			var storage = GetInitialStorage();
+
+			storage.SortStyleSheetLinks(dom);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[1][@href='basePage.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[2][@href='languageDisplay.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[3][@href='../../editMode.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[4][@href='Basic book.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[5][@href='Factory-Xmatter.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[6][@href='my special a.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[7][@href='my special b.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='my special c.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../collection.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='book.css']", 1);
 		}
 	}
 }
