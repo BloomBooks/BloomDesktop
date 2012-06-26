@@ -3,6 +3,7 @@
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 189.4mm;
+	/*[disabled]border:1px solid #000000;*/
 }
 .A4Landscape DIV.marginBox
 {
@@ -189,13 +190,7 @@ DIV.coverBottomLangName
 /*Title Page*/
 DIV.titlePage
 {
-	margin: 0;
-	padding: 0;
 	text-align: center;
-	/*+placement:shift;*/
-	position: relative;
-	left: 0;
-	top: 0;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV#titePageTitleBlock DIV.bloom-content1
@@ -216,6 +211,7 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 	top: 119px;
 	width: 100%;
 	display: block;
+	font-size: 100%;
 }
 DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
@@ -230,19 +226,18 @@ DIV.ISBNContainer
 	left: 0px;
 	top: 330px;
 	width: 100%;
-	/*[disabled]font-size:12pt;*/
 	/*[disabled]line-height:12pt;*/
-	font-family: arial !important;
+	/*[disabled]font-family:arial;*/
 }
 DIV.ISBNContainer DIV
 {
 	/*[disabled]height:21px;*/
 	display: inline-block;
-	text-align: left;
+	text-align: center;
 	/*[disabled]+placement:shift 1px 3px;*/
 	min-width: 120px;
 	line-height: normal;
-	font-size: 120%;
+	font-size: 100%;
 	vertical-align: text-bottom;
 	min-height: 18px;
 }
@@ -282,6 +277,7 @@ DIV.titlePage .credits.bloom-contentNational1
 	text-align: center;
 	width: 100%;
 	display: block;
+	font-size: 100%;
 }
 DIV.titlePage DIV#languageInformation
 {

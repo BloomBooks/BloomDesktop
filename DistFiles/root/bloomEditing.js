@@ -674,7 +674,7 @@ function ResizeUsingPercentages(e,ui){
             if ($(this).css('cursor') == 'not-allowed') {
                 var whyDisabled = "You cannot change these because this is not the original copy.";
                 if($(this).hasClass('bloom-readOnlyInEditMode')){
-                    whyDisabled = "You cannot put anything in there while making an original.";
+                    whyDisabled = "You cannot put anything in there while making an original book.";
                 }
 
                 var whatToSay = GetLocalizedHint(this)+" <br/>"+whyDisabled;
