@@ -108,8 +108,9 @@ namespace Bloom.Edit
 
         private void OnRelocatePage(RelocatePageInfo info)
         {
-            _bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
-			UsageReporter.SendNavigationNotice("RelocatePage");
+            info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			if(!info.Cancel)
+				UsageReporter.SendNavigationNotice("RelocatePage");
         }
 
         private void OnInsertTemplatePage(object sender, EventArgs e)
@@ -391,21 +392,22 @@ namespace Bloom.Edit
 
         public IPage DeterminePageWhichWouldPrecedeNextInsertion()
         {
-            if (_view != null)
-            {
-                var pagesStartingWithCurrentSelection =
-                    _bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
-                var candidates = pagesStartingWithCurrentSelection.ToArray();
-                for (int i = 0; i < candidates.Length - 1; i++)
-                {
-                    if (!candidates[i + 1].Required)
-                    {
-                        return candidates[i];
-                    }
-                }
-                return _bookSelection.CurrentSelection.GetPages().LastOrDefault();
-            }
-            return null;
+			if (_view != null)
+			{
+				var pagesStartingWithCurrentSelection =
+					_bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
+				var candidates = pagesStartingWithCurrentSelection.ToArray();
+				for (int i = 0; i < candidates.Length - 1; i++)
+				{
+					if (!candidates[i + 1].Required)
+					{
+						return candidates[i];
+					}
+				}
+				IPage lastGuyWHoCanHaveAnInsertionAfterHim = _bookSelection.CurrentSelection.GetPages().Last(p => !p.IsBackMatter);
+				return lastGuyWHoCanHaveAnInsertionAfterHim;
+			}
+        	return null;
         }
 
         public bool CanChangeImages()

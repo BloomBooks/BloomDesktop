@@ -53,7 +53,7 @@ BODY
 DIV.ui-tooltip-content
 {
 	overflow: visible !important;
-	/*[disabled]font-size:10pt;*/
+	font-size: 10pt;
 	padding: 0px 9px;
 }
 /*++++ Experimental Toolbox Stuff*/
