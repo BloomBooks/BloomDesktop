@@ -297,7 +297,7 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	font-size: 120%;
+	font-size: 100%;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
@@ -402,4 +402,15 @@ DIV.versionAcknowledgments
 	position: absolute;
 	left: 0px;
 	bottom: 0px;
+}
+/*Inside Back Cover*/
+.insideBackCover DIV.bloom-editable
+{
+	height: 100%;
+}
+/*Outside Back Cover*/
+.outsideBackCover DIV.bloom-editable
+{
+	height: 100%;
+	text-align: center;
 }

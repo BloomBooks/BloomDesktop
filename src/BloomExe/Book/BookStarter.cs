@@ -347,7 +347,7 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter'))]"))
+			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 			{
 				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
@@ -357,18 +357,16 @@ namespace Bloom.Book
 
 			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
 			{
-//				Debug.WriteLine("translationGroup : " + group.InnerXml);
-				var isFrontMatter = group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter')]").Count>0;
+				var isXMatter = group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]").Count > 0;
 				foreach (XmlElement e in group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
 				{
 					var lang = e.GetAttribute("lang");
 					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
-					if (isFrontMatter && lang == national1Iso)
+					if (isXMatter && lang == national1Iso)
 					{
-	//					Debug.WriteLine("Adding bloom-contentNational1: to" + e.InnerXml);
 						AddClass(e,"bloom-contentNational1");
 					}
-					if (isFrontMatter && !string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
+					if (isXMatter && !string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
 					{
 						AddClass(e, "bloom-contentNational2");
 					}

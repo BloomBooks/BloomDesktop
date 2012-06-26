@@ -47,7 +47,7 @@ namespace Bloom.Book
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();
 			}
-			FrontMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml);
+			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml);
 		}
 
 
@@ -77,7 +77,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// this is separated out to ease unit testing
 		/// </summary>
-		public XmlDocument FrontMatterDom { get; set; }
+		public XmlDocument XMatterDom { get; set; }
 
 		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
 		{
@@ -100,14 +100,18 @@ namespace Bloom.Book
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
-			foreach (XmlElement frontMatterPage in FrontMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
+			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
-				var newPageDiv = _dom.ImportNode(frontMatterPage, true) as XmlElement;
+				var newPageDiv = _dom.ImportNode(xmatterPage, true) as XmlElement;
 
+				if (IsBackMatterPage(xmatterPage))
+				{
+					//note: this is redundant unless this is the 1st backmatterpage in the list
+					divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[last()]");
+				}
 
-				//we want the front matter pages to match what we found in the source book
+				//we want the xmatter pages to match what we found in the source book
 				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, layout);
-
 
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');
 				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + writingSystemCodes["V"] + '"');
@@ -118,6 +122,7 @@ namespace Bloom.Book
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + writingSystemCodes["N2"] + '"');
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
 				}
+
 				_dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
 
@@ -134,6 +139,16 @@ namespace Bloom.Book
 			}
 		}
 
+		public static bool IsFrontMatterPage(XmlElement pageDiv)
+		{
+			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-frontMatter')]") != null;
+		}
+
+		public static bool IsBackMatterPage(XmlElement pageDiv)
+		{
+			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]") != null;
+		}
+
 
 		/// <summary>
 		///remove any x-matter in the book
@@ -141,7 +156,7 @@ namespace Bloom.Book
 		/// <param name="storage"></param>
 		public static void RemoveExistingXMatter(XmlDocument dom)
 		{
-			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]"))
+			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]"))
 			{
 				div.ParentNode.RemoveChild(div);
 			}

@@ -108,8 +108,9 @@ namespace Bloom.Edit
 
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
-			_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
-			UsageReporter.SendNavigationNotice("RelocatePage");
+			info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			if(!info.Cancel)
+				UsageReporter.SendNavigationNotice("RelocatePage");
 		}
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
@@ -403,7 +404,8 @@ namespace Bloom.Edit
 						return candidates[i];
 					}
 				}
-				return _bookSelection.CurrentSelection.GetPages().LastOrDefault();
+				IPage lastGuyWHoCanHaveAnInsertionAfterHim = _bookSelection.CurrentSelection.GetPages().Last(p => !p.IsBackMatter);
+				return lastGuyWHoCanHaveAnInsertionAfterHim;
 			}
 			return null;
 		}

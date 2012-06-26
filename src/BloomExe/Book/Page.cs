@@ -17,6 +17,7 @@ namespace Bloom.Book
 		bool Required { get; }
 		bool CanRelocate { get;}
 		Book Book { get; set; }
+		bool IsBackMatter { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber);
 	}
 
@@ -79,6 +80,14 @@ namespace Bloom.Book
 		}
 
 		public Book Book { get; set; }
+
+		public bool IsBackMatter
+		{
+			get
+			{
+				return XMatterHelper.IsBackMatterPage(_getDivNodeForThisPageMethod(this));
+			}
+		}
 
 		public string GetCaptionOrPageNumber(ref int pageNumber)
 		{

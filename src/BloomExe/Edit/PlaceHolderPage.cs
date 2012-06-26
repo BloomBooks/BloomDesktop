@@ -55,6 +55,11 @@ namespace Bloom.Edit
 			get { return null; } set { }
 		}
 
+		public bool IsBackMatter
+		{
+			get { return false; }
+		}
+
 		public string GetCaptionOrPageNumber(ref int pageNumber)
 		{
 			return Caption;

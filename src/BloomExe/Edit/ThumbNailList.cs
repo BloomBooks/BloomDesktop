@@ -287,7 +287,10 @@ namespace Bloom.Edit
 					return;
 				}
 
-				RelocatePageEvent.Raise(new RelocatePageInfo((IPage)_currentDraggingItem.Tag, _currentTarget.Index-_numberofEmptyListItemsAtStart));
+				var relocatePageInfo = new RelocatePageInfo((IPage) _currentDraggingItem.Tag, _currentTarget.Index - _numberofEmptyListItemsAtStart);
+				RelocatePageEvent.Raise(relocatePageInfo);
+				if (relocatePageInfo.Cancel)
+					return;
 
 				_listView.BeginUpdate();
 				_listView.Items.Remove(_currentDraggingItem);
@@ -356,6 +359,7 @@ namespace Bloom.Edit
 				{
 					return;
 				}
+
 				if (target != _currentTarget)
 				{
 					_listView.Invalidate(); //repaint

@@ -355,14 +355,14 @@ namespace Bloom.Book
 		/// <summary>
 		/// stick in a json with various string values/translations we want to make available to the javascript
 		/// </summary>
-		/// <param name="dom"></param>
-		private void AddUIDictionary(XmlDocument dom)
+		/// <param name="singlePageHtmlDom"></param>
+		private void AddUIDictionary(XmlDocument singlePageHtmlDom)
 		{
-			XmlElement dictionaryScriptElement = dom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
+			XmlElement dictionaryScriptElement = singlePageHtmlDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
 			if (dictionaryScriptElement != null)
 				dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
 
-			dictionaryScriptElement = dom.CreateElement("script");
+			dictionaryScriptElement = singlePageHtmlDom.CreateElement("script");
 			dictionaryScriptElement.SetAttribute("type", "text/javascript");
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
@@ -377,20 +377,25 @@ namespace Bloom.Book
 			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
 
-			AddLocalizedHintContentsToDictionary(dom, d);
+			AddLocalizedHintContentsToDictionary(singlePageHtmlDom, d);
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
-			dom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+			singlePageHtmlDom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
 		}
 
-		private void AddLocalizedHintContentsToDictionary(XmlDocument dom, Dictionary<string, string> dictionary)
+		private void AddLocalizedHintContentsToDictionary(XmlDocument singlePageHtmlDom, Dictionary<string, string> dictionary)
 		{
 			string idPrefix="";
-			if (GetIsFrontMatterPage(dom))
+			var pageElement = singlePageHtmlDom.SelectSingleNode("//div") as XmlElement;
+			if (GetIsFrontMatterPage(pageElement))
 			{
 				idPrefix = "FrontMatter." + _collectionSettings.XMatterPackName + ".";
 			}
-			foreach (XmlElement element in dom.SelectNodes("//*[@data-hint]"))
+			else if (GetIsBackMatterPage(pageElement))
+			{
+				idPrefix = "BackMatter." + _collectionSettings.XMatterPackName + ".";
+			}
+			foreach (XmlElement element in singlePageHtmlDom.SelectNodes("//*[@data-hint]"))
 			{
 				//why aren't we just doing: element.SetAttribute("data-hint", translation);  instead of bothering to write out a dictionary?
 				//because (especially since we're currently just assuming it is in english), we would later save it with the translation, and then next time try to translate that, and poplute the
@@ -413,10 +418,16 @@ namespace Bloom.Book
 			}
 		}
 
-		private static bool GetIsFrontMatterPage(XmlDocument dom)
+		public static bool GetIsFrontMatterPage(XmlElement page)
 		{
-			return dom.SelectSingleNode("//div[contains(@class, 'bloom-frontMatter')]")!=null;
+			return XMatterHelper.IsFrontMatterPage(page);
 		}
+
+		public static bool GetIsBackMatterPage(XmlElement page)
+		{
+			return XMatterHelper.IsBackMatterPage(page);
+		}
+
 
 		private static bool ContainsClass(XmlNode element, string className)
 		{
@@ -1405,13 +1416,19 @@ namespace Bloom.Book
 		/// <summary>
 		/// Move a page to somewhere else in the book
 		/// </summary>
-		public void RelocatePage(IPage page, int indexOfItemAfterRelocation)
+		public bool RelocatePage(IPage page, int indexOfItemAfterRelocation)
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
 
+			if(!CanRelocatePageAsRequested(page, indexOfItemAfterRelocation))
+			{
+
+				return false;
+			}
+
 			ClearPagesCache();
 
-			var pages = _storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
+			var pages = GetPageElements();
 			var pageDiv = FindPageDiv(page);
 			var body = pageDiv.ParentNode;
 				body.RemoveChild(pageDiv);
@@ -1426,6 +1443,51 @@ namespace Bloom.Book
 
 			_storage.Save();
 			InvokeContentsChanged(null);
+			return true;
+		}
+
+		private XmlNodeList GetPageElements()
+		{
+			return _storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
+		}
+
+		private bool CanRelocatePageAsRequested(IPage page, int indexOfItemAfterRelocation)
+		{
+			int upperBounds = GetIndexOfFirstBackMatterPage();
+			if (upperBounds < 0)
+				upperBounds = 10000;
+
+			return indexOfItemAfterRelocation > GetIndexLastFrontkMatterPage ()
+				&& indexOfItemAfterRelocation < upperBounds;
+		}
+
+		private int GetIndexLastFrontkMatterPage()
+		{
+			XmlElement lastFrontMatterPage =
+				_storage.Dom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
+			if(lastFrontMatterPage==null)
+				return -1;
+			return GetIndexOfPage(lastFrontMatterPage);
+		}
+
+		private int GetIndexOfFirstBackMatterPage()
+		{
+			XmlElement firstBackMatterPage =
+				_storage.Dom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-backMatter')])[position()=1]") as XmlElement;
+			if (firstBackMatterPage == null)
+				return -1;
+			return GetIndexOfPage(firstBackMatterPage);
+		}
+
+		private int GetIndexOfPage(XmlElement pageElement)
+		{
+			var elements = GetPageElements();
+			for (int i = 0; i < elements.Count; i++)
+			{
+				if (elements[i] == pageElement)
+					return i;
+			}
+			return -1;
 		}
 
 		public virtual bool Delete()

@@ -55,9 +55,11 @@ namespace BloomTests.Book
 			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'titlePage')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'verso')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'titlePage')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][@id='firstPage']", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[6][contains(@class,'bloom-backMatter')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[7][contains(@class,'bloom-backMatter')]", 1);
 		}
 
 		[Test]
@@ -69,10 +71,37 @@ namespace BloomTests.Book
 						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div></body></html>");
 			var helper = CreateHelper();
-			helper.FrontMatterDom = frontMatterDom;
+			helper.XMatterDom = frontMatterDom;
 
 			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
+			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
+		}
+
+		[Test]
+		public void InjectXMatter_HasBackMatter_BackMatterInjectedAtEnd()
+		{
+			var xMatterDom = new XmlDocument();
+			xMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
+						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
+						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						</div>
+						<div class='bloom-page cover coverColor bloom-backMatter insideBackCover' data-page='required'>
+						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						</div>
+						<div class='bloom-page cover coverColor bloom-backMatter outsideBackCover' data-page='required'>
+						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						</div>
+						</body></html>");
+			var helper = CreateHelper();
+			helper.XMatterDom = xMatterDom;
+
+			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][@id='firstPage']", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'bloom-backMatter')]", 1);
+			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][contains(@class,'bloom-backMatter')]", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
 

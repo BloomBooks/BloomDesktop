@@ -81,6 +81,7 @@ namespace Bloom
 	{
 		public IPage Page;
 		public int IndexOfPageAfterMove;
+		public bool Cancel;
 
 		public RelocatePageInfo(IPage page, int indexOfPageAfterMove)
 		{
