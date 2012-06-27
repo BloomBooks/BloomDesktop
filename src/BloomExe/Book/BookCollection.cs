@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.Library;
 using Palaso.Reporting;
 
 namespace Bloom.Book
@@ -29,6 +28,9 @@ namespace Bloom.Book
 		private readonly BookSelection _bookSelection;
 		private readonly EditBookCommand _editBookCommand;
 		private readonly CollectionSettings _collectionSettings;
+		//private Color[] kCoverColors = new Color[] { Color.FromArgb(225, 0, 0), Color.FromArgb(0, 225, 0), Color.FromArgb(0, 0, 225), Color.FromArgb(180, 180, 180) };
+		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176,222,228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
+		private int _coverColorIndex = 0;
 
 
 		//for moq only
@@ -187,6 +189,7 @@ namespace Bloom.Book
 					return;
 
 				var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
+				book.CoverColor = NextBookColor();
 				Debug.WriteLine(book.Title);
 				_books.Add(book);
 			}
@@ -198,6 +201,11 @@ namespace Bloom.Book
 				}
 				_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
 			}
+		}
+
+		public Color NextBookColor()
+		{
+			return kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 		}
 	}
 }

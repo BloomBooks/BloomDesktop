@@ -151,9 +151,7 @@ namespace Bloom.Book
 //			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,USLetterPortrait,USLetterLandscape,USHalfLetterPortrait,USHalfLetterLandscape
 //		}
 
-		static private int _coverColorIndex = 0;
-		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(15,173,197), Color.FromArgb(152,208,185), Color.FromArgb(194,166,191)};
-		private IProgress _log= new StringBuilderProgress();
+		private IProgress _log = new StringBuilderProgress();
 		private bool _haveCheckedForErrorsAtLeastOnce;
 
 		//for moq'ing only
@@ -169,7 +167,6 @@ namespace Bloom.Book
 		{
 			IsInEditableLibrary = projectIsEditable;
 			Id = Guid.NewGuid().ToString();
-			CoverColor = kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 
 			Guard.AgainstNull(storage,"storage");
 			_storage = storage;
@@ -1016,13 +1013,14 @@ namespace Bloom.Book
 
 		private void AddCoverColor(XmlDocument dom, Color coverColor)
 		{
-			var colorValue = String.Format("{0:X}{1:X}{2:X}", coverColor.R, coverColor.G, coverColor.B);
+			var colorValue = ColorTranslator.ToHtml(coverColor);
+//            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
 			XmlElement colorStyle = dom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
 
-				DIV.coverColor  TEXTAREA	{		background-color: #colorValue;	}
-				DIV.bloom-page.coverColor	{		background-color: #colorValue;	}
+				DIV.coverColor  TEXTAREA	{		background-color: colorValue;	}
+				DIV.bloom-page.coverColor	{		background-color: colorValue;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			var header = dom.SelectSingleNodeHonoringDefaultNS("//head");
