@@ -135,7 +135,6 @@ DIV.coverBottomBookTopic DIV
 {
 	/*[disabled]overflow:hidden;*/
 	text-align: right;
-	border: none !important;
 	width: 100%;
 	min-height: 20px;
 	font-size: 110%;
