@@ -123,41 +123,35 @@ DIV.bloom-editable.smallCoverCredits
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
-	width: 45%;
+	width: 61%;
 	/*+placement:anchor-bottom-right 0 0;*/
 	position: absolute;
 	right: 0;
 	bottom: 0;
 	min-height: 20px;
 	height: 58px;
+	text-align: right;
 }
 DIV.coverBottomBookTopic DIV
 {
 	/*[disabled]overflow:hidden;*/
 	text-align: right;
 	width: 100%;
-	min-height: 20px;
+	/*[disabled]min-height:20px;*/
 	font-size: 110%;
-	display: block !important;
-/*This hack is about pushing it down to line up with the language name over on the left.*/
-	margin-top: 9px;
+	display: inline !important;
+	height: 25px !important;
+	padding-right: 1px;
+	/*[disabled]padding-left:15px;*/
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
-	height: 44px;
 /*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
-	/*+placement:anchor-top-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	top: 0px;
+	/*[disabled]+placement:anchor-top-right 0px 0px;*/
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational2
 {
-	height: 106px;
-	/*+placement:anchor-top-right -3px 43px;*/
-	position: absolute;
-	right: -3px;
-	top: 43px;
+	/*[disabled]+placement:anchor-top-right -3px 43px;*/
 }
 /*.......Language Name*/
 DIV.coverBottomLangName DIV
@@ -166,10 +160,10 @@ DIV.coverBottomLangName DIV
 	font-size: 110% !important;
 	/*[disabled]vertical-align:bottom;*/
 /*This placement is to get vertical alignment with the topic*/
-	/*+placement:anchor-top-left 0px 6px;*/
+	/*+placement:anchor-top-left 0px 4px;*/
 	position: absolute;
 	left: 0px;
-	top: 6px;
+	top: 4px;
 }
 DIV.coverBottomLangName
 {
@@ -185,6 +179,7 @@ DIV.coverBottomLangName
 	margin-bottom: 0px;
 	padding-top: 0;
 	padding-bottom: 0px;
+	line-height: 1;
 }
 /*Title Page*/
 DIV.titlePage
