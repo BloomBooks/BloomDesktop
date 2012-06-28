@@ -29,9 +29,7 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PublishView));
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
-			this._adobeReader = new AxAcroPDFLib.AxAcroPDF();
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this._topBarPanel = new System.Windows.Forms.Panel();
@@ -43,28 +41,14 @@
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).BeginInit();
+			this.adobeReaderProblemControl1 = new Bloom.Publish.AdobeReaderControl();
+			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
-			// 
-			// _adobeReader
-			// 
-			this._adobeReader.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._adobeReader.Enabled = true;
-			this.localizationExtender1.SetLocalizableToolTip(this._adobeReader, null);
-			this.localizationExtender1.SetLocalizationComment(this._adobeReader, null);
-			this.localizationExtender1.SetLocalizingId(this._adobeReader, "PublishView._adobeReader");
-			this._adobeReader.Location = new System.Drawing.Point(103, 3);
-			this._adobeReader.Name = "_adobeReader";
-			this._adobeReader.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("_adobeReader.OcxState")));
-			this._adobeReader.Size = new System.Drawing.Size(730, 534);
-			this._adobeReader.TabIndex = 5;
 			// 
 			// _makePdfBackgroundWorker
 			// 
@@ -79,9 +63,9 @@
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
 			this._workingIndicator.Controls.Add(this._workingIndicatorGif);
-			this._workingIndicator.Location = new System.Drawing.Point(103, 0);
+			this._workingIndicator.Location = new System.Drawing.Point(103, 24);
 			this._workingIndicator.Name = "_workingIndicator";
-			this._workingIndicator.Size = new System.Drawing.Size(730, 540);
+			this._workingIndicator.Size = new System.Drawing.Size(714, 516);
 			this._workingIndicator.TabIndex = 8;
 			// 
 			// _topBarPanel
@@ -219,6 +203,29 @@
 			// 
 			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
+			// adobeReaderProblemControl1
+			// 
+			this.localizationExtender1.SetLocalizableToolTip(this.adobeReaderProblemControl1, null);
+			this.localizationExtender1.SetLocalizationComment(this.adobeReaderProblemControl1, null);
+			this.localizationExtender1.SetLocalizingId(this.adobeReaderProblemControl1, "adobeReaderProblemControl1.AdobeReaderControl");
+			this.adobeReaderProblemControl1.Location = new System.Drawing.Point(0, 0);
+			this.adobeReaderProblemControl1.Name = "adobeReaderProblemControl1";
+			this.adobeReaderProblemControl1.Size = new System.Drawing.Size(509, 264);
+			this.adobeReaderProblemControl1.TabIndex = 0;
+			// 
+			// _adobeReaderControl
+			// 
+			this._adobeReaderControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.localizationExtender1.SetLocalizableToolTip(this._adobeReaderControl, null);
+			this.localizationExtender1.SetLocalizationComment(this._adobeReaderControl, null);
+			this.localizationExtender1.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
+			this._adobeReaderControl.Location = new System.Drawing.Point(103, 3);
+			this._adobeReaderControl.Name = "_adobeReaderControl";
+			this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
+			this._adobeReaderControl.TabIndex = 16;
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -226,13 +233,12 @@
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this._workingIndicator);
-			this.Controls.Add(this._adobeReader);
+			this.Controls.Add(this._adobeReaderControl);
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
 			this.localizationExtender1.SetLocalizingId(this, "PublishView.PublishView");
 			this.Name = "PublishView";
 			this.Size = new System.Drawing.Size(833, 540);
-			((System.ComponentModel.ISupportInitialize)(this._adobeReader)).EndInit();
 			this._workingIndicator.ResumeLayout(false);
 			this._topBarPanel.ResumeLayout(false);
 			this._topBarPanel.PerformLayout();
@@ -246,7 +252,7 @@
         #endregion
 
 		private System.Windows.Forms.Timer _loadTimer;
-		private AxAcroPDFLib.AxAcroPDF _adobeReader;
+
 		private System.ComponentModel.BackgroundWorker _makePdfBackgroundWorker;
 		private System.Windows.Forms.Panel _workingIndicator;
 		private System.Windows.Forms.PictureBox _workingIndicatorGif;
@@ -258,5 +264,7 @@
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
 		private Localization.UI.LocalizationExtender localizationExtender1;
+		private AdobeReaderControl adobeReaderProblemControl1;
+		private AdobeReaderControl _adobeReaderControl;
     }
 }

@@ -12,29 +12,19 @@ namespace Bloom.Publish
 {
 	public partial class PublishView : UserControl, IBloomTabArea
 	{
-
 		private readonly PublishModel _model;
+		private bool _activated;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
-			try
-			{
 				InitializeComponent();
+				adobeReaderProblemControl1.Visible = false;
 				Controls.Remove(_saveButton);//our parent will retrieve this
 				Controls.Remove(_printButton);//our parent will retrieve this
-			}
-			catch (Exception error)
-			{
-				if (error.Message.Contains("0x80040154"))
-				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Please install Adobe Reader before running Bloom.");
-					Environment.FailFast("Bloom quitting for lack of Adobe Reader");
-				}
-				throw error;
-			}
+
 
 			if(this.DesignMode)
 				return;
@@ -50,11 +40,7 @@ namespace Bloom.Publish
 												{
 													if (c.To == this)
 													{
-														if (_makePdfBackgroundWorker.IsBusy)
-															return;
-
-														_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-														MakeBooklet();
+														Activate();
 													}
 													else if (c.To!=this && _makePdfBackgroundWorker.IsBusy)
 														_makePdfBackgroundWorker.CancelAsync();
@@ -66,6 +52,37 @@ namespace Bloom.Publish
 
 
 		}
+
+
+		private void Activate()
+		{
+			if (_makePdfBackgroundWorker.IsBusy)
+				return;
+
+//			if(_adobeReader==null)
+//			{
+//				try
+//				{
+//					AddAdobeReader();
+//				}
+//				catch (Exception e)
+//				{
+//					_adobeReader = null;
+//					_printButton.Enabled = false;
+//					_workingIndicatorGif.Visible = false;
+//					adobeReaderProblemControl1.Visible = true;
+//				}
+//			}
+
+
+
+			_activated = true;
+
+			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+			MakeBooklet();
+		}
+
+
 
 		public Control TopBarControl
 		{
@@ -115,24 +132,13 @@ namespace Bloom.Publish
 					_workingIndicator.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
-					_printButton.Enabled = _saveButton.Enabled = true;
-					Cursor = Cursors.Default;
 					if (File.Exists(_model.PdfFilePath))
 					{
-						//http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
-						var path = _model.PdfFilePath;
+						_saveButton.Enabled = true;
 						_workingIndicator.Visible = false;
-						_adobeReader.Hide();
-						_adobeReader.BackColor = Color.FromArgb(64, 64, 64);
-
-						// can't handle non-ascii names _adobeReader.LoadFile(path);
-						_adobeReader.src = path;
-
-						_adobeReader.setShowToolbar(false);
-						_adobeReader.setView("Fit");
-						_adobeReader.Show();
+						Cursor = Cursors.Default;
+						_printButton.Enabled = _adobeReaderControl.ShowPdf(_model.PdfFilePath);
 					}
-
 					break;
 			}
 		}
@@ -140,6 +146,9 @@ namespace Bloom.Publish
 
 		private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
 		{
+			if (!_activated)
+				return;
+
 			var old = _model.BookletPortion;
 			SetModelFromRadioButtons();
 			if (old == _model.BookletPortion)
@@ -171,7 +180,7 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
-			_adobeReader.printAll();
+			//_adobeReader.printAll();
 		}
 
 		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -187,6 +196,11 @@ namespace Bloom.Publish
 		public string HelpTopicUrl
 		{
 			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
+		}
+
+		private void pictureBox1_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }
