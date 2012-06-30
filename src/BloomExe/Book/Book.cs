@@ -363,12 +363,12 @@ namespace Bloom.Book
 			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
 				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
-				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
+				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
 
 			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _collectionSettings.Language1Name);
 			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
-			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
+			d.Add("{N2}", _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
 
 			AddLocalizedHintContentsToDictionary(singlePageHtmlDom, d);
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
@@ -1373,7 +1373,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.Language1Name, true);
 				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code), true);
-				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language2Iso639Code), true);
+				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetLanguage3Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);
 				data.AddGenericLanguageString("country", _collectionSettings.Country, true);
 				data.AddGenericLanguageString("province", _collectionSettings.Province, true);

@@ -207,7 +207,7 @@ namespace Bloom.Edit
 //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-														_collectionSettings.GetNationalLanguage2Name("en"));// {Selected = selected};
+														_collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}

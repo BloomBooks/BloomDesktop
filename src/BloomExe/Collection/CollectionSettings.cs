@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -52,12 +53,14 @@ namespace Bloom.Collection
 		{
 			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
-				return "???";
+				return "L1-Unknown-"+Language1Iso639Code;
 			return exactLanguageMatch.Name;
 		}
 
 		public string GetLanguage2Name(string inLanguage)
 		{
+			try
+			{
 			//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 			//So, we'd rather have GetBestLanguageMatch()
 
@@ -68,9 +71,20 @@ namespace Bloom.Collection
 				_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
 			}
 			return _isoToLangNameDictionary[Language2Iso639Code];
+
+			}
+			catch (Exception)
+			{
+				Debug.Fail("check this out");
+				// a user reported this, and I saw it happen once: had just installed 0.8.38, made a new vernacular
+				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
+				return "L2-Unknown-" + Language2Iso639Code;
+			}
 		}
 
-		public string GetNationalLanguage2Name(string inLanguage)
+		public string GetLanguage3Name(string inLanguage)
+		{
+			try
 		{
 			if(string.IsNullOrEmpty(Language3Iso639Code))
 				return string.Empty;
@@ -82,6 +96,11 @@ namespace Bloom.Collection
 			}
 			return _isoToLangNameDictionary[Language3Iso639Code];
 		}
+			catch (Exception)
+			{
+				return "L2N-Unknown-" + Language3Iso639Code;
+			}
+	}
 		#endregion
 
 		/// <summary>
