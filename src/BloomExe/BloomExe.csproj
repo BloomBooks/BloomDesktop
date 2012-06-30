@@ -67,13 +67,21 @@
     <Reference Include="AeroWizard">
       <HintPath>..\..\packages\AeroWizard.1.2.1\lib\3.5\AeroWizard.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac, Version=2.2.4.900, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+    <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Configuration">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="AxInterop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Chorus, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
@@ -89,6 +97,10 @@
     </Reference>
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
+    </Reference>
+    <Reference Include="LibChorus, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -178,6 +190,7 @@
     <Compile Include="HtmlLabel.Designer.cs">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </Compile>
+    <Compile Include="LibraryFolderInChorus.cs" />
     <Compile Include="Library\IBloomTabArea.cs" />
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
@@ -366,6 +379,7 @@
       <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XmlHtmlConverter.cs" />
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -512,7 +526,6 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="ToPalaso\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -739,9 +752,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PackageFlat48x47.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\delete-wordLarge.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\uservoice16x161.png" />

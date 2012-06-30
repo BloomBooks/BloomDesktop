@@ -153,16 +153,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap delete_wordLarge {
-            get {
-                object obj = ResourceManager.GetObject("delete-wordLarge", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap DeleteMessageBoxButtonImage {
             get {
                 object obj = ResourceManager.GetObject("DeleteMessageBoxButtonImage", resourceCulture);
