@@ -40,7 +40,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetNationalLanguage2Name("en"), _collectionSettings.Language3Iso639Code);
+				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name("en"), _collectionSettings.Language3Iso639Code);
 				_removeLanguage3Link.Visible = true;
 			}
 
