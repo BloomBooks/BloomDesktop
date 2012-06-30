@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.Properties;
+using Chorus;
 using Localization;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -304,6 +305,12 @@ namespace Bloom
 				Application.Exit();
 			}
 		}
+
+		private static void DoChorusCheckin()
+		{
+
+		}
+
 		public static void SetUpLocalization()
 		{
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
