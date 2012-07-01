@@ -103,6 +103,7 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
 			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList(false);
+			Logger.WriteEvent("DeletePage");
 			UsageReporter.SendNavigationNotice("DeletePage");
 		}
 
@@ -110,7 +111,10 @@ namespace Bloom.Edit
 		{
 			info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
+			{
 				UsageReporter.SendNavigationNotice("RelocatePage");
+				Logger.WriteEvent("RelocatePage");
+			}
 		}
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
@@ -119,6 +123,7 @@ namespace Bloom.Edit
 			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
 			UsageReporter.SendNavigationNotice("InsertTemplatePage");
+			Logger.WriteEvent("InsertTemplatePage");
 		}
 
 		public string CurrentBookName
@@ -254,6 +259,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void ContentLanguagesSelectionChanged()
 		{
+			Logger.WriteEvent("Changing Content Languages");
 			string l2 = null;
 			string l3 = null;
 			foreach (var language in _contentLanguages)
@@ -275,6 +281,8 @@ namespace Bloom.Edit
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
+
+			UsageReporter.SendNavigationNotice("ChangingContentLanguages");
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -337,6 +345,7 @@ namespace Bloom.Edit
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
+			Logger.WriteMinorEvent("changing page selection");
 			if (_view != null)
 			{
 				if (_previouslySelectedPage!=null && _domForCurrentPage != null)
@@ -367,6 +376,7 @@ namespace Bloom.Edit
 
 		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
 		{
+			Logger.WriteMinorEvent("Starting ChangePicture...");
 			var editor = new PageEditingModel();
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
@@ -374,6 +384,7 @@ namespace Bloom.Edit
 			SaveNow();
 			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 			UsageReporter.SendNavigationNotice("ChangePicture");
+			Logger.WriteEvent("ChangePicture");
 		}
 
 //        private void InvokeUpdatePageList()

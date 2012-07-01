@@ -74,6 +74,7 @@ namespace Bloom.Book
 		{
 			string newBookFolder = null;
 
+			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBook.FolderPath);
 			try
 			{
 				var starter = _bookStarterFactory();
@@ -116,11 +117,14 @@ namespace Bloom.Book
 			}
 			catch (Exception)
 			{
+				Logger.WriteEvent("Cleaning up after error CreateFromSourceBook({0})", sourceBook.FolderPath);
 				//clean up this ill-fated book folder up
 				if (!string.IsNullOrEmpty(newBookFolder) && Directory.Exists(newBookFolder))
 					Directory.Delete(newBookFolder, true);
 				throw;
 			}
+			Logger.WriteMinorEvent("Finished CreateFromSourceBook({0})", sourceBook.FolderPath);
+			Logger.WriteEvent("CreateFromSourceBook({0})", sourceBook.FolderPath);
 		}
 
 		private void NotifyCollectionChanged()

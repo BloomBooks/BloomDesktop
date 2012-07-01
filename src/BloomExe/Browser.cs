@@ -98,16 +98,25 @@ namespace Bloom
 		{
 			if (_copyCommand == null)
 				return;
-
-			_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
-			_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
-			_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
-			if(_pasteCommand.Enabled)
+			try
 			{
-				//prevent pasting images (BL-93)
-				_pasteCommand.Enabled = Clipboard.ContainsText();
+				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
+				_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
+				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
+				if(_pasteCommand.Enabled)
+				{
+					//prevent pasting images (BL-93)
+					_pasteCommand.Enabled = Clipboard.ContainsText();
+				}
+				_undoCommand.Enabled = _browser != null && _browser.CanUndo;
+
 			}
-			_undoCommand.Enabled = _browser != null && _browser.CanUndo;
+			catch (Exception)
+			{
+
+				Debug.Fail("Check this out");
+				throw;
+			}
 		}
 
 		void OnValidating(object sender, CancelEventArgs e)

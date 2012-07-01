@@ -75,7 +75,7 @@ namespace Bloom.Collection
 			}
 			catch (Exception)
 			{
-				Debug.Fail("check this out");
+				Debug.Fail("check this out. BL-193 Reproduction");
 				// a user reported this, and I saw it happen once: had just installed 0.8.38, made a new vernacular
 				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
 				return "L2-Unknown-" + Language2Iso639Code;

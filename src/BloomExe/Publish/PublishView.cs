@@ -180,7 +180,9 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
-			//_adobeReader.printAll();
+			_adobeReaderControl.Print();
+			UsageReporter.SendNavigationNotice("Print");
+			Logger.WriteEvent("Calling Print on Adobe Reader");
 		}
 
 		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)

@@ -41,7 +41,8 @@ namespace Bloom.Library
 		{
 			if(Visible)
 			{
-				UsageReporter.SendNavigationNotice("Library");
+				UsageReporter.SendNavigationNotice("Entered Collections Tab");
+				Logger.WriteEvent("Entered Collections Tab");
 			}
 		}
 

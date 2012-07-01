@@ -249,7 +249,8 @@ namespace Bloom.Edit
 				}
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
-				UsageReporter.SendNavigationNotice("Editing");
+				UsageReporter.SendNavigationNotice("Entered Edit Tab");
+				Logger.WriteEvent("Entered Edit Tab");
 			}
 			else
 			{
