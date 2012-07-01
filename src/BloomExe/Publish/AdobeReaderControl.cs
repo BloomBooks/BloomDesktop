@@ -94,5 +94,10 @@ namespace Bloom.Publish
 				return false;
 			}
 		}
+
+		public void Print()
+		{
+			_adobeReader.printAll();
+		}
 	}
 }
