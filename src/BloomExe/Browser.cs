@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 using Gecko;
 using Gecko.DOM;
@@ -103,7 +104,7 @@ namespace Bloom
 				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
 				_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
-				if(_pasteCommand.Enabled)
+				if (_pasteCommand.Enabled)
 				{
 					//prevent pasting images (BL-93)
 					_pasteCommand.Enabled = Clipboard.ContainsText();
@@ -113,9 +114,11 @@ namespace Bloom
 			}
 			catch (Exception)
 			{
-
-				Debug.Fail("Check this out");
-				throw;
+				_pasteCommand.Enabled = false;
+				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+				//REf jira.palaso.org/issues/browse/BL-197
+				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+				//so it's probably just not ok to check if you're not front-most.
 			}
 		}
 
