@@ -314,13 +314,15 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	font-size: 100%;
+/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
+	font-size: 10pt !important;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
 {
 	height: 156px;
 	width: 100%;
+	font-size: 100% !important;
 }
 .A5Landscape DIV.originalAcknowledgments
 {
