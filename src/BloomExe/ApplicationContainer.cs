@@ -5,6 +5,7 @@ using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
 
+
 namespace Bloom
 {
 		/// <summary>
@@ -18,6 +19,7 @@ namespace Bloom
 			public ApplicationContainer()
 			{
 				var builder = new ContainerBuilder();
+				//builder.RegisterModule<WhiteboxProfilingModule>();
 
 				//default to InstancePerDependency, i.e., they it will make a new
 				//one each time someone asks for one
