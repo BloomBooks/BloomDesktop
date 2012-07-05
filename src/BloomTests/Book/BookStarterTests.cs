@@ -528,6 +528,25 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
 		}
 
+		/// <summary>
+		/// this is an abnormal situation, but I did see it (there was another problem with V lang id)
+		/// The key challenge for the code is, there's no prototype div to copy.
+		/// </summary>
+		[Test]
+		public void PrepareElementsOnPage_HasEmptyTranslationGroup_MakesVernacularAndNational()
+		{
+			var contents = @"<div class='bloom-page bloom-translationGroup'>
+					</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			BookStarter.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+		}
 
 
 		[Test]

@@ -364,22 +364,26 @@ namespace Bloom.Edit
 
 		private void OnChangeImage(GeckoDomEventArgs ge)
 		{
-			if (!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
 				return;
+			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+
+			//TODO: this would let them set it once without us bugging them, but after that if they
+			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
+			if (!currentPath.ToLower().Contains("placeholder")  //always alow them to put in something over a placeholder
+				&& !_model.CanChangeImages())
+			{
+				if(DialogResult.Cancel== MessageBox.Show("This book is locked down as shell. Are you sure you want to change the picture?","Change Image",MessageBoxButtons.OKCancel))
+				{
+					return;
+				}
 			}
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 
+			Cursor = Cursors.WaitCursor;
 
-			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
-				return;
-
-			 Cursor = Cursors.WaitCursor;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
