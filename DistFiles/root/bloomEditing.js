@@ -321,6 +321,13 @@ function MakeSourceTextDivForGroup(group) {
          });
  }
 
+ // Instead of "missing", we want to show it in the right ui language. We also want the text
+ // to indicate that it might not be missing, just didn't load (this happens on slow machines)
+ // TODO: internationalize
+ function SetAlternateTextOnImages(element) {
+     $(element).attr('alt', 'This picture, '+$(element).attr('src')+', is missing or was loading too slowly.')
+ }
+
  function SetupResizableElement(element) {
 
      $(element).mouseenter(
@@ -748,6 +755,9 @@ function ResizeUsingPercentages(e,ui){
         SetupResizableElement(this);
     });
 
+     $("img").each(function() {
+           SetAlternateTextOnImages(this);
+       });
 
     //focus on the first editable field
     //$(':input:enabled:visible:first').focus();
