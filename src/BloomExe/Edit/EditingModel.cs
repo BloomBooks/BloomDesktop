@@ -376,15 +376,16 @@ namespace Bloom.Edit
 
 		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
 		{
-			Logger.WriteMinorEvent("Starting ChangePicture...");
+			Logger.WriteMinorEvent("Starting ChangePicture {0}...",imageInfo.FileName);
 			var editor = new PageEditingModel();
 			editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
 
 			//we have to save so that when asked by the thumnailer, the book will give the proper image
 			SaveNow();
 			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+			Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
 			UsageReporter.SendNavigationNotice("ChangePicture");
-			Logger.WriteEvent("ChangePicture");
+			Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
 		}
 
 //        private void InvokeUpdatePageList()
