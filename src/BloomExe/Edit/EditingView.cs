@@ -303,9 +303,12 @@ namespace Bloom.Edit
 				OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
+			if (ge.Target.ClassName.Contains("imgMetadataProblem"))
+				OnEditImageMetdata(ge);
 			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 				OnClickCopyrightAndLicenseDiv();
 		}
+
 
 		private void RememberSourceTabChoice(GeckoElement target)
 		{
@@ -315,6 +318,35 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
+
+		private void OnEditImageMetdata(GeckoDomEventArgs ge)
+		{
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
+				return;
+			string fileName = imageElement.GetAttribute("src").Replace("%20", " ");
+
+			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+			using (var imageInfo = PalasoImage.FromFile(path))
+			{
+				Logger.WriteEvent("Showing Metadata Editor For Image");
+				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
+				{
+					if (DialogResult.OK == dlg.ShowDialog())
+					{
+						imageInfo.Metadata = dlg.Metadata;
+						imageInfo.SaveUpdatedMetadataIfItMakesSense();
+						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
+						//update so any overlays on the image are brough up to data
+						var editor = new PageEditingModel();
+						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
+					}
+				}
+			}
+
+			//_model.SaveNow();
+			//doesn't work: _browser1.WebBrowser.Reload();
+		}
 
 		private void OnPasteImage(GeckoDomEventArgs ge)
 		{
@@ -327,7 +359,7 @@ namespace Bloom.Edit
 			if (!Clipboard.ContainsImage())
 
 			{
-				MessageBox.Show("Before you can paste and image, copy one onto your 'clipboard', from another program.");
+				MessageBox.Show("Before you can paste an image, copy one onto your 'clipboard', from another program.");
 				return;
 			}
 

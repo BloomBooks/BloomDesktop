@@ -262,3 +262,19 @@ DIV.bloom-page:nth-of-type(even).A5Portrait DIV.marginBox
 	top: 12.8mm;
 	height: 178.5mm;
 }
+BUTTON.imgMetadataProblem
+{
+	background-image: url("warning.svg") !important;
+	background-position: 7px 0px;
+	width: 54px;
+	height: 42px;
+	background-repeat: no-repeat !important;
+	/*+placement:anchor-bottom-left 3px 5px;*/
+	position: absolute;
+	left: 3px;
+	bottom: 5px;
+	z-index: 1000;
+	background: transparent;
+	border: 1px none #000000;
+	background-size: contain;
+}

@@ -441,6 +441,7 @@ namespace Bloom.Edit
 			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 		}
 #endif
+
 	}
 
 	public class TemplateInsertionCommand
