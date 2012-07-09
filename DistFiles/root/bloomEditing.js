@@ -52,12 +52,18 @@ function Cleanup() {
     $('div, figure').each(function() {
         $(this).removeClass('ui-draggable');
         $(this).removeClass('ui-resizable');
+        $(this).removeClass('hoverUp');
     });
 
 
 	$('div.bloom-editable').each( function() {
 		TrimTrailingLineBreaksInDivs(this);
-	});
+});
+
+    //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
+    $('#element').css('opacity', '');
+    $('#element').css('overflow', '');
+
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
@@ -328,6 +334,40 @@ function MakeSourceTextDivForGroup(group) {
      $(element).attr('alt', 'This picture, '+$(element).attr('src')+', is missing or was loading too slowly.')
  }
 
+ //While the actual metada is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
+ // so that we can easily & quickly get to the here.
+ function SetOverlayForImagesWithoutMetadata() {
+     $(".bloom-imageContainer").each(function () {
+         var img = $(this).find('img');
+         if($(img).attr('src').indexOf('placeHolder') > -1) {
+            return;
+         }
+         var container = $(this);
+
+         UpdateOverlay(container, img);
+
+         //and if the bloom program changes these values (i.e. the user changes them using bloom), I
+         //haven't figured out a way (appart from polling) to know that. So for now I'm using a hack
+         //where Bloom calls click() on the image when it wants an update, and we detect that here.
+         $(img).click(function () {
+                   UpdateOverlay(container, img);
+         });
+     });
+ }
+
+ function UpdateOverlay(container, img) {
+
+     $(container).find(".imgMetadataProblem").each(function () {
+         $(this).remove()
+     });
+
+     var license = $(img).attr('data-license');
+     if (!license || license.length == 0) {
+         $(container).prepend("<button class='imgMetadataProblem' title='Click to complete the metdata on this image.'></button>");
+     } 
+     
+
+ }
  function SetupResizableElement(element) {
 
      $(element).mouseenter(
@@ -411,113 +451,113 @@ function ResizeUsingPercentages(e,ui){
 
  //---------------------------------------------------------------------------------
 
- jQuery(document).ready(function() {
+ jQuery(document).ready(function () {
 
      //add a marginBox if it's missing. We introduced it early in the first beta
-     $(".bloom-page").each(function(){
-        if($(this).find(".marginBox").length == 0){
-            $(this).wrapInner("<div class='marginBox'></div>");
-        }
+     $(".bloom-page").each(function () {
+         if ($(this).find(".marginBox").length == 0) {
+             $(this).wrapInner("<div class='marginBox'></div>");
+         }
      });
 
      AddToolbox();
 
-    //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
-    jQuery("textarea").blur(function() {
-        this.innerHTML = this.value;
-    });
-    
-    SetCopyrightAndLicenseButtonVisibility();
+     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
+     jQuery("textarea").blur(function () {
+         this.innerHTML = this.value;
+     });
 
-    /*
-    //when a textarea gets focus, send Bloom a dictionary of all the translations found within
-    //the same parent element
-    jQuery("textarea, div.bloom-editable").focus(function () {
-        event = document.createEvent('MessageEvent');
-        var origin = window.location.protocol + '//' + window.location.host;
-        var obj = {};
-        $(this).parent().find("textarea, div.bloom-editable").each(function () {
-            obj[$(this).attr("lang")] = $(this).text();
-        })
-        var json = obj; //.get();
-        json = JSON.stringify(json);
-        event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
-        document.dispatchEvent(event);
-    });
-*/
+     SetCopyrightAndLicenseButtonVisibility();
 
-    //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
-    $(".bloom-translationGroup").each(function() {
-        var contentElements = $(this).find("textarea, div.bloom-editable");
-        contentElements.sort(function(a, b) {
-			//using negatives so that something with none of these labels ends up with a > score and at the end
-            var scoreA = $(a).hasClass('bloom-content1')*-3 + ($(a).hasClass('bloom-content2') * -2) + ($(a).hasClass('bloom-content3') * -1);
-            var scoreB = $(b).hasClass('bloom-content1')*-3 + ($(b).hasClass('bloom-content2') * -2) + ($(b).hasClass('bloom-content3') * -1);
-            if (scoreA < scoreB)
-                return -1;
-            if (scoreA > scoreB)
-                return 1;
-            return 0;
-        });
-        //do the actual rearrangement
-        $(this).append(contentElements);
-    });
+     /*
+     //when a textarea gets focus, send Bloom a dictionary of all the translations found within
+     //the same parent element
+     jQuery("textarea, div.bloom-editable").focus(function () {
+     event = document.createEvent('MessageEvent');
+     var origin = window.location.protocol + '//' + window.location.host;
+     var obj = {};
+     $(this).parent().find("textarea, div.bloom-editable").each(function () {
+     obj[$(this).attr("lang")] = $(this).text();
+     })
+     var json = obj; //.get();
+     json = JSON.stringify(json);
+     event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
+     document.dispatchEvent(event);
+     });
+     */
 
-
-    //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
-    //NB: we would like to run this even when there is a mouse paste, but currently don't know how
-    //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
-//    jQuery("textarea").keypress(function() {
-//        var overflowing = this.scrollHeight > this.clientHeight;
-//        if ($(this).hasClass('overflow') && !overflowing) {
-//            $(this).removeClass('overflow');
-//        }
-//        else if (overflowing) {
-//            $(this).addClass('overflow');
-//        }
-//    });
-//    jQuery("div.bloom-editable").keypress(function() {
-//        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
-//        if ($(this).hasClass('overflow') && !overflowing) {
-//            $(this).removeClass('overflow');
-//        }
-//        else if (overflowing) {
-//            $(this).addClass('overflow');
-//        }
-//    });
+     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
+     $(".bloom-translationGroup").each(function () {
+         var contentElements = $(this).find("textarea, div.bloom-editable");
+         contentElements.sort(function (a, b) {
+             //using negatives so that something with none of these labels ends up with a > score and at the end
+             var scoreA = $(a).hasClass('bloom-content1') * -3 + ($(a).hasClass('bloom-content2') * -2) + ($(a).hasClass('bloom-content3') * -1);
+             var scoreB = $(b).hasClass('bloom-content1') * -3 + ($(b).hasClass('bloom-content2') * -2) + ($(b).hasClass('bloom-content3') * -1);
+             if (scoreA < scoreB)
+                 return -1;
+             if (scoreA > scoreB)
+                 return 1;
+             return 0;
+         });
+         //do the actual rearrangement
+         $(this).append(contentElements);
+     });
 
 
-    //--------------------------------
-    //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
+     //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
+     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
+     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
+     //    jQuery("textarea").keypress(function() {
+     //        var overflowing = this.scrollHeight > this.clientHeight;
+     //        if ($(this).hasClass('overflow') && !overflowing) {
+     //            $(this).removeClass('overflow');
+     //        }
+     //        else if (overflowing) {
+     //            $(this).addClass('overflow');
+     //        }
+     //    });
+     //    jQuery("div.bloom-editable").keypress(function() {
+     //        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
+     //        if ($(this).hasClass('overflow') && !overflowing) {
+     //            $(this).removeClass('overflow');
+     //        }
+     //        else if (overflowing) {
+     //            $(this).addClass('overflow');
+     //        }
+     //    });
 
-    //do it initially
-    $(".bloom-verticalAlign").VAlign();
-    //reposition as needed
-    $(".bloom-verticalAlign").resize(function() { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
-        $(this).VAlign();
-    });
+
+     //--------------------------------
+     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
+
+     //do it initially
+     $(".bloom-verticalAlign").VAlign();
+     //reposition as needed
+     $(".bloom-verticalAlign").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
+         $(this).VAlign();
+     });
 
 
 
 
-    /* Defines a starts-with function*/
-    if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function(str) {
-            return this.indexOf(str) == 0;
-        };
-    }
+     /* Defines a starts-with function*/
+     if (typeof String.prototype.startsWith != 'function') {
+         String.prototype.startsWith = function (str) {
+             return this.indexOf(str) == 0;
+         };
+     }
 
      //Add little language tag bubbles
-     $("div.bloom-editable").each(function(){
+     $("div.bloom-editable").each(function () {
          var key = $(this).attr("lang");
          var dictionary = GetDictionary();
          var whatToSay = dictionary[key];
-         if(whatToSay == null)
-            whatToSay = key;//just show the code
+         if (whatToSay == null)
+             whatToSay = key; //just show the code
 
          //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
-         if($(this).width() < 100){
-            return;
+         if ($(this).width() < 100) {
+             return;
          }
 
          $(this).qtip({
@@ -526,270 +566,273 @@ function ResizeUsingPercentages(e,ui){
              position: {
                  my: 'top right',
                  at: 'bottom right'
-                 ,adjust: {y: -25}
+                 , adjust: { y: -25 }
              },
 
              style: {
                  classes: 'ui-languageToolTip'
              }
          })
-            .removeData('qtip');// allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+            .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
      });
 
-// I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
-// say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
-//    $("*[title]").each(function() {
-//        $(this).qtip({ position: {
-//                at: 'right bottom', //I like this, but it doesn't reposition well -->at: 'right center',
-//                my: 'top left', //I like this, but it doesn't reposition well-->  my: 'left center',
-//                viewport: $(window)
-//            },
-//            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
-//    });
+     // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
+     // say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
+     //    $("*[title]").each(function() {
+     //        $(this).qtip({ position: {
+     //                at: 'right bottom', //I like this, but it doesn't reposition well -->at: 'right center',
+     //                my: 'top left', //I like this, but it doesn't reposition well-->  my: 'left center',
+     //                viewport: $(window)
+     //            },
+     //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
+     //    });
 
-    //put hint bubbles next to elements which call for them.
-	//show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-    $("*[data-hint]").each(function() {
+     //put hint bubbles next to elements which call for them.
+     //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
+     $("*[data-hint]").each(function () {
 
-        if ($(this).css('border-bottom-color') == 'transparent') {
-            return; //don't put tips if they can't edit it. That's just confusing
-        }
-        if ($(this).css('display') == 'none') {
-            return; //don't put tips if they can't see it.
-        }
-        theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-        pos = {
-           at: 'right bottom', //I like this, but it doesn't reposition well -->'right center',
-          my: 'top left', //I like this, but it doesn't reposition well-->  'left center',
-            viewport: $(window),
-            adjust:{y:-20}
-        };
-        
-        var shouldShowAlways = $(this).is(':empty');//if it was empty when we drew the page, keep the tooltip there
-		var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+         if ($(this).css('border-bottom-color') == 'transparent') {
+             return; //don't put tips if they can't edit it. That's just confusing
+         }
+         if ($(this).css('display') == 'none') {
+             return; //don't put tips if they can't see it.
+         }
+         theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+         pos = {
+             at: 'right bottom', //I like this, but it doesn't reposition well -->'right center',
+             my: 'top left', //I like this, but it doesn't reposition well-->  'left center',
+             viewport: $(window),
+             adjust: { y: -20 }
+         };
 
-        //make hints that start with a * only show when the field has focus
-        if($(this).data("hint").startsWith("*")) {
-            shouldShowAlways=false;
-            hideEvents='unfocus mouseleave';
-        }
-        
-        var whatToSay = GetLocalizedHint(this);
-        
-        $(this).qtip({
-            content: whatToSay,
-            position: pos,
-            show: {
-                event: " focusin mouseenter",
-                ready:  shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
-            }
-            ,tip:  {corner : "left center"}
-            ,hide: {
-				event:hideEvents
-			},
-            adjust: { method: "flip none"},
-            style: {
-                classes: theClasses
-            }
-//            ,adjust:{screen:true, resize:true}
-        });
-    });
+         var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
+         var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
 
-    $.fn.hasAttr = function(name) {
-        var attr = $(this).attr(name);
+         //make hints that start with a * only show when the field has focus
+         if ($(this).data("hint").startsWith("*")) {
+             shouldShowAlways = false;
+             hideEvents = 'unfocus mouseleave';
+         }
 
-        // For some browsers, `attr` is undefined; for others,
-        // `attr` is false.  Check for both.
-        return (typeof attr !== 'undefined' && attr !== false);
-    };
+         var whatToSay = GetLocalizedHint(this);
 
-    //Show data on fields
-   /* disabled to see if we can do fine without it
-    $("*[data-book], *[data-library], *[lang]").each(function() {
-
-        var data = " ";
-        if ($(this).hasAttr("data-book")) {
-            data = $(this).attr("data-book");
-        }
-        if ($(this).hasAttr("data-library")) {
-            data = $(this).attr("data-library");
-        }
-        $(this).qtipSecondary({
-            content: {text: $(this).attr("lang") + "<br>" + data}, //, title: { text:  $(this).attr("lang")}},
-
-            position: {
-                my: 'top right',
-                at: 'top left'
+         $(this).qtip({
+             content: whatToSay,
+             position: pos,
+             show: {
+                 event: " focusin mouseenter",
+                 ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
+             }
+            , tip: { corner: "left center" }
+            , hide: {
+                event: hideEvents
             },
-            //                  show: {
-            //                                  event: false, // Don't specify a show event...
-            //                                  ready: true // ... but show the tooltip when ready
-            //                              },
-            //                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
-            style: {'default': false,
-                tip: {corner: false,border: false},
-                classes: 'fieldInfo-qtip'
-            }
-        });
-    });
-*/
-
-
-    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
-    Cleanup();
-
-    //make images look click-able when you cover over them
-    jQuery(".bloom-imageContainer").each(function() {
-            SetupImageContainer(this);
-        });
-
-    
-    jQuery(".bloom-draggable").mouseenter(function() {
-        $(this).prepend("<button class='moveButton' title='Move'></button>");
-        $(this).find(".moveButton").mousedown(function(e) {
-            $(this).parent().trigger(e);
-        });
-    });
-    jQuery(".bloom-draggable").mouseleave(function() {
-        $(this).find(".moveButton").each(function() {
-            $(this).remove()
-        });
-    });
-
-    $('div.bloom-editable').each(function() {
-        $(this).attr('contentEditable', 'true');
-    });
-    // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
-    // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
-    // an attribute, so it can't be included in css.
-    // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
-    $('textarea, div').focus(function() {
-//        if ($(this).css('border-bottom-color') == 'transparent') {
-        if ($(this).css('cursor') == 'not-allowed') {
-            $(this).attr("readonly", "true");
-			$(this).removeAttr("contentEditable");
-        } 
-        else {
-            $(this).removeAttr("readonly");
-			//review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
-        }
-    });
-
-
-    // If the user moves over something they can't edit, show a tooltip explaining why not
-    $('*[data-hint]').each(function() {
-            if ($(this).css('cursor') == 'not-allowed') {
-                var whyDisabled = "You cannot change these because this is not the original copy.";
-                if($(this).hasClass('bloom-readOnlyInEditMode')){
-                    whyDisabled = "You cannot put anything in there while making an original book.";
-                }
-
-                var whatToSay = GetLocalizedHint(this)+" <br/>"+whyDisabled;
-                var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
-                var pos = {at: 'right center',
-                            my: 'left center'
-                        };
-                $(this).qtip({
-                            content: whatToSay,
-                            position: pos,
-                            show: {
-                                event: " focusin mouseenter"
-                            },
-                            style: {
-                                classes: theClasses
-                            }
-                        });
-            }
-        });
-
-
-
-    //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
-    // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
-    // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
-    $('div.bloom-readOnlyInTranslationMode').focus(function() {
-         if ($(this).css('cursor') == 'not-allowed') {
-            $(this).removeAttr("contentEditable");
-        } 
-        else {
-            $(this).attr("contentEditable", "true");
-        }
-    });
-    
-
-
-// this is gone because of a memory violation bug in geckofx 11 with messaging. Now we just notice the click from within c#
-//    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
-    // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-//    $('div.bloom-metaData').each(function() {
-//        if ($(this).css('cursor') == 'pointer') {
-//            $(this).click(function() {
-//                event = document.createEvent('MessageEvent');
-//                var origin = window.location.protocol + '//' + window.location.host;
-//                var obj = {};
-//                $(this).find("*[data-book]").each(function() {
-//                    obj[$(this).attr("data-book")] = $(this).text();
-//                })
-//                var json = obj; //.get();
-//                json = JSON.stringify(json);
-//                event.initMessageEvent('divClicked', true, true, json, origin, "", window, null);
-//                document.dispatchEvent(event);
-//            })
-//        }
-//    });
-
-
-    //add drag and resize ability where elements call for it
- //   $(".bloom-draggable").draggable({containment: "parent"});
-    $(".bloom-draggable").draggable({containment: "parent",
-            handle: '.bloom-imageContainer' });//without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
-
-
-    //only make things deletable if they have the deletable class *and* page customization is enabled
-     $("DIV.bloom-page.enablePageCustomization DIV.bloom-deletable").each(function() {
-             SetupDeletable(this);
+             adjust: { method: "flip none" },
+             style: {
+                 classes: theClasses
+             }
+             //            ,adjust:{screen:true, resize:true}
          });
+     });
+
+     $.fn.hasAttr = function (name) {
+         var attr = $(this).attr(name);
+
+         // For some browsers, `attr` is undefined; for others,
+         // `attr` is false.  Check for both.
+         return (typeof attr !== 'undefined' && attr !== false);
+     };
+
+     //Show data on fields
+     /* disabled to see if we can do fine without it
+     $("*[data-book], *[data-library], *[lang]").each(function() {
+
+     var data = " ";
+     if ($(this).hasAttr("data-book")) {
+     data = $(this).attr("data-book");
+     }
+     if ($(this).hasAttr("data-library")) {
+     data = $(this).attr("data-library");
+     }
+     $(this).qtipSecondary({
+     content: {text: $(this).attr("lang") + "<br>" + data}, //, title: { text:  $(this).attr("lang")}},
+
+     position: {
+     my: 'top right',
+     at: 'top left'
+     },
+     //                  show: {
+     //                                  event: false, // Don't specify a show event...
+     //                                  ready: true // ... but show the tooltip when ready
+     //                              },
+     //                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
+     style: {'default': false,
+     tip: {corner: false,border: false},
+     classes: 'fieldInfo-qtip'
+     }
+     });
+     });
+     */
 
 
-     $(".bloom-resizable").each(function() {
-        SetupResizableElement(this);
-    });
+     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+     Cleanup();
 
-     $("img").each(function() {
-           SetAlternateTextOnImages(this);
-       });
-
-    //focus on the first editable field
-    //$(':input:enabled:visible:first').focus();
-    $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
-    
-    SetupTopicDialog();
-
-    //copy source texts out to their own div, where we can make a bubble with tabs out of them
-    //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
-    $("*.bloom-translationGroup").each(function() {
-        if ($(this).find("textarea, div").length > 1) {
-            MakeSourceTextDivForGroup(this);
-        }
-    });
+     //make images look click-able when you cover over them
+     jQuery(".bloom-imageContainer").each(function () {
+         SetupImageContainer(this);
+     });
 
 
-    //make images scale up to their container without distorting their proportions, while being centered within it.
-    $(".bloom-imageContainer img").scaleImage({scale: "fit"}); //uses jquery.myimgscale.js
+     jQuery(".bloom-draggable").mouseenter(function () {
+         $(this).prepend("<button class='moveButton' title='Move'></button>");
+         $(this).find(".moveButton").mousedown(function (e) {
+             $(this).parent().trigger(e);
+         });
+     });
+     jQuery(".bloom-draggable").mouseleave(function () {
+         $(this).find(".moveButton").each(function () {
+             $(this).remove()
+         });
+     });
 
-    // when the image changes, we need to scale again:
-    $(".bloom-imageContainer img").load(function() {
-        $(this).scaleImage({scale: "fit"});
-    });
+     $('div.bloom-editable').each(function () {
+         $(this).attr('contentEditable', 'true');
+     });
+     // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
+     // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
+     // an attribute, so it can't be included in css.
+     // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
+     $('textarea, div').focus(function () {
+         //        if ($(this).css('border-bottom-color') == 'transparent') {
+         if ($(this).css('cursor') == 'not-allowed') {
+             $(this).attr("readonly", "true");
+             $(this).removeAttr("contentEditable");
+         }
+         else {
+             $(this).removeAttr("readonly");
+             //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
+         }
+     });
 
-    //and when their parent is resized by the user, we need to scale again:
-    $(".bloom-imageContainer img").each(function() {
-        $(this).parent().resize(function() {
-            $(this).find("img").scaleImage({scale: "fit"});
-            ResetRememberedSize(this);
-        });
-    });
-});
+
+     // If the user moves over something they can't edit, show a tooltip explaining why not
+     $('*[data-hint]').each(function () {
+         if ($(this).css('cursor') == 'not-allowed') {
+             var whyDisabled = "You cannot change these because this is not the original copy.";
+             if ($(this).hasClass('bloom-readOnlyInEditMode')) {
+                 whyDisabled = "You cannot put anything in there while making an original book.";
+             }
+
+             var whatToSay = GetLocalizedHint(this) + " <br/>" + whyDisabled;
+             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
+             var pos = { at: 'right center',
+                 my: 'left center'
+             };
+             $(this).qtip({
+                 content: whatToSay,
+                 position: pos,
+                 show: {
+                     event: " focusin mouseenter"
+                 },
+                 style: {
+                     classes: theClasses
+                 }
+             });
+         }
+     });
+
+
+
+     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
+     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
+     // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
+     $('div.bloom-readOnlyInTranslationMode').focus(function () {
+         if ($(this).css('cursor') == 'not-allowed') {
+             $(this).removeAttr("contentEditable");
+         }
+         else {
+             $(this).attr("contentEditable", "true");
+         }
+     });
+
+
+
+     // this is gone because of a memory violation bug in geckofx 11 with messaging. Now we just notice the click from within c#
+     //    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
+     // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
+     //    $('div.bloom-metaData').each(function() {
+     //        if ($(this).css('cursor') == 'pointer') {
+     //            $(this).click(function() {
+     //                event = document.createEvent('MessageEvent');
+     //                var origin = window.location.protocol + '//' + window.location.host;
+     //                var obj = {};
+     //                $(this).find("*[data-book]").each(function() {
+     //                    obj[$(this).attr("data-book")] = $(this).text();
+     //                })
+     //                var json = obj; //.get();
+     //                json = JSON.stringify(json);
+     //                event.initMessageEvent('divClicked', true, true, json, origin, "", window, null);
+     //                document.dispatchEvent(event);
+     //            })
+     //        }
+     //    });
+
+
+     //add drag and resize ability where elements call for it
+     //   $(".bloom-draggable").draggable({containment: "parent"});
+     $(".bloom-draggable").draggable({ containment: "parent",
+         handle: '.bloom-imageContainer'
+     }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
+
+
+     //only make things deletable if they have the deletable class *and* page customization is enabled
+     $("DIV.bloom-page.enablePageCustomization DIV.bloom-deletable").each(function () {
+         SetupDeletable(this);
+     });
+
+
+     $(".bloom-resizable").each(function () {
+         SetupResizableElement(this);
+     });
+
+     $("img").each(function () {
+         SetAlternateTextOnImages(this);
+     });
+
+     SetOverlayForImagesWithoutMetadata();
+
+     //focus on the first editable field
+     //$(':input:enabled:visible:first').focus();
+     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+
+     SetupTopicDialog();
+
+     //copy source texts out to their own div, where we can make a bubble with tabs out of them
+     //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
+     $("*.bloom-translationGroup").each(function () {
+         if ($(this).find("textarea, div").length > 1) {
+             MakeSourceTextDivForGroup(this);
+         }
+     });
+
+
+     //make images scale up to their container without distorting their proportions, while being centered within it.
+     $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+
+     // when the image changes, we need to scale again:
+     $(".bloom-imageContainer img").load(function () {
+         $(this).scaleImage({ scale: "fit" });
+     });
+
+     //and when their parent is resized by the user, we need to scale again:
+     $(".bloom-imageContainer img").each(function () {
+         $(this).parent().resize(function () {
+             $(this).find("img").scaleImage({ scale: "fit" });
+             ResetRememberedSize(this);
+         });
+     });
+ });
 
 //function SetCopyrightAndLicense(data) {
 //    $('*[data-book="copyright"]').each(function(){

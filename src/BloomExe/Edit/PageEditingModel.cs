@@ -18,6 +18,7 @@ namespace Bloom.Edit
 		{
 			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);
+			UpdateMetdataAttributesOnImgElement(img, imageInfo);
 		}
 	
 		/// <summary>
@@ -141,5 +142,18 @@ namespace Bloom.Edit
 
             return  new []{"jpg", "jpeg"}.Contains(Path.GetExtension(imageInfo.FileName).ToLower());
         }
+
+		public void UpdateMetdataAttributesOnImgElement(GeckoElement img, PalasoImage imageInfo)
+    	{
+			img.SetAttribute("data-copyright",
+			                 string.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
+
+			img.SetAttribute("data-creator", string.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
+
+
+			img.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
+
+			img.Click(); //wake up javascript to update overlays			
+    	}
     }
 }
