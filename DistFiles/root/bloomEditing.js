@@ -55,6 +55,10 @@ function Cleanup() {
         $(this).removeClass('hoverUp');
     });
 
+    $('button').each(function () {
+        $(this).remove();
+    });
+
 
 	$('div.bloom-editable').each( function() {
 		TrimTrailingLineBreaksInDivs(this);
@@ -314,6 +318,14 @@ function MakeSourceTextDivForGroup(group) {
              }
              $(this).prepend("<button class='pasteImageButton " + buttonModifier + "' title='Paste Image'></button>");
              $(this).prepend("<button class='changeImageButton " + buttonModifier + "' title='Change Image'></button>");
+
+//             if ($(this).find('button.imgMetadataProblem').length==0) {
+                 var img = $(this).find('img');
+                 if (CreditsAreRelevantForImage(img)) { 
+                     $(this).prepend("<button class='editMetadataButton " + buttonModifier + "' title='Edit Image Credits, Copyright, & License'></button>");
+                 }
+  //           }
+
              $(this).addClass('hoverUp');
          })
          .mouseleave(function () {
@@ -324,22 +336,24 @@ function MakeSourceTextDivForGroup(group) {
              $(this).find(".pasteImageButton").each(function () {
                  $(this).remove()
              });
+             $(this).find(".editMetadataButton").each(function () {
+                 if (!$(this).hasClass('imgMetadataProblem')) {
+                     $(this).remove()
+                 }
+             });
          });
- }
+     }
 
- // Instead of "missing", we want to show it in the right ui language. We also want the text
- // to indicate that it might not be missing, just didn't load (this happens on slow machines)
- // TODO: internationalize
- function SetAlternateTextOnImages(element) {
-     $(element).attr('alt', 'This picture, '+$(element).attr('src')+', is missing or was loading too slowly.')
- }
+     function CreditsAreRelevantForImage(img) {
+         return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+     }
 
  //While the actual metada is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
  // so that we can easily & quickly get to the here.
  function SetOverlayForImagesWithoutMetadata() {
      $(".bloom-imageContainer").each(function () {
          var img = $(this).find('img');
-         if($(img).attr('src').indexOf('placeHolder') > -1) {
+         if (!CreditsAreRelevantForImage(img)) {
             return;
          }
          var container = $(this);
@@ -363,11 +377,19 @@ function MakeSourceTextDivForGroup(group) {
 
      var license = $(img).attr('data-license');
      if (!license || license.length == 0) {
-         $(container).prepend("<button class='imgMetadataProblem' title='Click to complete the metdata on this image.'></button>");
-     } 
-     
-
+         $(container).prepend("<button class='editMetadataButton imgMetadataProblem' title='Image is missing information on Credits, Copyright, or License'></button>");
+     }
  }
+
+
+ // Instead of "missing", we want to show it in the right ui language. We also want the text
+ // to indicate that it might not be missing, just didn't load (this happens on slow machines)
+ // TODO: internationalize
+ function SetAlternateTextOnImages(element) {
+     $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.')
+ }
+
+
  function SetupResizableElement(element) {
 
      $(element).mouseenter(
