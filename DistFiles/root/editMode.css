@@ -127,6 +127,35 @@ BUTTON.pasteImageButton
 	/*[disabled]background-position:13px 3px;*/
 	background-color: #0C8597;
 }
+BUTTON.editMetadataButton
+{
+	background-image: url("imageMetaDataButton.svg") !important;
+	background-size: contain;
+	background-position: 5px 0px;
+	width: 70px;
+	height: 52px;
+	background-repeat: no-repeat !important;
+	/*+placement:anchor-top-left 3px 5px;*/
+	position: absolute;
+	left: 3px;
+	top: 5px;
+	z-index: 1000;
+}
+BUTTON.editMetadataButton.imgMetadataProblem
+{
+	background-image: url("imageMissingMetaData.svg") !important;
+	background: transparent;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: none;
+}
+.hoverUp BUTTON.editMetadataButton
+{
+	background: #3A7F62;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: 2px outset #716666;
+}
 BUTTON.deleteButton
 {
 	/*+placement:anchor-bottom-left;*/

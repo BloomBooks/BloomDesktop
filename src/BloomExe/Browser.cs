@@ -78,10 +78,7 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = () =>
-											{
-												_browser.Paste();
-											};
+			_pasteCommand.Implementer = PasteFilteredText;
 			_undoCommand.Implementer = () => _browser.Undo();
 
 			//none of these worked
@@ -224,22 +221,31 @@ namespace Bloom
 		{
 			if (e.CtrlKey && e.KeyChar == 'v')
 			{
+				Debug.WriteLine("Ctrl-v pressed.");
 				if (!_pasteCommand.Enabled)
 				{
+					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
 				else if(_browser.CanPaste && Clipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
 
-					//filter whatever's on there down to just simple text.
-					//While it's tempting to allow formatted pasting, if you're making a shell, that's just
-					//kidding yourself; the translator won't get to have that formatting too.
-					var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
-					Clipboard.SetText(originalText,TextDataFormat.UnicodeText);
-					_browser.Paste();
+
+					PasteFilteredText();
 				}
 			}
+		}
+
+		private void PasteFilteredText()
+		{
+//filter whatever's on there down to just simple text.
+			//While it's tempting to allow formatted pasting, if you're making a shell, that's just
+			//kidding yourself; the translator won't get to have that formatting too.
+			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
+			Debug.WriteLine("Asking browser to paste:" + Clipboard.GetText());
+			_browser.Paste();
 		}
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)

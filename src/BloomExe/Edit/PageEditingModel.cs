@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.Book;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 using Gecko;
@@ -145,15 +146,21 @@ namespace Bloom.Edit
 
 		public void UpdateMetdataAttributesOnImgElement(GeckoElement img, PalasoImage imageInfo)
 		{
-			img.SetAttribute("data-copyright",
-							 string.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
+			UpdateMetadataAttributesOnImage(img, imageInfo);
 
-			img.SetAttribute("data-creator", string.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
+			img.Click(); //wake up javascript to update overlays
+		}
+
+		public static void UpdateMetadataAttributesOnImage(GeckoElement img, PalasoImage imageInfo)
+		{
+			//see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
+			img.SetAttribute("data-copyright",
+							 String.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
+
+			img.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
 
 
 			img.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
-
-			img.Click(); //wake up javascript to update overlays
 		}
 	}
 }

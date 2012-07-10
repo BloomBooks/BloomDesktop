@@ -10,12 +10,14 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
+using Gecko;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
+using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace Bloom.Book

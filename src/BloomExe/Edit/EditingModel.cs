@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 
@@ -442,6 +443,10 @@ namespace Bloom.Edit
 		}
 #endif
 
+		public void CopyImageMetadataToWholeBook(Metadata metadata)
+		{
+			CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata);
+		}
 	}
 
 	public class TemplateInsertionCommand

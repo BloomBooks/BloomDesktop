@@ -14,6 +14,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using Gecko;
 using Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,6 +25,7 @@ using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
+using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -1889,5 +1891,53 @@ namespace Bloom.Book
 		}
 
 
+		public IEnumerable<string> GetImagePaths()
+		{
+			foreach (var path in Directory.EnumerateFiles(_storage.FolderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
+			{
+				if ((path.ToLower() =="placeholder.png") || path.ToLower()==("license.png") || path.ToLower() == ("thumbnail.png"))
+					continue;
+				yield return path;
+			}
+		}
+
+		/// <summary>
+		/// This is used when the user elects to apply the same image metadata to all images.
+		/// </summary>
+		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata)
+		{
+			//First update the images themselves
+
+			foreach (string path in GetImagePaths())
+			{
+				using (var image = PalasoImage.FromFile(path))
+				{
+					image.Metadata = metadata;
+					image.SaveUpdatedMetadataIfItMakesSense();
+				}
+			}
+
+			//Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to
+			//whether the info is there or missing or whatever.
+
+			foreach (XmlElement img in RawDom.SafeSelectNodes("//img"))
+			{
+				//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
+
+				var src = img.GetOptionalStringAttribute("src", string.Empty).ToLower();
+				if (src == "placeholder.png" || src == "license.png")
+					continue;
+
+				img.SetAttribute("data-copyright",
+								 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
+
+				img.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
+
+
+				img.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
+			}
+
+			_storage.Save();
+		}
 	}
 }

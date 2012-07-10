@@ -303,8 +303,9 @@ namespace Bloom.Edit
 				OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
-			if (ge.Target.ClassName.Contains("imgMetadataProblem"))
+			if (ge.Target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
+
 			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 				OnClickCopyrightAndLicenseDiv();
 		}
@@ -340,6 +341,21 @@ namespace Bloom.Edit
 						//update so any overlays on the image are brough up to data
 						var editor = new PageEditingModel();
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
+
+						var answer = MessageBox.Show("Copy this information to all other pictures in this book?", "Picture Intellectual Proprty Information", MessageBoxButtons.YesNo);
+						if(answer == DialogResult.Yes)
+						{
+							Cursor = Cursors.WaitCursor;
+							try
+							{
+								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
+							}
+							catch (Exception e)
+							{
+								ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
+							}
+							Cursor = Cursors.Default;
+						}
 					}
 				}
 			}
@@ -370,8 +386,10 @@ namespace Bloom.Edit
 			if (imageElement == null)
 				return;
 
-			var image = new PalasoImage(Clipboard.GetImage());
-			_model.ChangePicture(imageElement, image);
+			using (var image = new PalasoImage(Clipboard.GetImage()))
+			{
+				_model.ChangePicture(imageElement, image);
+			}
 		}
 
 		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
