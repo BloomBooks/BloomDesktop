@@ -38,7 +38,7 @@ namespace Bloom
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Bloom");
 		}
 
-		public static NewCollectionSettings CreateNewCollection()
+		public static string CreateNewCollection()
 		{
 			bool showWelcomePage = Settings.Default.MruProjects.Latest == null;
 			using (var dlg = new NewCollectionWizard(showWelcomePage, DefaultParentDirectoryForLibraries()))
@@ -48,7 +48,9 @@ namespace Bloom
 				{
 					return null;
 				}
-				return dlg.GetNewCollectionSettings();
+				//review: this is a bit weird... we clone it instead of just using it just becuase this code path
+				//can handle creating the path from scratch
+				return new CollectionSettings(dlg.GetNewCollectionSettings()).SettingsFilePath;
 			}
 		}
 

@@ -257,10 +257,10 @@ namespace Bloom
 				//The user can cancel that if they want to go looking for a collection on disk.
 				if(Settings.Default.MruProjects.Latest == null)
 				{
-					var collection=OpenAndCreateCollectionDialog.CreateNewCollection();
-					if (collection != null)
+					var path=OpenAndCreateCollectionDialog.CreateNewCollection();
+					if (!string.IsNullOrEmpty(path) && File.Exists(path))
 					{
-						OpenCollection(collection.PathToSettingsFile);
+						OpenCollection(path);
 						return;
 					}
 				}
