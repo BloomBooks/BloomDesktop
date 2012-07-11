@@ -56,7 +56,6 @@ function Cleanup() {
     });
 
     $('button').each(function () {
-        if (!$(this).attr('id') == 'editCopyrightAndLicense')
             $(this).remove();
     });
 
@@ -387,7 +386,13 @@ function MakeSourceTextDivForGroup(group) {
  // to indicate that it might not be missing, just didn't load (this happens on slow machines)
  // TODO: internationalize
  function SetAlternateTextOnImages(element) {
-     $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.')
+     if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
+         $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.');
+     }
+     else {
+         $(element).attr('alt', '?');
+     }
+
  }
 
 
@@ -639,6 +644,14 @@ function ResizeUsingPercentages(e,ui){
 
          var whatToSay = GetLocalizedHint(this);
 
+         var functionCall = $(this).data("functiononhintclick");
+         if(functionCall)
+         {
+             shouldShowAlways = true;
+             whatToSay = "<a href='"+functionCall+"'>" + whatToSay + "</a>";
+             hideEvents = false;
+         }
+
          $(this).qtip({
              content: whatToSay,
              position: pos,
@@ -763,6 +776,8 @@ function ResizeUsingPercentages(e,ui){
                  }
              });
          }
+
+
      });
 
 
@@ -829,7 +844,7 @@ function ResizeUsingPercentages(e,ui){
      //$(':input:enabled:visible:first').focus();
      $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
-     SetupTopicDialog();
+     SetupShowingTopicChooserWhenTopicIsClicked();
 
      //copy source texts out to their own div, where we can make a bubble with tabs out of them
      //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
@@ -914,33 +929,39 @@ function FindOrCreateTopicDialogDiv() {
     }
     return dialogContents;
 }
-function SetupTopicDialog() {
-    $("div[data-book='topic']").click(function() {
 
+//note, the normal way is for the user to click the link on the qtip. 
+//But clicking on the exiting topic may be natural too, and this prevents
+//them from editing it by hand.
+function SetupShowingTopicChooserWhenTopicIsClicked() {
+    $("div[data-book='topic']").click(function () {
         if ($(this).css('cursor') == 'not-allowed')
             return;
+        ShowTopicChooser();
+    });
+}
 
-        var dialogContents = FindOrCreateTopicDialogDiv();
-        var dlg = $(dialogContents).dialog({
-            autoOpen: "true",
-            modal: "true",
-            zIndex: 30000, //qtip is in the 15000 range
-            buttons: {
-                "Ok": function() {
-                    var t = $("ol#topics li.ui-selected");
-                    if (t.length) 
-                    {
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
-                    }
-                    $(this).dialog("close");
+// This is called directly from Bloom via RunJavaScript()
+function ShowTopicChooser() {
+    var dialogContents = FindOrCreateTopicDialogDiv();
+    var dlg = $(dialogContents).dialog({
+        autoOpen: "true",
+        modal: "true",
+        zIndex: 30000, //qtip is in the 15000 range
+        buttons: {
+            "Ok": function () {
+                var t = $("ol#topics li.ui-selected");
+                if (t.length) {
+                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
                 }
+                $(this).dialog("close");
             }
-        });
+        }
+    });
 
-        //make a double click on an item close the dialog
-        dlg.find("li").dblclick(function() {
-            var x = dlg.dialog("option", "buttons");
-            x['Ok'].apply(dlg);
-        });
+    //make a double click on an item close the dialog
+    dlg.find("li").dblclick(function () {
+        var x = dlg.dialog("option", "buttons");
+        x['Ok'].apply(dlg);
     });
 }
