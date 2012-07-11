@@ -56,7 +56,8 @@ function Cleanup() {
     });
 
     $('button').each(function () {
-        $(this).remove();
+        if (!$(this).attr('id') == 'editCopyrightAndLicense')
+            $(this).remove();
     });
 
 
@@ -489,7 +490,7 @@ function ResizeUsingPercentages(e,ui){
          this.innerHTML = this.value;
      });
 
-     SetCopyrightAndLicenseButtonVisibility();
+     SetBookCopyrightAndLicenseButtonVisibility();
 
      /*
      //when a textarea gets focus, send Bloom a dictionary of all the translations found within
@@ -867,10 +868,10 @@ function SetCopyrightAndLicense(data) {
     $("DIV.licenseDescription").text(data.licenseDescription);
     $("DIV.licenseNotes").text(data.licenseNotes);
     $("IMG[data-book='licenseImage']").attr("src", data.licenseImage + "?" + new Date().getTime()); //the time thing makes the browser reload it even if it's the same name
-    SetCopyrightAndLicenseButtonVisibility();
+    SetBookCopyrightAndLicenseButtonVisibility();
 }
 
-function SetCopyrightAndLicenseButtonVisibility() {
+function SetBookCopyrightAndLicenseButtonVisibility() {
     var shouldShowButton = !($("DIV.copyright").text());
     $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
 }
