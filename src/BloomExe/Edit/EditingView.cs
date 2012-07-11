@@ -129,7 +129,7 @@ namespace Bloom.Edit
 #endif
 		}
 
-		private void OnClickCopyrightAndLicenseDiv()
+		private void OnShowBookMetadataEditor()
 		{
 			try
 			{
@@ -306,8 +306,36 @@ namespace Bloom.Edit
 			if (ge.Target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
 
-			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
-				OnClickCopyrightAndLicenseDiv();
+			var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
+			if(anchor!=null)
+			{
+				if(anchor.Href.Contains("bookMetadataEditor"))
+				{
+					OnShowBookMetadataEditor();
+					ge.Handled = true;
+					return;
+				}
+				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
+				{
+					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
+					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
+					_browser1.RunJavaScript(function);
+					ge.Handled = true;
+					return;
+				}
+				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
+				{
+					Process.Start(anchor.Href);
+					ge.Handled = true;
+				}
+				else
+				{
+					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+					ge.Handled = true;
+				}
+
+			}
+//			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 		}
 
 
