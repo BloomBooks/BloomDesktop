@@ -55,6 +55,7 @@ namespace Bloom.NewCollection
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_pathToNewLibraryDirectory, string.Format(pattern,_collectionInfo.Language1Name));
 				//_collectionInfo.CollectionName = ;
 
+
 				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems
 													? _collectionNamePage	//go ahead to the language location page for now, but then divert to the page
 																		//we use for fixing up the name
@@ -94,6 +95,7 @@ namespace Bloom.NewCollection
 		private void OnFinish(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.OK;
+
 			if (_collectionInfo.IsSourceCollection)
 				UsageReporter.SendNavigationNotice("NewSourceCollection");
 			else
