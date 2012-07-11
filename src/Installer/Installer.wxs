@@ -116,6 +116,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			  </Extension>
 			</ProgId>
 
+
 			<Registry  Id='BloomPackIcon1' Root='HKCR' Key='.BloomPack' Action='write'
 			  Type='string' Value='Bloom.BloomPackFile' />
 			<Registry Id='BloomPackIcon2' Root='HKCR' Key='Bloom.BloomPackFile' Action='write'
@@ -126,6 +127,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
 				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
 
+		  </Component>
+
+		  <Component Id="Bloom.exe.config" Guid="{5173C7E9-39FD-4438-B1C1-BA189707AA35}">
+			<File Id="Bloom.exe.config" Name="Bloom.exe.config" KeyPath="yes" Source="..\..\output\release\Bloom.exe.config" />
 		  </Component>
 
 		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
@@ -219,6 +224,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
+	  <ComponentRef Id="Bloom.exe.config" />
 	  <ComponentRef Id="Interop.Acrobat.dll" />
 	  <ComponentRef Id="Interop.AcroPDFLib.dll" />
 	  <ComponentRef Id="AxInterop.AcroPDFLib.dll" />
