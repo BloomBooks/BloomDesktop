@@ -25,14 +25,14 @@ namespace Bloom.Book
 
 		public Dictionary<string, DataItem> TextVariables { get; private set; }
 
-		public void AddGenericLanguageString(string key, string value, bool isLibraryValue)
+		public void AddGenericLanguageString(string key, string value, bool isCollectionValue)
 		{
 			var code = new MultiTextBase();
 			code.SetAlternative("*", value);
-			TextVariables.Add(key, new DataItem(code, isLibraryValue));
+			TextVariables.Add(key, new DataItem(code, isCollectionValue));
 		}
 
-		public void UpdateGenericLanguageString(string key, string value, bool isLibraryValue)
+		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
 		{
 			var code = new MultiTextBase();
 			code.SetAlternative("*", value);
@@ -40,15 +40,26 @@ namespace Bloom.Book
 			{
 				TextVariables.Remove(key);
 			}
-			TextVariables.Add(key, new DataItem(code, isLibraryValue));
+			TextVariables.Add(key, new DataItem(code, isCollectionValue));
 		}
 
-		public void AddLanguageString(string writingSystemId, string key, string value, bool isLibraryValue)
+		public void UpdateLanguageString(string writingSystemId, string key, string value, bool isCollectionValue)
+		{
+			var code = new MultiTextBase();
+			code.SetAlternative(writingSystemId, value);
+			if (TextVariables.ContainsKey(key))
+			{
+				TextVariables.Remove(key);
+			}
+			TextVariables.Add(key, new DataItem(code, isCollectionValue));
+		}
+
+		public void AddLanguageString(string writingSystemId, string key, string value, bool isCollectionValue)
 		{
 			if(!TextVariables.ContainsKey(key))
 			{
 				var text = new MultiTextBase();
-				TextVariables.Add(key, new DataItem(text, isLibraryValue));
+				TextVariables.Add(key, new DataItem(text, isCollectionValue));
 			}
 			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
 		}
@@ -56,12 +67,13 @@ namespace Bloom.Book
 
 	public class DataItem
 	{
-		public DataItem(MultiTextBase text, bool isLibraryValue)
+		public DataItem(MultiTextBase text, bool isCollectionValue)
 		{
 			TextAlternatives = text;
-			IsLibraryValue = isLibraryValue;
+			isCollectionValue = isCollectionValue;
 		}
 		public MultiTextBase TextAlternatives;
-		public bool IsLibraryValue;
+		public bool IsCollectionValue;
+
 	}
 }

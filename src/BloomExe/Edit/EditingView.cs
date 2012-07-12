@@ -162,7 +162,7 @@ namespace Bloom.Edit
 						}
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-
+						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is emtpy
 						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
@@ -173,6 +173,12 @@ namespace Bloom.Edit
 								licenseImageName,
 								dlg.Metadata.License.Url, rights, description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+
+						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
+						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
+						//have the data div.
+						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
+						_model.SaveNow();
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
