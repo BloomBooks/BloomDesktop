@@ -591,6 +591,16 @@ function ResizeUsingPercentages(e,ui){
              return;
          }
 
+         //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
+         //then reappear
+
+         var shouldShowAlways = true; // "mouseleave unfocus";
+         var hideEvents = false;// "mouseover focusin";
+
+         //             shouldShowAlways = false;
+         //           hideEvents = 'unfocus mouseleave';
+
+
          $(this).qtip({
              content: whatToSay,
 
@@ -599,8 +609,10 @@ function ResizeUsingPercentages(e,ui){
                  at: 'bottom right'
                  , adjust: { y: -25 }
              },
-             show: { ready: true },
-             hide: false,
+             show: { ready: shouldShowAlways },
+             hide: {
+                 event: hideEvents
+             },
              style: {
                  classes: 'ui-languageToolTip'
              }
@@ -649,10 +661,9 @@ function ResizeUsingPercentages(e,ui){
          var whatToSay = GetLocalizedHint(this);
 
          var functionCall = $(this).data("functiononhintclick");
-         if(functionCall)
-         {
+         if (functionCall) {
              shouldShowAlways = true;
-             whatToSay = "<a href='"+functionCall+"'>" + whatToSay + "</a>";
+             whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
              hideEvents = false;
          }
 
