@@ -70,7 +70,7 @@ namespace Bloom.Book
 		public DataItem(MultiTextBase text, bool isCollectionValue)
 		{
 			TextAlternatives = text;
-			isCollectionValue = isCollectionValue;
+			IsCollectionValue = isCollectionValue;
 		}
 		public MultiTextBase TextAlternatives;
 		public bool IsCollectionValue;
