@@ -390,7 +390,7 @@ function MakeSourceTextDivForGroup(group) {
          $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.');
      }
      else {
-         $(element).attr('alt', '?');
+         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
      }
 
  }
@@ -880,9 +880,15 @@ function SetCopyrightAndLicense(data) {
     //nb: for textarea, we need val(). But for div, it would be text()
     $("DIV[data-book='copyright']").text(data.copyright);
     $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
-    $("DIV.licenseDescription").text(data.licenseDescription);
-    $("DIV.licenseNotes").text(data.licenseNotes);
-    $("IMG[data-book='licenseImage']").attr("src", data.licenseImage + "?" + new Date().getTime()); //the time thing makes the browser reload it even if it's the same name
+    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
+    $("DIV[data-book='licenseNotes']").text(data.licenseNotes);
+    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
+    if (data.licenseImage.length == 0) {
+        licenseImageValue = ""; //don't wan the date on there
+        $("IMG[data-book='licenseImage']").attr('alt', '');
+    }
+
+    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
     SetBookCopyrightAndLicenseButtonVisibility();
 }
 
