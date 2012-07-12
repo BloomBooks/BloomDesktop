@@ -192,7 +192,9 @@ namespace Bloom
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
-
+#if !DEBUG
+			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
+#endif
 			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
 			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
 			//it will continue to show in firebug, so i won't forget about it
