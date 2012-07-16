@@ -251,6 +251,18 @@ namespace BloomTemp
 			return s;
 		}
 
+		public string GetPathForNewTempFile(bool doCreateTheFile, string extension)
+		{
+			extension = extension.TrimStart('.');
+			var s = System.IO.Path.Combine(_path, System.IO.Path.GetRandomFileName() + "." + extension);
+
+			if (doCreateTheFile)
+			{
+				File.Create(s).Close();
+			}
+			return s;
+		}
+
 		public TempFile GetNewTempFile(bool doCreateTheFile)
 		{
 			string s = System.IO.Path.GetRandomFileName();
@@ -300,14 +312,20 @@ namespace BloomTemp
 				{
 					try
 					{
-						Console.WriteLine(e.Message);
+						Debug.WriteLine(e.Message);
 						//maybe we can at least clear it out a bit
 						string[] files = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
 						foreach (string s in files)
 						{
-							File.Delete(s);
+							try
+							{
+								File.Delete(s);
+							}
+							catch (Exception)
+							{
+							}
 						}
-						//sleep and try again (seems to work)
+						//sleep and try again (in case some other thread will  let go of them)
 						Thread.Sleep(1000);
 						Directory.Delete(folder, true);
 					}

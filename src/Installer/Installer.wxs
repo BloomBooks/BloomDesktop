@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.  this value should be B U I  LD_SCRIPT_MUST_REPLACE_AT_RUNTIME (in quotes) -->
-<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
+<?define Property_ProductVersion = "0.8.49" ?>
 <!--this is replaced at build time by the msbuild 'package' target -->
 <?define Property_ProductCode = "*" ?>
 <!-- auto-generate a new guid each time -->
@@ -248,7 +248,35 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 				  ExeCommand=""
 				  Return="asyncNoWait"/>
 
+	<!-- As Bloom acts as its own http service, on Vista/Win7 we use netsh to configure a port for that -->
+	<CustomAction Id="ListenerServiceAddReservation"
+					  Directory="INSTALLLOCATION"
+					  ExeCommand="[SystemFolder]netsh.exe http add urlacl url=http://+:8089/bloom/ user=everyone"
+					  Return="asyncWait" />
+	<CustomAction Id="ListenerServiceDeleteReservation"
+					  Directory="INSTALLLOCATION"
+					  ExeCommand="[SystemFolder]netsh.exe http delete urlacl url=http://+:8089/bloom/ "
+					  Return="asyncWait" />
+<!-- For WinXP, for which, reportedly, I need to use httpcfg instead of netsh -->
+	<CustomAction Id='ListenerServiceAddReservationXP'
+				  Execute='deferred' Impersonate='no'
+				  Return='asyncWait'
+				  BinaryKey='HTTPCFG'
+				  ExeCommand='set urlacl -u http://+:8089/bloom/ /a D:(A;;GX;;;WD)' />
+	<CustomAction Id='ListenerServiceDeleteReservationXP'
+				  Execute='deferred'  Impersonate='no'
+				  Return='asyncWait'
+				  BinaryKey='HTTPCFG'
+				  ExeCommand='delete urlacl -u http://+:8089/bloom/'/>
+
+
 	<InstallExecuteSequence>
+	  <Custom Action="ListenerServiceAddReservationXP" Before="InstallFinalize">NOT Installed  AND VersionNT = 501</Custom>
+	  <Custom Action="ListenerServiceDeleteReservationXP" Before="InstallFinalize">Installed AND VersionNT = 501</Custom>
+
+	  <Custom Action="ListenerServiceAddReservation" Before="InstallFinalize">NOT Installed  AND VersionNT >= 600 </Custom>
+	  <Custom Action="ListenerServiceDeleteReservation" Before="InstallFinalize">Installed AND VersionNT >= 600 </Custom>
+
 	  <RemoveExistingProducts After="InstallInitialize" />
 
 	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
