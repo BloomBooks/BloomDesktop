@@ -182,6 +182,7 @@
     <Compile Include="HtmlLabel.Designer.cs">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImageProcessing\LowResImageCache.cs" />
     <Compile Include="Library\IBloomTabArea.cs" />
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
@@ -233,6 +234,7 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
     </Compile>
