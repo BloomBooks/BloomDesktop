@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security;
 using System.Text;
@@ -323,7 +324,7 @@ namespace Bloom.Book
 
 
 
-		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
+		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath, bool pointAtEmbeddedServer)
 		{
 		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
 		   if (head == null)
@@ -336,7 +337,22 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(folderPath))
 			{
 				var baseElement = dom.CreateElement("base");
-				baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+				if (pointAtEmbeddedServer)
+				{
+					//this is only used by relative paths, and only img src's are left relative.
+					//we are redirecting through our build-in httplistener in order to shrink
+					//big images before giving them to gecko which has trouble with really hi-res ones
+					var uri = folderPath + Path.DirectorySeparatorChar;
+					uri = uri.Replace(":", "%3A");
+					uri = uri.Replace('\\', '/');
+					uri = "http://localhost:8089/bloom/" + uri;
+					baseElement.SetAttribute("href", uri);
+				}
+				else
+				{
+					baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+				}
+
 				head.AppendChild(baseElement);
 			}
 
@@ -461,7 +477,7 @@ namespace Bloom.Book
 		{
 			string tempPath = Path.GetTempFileName();
 			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
-			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
+			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
 
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
 		}
@@ -572,7 +588,7 @@ namespace Bloom.Book
 		{
 			XmlDocument dom = (XmlDocument)Dom.Clone();
 
-			SetBaseForRelativePaths(dom, _folderPath);
+			SetBaseForRelativePaths(dom, _folderPath,true);
 			EnsureHasCollectionAndBookStylesheets(dom);
 			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
 

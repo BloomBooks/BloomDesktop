@@ -8,11 +8,13 @@ using Autofac;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Workspace;
 using Bloom.web;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -25,6 +27,7 @@ namespace Bloom
 		private ILifetimeScope _scope;
 
 		private BloomServer _bloomServer;
+		private ImageServer _imageServer;
 		public Form ProjectWindow { get; private set; }
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
@@ -49,6 +52,19 @@ namespace Bloom
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
 				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
+			}
+			else
+			{
+				try
+				{
+					_imageServer = new ImageServer();
+					_imageServer.Start();
+				}
+				catch (Exception e)
+				{
+					ErrorReport.NotifyUserOfProblem(e,
+						"Bloom could not start its image server, which keeps hi-res images from chewing up memory. You should still be able to work, but some images may not always show.");
+				}
 			}
 		}
 
@@ -247,11 +263,15 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
-			if(_bloomServer!=null)
-				_bloomServer.Dispose();
-			_bloomServer = null;
 			_scope.Dispose();
 			_scope = null;
+
+			if (_bloomServer != null)
+				_bloomServer.Dispose();
+			_bloomServer = null;
+			if (_imageServer!=null)
+				_imageServer.Dispose();
+			_imageServer = null;
 		}
 
 		/// <summary>
