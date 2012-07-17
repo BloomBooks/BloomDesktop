@@ -243,10 +243,40 @@ namespace Bloom.web
 
 			public void ReplyWithImage(string path)
 			{
-				var img = Image.FromFile(path);
-				var output = _actualContext.Response.OutputStream;
-				img.Save(output, ImageFormat.Png);
-				output.Close();
+				var isJPEG = !path.EndsWith(".png");
+
+				_actualContext.Response.ContentType = isJPEG ? "image/png" : "image/jpeg";
+
+				//problems around here? See: http://www.west-wind.com/weblog/posts/2006/Oct/19/Common-Problems-with-rendering-Bitmaps-into-ASPNET-OutputStream
+				using (var image = Image.FromFile(path))
+				{
+					//				var output = _actualContext.Response.OutputStream;
+					//				img.Save(output, Path.GetExtension(path)==".jpg"? ImageFormat.Jpeg : ImageFormat.Png);
+					//				output.Close();
+
+					//On Vista an XP, I would get a "generic GDI+ error" when I saved the image I just loaded.
+					//The workaround (see about link) is to make a copy and stream that
+
+					using (Bitmap workAroundCopy = new Bitmap(image))
+					{
+						if (isJPEG)
+						{
+							workAroundCopy.Save(_actualContext.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+							_actualContext.Response.Close();
+						}
+						else //PNG's reportedly need this further special treatment:
+						{
+							using (MemoryStream ms = new MemoryStream())
+							{
+								workAroundCopy.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+								ms.WriteTo(_actualContext.Response.OutputStream);
+								_actualContext.Response.Close();
+							}
+						}
+					}
+				}
+
+				//_actualContext.Response.Close();
 			}
 
 			public void WriteError(int errorCode)

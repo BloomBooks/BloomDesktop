@@ -333,7 +333,7 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(folderPath))
 			{
 				var baseElement = dom.CreateElement("base");
-				if (pointAtEmbeddedServer && !ImageServer.CommunicationTestFailed)
+				if (pointAtEmbeddedServer && ImageServer.IsAbleToUsePort)
 				{
 					//this is only used by relative paths, and only img src's are left relative.
 					//we are redirecting through our build-in httplistener in order to shrink
