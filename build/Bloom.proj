@@ -89,11 +89,11 @@
   </Target>
 
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build"><!--; Build ">-->
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
 
 	<Message Text="Downloading Bloom.chm help file" Importance="high"  />
 
-	<!--<WebDownload FileUri="https://dl.dropbox.com/s/wbhocwhrb2unflc/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>-->
+	<WebDownload FileUri="https://dl.dropbox.com/s/wbhocwhrb2unflc/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 
 	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
