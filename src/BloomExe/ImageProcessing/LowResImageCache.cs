@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using BloomTemp;
 
@@ -14,7 +15,7 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class LowResImageCache :IDisposable
 	{
-		public int TargetDimension=400;
+		public int TargetDimension=500;
 		private Dictionary<string,string> _paths;
 		private TemporaryFolder _cacheFolder;
 
@@ -62,6 +63,7 @@ namespace Bloom.ImageProcessing
 				{
 					_paths.Remove(path);
 				}
+
 			}
 
 			var original = Image.FromFile(path);
@@ -72,13 +74,24 @@ namespace Bloom.ImageProcessing
 					var maxDimension = Math.Max(original.Width, original.Height);
 					double shrinkFactor = (TargetDimension/(double) maxDimension);
 
-					using (var img = new Bitmap(original, (int)(shrinkFactor * original.Width), (int)(shrinkFactor * original.Height)))
+					var destWidth = (int) (shrinkFactor*original.Width);
+					var destHeight = (int) (shrinkFactor*original.Height);
+					using (var b = new Bitmap(destWidth, destHeight))
 					{
+
+						using (Graphics g = Graphics.FromImage((Image)b))
+						{
+							g.InterpolationMode = InterpolationMode.NearestNeighbor;//or smooth it: HighQualityBicubic
+							g.DrawImage(original, 0, 0, destWidth, destHeight);
+						}
+
 						var temp = _cacheFolder.GetPathForNewTempFile(false, Path.GetExtension(path));
-						img.Save(temp, img.RawFormat);
+						b.Save(temp, original.RawFormat);
 						_paths.Add(path, temp);//remember it so we can reuse if they show it again, and later delete
 						return temp;
 					}
+
+
 				}
 				else
 				{

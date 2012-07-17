@@ -58,12 +58,13 @@ namespace Bloom
 				try
 				{
 					_imageServer = new ImageServer();
-					_imageServer.Start();
+//					_imageServer.Start();
+					ImageServer.TestAndThrowIfCommunicationIsBlocked();
 				}
 				catch (Exception e)
 				{
 					ErrorReport.NotifyUserOfProblem(e,
-						"Bloom could not start its image server, which keeps hi-res images from chewing up memory. You should still be able to work, but some images may not always show.");
+						"What Happened\r\nBloom could not start its image server, which keeps hi-res images from chewing up memory. You will still be able to work, but Bloom will take more memory, and hi-res images may not always show.\r\n\r\nWhat caused this?\r\nProbably the Bloom installer was not able to get your computer to allow its image server to run. \r\n\r\n What can you do?\r\nClick 'Details' and report the problem to the developers.");
 				}
 			}
 		}
