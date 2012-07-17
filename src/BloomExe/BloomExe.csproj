@@ -234,7 +234,9 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs" />
+    <Compile Include="ImageProcessing\ImageServer.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
     </Compile>

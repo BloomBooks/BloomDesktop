@@ -358,6 +358,8 @@ namespace Bloom.Edit
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 			}
+
+			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
 		}
 
 		public XmlDocument GetXmlDocumentForCurrentPage()

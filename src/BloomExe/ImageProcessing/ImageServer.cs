@@ -18,6 +18,8 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : IDisposable
 	{
+		public static bool CommunicationTestFailed;
+
 		private HttpListener _listener;
 		private LowResImageCache _cache;
 		public ImageServer()
@@ -29,7 +31,7 @@ namespace Bloom.ImageProcessing
 		{
 			_listener = new HttpListener();
 			_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-			_listener.Prefixes.Add("http://localhost:8089/bloom/");
+			_listener.Prefixes.Add(GetPathEndingInSlash());
 			//nb: had trouble with 8080. Remember to enable this with (windows 7 up): netsh http add urlacl url=http://localhost:8089/bloom user=everyone
 			//on Windows XP, use httpcfg. I haven't tested this, but I think it may be: HTTPCFG set urlacl -u http://+:8089/bloom/ /a D:(A;;GX;;;WD)
 			_listener.Start();
@@ -64,9 +66,15 @@ namespace Bloom.ImageProcessing
 		/// <param name="info"></param>
 		public void MakeReply(IRequestInfo info)
 		{
+			if(info.RawUrl.EndsWith("testconnection"))
+			{
+				info.WriteCompleteOutput("OK");
+				return;
+			}
 			var r = info.RawUrl.Replace("/bloom/", "");
 			r = r.Replace("%3A", ":");
 			r = r.Replace("%20", " ");
+			r = r.Replace("%27", "'");
 			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
 			{
 				info.ContentType = "image/png";
@@ -80,6 +88,7 @@ namespace Bloom.ImageProcessing
 					}
 					else
 					{
+						Logger.WriteEvent("**ImageServer: File Missing: "+r);
 						info.WriteError(404);
 					}
 				}
@@ -98,5 +107,71 @@ namespace Bloom.ImageProcessing
 			}
 			_listener = null;
 		}
+
+		public static void TestAndThrowIfCommunicationIsBlocked()
+		{
+			try
+			{
+				var x = new WebClientWithTimeout {Timeout = 3000};
+
+				if ("OK" != x.DownloadString(GetPathEndingInSlash()+"testconnection"))
+				{
+					CommunicationTestFailed = true;
+					throw new ApplicationException("Bloom server communication Test Failed");
+				}
+
+			}
+			catch (Exception)
+			{
+				CommunicationTestFailed = true;
+				throw new ApplicationException("Bloom server communication Test Failed");
+			}
+		}
+
+		public static string GetPathEndingInSlash()
+		{
+			return "http://localhost:8089/bloom/";
+		}
 	}
+
+
+	/// <summary>
+	/// the base class waits for 30 seconds, which is too long for local thing like we are doing
+	/// </summary>
+	public class WebClientWithTimeout : WebClient
+	{
+		private int _timeout;
+		/// <summary>
+		/// Time in milliseconds
+		/// </summary>
+		public int Timeout
+		{
+			get
+			{
+				return _timeout;
+			}
+			set
+			{
+				_timeout = value;
+			}
+		}
+
+		public WebClientWithTimeout()
+		{
+			this._timeout = 60000;
+		}
+
+		public WebClientWithTimeout(int timeout)
+		{
+			this._timeout = timeout;
+		}
+
+		protected override WebRequest GetWebRequest(Uri address)
+		{
+			var result = base.GetWebRequest(address);
+			result.Timeout = this._timeout;
+			return result;
+		}
+	}
+
 }

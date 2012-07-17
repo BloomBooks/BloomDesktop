@@ -1,24 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
-using Gecko;
+using Bloom.ImageProcessing;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
-using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -59,10 +55,10 @@ namespace Bloom.Book
 		/// History of this number:
 		///		0.4 had version 0.4
 		/// </summary>
-		private const string kBloomFormatVersion = "0.5";
+		private const string kBloomFormatVersion = "0.8";
 
 		private  string _folderPath;
-		private IChangeableFileLocator _fileLocator;
+		private readonly IChangeableFileLocator _fileLocator;
 		public string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 
@@ -337,7 +333,7 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(folderPath))
 			{
 				var baseElement = dom.CreateElement("base");
-				if (pointAtEmbeddedServer)
+				if (pointAtEmbeddedServer && !ImageServer.CommunicationTestFailed)
 				{
 					//this is only used by relative paths, and only img src's are left relative.
 					//we are redirecting through our build-in httplistener in order to shrink
@@ -345,7 +341,7 @@ namespace Bloom.Book
 					var uri = folderPath + Path.DirectorySeparatorChar;
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
-					uri = "http://localhost:8089/bloom/" + uri;
+					uri = ImageServer.GetPathEndingInSlash() + uri;
 					baseElement.SetAttribute("href", uri);
 				}
 				else
