@@ -30,7 +30,11 @@ namespace Bloom.ImageProcessing
 			if (_paths == null)
 				return;
 
-			foreach (var path in _paths.Values)
+			//operate on a copy to avoid "Collection was modified; enumeration operation may not execute"
+			//if someone is still using use while we're being disposed
+			var pathsToDelete = new List<string>();
+			pathsToDelete.AddRange(_paths.Values);
+			foreach (var path in pathsToDelete)
 			{
 				try
 				{

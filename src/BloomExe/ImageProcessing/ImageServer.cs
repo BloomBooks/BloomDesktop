@@ -30,6 +30,7 @@ namespace Bloom.ImageProcessing
 
 		private HttpListener _listener;
 		private LowResImageCache _cache;
+		private bool _isDisposing;
 
 		public ImageServer()
 		{
@@ -123,8 +124,8 @@ namespace Bloom.ImageProcessing
 
 		private void GetContextCallback(IAsyncResult ar)
 		{
-			if (_listener == null || !_listener.IsListening)
-				return; //strangely, this callback is fired when we close downn the listener
+			if (_isDisposing || _listener == null || !_listener.IsListening)
+				return; //strangely, this callback is fired when we close down the listener
 			string rawurl="unknown";
 			try
 			{
@@ -190,6 +191,7 @@ namespace Bloom.ImageProcessing
 
 		public void Dispose()
 		{
+			_isDisposing = true;
 			_cache.Dispose();
 			_cache = null;
 
