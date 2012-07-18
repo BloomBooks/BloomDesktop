@@ -134,6 +134,12 @@ namespace Bloom.ImageProcessing
 				MakeReply(new RequestInfo(context));
 				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
 			}
+			catch(HttpListenerException e)
+			{
+				//http://stackoverflow.com/questions/4801868/c-sharp-problem-with-httplistener
+				Logger.WriteEvent("At ImageServer: GetContextCallback(): HttpListenerException, which may indicate that the caller closed the connection before we could reply. msg=" + e.Message);
+				Logger.WriteEvent("At ImageServer: GetContextCallback(): url=" + rawurl);
+			}
 			catch (Exception error)
 			{
 				Logger.WriteEvent("At ImageServer: GetContextCallback(): msg="+ error.Message);
