@@ -37,7 +37,7 @@ DIV.wordsDiv
 }
 DIV.domain
 {
-	font: 240%;
+	font: 240% sans-serif;
 	text-align: center;
 }
 DIV.domain DIV
@@ -58,7 +58,7 @@ DIV.domain DIV.bloom-content2
 }
 .bloom-trilingual DIV.domain DIV.bloom-content3:before
 {
-	content: "/  ";
+	/*[disabled]content:"/  ";*/
 }
 DIV.domain DIV.bloom-content3
 {
@@ -66,11 +66,12 @@ DIV.domain DIV.bloom-content3
 	display: inline;
 	/*[disabled]min-width:157px;*/
 	width: 48%;
-	/*+placement:anchor-top-right 0px 44px;*/
+	/*+placement:anchor-top-right -1px 29px;*/
 	position: absolute;
-	right: 0px;
-	top: 44px;
-	text-align: left;
+	right: -1px;
+	top: 29px;
+	text-align: center;
+	height: 24px;
 }
 DIV.wordAndPicture
 {
