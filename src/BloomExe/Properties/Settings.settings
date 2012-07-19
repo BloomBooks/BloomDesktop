@@ -20,5 +20,8 @@
     <Setting Name="LastSourceLanguageViewed" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="ImageHandler" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

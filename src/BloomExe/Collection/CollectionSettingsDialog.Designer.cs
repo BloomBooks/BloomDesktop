@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CollectionSettingsDialog));
-			this.tabControl1 = new System.Windows.Forms.TabControl();
+			this._tab = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this._aboutLanguageSettingsButton = new System.Windows.Forms.Button();
 			this._removeLanguage3Link = new System.Windows.Forms.LinkLabel();
@@ -55,31 +55,36 @@
 			this._countryLabel = new System.Windows.Forms.Label();
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
+			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this._useImageServer = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-			this.tabControl1.SuspendLayout();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.tabPage3.SuspendLayout();
+			this.tabPage4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// tabControl1
+			// _tab
 			// 
-			this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this._tab.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tabControl1.Controls.Add(this.tabPage1);
-			this.tabControl1.Controls.Add(this.tabPage2);
-			this.tabControl1.Controls.Add(this.tabPage3);
-			this.tabControl1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.tabControl1.Location = new System.Drawing.Point(1, 2);
-			this.tabControl1.Name = "tabControl1";
-			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(619, 344);
-			this.tabControl1.TabIndex = 0;
+			this._tab.Controls.Add(this.tabPage1);
+			this._tab.Controls.Add(this.tabPage2);
+			this._tab.Controls.Add(this.tabPage3);
+			this._tab.Controls.Add(this.tabPage4);
+			this._tab.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._tab.Location = new System.Drawing.Point(1, 2);
+			this._tab.Name = "_tab";
+			this._tab.SelectedIndex = 0;
+			this._tab.Size = new System.Drawing.Size(618, 348);
+			this._tab.TabIndex = 0;
 			// 
 			// tabPage1
 			// 
@@ -100,7 +105,7 @@
 			this.tabPage1.Location = new System.Drawing.Point(4, 26);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(611, 314);
+			this.tabPage1.Size = new System.Drawing.Size(610, 318);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -116,7 +121,7 @@
 			this.localizationExtender1.SetLocalizationComment(this._aboutLanguageSettingsButton, null);
 			this.localizationExtender1.SetLocalizationPriority(this._aboutLanguageSettingsButton, Localization.LocalizationPriority.Medium);
 			this.localizationExtender1.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog._aboutLanguageSettingsButton");
-			this._aboutLanguageSettingsButton.Location = new System.Drawing.Point(478, 24);
+			this._aboutLanguageSettingsButton.Location = new System.Drawing.Point(477, 24);
 			this._aboutLanguageSettingsButton.Name = "_aboutLanguageSettingsButton";
 			this._aboutLanguageSettingsButton.Size = new System.Drawing.Size(113, 73);
 			this._aboutLanguageSettingsButton.TabIndex = 19;
@@ -281,7 +286,7 @@
 			this.tabPage2.Location = new System.Drawing.Point(4, 26);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(611, 314);
+			this.tabPage2.Size = new System.Drawing.Size(610, 318);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
@@ -346,7 +351,7 @@
 			this.localizationExtender1.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.tabPage3");
 			this.tabPage3.Location = new System.Drawing.Point(4, 26);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(611, 314);
+			this.tabPage3.Size = new System.Drawing.Size(610, 318);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -446,13 +451,40 @@
 			this._provinceLabel.TabIndex = 0;
 			this._provinceLabel.Text = "Province";
 			// 
+			// tabPage4
+			// 
+			this.tabPage4.Controls.Add(this._useImageServer);
+			this.localizationExtender1.SetLocalizableToolTip(this.tabPage4, null);
+			this.localizationExtender1.SetLocalizationComment(this.tabPage4, null);
+			this.localizationExtender1.SetLocalizingId(this.tabPage4, "tabPage4.tabPage4");
+			this.tabPage4.Location = new System.Drawing.Point(4, 26);
+			this.tabPage4.Name = "tabPage4";
+			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPage4.Size = new System.Drawing.Size(610, 318);
+			this.tabPage4.TabIndex = 3;
+			this.tabPage4.Text = "Program Settings";
+			this.tabPage4.UseVisualStyleBackColor = true;
+			// 
+			// _useImageServer
+			// 
+			this._useImageServer.AutoSize = true;
+			this.localizationExtender1.SetLocalizableToolTip(this._useImageServer, null);
+			this.localizationExtender1.SetLocalizationComment(this._useImageServer, null);
+			this.localizationExtender1.SetLocalizingId(this._useImageServer, "checkBox1.checkBox1");
+			this._useImageServer.Location = new System.Drawing.Point(50, 35);
+			this._useImageServer.Name = "_useImageServer";
+			this._useImageServer.Size = new System.Drawing.Size(406, 23);
+			this._useImageServer.TabIndex = 0;
+			this._useImageServer.Text = "Use Image Server to reduce memory usage with large images.";
+			this._useImageServer.UseVisualStyleBackColor = true;
+			// 
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._okButton, null);
 			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(534, 382);
+			this._okButton.Location = new System.Drawing.Point(533, 386);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
 			this._okButton.TabIndex = 1;
@@ -462,26 +494,28 @@
 			// 
 			// _restartReminder
 			// 
+			this._restartReminder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._restartReminder.AutoSize = true;
-			this._restartReminder.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._restartReminder.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+			this._restartReminder.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._restartReminder.ForeColor = System.Drawing.Color.Green;
 			this.localizationExtender1.SetLocalizableToolTip(this._restartReminder, null);
 			this.localizationExtender1.SetLocalizationComment(this._restartReminder, null);
 			this.localizationExtender1.SetLocalizationPriority(this._restartReminder, Localization.LocalizationPriority.Medium);
 			this.localizationExtender1.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
-			this._restartReminder.Location = new System.Drawing.Point(9, 388);
+			this._restartReminder.Location = new System.Drawing.Point(128, 389);
 			this._restartReminder.Name = "_restartReminder";
-			this._restartReminder.Size = new System.Drawing.Size(290, 20);
+			this._restartReminder.Size = new System.Drawing.Size(399, 17);
 			this._restartReminder.TabIndex = 19;
-			this._restartReminder.Text = "Restart Bloom to use new settings.";
+			this._restartReminder.Text = "Bloom will close and re-open this project with the new settings.";
 			this._restartReminder.Visible = false;
 			// 
 			// settingsProtectionLauncherButton1
 			// 
+			this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.localizationExtender1.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
 			this.localizationExtender1.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
 			this.localizationExtender1.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
-			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 349);
+			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 350);
 			this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
 			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
 			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
@@ -496,11 +530,11 @@
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(621, 417);
+			this.ClientSize = new System.Drawing.Size(620, 421);
 			this.Controls.Add(this.settingsProtectionLauncherButton1);
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
-			this.Controls.Add(this.tabControl1);
+			this.Controls.Add(this._tab);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
@@ -509,13 +543,15 @@
 			this.MinimizeBox = false;
 			this.Name = "CollectionSettingsDialog";
 			this.Text = "Settings";
-			this.tabControl1.ResumeLayout(false);
+			this._tab.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.tabPage1.PerformLayout();
 			this.tabPage2.ResumeLayout(false);
 			this.tabPage2.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
 			this.tabPage3.PerformLayout();
+			this.tabPage4.ResumeLayout(false);
+			this.tabPage4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -524,7 +560,7 @@
 
 		#endregion
 
-		private System.Windows.Forms.TabControl tabControl1;
+		private System.Windows.Forms.TabControl _tab;
 		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.TabPage tabPage3;
@@ -553,5 +589,8 @@
 		private System.Windows.Forms.Button _aboutBookMakingSettingsButton;
 		private System.Windows.Forms.Button _aboutProjectInformationSetingsButton;
 		private Localization.UI.LocalizationExtender localizationExtender1;
+		private System.Windows.Forms.TabPage tabPage4;
+		private System.Windows.Forms.CheckBox _useImageServer;
+		private System.Windows.Forms.ToolTip toolTip1;
 	}
 }

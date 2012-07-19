@@ -29,6 +29,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 
 		public event EventHandler CloseCurrentProject;
+		public event EventHandler ReopenCurrentProject;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -204,13 +205,17 @@ namespace Bloom.Workspace
 
 		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
-			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
+			DialogResult result =  _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 																	{
 																		using (var dlg = _settingsDialogFactory())
 																		{
 																			return dlg.ShowDialog();
 																		}
 																	});
+			if(result==DialogResult.Yes)
+			{
+				Invoke(ReopenCurrentProject);
+			}
 		}
 
 		private void SelectPage(Control view)
@@ -299,7 +304,6 @@ namespace Bloom.Workspace
 		{
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
 		}
-
 
 
 	}

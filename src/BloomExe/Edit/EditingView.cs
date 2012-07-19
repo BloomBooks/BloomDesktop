@@ -364,6 +364,12 @@ namespace Bloom.Edit
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
+				bool looksOfficial = imageInfo.Metadata!=null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+				if(looksOfficial)
+				{
+					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
+					return;
+				}
 				Logger.WriteEvent("Showing Metadata Editor For Image");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
 				{

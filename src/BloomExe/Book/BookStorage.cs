@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Properties;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -333,7 +334,7 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(folderPath))
 			{
 				var baseElement = dom.CreateElement("base");
-				if (pointAtEmbeddedServer && ImageServer.IsAbleToUsePort)
+				if (pointAtEmbeddedServer && Settings.Default.ImageHandler=="ImageServer" && ImageServer.IsAbleToUsePort)
 				{
 					//this is only used by relative paths, and only img src's are left relative.
 					//we are redirecting through our build-in httplistener in order to shrink

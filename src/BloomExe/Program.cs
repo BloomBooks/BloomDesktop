@@ -299,11 +299,22 @@ namespace Bloom
 			{
 				Application.Idle += ChooseAnotherProject;
 			}
+			else if (((Shell)sender).UserWantsToOpeReopenProject)
+			{
+				Application.Idle +=new EventHandler(ReopenProject);
+			}
 			else
 			{
 				Application.Exit();
 			}
 		}
+
+		private static void ReopenProject(object sender, EventArgs e)
+		{
+			Application.Idle -= ReopenProject;
+			OpenCollection(Settings.Default.MruProjects.Latest);
+		}
+
 		public static void SetUpLocalization()
 		{
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
