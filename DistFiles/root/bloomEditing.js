@@ -142,6 +142,20 @@ function AddToolbox(){
     })
 }
 
+function AddExperimentalNotice(element) {
+    $(element).qtipSecondary({
+        content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomProgramFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
+                         , show: { ready: true }
+                         , hide: false
+                         , position: { at: 'right top',
+                             my: 'left top'
+                         },
+        style: { classes: 'ui-tooltip-red',
+            tip: { corner: false }
+        }
+    });
+}
+
  //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
 
@@ -595,7 +609,7 @@ function ResizeUsingPercentages(e,ui){
          //then reappear
 
          var shouldShowAlways = true; // "mouseleave unfocus";
-         var hideEvents = false;// "mouseover focusin";
+         var hideEvents = false; // "mouseover focusin";
 
          //             shouldShowAlways = false;
          //           hideEvents = 'unfocus mouseleave';
@@ -642,12 +656,20 @@ function ResizeUsingPercentages(e,ui){
              return; //don't put tips if they can't see it.
          }
          theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-         pos = {
-             at: 'right bottom', //I like this, but it doesn't reposition well -->'right center',
-             my: 'top left', //I like this, but it doesn't reposition well-->  'left center',
-             viewport: $(window),
-             adjust: { y: -20 }
-         };
+         if ($(this).height() < 100) {
+             pos = {
+                 at: 'right top', //I like this, but it doesn't reposition well -->'right center',
+                 my: 'top left' //I like this, but it doesn't reposition well-->  'left center',
+                , viewport: $(window)
+                , adjust: { y: -20 }
+             };
+         }
+         else { // with the big back covers, the adjustment just makes things worse.
+             pos = {
+                 at: 'right top',
+                 my: 'top left'
+             }
+         }
 
          var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
          var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
@@ -844,6 +866,9 @@ function ResizeUsingPercentages(e,ui){
          SetupDeletable(this);
      });
 
+     $(".experimental").each(function () {
+         AddExperimentalNotice(this);
+     });
 
      $(".bloom-resizable").each(function () {
          SetupResizableElement(this);
@@ -970,7 +995,7 @@ function ShowTopicChooser() {
         modal: "true",
         zIndex: 30000, //qtip is in the 15000 range
         buttons: {
-            "Ok": function () {
+            "OK": function () {
                 var t = $("ol#topics li.ui-selected");
                 if (t.length) {
                     $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
@@ -983,6 +1008,6 @@ function ShowTopicChooser() {
     //make a double click on an item close the dialog
     dlg.find("li").dblclick(function () {
         var x = dlg.dialog("option", "buttons");
-        x['Ok'].apply(dlg);
+        x['OK'].apply(dlg);
     });
 }
