@@ -35,7 +35,7 @@ namespace Bloom.Publish
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
 			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
-			if (doWorkEventArgs.Cancel)
+			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result!=null && doWorkEventArgs.Result is Exception))
 				return;
 			if (bookletPortion != PublishModel.BookletPortions.None)
 			{
@@ -100,9 +100,22 @@ namespace Bloom.Publish
 				Debug.WriteLine(result.StandardOutput);
 
 				if (!File.Exists(tempOutput.Path))
-					throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
+					throw new ApplicationException("Bloom was not able to create the PDF.\r\n\r\nDetails: Wkhtml2pdf did not produce the expected document.");
 
-				File.Move(tempOutput.Path, outputPdfPath);
+				try
+				{
+					File.Move(tempOutput.Path, outputPdfPath);
+				}
+				catch (IOException e)
+				{
+					//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
+					//but we had a report (BL-211) of that move failing.
+					throw new ApplicationException(
+							string.Format("Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.\r\n\r\nDetails: {1}",
+										  outputPdfPath, e.Message));
+
+				}
+
 
 			}
 

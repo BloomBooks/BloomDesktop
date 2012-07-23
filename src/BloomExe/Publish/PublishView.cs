@@ -56,6 +56,7 @@ namespace Bloom.Publish
 
 		private void Activate()
 		{
+			Logger.WriteEvent("Entered Publish Tab");
 			if (_makePdfBackgroundWorker.IsBusy)
 				return;
 
@@ -91,6 +92,24 @@ namespace Bloom.Publish
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
+			if(e.Result is Exception)
+			{
+				var error = e.Result as Exception;
+				if(error is ApplicationException)
+				{
+					//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
+					//note, we don't want to include the original, as it leads to people sending in reports we don't
+					//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
+					//installed, or they had the PDF open in Word, or something like that.
+					ErrorReport.NotifyUserOfProblem(error.Message);
+				}
+				else // for others, just give a generic message and include the original exception in the message
+				{
+					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
+				}
+				SetDisplayMode(PublishModel.DisplayModes.NoBook);
+				return;
+			}
 			SetDisplayMode(PublishModel.DisplayModes.ShowPdf);
 			UpdateDisplay();
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
@@ -124,6 +143,7 @@ namespace Bloom.Publish
 				case PublishModel.DisplayModes.NoBook:
 					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
+					_workingIndicator.Visible = false;
 					break;
 				case PublishModel.DisplayModes.Working:
 					_printButton.Enabled = _saveButton.Enabled = false;

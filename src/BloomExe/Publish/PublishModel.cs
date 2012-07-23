@@ -101,9 +101,11 @@ namespace Bloom.Publish
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
-				SetDisplayMode(DisplayModes.NoBook);
-				return;
+				//we can't safely do any ui-related work from this thread, like putting up a dialog
+				doWorkEventArgs.Result = e;
+//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
+//                SetDisplayMode(DisplayModes.NoBook);
+//                return;
 			}
 		}
 
