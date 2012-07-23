@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
 using Palaso.Extensions;
@@ -156,6 +157,8 @@ namespace Bloom.Collection
 		/// ------------------------------------------------------------------------------------
 		public void Save()
 		{
+			Logger.WriteEvent("Saving Collection Settings");
+
 			XElement library = new XElement("Collection");
 			library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));

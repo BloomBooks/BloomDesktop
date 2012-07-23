@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 
 namespace Bloom.Collection
@@ -114,6 +115,8 @@ namespace Bloom.Collection
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
+			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
+
 			_collectionSettings.XMatterPackName = ((XMatterInfo) _xmatterPackCombo.SelectedItem).Key;
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
@@ -124,6 +127,8 @@ namespace Bloom.Collection
 				_collectionSettings.Language3Iso639Code = null;
 
 			_collectionSettings.Save();
+
+			Logger.WriteEvent("Closing Settings Dialog");
 			Close();
 			DialogResult = _restartRequired ? DialogResult.Yes : DialogResult.OK;
 		}
@@ -185,6 +190,10 @@ namespace Bloom.Collection
 			UpdateDisplay();
 		}
 
-
+		private void CollectionSettingsDialog_Load(object sender, EventArgs e)
+		{
+			Logger.WriteEvent("Entered Settings Dialog");
+			UsageReporter.SendNavigationNotice("Entered Settings Dialog");
+		}
 	}
 }

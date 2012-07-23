@@ -543,6 +543,7 @@
 			this.MinimizeBox = false;
 			this.Name = "CollectionSettingsDialog";
 			this.Text = "Settings";
+			this.Load += new System.EventHandler(this.CollectionSettingsDialog_Load);
 			this._tab.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.tabPage1.PerformLayout();

@@ -14,7 +14,9 @@ namespace Bloom.Library
 		private LibraryListView _collectionListView;
 		private LibraryBookView _bookView;
 
-		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory, LibraryBookView.Factory templateBookViewFactory)
+		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
+			LibraryBookView.Factory templateBookViewFactory,
+			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 			_model = model;
 			InitializeComponent();
@@ -29,6 +31,15 @@ namespace Bloom.Library
 
 			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
+
+			selectedTabChangedEvent.Subscribe(c=>
+												{
+													if (c.To == this)
+													{
+														Logger.WriteEvent("Entered Collections Tab");
+														UsageReporter.SendNavigationNotice("Entered Collections Tab");
+													}
+												});
 		}
 
 		public string CollectionTabLabel
@@ -37,14 +48,6 @@ namespace Bloom.Library
 
 		}
 
-		private void LibraryView_VisibleChanged(object sender, EventArgs e)
-		{
-			if(Visible)
-			{
-				UsageReporter.SendNavigationNotice("Entered Collections Tab");
-				Logger.WriteEvent("Entered Collections Tab");
-			}
-		}
 
 		private void OnMakeBloomPackButton_Click(object sender, EventArgs e)
 		{

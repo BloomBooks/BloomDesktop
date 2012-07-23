@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Ionic.Zip;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Library
@@ -144,7 +145,7 @@ namespace Bloom.Library
 					//UI already go permission for this
 					File.Delete(path);
 				}
-
+				Logger.WriteEvent("Making BloomPack");
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack..."))
 				{
 					try
@@ -161,7 +162,9 @@ namespace Bloom.Library
 							zip.Save(path);
 						}
 						//show it
+						Logger.WriteEvent("Showing BloomPack on disk");
 						Process.Start(Path.GetDirectoryName(path));
+						UsageReporter.SendNavigationNotice("Made BloomPack");
 					}
 					finally
 					{

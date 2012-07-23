@@ -96,6 +96,7 @@ namespace Bloom.NewCollection
 		{
 			DialogResult = DialogResult.OK;
 
+			Logger.WriteEvent("Finshed New Collection Wizard");
 			if (_collectionInfo.IsSourceCollection)
 				UsageReporter.SendNavigationNotice("NewSourceCollection");
 			else

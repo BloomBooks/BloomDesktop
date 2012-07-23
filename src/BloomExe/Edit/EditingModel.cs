@@ -283,6 +283,7 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 
+			Logger.WriteEvent("ChangingContentLanguages");
 			UsageReporter.SendNavigationNotice("ChangingContentLanguages");
 		}
 
