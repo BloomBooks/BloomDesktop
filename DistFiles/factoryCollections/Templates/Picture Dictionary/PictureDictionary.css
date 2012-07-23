@@ -37,8 +37,8 @@ DIV.wordsDiv
 }
 DIV.domain
 {
-	font: 240% sans-serif;
 	text-align: center;
+	font-size: 140%;
 }
 DIV.domain DIV
 {
@@ -49,7 +49,7 @@ DIV.domain DIV
 DIV.domain DIV.bloom-content2
 {
 	font-style: italic;
-	font-size: 140%;
+	font-size: 100%;
 	/*[disabled]vertical-align:baseline;*/
 	/*[disabled]+placement:shift 0px -8px;*/
 	display: inline;
@@ -62,7 +62,7 @@ DIV.domain DIV.bloom-content2
 }
 DIV.domain DIV.bloom-content3
 {
-	font-size: 140%;
+	font-size: 100%;
 	display: inline;
 	/*[disabled]min-width:157px;*/
 	width: 48%;
