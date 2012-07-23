@@ -50,7 +50,11 @@ namespace Bloom.Publish
 
 			//			UsageReporter.SendNavigationNotice("Publish");
 
-
+#if DEBUG
+			var linkLabel = new LinkLabel() {Text = "DEBUG"};
+			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
+			tableLayoutPanel1.Controls.Add(linkLabel);
+#endif
 		}
 
 
