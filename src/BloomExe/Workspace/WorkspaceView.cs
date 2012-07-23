@@ -12,6 +12,7 @@ using Bloom.Publish;
 using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -305,7 +306,16 @@ namespace Bloom.Workspace
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
 		}
 
-
+		private void _showLogMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				Logger.ShowUserTheLogFile();// Process.Start(Logger.LogPath);
+			}
+			catch (Exception)
+			{
+			}
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

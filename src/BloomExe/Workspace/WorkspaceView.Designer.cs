@@ -52,6 +52,8 @@
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+			this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
@@ -149,7 +151,9 @@
             this.deepBloomPaperToolStripMenuItem,
             this.toolStripSeparator2,
             this._makeASuggestionMenuItem,
-            this._webSiteMenuItem});
+            this._webSiteMenuItem,
+            this.toolStripMenuItem1,
+            this._showLogMenuItem});
 			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._helpMenu.Image = global::Bloom.Properties.Resources.help24x24;
 			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -342,6 +346,21 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
+			// toolStripMenuItem1
+			// 
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(171, 6);
+			// 
+			// _showLogMenuItem
+			// 
+			this.localizationExtender1.SetLocalizableToolTip(this._showLogMenuItem, null);
+			this.localizationExtender1.SetLocalizationComment(this._showLogMenuItem, null);
+			this.localizationExtender1.SetLocalizingId(this._showLogMenuItem, ".showEventLogToolStripMenuItem");
+			this._showLogMenuItem.Name = "_showLogMenuItem";
+			this._showLogMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._showLogMenuItem.Text = "Show Event Log";
+			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
+			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -392,6 +411,8 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private Localization.UI.LocalizationExtender localizationExtender1;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
+		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
 
 
     }
