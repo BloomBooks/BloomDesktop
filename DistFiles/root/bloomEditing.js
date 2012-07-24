@@ -866,7 +866,7 @@ function ResizeUsingPercentages(e,ui){
          SetupDeletable(this);
      });
 
-     $(".experimental").each(function () {
+     $(".pictureDictionaryPage").each(function () {
          AddExperimentalNotice(this);
      });
 
