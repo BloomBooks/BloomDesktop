@@ -315,5 +315,10 @@ DIV.textWholePage UL
 }
 DIV.marginBox
 {
-	/*[disabled]border:thin dotted rgba(133, 133, 193, 0.9);*/
+	border: 1px solid rgba(115, 189, 189, 0.3);
+}
+.bloom-frontMatter DIV.marginBox
+{
+/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+	border: none;
 }

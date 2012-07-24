@@ -97,17 +97,17 @@ DIV.wordAndPicture:nth-child(3)
 }
 DIV.wordAndPicture:nth-child(4)
 {
-	/*+placement:anchor-top-left 0 290px;*/
+	/*+placement:anchor-top-left 0 305px;*/
 	position: absolute;
 	left: 0;
-	top: 290px;
+	top: 305px;
 }
 DIV.wordAndPicture:nth-child(5)
 {
-	/*+placement:anchor-top-right 0 290px;*/
+	/*+placement:anchor-top-right 0 305px;*/
 	position: absolute;
 	right: 0;
-	top: 290px;
+	top: 305px;
 }
 DIV.wordAndPicture:nth-child(6)
 {
