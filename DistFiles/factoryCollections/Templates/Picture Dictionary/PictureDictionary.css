@@ -6,9 +6,9 @@
 BODY
 {
 }
-DIV.wordsDiv DIV.contentLanguage1
+DIV.wordsDiv DIV.bloom-content1
 {
-	font-weight: bold;
+	font-weight: bold !important;
 }
 DIV.wordsDiv DIV
 {
@@ -38,13 +38,16 @@ DIV.wordsDiv
 DIV.domain
 {
 	text-align: center;
-	font-size: 140%;
 }
 DIV.domain DIV
 {
 	/*[disabled]display:inline;*/
 	min-width: 50px;
-	height: 41px;
+	height: 41px !important;
+}
+DIV.domain DIV.bloom-content1
+{
+	font-size: 140%;
 }
 DIV.domain DIV.bloom-content2
 {
@@ -66,10 +69,10 @@ DIV.domain DIV.bloom-content3
 	display: inline;
 	/*[disabled]min-width:157px;*/
 	width: 48%;
-	/*+placement:anchor-top-right -1px 29px;*/
+	/*+placement:anchor-top-right -1px 44px;*/
 	position: absolute;
 	right: -1px;
-	top: 29px;
+	top: 44px;
 	text-align: center;
 	height: 24px;
 }
