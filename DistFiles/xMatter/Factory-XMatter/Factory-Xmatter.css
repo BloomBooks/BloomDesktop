@@ -1,5 +1,5 @@
 /*Cover Page*/
-.A5Portrait DIV.marginBox
+.A5Portrait.bloom-frontMatter DIV.marginBox
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 189.4mm;
