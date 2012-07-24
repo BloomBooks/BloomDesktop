@@ -385,7 +385,8 @@ namespace Bloom.Edit
                     {
                         _intentionallyChangingSelection = true;
                         listViewItem.Selected = true;
-                        ItemWhichWouldPrecedeANewPageInsertion = listViewItem; 
+                        ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
+                    	listViewItem.EnsureVisible();
                     }
                     finally
                     {
