@@ -560,7 +560,8 @@ namespace Bloom.Edit
 
 				_layoutChoices.DropDownItems.Clear();
 				var layout = _model.GetCurrentLayout();
-				foreach (var l in _model.GetLayoutChoices())
+				var layoutChoices = _model.GetLayoutChoices();
+				foreach (var l in layoutChoices)
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(l.ToString());
 					item.Tag = l;
@@ -568,6 +569,13 @@ namespace Bloom.Edit
 					item.Checked = l.ToString() == layout.ToString();
 					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+				}
+
+				if(layoutChoices.Count()<2)
+				{
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add("There are no other layout options for this template.");
+					item.Tag = null;
+					item.Enabled = false;
 				}
 
 				_layoutChoices.Text = layout.ToString();
