@@ -42,7 +42,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
 	<PropertyRef Id="NETFRAMEWORK40CLIENT" />
 	<Condition Message="Before Bloom can install on older computers, you need to install Microsoft's free .NET Framework 4.0 (at least the small 'client profile'.  A full discussion of Bloom's requirements can be found at http://bloom.palaso.org/download ">
-	  Installed OR NETFRAMEWORK40CLIENT
+	  Installed OR NETFRAMEWORK40CLIENT OR NETFRAMEWORK40FULL
 	</Condition>
 
 	<!--because of bug, this needs to be 1 -->
