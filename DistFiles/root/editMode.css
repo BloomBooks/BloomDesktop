@@ -8,6 +8,16 @@ BODY
 {
 	background-color: #363333;
 }
+BODY
+{
+/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the basePage.css, we have 10pt, but here, 10.2pt.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
+	font-size: 10.2pt;
+}
 .ui-languageToolTip.ui-tooltip-titlebar, .ui-languageToolTip .ui-tooltip-content
 {
 	background-color: transparent !important;
