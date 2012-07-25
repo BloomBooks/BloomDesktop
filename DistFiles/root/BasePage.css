@@ -47,7 +47,12 @@ BODY
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.*/
+/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
 	font-size: 10pt;
 }
 DIV.ui-tooltip-content
