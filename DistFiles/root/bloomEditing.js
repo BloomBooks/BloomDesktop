@@ -592,7 +592,7 @@ function ResizeUsingPercentages(e,ui){
          };
      }
 
-     //Add little language tag bubbles
+     //Add little language tags
      $("div.bloom-editable:visible").each(function () {
          var key = $(this).attr("lang");
          var dictionary = GetDictionary();
@@ -631,7 +631,7 @@ function ResizeUsingPercentages(e,ui){
                  classes: 'ui-languageToolTip'
              }
          })
-            .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+ // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
      });
 
      // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
@@ -658,16 +658,16 @@ function ResizeUsingPercentages(e,ui){
          theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
          if ($(this).height() < 100) {
              pos = {
-                 at: 'right top', //I like this, but it doesn't reposition well -->'right center',
-                 my: 'top left' //I like this, but it doesn't reposition well-->  'left center',
+                 at: 'right center', //I like this, but it doesn't reposition well -->'right center',
+                 my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
                 , viewport: $(window)
-                , adjust: { y: -20 }
+               // , adjust: { y: -20 }
              };
          }
          else { // with the big back covers, the adjustment just makes things worse.      
              pos = {
-                 at: 'right top',
-                 my: 'top left'
+                 at: 'right center',
+                 my: 'left center'
              }
          }
 
@@ -857,7 +857,10 @@ function ResizeUsingPercentages(e,ui){
      //add drag and resize ability where elements call for it
      //   $(".bloom-draggable").draggable({containment: "parent"});
      $(".bloom-draggable").draggable({ containment: "parent",
-         handle: '.bloom-imageContainer'
+         handle: '.bloom-imageContainer',
+         stop: function (event, ui) {
+             $(this).find('.wordsDiv').find('div').each(function () {
+                    $(this).qtip('reposition');} ) }//yes, this repositions *all* qtips on the page. Yuck.
      }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
 
 
