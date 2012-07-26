@@ -70,7 +70,7 @@ namespace Bloom.web
 		/// <param name="info"></param>
 		public void MakeReply(IRequestInfo info)
 		{
-			var r = info.RawUrl.Replace("/bloom/", "");
+			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
 			{
@@ -197,7 +197,7 @@ namespace Bloom.web
 
 	public interface IRequestInfo
 		{
-			string RawUrl { get; }
+			string LocalPathWithoutQuery { get; }
 			string ContentType { set; }
 			void WriteCompleteOutput(string s);
 			void ReplyWithImage(string path);
@@ -211,9 +211,9 @@ namespace Bloom.web
 		{
 			private readonly HttpListenerContext _actualContext;
 
-			public string RawUrl
+			public string LocalPathWithoutQuery
 			{
-				get { return _actualContext.Request.RawUrl; }
+				get { return _actualContext.Request.Url.LocalPath; }
 			}
 
 			public string ContentType
@@ -296,10 +296,10 @@ namespace Bloom.web
 
 			public PretendRequestInfo(string url)
 			{
-				RawUrl = url.Replace("http://localhost:8089", "");
+				LocalPathWithoutQuery = url.Replace("http://localhost:8089", "");
 			}
 
-			public string RawUrl { get; set; }
+			public string LocalPathWithoutQuery { get; set; }
 
 			public string ContentType { get; set; }
 

@@ -60,8 +60,11 @@ DIV.ui-tooltip-content
 	overflow: visible !important;
 	font-size: 10pt;
 	padding: 0px 9px;
+}
+.uibloomSourceTextsBubble .ui-tooltip-content
+{
 /*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
-	min-height: 60px;
+	min-height: 60px !important;
 }
 /*++++ Experimental Toolbox Stuff*/
 UL.toolbox
