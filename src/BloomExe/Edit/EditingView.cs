@@ -333,6 +333,12 @@ namespace Bloom.Edit
 				{
 					Process.Start(anchor.Href);
 					ge.Handled = true;
+					return;
+				}
+				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
+				{
+					ge.Handled = false;//let gecko handle it
+					return;
 				}
 				else
 				{
