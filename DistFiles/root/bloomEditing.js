@@ -248,38 +248,47 @@ function MakeSourceTextDivForGroup(group) {
     return;
   }
 
-
-
-
     // turn that tab thing into a bubble, and attach it to the original div ("group")
-    $(group).each(function() {
-        var targetHeight = $(this).height();
+  $(group).each(function () {
+      var targetHeight = $(this).height();
 
-        $(this).qtip({
-            position: {at: 'right center',
-                my: 'left center',
-                adjust: {
-                    x: 10,
-                    y: 0
-                }
-            },
-            content: $(divForBubble),
+      showEvents = false;
+      hideEvents = false;
+      shouldShowAlways = true;
 
-            show: {
-                ready: true // ... but show the tooltip when ready
-            },
-            events: {
-                render: function(event, api) {
-                    api.elements.content.height(targetHeight);
-                }
-            },
-            style: {
-                //doesn't work: tip:{ size: {height: 50, width:50}             },
-                //doesn't work: tip:{ size: {x: 50, y:50}             },
-                classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'},
-            hide: false //{ when: 'mouseout', fixed: true }
-        });
-    });
+        //todo: really, this should detect some made-up style, so thatwe can control this behavior via the stylesheet
+        if($(this).hasClass('wordsDiv')) {
+            showEvents = " focusin ";
+            hideEvents = ' focusout ';
+            shouldShowAlways = false;
+        }
+      $(this).qtip({
+          position: { at: 'right center',
+              my: 'left center',
+              adjust: {
+                  x: 10,
+                  y: 0
+              }
+          },
+          content: $(divForBubble),
+
+          show: {
+              event: showEvents,
+              ready: shouldShowAlways
+          },
+          events: {
+              render: function (event, api) {
+                  api.elements.content.height(targetHeight);
+              }
+          },
+          style: {
+              //doesn't work: tip:{ size: {height: 50, width:50}             },
+              //doesn't work: tip:{ size: {x: 50, y:50}             },
+              classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
+          },
+          hide: hideEvents
+      });
+  });
 }
 
 
