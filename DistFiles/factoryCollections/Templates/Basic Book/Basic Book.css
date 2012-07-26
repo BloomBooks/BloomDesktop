@@ -4,6 +4,7 @@
 	position: relative;
 	margin: 0;
 	padding: 0;
+	font-size: 1em;
 }
 H1, H2, H3, H4, H5, H6, TH
 {
@@ -37,7 +38,9 @@ FIELDSET, A IMG
 {
 	border: 0;
 }
-
+BODY
+{
+}
 /*+}*/
 /*The following is json, read by Bloom to get size/orientation options
 STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},
@@ -162,7 +165,7 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 /*........bilingual, placing 1st lang on top, 2nd below the picture*/
 .imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer
 {
-	height: 35% !important;
+	height: 30% !important;
 	/*+placement:anchor-top-left 0px 228px;*/
 	position: absolute;
 	left: 0px;
@@ -192,7 +195,7 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 /*--------trilingual, with 1st lang on top, 2nd and 3rd below the picture*/
 .imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
 {
-	height: 30% !important;
+	height: 27% !important;
 	/*+placement:anchor-top-left 1px 196px;*/
 	position: absolute;
 	left: 1px;
