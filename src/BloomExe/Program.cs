@@ -10,6 +10,7 @@ using Bloom.Properties;
 using Localization;
 using Palaso.IO;
 using Palaso.Reporting;
+using System.Linq;
 
 namespace Bloom
 {
@@ -139,6 +140,7 @@ namespace Bloom
 
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{
+				dlg.TopMost = true;
 				dlg.Show();
 				try
 				{
@@ -320,11 +322,35 @@ namespace Bloom
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			installedStringFileFolder = Path.GetDirectoryName(installedStringFileFolder);
 
-			LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
-				"Bloom", "Bloom", Application.ProductVersion,
-				installedStringFileFolder, Path.Combine(ProjectContext.GetBloomAppDataFolder(),"Localizations"), "Bloom");
+			try
+			{
+				LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+										   "Bloom", "Bloom", Application.ProductVersion,
+										   installedStringFileFolder,
+										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "Bloom");
 
-			Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+			}
+			catch (Exception error)
+			{
+				//handle http://jira.palaso.org/issues/browse/BL-213
+				if(Process.GetProcesses().Count(p=>p.ProcessName.ToLower().Contains("bloom"))>1)
+				{
+					ErrorReport.NotifyUserOfProblem("Whoops. There is another copy of Bloom already running while Bloom was trying to set up localization.");
+					Environment.FailFast("Bloom couldn't set up localization");
+				}
+
+				if (error.Message.Contains("Bloom.en.tmx"))
+				{
+					ErrorReport.NotifyUserOfProblem(error,
+						"Sorry. Bloom is trying to set up your machine to use this new version, but something went wrong getting at the file it needs. If you restart your computer, all will be well.");
+
+					Environment.FailFast("Bloom couldn't set up localization");
+				}
+
+				//otherwise, we don't know what caused it.
+				throw;
+			}
 		}
 
 
