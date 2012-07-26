@@ -10,6 +10,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
+using Bloom.Properties;
 using Bloom.Workspace;
 using Bloom.web;
 using Palaso.Extensions;
@@ -55,8 +56,12 @@ namespace Bloom
 			}
 			else
 			{
-				_imageServer = new ImageServer();
-				_imageServer.StartWithSetupIfNeeded();
+				if (Settings.Default.ImageHandler != "off")
+				{
+					_imageServer = new ImageServer();
+
+					_imageServer.StartWithSetupIfNeeded();
+				}
 			}
 		}
 
