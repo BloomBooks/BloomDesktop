@@ -124,6 +124,7 @@ UL.toolbox LI
 .bloom-imageContainer
 {
 	min-height: 50px;
+	z-index: 100;
 }
 TEXTAREA, DIV.bloom-editable
 {
