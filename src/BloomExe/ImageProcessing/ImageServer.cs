@@ -158,13 +158,14 @@ namespace Bloom.ImageProcessing
 		/// </summary>
 		/// <param name="info"></param>
 		public void MakeReply(IRequestInfo info)
-		{
-			if(info.RawUrl.EndsWith("testconnection"))
+		{	
+			if(info.LocalPathWithoutQuery.EndsWith("testconnection"))
 			{
 				info.WriteCompleteOutput("OK");
 				return;
 			}
-			var r = info.RawUrl.Replace("/bloom/", "");
+
+			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
 			r = r.Replace("%3A", ":");
 			r = r.Replace("%20", " ");
 			r = r.Replace("%27", "'");
