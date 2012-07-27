@@ -32,9 +32,9 @@ namespace Bloom.ImageProcessing
 		private LowResImageCache _cache;
 		private bool _isDisposing;
 
-		public ImageServer()
+		public ImageServer(LowResImageCache cache)
 		{
-			_cache = new LowResImageCache();
+			_cache = cache;
 		}
 
 		public void StartWithSetupIfNeeded()
@@ -133,7 +133,6 @@ namespace Bloom.ImageProcessing
 				rawurl = context.Request.RawUrl;
 				HttpListenerRequest request = context.Request;
 				MakeReply(new RequestInfo(context));
-				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
 			}
 			catch(HttpListenerException e)
 			{
@@ -150,6 +149,10 @@ namespace Bloom.ImageProcessing
 #if DEBUG
 				throw;
 #endif
+			}
+			finally
+			{
+				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
 			}
 		}
 
@@ -193,7 +196,7 @@ namespace Bloom.ImageProcessing
 		public void Dispose()
 		{
 			_isDisposing = true;
-			_cache.Dispose();
+			//the container that gave us this will dispose of it: _cache.Dispose();
 			_cache = null;
 
 			if (_listener != null)
