@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Threading;
 using BloomTemp;
+using Palaso.Reporting;
 
 namespace Bloom.ImageProcessing
 {
@@ -72,21 +74,21 @@ namespace Bloom.ImageProcessing
 			_paths = null;
 		}
 
-		public string GetPathToResizedImage(string path)
+		public string GetPathToResizedImage(string originalPath)
 		{
 			string resizedPath;
-			if(_paths.TryGetValue(path, out resizedPath))
+			if(_paths.TryGetValue(originalPath, out resizedPath))
 			{
 				if(File.Exists(resizedPath))
 					return resizedPath;
 				else
 				{
-					_paths.Remove(path);
+					_paths.Remove(originalPath);
 				}
 
 			}
 
-			var original = Image.FromFile(path);
+			var original = Image.FromFile(originalPath);
 			try
 			{
 				if (original.Width > TargetDimension || original.Height > TargetDimension)
@@ -105,17 +107,52 @@ namespace Bloom.ImageProcessing
 							g.DrawImage(original, 0, 0, destWidth, destHeight);
 						}
 
-						var temp = _cacheFolder.GetPathForNewTempFile(false, Path.GetExtension(path));
-						b.Save(temp, original.RawFormat);
-						_paths.Add(path, temp);//remember it so we can reuse if they show it again, and later delete
+						var temp = _cacheFolder.GetPathForNewTempFile(false, Path.GetExtension(originalPath));
+
+
+						//Hatton July 2012:
+						//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
+						//I verified that if there is an IO error, that's what it you get (a GDI+ error).
+						//I looked once, and the %temp%/Bloom directory wasn't there, so that's what I think caused the error.
+						//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
+						//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
+
+						Exception error=null;
+						for (int i = 0; i < 5; i++ )//try up to five times, a second apart
+						{
+							try
+							{
+								error = null;
+
+								if (!Directory.Exists(Path.GetDirectoryName(temp)))
+								{
+									Directory.CreateDirectory(Path.GetDirectoryName(temp));
+								}
+								b.Save(temp, original.RawFormat);
+								break;
+							}
+							catch (Exception e)
+							{
+								Logger.WriteEvent("Error in LowResImage while trying to write image.");
+								Logger.WriteEvent(e.Message);
+								error = e;
+								Thread.Sleep(1000);//wait a second before trying again
+							}
+						}
+						if(error!=null)
+						{
+							//NB: this will be on a non-UI thread, so it probably won't work well!
+							ErrorReport.NotifyUserOfProblem(error, "Bloom is having problem saving a low-res version to your temp directory, at "+temp+"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will try to use the full-res images.");
+							return originalPath;
+						}
+
+						_paths.Add(originalPath, temp);//remember it so we can reuse if they show it again, and later delete
 						return temp;
 					}
-
-
 				}
 				else
 				{
-					return path;
+					return originalPath;
 				}
 			}
 			finally
