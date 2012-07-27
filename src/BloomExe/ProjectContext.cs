@@ -58,7 +58,7 @@ namespace Bloom
 			{
 				if (Settings.Default.ImageHandler != "off")
 				{
-					_imageServer = new ImageServer();
+					_imageServer = _scope.Resolve<ImageServer>();
 
 					_imageServer.StartWithSetupIfNeeded();
 				}
@@ -86,6 +86,7 @@ namespace Bloom
 					typeof(EditBookCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
+					typeof(BookRenamedEvent),
 					typeof(LibraryClosing),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),

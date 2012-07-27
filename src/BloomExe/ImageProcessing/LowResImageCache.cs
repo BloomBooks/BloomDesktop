@@ -15,14 +15,25 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class LowResImageCache :IDisposable
 	{
+		private readonly BookRenamedEvent _bookRenamedEvent;
 		public int TargetDimension=500;
 		private Dictionary<string,string> _paths;
 		private TemporaryFolder _cacheFolder;
 
-		public LowResImageCache()
+		public LowResImageCache(BookRenamedEvent bookRenamedEvent)
 		{
+			_bookRenamedEvent = bookRenamedEvent;
 			_paths = new Dictionary<string, string>();
 			_cacheFolder = new TemporaryFolder("Bloom");
+			_bookRenamedEvent.Subscribe(OnBookRenamed);
+		}
+
+		private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
+		{
+			//Note, we don't pay attention to what the change was, we just purge the whole cache
+
+			TryToDeleteCachedImages();
+			_paths = new Dictionary<string, string>();
 		}
 
 		public void Dispose()
@@ -30,7 +41,16 @@ namespace Bloom.ImageProcessing
 			if (_paths == null)
 				return;
 
-			//operate on a copy to avoid "Collection was modified; enumeration operation may not execute"
+			TryToDeleteCachedImages();
+
+			//NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
+			//each time, and then deleting them on the next run
+			//			_cacheFolder.Dispose();
+		}
+
+		private void TryToDeleteCachedImages()
+		{
+//operate on a copy to avoid "Collection was modified; enumeration operation may not execute"
 			//if someone is still using use while we're being disposed
 			var pathsToDelete = new List<string>();
 			pathsToDelete.AddRange(_paths.Values);
@@ -38,22 +58,18 @@ namespace Bloom.ImageProcessing
 			{
 				try
 				{
-					if(File.Exists(path))
+					if (File.Exists(path))
 					{
 						File.Delete(path);
-						Debug.WriteLine("LowResImageCache Successfully deleted: "+path);
+						Debug.WriteLine("LowResImageCache Successfully deleted: " + path);
 					}
 				}
 				catch (Exception e)
 				{
-					Debug.WriteLine("LowResImageCache Dispose(): "+e.Message);
+					Debug.WriteLine("LowResImageCache Dispose(): " + e.Message);
 				}
 			}
 			_paths = null;
-
-			//NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
-			//each time, and then deleting them on the next run
-			//			_cacheFolder.Dispose();
 		}
 
 		public string GetPathToResizedImage(string path)

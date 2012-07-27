@@ -60,17 +60,19 @@ namespace Bloom.Book
 
 		private  string _folderPath;
 		private readonly IChangeableFileLocator _fileLocator;
+		private readonly BookRenamedEvent _bookRenamedEvent;
 		public string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
-		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator)
+		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator, BookRenamedEvent bookRenamedEvent)
 		{
 			Debug.WriteLine(string.Format("BookStorage({0})", folderPath));
 			_folderPath = folderPath;
 			//the fileLocator we get doesn't know anything about this particular book
 			_fileLocator = baseFileLocator;
+			_bookRenamedEvent = bookRenamedEvent;
 			_fileLocator.AddPath(folderPath);
 
 			Dom = new XmlDocument();
@@ -649,6 +651,7 @@ namespace Bloom.Book
 			File.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
 
 			 //next, rename the enclosing folder
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, newFolderPath);
 			try
 			{
 				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
@@ -666,7 +669,7 @@ namespace Bloom.Book
 				Debug.Fail("(debug mode only): could not rename the folder");
 			}
 
-
+			_bookRenamedEvent.Raise(fromToPair);
 		}
 
 		public string GetValidateErrors()
@@ -748,4 +751,5 @@ namespace Bloom.Book
 			return Path.Combine(parent, name + suffix);
 		}
 	}
+
 }

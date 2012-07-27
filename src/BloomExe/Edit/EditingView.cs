@@ -431,11 +431,12 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-
+			Cursor = Cursors.WaitCursor;
 			using (var image = new PalasoImage(Clipboard.GetImage()))
 			{
 				_model.ChangePicture(imageElement, image);
 			}
+			Cursor = Cursors.Default;
 		}
 
 		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)

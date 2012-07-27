@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.web;
 using NUnit.Framework;
@@ -46,7 +47,7 @@ namespace BloomTests.LowResImageProcessing
 
 		private ImageServer CreateImageServer()
 		{
-			return new ImageServer();
+			return new ImageServer(new LowResImageCache(new BookRenamedEvent()));
 		}
 		private TempFile MakeTempImage()
 		{

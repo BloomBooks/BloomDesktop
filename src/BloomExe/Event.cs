@@ -123,6 +123,20 @@ namespace Bloom
 	}
 
 	/// <summary>
+	/// This is used to purge the ImageServer cache, so solve the problem of "My Book/image3" (for example)
+	/// leading to a picture from the previous book we worked on, back when *it* was named simple "My Book"
+	/// The pair here is from, to paths.
+	/// </summary>
+	public class BookRenamedEvent : Event<KeyValuePair<string,string>>
+	{
+		public BookRenamedEvent()
+			: base("BookRenamedEvent", LoggingLevel.Major)
+		{
+
+		}
+	}
+
+	/// <summary>
 	/// ANything displaying the book should re-load it.
 	/// </summary>
 	public class BookRefreshEvent : Event<Book.Book>
