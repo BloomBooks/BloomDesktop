@@ -582,6 +582,22 @@ namespace BloomTests.Book
 			Assert.AreEqual(3, pages.Length);
 		}
 
+		/// <summary>
+		/// regression test
+		/// </summary>
+		[Test]
+		public void RelocatePage_SuccessiveRelocates_BothWork()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+			book.RelocatePage(pages[1], 0);
+			book.RelocatePage(pages[2], 1);
+			var newPages = book.GetPages().ToArray();
+			Assert.AreEqual(pages[1].Id, newPages[0].Id);
+			Assert.AreEqual(pages[2].Id, newPages[1].Id);
+			Assert.AreEqual(pages[0].Id, newPages[2].Id);
+			Assert.AreEqual(3, pages.Length);
+		}
 		[Test]
 		public void RelocatePage_LastPageToFirst_DoesRelocate()
 		{
