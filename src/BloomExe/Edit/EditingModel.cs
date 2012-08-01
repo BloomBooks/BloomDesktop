@@ -373,7 +373,9 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null)
 			{
-				_view.ReadEditableAreasNow();
+				// It's not clear why this was needed at one point... but th effect was, because it does a Cleanup(), to
+				//remove any qtips and such.
+				//_view.ReadEditableAreasNow();
 				_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
 			}
 		}
