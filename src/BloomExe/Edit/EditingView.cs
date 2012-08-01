@@ -111,7 +111,8 @@ namespace Bloom.Edit
 			 */
 
 			_splitContainer1.Select();
-			_browser1.Select();
+			//_browser1.Select();
+			_browser1.WebBrowser.Select();
 		}
 
 
