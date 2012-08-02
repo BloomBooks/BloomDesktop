@@ -378,10 +378,23 @@ namespace Bloom
 			if (_pageDom == null)
 				return;
 
-			//this is to force an onblur so that we can get at the actual user-edited value [review: still needed? maybe for textareas]
-			_browser.WebBrowserFocus.Deactivate();
-			_browser.WebBrowserFocus.Activate();
+#if DEBUG
+			if (_pageDom.SelectNodes("//textarea").Count > 0)
+				Debug.Fail("Oh, a chance to test bluring textarea's!");
+#endif
+			//I (John) don't use textareas anymore... I stick with divs.
+	//		if (_pageDom.SelectNodes("//textarea").Count >0)
+			{
+				//This approach was to force an onblur so that we can get at the actual user-edited value.
+				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
+				//_browser.WebBrowserFocus.Deactivate();
+				//_browser.WebBrowserFocus.Activate();
 
+				//now, we just do the blur directly. This has not been tested, because we don't have an docs with inputs or text areas at the moment
+				var activeElement = _browser.Window.Document.ActiveElement;
+				if(activeElement!=null)
+					activeElement.Blur();
+			}
 
 			var body = _browser.Document.GetElementsByTagName("body");
 			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.

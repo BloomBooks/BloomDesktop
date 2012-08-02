@@ -31,6 +31,7 @@ namespace Bloom.Edit
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
+		private bool _visible;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -94,7 +95,10 @@ namespace Bloom.Edit
 
 		void ParentForm_Activated(object sender, EventArgs e)
 		{
-//			Debug.WriteLine("window activated");
+			if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
+				return;
+
+			Debug.WriteLine("EditingView.ParentForm_Activated(): Selecting Browser");
 //			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
 //			Debug.WriteLine("active control: " + ActiveControl.Name);
 //			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
@@ -244,6 +248,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
 		{
+			_visible = visible;
 			if (visible)
 			{
 				if(_model.GetBookHasChanged())
@@ -534,7 +539,7 @@ namespace Bloom.Edit
 		/// this started as an experiment, where our textareas were not being read when we saved because of the need
 		/// to change the picture
 		/// </summary>
-		public void ReadEditableAreasNow()
+		public void CleanHtmlAndCopyToPageDom()
 		{
 			_browser1.ReadEditableAreasNow();
 		}

@@ -95,7 +95,7 @@ namespace Bloom
 
 		private void Shell_Deactivate(object sender, EventArgs e)
 		{
-			Debug.WriteLine("Shell Deativated");
+			Debug.WriteLine("Shell Deactivated");
 		}
 
 	}
