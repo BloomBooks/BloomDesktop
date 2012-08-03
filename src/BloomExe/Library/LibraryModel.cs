@@ -9,9 +9,12 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Ionic.Zip;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Library
 {
@@ -125,10 +128,14 @@ namespace Bloom.Library
 
     	public void UpdateFrontMatter()
     	{
-    		var b = _bookSelection.CurrentSelection;
+			var b = _bookSelection.CurrentSelection;
 			_bookSelection.SelectBook(null);
-    		b.UpdateXMatter();
-    		_bookSelection.SelectBook(b);
+
+			using (var dlg = new ProgressDialogForeground())
+			{
+				dlg.ShowAndDoWork(progress=>b.UpdateXMatter(progress));
+			} 
+			_bookSelection.SelectBook(b);
     	}
 
 		public void UpdateThumbnailAsync(Action<Book.Book, Image> callback, Action<Book.Book, Exception> errorCallback)
