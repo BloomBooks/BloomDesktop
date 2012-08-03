@@ -687,7 +687,7 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
 		{
-			var title = XmlUtilities.GetTitleOfHtml(Dom, null);
+			var title = XmlUtils.GetTitleOfHtml(Dom, null);
 			if (title != null)
 			{
 				SetBookName(title);

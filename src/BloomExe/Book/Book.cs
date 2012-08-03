@@ -273,7 +273,7 @@ namespace Bloom.Book
 //                        return "unknown";
 //                    return (node.InnerText);
 					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Language1Iso639Code);
-					var s = XmlUtilities.GetTitleOfHtml(RawDom, null);
+					var s = XmlUtils.GetTitleOfHtml(RawDom, null);
 					if(s==null)
 						return Path.GetFileName(_storage.FolderPath);
 					return s;
@@ -730,7 +730,7 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				RebuildXMatter(dom);
+				RebuildXMatter(dom, new NullProgress());
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
@@ -744,25 +744,29 @@ namespace Bloom.Book
 			return dom;
 		}
 
-		public void UpdateXMatter()
+		public void UpdateXMatter(IProgress progress)
 		{
 			_pagesCache = null;
-			RebuildXMatter(RawDom);
+			RebuildXMatter(RawDom, progress);
 			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
-		private void RebuildXMatter(XmlDocument dom)
+		private void RebuildXMatter(XmlDocument dom, IProgress progress)
 		{
+			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
 			var data = LoadDataSetFromCollectionSettings(false);
 			GatherDataItemsFromDom(data, "*", RawDom);
 			var helper = new XMatterHelper(dom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(dom);
 			Layout layout = Layout.FromDom(dom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+			progress.WriteStatus("Injecting XMatter...");
 			helper.InjectXMatter(data.WritingSystemCodes, layout);
 			BookStarter.PrepareElementsInPageOrDocument(dom, _collectionSettings);
+			progress.WriteStatus("Updating Data...");
 			UpdateDomWIthDataItems(data, "*", dom);
+			UpdateAllImageMetadataHtmlAttributesAndSave(progress);
 		}
 
 		public Color CoverColor { get; set; }
@@ -1314,7 +1318,7 @@ namespace Bloom.Book
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				XmlUtilities.GetOrCreateElement(RawDom,"//html", "head");
+				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_collectionSettings.Language1Iso639Code});
 				SetTitle(t);
 			}
@@ -1324,7 +1328,7 @@ namespace Bloom.Book
 		{
 			if (!String.IsNullOrEmpty(t.Trim()))
 			{
-				var titleNode = XmlUtilities.GetOrCreateElement(RawDom, "//head", "title");
+				var titleNode = XmlUtils.GetOrCreateElement(RawDom, "//head", "title");
 				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
 
 				//so we set the xml (not the text) of the node
@@ -1969,17 +1973,24 @@ namespace Bloom.Book
 		/// <summary>
 		/// This is used when the user elects to apply the same image metadata to all images.
 		/// </summary>
-		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata)
+		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
+			progress.WriteStatus("Starting...");
+
 			//First update the images themselves
 
-			foreach (string path in GetImagePaths())
+			int completed = 0;
+			var imgElements = GetImagePaths();
+			foreach (string path in imgElements)
 			{
+				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
+				progress.WriteStatus("Copying to "+ Path.GetFileName(path));
 				using (var image = PalasoImage.FromFile(path))
 				{
 					image.Metadata = metadata;
 					image.SaveUpdatedMetadataIfItMakesSense();
 				}
+				++completed;
 			}
 
 			//Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to
@@ -1987,19 +1998,76 @@ namespace Bloom.Book
 
 			foreach (XmlElement img in RawDom.SafeSelectNodes("//img"))
 			{
-				//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
+				UpdateImgMetdataAttributesToMatchImage(img, progress, metadata);
+			}
 
-				var src = img.GetOptionalStringAttribute("src", string.Empty).ToLower();
-				if (src == "placeholder.png" || src == "license.png")
-					continue;
+			_storage.Save();
+		}
 
-				img.SetAttribute("data-copyright",
-								 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
+		public void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress)
+		{
+			UpdateImgMetdataAttributesToMatchImage(imgElement, progress, null);
+		}
 
-				img.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
+		private void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress, Metadata metadata)
+		{
+			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
+			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
+			if (fileName == "placeholder.png" || fileName == "license.png")
+				return;
+
+			if(string.IsNullOrEmpty(fileName))
+			{
+				Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage() Warning: img has no or empty src attribute");
+				//Debug.Fail(" (Debug only) img has no or empty src attribute");
+				return; // they have bigger problems, which aren't appropriate to deal with here.
+			}
+			if(metadata ==null)
+			{
+				progress.WriteStatus("Reading metadata from "+fileName);
+				var path = FolderPath.CombineForPath(fileName);
+				if (!File.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
+				{
+					imgElement.RemoveAttribute("data-copyright");
+					imgElement.RemoveAttribute("data-creator");
+					imgElement.RemoveAttribute("data-license");
+					Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage()  Image " + path + " is missing");
+					Debug.Fail(" (Debug only) Image " + path + " is missing");
+					return;
+				}
+				using (var image = PalasoImage.FromFile(path))
+				{
+					metadata = image.Metadata;
+				}
+			}
+
+			progress.WriteStatus("Writing metadata to HTML for " + fileName);
+
+			imgElement.SetAttribute("data-copyright",
+							 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
+			imgElement.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
+			imgElement.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
+		}
 
 
-				img.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
+		/// <summary>
+		/// We mirror several metadata tags in the html for quick access by the UI.
+		/// This method makes sure they are all up to date.
+		/// </summary>
+		/// <param name="progress"> </param>
+		public void UpdateAllImageMetadataHtmlAttributesAndSave(IProgress progress)
+		{
+			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
+			//whether the info is there or missing or whatever.
+
+			var imgElements = RawDom.SafeSelectNodes("//img");
+			int completed=0;
+			foreach (XmlElement img in imgElements)
+			{
+				progress.ProgressIndicator.PercentCompleted =(int) (100.0* (float)completed/(float)imgElements.Count);
+				//("Updating image metadata in html for +");
+				UpdateImgMetdataAttributesToMatchImage(img, progress);
+				completed++;
 			}
 
 			_storage.Save();

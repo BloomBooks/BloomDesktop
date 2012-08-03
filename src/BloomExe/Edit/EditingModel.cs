@@ -7,6 +7,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -459,7 +460,10 @@ namespace Bloom.Edit
 
 		public void CopyImageMetadataToWholeBook(Metadata metadata)
 		{
-			CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata);
+			using (var dlg = new ProgressDialogForeground())
+			{
+				dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
+			}
 		}
 	}
 

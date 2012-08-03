@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -13,6 +15,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.TestUtilities;
+using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace BloomTests.Book
@@ -65,6 +68,8 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFile("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
 			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFile("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
+			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
 			//warning: we're neutering part of what the code under test is trying to do here:
@@ -724,6 +729,70 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
 		}
+
+		/// <summary>
+		/// regression test... when we rebuild the xmatter, we also need to update the html attributes that let us
+		/// know the state of the image metadata without having to open the image up (slow).
+		/// </summary>
+		[Test]
+		public void UpdateXMatter_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"
+				<html>
+					<body>
+						<div id='bloomDataDiv'>
+							<div data-book='coverImage'>test.png</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+			var imagePath = book.FolderPath.CombineForPath("test.png");
+			MakeSamplePngImageWithMetadata(imagePath);
+
+			book.UpdateXMatter(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']",1);
+		}
+
+		[Test]
+		public void UpdateImgMetdataAttributesToMatchImage_HtmlForImgGetsMetaDataAttributes()
+		{
+			_documentDom = new XmlDocument();
+			_documentDom.LoadXml(@"
+				<html>
+					<body>
+					   <div class='bloom-page'>
+							<div class='marginBox'>
+								<div class='bloom-imageContainer'>
+								  <img src='test.png'/>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+			var imagePath = book.FolderPath.CombineForPath("test.png");
+			MakeSamplePngImageWithMetadata(imagePath);
+
+			book.UpdateXMatter(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
+		}
+
+		private void MakeSamplePngImageWithMetadata(string path)
+		{
+			var x = new Bitmap(10, 10);
+			x.Save(path, ImageFormat.Png);
+			x.Dispose();
+			using (var img = PalasoImage.FromFile(path))
+			{
+				img.Metadata.Creator = "joe";
+				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
+				img.SaveUpdatedMetadataIfItMakesSense();
+			}
+		}
+
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{

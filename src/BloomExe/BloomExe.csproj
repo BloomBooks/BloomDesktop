@@ -163,11 +163,23 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.Designer.cs">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\FlowThumbNailList.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Edit\FlowThumbNailList.Designer.cs">
       <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.Designer.cs">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
     </Compile>
     <Compile Include="HelpLauncher.cs" />
     <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
@@ -384,8 +396,14 @@
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogForeground.resx">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
       <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HtmlLabel.resx">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
@@ -521,7 +539,6 @@
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
-    <Compile Include="ToPalaso\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />

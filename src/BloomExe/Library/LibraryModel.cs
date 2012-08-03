@@ -9,9 +9,12 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Ionic.Zip;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Library
 {
@@ -127,7 +130,11 @@ namespace Bloom.Library
 		{
 			var b = _bookSelection.CurrentSelection;
 			_bookSelection.SelectBook(null);
-			b.UpdateXMatter();
+
+			using (var dlg = new ProgressDialogForeground())
+			{
+				dlg.ShowAndDoWork(progress=>b.UpdateXMatter(progress));
+			}
 			_bookSelection.SelectBook(b);
 		}
 
