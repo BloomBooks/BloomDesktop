@@ -50,11 +50,11 @@ namespace Bloom.Publish
 
 			//			UsageReporter.SendNavigationNotice("Publish");
 
-#if DEBUG
-			var linkLabel = new LinkLabel() {Text = "DEBUG"};
-			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
-			tableLayoutPanel1.Controls.Add(linkLabel);
-#endif
+//#if DEBUG
+//        	var linkLabel = new LinkLabel() {Text = "DEBUG"};
+//			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
+//        	tableLayoutPanel1.Controls.Add(linkLabel);
+//#endif
 		}
 
 
@@ -227,6 +227,11 @@ namespace Bloom.Publish
 		private void pictureBox1_Click(object sender, EventArgs e)
 		{
 
+		}
+
+		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.DebugCurrentPDFLayout();
 		}
 	}
 }
