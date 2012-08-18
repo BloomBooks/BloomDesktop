@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.web;
 using Palaso.IO;
@@ -31,10 +32,13 @@ namespace Bloom.ImageProcessing
 		private HttpListener _listener;
 		private LowResImageCache _cache;
 		private bool _isDisposing;
+		private Thread _listenerThread;
+		private readonly ManualResetEvent _stop;
 
 		public ImageServer(LowResImageCache cache)
 		{
 			_cache = cache;
+			_stop = new ManualResetEvent(false);
 		}
 
 		public void StartWithSetupIfNeeded()
@@ -73,7 +77,11 @@ namespace Bloom.ImageProcessing
 			_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
 			_listener.Prefixes.Add(GetPathEndingInSlash());
 			_listener.Start();
-			_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
+//			_listener.BeginGetContext(new AsyncCallback(ListenerCallback), _listener);
+
+			_listenerThread = new Thread(HandleRequests);
+			_listenerThread.Start();
+
 			return GetIsAbleToUsePort();
 		}
 
@@ -93,6 +101,17 @@ namespace Bloom.ImageProcessing
 			}
 			return IsAbleToUsePort;
 		}
+
+		private void HandleRequests()
+		{
+			while (_listener.IsListening)
+			{
+				var context = _listener.BeginGetContext(new AsyncCallback(ListenerCallback), _listener);
+				if (0 == WaitHandle.WaitAny(new[] { _stop, context.AsyncWaitHandle }))
+					return;
+			}
+		}
+
 
 		/// <summary>
 		/// TODO: Note: doing this at runtim isn't as good as doing it in the installer, because we have no way of
@@ -122,7 +141,7 @@ namespace Bloom.ImageProcessing
 		}
 
 
-		private void GetContextCallback(IAsyncResult ar)
+		private void ListenerCallback(IAsyncResult ar)
 		{
 			if (_isDisposing || _listener == null || !_listener.IsListening)
 				return; //strangely, this callback is fired when we close down the listener
@@ -152,7 +171,7 @@ namespace Bloom.ImageProcessing
 			}
 			finally
 			{
-				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
+			//	_listener.BeginGetContext(new AsyncCallback(ListenerCallback), _listener);
 			}
 		}
 
@@ -201,6 +220,10 @@ namespace Bloom.ImageProcessing
 
 			if (_listener != null)
 			{
+				_stop.Set();
+				_listenerThread.Join();
+				_listener.Stop();
+
 				_listener.Close();
 			}
 			_listener = null;
