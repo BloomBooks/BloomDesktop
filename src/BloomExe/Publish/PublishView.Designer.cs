@@ -44,7 +44,6 @@
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
-			this.adobeReaderProblemControl1 = new Bloom.Publish.AdobeReaderControl();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
@@ -242,17 +241,6 @@
 			this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
 			this._adobeReaderControl.TabIndex = 16;
 			// 
-			// adobeReaderProblemControl1
-			// 
-			this.adobeReaderProblemControl1.BackColor = System.Drawing.Color.White;
-			this.localizationExtender1.SetLocalizableToolTip(this.adobeReaderProblemControl1, null);
-			this.localizationExtender1.SetLocalizationComment(this.adobeReaderProblemControl1, null);
-			this.localizationExtender1.SetLocalizingId(this.adobeReaderProblemControl1, "adobeReaderProblemControl1.AdobeReaderControl");
-			this.adobeReaderProblemControl1.Location = new System.Drawing.Point(0, 0);
-			this.adobeReaderProblemControl1.Name = "adobeReaderProblemControl1";
-			this.adobeReaderProblemControl1.Size = new System.Drawing.Size(509, 264);
-			this.adobeReaderProblemControl1.TabIndex = 0;
-			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -292,7 +280,6 @@
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
 		private Localization.UI.LocalizationExtender localizationExtender1;
-		private AdobeReaderControl adobeReaderProblemControl1;
 		private AdobeReaderControl _adobeReaderControl;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
