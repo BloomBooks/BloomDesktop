@@ -491,8 +491,8 @@ namespace Bloom.Book
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
 			{
-				throw new ApplicationException(String.Format("The request page {0} from book {1} isn't in this book {2}.", page.Id,
-															 page.Book.FolderPath, page.Book.FolderPath));
+				throw new ApplicationException(String.Format("The requested page {0} from book {1} isn't in this book {2}.", page.Id,
+															 page.Book.FolderPath, FolderPath));
 			}
 			var pageDom = dom.ImportNode(divNodeForThisPage, true);
 			body.AppendChild(pageDom);
