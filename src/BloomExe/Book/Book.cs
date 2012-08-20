@@ -766,7 +766,8 @@ namespace Bloom.Book
 			BookStarter.PrepareElementsInPageOrDocument(dom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 			UpdateDomWIthDataItems(data, "*", dom);
-			UpdateAllImageMetadataHtmlAttributesAndSave(progress);
+			if(Type == Book.BookType.Publication)
+				UpdateAllImageMetadataHtmlAttributesAndSave(progress);
 		}
 
 		public Color CoverColor { get; set; }
