@@ -154,7 +154,7 @@ DIV#bloomDataDiv
 {
 	DIV.bloom-page
 	{
-		border: 1px solid #000000;
+		/*[disabled]border:1px solid #000000;*/
 	}
 }
 .centered
