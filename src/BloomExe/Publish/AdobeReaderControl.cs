@@ -97,7 +97,7 @@ namespace Bloom.Publish
 
 		public void Print()
 		{
-			_adobeReader.printAll();
+			_adobeReader.printWithDialog();//.printAll();
 		}
 	}
 }

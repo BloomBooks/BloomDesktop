@@ -21,10 +21,8 @@ namespace Bloom.Publish
 			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 				InitializeComponent();
-				adobeReaderProblemControl1.Visible = false;
 				Controls.Remove(_saveButton);//our parent will retrieve this
 				Controls.Remove(_printButton);//our parent will retrieve this
-
 
 			if(this.DesignMode)
 				return;
@@ -63,23 +61,6 @@ namespace Bloom.Publish
 			Logger.WriteEvent("Entered Publish Tab");
 			if (_makePdfBackgroundWorker.IsBusy)
 				return;
-
-//			if(_adobeReader==null)
-//			{
-//				try
-//				{
-//					AddAdobeReader();
-//				}
-//				catch (Exception e)
-//				{
-//					_adobeReader = null;
-//					_printButton.Enabled = false;
-//					_workingIndicatorGif.Visible = false;
-//					adobeReaderProblemControl1.Visible = true;
-//				}
-//			}
-
-
 
 			_activated = true;
 
@@ -204,6 +185,7 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
+
 			_adobeReaderControl.Print();
 			UsageReporter.SendNavigationNotice("Print");
 			Logger.WriteEvent("Calling Print on Adobe Reader");
