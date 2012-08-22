@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
+using Bloom.ToPalaso.Experimental;
 using Ionic.Zip;
-using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
-using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Library
 {
@@ -131,7 +127,7 @@ namespace Bloom.Library
 			var b = _bookSelection.CurrentSelection;
 			_bookSelection.SelectBook(null);
 
-			using (var dlg = new ProgressDialogForeground())
+			using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
 			{
 				dlg.ShowAndDoWork(progress=>b.UpdateXMatter(progress));
 			}

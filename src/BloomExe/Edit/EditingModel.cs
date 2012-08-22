@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Palaso.IO;
-using Palaso.Progress.LogBox;
+using Bloom.ToPalaso.Experimental;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -460,7 +457,7 @@ namespace Bloom.Edit
 
 		public void CopyImageMetadataToWholeBook(Metadata metadata)
 		{
-			using (var dlg = new ProgressDialogForeground())
+			using (var dlg = new ProgressDialogForeground())//REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
 			{
 				dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
 			}

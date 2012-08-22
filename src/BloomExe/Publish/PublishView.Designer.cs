@@ -35,21 +35,19 @@
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._saveButton = new System.Windows.Forms.Button();
 			this._printButton = new System.Windows.Forms.Button();
-			this._workingIndicatorGif = new System.Windows.Forms.PictureBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.contextMenuStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _makePdfBackgroundWorker
@@ -64,7 +62,6 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
-			this._workingIndicator.Controls.Add(this._workingIndicatorGif);
 			this._workingIndicator.Location = new System.Drawing.Point(103, 24);
 			this._workingIndicator.Name = "_workingIndicator";
 			this._workingIndicator.Size = new System.Drawing.Size(714, 516);
@@ -121,19 +118,6 @@
 			this._printButton.UseVisualStyleBackColor = false;
 			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
 			// 
-			// _workingIndicatorGif
-			// 
-			this._workingIndicatorGif.BackColor = System.Drawing.Color.White;
-			this._workingIndicatorGif.Image = global::Bloom.Properties.Resources.spinner;
-			this.localizationExtender1.SetLocalizableToolTip(this._workingIndicatorGif, null);
-			this.localizationExtender1.SetLocalizationComment(this._workingIndicatorGif, null);
-			this.localizationExtender1.SetLocalizingId(this._workingIndicatorGif, "PublishView._workingIndicatorGif");
-			this._workingIndicatorGif.Location = new System.Drawing.Point(316, 148);
-			this._workingIndicatorGif.Name = "_workingIndicatorGif";
-			this._workingIndicatorGif.Size = new System.Drawing.Size(179, 141);
-			this._workingIndicatorGif.TabIndex = 8;
-			this._workingIndicatorGif.TabStop = false;
-			// 
 			// tableLayoutPanel1
 			// 
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -153,6 +137,27 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(100, 540);
 			this.tableLayoutPanel1.TabIndex = 10;
+			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._openinBrowserMenuItem});
+			this.localizationExtender1.SetLocalizableToolTip(this.contextMenuStrip1, null);
+			this.localizationExtender1.SetLocalizationComment(this.contextMenuStrip1, null);
+			this.localizationExtender1.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(335, 26);
+			// 
+			// _openinBrowserMenuItem
+			// 
+			this.localizationExtender1.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
+			this.localizationExtender1.SetLocalizationComment(this._openinBrowserMenuItem, null);
+			this.localizationExtender1.SetLocalizationPriority(this._openinBrowserMenuItem, Localization.LocalizationPriority.Low);
+			this.localizationExtender1.SetLocalizingId(this._openinBrowserMenuItem, ".openHtmlInBrowserToolStripMenuItem");
+			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
+			this._openinBrowserMenuItem.Size = new System.Drawing.Size(334, 22);
+			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Browser";
+			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
 			// 
 			// _bodyRadio
 			// 
@@ -206,27 +211,6 @@
 			// 
 			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
-			// contextMenuStrip1
-			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._openinBrowserMenuItem});
-			this.localizationExtender1.SetLocalizableToolTip(this.contextMenuStrip1, null);
-			this.localizationExtender1.SetLocalizationComment(this.contextMenuStrip1, null);
-			this.localizationExtender1.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(335, 48);
-			// 
-			// _openinBrowserMenuItem
-			// 
-			this.localizationExtender1.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
-			this.localizationExtender1.SetLocalizationComment(this._openinBrowserMenuItem, null);
-			this.localizationExtender1.SetLocalizationPriority(this._openinBrowserMenuItem, Localization.LocalizationPriority.Low);
-			this.localizationExtender1.SetLocalizingId(this._openinBrowserMenuItem, ".openHtmlInBrowserToolStripMenuItem");
-			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
-			this._openinBrowserMenuItem.Size = new System.Drawing.Size(334, 22);
-			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Browser";
-			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
-			// 
 			// _adobeReaderControl
 			// 
 			this._adobeReaderControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -257,10 +241,9 @@
 			this._workingIndicator.ResumeLayout(false);
 			this._topBarPanel.ResumeLayout(false);
 			this._topBarPanel.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this._workingIndicatorGif)).EndInit();
 			this.tableLayoutPanel1.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.contextMenuStrip1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -271,7 +254,6 @@
 
 		private System.ComponentModel.BackgroundWorker _makePdfBackgroundWorker;
 		private System.Windows.Forms.Panel _workingIndicator;
-		private System.Windows.Forms.PictureBox _workingIndicatorGif;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.RadioButton _bodyRadio;
 		private System.Windows.Forms.RadioButton _coverRadio;

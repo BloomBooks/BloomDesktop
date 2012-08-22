@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
+using Bloom.Edit;
+using Bloom.ToPalaso;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
@@ -101,8 +104,45 @@ namespace Bloom.Publish
 					"--disable-smart-shrinking --zoom 1.041 \"{0}\" \"{1}\"",
 					Path.GetFileName(tempInput.Path), tempOutput.Path);
 
-				var progress = new CancellableNullProgress(doWorkEventArgs);
-				var result = CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(tempInput.Path), 20, progress);
+				ExecutionResult result = null;
+				using (var dlg = new ProgressDialogBackground())
+				{
+
+					/* This isn't really working yet (Aug 2012)... I put a day's work into getting Palaso.CommandLineRunner to
+					 * do asynchronous reading of the
+					 * nice progress that wkhtml2pdf puts out, and feeding it to the UI. It worked find with a sample utility
+					 * (PalasoUIWindowsForms.TestApp.exe). But try as I might, it seems
+					 * that the Process doesn't actually deliver wkhtml2pdf's outputs to me until it's all over.
+					 * If I run wkhtml2pdf from a console, it gives the progress just fine, as it works.
+					 * So there is either a bug in Palaso.CommandLineRunner & friends, or.... ?
+					 */
+
+
+					//this proves that the ui part here is working... it's something about the wkhtml2pdf that we're not getting the updates in real time...
+					//		dlg.ShowAndDoWork(progress => result = CommandLineRunner.Run("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
+					dlg.ShowAndDoWork((progress,args) =>
+										{
+											progress.WriteStatus("Making PDF...");
+											//this is a trick... since we are so far failing to get
+											//the progress otu of wkhtml2pdf until it is done,
+											//we at least have this indicator which on win 7 does
+											//grow from 0 to the set percentage with some animation
+											progress.ProgressIndicator.PercentCompleted = 70;
+											result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
+																		   5*60, progress
+																		   , (s) =>
+																				{
+																					//progress.WriteVerbose(s);
+																					progress.WriteStatus(s);
+
+																					//this wakes up the dialog, which then calls the Refresh() we need
+																					((BackgroundWorker) args.Argument).ReportProgress(100);
+																				});
+										});
+				}
+
+				//var progress = new CancellableNullProgress(doWorkEventArgs);
+
 
 				Debug.WriteLine(result.StandardError);
 				Debug.WriteLine(result.StandardOutput);

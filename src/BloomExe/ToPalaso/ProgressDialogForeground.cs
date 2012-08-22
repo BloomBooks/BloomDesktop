@@ -4,12 +4,15 @@ using System.Windows.Forms;
 using Palaso.Progress;
 using Palaso.Progress.LogBox;
 
-namespace Bloom.Edit
+namespace Bloom.ToPalaso.Experimental
 {
 	/// <summary>
 	/// A Palaso.IProgress-compatible progress dialog which keeps the work in the foreground, using
 	/// the progress calls by the worker to keep the UI alive. This has the advantage that any
 	/// errors raised by the worker don't need special handling.
+	///
+	/// NOTE: this dialog is more of an experiment: it doesn't normally work... it's a lot to ask
+	/// the ui to freeze and still keep working by means of an occasionally hacked-in Application.DoEvents();
 	/// </summary>
 	public partial class ProgressDialogForeground : Form
 	{
@@ -25,7 +28,8 @@ namespace Bloom.Edit
 		{
 			_work = work;
 			Progress.ProgressIndicator = ProgressBar;
-			Progress.AddStatusProgress(Status);
+			Progress.AddStatusProgress(_status);
+			Progress.AddMessageProgress(_messageLabelProgress);
 			Progress.Add(new ApplicationDoEventsProgress());//this will keep our UI alive
 			Application.Idle += StartWorking;
 			ShowDialog();
@@ -39,7 +43,7 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Everytime some progress is reported, we juste let the UI update
+		/// Everytime some progress is reported, we just let the UI update
 		/// </summary>
 		class ApplicationDoEventsProgress : IProgress
 		{
@@ -92,6 +96,12 @@ namespace Bloom.Edit
 			public IProgressIndicator ProgressIndicator { get; set; }
 
 			public SynchronizationContext SyncContext { get; set; }
+		}
+
+		private void ProgressDialogForeground_Load(object sender, EventArgs e)
+		{
+			Progress.SyncContext = SynchronizationContext.Current;
+			_messageLabelProgress.SyncContext = SynchronizationContext.Current;
 		}
 	}
 }
