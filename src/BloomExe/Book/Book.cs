@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,17 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
-using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
-using Gecko;
 using Localization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -254,6 +249,38 @@ namespace Bloom.Book
 		*/
 
 		public enum BookType { Unknown, Template, Shell, Publication }
+
+		/// <summary>
+		/// If we have to just show title in one language, which should it be?
+		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
+		/// </summary>
+		public string TitleBestForUserDisplay
+		{
+			get
+			{
+				var data = new DataSet();
+				GatherDataItemsFromDom(data, "div", GetOrCreateDataDiv());
+				DataItem title;
+				if (data.TextVariables.TryGetValue("bookTitle", out title))
+				{
+					XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
+					var list = new List<string>();
+					list.Add(_collectionSettings.Language1Iso639Code);
+					if(_collectionSettings.Language2Iso639Code !=null)
+						list.Add(_collectionSettings.Language2Iso639Code);
+					if (_collectionSettings.Language3Iso639Code != null)
+						list.Add(_collectionSettings.Language3Iso639Code);
+					list.Add("en");
+					var t = title.TextAlternatives.GetBestAlternativeString(list);
+					if(string.IsNullOrEmpty(t))
+					{
+						return "Title Missing";
+					}
+					return t;
+				}
+				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
+			}
+		}
 
 		/// <summary>
 		/// we could get the title from the <title/> element, the name of the html, or the name of the folder...
@@ -1320,7 +1347,7 @@ namespace Bloom.Book
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
 				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_collectionSettings.Language1Iso639Code});
+				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
 				SetTitle(t);
 			}
 		}
