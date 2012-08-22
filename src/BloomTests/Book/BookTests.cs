@@ -285,17 +285,21 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void UpdateFieldsAndVariables_HadTitleChangeVernacularTitle_ChangesTitleElement()
+		public void UpdateFieldsAndVariables_HadTitleChangeEnglishTitle_ChangesTitleElement()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;
 			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 			head.AppendChild(dom.CreateElement("title")).InnerText = "original";
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle']");
-			textArea.InnerText = "blue";
-			book.UpdateFieldsAndVariables(dom);
+
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
-			Assert.AreEqual("dog", title.InnerText);
+			Assert.AreEqual("tree", title.InnerText);
+
+			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='en']");
+			textArea.InnerText = "shrub";
+			book.UpdateFieldsAndVariables(dom);
+			title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
+			Assert.AreEqual("shrub", title.InnerText);
 		}
 
 
