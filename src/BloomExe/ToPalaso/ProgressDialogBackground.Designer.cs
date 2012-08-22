@@ -1,4 +1,4 @@
-﻿namespace Bloom.Edit
+﻿namespace Bloom.ToPalaso
 {
 	partial class ProgressDialogBackground
 	{
@@ -29,7 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.ProgressBar = new Palaso.Progress.SimpleProgressIndicator();
-			this.Status = new Palaso.Progress.LogBox.SimpleStatusProgress();
+			this._statusLabel = new Palaso.Progress.LogBox.SimpleStatusProgress();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this.SuspendLayout();
 			// 
@@ -45,20 +45,20 @@
 			this.ProgressBar.TabIndex = 1;
 			this.ProgressBar.UseWaitCursor = true;
 			// 
-			// Status
+			// _statusLabel
 			// 
-			this.Status.AutoSize = true;
-			this.Status.CancelRequested = false;
-			this.Status.ErrorEncountered = false;
-			this.Status.Location = new System.Drawing.Point(30, 78);
-			this.Status.Name = "Status";
-			this.Status.ProgressIndicator = null;
-			this.Status.Size = new System.Drawing.Size(113, 13);
-			this.Status.SyncContext = null;
-			this.Status.TabIndex = 2;
-			this.Status.Text = "simpleStatusProgress1";
-			this.Status.UseWaitCursor = true;
-			this.Status.WarningEncountered = false;
+			this._statusLabel.AutoSize = true;
+			this._statusLabel.CancelRequested = false;
+			this._statusLabel.ErrorEncountered = false;
+			this._statusLabel.Location = new System.Drawing.Point(30, 78);
+			this._statusLabel.Name = "_statusLabel";
+			this._statusLabel.ProgressIndicator = null;
+			this._statusLabel.Size = new System.Drawing.Size(16, 13);
+			this._statusLabel.SyncContext = null;
+			this._statusLabel.TabIndex = 2;
+			this._statusLabel.Text = "...";
+			this._statusLabel.UseWaitCursor = true;
+			this._statusLabel.WarningEncountered = false;
 			// 
 			// ProgressDialogBackground
 			// 
@@ -66,7 +66,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(421, 130);
 			this.ControlBox = false;
-			this.Controls.Add(this.Status);
+			this.Controls.Add(this._statusLabel);
 			this.Controls.Add(this.ProgressBar);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.Name = "ProgressDialogBackground";
@@ -82,7 +82,7 @@
 		#endregion
 
 		public Palaso.Progress.SimpleProgressIndicator ProgressBar;
-		public Palaso.Progress.LogBox.SimpleStatusProgress Status;
+		public Palaso.Progress.LogBox.SimpleStatusProgress _statusLabel;
 		private System.ComponentModel.BackgroundWorker _backgroundWorker;
 
 	}
