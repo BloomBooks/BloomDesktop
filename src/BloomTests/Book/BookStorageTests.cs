@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
 using Palaso.IO;
@@ -42,7 +43,7 @@ namespace BloomTests.Book
 		public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
 		{
 			File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
+			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
@@ -51,7 +52,7 @@ namespace BloomTests.Book
 		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
 		{
 			File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator);
+			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
@@ -71,7 +72,7 @@ namespace BloomTests.Book
 		private BookStorage GetInitialStorage()
 		{
 			File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator);
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			return storage;
 		}
@@ -79,7 +80,7 @@ namespace BloomTests.Book
 		private BookStorage GetInitialStorageWithCustomHead(string head)
 		{
 			File.WriteAllText(_bookPath, "<html><head>"+head+" </head></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator);
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			return storage;
 		}
@@ -88,7 +89,7 @@ namespace BloomTests.Book
 		{
 			var bookPath = _folder.Combine(bookName + ".htm");
 			File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator);
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			return storage;
 		}
@@ -116,7 +117,7 @@ namespace BloomTests.Book
 			using (var z = new TemporaryFolder(_folder, "foo2"))
 			{
 				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(original.Path, _fileLocator);
+				var storage = new BookStorage(original.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 
 				Directory.Delete(z.Path);

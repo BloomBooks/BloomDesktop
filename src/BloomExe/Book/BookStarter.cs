@@ -450,28 +450,39 @@ namespace Bloom.Book
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
-		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string vernacularCode, string elementTag)
+		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode, string elementTag)
 		{
 			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
 
-			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-				return;
+//true, this is a weird situation...			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
+//				return;
 
-			var alreadyInVernacular = from XmlElement x in editableElementsWithinTheIndicatedParagraph
-									  where x.GetAttribute("lang") == vernacularCode
+			var elementsAlreadyInThisLanguage = from XmlElement x in editableElementsWithinTheIndicatedParagraph
+									  where x.GetAttribute("lang") == isoCode
 									  select x;
-			if (alreadyInVernacular.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
+			if (elementsAlreadyInThisLanguage.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 				return;
 
 			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
 				return;
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
-			XmlElement vernacularCopy = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-			vernacularCopy.SetAttribute("lang",vernacularCode);
+			XmlElement newElementInThisLanguage;
+			if (prototype == null)// something bad happened here in the past, or the template wasn't created correctly
+			{
+				newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
+				newElementInThisLanguage.SetAttribute("class", "bloom-editable");
+				newElementInThisLanguage.SetAttribute("contenteditable", "true");
+				groupElement.AppendChild(newElementInThisLanguage);
+			}
+			else  //this is the normal situation, where we're just copying the first element
+			{
+				newElementInThisLanguage = (XmlElement)prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
+			}
+			newElementInThisLanguage.SetAttribute("lang",isoCode);
 			//if there is an id, get rid of it, because we don't want 2 elements with the same id
-			vernacularCopy.RemoveAttribute("id");
-			vernacularCopy.InnerText = string.Empty;
+			newElementInThisLanguage.RemoveAttribute("id");
+			newElementInThisLanguage.InnerText = string.Empty;
 		}
 
 		/// <summary>

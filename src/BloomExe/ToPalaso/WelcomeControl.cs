@@ -15,7 +15,7 @@ namespace Bloom.ToPalaso
 		private  MostRecentPathsList _mruList;
 		private Func<string, bool> _looksLikeValidLibraryPredicate;
 		private string _createNewLibraryButtonLabel;
-		private Func<NewCollectionSettings> _createNewLibraryAndReturnPath;
+		private Func<string> _createNewLibraryAndReturnPath;
 		private string _browseLabel;
 		private string _filterString;
 
@@ -33,7 +33,7 @@ namespace Bloom.ToPalaso
 			string browseForOtherLibrarysLabel,
 			string filterString,
 			Func<string, bool> looksLikeValidLibraryPredicate,
-			Func<NewCollectionSettings> createNewLibraryAndReturnPath)
+			Func<string> createNewLibraryAndReturnPath)
 		 {
 			_filterString = filterString;
 			_createNewLibraryAndReturnPath = createNewLibraryAndReturnPath;

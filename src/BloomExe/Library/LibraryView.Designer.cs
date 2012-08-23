@@ -112,7 +112,6 @@
 			this.localizationExtender1.SetLocalizingId(this, "LibraryView.LibraryView");
 			this.Name = "LibraryView";
 			this.Size = new System.Drawing.Size(773, 518);
-			this.VisibleChanged += new System.EventHandler(this.LibraryView_VisibleChanged);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this._topBarControl.ResumeLayout(false);

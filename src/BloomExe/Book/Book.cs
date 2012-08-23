@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,8 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
-using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -16,7 +13,6 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Localization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -24,6 +20,7 @@ using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
+using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -254,6 +251,38 @@ namespace Bloom.Book
 		public enum BookType { Unknown, Template, Shell, Publication }
 
 		/// <summary>
+		/// If we have to just show title in one language, which should it be?
+		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
+		/// </summary>
+		public string TitleBestForUserDisplay
+		{
+			get
+			{
+				var data = new DataSet();
+				GatherDataItemsFromDom(data, "div", GetOrCreateDataDiv());
+				DataItem title;
+				if (data.TextVariables.TryGetValue("bookTitle", out title))
+				{
+					XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
+					var list = new List<string>();
+					list.Add(_collectionSettings.Language1Iso639Code);
+					if(_collectionSettings.Language2Iso639Code !=null)
+						list.Add(_collectionSettings.Language2Iso639Code);
+					if (_collectionSettings.Language3Iso639Code != null)
+						list.Add(_collectionSettings.Language3Iso639Code);
+					list.Add("en");
+					var t = title.TextAlternatives.GetBestAlternativeString(list);
+					if(string.IsNullOrEmpty(t))
+					{
+						return "Title Missing";
+					}
+					return t;
+				}
+				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
+			}
+		}
+
+		/// <summary>
 		/// we could get the title from the <title/> element, the name of the html, or the name of the folder...
 		/// </summary>
 		public virtual string Title
@@ -271,7 +300,7 @@ namespace Bloom.Book
 //                        return "unknown";
 //                    return (node.InnerText);
 					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Language1Iso639Code);
-					var s = XmlUtilities.GetTitleOfHtml(RawDom, null);
+					var s = XmlUtils.GetTitleOfHtml(RawDom, null);
 					if(s==null)
 						return Path.GetFileName(_storage.FolderPath);
 					return s;
@@ -363,12 +392,12 @@ namespace Bloom.Book
 			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
 				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
 			if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
-				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
+				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
 
 			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
 			d.Add("{V}", _collectionSettings.Language1Name);
 			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
-			d.Add("{N2}", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language3Iso639Code));
+			d.Add("{N2}", _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
 
 			AddLocalizedHintContentsToDictionary(singlePageHtmlDom, d);
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
@@ -489,8 +518,8 @@ namespace Bloom.Book
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
 			{
-				throw new ApplicationException(String.Format("The request page {0} from book {1} isn't in this book {2}.", page.Id,
-															 page.Book.FolderPath, page.Book.FolderPath));
+				throw new ApplicationException(String.Format("The requested page {0} from book {1} isn't in this book {2}.", page.Id,
+															 page.Book.FolderPath, FolderPath));
 			}
 			var pageDom = dom.ImportNode(divNodeForThisPage, true);
 			body.AppendChild(pageDom);
@@ -728,7 +757,7 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				RebuildXMatter(dom);
+				RebuildXMatter(dom, new NullProgress());
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
@@ -742,25 +771,30 @@ namespace Bloom.Book
 			return dom;
 		}
 
-		public void UpdateXMatter()
+		public void UpdateXMatter(IProgress progress)
 		{
 			_pagesCache = null;
-			RebuildXMatter(RawDom);
+			RebuildXMatter(RawDom, progress);
 			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
-		private void RebuildXMatter(XmlDocument dom)
+		private void RebuildXMatter(XmlDocument dom, IProgress progress)
 		{
+			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-			var data = LoadDataSetFromLibrarySettings(false);
+			var data = LoadDataSetFromCollectionSettings(false);
 			GatherDataItemsFromDom(data, "*", RawDom);
 			var helper = new XMatterHelper(dom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(dom);
 			Layout layout = Layout.FromDom(dom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+			progress.WriteStatus("Injecting XMatter...");
 			helper.InjectXMatter(data.WritingSystemCodes, layout);
 			BookStarter.PrepareElementsInPageOrDocument(dom, _collectionSettings);
+			progress.WriteStatus("Updating Data...");
 			UpdateDomWIthDataItems(data, "*", dom);
+			if(Type == Book.BookType.Publication)
+				UpdateAllImageMetadataHtmlAttributesAndSave(progress);
 		}
 
 		public Color CoverColor { get; set; }
@@ -1286,7 +1320,7 @@ namespace Bloom.Book
 		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
 		public DataSet UpdateFieldsAndVariables(XmlDocument domToRead)
 		{
-			var data = LoadDataSetFromLibrarySettings(false);
+			var data = LoadDataSetFromCollectionSettings(false);
 
 			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
@@ -1312,8 +1346,8 @@ namespace Bloom.Book
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				XmlUtilities.GetOrCreateElement(RawDom,"//html", "head");
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] {_collectionSettings.Language1Iso639Code});
+				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
+				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
 				SetTitle(t);
 			}
 		}
@@ -1322,7 +1356,7 @@ namespace Bloom.Book
 		{
 			if (!String.IsNullOrEmpty(t.Trim()))
 			{
-				var titleNode = XmlUtilities.GetOrCreateElement(RawDom, "//head", "title");
+				var titleNode = XmlUtils.GetOrCreateElement(RawDom, "//head", "title");
 				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
 
 				//so we set the xml (not the text) of the node
@@ -1348,7 +1382,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="makeGeneric">When we're showing shells, we don't wayt to make it confusing by populating them with this library's data</param>
 		/// <returns></returns>
-		private DataSet LoadDataSetFromLibrarySettings(bool makeGeneric)
+		private DataSet LoadDataSetFromCollectionSettings(bool makeGeneric)
 		{
 			var data = new DataSet();
 
@@ -1373,7 +1407,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.Language1Name, true);
 				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code), true);
-				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetNationalLanguage2Name(_collectionSettings.Language2Iso639Code), true);
+				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetLanguage3Name(_collectionSettings.Language2Iso639Code), true);
 				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);
 				data.AddGenericLanguageString("country", _collectionSettings.Country, true);
 				data.AddGenericLanguageString("province", _collectionSettings.Province, true);
@@ -1494,6 +1528,10 @@ namespace Bloom.Book
 			var dom = GetBookDomWithStyleSheet("previewMode.css");
 			//dom.LoadXml(_storage.Dom.OuterXml);
 
+			//whereas the base is to our embedded server during editing, it's to the file folder
+			//when we make a PDF, because we wan the PDF to use the original hi-res versions
+			BookStorage.SetBaseForRelativePaths(dom, FolderPath, false);
+
 			switch (bookletPortion)
 			{
 				case PublishModel.BookletPortions.None:
@@ -1568,7 +1606,7 @@ namespace Bloom.Book
 			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
 			{
-				if (v.Value.IsLibraryValue)
+				if (v.Value.IsCollectionValue)
 					continue;//we don't save these out here
 
 				//Debug.WriteLine("before: " + dataDiv.OuterXml);
@@ -1718,7 +1756,7 @@ namespace Bloom.Book
 				{
 					var key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
-						key = node.GetAttribute("data-library").Trim();
+						key = node.GetAttribute("data-library").Trim();//"library" is the old name for what is now "collection"
 					if (!String.IsNullOrEmpty(key) && data.TextVariables.ContainsKey(key))
 					{
 						if (node.Name.ToLower() == "img")
@@ -1731,12 +1769,20 @@ namespace Bloom.Book
 							var lang = node.GetOptionalStringAttribute("lang", "*");
 							if (lang == "N1" || lang == "N2" || lang == "V")
 								lang = data.WritingSystemCodes[lang];
+
+//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
+//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
+//							{
+//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
+//								targetDom.RemoveChild(node);
+//							}
+//							else
 							if (!String.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
 								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*"});//, "en", "fr", "es" });//review: I really hate to lose the data, but I admit, this is trying a bit too hard :-)
 
 
-								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it write.
+								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
 								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
 								//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
 								//was giving "", which we then used to remove our nice values.
@@ -1747,7 +1793,7 @@ namespace Bloom.Book
 									continue;
 
 								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-								if (lang == data.WritingSystemCodes["N2"] && s == data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { data.WritingSystemCodes["N1"], "*" }))
+								if (data.WritingSystemCodes.Count !=0 && lang == data.WritingSystemCodes["N2"] && s == data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { data.WritingSystemCodes["N1"], "*" }))
 								{
 									s = ""; //don't show it in N2, since it's the same as N1
 								}
@@ -1850,6 +1896,49 @@ namespace Bloom.Book
 			SizeAndOrientation.AddClassesForLayout(RawDom, layout);
 		}
 
+		public void UpdateLicenseMetdata(Metadata metadata)
+		{
+			var data = new DataSet();
+			GatherDataItemsFromDom(data, "*", RawDom);
+
+			var copyright = metadata.CopyrightNotice;
+			data.UpdateLanguageString("*", "copyright", copyright, false);
+
+			var description = metadata.License.GetDescription("en");
+			data.UpdateLanguageString("en","licenseDescription", description, false);
+
+			var licenseUrl = metadata.License.Url;
+			data.UpdateLanguageString("*", "licenseUrl", licenseUrl, false);
+
+			var licenseNotes = metadata.License.RightsStatement;
+			data.UpdateLanguageString("*", "licenseNotes", licenseNotes, false);
+
+			var licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
+			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
+
+
+			UpdateDomWIthDataItems(data, "*",RawDom);
+
+			//UpdateDomWIthDataItems() is not able to remove items yet, so we do it explicity
+
+			RemoveDataDivElementIfEmptyValue("licenseDescription", description);
+			RemoveDataDivElementIfEmptyValue("licenseImage", licenseImageName);
+			RemoveDataDivElementIfEmptyValue("licenseUrl", licenseUrl);
+			RemoveDataDivElementIfEmptyValue("copyright", copyright);
+			RemoveDataDivElementIfEmptyValue("licenseNotes", licenseNotes);
+		}
+
+		private void RemoveDataDivElementIfEmptyValue(string key, string value)
+		{
+			if (string.IsNullOrEmpty(value))
+			{
+				foreach (XmlElement node in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']//div[@data-book='" + key + "']"))
+				{
+					node.ParentNode.RemoveChild(node);
+				}
+			}
+		}
+
 		public Metadata GetLicenseMetadata()
 		{
 			var data = new DataSet();
@@ -1870,6 +1959,7 @@ namespace Bloom.Book
 			if (licenseUrl == null || licenseUrl.Trim() == "")
 			{
 				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+				//custom licenses live in this field
 				if (data.TextVariables.TryGetValue("licenseNotes", out d))
 				{
 					var licenseNotes = d.TextAlternatives.GetFirstAlternative();
@@ -1878,7 +1968,16 @@ namespace Bloom.Book
 				}
 				else
 				{
-					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+					//how to detect a null license was chosen? We're using the fact that it has a description, but nothing else.
+					if (data.TextVariables.TryGetValue("licenseDescription", out d))
+					{
+						metadata.License = new NullLicense(); //"contact the copyright owner
+					}
+					else
+					{
+						//looks like the first time. Nudge them with a nice default
+						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+					}
 				}
 			}
 			else
@@ -1889,5 +1988,117 @@ namespace Bloom.Book
 		}
 
 
+		public IEnumerable<string> GetImagePaths()
+		{
+			foreach (var path in Directory.EnumerateFiles(_storage.FolderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
+			{
+				if ((path.ToLower() =="placeholder.png") || path.ToLower()==("license.png") || path.ToLower() == ("thumbnail.png"))
+					continue;
+				yield return path;
+			}
+		}
+
+		/// <summary>
+		/// This is used when the user elects to apply the same image metadata to all images.
+		/// </summary>
+		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
+		{
+			progress.WriteStatus("Starting...");
+
+			//First update the images themselves
+
+			int completed = 0;
+			var imgElements = GetImagePaths();
+			foreach (string path in imgElements)
+			{
+				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
+				progress.WriteStatus("Copying to "+ Path.GetFileName(path));
+				using (var image = PalasoImage.FromFile(path))
+				{
+					image.Metadata = metadata;
+					image.SaveUpdatedMetadataIfItMakesSense();
+				}
+				++completed;
+			}
+
+			//Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to
+			//whether the info is there or missing or whatever.
+
+			foreach (XmlElement img in RawDom.SafeSelectNodes("//img"))
+			{
+				UpdateImgMetdataAttributesToMatchImage(img, progress, metadata);
+			}
+
+			_storage.Save();
+		}
+
+		public void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress)
+		{
+			UpdateImgMetdataAttributesToMatchImage(imgElement, progress, null);
+		}
+
+		private void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress, Metadata metadata)
+		{
+			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
+			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
+			if (fileName == "placeholder.png" || fileName == "license.png")
+				return;
+
+			if(string.IsNullOrEmpty(fileName))
+			{
+				Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage() Warning: img has no or empty src attribute");
+				//Debug.Fail(" (Debug only) img has no or empty src attribute");
+				return; // they have bigger problems, which aren't appropriate to deal with here.
+			}
+			if(metadata ==null)
+			{
+				progress.WriteStatus("Reading metadata from "+fileName);
+				var path = FolderPath.CombineForPath(fileName);
+				if (!File.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
+				{
+					imgElement.RemoveAttribute("data-copyright");
+					imgElement.RemoveAttribute("data-creator");
+					imgElement.RemoveAttribute("data-license");
+					Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage()  Image " + path + " is missing");
+					Debug.Fail(" (Debug only) Image " + path + " is missing");
+					return;
+				}
+				using (var image = PalasoImage.FromFile(path))
+				{
+					metadata = image.Metadata;
+				}
+			}
+
+			progress.WriteStatus("Writing metadata to HTML for " + fileName);
+
+			imgElement.SetAttribute("data-copyright",
+							 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
+			imgElement.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
+			imgElement.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
+		}
+
+
+		/// <summary>
+		/// We mirror several metadata tags in the html for quick access by the UI.
+		/// This method makes sure they are all up to date.
+		/// </summary>
+		/// <param name="progress"> </param>
+		public void UpdateAllImageMetadataHtmlAttributesAndSave(IProgress progress)
+		{
+			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
+			//whether the info is there or missing or whatever.
+
+			var imgElements = RawDom.SafeSelectNodes("//img");
+			int completed=0;
+			foreach (XmlElement img in imgElements)
+			{
+				progress.ProgressIndicator.PercentCompleted =(int) (100.0* (float)completed/(float)imgElements.Count);
+				//("Updating image metadata in html for +");
+				UpdateImgMetdataAttributesToMatchImage(img, progress);
+				completed++;
+			}
+
+			_storage.Save();
+		}
 	}
 }

@@ -42,7 +42,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
 	<PropertyRef Id="NETFRAMEWORK40CLIENT" />
 	<Condition Message="Before Bloom can install on older computers, you need to install Microsoft's free .NET Framework 4.0 (at least the small 'client profile'.  A full discussion of Bloom's requirements can be found at http://bloom.palaso.org/download ">
-	  Installed OR NETFRAMEWORK40CLIENT
+	  Installed OR NETFRAMEWORK40CLIENT OR NETFRAMEWORK40FULL
 	</Condition>
 
 	<!--because of bug, this needs to be 1 -->
@@ -116,6 +116,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			  </Extension>
 			</ProgId>
 
+
 			<Registry  Id='BloomPackIcon1' Root='HKCR' Key='.BloomPack' Action='write'
 			  Type='string' Value='Bloom.BloomPackFile' />
 			<Registry Id='BloomPackIcon2' Root='HKCR' Key='Bloom.BloomPackFile' Action='write'
@@ -126,6 +127,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
 				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
 
+		  </Component>
+
+		  <Component Id="Bloom.exe.config" Guid="{5173C7E9-39FD-4438-B1C1-BA189707AA35}">
+			<File Id="Bloom.exe.config" Name="Bloom.exe.config" KeyPath="yes" Source="..\..\output\release\Bloom.exe.config" />
 		  </Component>
 
 		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
@@ -219,6 +224,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
+	  <ComponentRef Id="Bloom.exe.config" />
 	  <ComponentRef Id="Interop.Acrobat.dll" />
 	  <ComponentRef Id="Interop.AcroPDFLib.dll" />
 	  <ComponentRef Id="AxInterop.AcroPDFLib.dll" />
@@ -242,7 +248,42 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 				  ExeCommand=""
 				  Return="asyncNoWait"/>
 
+	<!-- As Bloom acts as its own http service, on Vista/Win7 we use netsh to configure a port for that -->
+	<CustomAction Id="ListenerServiceAddReservation"
+					  Execute='deferred' Impersonate='no'
+					  Directory="TARGETDIR"
+					  ExeCommand="netsh.exe http add urlacl url=http://localhost:8089/bloom/ user=everyone"
+					  Return="asyncWait" />
+	<CustomAction Id="ListenerServiceDeleteReservation"
+					  Execute='deferred' Impersonate='no'
+					  Directory="TARGETDIR"
+					  ExeCommand="netsh.exe http delete urlacl url=http://localhost:8089/bloom/ "
+					  Return="asyncWait"  />
+<!-- For WinXP, for which, reportedly, I need to use httpcfg instead of netsh -->
+	<CustomAction Id='ListenerServiceAddReservationXP'
+				  Execute='deferred' Impersonate='no'
+				  Directory="TARGETDIR"
+				  ExeCommand='httpcf set urlacl -u http://localhost:8089/bloom/ /a "D:(A;;GX;;;WD)"'
+				  Return='asyncWait' />
+	<CustomAction Id='ListenerServiceDeleteReservationXP'
+				  Execute='deferred'  Impersonate='no'
+				  Directory="TARGETDIR"
+				  ExeCommand='httpcf delete urlacl -u http://localhost:8089/bloom/'
+				  Return='asyncWait' />
+
+
 	<InstallExecuteSequence>
+	  <!--
+
+	  It's not clear when these are needed, so I'm commenting them out until I discover that.
+
+	  <Custom Action="ListenerServiceAddReservationXP" Before="InstallFinalize">NOT Installed AND VersionNT = 501</Custom>
+	  <Custom Action="ListenerServiceDeleteReservationXP" Before="InstallFinalize">Installed AND VersionNT = 501</Custom>
+
+	  <Custom Action="ListenerServiceAddReservation" Before="InstallFinalize">NOT Installed  AND VersionNT >= 600 </Custom>
+	  <Custom Action="ListenerServiceDeleteReservation" Before="InstallFinalize">Installed AND VersionNT >= 600 </Custom>
+-->
+
 	  <RemoveExistingProducts After="InstallInitialize" />
 
 	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->

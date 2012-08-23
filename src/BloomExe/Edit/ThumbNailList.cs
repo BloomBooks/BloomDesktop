@@ -105,7 +105,6 @@ namespace Bloom.Edit
 		public void UpdateThumbnailCaptions()
 		{
 			_listView.BeginUpdate();
-			_numberofEmptyListItemsAtStart = 0;
 			int pageNumber = 0;
 			foreach (ListViewItem item in _listView.Items)
 			{
@@ -386,6 +385,7 @@ namespace Bloom.Edit
 						_intentionallyChangingSelection = true;
 						listViewItem.Selected = true;
 						ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
+						listViewItem.EnsureVisible();
 					}
 					finally
 					{

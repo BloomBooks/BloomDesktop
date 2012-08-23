@@ -81,7 +81,7 @@
 			//
 			// pictureRecycleBin
 			//
-			this.pictureRecycleBin.Image = global::Bloom.Properties.Resources.delete_wordLarge;
+			this.pictureRecycleBin.Image = global::Bloom.Properties.Resources.DeleteMessageBoxImage;
 			this.localizationExtender1.SetLocalizableToolTip(this.pictureRecycleBin, null);
 			this.localizationExtender1.SetLocalizationComment(this.pictureRecycleBin, null);
 			this.localizationExtender1.SetLocalizingId(this.pictureRecycleBin, "ConfirmRemovePageDialog.pictureRecycleBin");

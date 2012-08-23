@@ -47,7 +47,12 @@ BODY
 BODY
 {
 	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.*/
+/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
 	font-size: 10pt;
 }
 DIV.ui-tooltip-content
@@ -55,6 +60,11 @@ DIV.ui-tooltip-content
 	overflow: visible !important;
 	font-size: 10pt;
 	padding: 0px 9px;
+}
+.uibloomSourceTextsBubble .ui-tooltip-content
+{
+/*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+	min-height: 60px !important;
 }
 /*++++ Experimental Toolbox Stuff*/
 UL.toolbox
@@ -114,6 +124,7 @@ UL.toolbox LI
 .bloom-imageContainer
 {
 	min-height: 50px;
+	z-index: 100;
 }
 TEXTAREA, DIV.bloom-editable
 {
@@ -143,7 +154,7 @@ DIV#bloomDataDiv
 {
 	DIV.bloom-page
 	{
-		border: 1px solid #000000;
+		/*[disabled]border:1px solid #000000;*/
 	}
 }
 .centered

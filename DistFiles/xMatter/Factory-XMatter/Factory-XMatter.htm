@@ -20,7 +20,7 @@
 				<img data-book='coverImage' src="placeholder.png" />
 			</div>
 
-			<div class="bloom-editable smallCoverCredits" data-book='smallCoverCredits' lang="V" data-hint="You may use this space for author/illustrator, or anything else."></div>
+			<div class="bloom-editable smallCoverCredits" data-book='smallCoverCredits' lang="V" data-hint="*You may use this space for author/illustrator, or anything else."></div>
 
 			<div class="coverBottomLangName">
 				<div data-library="nameOfLanguage" lang="N1">
@@ -29,7 +29,7 @@
 			<div data-library="nameOfLanguage" lang="N2"  class="">{Lang in N2}</div> -->
 			</div>
 
-			<div class="bloom-translationGroup coverBottomBookTopic" data-hint="Click to choose topic">
+			<div class="bloom-translationGroup coverBottomBookTopic" data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic">
 				<!-- NB: don't be tempted to move the data-hint up to the div. If you do, it will be visible even when the user isn't allowed to edit it. Down on the textarea, jscript will scipt it when it's readonly -->
 				<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable">
 				</div>
@@ -46,9 +46,7 @@
 					class="bloom-editable bloom-readOnlyInTranslationMode">
 					{Original Acknowledgments}</div>
 			</div>
-			<div class="bloom-metaData" id="versoLicenseAndCopyright" data-message="editMetadata">
-				<button id="editCopyrightAndLicense">
-					Edit Copyright &amp; License</button>
+			<div class="bloom-metaData" id="versoLicenseAndCopyright" data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright & License">
 				<div data-book="copyright" class="copyright " lang="*">
 					{copyright}</div>
 				<img data-book="licenseImage" class="licenseImage" src="" />

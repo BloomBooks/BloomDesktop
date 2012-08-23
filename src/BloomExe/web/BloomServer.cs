@@ -13,6 +13,8 @@ using Palaso.Reporting;
 
 namespace Bloom.web
 {
+	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
+
 	public class BloomServer : IDisposable
 	{
 		private readonly CollectionSettings _collectionSettings;
@@ -68,7 +70,7 @@ namespace Bloom.web
 		/// <param name="info"></param>
 		public void MakeReply(IRequestInfo info)
 		{
-			var r = info.RawUrl.Replace("/bloom/", "");
+			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
 			{
@@ -195,10 +197,11 @@ namespace Bloom.web
 
 	public interface IRequestInfo
 		{
-			string RawUrl { get; }
+			string LocalPathWithoutQuery { get; }
 			string ContentType { set; }
 			void WriteCompleteOutput(string s);
 			void ReplyWithImage(string path);
+		void WriteError(int errorCode);
 		}
 
 		/// <summary>
@@ -208,9 +211,9 @@ namespace Bloom.web
 		{
 			private readonly HttpListenerContext _actualContext;
 
-			public string RawUrl
+			public string LocalPathWithoutQuery
 			{
-				get { return _actualContext.Request.RawUrl; }
+				get { return _actualContext.Request.Url.LocalPath; }
 			}
 
 			public string ContentType
@@ -240,10 +243,47 @@ namespace Bloom.web
 
 			public void ReplyWithImage(string path)
 			{
-				var img = Image.FromFile(path);
-				var output = _actualContext.Response.OutputStream;
-				img.Save(output, ImageFormat.Png);
-				output.Close();
+				var isJPEG = !path.EndsWith(".png");
+
+				_actualContext.Response.ContentType = isJPEG ? "image/png" : "image/jpeg";
+
+				//problems around here? See: http://www.west-wind.com/weblog/posts/2006/Oct/19/Common-Problems-with-rendering-Bitmaps-into-ASPNET-OutputStream
+				using (var image = Image.FromFile(path))
+				{
+					//				var output = _actualContext.Response.OutputStream;
+					//				img.Save(output, Path.GetExtension(path)==".jpg"? ImageFormat.Jpeg : ImageFormat.Png);
+					//				output.Close();
+
+					//On Vista an XP, I would get a "generic GDI+ error" when I saved the image I just loaded.
+					//The workaround (see about link) is to make a copy and stream that
+
+					using (Bitmap workAroundCopy = new Bitmap(image))
+					{
+						if (isJPEG)
+						{
+							workAroundCopy.Save(_actualContext.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+							_actualContext.Response.Close();
+						}
+						else //PNG's reportedly need this further special treatment:
+						{
+							using (MemoryStream ms = new MemoryStream())
+							{
+								workAroundCopy.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+								ms.WriteTo(_actualContext.Response.OutputStream);
+								_actualContext.Response.Close();
+							}
+						}
+					}
+				}
+
+				//_actualContext.Response.Close();
+			}
+
+			public void WriteError(int errorCode)
+			{
+				_actualContext.Response.StatusCode = errorCode;
+				_actualContext.Response.StatusDescription = "File not found";
+				_actualContext.Response.Close();
 			}
 		}
 
@@ -251,13 +291,15 @@ namespace Bloom.web
 		{
 			public string ReplyContents;
 			public string ReplyImagePath;
+			//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
+			public long StatusCode;
 
 			public PretendRequestInfo(string url)
 			{
-				RawUrl = url.Replace("http://localhost:8089", "");
+				LocalPathWithoutQuery = url.Replace("http://localhost:8089", "");
 			}
 
-			public string RawUrl { get; set; }
+			public string LocalPathWithoutQuery { get; set; }
 
 			public string ContentType { get; set; }
 
@@ -277,6 +319,11 @@ namespace Bloom.web
 			public void ReplyWithImage(string path)
 			{
 				ReplyImagePath = path;
+			}
+
+			public void WriteError(int errorCode)
+			{
+				StatusCode = errorCode;
 			}
 		}
 

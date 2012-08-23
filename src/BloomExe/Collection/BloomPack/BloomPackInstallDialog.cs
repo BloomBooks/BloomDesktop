@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using Ionic.Zip;
+using Palaso.Reporting;
 
 namespace Bloom.Collection.BloomPack
 {
@@ -41,6 +42,8 @@ namespace Bloom.Collection.BloomPack
 			}
 			try
 			{
+				Logger.WriteEvent("Installing BloomPack "+_path);
+
 				using (var zip = new Ionic.Zip.ZipFile(_path))
 				{
 					var folderName = GetRootFolderName(zip);
@@ -49,6 +52,7 @@ namespace Bloom.Collection.BloomPack
 					string destinationFolder = Path.Combine(ProjectContext.InstalledCollectionsDirectory, folderName);
 					if (Directory.Exists(destinationFolder))
 					{
+						Logger.WriteEvent("BloomPack already exists, asking...");
 						var msg =
 							string.Format(
 								"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?",
@@ -61,13 +65,14 @@ namespace Bloom.Collection.BloomPack
 						}
 						try
 						{
+							Logger.WriteEvent("Deleting existing BloomPack at "+destinationFolder);
 							Directory.Delete(destinationFolder, true);
 						}
 						catch (Exception error)
 						{
 							_message.Text =
 								string.Format(
-									"Bloom was not able to remove the existing copy of '{0}'. Try again after restarting your computer.",
+									"Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.",
 									destinationFolder);
 							pictureBox1.Image = _errorImage.Image;
 							_okButton.Text = "&Cancel";
@@ -76,8 +81,9 @@ namespace Bloom.Collection.BloomPack
 					}
 					zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
 					_message.Text = string.Format("The {0} Collection is now ready to use on this computer.", folderName);
+					UsageReporter.SendNavigationNotice("Installed BloomPack");
+					UsageReporter.SendEvent("BloomPack", "BloomPack", "Install", folderName,0);
 				}
-
 			}
 			catch (Exception error)
 			{

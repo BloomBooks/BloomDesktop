@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.Workspace;
 using Palaso.Reporting;
 
@@ -39,6 +40,12 @@ namespace Bloom
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
+			_workspaceView.ReopenCurrentProject += ((x, y) =>
+			{
+				Settings.Default.MruProjects.AddNewPath(_collectionSettings.SettingsFilePath);
+				UserWantsToOpeReopenProject = true;
+				Close();
+			});
 
 			_workspaceView.BackColor =
 				System.Drawing.Color.FromArgb(64,64,64);
@@ -78,6 +85,9 @@ namespace Bloom
 
 		public bool UserWantsToOpenADifferentProject { get; set; }
 
+		public bool UserWantsToOpeReopenProject;
+
+
 		private void Shell_Activated(object sender, EventArgs e)
 		{
 
@@ -85,7 +95,7 @@ namespace Bloom
 
 		private void Shell_Deactivate(object sender, EventArgs e)
 		{
-			Debug.WriteLine("Shell Deativated");
+			Debug.WriteLine("Shell Deactivated");
 		}
 
 	}

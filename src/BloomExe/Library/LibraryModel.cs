@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ToPalaso.Experimental;
 using Ionic.Zip;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Library
@@ -126,7 +126,11 @@ namespace Bloom.Library
 		{
 			var b = _bookSelection.CurrentSelection;
 			_bookSelection.SelectBook(null);
-			b.UpdateXMatter();
+
+			using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
+			{
+				dlg.ShowAndDoWork(progress=>b.UpdateXMatter(progress));
+			}
 			_bookSelection.SelectBook(b);
 		}
 
@@ -144,7 +148,7 @@ namespace Bloom.Library
 					//UI already go permission for this
 					File.Delete(path);
 				}
-
+				Logger.WriteEvent("Making BloomPack");
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack..."))
 				{
 					try
@@ -161,7 +165,9 @@ namespace Bloom.Library
 							zip.Save(path);
 						}
 						//show it
+						Logger.WriteEvent("Showing BloomPack on disk");
 						Process.Start(Path.GetDirectoryName(path));
+						UsageReporter.SendNavigationNotice("Made BloomPack");
 					}
 					finally
 					{

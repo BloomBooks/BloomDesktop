@@ -170,8 +170,7 @@ namespace Bloom.Library
 		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)
 		{
 			var item = new Button(){Size=new Size(90,110)};
-			int kMaxCaptionLetters=20;
-			item.Text = book.Title.Length > kMaxCaptionLetters ? book.Title.Substring(0, kMaxCaptionLetters) + "…" : book.Title;
+			item.Text = GetTitleToDisplay(book);
 			item.TextImageRelation = TextImageRelation.ImageAboveText;
 			item.ImageAlign = ContentAlignment.TopCenter;
 			item.TextAlign = ContentAlignment.BottomCenter;
@@ -197,6 +196,13 @@ namespace Bloom.Library
 												  image => RefreshOneThumbnail(book, image),
 												  error=> RefreshOneThumbnail(book, Resources.Error70x70));
 
+		}
+
+		private string GetTitleToDisplay(Book.Book book)
+		{
+			int kMaxCaptionLetters = 20;
+			var title = book.TitleBestForUserDisplay;
+			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters) + "…" : title;
 		}
 
 		/// <summary>
@@ -297,7 +303,7 @@ namespace Bloom.Library
 				if (book == null || SelectedButton == null)
 					return;
 
-				SelectedButton.Text = book.Title;
+				SelectedButton.Text = GetTitleToDisplay(book);
 
 				if (_reshowPending)
 				{

@@ -12,6 +12,7 @@ using Bloom.Publish;
 using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -29,6 +30,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 
 		public event EventHandler CloseCurrentProject;
+		public event EventHandler ReopenCurrentProject;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -204,13 +206,17 @@ namespace Bloom.Workspace
 
 		private void OnSettingsButton_Click(object sender, EventArgs e)
 		{
-			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
+			DialogResult result =  _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 																	{
 																		using (var dlg = _settingsDialogFactory())
 																		{
 																			return dlg.ShowDialog();
 																		}
 																	});
+			if(result==DialogResult.Yes)
+			{
+				Invoke(ReopenCurrentProject);
+			}
 		}
 
 		private void SelectPage(Control view)
@@ -300,8 +306,16 @@ namespace Bloom.Workspace
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
 		}
 
-
-
+		private void _showLogMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				Logger.ShowUserTheLogFile();// Process.Start(Logger.LogPath);
+			}
+			catch (Exception)
+			{
+			}
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

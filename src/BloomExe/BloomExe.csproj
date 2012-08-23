@@ -68,10 +68,11 @@
       <HintPath>..\..\packages\AeroWizard.1.2.1\lib\3.5\AeroWizard.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Autofac.Configuration">
+    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="AxInterop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -127,7 +128,8 @@
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
-    <Reference Include="PdfSharp">
+    <Reference Include="PdfSharp, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -171,11 +173,26 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ToPalaso\MessageLabelProgress.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.Designer.cs">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\FlowThumbNailList.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Edit\FlowThumbNailList.Designer.cs">
       <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.Designer.cs">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
     </Compile>
     <Compile Include="HelpLauncher.cs" />
     <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
@@ -191,6 +208,7 @@
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </Compile>
     <Compile Include="LibraryFolderInChorus.cs" />
+    <Compile Include="ImageProcessing\LowResImageCache.cs" />
     <Compile Include="Library\IBloomTabArea.cs" />
     <Compile Include="Library\ListHeader.cs">
       <SubType>UserControl</SubType>
@@ -240,6 +258,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
@@ -390,8 +411,14 @@
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogForeground.resx">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
       <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HtmlLabel.resx">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
@@ -459,9 +486,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PleaseWait.resx">
-      <DependentUpon>PleaseWait.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
@@ -501,12 +525,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Publish\PleaseWait.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\PleaseWait.Designer.cs">
-      <DependentUpon>PleaseWait.cs</DependentUpon>
-    </Compile>
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -526,7 +544,6 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToPalaso\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />

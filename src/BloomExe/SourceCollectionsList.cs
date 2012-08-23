@@ -40,15 +40,29 @@ namespace Bloom
 			{
 				if (!Directory.Exists(root))
 					continue;
-				foreach (var collection in Directory.GetDirectories(root))
+				foreach (var collectionDir in Directory.GetDirectories(root))
 				{
-					//TODO: dereference shortcuts to folders living elsewhere
-
-					foreach (var templateDir in Directory.GetDirectories(collection))
+					foreach (var templateDir in Directory.GetDirectories(collectionDir))
 					{
 						if (Path.GetFileName(templateDir) == key)
 							return _bookFactory(_storageFactory(templateDir), false);
 								//review: this is loading the book both in the librarymodel, and here
+					}
+				}
+
+				//dereference shortcuts to folders living elsewhere
+
+				foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
+				{
+					var collectionDir = ResolveShortcut.Resolve(shortcut);
+					if (Directory.Exists(collectionDir))
+					{
+						foreach (var templateDir in Directory.GetDirectories(collectionDir))
+						{
+							if (Path.GetFileName(templateDir) == key)
+								return _bookFactory(_storageFactory(templateDir), false);
+							//review: this is loading the book both in the librarymodel, and here
+						}
 					}
 				}
 			}
