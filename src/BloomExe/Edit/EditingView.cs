@@ -31,6 +31,7 @@ namespace Bloom.Edit
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
     	private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
+    	private bool _visible;
 
     	public delegate EditingView Factory();//autofac uses this
 
@@ -94,7 +95,10 @@ namespace Bloom.Edit
 
 		void ParentForm_Activated(object sender, EventArgs e)
 		{
-//			Debug.WriteLine("window activated");
+			if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
+				return;
+
+			Debug.WriteLine("EditingView.ParentForm_Activated(): Selecting Browser");
 //			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
 //			Debug.WriteLine("active control: " + ActiveControl.Name);
 //			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
@@ -111,7 +115,8 @@ namespace Bloom.Edit
 			 */
 			
 			_splitContainer1.Select();
-			_browser1.Select();
+			//_browser1.Select();
+			_browser1.WebBrowser.Select();
 		}
 
 
@@ -129,7 +134,7 @@ namespace Bloom.Edit
 #endif
     	}
 
-    	private void OnClickCopyrightAndLicenseDiv()
+    	private void OnShowBookMetadataEditor()
     	{
 			try
 			{
@@ -162,7 +167,7 @@ namespace Bloom.Edit
 						}
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-
+						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is emtpy
 						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
@@ -173,6 +178,12 @@ namespace Bloom.Edit
 								licenseImageName,
 								dlg.Metadata.License.Url, rights, description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+						
+						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
+						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
+						//have the data div.
+						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
+						_model.SaveNow();
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
@@ -236,7 +247,8 @@ namespace Bloom.Edit
 	   /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
-        {
+		{
+			_visible = visible;
             if (visible)
             {
                 if(_model.GetBookHasChanged())
@@ -249,7 +261,8 @@ namespace Bloom.Edit
                 }
                 Application.Idle += new EventHandler(VisibleNowAddSlowContents);
                 Cursor = Cursors.WaitCursor;
-                UsageReporter.SendNavigationNotice("Editing");
+				Logger.WriteEvent("Entered Edit Tab");
+				UsageReporter.SendNavigationNotice("Entered Edit Tab");
             }
             else
 			{
@@ -302,9 +315,47 @@ namespace Bloom.Edit
                 OnChangeImage(ge);
 			if (ge.Target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
-			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
-				OnClickCopyrightAndLicenseDiv();
+			if (ge.Target.ClassName.Contains("editMetadataButton"))
+				OnEditImageMetdata(ge);
+
+        	var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
+			if(anchor!=null)
+			{
+				if(anchor.Href.Contains("bookMetadataEditor"))
+				{
+					OnShowBookMetadataEditor();
+					ge.Handled = true; 
+					return;
+				}
+				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
+				{
+					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
+					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
+					_browser1.RunJavaScript(function);
+					ge.Handled = true;
+					return;
+				}
+				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
+				{
+					Process.Start(anchor.Href);
+					ge.Handled = true;
+					return;
+				}
+				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
+				{
+					ge.Handled = false;//let gecko handle it
+					return;
+				}
+				else
+				{
+					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+					ge.Handled = true;
+				}
+
+			}
+//			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
         }
+
 
     	private void RememberSourceTabChoice(GeckoElement target)
     	{
@@ -314,6 +365,56 @@ namespace Bloom.Edit
     		Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
     	}
 
+
+		private void OnEditImageMetdata(GeckoDomEventArgs ge)
+		{
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
+				return;
+			string fileName = imageElement.GetAttribute("src").Replace("%20", " ");
+
+			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+			using (var imageInfo = PalasoImage.FromFile(path))
+			{
+				bool looksOfficial = imageInfo.Metadata!=null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+				if(looksOfficial)
+				{
+					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
+					return;
+				}
+				Logger.WriteEvent("Showing Metadata Editor For Image");
+				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
+				{
+					if (DialogResult.OK == dlg.ShowDialog())
+					{
+						imageInfo.Metadata = dlg.Metadata;
+						imageInfo.SaveUpdatedMetadataIfItMakesSense();
+						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
+						//update so any overlays on the image are brough up to data
+						var editor = new PageEditingModel();
+						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
+
+						var answer = MessageBox.Show("Copy this information to all other pictures in this book?", "Picture Intellectual Proprty Information", MessageBoxButtons.YesNo);
+						if(answer == DialogResult.Yes)
+						{
+							Cursor = Cursors.WaitCursor;
+							try
+							{
+								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
+							}
+							catch (Exception e)
+							{
+								ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
+							}
+							Cursor = Cursors.Default;
+						}
+					}
+				}
+			}
+
+			//_model.SaveNow();
+			//doesn't work: _browser1.WebBrowser.Reload();
+		}
 
     	private void OnPasteImage(GeckoDomEventArgs ge)
 		{
@@ -326,7 +427,7 @@ namespace Bloom.Edit
 			if (!Clipboard.ContainsImage())
 
 			{
-				MessageBox.Show("Before you can paste and image, copy one onto your 'clipboard', from another program.");
+				MessageBox.Show("Before you can paste an image, copy one onto your 'clipboard', from another program.");
 				return;
 			}
 
@@ -336,9 +437,12 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-
-			var image = new PalasoImage(Clipboard.GetImage());
-			_model.ChangePicture(imageElement, image);
+    		Cursor = Cursors.WaitCursor;
+			using (var image = new PalasoImage(Clipboard.GetImage()))
+			{
+				_model.ChangePicture(imageElement, image);
+			}
+    		Cursor = Cursors.Default;
 		}
 
     	private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
@@ -363,22 +467,26 @@ namespace Bloom.Edit
 
     	private void OnChangeImage(GeckoDomEventArgs ge)
         {
-			if (!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
 				return;
+			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");			
+			
+			//TODO: this would let them set it once without us bugging them, but after that if they
+			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
+			if (!currentPath.ToLower().Contains("placeholder")  //always alow them to put in something over a placeholder
+				&& !_model.CanChangeImages())
+			{
+				if(DialogResult.Cancel== MessageBox.Show("This book is locked down as shell. Are you sure you want to change the picture?","Change Image",MessageBoxButtons.OKCancel))
+				{
+					return;
+				}
 			}
         	if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 
+			Cursor = Cursors.WaitCursor;
 
-			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
-				return;
-
-			 Cursor = Cursors.WaitCursor;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
             var imageInfo = new PalasoImage();
             var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
             
@@ -431,7 +539,7 @@ namespace Bloom.Edit
         /// this started as an experiment, where our textareas were not being read when we saved because of the need
         /// to change the picture
         /// </summary>
-        public void ReadEditableAreasNow()
+        public void CleanHtmlAndCopyToPageDom()
         {
             _browser1.ReadEditableAreasNow();
         }
@@ -465,7 +573,8 @@ namespace Bloom.Edit
 
 				_layoutChoices.DropDownItems.Clear();
 				var layout = _model.GetCurrentLayout();
-				foreach (var l in _model.GetLayoutChoices())
+				var layoutChoices = _model.GetLayoutChoices();
+				foreach (var l in layoutChoices)
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(l.ToString());
 					item.Tag = l;
@@ -473,6 +582,13 @@ namespace Bloom.Edit
 					item.Checked = l.ToString() == layout.ToString();
 					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+				}
+
+				if(layoutChoices.Count()<2)
+				{
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add("There are no other layout options for this template.");
+					item.Tag = null;
+					item.Enabled = false;
 				}
 
 				_layoutChoices.Text = layout.ToString();

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Palaso.IO;
+using Bloom.ToPalaso.Experimental;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 
@@ -103,6 +102,7 @@ namespace Bloom.Edit
             _domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
             _currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
             _view.UpdatePageList(false);
+			Logger.WriteEvent("DeletePage");
 			UsageReporter.SendNavigationNotice("DeletePage");
         }
 
@@ -110,7 +110,10 @@ namespace Bloom.Edit
         {
             info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
+			{
 				UsageReporter.SendNavigationNotice("RelocatePage");
+				Logger.WriteEvent("RelocatePage");
+			}
         }
 
         private void OnInsertTemplatePage(object sender, EventArgs e)
@@ -119,6 +122,7 @@ namespace Bloom.Edit
 			_view.UpdatePageList(false);
             //_pageSelection.SelectPage(newPage);
 			UsageReporter.SendNavigationNotice("InsertTemplatePage");
+			Logger.WriteEvent("InsertTemplatePage");
         }
 
         public string CurrentBookName
@@ -207,7 +211,7 @@ namespace Bloom.Edit
 //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-						                                _collectionSettings.GetNationalLanguage2Name("en"));// {Selected = selected};
+						                                _collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}
@@ -254,6 +258,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void ContentLanguagesSelectionChanged()
 		{
+			Logger.WriteEvent("Changing Content Languages");
 			string l2 = null;
 			string l3 = null;
 			foreach (var language in _contentLanguages)
@@ -275,6 +280,9 @@ namespace Bloom.Edit
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
+
+			Logger.WriteEvent("ChangingContentLanguages"); 
+			UsageReporter.SendNavigationNotice("ChangingContentLanguages");
 		}
 
     	public int NumberOfDisplayedLanguages
@@ -337,6 +345,7 @@ namespace Bloom.Edit
 
         void OnPageSelectionChanged(object sender, EventArgs e)
         {
+			Logger.WriteMinorEvent("changing page selection");
             if (_view != null)
             {
 				if (_previouslySelectedPage!=null && _domForCurrentPage != null)
@@ -348,6 +357,8 @@ namespace Bloom.Edit
                 _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
             	_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
             }
+
+			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
         }
 
         public XmlDocument GetXmlDocumentForCurrentPage()
@@ -360,20 +371,34 @@ namespace Bloom.Edit
         {
             if (_domForCurrentPage != null)
             {
-                _view.ReadEditableAreasNow();
+				_view.CleanHtmlAndCopyToPageDom();
                 _bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
             }
         }
 
         public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
         {
-            var editor = new PageEditingModel();
-            editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
-			
-			//we have to save so that when asked by the thumnailer, the book will give the proper image
-			SaveNow();
-            _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-			UsageReporter.SendNavigationNotice("ChangePicture");
+			try
+			{
+				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
+				var editor = new PageEditingModel();
+				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
+
+				//we have to save so that when asked by the thumnailer, the book will give the proper image
+				SaveNow();
+				//but then, we need the non-cleaned version back there
+				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+
+				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+				Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
+				UsageReporter.SendNavigationNotice("ChangePicture");
+				Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
+
+			}
+			catch (Exception e)
+			{
+				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
+			}
         }
 
 //        private void InvokeUpdatePageList()
@@ -429,6 +454,14 @@ namespace Bloom.Edit
 			_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
     	}
 #endif
+
+    	public void CopyImageMetadataToWholeBook(Metadata metadata)
+    	{
+			using (var dlg = new ProgressDialogForeground())//REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
+			{
+				dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
+			}
+    	}
     }
        
     public class TemplateInsertionCommand

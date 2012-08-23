@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.Xml;
 using Gecko;
 using Gecko.DOM;
@@ -77,10 +78,7 @@ namespace Bloom
 
             _cutCommand.Implementer = () => _browser.CutSelection();
             _copyCommand.Implementer = () => _browser.CopySelection();
-            _pasteCommand.Implementer = () =>
-                                        	{
-                                        		_browser.Paste();
-                                        	};
+            _pasteCommand.Implementer = PasteFilteredText;
             _undoCommand.Implementer = () => _browser.Undo();
 
             //none of these worked
@@ -98,16 +96,27 @@ namespace Bloom
         {
             if (_copyCommand == null)
                 return;
-
-            _cutCommand.Enabled = _browser != null && _browser.CanCutSelection; 
-            _copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
-            _pasteCommand.Enabled = _browser != null && _browser.CanPaste;
-			if(_pasteCommand.Enabled)
+			try
 			{
-				//prevent pasting images (BL-93)
-				_pasteCommand.Enabled = Clipboard.ContainsText();
+				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
+				_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
+				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
+				if (_pasteCommand.Enabled)
+				{
+					//prevent pasting images (BL-93)
+					_pasteCommand.Enabled = Clipboard.ContainsText();
+				}
+				_undoCommand.Enabled = _browser != null && _browser.CanUndo;
+
 			}
-            _undoCommand.Enabled = _browser != null && _browser.CanUndo;
+			catch (Exception)
+			{	
+				_pasteCommand.Enabled = false;
+				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+				//REf jira.palaso.org/issues/browse/BL-197
+				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+				//so it's probably just not ok to check if you're not front-most.
+			}
         }
 
         void OnValidating(object sender, CancelEventArgs e)
@@ -183,7 +192,9 @@ namespace Bloom
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
-
+#if !DEBUG
+			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
+#endif
 			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js 
 			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
 			//it will continue to show in firebug, so i won't forget about it
@@ -212,22 +223,31 @@ namespace Bloom
 		{
 			if (e.CtrlKey && e.KeyChar == 'v')
 			{
+				Debug.WriteLine("Ctrl-v pressed.");
 				if (!_pasteCommand.Enabled)
 				{
+					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
 				else if(_browser.CanPaste && Clipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-					
-					//filter whatever's on there down to just simple text.
-					//While it's tempting to allow formatted pasting, if you're making a shell, that's just
-					//kidding yourself; the translator won't get to have that formatting too.
-					var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
-					Clipboard.SetText(originalText,TextDataFormat.UnicodeText);
-					_browser.Paste();
+
+
+					PasteFilteredText();
 				}
 			}
+		}
+
+		private void PasteFilteredText()
+		{
+//filter whatever's on there down to just simple text.
+			//While it's tempting to allow formatted pasting, if you're making a shell, that's just
+			//kidding yourself; the translator won't get to have that formatting too.
+			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
+			Debug.WriteLine("Asking browser to paste:" + Clipboard.GetText());
+			_browser.Paste();
 		}
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
@@ -358,12 +378,25 @@ namespace Bloom
 			if (_pageDom == null)
                 return;
 
-            //this is to force an onblur so that we can get at the actual user-edited value [review: still needed? maybe for textareas]
-            _browser.WebBrowserFocus.Deactivate();
-    		_browser.WebBrowserFocus.Activate();
+#if DEBUG
+			if (_pageDom.SelectNodes("//textarea").Count > 0)
+				Debug.Fail("Oh, a chance to test bluring textarea's!");
+#endif
+			//I (John) don't use textareas anymore... I stick with divs.
+	//		if (_pageDom.SelectNodes("//textarea").Count >0)
+			{
+				//This approach was to force an onblur so that we can get at the actual user-edited value.
+				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
+				//_browser.WebBrowserFocus.Deactivate();
+				//_browser.WebBrowserFocus.Activate();
 
+				//now, we just do the blur directly. This has not been tested, because we don't have an docs with inputs or text areas at the moment
+				var activeElement = _browser.Window.Document.ActiveElement;
+				if(activeElement!=null)
+					activeElement.Blur();
+			}
 
-			var body = _browser.Document.GetElementsByTagName("body");
+    		var body = _browser.Document.GetElementsByTagName("body");
 			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
 				return;
 

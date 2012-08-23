@@ -43,12 +43,9 @@ DIV.coverBottomBookTopic
 }
 DIV.marginBox
 {
-	width: 108mm;
-	/*+placement:anchor-top-left 20mm 14mm;*/
-	position: absolute;
-	left: 20mm;
-	top: 14mm;
-	height: 175mm;
+	/*[disabled]width:108mm;*/
+	/*[disabled]+placement:anchor-top-left 20mm 14mm;*/
+	/*[disabled]height:175mm;*/
 }
 .enablePageCustomization DIV.marginBox
 {

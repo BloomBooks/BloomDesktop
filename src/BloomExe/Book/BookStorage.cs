@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,9 +6,10 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
+using Bloom.Properties;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -56,21 +56,23 @@ namespace Bloom.Book
 		/// History of this number:
 		///		0.4 had version 0.4
 		/// </summary>
-    	private const string kBloomFormatVersion = "0.5";
+    	private const string kBloomFormatVersion = "0.8";
 
         private  string _folderPath;
-        private IChangeableFileLocator _fileLocator;
-        public string ErrorMessages;
+        private readonly IChangeableFileLocator _fileLocator;
+    	private readonly BookRenamedEvent _bookRenamedEvent;
+    	public string ErrorMessages;
         private static bool _alreadyNotifiedAboutOneFailedCopy;
 
         public delegate BookStorage Factory(string folderPath);//autofac uses this        
 
-        public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator)
+		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator, BookRenamedEvent bookRenamedEvent)
         {
 			Debug.WriteLine(string.Format("BookStorage({0})", folderPath));
             _folderPath = folderPath;
 			//the fileLocator we get doesn't know anything about this particular book
         	_fileLocator = baseFileLocator;
+			_bookRenamedEvent = bookRenamedEvent;
 			_fileLocator.AddPath(folderPath);
 			
 			Dom = new XmlDocument();
@@ -321,7 +323,7 @@ namespace Bloom.Book
 
 
 
-        public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath)
+        public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath, bool pointAtEmbeddedServer)
         {
            var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
            if (head == null)
@@ -334,8 +336,23 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(folderPath))
             {
                 var baseElement = dom.CreateElement("base");
-                baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
-                head.AppendChild(baseElement);
+				if (pointAtEmbeddedServer && Settings.Default.ImageHandler=="http" && ImageServer.IsAbleToUsePort)
+				{
+					//this is only used by relative paths, and only img src's are left relative.
+					//we are redirecting through our build-in httplistener in order to shrink
+					//big images before giving them to gecko which has trouble with really hi-res ones
+					var uri = folderPath + Path.DirectorySeparatorChar;
+					uri = uri.Replace(":", "%3A");
+					uri = uri.Replace('\\', '/');
+					uri = ImageServer.GetPathEndingInSlash() + uri;
+					baseElement.SetAttribute("href", uri);
+				}
+				else
+				{
+					baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+				}
+
+            	head.AppendChild(baseElement);
             }
             
         }
@@ -459,7 +476,7 @@ namespace Bloom.Book
         {
             string tempPath = Path.GetTempFileName();
             MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
-            SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
+            SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
 
             return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
         }
@@ -570,7 +587,7 @@ namespace Bloom.Book
         {
             XmlDocument dom = (XmlDocument)Dom.Clone();
 
-            SetBaseForRelativePaths(dom, _folderPath);
+            SetBaseForRelativePaths(dom, _folderPath,true);
     		EnsureHasCollectionAndBookStylesheets(dom);
 			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
 
@@ -634,7 +651,8 @@ namespace Bloom.Book
             File.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
                        
              //next, rename the enclosing folder
-            try
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, newFolderPath); 
+			try
             {
 				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
 				
@@ -651,7 +669,7 @@ namespace Bloom.Book
                 Debug.Fail("(debug mode only): could not rename the folder");
             }
 
-
+        	_bookRenamedEvent.Raise(fromToPair);
         }
 
         public string GetValidateErrors()
@@ -669,7 +687,7 @@ namespace Bloom.Book
 
         public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
         {
-        	var title = XmlUtilities.GetTitleOfHtml(Dom, null);
+        	var title = XmlUtils.GetTitleOfHtml(Dom, null);
 			if (title != null)
 			{
 				SetBookName(title);
@@ -733,4 +751,5 @@ namespace Bloom.Book
             return Path.Combine(parent, name + suffix);
         }
     }
+
 }

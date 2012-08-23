@@ -9,7 +9,9 @@ using Autofac;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Library;
+using Bloom.Properties;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
@@ -60,15 +62,15 @@ namespace Bloom
 				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
+			else
+			{
+				if (Settings.Default.ImageHandler != "off")
+				{
+					_imageServer = _scope.Resolve<ImageServer>();
 
-        	try
-        	{
-				_chorusSystem = new ChorusSystem(projectSettingsPath, string.Empty/*we don't know the user name*/);
-        	}
-        	catch (Exception)
-        	{
-        	}
-        	
+					_imageServer.StartWithSetupIfNeeded();
+				}
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -92,6 +94,7 @@ namespace Bloom
                     typeof(EditBookCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
+					typeof(BookRenamedEvent),
 					typeof(LibraryClosing),
                     typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
@@ -269,13 +272,17 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
+			_scope.Dispose();
+			_scope = null; 
 			CheckInNow();
 
-			if(_bloomServer!=null)
+			
+			if (_bloomServer != null)
 				_bloomServer.Dispose();
 			_bloomServer = null;
-			_scope.Dispose();
-			_scope = null;
+			if (_imageServer!=null)
+				_imageServer.Dispose();
+			_imageServer = null;
 		}
 
 		/// <summary>

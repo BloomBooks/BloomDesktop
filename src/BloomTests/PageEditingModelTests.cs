@@ -27,10 +27,13 @@ namespace BloomTests
             using (var dest = new TemporaryFolder("bloom picture tests dest"))
             {
                 var newImagePath = src.Combine("new.png");
-                model.ChangePicture(dest.Path, dom, "two", MakeSamplePngImage(newImagePath));
-                Assert.IsTrue(File.Exists(dest.Combine("new.png")));
-                AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
-          }
+				using (var original = MakeSamplePngImage(newImagePath))
+				{
+					model.ChangePicture(dest.Path, dom, "two", original);
+					Assert.IsTrue(File.Exists(dest.Combine("new.png")));
+					AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
+				}
+            }
 
         }
 
@@ -47,14 +50,17 @@ namespace BloomTests
             dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
             var model = new PageEditingModel();
             using (var src = new TemporaryFolder("bloom pictures test source"))
-            using (var dest = new TemporaryFolder("bloom picture tests dest"))
-            {
-                var dogImagePath = src.Combine("dog.png");
-                var destDogImagePath = dest.Combine("dog.png");
-                File.WriteAllText(destDogImagePath, "old dog");
-                model.ChangePicture(dest.Path, dom, "two", MakeSamplePngImage(dogImagePath));
-                Assert.IsTrue(Image.FromFile(destDogImagePath).Width == kSampleImageDimension);
-            }
+			using (var dest = new TemporaryFolder("bloom picture tests dest"))
+			{
+				var dogImagePath = src.Combine("dog.png"); 
+				using (var original = MakeSamplePngImage(dogImagePath))
+				{
+					var destDogImagePath = dest.Combine("dog.png");
+					File.WriteAllText(destDogImagePath, "old dog");
+					model.ChangePicture(dest.Path, dom, "two", original);
+					Assert.IsTrue(Image.FromFile(destDogImagePath).Width == kSampleImageDimension);
+				}
+			}
         }
 
         private PalasoImage MakeSamplePngImage(string path)
@@ -83,27 +89,27 @@ namespace BloomTests
         /// <summary>
         /// Some (or maybe all?) browsers can't show tiff, so we might as well convert it
         /// </summary>
-        [Test]
-        public void ChangePicture_PictureIsTiff_ConvertedToPng()
+		[Test]
+		public void ChangePicture_PictureIsTiff_ConvertedToPng()
         {
-            var dom = new XmlDocument();
-            dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-            var model = new PageEditingModel();
-            using (var src = new TemporaryFolder("bloom pictures test source"))
-            using (var dest = new TemporaryFolder("bloom picture tests dest"))
-            {
-                model.ChangePicture(dest.Path, dom, "two", MakeSampleTifImage(src.Combine("new.tif")));
-                Assert.IsTrue(File.Exists(dest.Combine("new.png")));
-                AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
-                using (var converted = Image.FromFile(dest.Combine("new.png")))
-                {
-                    Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
-                }
-            }
-
+        	var dom = new XmlDocument();
+        	dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
+        	var model = new PageEditingModel();
+        	using (var src = new TemporaryFolder("bloom pictures test source"))
+        	using (var dest = new TemporaryFolder("bloom picture tests dest"))
+        	using (var original = MakeSampleTifImage(src.Combine("new.tif")))
+        	{
+				model.ChangePicture(dest.Path, dom, "two", original);
+        		Assert.IsTrue(File.Exists(dest.Combine("new.png")));
+        		AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
+        		using (var converted = Image.FromFile(dest.Combine("new.png")))
+        		{
+        			Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
+        		}
+        	}
         }
 
-        [Test]
+    	[Test]
         public void ChangePicture_PictureIsJpg_StaysJpg()
         {
             var dom = new XmlDocument();
@@ -111,8 +117,9 @@ namespace BloomTests
             var model = new PageEditingModel();
             using (var src = new TemporaryFolder("bloom pictures test source"))
             using (var dest = new TemporaryFolder("bloom picture tests dest"))
-            {
-                model.ChangePicture(dest.Path, dom, "two", MakeSampleJpegImage(src.Combine("new.jpg")));
+			using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
+			{
+                model.ChangePicture(dest.Path, dom, "two", original);
                 Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
                 AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.jpg']", 1);
                 using (var converted = Image.FromFile(dest.Combine("new.jpg")))

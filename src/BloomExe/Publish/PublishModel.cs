@@ -11,25 +11,28 @@ using Palaso.Xml;
 
 namespace Bloom.Publish
 {
-    /// <summary>
-    /// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it.
-    /// </summary>
-    public class PublishModel : IDisposable
-    {
-        public BookSelection BookSelection { get; set; }
+	/// <summary>
+	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it.
+	/// </summary>
+	public class PublishModel : IDisposable
+	{
+		public BookSelection BookSelection { get; set; }
 
-        public string PdfFilePath{ get; private set;}
-        public enum DisplayModes
-        {
-            NoBook, Working, ShowPdf
-        }
+		public string PdfFilePath { get; private set; }
 
-        public enum BookletPortions
-        {
-            None,
-            BookletCover,
-            BookletPages
-        }
+		public enum DisplayModes
+		{
+			NoBook,
+			Working,
+			ShowPdf
+		}
+
+		public enum BookletPortions
+		{
+			None,
+			BookletCover,
+			BookletPages
+		}
 
 		public enum BookletLayoutMethod
 		{
@@ -38,129 +41,132 @@ namespace Bloom.Publish
 			Calendar
 		}
 
-        private readonly BookSelection _bookSelection;
-        private Book.Book _currentlyLoadedBook;
-        private PdfMaker _pdfMaker;
-    	private readonly CollectionSettings _collectionSettings;
-    	private string _lastDirectory;
+		private readonly BookSelection _bookSelection;
+		private Book.Book _currentlyLoadedBook;
+		private PdfMaker _pdfMaker;
+		private readonly CollectionSettings _collectionSettings;
+		private string _lastDirectory;
 
-    	public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
-        {
-            BookSelection = bookSelection;
-            _bookSelection = bookSelection;
-            _pdfMaker = pdfMaker;
-        	_collectionSettings = collectionSettings;
-        	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-            BookletPortion = BookletPortions.BookletPages;
-        }
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
+		{
+			BookSelection = bookSelection;
+			_bookSelection = bookSelection;
+			_pdfMaker = pdfMaker;
+			_collectionSettings = collectionSettings;
+			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			BookletPortion = BookletPortions.BookletPages;
+		}
 
-        public PublishView View { get; set; }
-
-
-        void OnBookSelectionChanged(object sender, EventArgs e)
-        {
-            if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
-            {
-			//	View.MakeBooklet();
-            }
-        }
+		public PublishView View { get; set; }
 
 
-        public void LoadBook(DoWorkEventArgs doWorkEventArgs)
-        {
-            _currentlyLoadedBook = BookSelection.CurrentSelection;
+		private void OnBookSelectionChanged(object sender, EventArgs e)
+		{
+			if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
+			{
+				//	View.MakeBooklet();
+			}
+		}
 
-            try
-            {
 
-                PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
+		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
+		{
+			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
-                XmlDocument dom =   _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
-                
-                //wkhtmltopdf can't handle file://
-                dom.InnerXml = dom.InnerXml.Replace("file://", "");
+			try
+			{
+
+				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
+
+				XmlDocument dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+
+				//wkhtmltopdf can't handle file://
+				dom.InnerXml = dom.InnerXml.Replace("file://", "");
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
-                 using (var tempHtml = TempFile.WithExtension(".htm"))
-                {
-                    XmlWriterSettings settings = new XmlWriterSettings();
-                    settings.Indent = true;
-                    settings.CheckCharacters = true;
-                    
-                    using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-                    {
-                        dom.WriteContentTo(writer);
-                        writer.Close();
-                    }
-					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom, "A5Portrait");
+				using (var tempHtml = TempFile.WithExtension(".htm"))
+				{
+					XmlWriterSettings settings = new XmlWriterSettings();
+					settings.Indent = true;
+					settings.CheckCharacters = true;
+
+					using (var writer = XmlWriter.Create(tempHtml.Path, settings))
+					{
+						dom.WriteContentTo(writer);
+						writer.Close();
+					}
+					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom,
+					                                                                  "A5Portrait");
 					if (doWorkEventArgs.Cancel)
 						return;
 
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape, _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
-                }
-            }
-            catch (Exception e)
-            {
-                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
-                SetDisplayMode(DisplayModes.NoBook);
-                return;
-            }
-        }
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape,
+					                  _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
+				}
+			}
+			catch (Exception e)
+			{
+				//we can't safely do any ui-related work from this thread, like putting up a dialog
+				doWorkEventArgs.Result = e;
+				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
+				//                SetDisplayMode(DisplayModes.NoBook);
+				//                return;
+			}
+		}
 
-        private string GetPdfPath(string fileName)
-        {
-            string path=null;
+		private string GetPdfPath(string fileName)
+		{
+			string path = null;
 
-            for (int i = 0; i < 100; i++)
-            {
-                path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf",fileName, i));
-                if (!File.Exists(path))
-                    break;
+			for (int i = 0; i < 100; i++)
+			{
+				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf", fileName, i));
+				if (!File.Exists(path))
+					break;
 
-                try
-                {
-                    File.Delete(path);
-                    break;
-                }
-                catch (Exception)
-                {
-                    //couldn't delete it? then increment the suffix and try again
-                }
-            }
-            return path;
-        }
+				try
+				{
+					File.Delete(path);
+					break;
+				}
+				catch (Exception)
+				{
+					//couldn't delete it? then increment the suffix and try again
+				}
+			}
+			return path;
+		}
 
-        private void SetDisplayMode(DisplayModes displayMode)
-        {
-            if(View!=null)
-                View.SetDisplayMode(displayMode);
-        }
+		private void SetDisplayMode(DisplayModes displayMode)
+		{
+			if (View != null)
+				View.SetDisplayMode(displayMode);
+		}
 
-        public void Dispose()
-        {
-            if(File.Exists(PdfFilePath))
-            {
-                try
-                {
-                    File.Delete(PdfFilePath);
-                }
-                catch (Exception)
-                {
-                    
-                }
-            }
-        }
+		public void Dispose()
+		{
+			if (File.Exists(PdfFilePath))
+			{
+				try
+				{
+					File.Delete(PdfFilePath);
+				}
+				catch (Exception)
+				{
 
-        public BookletPortions BookletPortion
-        { get; set; }
+				}
+			}
+		}
+
+		public BookletPortions BookletPortion { get; set; }
 
 
-    	public void Save()
-    	{
+		public void Save()
+		{
 			try
 			{
 				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.
-				
+
 				if (string.IsNullOrEmpty(_lastDirectory) || !Directory.Exists(_lastDirectory))
 				{
 					var drives = Palaso.UsbDrive.UsbDriveInfo.GetDrives();
@@ -189,7 +195,8 @@ namespace Bloom.Publish
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
-					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath), _collectionSettings.GetVernacularName("en"),portion);
+					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
+					                                     _collectionSettings.GetVernacularName("en"), portion);
 					dlg.FileName = suggestedName;
 					dlg.Filter = "PDF|*.pdf";
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -203,6 +210,23 @@ namespace Bloom.Publish
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
 			}
-    	}
-    }
+		}
+
+		public void DebugCurrentPDFLayout()
+		{
+			var dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+
+			var tempHtml = TempFile.WithExtension(".htm"); //nb: we intentially don't ever delete this
+
+			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
+			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
+			{
+				dom.WriteContentTo(writer);
+				writer.Close();
+			}
+
+			System.Diagnostics.Process.Start(tempHtml.Path);
+		}
+	}
 }

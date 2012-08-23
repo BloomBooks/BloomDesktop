@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
+using Bloom.Edit;
+using Bloom.ToPalaso;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
@@ -35,7 +38,7 @@ namespace Bloom.Publish
                           "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
 			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
-			if (doWorkEventArgs.Cancel)
+			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result!=null && doWorkEventArgs.Result is Exception))
 				return;
             if (bookletPortion != PublishModel.BookletPortions.None)
             {
@@ -81,7 +84,15 @@ namespace Bloom.Publish
 				 * had, and which is not being triggered by the better browsers.
 				 * 
 				 */
-				string exePath = FindWkhtmlToPdf();
+				string exePath = FindWkhtmlToPdf(); 
+
+				//About the --zoom parameter. It's a hack to get the pages chopped properly.
+				//Notes: Remember, a page border *will make the page that much larger!*
+				//		One way to see what's happening without a page border is to make the marginBox visible,
+				//		then scroll through and you can see it moving up (if the page (zoom factor) is too small) or down (if page (zoom factor) is too large)
+				//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw 
+				//		that the page was too big, leading to an extra page at the end.
+				//		Experimentation showed that 1.041 kept the marge box steady.
 				var arguments = string.Format(
 					"--print-media-type " +
 					pageSizeArguments +
@@ -90,19 +101,69 @@ namespace Bloom.Publish
 					" --debug-javascript "+
 #endif
 					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
-					"--disable-smart-shrinking --zoom 1.091 \"{0}\" \"{1}\"",
+					"--disable-smart-shrinking --zoom 1.041 \"{0}\" \"{1}\"",
 					Path.GetFileName(tempInput.Path), tempOutput.Path);
 
-				var progress = new CancellableNullProgress(doWorkEventArgs);
-				var result = CommandLineRunner.Run(exePath, arguments, Path.GetDirectoryName(tempInput.Path), 20, progress);
+				ExecutionResult result = null;
+				using (var dlg = new ProgressDialogBackground())
+				{
+
+					/* This isn't really working yet (Aug 2012)... I put a day's work into getting Palaso.CommandLineRunner to
+					 * do asynchronous reading of the 
+					 * nice progress that wkhtml2pdf puts out, and feeding it to the UI. It worked find with a sample utility
+					 * (PalasoUIWindowsForms.TestApp.exe). But try as I might, it seems
+					 * that the Process doesn't actually deliver wkhtml2pdf's outputs to me until it's all over.
+					 * If I run wkhtml2pdf from a console, it gives the progress just fine, as it works.
+					 * So there is either a bug in Palaso.CommandLineRunner & friends, or.... ?
+					 */
+
+
+					//this proves that the ui part here is working... it's something about the wkhtml2pdf that we're not getting the updates in real time... 
+					//		dlg.ShowAndDoWork(progress => result = CommandLineRunner.Run("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
+					dlg.ShowAndDoWork((progress,args) =>
+					                  	{
+											progress.WriteStatus("Making PDF...");
+					                  		//this is a trick... since we are so far failing to get
+											//the progress otu of wkhtml2pdf until it is done,
+											//we at least have this indicator which on win 7 does
+											//grow from 0 to the set percentage with some animation
+											progress.ProgressIndicator.PercentCompleted = 70;
+					                  		result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
+					                  		                               5*60, progress
+					                  		                               , (s) =>
+					                  		                                 	{
+					                  		                                 		//progress.WriteVerbose(s);
+					                  		                                 		progress.WriteStatus(s);
+					                  		                                 		
+																					//this wakes up the dialog, which then calls the Refresh() we need
+																					((BackgroundWorker) args.Argument).ReportProgress(100);
+					                  		                                 	});
+					                  	});
+				} 
+
+				//var progress = new CancellableNullProgress(doWorkEventArgs);
+				
 
 				Debug.WriteLine(result.StandardError);
 				Debug.WriteLine(result.StandardOutput);
 				
 				if (!File.Exists(tempOutput.Path))
-					throw new ApplicationException("Wkhtml2pdf did not produce the expected document.");
+					throw new ApplicationException("Bloom was not able to create the PDF.\r\n\r\nDetails: Wkhtml2pdf did not produce the expected document.");
 
-				File.Move(tempOutput.Path, outputPdfPath);
+				try
+				{
+					File.Move(tempOutput.Path, outputPdfPath);
+				}
+				catch (IOException e)
+				{
+					//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
+					//but we had a report (BL-211) of that move failing.
+					throw new ApplicationException(
+							string.Format("Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.\r\n\r\nDetails: {1}",
+							              outputPdfPath, e.Message));
+
+				}
+				
 
 			}
 

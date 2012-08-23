@@ -1,5 +1,5 @@
 /*Cover Page*/
-.A5Portrait DIV.marginBox
+.A5Portrait.bloom-frontMatter DIV.marginBox
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 189.4mm;
@@ -314,13 +314,15 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	font-size: 100%;
+/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
+	font-size: 10pt !important;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
 {
 	height: 156px;
 	width: 100%;
+	font-size: 100% !important;
 }
 .A5Landscape DIV.originalAcknowledgments
 {
@@ -329,7 +331,7 @@ DIV.verso DIV
 }
 DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
-	height: 2.7cm;
+	height: 4.3cm;
 	width: 100%;
 	display: block !important;
 }

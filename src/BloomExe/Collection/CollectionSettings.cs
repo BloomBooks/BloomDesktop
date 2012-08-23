@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
 using Palaso.Extensions;
@@ -26,63 +28,6 @@ namespace Bloom.Collection
     	private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
     	private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
-    	#region Persisted roperties
-
-		//these are virtual for the sake of the unit test mock framework
-    	public virtual string Language1Iso639Code
-    	{
-			get { return _language1Iso639Code; }
-			set 
-			{
-				_language1Iso639Code = value;
-				Language1Name = GetVernacularName(Language2Iso639Code);
-			}
-    	}
-		
-		public virtual string Language2Iso639Code { get; set; }
-		public virtual string Language3Iso639Code { get; set; }
-		public virtual string Language1Name { get; set; }
-
-		/// <summary>
-		/// Intended for making shell books and templates, not vernacular
-		/// </summary>
-		public virtual bool IsSourceCollection { get; set; }
-
-		public string GetVernacularName(string inLanguage)
-		{
-			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
-			if (exactLanguageMatch == null)
-				return "???";
-			return exactLanguageMatch.Name;
-		}
-
-		public string GetLanguage2Name(string inLanguage)
-		{
-			//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
-			//So, we'd rather have GetBestLanguageMatch()
-
-
-			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(Language2Iso639Code))
-			{
-				_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
-			}
-			return _isoToLangNameDictionary[Language2Iso639Code];
-		}
-
-		public string GetNationalLanguage2Name(string inLanguage)
-		{
-			if(string.IsNullOrEmpty(Language3Iso639Code))
-				return string.Empty;
-
-			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(Language3Iso639Code))
-			{
-				_isoToLangNameDictionary.Add(Language3Iso639Code,_lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
-			}
-			return _isoToLangNameDictionary[Language3Iso639Code];
-		}
-    	#endregion
 
 		/// <summary>
 		/// for moq in unit tests only
@@ -132,10 +77,88 @@ namespace Bloom.Collection
                 Save();
             }
         }
-       
+
+		#region Persisted properties
+
+		//these are virtual for the sake of the unit test mock framework
+		public virtual string Language1Iso639Code
+		{
+			get { return _language1Iso639Code; }
+			set
+			{
+				_language1Iso639Code = value;
+				Language1Name = GetVernacularName(Language2Iso639Code);
+			}
+		}
+
+		public virtual string Language2Iso639Code { get; set; }
+		public virtual string Language3Iso639Code { get; set; }
+		public virtual string Language1Name { get; set; }
+
+		/// <summary>
+		/// Intended for making shell books and templates, not vernacular
+		/// </summary>
+		public virtual bool IsSourceCollection { get; set; }
+
+		public string GetVernacularName(string inLanguage)
+		{
+			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
+			if (exactLanguageMatch == null)
+				return "L1-Unknown-" + Language1Iso639Code;
+			return exactLanguageMatch.Name;
+		}
+
+		public string GetLanguage2Name(string inLanguage)
+		{
+			try
+			{
+				//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
+				//So, we'd rather have GetBestLanguageMatch()
+
+
+				//profiling showed we were spending a lot of time looking this up, hence the cache
+				if (!_isoToLangNameDictionary.ContainsKey(Language2Iso639Code))
+				{
+					_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
+				}
+				return _isoToLangNameDictionary[Language2Iso639Code];
+
+			}
+			catch (Exception)
+			{
+				Debug.Fail("check this out. BL-193 Reproduction");
+				// a user reported this, and I saw it happen once: had just installed 0.8.38, made a new vernacular
+				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
+				return "L2-Unknown-" + Language2Iso639Code;
+			}
+		}
+
+		public string GetLanguage3Name(string inLanguage)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(Language3Iso639Code))
+					return string.Empty;
+
+				//profiling showed we were spending a lot of time looking this up, hence the cache
+				if (!_isoToLangNameDictionary.ContainsKey(Language3Iso639Code))
+				{
+					_isoToLangNameDictionary.Add(Language3Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
+				}
+				return _isoToLangNameDictionary[Language3Iso639Code];
+			}
+			catch (Exception)
+			{
+				return "L2N-Unknown-" + Language3Iso639Code;
+			}
+		}
+		#endregion
+
         /// ------------------------------------------------------------------------------------
         public void Save()
         {
+			Logger.WriteEvent("Saving Collection Settings");
+			
             XElement library = new XElement("Collection");
             library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
