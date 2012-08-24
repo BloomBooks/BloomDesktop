@@ -1177,6 +1177,7 @@ namespace Bloom.Book
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, MultilingualContentLanguage2, MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			ClearEditableValues(newPageDiv);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
