@@ -94,7 +94,8 @@ namespace Bloom.Publish
 				//		that the page was too big, leading to an extra page at the end.
 				//		Experimentation showed that 1.041 kept the marge box steady.
 				var arguments = string.Format(
-					"--print-media-type " +
+					"--no-background "+ //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+					" --print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
 #if DEBUG
