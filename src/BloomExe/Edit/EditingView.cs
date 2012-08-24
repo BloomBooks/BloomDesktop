@@ -184,6 +184,7 @@ namespace Bloom.Edit
 						//have the data div.
 						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
 						_model.SaveNow();
+						_model.RefreshDisplayOfCurrentPage();//the cleanup() that is part of Save removes qtips, so let' redraw everything
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
