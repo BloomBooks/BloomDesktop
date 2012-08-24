@@ -35,6 +35,8 @@ namespace Bloom
 		private BloomServer _bloomServer;
 		private ChorusSystem _chorusSystem;
 		private string _collectionPath;
+		private ImageServer _imageServer;
+
 		public Form ProjectWindow { get; private set; }
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
@@ -274,8 +276,6 @@ namespace Bloom
 		{
 			_scope.Dispose();
 			_scope = null;
-			CheckInNow();
-
 
 			if (_bloomServer != null)
 				_bloomServer.Dispose();
