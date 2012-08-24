@@ -26,30 +26,6 @@
 	width: 100%;
 	text-align: center;
 }
-/*...................Vernacular*/
-.A5Portrait.cover .bookTitle.bloom-content1
-{
-	font-size: 250%;
-	height: 3.3cm;
-	width: 100%;
-	display: block;
-	line-height: 1;
-}
-.A5Landscape.cover .bookTitle.bloom-content1
-{
-	font-size: 300%;
-	height: 1.5cm;
-	width: 100%;
-	display: block;
-}
-.A4Landscape.cover .bookTitle.bloom-content1
-{
-	font-size: 250%;
-	height: 2.8cm;
-	width: 100%;
-	display: block;
-	line-height: 1.2;
-}
 /*....................National 1*/
 .A5Portrait.cover .bookTitle.bloom-contentNational1
 {
@@ -57,6 +33,10 @@
 	height: 1.3cm;
 	width: 100%;
 	display: block;
+	/*+placement:anchor-top-left 0px 130px;*/
+	position: absolute;
+	left: 0px;
+	top: 130px;
 }
 .A5Landscape.cover .bookTitle.bloom-contentNational1
 {
@@ -80,15 +60,53 @@
 	top: 112px;
 	display: block;
 }
+/*Note: this vernacular/conent1 must come *after* the National1 block, else when we have English as the only language,
+It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.
+...................Vernacular*/
+.A5Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 3.3cm;
+	width: 100%;
+	display: block;
+	line-height: 1;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.A5Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 300%;
+	height: 1.5cm;
+	width: 100%;
+	display: block;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.A4Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 2.8cm;
+	width: 100%;
+	display: block;
+	line-height: 1.2;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer
 {
 	height: 10cm;
 	width: 100%;
-	/*+placement:shift 1px 19px;*/
-	position: relative;
-	left: 1px;
-	top: 19px;
+	/*+placement:anchor-top-left 0px 193px;*/
+	position: absolute;
+	left: 0px;
+	top: 193px;
 }
 .A5Landscape.cover DIV.bloom-imageContainer
 {
@@ -187,13 +205,11 @@ DIV.titlePage
 	text-align: center;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titePageTitleBlock DIV.bloom-content1
+DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
-	font-size: 150%;
-	height: 111px;
+	height: 35px;
 	text-align: center;
-	width: 100%;
-	display: block;
+	width: 419px;
 }
 DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
@@ -207,11 +223,19 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 	display: block;
 	font-size: 100%;
 }
-DIV#titePageTitleBlock DIV.bloom-contentNational2
+/*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
+It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
+DIV#titePageTitleBlock DIV.bloom-content1
 {
-	height: 35px;
+	font-size: 150%;
+	height: 111px;
 	text-align: center;
-	width: 419px;
+	width: 100%;
+	display: block;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
 }
 DIV.ISBNContainer
 {
@@ -272,6 +296,10 @@ DIV.titlePage .credits.bloom-contentNational1
 	width: 100%;
 	display: block;
 	font-size: 100%;
+	/*+placement:anchor-top-left 0px 174px;*/
+	position: absolute;
+	left: 0px;
+	top: 174px;
 }
 DIV.titlePage DIV#languageInformation
 {
@@ -389,6 +417,13 @@ IMG.licenseImage
 	position: absolute;
 	left: 39%;
 	top: 60px;
+}
+.A4Landscape IMG.licenseImage
+{
+	/*+placement:anchor-top-left 454px 58px;*/
+	position: absolute;
+	left: 454px;
+	top: 58px;
 }
 BUTTON#editCopyrightAndLicense
 {
