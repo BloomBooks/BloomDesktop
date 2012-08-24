@@ -382,7 +382,7 @@ namespace Bloom
 			if (_pageDom.SelectNodes("//textarea").Count > 0)
 				Debug.Fail("Oh, a chance to test bluring textarea's!");
 #endif
-			//I (John) don't use textareas anymore... I stick with divs.
+			//as of august 2012 textareas only occur in the Calendar
 	//		if (_pageDom.SelectNodes("//textarea").Count >0)
 			{
 				//This approach was to force an onblur so that we can get at the actual user-edited value.
@@ -390,7 +390,7 @@ namespace Bloom
 				//_browser.WebBrowserFocus.Deactivate();
 				//_browser.WebBrowserFocus.Activate();
 
-				//now, we just do the blur directly. This has not been tested, because we don't have an docs with inputs or text areas at the moment
+				//now, we just do the blur directly.
 				var activeElement = _browser.Window.Document.ActiveElement;
 				if(activeElement!=null)
 					activeElement.Blur();
