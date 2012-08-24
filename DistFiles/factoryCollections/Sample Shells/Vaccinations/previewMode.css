@@ -55,21 +55,11 @@ TEXTAREA
 }
 DIV.bloom-page
 {
-	/*[ph]2*/
-/*this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
 	border: 0 none #EF0808 !important;
 /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
 }
-@media screen
-{
-	DIV.bloom-page
-	{
-		/*[id]2*/border: 1px solid #000000 !important;
-/*this belongs in the @media print, but I haven't been able to make wkhtmltopdf honor its --print-media-type argument.*/
-/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
-	}
-}
+
 BUTTON
 {
 	display: none !important;
