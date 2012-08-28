@@ -118,6 +118,33 @@ DIV.imageOnTop.A4Landscape DIV.bloom-editable
 	display: table-row;
 	width: 100%;
 }
+.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer
+{
+	width: 100%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 33% !important;
+	/*[disabled]border:1px solid #000000;*/
+}
+DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
+{
+	height: 63% !important;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	display: table;
+}
+DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
+{
+	height: 31% !important;
+	/*[disabled]+placement:anchor-top-left 549px 2px;*/
+	display: table-row;
+	width: 100%;
+}
 /*------A4L Side-by-side common*/
 .imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
@@ -262,14 +289,40 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
 	left: 26px;
 	top: 30px;
 }
+DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top
+{
+	height: 8.8cm;
+	width: 488px;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
+{
+	height: 9.1cm;
+	width: 488px;
+	/*+placement:shift 1px 365px;*/
+	position: relative;
+	left: 1px;
+	top: 365px;
+}
 DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
 {
 	/*+placement:anchor-top-left 31px 311px;*/
 	position: absolute !important;
 	left: 31px !important;
 	top: 311px !important;
-	border: 1px solid #000000;
 	height: 152px;
+}
+DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 549px -29px;*/
+	position: absolute !important;
+	left: 549px !important;
+	top: -29px !important;
+	height: 100%;
+	width: 45%;
 }
 DIV.imageInMiddle DIV.bloom-translationGroup.bottom
 {
