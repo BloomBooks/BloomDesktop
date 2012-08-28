@@ -1842,7 +1842,9 @@ namespace Bloom.Book
 
 		public void RebuildThumbNailAsync(Action<Book, Image> callback, Action<Book, Exception> errorCallback)
 		{
-			_storage.RemoveBookThumbnail();
+			if (!_storage.RemoveBookThumbnail())
+				return;
+
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
 			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image),
 				error=>

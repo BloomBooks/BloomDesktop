@@ -45,7 +45,7 @@ namespace Bloom.Book
 		void SetBookName(string name);
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
-		void RemoveBookThumbnail();
+		bool RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
 		void SortStyleSheetLinks(XmlDocument dom);
 	}
@@ -525,13 +525,20 @@ namespace Bloom.Book
 			}
 		}
 
-		public void RemoveBookThumbnail()
+		/// <summary>
+		///
+		/// </summary>
+		/// <returns>false we shouldn't mess with the thumbnail</returns>
+		public bool RemoveBookThumbnail()
 		{
 			string path = Path.Combine(_folderPath, "thumbnail.png");
+			if(new System.IO.FileInfo(path).IsReadOnly) //readonly is good when you've put in a custom thumbnail
+				return false;
 			if (File.Exists(path))
 			{
 				File.Delete(path);
 			}
+			return true;
 		}
 
 		/// <summary>
