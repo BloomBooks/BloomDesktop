@@ -12,7 +12,6 @@ namespace Bloom.Book
 		{
 			WritingSystemCodes = new Dictionary<string, string>();
 			TextVariables = new Dictionary<string, DataItem>();
-
 		}
 
 		/// <summary>
