@@ -55,11 +55,19 @@ TEXTAREA
 }
 DIV.bloom-page
 {
-	border: 0 none #EF0808 !important;
+	/*[ph]2*/
+	border-bottom: 15px solid #363333 !important;
 /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
 }
-
+@media print
+{
+	DIV.bloom-page
+	{
+		/*[id]2*/border: 0 none #EF0808 !important;
+/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+	}
+}
 BUTTON
 {
 	display: none !important;

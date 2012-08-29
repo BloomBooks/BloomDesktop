@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -18,7 +19,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class XMatterHelper
 	{
-		private readonly XmlDocument _dom;
+		private readonly XmlDocument _bookDom;
 		private readonly string _nameOfXMatterPack;
 
 		/// <summary>
@@ -28,9 +29,9 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
 		/// <param name="fileLocator">The locator needs to be able tell use the path to an xmater html file, given its name</param>
-		public XMatterHelper(XmlDocument dom, string nameOfXMatterPack, IFileLocator fileLocator)
+		public XMatterHelper(XmlDocument bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
 		{
-			_dom = dom;
+			_bookDom = bookDom;
 			_nameOfXMatterPack = nameOfXMatterPack;
 			string directoryName = nameOfXMatterPack + "-XMatter";
 			var directoryPath = fileLocator.LocateDirectory(directoryName, "xmatter pack directory named " + directoryName);
@@ -79,7 +80,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
+		public void InjectXMatter(string folderPath, Dictionary<string, string> writingSystemCodes, Layout layout)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -95,19 +96,22 @@ namespace Bloom.Book
 			//note: for debugging the template/css purposes, it makes our life easier if, at runtime, the html is pointing the original.
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
-			_dom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
+			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
-			XmlNode divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
+			XmlNode divBeforeNextFrontMattterPage = _bookDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
+
+//			if(folderPath!=null)//null in some unit test that don't care about images
+//				ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(folderPath, XMatterDom, new NullProgress());
 
 			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
-				var newPageDiv = _dom.ImportNode(xmatterPage, true) as XmlElement;
+				var newPageDiv = _bookDom.ImportNode(xmatterPage, true) as XmlElement;
 
 				if (IsBackMatterPage(xmatterPage))
 				{
 					//note: this is redundant unless this is the 1st backmatterpage in the list
-					divBeforeNextFrontMattterPage = _dom.SelectSingleNode("//body/div[last()]");
+					divBeforeNextFrontMattterPage = _bookDom.SelectSingleNode("//body/div[last()]");
 				}
 
 				//we want the xmatter pages to match what we found in the source book
@@ -123,7 +127,7 @@ namespace Bloom.Book
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
 				}
 
-				_dom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
+				_bookDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
 
 				//enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template

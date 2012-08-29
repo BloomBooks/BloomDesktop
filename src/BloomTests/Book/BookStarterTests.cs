@@ -126,7 +126,7 @@ namespace BloomTests.Book
 				"//div[contains(@class,'cover')]//img[@src='HL0014-1.png']", 1);
 		}
 
-		[Test, Ignore("Current architecture gives spreads this responsibility for updating to Book, so can't be tested here.")]
+		[Test, Ignore("Current architecture spreads this responsibility for updating to Book, so can't be tested here.")]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
 		{
 			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
