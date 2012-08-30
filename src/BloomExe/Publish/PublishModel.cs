@@ -84,17 +84,8 @@ namespace Bloom.Publish
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
-				using (var tempHtml = TempFile.WithExtension(".htm"))
+				using(var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom))
 				{
-					XmlWriterSettings settings = new XmlWriterSettings();
-					settings.Indent = true;
-					settings.CheckCharacters = true;
-
-					using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-					{
-						dom.WriteContentTo(writer);
-						writer.Close();
-					}
 					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom,
 																					  "A5Portrait");
 					if (doWorkEventArgs.Cancel)
@@ -216,8 +207,8 @@ namespace Bloom.Publish
 		{
 			var dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-
-			var tempHtml = TempFile.WithExtension(".htm"); //nb: we intentially don't ever delete this
+			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
+			//var tempHtml = TempFile.WithExtension(".htm");
 
 			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
 			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
