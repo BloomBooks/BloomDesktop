@@ -316,6 +316,12 @@ namespace Bloom.Workspace
 			{
 			}
 		}
+
+		private void WorkspaceView_Resize(object sender, EventArgs e)
+		{
+			//when doing videos at this really low resolution, there's just no room for this
+			_panelHoldingToolStrip.Visible = this.Width > 820;
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

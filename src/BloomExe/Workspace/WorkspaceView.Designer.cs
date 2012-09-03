@@ -374,6 +374,7 @@
 			this.localizationExtender1.SetLocalizingId(this, "WorkspaceView.WorkspaceView");
 			this.Name = "WorkspaceView";
 			this.Size = new System.Drawing.Size(1098, 540);
+			this.Resize += new System.EventHandler(this.WorkspaceView_Resize);
 			this._panelHoldingToolStrip.ResumeLayout(false);
 			this._panelHoldingToolStrip.PerformLayout();
 			this._toolStrip.ResumeLayout(false);
