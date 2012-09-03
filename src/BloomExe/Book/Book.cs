@@ -276,6 +276,7 @@ namespace Bloom.Book
 					{
 						return "Title Missing";
 					}
+					t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
 					return t;
 				}
 				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
