@@ -276,6 +276,7 @@ namespace Bloom.Book
 					{
 						return "Title Missing";
 					}
+					t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
 					return t;
 				}
 				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
@@ -1350,9 +1351,9 @@ namespace Bloom.Book
 
     		if (data.TextVariables.TryGetValue("bookTitle", out title))
     		{
-    			XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
+				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
-    			SetTitle(t);
+				SetTitle(t);
     		}
     	}
 
