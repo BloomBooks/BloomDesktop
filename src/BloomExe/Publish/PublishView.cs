@@ -65,6 +65,7 @@ namespace Bloom.Publish
 			_activated = true;
 
 			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+			UpdateDisplay();
 			MakeBooklet();
 		}
 
