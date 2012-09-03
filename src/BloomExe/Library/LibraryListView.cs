@@ -200,9 +200,9 @@ namespace Bloom.Library
 
 		private string GetTitleToDisplay(Book.Book book)
 		{
-			int kMaxCaptionLetters = 20;
+			int kMaxCaptionLetters = 17;
 			var title = book.TitleBestForUserDisplay;
-			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters) + "…" : title;
+			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
 		}
 
 		/// <summary>
