@@ -113,7 +113,7 @@ namespace Bloom.Book
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
-			UpdateEditabilityIndicator(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
+			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
 			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
 			//	for shells, we'll still have pages.
@@ -192,7 +192,7 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-		private void UpdateEditabilityIndicator(BookStorage storage)
+		private void UpdateEditabilityMetadata(BookStorage storage)
 		{
 
 			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
@@ -200,7 +200,18 @@ namespace Bloom.Book
 			//prevent us from editing it while in a shell-making collections, since we don't honor this
 			//tag in shell-making collections.
 			if(_isSourceCollection)
+			{
 				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
+			}
+
+#if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
+			//things like picture dictionaries could be used repeatedly
+			//but things from Basic Book are normally not.
+			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
+#else
+			var x = "false";
+#endif
+			BookStorage.UpdateMetaElement(storage.Dom, "SuitableForMakingShells", x);
 		}
 
 
