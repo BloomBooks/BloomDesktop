@@ -144,6 +144,14 @@ namespace Bloom.Book
 				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
 			}
 
+			//NB: no multi-lingual name suggestion ability yet
+			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
+			var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
+			if (nameSuggestion.Count > 0)
+			{
+				name = ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+			}
+			SetDataDivElement(storage.Dom, "bookTitle", "en", name);
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom, "defaultMultilingualLevel", "1"));
@@ -288,7 +296,20 @@ namespace Bloom.Book
 			dataDiv.AppendChild(d);
 		}
 
+		private void SetDataDivElement(XmlNode dom, string key, string lang, string value)
+		{
+			var dataDiv = GetOrCreateDataDiv(dom);
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			{
+				dataDiv.RemoveChild(e);
+			}
 
+			var d = dataDiv.OwnerDocument.CreateElement("div");
+			d.SetAttribute("data-book", key);
+			d.SetAttribute("lang", lang);
+			d.InnerXml = value;
+			dataDiv.AppendChild(d);
+		}
 		/// <summary>
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
 		/// then everytime someone created a new book based on it, it too would be trilingual.

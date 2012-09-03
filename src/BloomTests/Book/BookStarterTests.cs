@@ -370,7 +370,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedName()
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedFileName()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
 
@@ -380,6 +380,18 @@ namespace BloomTests.Book
 			Assert.AreEqual("My Book.htm", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(bookFolderPath));
 			Assert.IsTrue(File.Exists(path));
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDiv()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var path = GetPathToHtml(bookFolderPath);
+
+			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
 		}
 
 
