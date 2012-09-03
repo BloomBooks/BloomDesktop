@@ -88,11 +88,11 @@
 			this.localizationExtender1.SetLocalizableToolTip(this._saveButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._saveButton, null);
 			this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishView.SaveButton");
-			this._saveButton.Location = new System.Drawing.Point(127, 0);
+			this._saveButton.Location = new System.Drawing.Point(108, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
 			this._saveButton.TabIndex = 15;
-			this._saveButton.Text = "&Save Acrobat PDF...";
+			this._saveButton.Text = "&Save PDF...";
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
 			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
