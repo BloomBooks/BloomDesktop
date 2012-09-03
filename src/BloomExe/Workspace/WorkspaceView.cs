@@ -66,7 +66,7 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-
+			
 #if DEBUG //this would turn it on when we want it hidden until localization is more complete
 			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 #endif
@@ -315,6 +315,12 @@ namespace Bloom.Workspace
 			catch (Exception)
 			{
 			}
+		}
+
+		private void WorkspaceView_Resize(object sender, EventArgs e)
+		{
+			//when doing videos at this really low resolution, there's just no room for this
+			_panelHoldingToolStrip.Visible = this.Width > 820;
 		}
 	}
 
