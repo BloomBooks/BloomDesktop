@@ -310,12 +310,12 @@ DIV.titlePage DIV#languageInformation
 	width: 100%;
 	height: 86px;
 }
-DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational2
+DIV.titlePage DIV.langName.bloom-contentNational1
 {
 	display: block;
 	/*[empty]border:;*/
 }
-DIV.titlePage DIV.langName.bloom-content1
+DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
 /*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
