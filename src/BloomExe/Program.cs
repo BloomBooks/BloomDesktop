@@ -26,7 +26,11 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
+#if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
+#else
+		private static Mutex _onlyOneBloomMutex;
+#endif
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
@@ -36,6 +40,9 @@ namespace Bloom
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
+
+				if (!GrabMutexForBloom())
+					return;
 
 				TimeBomb();
 
@@ -86,7 +93,7 @@ namespace Bloom
 				catch (System.AccessViolationException nasty)
 				{
 					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					return;
+					System.Environment.FailFast("AccessViolationException");
 				}
 
 				Settings.Default.Save();
@@ -98,7 +105,7 @@ namespace Bloom
 			}
 			finally
 			{
-				ReleaseMutexForThisProject();
+				ReleaseMutexForBloom();
 			}
 		}
 
@@ -111,6 +118,13 @@ namespace Bloom
 		}
 
 
+#if PerProjectMutex
+
+					//NB: initially, you could have multiple blooms, if they were different projects.
+			//however, then we switched to the embedded http image server, which can't share
+			//a port. So we could fix that (get different ports), but for now, I'm just going
+			//to lock it down to a single bloom
+
 		private static bool GrabTokenForThisProject(string pathToProject)
 		{
 			//ok, here's how this complex method works...
@@ -119,9 +133,10 @@ namespace Bloom
 			//while we wait for the mutex to come free.
 
 
-			string mutexId = pathToProject;
-			mutexId = mutexId.Replace(Path.DirectorySeparatorChar, '-');
-			mutexId = mutexId.Replace(Path.VolumeSeparatorChar, '-');
+			string mutexId = "bloom";
+//			string mutexId = pathToProject;
+//			mutexId = mutexId.Replace(Path.DirectorySeparatorChar, '-');
+//			mutexId = mutexId.Replace(Path.VolumeSeparatorChar, '-');
 			bool mutexAcquired = false;
 			try
 			{
@@ -176,6 +191,71 @@ namespace Bloom
 				_oneInstancePerProjectMutex = null;
 			}
 		}
+#endif
+
+		private static bool GrabMutexForBloom()
+		{
+			//ok, here's how this complex method works...
+			//First, we try to get the mutex quickly and quitely.
+			//If that fails, we put up a dialog and wait a number of seconds,
+			//while we wait for the mutex to come free.
+
+
+			string mutexId = "bloom";
+			bool mutexAcquired = false;
+			try
+			{
+				_onlyOneBloomMutex = Mutex.OpenExisting(mutexId);
+				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
+			}
+			catch (WaitHandleCannotBeOpenedException e)//doesn't exist, we're the first.
+			{
+				_onlyOneBloomMutex = new Mutex(true, mutexId, out mutexAcquired);
+				mutexAcquired = true;
+			}
+			catch (AbandonedMutexException e)
+			{
+				//that's ok, we'll get it below
+			}
+
+			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
+			{
+				dlg.TopMost = true;
+				dlg.Show();
+				try
+				{
+					_onlyOneBloomMutex = Mutex.OpenExisting(mutexId);
+					mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(10 * 1000), false);
+				}
+				catch (AbandonedMutexException e)
+				{
+					_onlyOneBloomMutex = new Mutex(true, mutexId, out mutexAcquired);
+					mutexAcquired = true;
+				}
+				catch (Exception e)
+				{
+					ErrorReport.NotifyUserOfProblem(e,
+						"There was a problem starting Bloom which might require that you restart your computer.");
+				}
+			}
+
+			if (!mutexAcquired) // cannot acquire?
+			{
+				_onlyOneBloomMutex = null;
+				ErrorReport.NotifyUserOfProblem("Another copy of Bloom is already running. If you cannot find that Bloom, restart your computer.");
+				return false;
+			}
+			return true;
+		}
+
+		public static void ReleaseMutexForBloom()
+		{
+			if (_onlyOneBloomMutex != null)
+			{
+				_onlyOneBloomMutex.ReleaseMutex();
+				_onlyOneBloomMutex = null;
+			}
+		}
 
 		/// ------------------------------------------------------------------------------------
 		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
@@ -195,11 +275,15 @@ namespace Bloom
 
 			try
 			{
-				if (!GrabTokenForThisProject(projectPath))
-				{
-					return false;
-				}
-
+				//NB: initially, you could have multiple blooms, if they were different projects.
+				//however, then we switched to the embedded http image server, which can't share
+				//a port. So we could fix that (get different ports), but for now, I'm just going
+				//to lock it down to a single bloom
+/*					if (!GrabTokenForThisProject(projectPath))
+					{
+						return false;
+					}
+				*/
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
