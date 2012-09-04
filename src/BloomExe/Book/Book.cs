@@ -577,7 +577,7 @@ namespace Bloom.Book
 				return null;
 			}
 
-			XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
+			XmlDocument bookDom = GetBookDomWithStyleSheets("previewMode.css","thumbnail.css");
 
 			AddCoverColor(bookDom, CoverColor);
 			HideEverythingButFirstPageAndRemoveScripts(bookDom);
@@ -613,10 +613,14 @@ namespace Bloom.Book
 			}
 		}
 
-		private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
+		private XmlDocument GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
 			XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom(_log);
-			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(cssFileName));
+			var fileLocator = _storage.GetFileLocator();
+			foreach (var cssFileName in cssFileNames)
+			{
+				dom.AddStyleSheet(fileLocator.LocateFile(cssFileName));
+			}
 			_storage.SortStyleSheetLinks(dom);
 			return dom;
 		}
@@ -748,7 +752,7 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var dom= GetBookDomWithStyleSheet("previewMode.css");
+			var dom= GetBookDomWithStyleSheets("previewMode.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -1530,7 +1534,7 @@ namespace Bloom.Book
 
 		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion)
 		{
-			var dom = GetBookDomWithStyleSheet("previewMode.css");
+			var dom = GetBookDomWithStyleSheets("previewMode.css");
 			//dom.LoadXml(_storage.Dom.OuterXml);
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
