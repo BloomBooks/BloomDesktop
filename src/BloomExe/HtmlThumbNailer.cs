@@ -171,8 +171,8 @@ namespace Bloom
 							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
 						}
 
-						browser.Height = div.ScrollHeight;
-						browser.Width = div.ScrollWidth;
+						browser.Height = div.ClientHeight;
+						browser.Width = div.ClientWidth;
 
 						try
 						{
@@ -360,8 +360,8 @@ namespace Bloom
 
 
 				//leave out the grey boarder which is in the browser, and zoom in some
-				int skipMarginH = 30;
-				int skipMarginV = 30;
+				int skipMarginH = 0;// 30; //
+				int skipMarginV = 0;
 				graphics.DrawImage(bmp, destRect, skipMarginH, skipMarginV,
 						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
 						GraphicsUnit.Pixel, WhiteToBackground);
