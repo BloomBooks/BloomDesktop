@@ -311,6 +311,7 @@ namespace Bloom.Edit
 			if (ge.Target.ClassName.Contains("sourceTextTab"))
 			{
 				RememberSourceTabChoice(ge.Target);
+				return;
 			}
 			if (ge.Target.ClassName.Contains("changeImageButton"))
 				OnChangeImage(ge);
