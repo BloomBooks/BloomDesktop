@@ -98,5 +98,25 @@ namespace Bloom
 			Debug.WriteLine("Shell Deactivated");
 		}
 
+		private void On800x600Click(object sender, EventArgs e)
+		{
+			Size = new Size(800,600);
+		}
+
+		private void On1024x600Click(object sender, EventArgs e)
+		{
+			Size = new Size(1024, 600);
+		}
+
+		private void On1024x768(object sender, EventArgs e)
+		{
+			Size = new Size(1024, 768);
+		}
+
+		private void On1024x586(object sender, EventArgs e)
+		{
+			Size = new Size(1024, 586);
+		}
+
 	}
 }
