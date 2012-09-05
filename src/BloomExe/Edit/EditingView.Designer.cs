@@ -34,8 +34,8 @@
 			System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
 			System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
 			System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
-			this._splitContainer1 = new System.Windows.Forms.SplitContainer();
-			this._splitContainer2 = new System.Windows.Forms.SplitContainer();
+			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer();
+			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer();
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._deletePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._undoButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
@@ -46,7 +46,7 @@
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._browser1 = new Bloom.Browser();
-			this._splitTemplateAndSource = new System.Windows.Forms.SplitContainer();
+			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -447,10 +447,10 @@
 
         #endregion
 
-        private System.Windows.Forms.SplitContainer _splitContainer1;
-        private System.Windows.Forms.SplitContainer _splitContainer2;
+        private Bloom.ToPalaso.BetterSplitContainer _splitContainer1;
+        private Bloom.ToPalaso.BetterSplitContainer _splitContainer2;
         private Browser _browser1;
-		private System.Windows.Forms.SplitContainer _splitTemplateAndSource;
+		private Bloom.ToPalaso.BetterSplitContainer _splitTemplateAndSource;
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;

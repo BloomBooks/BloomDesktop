@@ -30,7 +30,7 @@
         {
 			this.components = new System.ComponentModel.Container();
 			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
-			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarControl = new System.Windows.Forms.Panel();
 			this._makeBloomPackButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
@@ -42,12 +42,16 @@
 			// 
 			// splitContainer1
 			// 
-			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
 			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.localizationExtender1.SetLocalizableToolTip(this.splitContainer1, null);
+			this.localizationExtender1.SetLocalizationComment(this.splitContainer1, null);
+			this.localizationExtender1.SetLocalizingId(this.splitContainer1, "LibraryView.splitContainer1");
 			this.splitContainer1.Location = new System.Drawing.Point(0, 0);
 			this.splitContainer1.Name = "splitContainer1";
 			this.splitContainer1.Size = new System.Drawing.Size(773, 518);
 			this.splitContainer1.SplitterDistance = 333;
+			this.splitContainer1.SplitterWidth = 10;
 			this.splitContainer1.TabIndex = 0;
 			// 
 			// _topBarControl
@@ -112,6 +116,7 @@
 			this.localizationExtender1.SetLocalizingId(this, "LibraryView.LibraryView");
 			this.Name = "LibraryView";
 			this.Size = new System.Drawing.Size(773, 518);
+			this.Load += new System.EventHandler(this.LibraryView_Load);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this._topBarControl.ResumeLayout(false);
@@ -122,7 +127,7 @@
 
         #endregion
 
-		private System.Windows.Forms.SplitContainer splitContainer1;
+		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _makeBloomPackButton;
 		public System.Windows.Forms.Panel _topBarControl;
 		private Localization.UI.LocalizationExtender localizationExtender1;

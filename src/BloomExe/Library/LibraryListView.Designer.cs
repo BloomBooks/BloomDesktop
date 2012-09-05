@@ -38,7 +38,7 @@
 			this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._libraryFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
@@ -138,7 +138,11 @@
 			// 
 			// splitContainer1
 			// 
+			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
 			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._localizationExtender.SetLocalizableToolTip(this.splitContainer1, null);
+			this._localizationExtender.SetLocalizationComment(this.splitContainer1, null);
+			this._localizationExtender.SetLocalizingId(this.splitContainer1, "LibraryListView.splitContainer1");
 			this.splitContainer1.Location = new System.Drawing.Point(0, 0);
 			this.splitContainer1.Name = "splitContainer1";
 			this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -153,6 +157,7 @@
 			this.splitContainer1.Panel2.Controls.Add(this._dividerPanel);
 			this.splitContainer1.Size = new System.Drawing.Size(350, 562);
 			this.splitContainer1.SplitterDistance = 303;
+			this.splitContainer1.SplitterWidth = 10;
 			this.splitContainer1.TabIndex = 1;
 			// 
 			// _libraryFlow
@@ -172,7 +177,7 @@
 			this._libraryFlow.Location = new System.Drawing.Point(0, 0);
 			this._libraryFlow.Name = "_libraryFlow";
 			this._libraryFlow.Size = new System.Drawing.Size(350, 303);
-			this._libraryFlow.TabIndex = 5;
+			this._libraryFlow.TabIndex = 0;
 			// 
 			// label1
 			// 
@@ -331,7 +336,7 @@
 			// _collectionFlow
 			// 
 			this._collectionFlow.AutoScroll = true;
-			this._collectionFlow.BackColor = System.Drawing.Color.Transparent;
+			this._collectionFlow.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._collectionFlow.ContextMenuStrip = this._sourcePaneMenuStrip;
 			this._collectionFlow.Controls.Add(this.label7);
 			this._collectionFlow.Controls.Add(this.pretendLabel);
@@ -339,8 +344,8 @@
 			this._collectionFlow.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._collectionFlow.Location = new System.Drawing.Point(0, 1);
 			this._collectionFlow.Name = "_collectionFlow";
-			this._collectionFlow.Size = new System.Drawing.Size(350, 254);
-			this._collectionFlow.TabIndex = 5;
+			this._collectionFlow.Size = new System.Drawing.Size(350, 248);
+			this._collectionFlow.TabIndex = 0;
 			// 
 			// _sourcePaneMenuStrip
 			// 
@@ -408,7 +413,7 @@
 			// 
 			// _dividerPanel
 			// 
-			this._dividerPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._dividerPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
 			this._dividerPanel.Dock = System.Windows.Forms.DockStyle.Top;
 			this._dividerPanel.Location = new System.Drawing.Point(0, 0);
 			this._dividerPanel.Margin = new System.Windows.Forms.Padding(0);
@@ -431,6 +436,7 @@
 			this._localizationExtender.SetLocalizingId(this, "LibraryListView.LibraryListView");
 			this.Name = "LibraryListView";
 			this.Size = new System.Drawing.Size(350, 562);
+			this.Load += new System.EventHandler(this.LibraryListView_Load);
 			this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
 			this.contextMenuStrip1.ResumeLayout(false);
 			this.splitContainer1.Panel1.ResumeLayout(false);
@@ -457,7 +463,7 @@
 		private System.Windows.Forms.ToolStripMenuItem _updateFrontMatterToolStripMenu;
 		private System.Windows.Forms.ToolStripMenuItem _openFolderOnDisk;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
-		private System.Windows.Forms.SplitContainer splitContainer1;
+		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
 		private System.Windows.Forms.FlowLayoutPanel _libraryFlow;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
