@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
-			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer();
-			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer();
+			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes7 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes8 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes9 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes10 = new System.Drawing.Imaging.ImageAttributes();
+			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
+			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._deletePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._undoButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
@@ -46,7 +46,7 @@
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._browser1 = new Bloom.Browser();
-			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer();
+			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -68,9 +68,12 @@
 			// 
 			// _splitContainer1
 			// 
-			this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
 			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+			this.localizationExtender1.SetLocalizableToolTip(this._splitContainer1, null);
+			this.localizationExtender1.SetLocalizationComment(this._splitContainer1, null);
+			this.localizationExtender1.SetLocalizingId(this._splitContainer1, "EditingView._splitContainer1");
 			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
 			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
 			this._splitContainer1.Name = "_splitContainer1";
@@ -84,12 +87,16 @@
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
 			this._splitContainer1.Size = new System.Drawing.Size(1200, 738);
 			this._splitContainer1.SplitterDistance = 250;
-			this._splitContainer1.SplitterWidth = 1;
+			this._splitContainer1.SplitterWidth = 10;
 			this._splitContainer1.TabIndex = 0;
+			this._splitContainer1.TabStop = false;
 			// 
 			// _splitContainer2
 			// 
 			this._splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.localizationExtender1.SetLocalizableToolTip(this._splitContainer2, null);
+			this.localizationExtender1.SetLocalizationComment(this._splitContainer2, null);
+			this.localizationExtender1.SetLocalizingId(this._splitContainer2, "EditingView._splitContainer2");
 			this._splitContainer2.Location = new System.Drawing.Point(0, 0);
 			this._splitContainer2.Margin = new System.Windows.Forms.Padding(4);
 			this._splitContainer2.Name = "_splitContainer2";
@@ -103,10 +110,11 @@
 			// 
 			this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
 			this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
-			this._splitContainer2.Size = new System.Drawing.Size(949, 738);
-			this._splitContainer2.SplitterDistance = 794;
-			this._splitContainer2.SplitterWidth = 1;
+			this._splitContainer2.Size = new System.Drawing.Size(940, 738);
+			this._splitContainer2.SplitterDistance = 785;
+			this._splitContainer2.SplitterWidth = 10;
 			this._splitContainer2.TabIndex = 0;
+			this._splitContainer2.TabStop = false;
 			// 
 			// _topBarPanel
 			// 
@@ -133,7 +141,7 @@
 			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._deletePageButton.Image = null;
 			this._deletePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._deletePageButton.ImageAttributes = imageAttributes1;
+			this._deletePageButton.ImageAttributes = imageAttributes6;
 			this._deletePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._deletePageButton.ImageBorderEnabled = false;
 			this._deletePageButton.ImageDropShadow = false;
@@ -174,7 +182,7 @@
 			this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._undoButton.Image = null;
 			this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._undoButton.ImageAttributes = imageAttributes2;
+			this._undoButton.ImageAttributes = imageAttributes7;
 			this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._undoButton.ImageBorderEnabled = false;
 			this._undoButton.ImageDropShadow = false;
@@ -214,7 +222,7 @@
 			this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._cutButton.Image = null;
 			this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._cutButton.ImageAttributes = imageAttributes3;
+			this._cutButton.ImageAttributes = imageAttributes8;
 			this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._cutButton.ImageBorderEnabled = false;
 			this._cutButton.ImageDropShadow = false;
@@ -254,7 +262,7 @@
 			this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._pasteButton.Image = null;
 			this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._pasteButton.ImageAttributes = imageAttributes4;
+			this._pasteButton.ImageAttributes = imageAttributes9;
 			this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._pasteButton.ImageBorderEnabled = false;
 			this._pasteButton.ImageDropShadow = false;
@@ -295,7 +303,7 @@
 			this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._copyButton.Image = null;
 			this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._copyButton.ImageAttributes = imageAttributes5;
+			this._copyButton.ImageAttributes = imageAttributes10;
 			this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._copyButton.ImageBorderEnabled = false;
 			this._copyButton.ImageDropShadow = false;
@@ -379,7 +387,7 @@
 			this._browser1.Location = new System.Drawing.Point(0, 0);
 			this._browser1.Margin = new System.Windows.Forms.Padding(5);
 			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(794, 742);
+			this._browser1.Size = new System.Drawing.Size(785, 742);
 			this._browser1.TabIndex = 1;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			// 
@@ -387,6 +395,9 @@
 			// 
 			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.localizationExtender1.SetLocalizableToolTip(this._splitTemplateAndSource, null);
+			this.localizationExtender1.SetLocalizationComment(this._splitTemplateAndSource, null);
+			this.localizationExtender1.SetLocalizingId(this._splitTemplateAndSource, "EditingView._splitTemplateAndSource");
 			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
 			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
 			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
@@ -399,10 +410,11 @@
 			// _splitTemplateAndSource.Panel2
 			// 
 			this._splitTemplateAndSource.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._splitTemplateAndSource.Size = new System.Drawing.Size(154, 738);
+			this._splitTemplateAndSource.Size = new System.Drawing.Size(145, 738);
 			this._splitTemplateAndSource.SplitterDistance = 303;
-			this._splitTemplateAndSource.SplitterWidth = 5;
+			this._splitTemplateAndSource.SplitterWidth = 10;
 			this._splitTemplateAndSource.TabIndex = 0;
+			this._splitTemplateAndSource.TabStop = false;
 			// 
 			// _editButtonsUpdateTimer
 			// 
