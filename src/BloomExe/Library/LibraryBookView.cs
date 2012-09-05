@@ -125,5 +125,10 @@ namespace Bloom.Library
 			_editBookCommand.Raise(_bookSelection.CurrentSelection);
 		}
 
+		private void LibraryBookView_Resize(object sender, EventArgs e)
+		{
+
+		}
+
 	}
 }

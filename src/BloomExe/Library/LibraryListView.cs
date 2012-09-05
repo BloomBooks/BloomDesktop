@@ -380,6 +380,12 @@ namespace Bloom.Library
 			Process.Start(ProjectContext.InstalledCollectionsDirectory);
 		}
 
+		private void LibraryListView_Load(object sender, EventArgs e)
+		{
+
+		}
+
+
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.
 		/// You can see it happen because the title bar of the application changes to the Windows unselected color (lighter).
