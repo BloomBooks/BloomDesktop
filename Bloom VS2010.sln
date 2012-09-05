@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApplication2", "WindowsFormsApplication2\WindowsFormsApplication2.csproj", "{D2C7944A-458A-4D8B-B1FE-E5D1158FB058}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -21,10 +19,6 @@ Global
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Debug|x86.Build.0 = Debug|x86
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|x86.ActiveCfg = Release|x86
 		{57E7AC72-D901-4A80-A50B-71319AC96CDC}.Release|x86.Build.0 = Release|x86
-		{D2C7944A-458A-4D8B-B1FE-E5D1158FB058}.Debug|x86.ActiveCfg = Debug|x86
-		{D2C7944A-458A-4D8B-B1FE-E5D1158FB058}.Debug|x86.Build.0 = Debug|x86
-		{D2C7944A-458A-4D8B-B1FE-E5D1158FB058}.Release|x86.ActiveCfg = Release|x86
-		{D2C7944A-458A-4D8B-B1FE-E5D1158FB058}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
