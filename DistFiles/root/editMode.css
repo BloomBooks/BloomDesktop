@@ -3,6 +3,10 @@ DIV.bloom-imageContainer
 {
 	border: 1px solid #C0B9B9;
 }
+.coverColor DIV.bloom-imageContainer
+{
+	border: thin solid #908B8B;
+}
 /*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
@@ -205,6 +209,11 @@ TEXTAREA, DIV.bloom-editable
 	border: thin solid #C0B9B9;
 	/*[disabled]min-height:34px;*/
 }
+/*need a darker border when we have a background color*/
+.coverColor TEXTAREA, DIV.bloom-editable
+{
+	border: thin solid #908B8B;
+}
 IMG.hoverUp
 {
 	background-color: #DFDFDF;
@@ -250,11 +259,11 @@ UL
 	padding: 0;
 	z-index: 1;
 	background-color: transparent;
-	text-align: right;
-	width: 311px;
-	/*+placement:shift -49px 1px;*/
+	text-align: left;
+	width: 219px;
+	/*+placement:shift -7px 1px;*/
 	position: relative;
-	left: -49px;
+	left: -7px;
 	top: 1px;
 }
 UL LI
