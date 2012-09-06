@@ -146,12 +146,21 @@ namespace Bloom.Book
 
 			//NB: no multi-lingual name suggestion ability yet
 			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
-			var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
+			//var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
 			if (nameSuggestion.Count > 0)
 			{
-				name = ((XmlElement)nameSuggestion[0]).GetAttribute("content");
+				var metaTag = (XmlElement) nameSuggestion[0];
+				var name = metaTag.GetAttribute("content");
+				SetDataDivElement(storage.Dom, "bookTitle", "en", name);
+				metaTag.ParentNode.RemoveChild(metaTag);
 			}
-			SetDataDivElement(storage.Dom, "bookTitle", "en", name);
+			else
+			{
+				//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
+				//that the shell used, e.g. "Vaccinations".
+				//We don't have to do anything special to get that.
+			}
+
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom, "defaultMultilingualLevel", "1"));
