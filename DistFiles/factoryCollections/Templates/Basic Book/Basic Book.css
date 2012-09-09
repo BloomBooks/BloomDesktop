@@ -43,7 +43,7 @@ BODY
 }
 /*+}*/
 /*The following is json, read by Bloom to get size/orientation options
-STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},
+STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},{"A4Portrait" : { "Styles": ["Default"]}},
 {"A4Landscape" : { "Styles": ["Default", "SideBySide"]}}]}ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 #bloom-supportedPageConfigurations
