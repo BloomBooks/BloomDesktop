@@ -10,18 +10,13 @@
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;
 }
+.A4Portrait DIV.marginBox
+{
+/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 269.3mm;
+}
 /*....Title*/
-.A5Portrait.cover .bloom-translationGroup.coverTitle
-{
-	width: 100%;
-	text-align: center;
-}
-.A5Landscape.cover .bloom-translationGroup.coverTitle
-{
-	width: 100%;
-	text-align: center;
-}
-.A4Landscape.cover .bloom-translationGroup.coverTitle
+.bloom-translationGroup.coverTitle
 {
 	width: 100%;
 	text-align: center;
@@ -58,6 +53,17 @@
 	position: absolute;
 	left: 0px;
 	top: 112px;
+	display: block;
+}
+.A4Portrait.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 120%;
+	height: 0.8cm;
+	width: 100%;
+	/*+placement:anchor-top-left 0px 110px;*/
+	position: absolute;
+	left: 0px;
+	top: 110px;
 	display: block;
 }
 /*Note: this vernacular/conent1 must come *after* the National1 block, else when we have English as the only language,
@@ -98,6 +104,18 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
 	left: 0px;
 	top: 0px;
 }
+.A4Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 2.8cm;
+	width: 100%;
+	display: block;
+	line-height: 1.2;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer
 {
@@ -126,6 +144,15 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
 	left: 0px;
 	top: 158px;
 }
+.A4Portrait.cover DIV.bloom-imageContainer
+{
+	height: 17.1cm;
+	width: 100%;
+	/*+placement:anchor-top-left 0px 158px;*/
+	position: absolute;
+	left: 0px;
+	top: 158px;
+}
 /*.....Small cover credits*/
 DIV.bloom-editable.smallCoverCredits
 {
@@ -135,6 +162,16 @@ DIV.bloom-editable.smallCoverCredits
 	position: absolute;
 	left: 0px;
 	top: 599px;
+	height: 49px;
+}
+.A4Portrait DIV.bloom-editable.smallCoverCredits
+{
+	font-size: 100%;
+	text-align: center;
+	/*+placement:anchor-top-left 0px 834px;*/
+	position: absolute;
+	left: 0px;
+	top: 834px;
 	height: 49px;
 }
 /*.......Topic*/
