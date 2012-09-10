@@ -504,6 +504,9 @@ function ResizeUsingPercentages(e,ui){
 
  jQuery(document).ready(function () {
 
+     $.fn.qtip.zindex = 1000000;
+     //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
+
      //add a marginBox if it's missing. We introduced it early in the first beta
      $(".bloom-page").each(function () {
          if ($(this).find(".marginBox").length == 0) {
@@ -640,7 +643,7 @@ function ResizeUsingPercentages(e,ui){
                  classes: 'ui-languageToolTip'
              }
          })
- // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+         // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
      });
 
      // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
@@ -670,7 +673,7 @@ function ResizeUsingPercentages(e,ui){
                  at: 'right center', //I like this, but it doesn't reposition well -->'right center',
                  my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
                 , viewport: $(window)
-               // , adjust: { y: -20 }
+                 // , adjust: { y: -20 }
              };
          }
          else { // with the big back covers, the adjustment just makes things worse.      
@@ -869,7 +872,9 @@ function ResizeUsingPercentages(e,ui){
          handle: '.bloom-imageContainer',
          stop: function (event, ui) {
              $(this).find('.wordsDiv').find('div').each(function () {
-                    $(this).qtip('reposition');} ) }//yes, this repositions *all* qtips on the page. Yuck.
+                 $(this).qtip('reposition');
+             })
+         } //yes, this repositions *all* qtips on the page. Yuck.
      }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
 
 
