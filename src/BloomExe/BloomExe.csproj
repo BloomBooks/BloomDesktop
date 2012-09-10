@@ -48,6 +48,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>Bloom</AssemblyName>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AeroWizard">
       <HintPath>..\..\packages\AeroWizard.1.2.1\lib\3.5\AeroWizard.dll</HintPath>

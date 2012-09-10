@@ -238,11 +238,20 @@ DIV.bloom-page.A4Portrait
 	left: 0;
 	top: 15mm;
 }
-DIV.bloom-page:nth-of-type(odd).A5Portrait DIV.marginBox
+.A4Portrait DIV.marginBox
+{
+	width: 178mm;
+	height: 266mm;
+	/*+placement:anchor-top-left -2.6mm 15.2mm;*/
+	position: absolute;
+	left: -2.6mm;
+	top: 15.2mm;
+}
+DIV.bloom-page:nth-of-type(odd) DIV.marginBox
 {
 	margin-left: 15mm;
 }
-DIV.bloom-page:nth-of-type(even).A5Portrait DIV.marginBox
+DIV.bloom-page:nth-of-type(even) DIV.marginBox
 {
 	margin-left: 25mm;
 }
@@ -258,10 +267,10 @@ DIV.bloom-page:nth-of-type(even).A5Portrait DIV.marginBox
 .A4Landscape DIV.marginBox
 {
 	width: 266.1mm;
-	/*+placement:anchor-top-left 13.8mm 12.8mm;*/
+	/*+placement:anchor-top-left 1.7mm 12.7mm;*/
 	position: absolute;
-	left: 13.8mm;
-	top: 12.8mm;
+	left: 1.7mm;
+	top: 12.7mm;
 	height: 178.5mm;
 }
 .A4LandscapeSideBySide DIV.marginBox
