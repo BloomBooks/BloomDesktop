@@ -241,6 +241,19 @@ DIV.titlePage
 {
 	text-align: center;
 }
+#funding
+{
+	height: 73px;
+	width: 100%;
+	/*+placement:anchor-top-left 0mm 88.4mm;*/
+	position: absolute;
+	left: 0mm;
+	top: 88.4mm;
+}
+#funding .bloom-contentNational1
+{
+	display: block;
+}
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
@@ -273,28 +286,6 @@ DIV#titePageTitleBlock DIV.bloom-content1
 	position: absolute;
 	left: 0px;
 	top: 0px;
-}
-DIV.ISBNContainer
-{
-	/*+placement:anchor-top-left 0px 330px;*/
-	position: absolute;
-	left: 0px;
-	top: 330px;
-	width: 100%;
-	/*[disabled]line-height:12pt;*/
-	/*[disabled]font-family:arial;*/
-}
-DIV.ISBNContainer DIV
-{
-	/*[disabled]height:21px;*/
-	display: inline-block;
-	text-align: center;
-	/*[disabled]+placement:shift 1px 3px;*/
-	min-width: 120px;
-	line-height: normal;
-	font-size: 100%;
-	vertical-align: text-bottom;
-	min-height: 18px;
 }
 .titlePage .titleN1
 {
@@ -506,6 +497,28 @@ DIV.versionAcknowledgments
 /*Outside Back Cover*/
 .outsideBackCover DIV.bloom-editable
 {
-	height: 100%;
+	height: 94%;
 	text-align: center;
+}
+DIV.ISBNContainer
+{
+	width: 100%;
+	/*[disabled]line-height:12pt;*/
+	/*[disabled]font-family:arial;*/
+	/*+placement:anchor-bottom-left 0px 9px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 9px;
+	height: 17px;
+}
+DIV.ISBNContainer DIV
+{
+	line-height: normal;
+	/*+placement:shift 37px -22px;*/
+	position: relative;
+	left: 37px;
+	top: -22px;
+	width: 231px;
+	font-size: 100%;
+	text-align: left !important;
 }

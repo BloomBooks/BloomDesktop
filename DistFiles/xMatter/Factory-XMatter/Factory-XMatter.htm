@@ -74,14 +74,14 @@
 				<div data-book='bookTitle' class="bloom-editable" data-hint="Book title in {lang}">
 				</div>
 			</div>
-			<div class="bloom-translationGroup">
+			<div id="originalContributions" class="bloom-translationGroup">
 				<div data-book="originalContributions" class="credits bloom-editable bloom-readOnlyInTranslationMode"
 					data-hint="The contributions made by writers, illustrators, editors, etc., in {lang}">
 				</div>
 			</div>
-			<div class="ISBNContainer" data-hint="International Standard Book Number. Leave blank if you don't have one of these.">
-				<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN"
-					class="bloom-editable" lang="*">
+			<div id="funding" class="bloom-translationGroup">
+				<div data-book="funding" class="funding bloom-editable"
+					data-hint="Use this to acknowledge any funding agencies.">
 				</div>
 			</div>
 			<div id="languageInformation">
@@ -112,6 +112,11 @@
 		<div class="pageLabel" lang="en">Outside Back Cover</div>
 		<div class="marginBox">
 			<div class="bloom-editable" data-book='outsideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+			</div>
+			<div class="ISBNContainer" data-hint="International Standard Book Number. Leave blank if you don't have one of these.">
+				<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN"
+					class="bloom-editable" lang="*">
+				</div>
 			</div>
 		</div>
 	</div>
