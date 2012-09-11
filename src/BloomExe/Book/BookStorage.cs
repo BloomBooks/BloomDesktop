@@ -125,7 +125,11 @@ namespace Bloom.Book
 				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
 				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
 				{
-					if(string.IsNullOrEmpty(node.GetAttribute("id")))
+					//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
+					//page of every book. This screws up thumbnail caching.
+					const string guidMistakenlyUsedForEveryCoverPage = "74731b2d-18b0-420f-ac96-6de20f659810";
+					if(string.IsNullOrEmpty(node.GetAttribute("id"))
+						||(node.GetAttribute("id") == guidMistakenlyUsedForEveryCoverPage))
 						node.SetAttribute("id", Guid.NewGuid().ToString());
 				}
 

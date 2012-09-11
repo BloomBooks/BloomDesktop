@@ -140,8 +140,25 @@ namespace Bloom.Book
 							t.Value =""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
 					}
 				}
+
+				//give new guids to each of these pages we've copied in
+				foreach (XmlElement e in newPageDiv.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+				{
+					e.SetAttribute("id", Guid.NewGuid().ToString());
+				}
 			}
 		}
+
+//		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
+//		//page of every book. This screws up thumbnail caching.
+//		private void FixPageId(XmlDocument bookDom)
+//		{
+//			XmlElement page = bookDom.SelectSingleNode("//div[@id='74731b2d-18b0-420f-ac96-6de20f659810']") as XmlElement;
+//			if (page != null)
+//			{
+//				page.SetAttribute("id", Guid.NewGuid().ToString());
+//			}
+//		}
 
 		public static bool IsFrontMatterPage(XmlElement pageDiv)
 		{
