@@ -62,6 +62,23 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[7][contains(@class,'bloom-backMatter')]", 1);
 		}
 
+
+		/// <summary>
+		/// Initially, we were re-using "74731b2d-18b0-420f-ac96-6de20f659810" for every book,
+		/// making the htmlthumbnailer's caching system totally messed up.
+		/// </summary>
+		[Test]
+		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
+		{
+			CreateHelper().InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
+			var id1 = ((XmlElement) _dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+			Setup(); //reset for another round
+			CreateHelper().InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
+			var id2 = ((XmlElement)_dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+
+			Assert.AreNotEqual(id1,id2);
+		}
+
 		[Test]
 		public void InjectXMatter_SpanWithNameOfLanguage2_GetsLang()
 		{
