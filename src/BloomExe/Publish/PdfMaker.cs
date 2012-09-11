@@ -133,11 +133,20 @@ namespace Bloom.Publish
 																		   5*60, progress
 																		   , (s) =>
 																				{
-																					//progress.WriteVerbose(s);
 																					progress.WriteStatus(s);
 
-																					//this wakes up the dialog, which then calls the Refresh() we need
-																					((BackgroundWorker) args.Argument).ReportProgress(100);
+																					try
+																					{
+																						//this wakes up the dialog, which then calls the Refresh() we need
+																						((BackgroundWorker)args.Argument).ReportProgress(100);
+																					}
+																					catch (Exception)
+																					{
+#if DEBUG
+																						throw;
+#endif
+																						//swallow an complaints about it already being completed (bl-233)
+																					}
 																				});
 										});
 				}
