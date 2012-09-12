@@ -189,6 +189,15 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 }
+DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
+{
+	height: 48% !important;
+	width: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
 /*........bilingual, placing 1st lang on top, 2nd below the picture*/
 .imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer
 {
@@ -207,13 +216,30 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
+.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer
+{
+	height: 30% !important;
+	/*+placement:anchor-top-left 0px 35%;*/
+	position: absolute;
+	left: 0px;
+	top: 35%;
+}
+.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-translationGroup
+{
+	height: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
 .imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content1
 {
-	height: 5.7cm;
+	height: 30%;
 }
 .imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2
 {
-	height: 5.7cm;
+	height: 30%;
 	/*+placement:anchor-bottom-left 0px 0px;*/
 	position: absolute;
 	left: 0px;
@@ -369,7 +395,7 @@ DIV.imageOnBottom DIV.bloom-translationGroup
 }
 .imageOnBottom DIV.bloom-imageContainer
 {
-	height: 8.4cm;
+	height: 45%;
 	width: 100%;
 	/*+placement:anchor-bottom-left 0px 0px;*/
 	position: absolute;

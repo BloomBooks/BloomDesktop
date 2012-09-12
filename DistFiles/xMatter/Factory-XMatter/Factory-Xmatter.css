@@ -450,6 +450,15 @@ IMG.licenseImage
 	left: 39%;
 	top: 60px;
 }
+.A4Portrait IMG.licenseImage
+{
+	/*[disabled]width:114px;*/
+	/*[disabled]height:34px;*/
+	/*+placement:anchor-top-left 7.6cm 1cm;*/
+	position: absolute;
+	left: 7.6cm;
+	top: 1cm;
+}
 .A4Landscape IMG.licenseImage
 {
 	/*+placement:anchor-top-left 454px 58px;*/
