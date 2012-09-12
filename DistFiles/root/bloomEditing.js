@@ -400,7 +400,13 @@ function MakeSourceTextDivForGroup(group) {
 
      var license = $(img).attr('data-license');
      if (!license || license.length == 0) {
-         $(container).prepend("<button class='editMetadataButton imgMetadataProblem' title='Image is missing information on Credits, Copyright, or License'></button>");
+
+         var buttonModifier = "largeImageButton";
+         if ($(container).height() < 80) {
+             buttonModifier = 'smallImageButton';
+         }
+
+         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing information on Credits, Copyright, or License'></button>");
      }
  }
 
