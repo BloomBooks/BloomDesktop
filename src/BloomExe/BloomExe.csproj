@@ -138,6 +138,7 @@
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\ImageMetadataUpdater.cs" />
+    <Compile Include="Book\Layout.cs" />
     <Compile Include="Book\SizeAndOrientation.cs" />
     <Compile Include="Book\BookStarter.cs" />
     <Compile Include="Book\BookStorage.cs" />
@@ -370,9 +371,7 @@
     </Compile>
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
-    <Compile Include="Publish\PublishView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Publish\PublishView.cs" />
     <Compile Include="Publish\PublishView.Designer.cs">
       <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>

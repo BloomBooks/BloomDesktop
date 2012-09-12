@@ -3,76 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
-using Bloom.Edit;
 using Newtonsoft.Json;
-using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Xml;
-using Palaso.Extensions;
 
 namespace Bloom.Book
 {
-
-	/// <summary>
-	/// A Layout is size and orientation, plus options. Currently, there is only one set of options allowed, named "styles"
-	/// </summary>
-	public class Layout
-	{
-		public SizeAndOrientation SizeAndOrientation;
-		public string Style ;
-
-		public IEnumerable<string> ClassNames
-		{
-			get
-			{
-				yield return SizeAndOrientation.ClassName;
-				if(!string.IsNullOrEmpty(Style))
-				{
-					yield return "layout-style-" + Style;
-				}
-			}
-
-		}
-
-		public static Layout A5Portrait
-		{
-			get { return new Layout() {SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait")}; }
-		}
-
-		public override string ToString()
-		{
-			var s = "";
-			if (!string.IsNullOrEmpty(Style) && Style.ToLower() != "default")
-				s = Style;
-			return (SizeAndOrientation.ToString() + " " + s).Trim();
-		}
-
-		public static Layout FromDom(XmlDocument dom, Layout defaultIfMissing)
-		{
-			var firstPage = dom.SelectSingleNode("descendant-or-self::div[contains(@class,'bloom-page')]");
-			if (firstPage == null)
-				return defaultIfMissing;
-
-			var layout = new Layout {SizeAndOrientation = defaultIfMissing.SizeAndOrientation, Style= defaultIfMissing.Style};
-
-			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
-			{
-				if (part.ToLower().Contains("portrait") || part.ToLower().Contains("landscape"))
-				{
-					layout.SizeAndOrientation = SizeAndOrientation.FromString(part);
-				}
-				if (part.ToLower().Contains("layout-style-"))
-				{
-					int startIndex = "layout-style-".Length;
-					layout.Style = part.Substring(startIndex, part.Length-startIndex);	//reivew: this might let us suck up a style that is no longer listed in any css
-				}
-			}
-			return layout;
-		}
-	}
-
-
 	/// <summary>
 	/// NB: html class names are case sensitive! In this code, we want to accept stuff regardless of case, but always generate Capitalized paper size and orientation names
 	/// </summary>
