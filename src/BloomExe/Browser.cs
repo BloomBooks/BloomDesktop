@@ -350,7 +350,7 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
-			_pageDom =(XmlDocument) dom;//.CloneNode(true); //clone because we want to modify it a bit
+			_pageDom =(XmlDocument) dom;
 
 			/*	This doesn't work for the 1st book shown, or when you change book sizes.
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.

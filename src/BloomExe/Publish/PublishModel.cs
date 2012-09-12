@@ -83,6 +83,7 @@ namespace Bloom.Publish
 
 				//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom,PageLayout);
+				PageLayout.UpdatePageSplitMode(dom);
 
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
