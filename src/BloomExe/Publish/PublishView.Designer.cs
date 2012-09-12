@@ -38,6 +38,8 @@
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
+			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
@@ -47,6 +49,7 @@
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.contextMenuStrip1.SuspendLayout();
+			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -124,6 +127,7 @@
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this.contextMenuStrip1;
+			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 2);
 			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._noBookletRadio, 0, 0);
@@ -131,10 +135,12 @@
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 3;
+			this.tableLayoutPanel1.RowCount = 5;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(100, 540);
 			this.tableLayoutPanel1.TabIndex = 10;
 			// 
@@ -159,6 +165,38 @@
 			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Browser";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
 			// 
+			// _menusToolStrip
+			// 
+			this._menusToolStrip.AutoSize = false;
+			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._menusToolStrip.CanOverflow = false;
+			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._layoutChoices});
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
+			this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
+			this.localizationExtender1.SetLocalizingId(this._menusToolStrip, "EditingView._menusToolStrip");
+			this._menusToolStrip.Location = new System.Drawing.Point(0, 340);
+			this._menusToolStrip.Name = "_menusToolStrip";
+			this._menusToolStrip.Size = new System.Drawing.Size(100, 20);
+			this._menusToolStrip.TabIndex = 6;
+			this._menusToolStrip.Text = "toolStrip1";
+			// 
+			// _layoutChoices
+			// 
+			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._layoutChoices.ForeColor = System.Drawing.Color.White;
+			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
+			this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
+			this.localizationExtender1.SetLocalizingId(this._layoutChoices, "._layoutChoices");
+			this._layoutChoices.Name = "_layoutChoices";
+			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
+			this._layoutChoices.Text = "Page Layout";
+			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
+			// 
 			// _bodyRadio
 			// 
 			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
@@ -173,7 +211,7 @@
 			this._bodyRadio.Text = "Booklet Inside Pages";
 			this._bodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bodyRadio.UseVisualStyleBackColor = true;
-			this._bodyRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
+			this._bodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// _coverRadio
 			// 
@@ -189,7 +227,7 @@
 			this._coverRadio.Text = "Booklet Cover Page";
 			this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._coverRadio.UseVisualStyleBackColor = true;
-			this._coverRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
+			this._coverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// _noBookletRadio
 			// 
@@ -205,7 +243,7 @@
 			this._noBookletRadio.Text = "One page per piece of paper";
 			this._noBookletRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._noBookletRadio.UseVisualStyleBackColor = true;
-			this._noBookletRadio.CheckedChanged += new System.EventHandler(this._bookletRadio_CheckedChanged);
+			this._noBookletRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// localizationExtender1
 			// 
@@ -243,6 +281,8 @@
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.contextMenuStrip1.ResumeLayout(false);
+			this._menusToolStrip.ResumeLayout(false);
+			this._menusToolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
@@ -265,5 +305,7 @@
 		private AdobeReaderControl _adobeReaderControl;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
+		private System.Windows.Forms.ToolStrip _menusToolStrip;
+		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
     }
 }
