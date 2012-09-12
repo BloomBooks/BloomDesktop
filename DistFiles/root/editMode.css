@@ -80,8 +80,8 @@ DIV.hoverUp
 }
 BUTTON.smallImageButton
 {
-	width: 40px;
-	height: 40%;
+	width: 50%;
+	height: 50%;
 	/*+border-radius:0;*/
 	-moz-border-radius: 0;
 	-webkit-border-radius: 0;
@@ -90,6 +90,8 @@ BUTTON.smallImageButton
 	border-radius: 0 0 0 0;
 	z-index: 100;
 	background-repeat: no-repeat;
+	border-style: none !important;
+	background-size: contain !important;
 }
 BUTTON.largeImageButton
 {
@@ -108,7 +110,7 @@ BUTTON.largeImageButton
 BUTTON.pasteImageButton.smallImageButton
 {
 	background-image: url("pasteImageButtonSmall.png") !important;
-	background-position: 7px 0px;
+	background-position: 67% 28% !important;
 }
 BUTTON.pasteImageButton.largeImageButton
 {
@@ -116,8 +118,8 @@ BUTTON.pasteImageButton.largeImageButton
 }
 BUTTON.changeImageButton.smallImageButton
 {
-	background-image: url("changeImageButtonSmall.png") !important;
-	background-position: 7px 0px;
+	background-image: url("changeImageButtonSmall.png");
+	background-position: 63% 27% !important;
 }
 BUTTON.changeImageButton.largeImageButton
 {
@@ -125,19 +127,19 @@ BUTTON.changeImageButton.largeImageButton
 }
 BUTTON.changeImageButton
 {
-	/*+placement:anchor-top-right 2px 2px;*/
+	/*+placement:anchor-top-right 0px 0px;*/
 	position: absolute;
-	right: 2px;
-	top: 2px;
+	right: 0px;
+	top: 0px;
 	/*[disabled]background-position:13px 3px;*/
 	background-color: #96668F;
 }
 BUTTON.pasteImageButton
 {
-	/*+placement:anchor-bottom-right 2px 2px;*/
+	/*+placement:anchor-bottom-right 0px 0px;*/
 	position: absolute;
-	right: 2px;
-	bottom: 2px;
+	right: 0px;
+	bottom: 0px;
 	/*[disabled]background-position:13px 3px;*/
 	background-color: #0C8597;
 }
@@ -146,14 +148,18 @@ BUTTON.editMetadataButton
 	background-image: url("imageMetaDataButton.svg") !important;
 	background-size: contain;
 	background-position: 5px 0px;
-	width: 70px;
-	height: 52px;
+	/*[disabled]width:70px;*/
+	/*[disabled]height:52px;*/
 	background-repeat: no-repeat !important;
-	/*+placement:anchor-top-left 3px 5px;*/
+	/*+placement:anchor-top-left 0px 0px;*/
 	position: absolute;
-	left: 3px;
-	top: 5px;
+	left: 0px;
+	top: 0px;
 	z-index: 1000;
+}
+BUTTON.editMetadataButton.smallImageButton
+{
+	background-position: 0 0 !important;
 }
 BUTTON.editMetadataButton.imgMetadataProblem
 {
