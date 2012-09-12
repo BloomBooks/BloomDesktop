@@ -497,7 +497,7 @@ DIV.versionAcknowledgments
 /*Outside Back Cover*/
 .outsideBackCover DIV.bloom-editable
 {
-	height: 94%;
+	height: 100%;
 	text-align: center;
 }
 DIV.ISBNContainer
@@ -505,20 +505,13 @@ DIV.ISBNContainer
 	width: 100%;
 	/*[disabled]line-height:12pt;*/
 	/*[disabled]font-family:arial;*/
-	/*+placement:anchor-bottom-left 0px 9px;*/
+	/*+placement:anchor-bottom-left 2px 216px;*/
 	position: absolute;
-	left: 0px;
-	bottom: 9px;
-	height: 17px;
+	left: 2px;
+	bottom: 216px;
+	display: inline;
 }
 DIV.ISBNContainer DIV
 {
-	line-height: normal;
-	/*+placement:shift 37px -22px;*/
-	position: relative;
-	left: 37px;
-	top: -22px;
-	width: 231px;
-	font-size: 100%;
-	text-align: left !important;
+	display: inline;
 }
