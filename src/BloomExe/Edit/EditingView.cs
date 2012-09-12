@@ -581,8 +581,8 @@ namespace Bloom.Edit
 					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(l.ToString());
 					item.Tag = l;
 					item.Text = l.ToString();
-					item.Checked = l.ToString() == layout.ToString();
-					item.CheckOnClick = true;
+//					item.Checked = l.ToString() == layout.ToString();
+//					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 

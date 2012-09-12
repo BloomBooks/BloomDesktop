@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
+using Bloom.Edit;
 using Palaso.Reporting;
 
 
@@ -53,6 +56,8 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
+
+			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
 		}
 
 
@@ -113,14 +118,38 @@ namespace Bloom.Publish
 
 		private void UpdateDisplay()
 		{
-			if(_model==null)
+			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
+
+			_layoutChoices.Text = _model.PageLayout.ToString();
 
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
 			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
-			_noBookletRadio.Checked = _model.BookletPortion== PublishModel.BookletPortions.None;
+			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.None;
 
+
+			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
+			_layoutChoices.DropDownItems.Clear();
+//			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
+//			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
+			foreach (var l in layoutChoices)
+			{
+				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(l.ToString());
+				item.Tag = l;
+				item.Text = l.ToString();
+				item.Checked = l.ToString() == _model.BookSelection.CurrentSelection.GetLayout().ToString();
+				item.CheckOnClick = true;
+				item.Click += new EventHandler(OnLayoutChosen);
 			}
+		}
+
+		private void OnLayoutChosen(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			_model.PageLayout = ((Layout)item.Tag);
+			_layoutChoices.Text = _model.PageLayout.ToString();
+			ControlsChanged();
+		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
@@ -150,17 +179,23 @@ namespace Bloom.Publish
 		}
 
 
-		private void _bookletRadio_CheckedChanged(object sender, EventArgs e)
+		private void OnBookletRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
 				return;
 
-			var old = _model.BookletPortion;
-			SetModelFromRadioButtons();
-			if (old == _model.BookletPortion)
-				return;
+			var oldPortion = _model.BookletPortion;
+			SetModelFromButtons();
+			if (oldPortion == _model.BookletPortion)
+				return; // no changes detected
 
-			if(_makePdfBackgroundWorker.IsBusy)
+
+			ControlsChanged();
+		}
+
+		private void ControlsChanged()
+		{
+			if (_makePdfBackgroundWorker.IsBusy)
 			{
 				_makePdfBackgroundWorker.CancelAsync();
 			}
@@ -168,7 +203,7 @@ namespace Bloom.Publish
 				MakeBooklet();
 		}
 
-		private void SetModelFromRadioButtons()
+		private void SetModelFromButtons()
 		{
 			if (_noBookletRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.None;
@@ -205,11 +240,6 @@ namespace Bloom.Publish
 		public string HelpTopicUrl
 		{
 			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
-		}
-
-		private void pictureBox1_Click(object sender, EventArgs e)
-		{
-
 		}
 
 		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)
