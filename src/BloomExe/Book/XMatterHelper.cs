@@ -107,6 +107,8 @@ namespace Bloom.Book
 			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
 				var newPageDiv = _bookDom.ImportNode(xmatterPage, true) as XmlElement;
+				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
+				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
 				if (IsBackMatterPage(xmatterPage))
 				{
@@ -141,11 +143,6 @@ namespace Bloom.Book
 					}
 				}
 
-				//give new guids to each of these pages we've copied in
-				foreach (XmlElement e in newPageDiv.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
-				{
-					e.SetAttribute("id", Guid.NewGuid().ToString());
-				}
 			}
 		}
 
