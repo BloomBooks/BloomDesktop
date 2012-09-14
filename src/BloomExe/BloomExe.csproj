@@ -371,7 +371,9 @@
     </Compile>
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
-    <Compile Include="Publish\PublishView.cs" />
+    <Compile Include="Publish\PublishView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Publish\PublishView.Designer.cs">
       <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>

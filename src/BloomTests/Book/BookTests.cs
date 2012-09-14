@@ -755,7 +755,7 @@ namespace BloomTests.Book
 			var imagePath = book.FolderPath.CombineForPath("test.png");
 			MakeSamplePngImageWithMetadata(imagePath);
 
-			book.UpdateXMatter(new NullProgress());
+			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']",1);
 		}
 
@@ -780,7 +780,7 @@ namespace BloomTests.Book
 			var imagePath = book.FolderPath.CombineForPath("test.png");
 			MakeSamplePngImageWithMetadata(imagePath);
 
-			book.UpdateXMatter(new NullProgress());
+			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
 		}
 

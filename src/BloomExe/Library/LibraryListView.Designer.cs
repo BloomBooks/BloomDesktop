@@ -38,6 +38,11 @@
 			this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._sourcePaneMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
+			this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
+			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._libraryFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
@@ -50,24 +55,19 @@
 			this.label5 = new System.Windows.Forms.Label();
 			this.button6 = new System.Windows.Forms.Button();
 			this._collectionFlow = new System.Windows.Forms.FlowLayoutPanel();
-			this._sourcePaneMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.label7 = new System.Windows.Forms.Label();
 			this.pretendLabel = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
-			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
-			this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
-			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.contextMenuStrip1.SuspendLayout();
+			this._sourcePaneMenuStrip.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
 			this._libraryFlow.SuspendLayout();
 			this._collectionFlow.SuspendLayout();
-			this._sourcePaneMenuStrip.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// contextMenuStrip1
@@ -92,6 +92,8 @@
 			this._updateThumbnailMenu.Name = "_updateThumbnailMenu";
 			this._updateThumbnailMenu.Size = new System.Drawing.Size(181, 22);
 			this._updateThumbnailMenu.Text = "Update Thumbnail";
+			this._updateThumbnailMenu.ToolTipText = "Did Bloom fail to update the thumbnail you see here? This command makes it try ag" +
+    "ain.";
 			this._updateThumbnailMenu.Click += new System.EventHandler(this._updateThumbnailMenu_Click);
 			// 
 			// _updateFrontMatterToolStripMenu
@@ -101,8 +103,11 @@
 			this._localizationExtender.SetLocalizingId(this._updateFrontMatterToolStripMenu, "._updateFrontMatterToolStripMenu");
 			this._updateFrontMatterToolStripMenu.Name = "_updateFrontMatterToolStripMenu";
 			this._updateFrontMatterToolStripMenu.Size = new System.Drawing.Size(181, 22);
-			this._updateFrontMatterToolStripMenu.Text = "Update Front Matter";
-			this._updateFrontMatterToolStripMenu.Click += new System.EventHandler(this._updateFrontMatterToolStripMenu_Click);
+			this._updateFrontMatterToolStripMenu.Text = "Update Book";
+			this._updateFrontMatterToolStripMenu.ToolTipText = "New versions of Bloom sometimes can fix or otherwise improve books. This should b" +
+    "e safe to do at any time, but is only worth doing if your are instructed to do i" +
+    "t by a Bloom specialist.";
+			this._updateFrontMatterToolStripMenu.Click += new System.EventHandler(this.OnBringBookUpToDate_Click);
 			// 
 			// _openFolderOnDisk
 			// 
@@ -136,6 +141,36 @@
 			this._bookThumbnails.TransparentColor = System.Drawing.Color.Transparent;
 			this._bookThumbnails.Images.SetKeyName(0, "booklet70x70.png");
 			// 
+			// toolTip1
+			// 
+			this.toolTip1.AutoPopDelay = 15000;
+			this.toolTip1.InitialDelay = 500;
+			this.toolTip1.ReshowDelay = 100;
+			// 
+			// _sourcePaneMenuStrip
+			// 
+			this._sourcePaneMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem1});
+			this._localizationExtender.SetLocalizableToolTip(this._sourcePaneMenuStrip, null);
+			this._localizationExtender.SetLocalizationComment(this._sourcePaneMenuStrip, null);
+			this._localizationExtender.SetLocalizingId(this._sourcePaneMenuStrip, "contextMenuStrip2.contextMenuStrip2");
+			this._sourcePaneMenuStrip.Name = "_sourcePaneMenuStrip";
+			this._sourcePaneMenuStrip.Size = new System.Drawing.Size(260, 26);
+			// 
+			// toolStripMenuItem1
+			// 
+			this._localizationExtender.SetLocalizableToolTip(this.toolStripMenuItem1, null);
+			this._localizationExtender.SetLocalizationComment(this.toolStripMenuItem1, null);
+			this._localizationExtender.SetLocalizingId(this.toolStripMenuItem1, ".toolStripMenuItem1");
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(259, 22);
+			this.toolStripMenuItem1.Text = "Open Additional Collections Folder";
+			this.toolStripMenuItem1.Click += new System.EventHandler(this.OnOpenAdditionalCollectionsFolderClick);
+			// 
+			// _localizationExtender
+			// 
+			this._localizationExtender.LocalizationManagerId = "Bloom";
+			// 
 			// splitContainer1
 			// 
 			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
@@ -159,6 +194,7 @@
 			this.splitContainer1.SplitterDistance = 303;
 			this.splitContainer1.SplitterWidth = 10;
 			this.splitContainer1.TabIndex = 1;
+			this.splitContainer1.TabStop = false;
 			// 
 			// _libraryFlow
 			// 
@@ -347,26 +383,6 @@
 			this._collectionFlow.Size = new System.Drawing.Size(350, 248);
 			this._collectionFlow.TabIndex = 0;
 			// 
-			// _sourcePaneMenuStrip
-			// 
-			this._sourcePaneMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1});
-			this._localizationExtender.SetLocalizableToolTip(this._sourcePaneMenuStrip, null);
-			this._localizationExtender.SetLocalizationComment(this._sourcePaneMenuStrip, null);
-			this._localizationExtender.SetLocalizingId(this._sourcePaneMenuStrip, "contextMenuStrip2.contextMenuStrip2");
-			this._sourcePaneMenuStrip.Name = "_sourcePaneMenuStrip";
-			this._sourcePaneMenuStrip.Size = new System.Drawing.Size(260, 26);
-			// 
-			// toolStripMenuItem1
-			// 
-			this._localizationExtender.SetLocalizableToolTip(this.toolStripMenuItem1, null);
-			this._localizationExtender.SetLocalizationComment(this.toolStripMenuItem1, null);
-			this._localizationExtender.SetLocalizingId(this.toolStripMenuItem1, ".toolStripMenuItem1");
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(259, 22);
-			this.toolStripMenuItem1.Text = "Open Additional Collections Folder";
-			this.toolStripMenuItem1.Click += new System.EventHandler(this.OnOpenAdditionalCollectionsFolderClick);
-			// 
 			// label7
 			// 
 			this.label7.AutoSize = true;
@@ -421,10 +437,6 @@
 			this._dividerPanel.Size = new System.Drawing.Size(350, 1);
 			this._dividerPanel.TabIndex = 6;
 			// 
-			// _localizationExtender
-			// 
-			this._localizationExtender.LocalizationManagerId = "Bloom";
-			// 
 			// LibraryListView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -439,6 +451,8 @@
 			this.Load += new System.EventHandler(this.LibraryListView_Load);
 			this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
 			this.contextMenuStrip1.ResumeLayout(false);
+			this._sourcePaneMenuStrip.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).EndInit();
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -447,8 +461,6 @@
 			this._libraryFlow.PerformLayout();
 			this._collectionFlow.ResumeLayout(false);
 			this._collectionFlow.PerformLayout();
-			this._sourcePaneMenuStrip.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).EndInit();
 			this.ResumeLayout(false);
 
         }

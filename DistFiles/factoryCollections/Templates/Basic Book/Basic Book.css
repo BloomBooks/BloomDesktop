@@ -44,7 +44,7 @@ BODY
 /*+}*/
 /*The following is json, read by Bloom to get size/orientation options
 STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},{"A4Portrait" : { "Styles": ["Default"]}},
-{"A4Landscape" : { "Styles": ["Default", "SideBySide"]}}]}ENDLAYOUTS
+{"A4Landscape" : { "Styles": ["Default", "SideBySide", "SplitAcrossPages"]}}]}ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 #bloom-supportedPageConfigurations
 {
@@ -100,6 +100,28 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	top: 0;
 	height: 70%;
 	/*[disabled]border:1px solid #000000;*/
+}
+.imageOnTop.layout-style-SplitAcrossPages DIV.bloom-imageContainer
+{
+	width: 100%;
+	height: 100% !important;
+}
+.imageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup
+{
+	width: 100%;
+/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+	/*[disabled]position:relative;*/
+/*So instead, we're settling for starting the text part of the way down*/
+	position: relative !important;
+	display: block !important;
+	/*+placement:anchor-top-left 0px 30%;*/
+	position: absolute;
+	left: 0px;
+	top: 30%;
+}
+.imageOnTop.layout-style-SplitAcrossPages .bloom-editable
+{
+	font-size: 300%;
 }
 DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 {
@@ -423,5 +445,4 @@ DIV.textWholePage DIV.bloom-translationGroup DIV
 {
 	min-height: 67px;
 	/*[disabled]height:30%;*/
-	border: 1px solid #CAF50F;
 }

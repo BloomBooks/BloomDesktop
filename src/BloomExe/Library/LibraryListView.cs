@@ -365,9 +365,9 @@ namespace Bloom.Library
 		RecreateOneThumbnail(SelectedBook);
 		}
 
-		private void _updateFrontMatterToolStripMenu_Click(object sender, EventArgs e)
+		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
-			_model.UpdateFrontMatter();
+			_model.BringBookUpToDate();
 		}
 
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
