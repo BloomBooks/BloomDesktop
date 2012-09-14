@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Xml;
+using Newtonsoft.Json;
 using Palaso.Extensions;
 using Palaso.Xml;
 
@@ -11,15 +13,12 @@ namespace Bloom.Book
 	/// </summary>
 	public class Layout
 	{
-		/// <summary>
-		/// E.g. A4 Landscape
-		/// </summary>
-		public SizeAndOrientation SizeAndOrientation;
+
 
 		/// <summary>
 		/// Style is what goes in the blank in the layout-style-______ css classes.
 		/// </summary>
-		public string Style ;
+		private string _style ;
 
 
 		/// <summary>
@@ -38,13 +37,17 @@ namespace Bloom.Book
 			SplitAcrossPages = 1
 		};
 
+		/// <summary>
+		/// E.g. A4 Landscape
+		/// </summary>
+		public SizeAndOrientation SizeAndOrientation;
 
 		public IEnumerable<string> ClassNames
 		{
 			get
 			{
 				yield return SizeAndOrientation.ClassName;
-				if(!string.IsNullOrEmpty(Style))
+				if(!String.IsNullOrEmpty(Style))
 				{
 					yield return "layout-style-" + Style;
 				}
@@ -57,10 +60,25 @@ namespace Bloom.Book
 			get { return new Layout() {SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait")}; }
 		}
 
+		/// <summary>
+		/// Style is what goes in the blank in the layout-style-______ css classes.
+		/// </summary>
+		public string Style
+		{
+			get { return _style; }
+			set
+			{
+				_style = value;
+				//TODO: can we jsut have ElementDist be a property, if it simply mirrors this???
+				if (value == "SplitAcrossPages")
+					ElementDistribution = ElementDistributionChoices.SplitAcrossPages;
+			}
+		}
+
 		public override string ToString()
 		{
 			var s = "";
-			if (!string.IsNullOrEmpty(Style) && Style.ToLower() != "default")
+			if (!String.IsNullOrEmpty(Style) && Style.ToLower() != "default")
 				s = Style;
 			return (SizeAndOrientation.ToString() + " " + s).Trim();
 		}
@@ -88,6 +106,63 @@ namespace Bloom.Book
 			return layout;
 		}
 
+		/// <summary>
+		/// At rutnime, this string comes out of a dummy css 'content' line. For unit tests, it just comes from the test.
+		/// </summary>
+		/// <param name="contents"></param>
+		/// <returns></returns>
+		public static List<Layout> GetConfigurationsFromConfigurationOptionsString(string contents)
+		{
+			var layouts = new List<Layout>();
+
+			contents = "{\"root\": " + contents + "}";
+			//I found it really hard to work with the json libraries, so I just convert it to xml. It's weird xml, but at least it's not like trying to mold smoke.
+			XmlDocument doc = (XmlDocument)JsonConvert.DeserializeXmlNode(contents);
+			var root = doc.SelectSingleNode("root");
+
+
+			foreach (XmlElement element in root.SelectNodes("layouts"))
+			{
+				foreach (var sizeAndOrientation in element.ChildNodes)
+				{
+					if (sizeAndOrientation is XmlText)
+					{
+						layouts.Add(new Layout() { SizeAndOrientation = SizeAndOrientation.FromString(((XmlText)sizeAndOrientation).InnerText) });
+					}
+					else if (sizeAndOrientation is XmlElement)
+					{
+						SizeAndOrientation soa = SizeAndOrientation.FromString(((XmlElement)sizeAndOrientation).Name);
+						foreach (XmlElement option in ((XmlElement)sizeAndOrientation).ChildNodes)
+						{
+							if (option.Name.ToLower() != "styles")
+								continue;//we don't handle anything else yet
+							layouts.Add(new Layout() { SizeAndOrientation = soa, Style = option.InnerText });
+							//								List<string> choices = null;
+							//								if (!soa.Options.TryGetValue(option.Name, out choices))
+							//								{
+							//									choices = new List<string>();
+							//								}
+							//								else
+							//								{
+							//									soa.Options.Remove(option.Name);
+							//								}
+							//
+							//								foreach (XmlText choice in option.ChildNodes)
+							//								{
+							//									choices.Add(choice.Value);
+							//								}
+							//								soa.Options.Add(option.Name, choices);
+						}
+						//							layouts.Add(soa);
+					}
+				}
+			}
+
+
+
+			return layouts;
+		}
+
 		public  void UpdatePageSplitMode(XmlNode node)
 		{
 			//NB: this can currently only split pages, not move them together. Doable, just not called for by the UI or unit tested yet.
@@ -112,14 +187,14 @@ namespace Bloom.Book
 
 				//now split the elements
 
-				foreach (XmlElement div in leader.SafeSelectNodes("*[contains(@class, 'bloom-trailingElement')]"))
+				foreach (XmlElement div in leader.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-trailingElement')]"))
 				{
-					leader.RemoveChild(div);
+					div.ParentNode.RemoveChild(div);
 				}
 
-				foreach (XmlElement div in trailer.SafeSelectNodes("*[contains(@class, 'bloom-leadingElement')]"))
+				foreach (XmlElement div in trailer.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-leadingElement')]"))
 				{
-					trailer.RemoveChild(div);
+					div.ParentNode.RemoveChild(div);
 				}
 			}
 		}

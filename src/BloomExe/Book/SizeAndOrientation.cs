@@ -151,7 +151,7 @@ namespace Bloom.Book
 
 				try
 				{
-					layouts = GetConfigurationsFromConfigurationOptionsString(s);
+					layouts = Layout.GetConfigurationsFromConfigurationOptionsString(s);
 				}
 				catch (Exception e)
 				{
@@ -171,62 +171,6 @@ namespace Bloom.Book
 			yield return new Layout {SizeAndOrientation = FromString("A5Portrait")};
 		}
 
-		/// <summary>
-		/// At rutnime, this string comes out of a dummy css 'content' line. For unit tests, it just comes from the test.
-		/// </summary>
-		/// <param name="contents"></param>
-		/// <returns></returns>
-		public static List<Layout> GetConfigurationsFromConfigurationOptionsString(string contents)
-		{
-			var layouts = new List<Layout>();
-
-				contents = "{\"root\": " + contents + "}";
-			//I found it really hard to work with the json libraries, so I just convert it to xml. It's weird xml, but at least it's not like trying to mold smoke.
-				XmlDocument doc = (XmlDocument) JsonConvert.DeserializeXmlNode(contents);
-				var root = doc.SelectSingleNode("root");
-
-
-				foreach (XmlElement element in root.SelectNodes("layouts"))
-				{
-					foreach (var sizeAndOrientation in element.ChildNodes)
-					{
-						if (sizeAndOrientation is XmlText)
-						{
-							layouts.Add(new Layout() {SizeAndOrientation = FromString(((XmlText) sizeAndOrientation).InnerText)});
-						}
-						else if (sizeAndOrientation is XmlElement)
-						{
-							SizeAndOrientation soa = FromString(((XmlElement) sizeAndOrientation).Name);
-							foreach (XmlElement option in ((XmlElement) sizeAndOrientation).ChildNodes)
-							{
-								if (option.Name.ToLower() != "styles")
-									continue;//we don't handle anything else yet
-								layouts.Add(new Layout(){SizeAndOrientation = soa, Style=option.InnerText});
-//								List<string> choices = null;
-//								if (!soa.Options.TryGetValue(option.Name, out choices))
-//								{
-//									choices = new List<string>();
-//								}
-//								else
-//								{
-//									soa.Options.Remove(option.Name);
-//								}
-//
-//								foreach (XmlText choice in option.ChildNodes)
-//								{
-//									choices.Add(choice.Value);
-//								}
-//								soa.Options.Add(option.Name, choices);
-							}
-//							layouts.Add(soa);
-						}
-					}
-				}
-
-
-
-			return layouts;
-		}
 
 		public static SizeAndOrientation GetSizeAndOrientation(XmlDocument dom, string defaultIfMissing)
 		{

@@ -371,8 +371,16 @@ namespace Bloom.Book
 			AddCoverColor(dom, CoverColor);
 			AddUIDictionary(dom);
 			AddUISettings(dom);
-			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			UpdateMultilingualSettings(dom);
 			return dom;
+		}
+
+		private void UpdateMultilingualSettings(XmlDocument dom)
+		{
+			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code,
+													 _collectionSettings.Language2Iso639Code,
+													 _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2,
+													 MultilingualContentLanguage3);
 		}
 
 		/// <summary>
@@ -762,7 +770,7 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				RebuildXMatter(dom, new NullProgress());
+				BringBookUpToDate(dom, new NullProgress());
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
@@ -776,15 +784,15 @@ namespace Bloom.Book
 			return dom;
 		}
 
-		public void UpdateXMatter(IProgress progress)
+		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			RebuildXMatter(RawDom, progress);
+			BringBookUpToDate(RawDom, progress);
 			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
-		private void RebuildXMatter(XmlDocument bookDOM, IProgress progress)
+		private void BringBookUpToDate(XmlDocument bookDOM, IProgress progress)
 		{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
@@ -801,8 +809,59 @@ namespace Bloom.Book
 			if(Type == Book.BookType.Publication)
 			{
 				ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
+				UpdatePageFromFactoryTemplates(bookDOM, progress);
 				_storage.Save();
 			}
+		}
+
+		private void UpdatePageFromFactoryTemplates(XmlDocument bookDom, IProgress progress)
+		{
+			var originalLayout = Layout.FromDom(bookDom, Layout.A5Portrait);
+
+			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("templatePages.htm"));
+
+			progress.WriteStatus("Updating pages that were based on Basic Book...");
+			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
+			{
+				var templateId = templatePageDiv.GetStringAttribute("id");
+				if (string.IsNullOrEmpty(templateId))
+					return;
+
+				var templatePageClasses = templatePageDiv.GetAttribute("class");
+				//note, lineage is a series of guids separated by a semicolon
+				foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//body/div[contains(@data-pagelineage, '" + templateId + "')]"))
+				{
+					pageDiv.SetAttribute("class", templatePageClasses);
+
+					//now for all the editable elements within the page
+					int count = 0;
+					foreach (XmlElement templateElement in templatePageDiv.SafeSelectNodes("div/div"))
+					{
+						UpdateDivInsidePage(count, templateElement, pageDiv, progress);
+						++count;
+					}
+				}
+			}
+
+			//custom layout gets messed up when we copy classes over from, for example, Basic Book
+			SetLayout(originalLayout);
+
+			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
+			UpdateMultilingualSettings(bookDom);
+		}
+
+		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
+		{
+			XmlElement targetElement = targetPage.SelectSingleNode("div/div[" + (zeroBasedCount + 1).ToString() + "]") as XmlElement;
+			if (targetElement == null)
+			{
+				progress.WriteError("Book had less than the expected number of divs on page " + targetPage.GetAttribute("id") +
+									", so it cannot be completely updated.");
+				return;
+			}
+			targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
 		}
 
 		public Color CoverColor { get; set; }

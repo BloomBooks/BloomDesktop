@@ -69,7 +69,10 @@ namespace Bloom.Publish
 
 			_activated = true;
 
-			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+//			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+
+			_model.RefreshValuesUponActivation();
+
 			UpdateDisplay();
 			MakeBooklet();
 		}
@@ -137,10 +140,11 @@ namespace Bloom.Publish
 				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(l.ToString());
 				item.Tag = l;
 				item.Text = l.ToString();
-				item.Checked = l.ToString() == _model.BookSelection.CurrentSelection.GetLayout().ToString();
+				item.Checked = l.ToString() == _model.PageLayout.ToString();
 				item.CheckOnClick = true;
 				item.Click += new EventHandler(OnLayoutChosen);
 			}
+			_layoutChoices.Text = _model.PageLayout.ToString();
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
@@ -245,6 +249,11 @@ namespace Bloom.Publish
 		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DebugCurrentPDFLayout();
+		}
+
+		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+		{
+
 		}
 	}
 }

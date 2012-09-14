@@ -220,6 +220,10 @@ namespace Bloom.Publish
 		public void DebugCurrentPDFLayout()
 		{
 			var dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
+			PageLayout.UpdatePageSplitMode(dom);
+
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
 			//var tempHtml = TempFile.WithExtension(".htm");
@@ -232,6 +236,15 @@ namespace Bloom.Publish
 			}
 
 			System.Diagnostics.Process.Start(tempHtml.Path);
+		}
+
+		public void RefreshValuesUponActivation()
+		{
+			if (BookSelection.CurrentSelection!=null)
+			{
+				PageLayout = _bookSelection.CurrentSelection.GetLayout();
+			}
+
 		}
 	}
 }

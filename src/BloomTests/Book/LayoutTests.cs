@@ -27,7 +27,7 @@ namespace BloomTests.Book
 		public void UpdatePageSplitMode_WasCombined_IsNowSplitIntoTwoPages()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html ><body><div id='foo'></div><div class='bloom-page A5Landscape bloom-combinedPage'></div></body></html>");
+			dom.LoadXml(@"<html ><body><div id='somemarginbox'><div class='bloom-page A5Landscape bloom-combinedPage'></div></div></body></html>");
 			var layout = new Layout() {ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages};
 			layout.UpdatePageSplitMode(dom);
 
@@ -53,20 +53,24 @@ namespace BloomTests.Book
 		public void UpdatePageSplitMode_WasCombined_ElementNowDividedBetweenTwoPages()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html ><body><div id='foo'></div><div class='bloom-page A5Landscape bloom-combinedPage'>
-					<div class='bloom-leadingElement'>top1</div>
-					<div class='bloom-trailingElement'>bottom1</div>
-					<div class='bloom-leadingElement'>top2</div>
-					<div class='bloom-trailingElement'>bottom2</div>
-				</div></body></html>");
+			dom.LoadXml(@"<html ><body>
+					<div class='bloom-page A5Landscape bloom-combinedPage'>
+						<div id='themarginbox'>
+							<div class='bloom-leadingElement'>top1</div>
+							<div class='bloom-trailingElement'>bottom1</div>
+							<div class='bloom-leadingElement'>top2</div>
+							<div class='bloom-trailingElement'>bottom2</div>
+						</div>
+					</div>
+			</body></html>");
 			var layout = new Layout() { ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages };
 			layout.UpdatePageSplitMode(dom);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-leadingPage')]//div", 2);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-trailingPage')]//div", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-leadingPage')]/div/div", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-trailingPage')]/div/div", 2);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-leadingPage')]//div[contains(@class,'bloom-leadingElement')]", 2);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-trailingPage')]//div[contains(@class,'bloom-trailingElement')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-leadingPage')]/div/div[contains(@class,'bloom-leadingElement')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-trailingPage')]/div/div[contains(@class,'bloom-trailingElement')]", 2);
 		}
 	}
 }
