@@ -68,7 +68,7 @@ namespace Bloom.Book
 				File.Move(oldNamedFile, newNamedFile);
 
 				//the destination may change here...
-				newBookFolder = SetupNewDocumentContents(newBookFolder);
+				newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
 
 				if(OnNextRunSimulateFailureMakingBook)
 					throw new ApplicationException("Simulated failure for unit test");
@@ -108,7 +108,7 @@ namespace Bloom.Book
 			return defaultValue;
 		}
 
-		private string SetupNewDocumentContents(string initialPath)
+		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
@@ -167,10 +167,13 @@ namespace Bloom.Book
 			SetInitialMultilingualSetting(storage.Dom, multilingualLevel);
 
 
-					//If this is a shell book, make elements to hold the vernacular
+			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
+
+			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				SetupIdAndLineage(div, div);
+				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
+				SetupIdAndLineage(sourceDiv, div);
 				SetupPage(div, _collectionSettings, null, null);
 			}
 
@@ -245,16 +248,17 @@ namespace Bloom.Book
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
-			//"data-" is an html5 attribute you can put on any element. We're using that on the page div
-
 			//NB: this works even if the parent and child are the same, which is the case when making a new book
-			//but not when we're adding an individual template page.
+			//but not when we're adding an individual template page. (Later: Huh?)
 
-			string parentId = parentPageDiv.GetAttribute("id");
 			childPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-			string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pageLineage", string.Empty);
-			childPageDiv.SetAttribute("data-pageLineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+			if (parentPageDiv != null) //until we get the xmatter also coming in, xmatter pages will have no parentDiv available
+			{
+				string parentId = parentPageDiv.GetAttribute("id");
+				string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pagelineage", string.Empty);
+				childPageDiv.SetAttribute("data-pagelineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+			}
 		}
 
 

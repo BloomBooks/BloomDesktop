@@ -466,10 +466,10 @@ namespace BloomTests.Book
 			//enhance: move to book starter tests, since that's what implements the actual behavior
 			var book = CreateBook();
 			var existingPage = book.GetPages().First();
-			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra'  data-pageLineage='grandma' id='ma'>hello</div>");
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra'  data-pagelineage='grandma' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement) GetPageFromBookDom(book, 1);
-			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage]", 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage]", 1);
 			string[] guids = GetLineageGuids(page);
 			Assert.AreEqual("grandma",guids[0]);
 			Assert.AreEqual("ma", guids[1]);
@@ -478,7 +478,7 @@ namespace BloomTests.Book
 
 		private string[] GetLineageGuids(XmlElement page)
 		{
-			XmlAttribute node = (XmlAttribute) page.SelectSingleNodeHonoringDefaultNS("//div/@data-pageLineage");
+			XmlAttribute node = (XmlAttribute) page.SelectSingleNodeHonoringDefaultNS("//div/@data-pagelineage");
 			return node.Value.Split(new char[]{';'});
 		}
 
@@ -491,7 +491,7 @@ namespace BloomTests.Book
 			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page' data-page='extra' id='ma'>hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			XmlElement page = (XmlElement)GetPageFromBookDom(book, 1);
-			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pageLineage='ma']", 1);
+			AssertThatXmlIn.String(page.OuterXml).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='ma']", 1);
 			string[] guids = GetLineageGuids(page);
 			Assert.AreEqual("ma", guids[0]);
 			Assert.AreEqual(1, guids.Length);
