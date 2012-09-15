@@ -5,7 +5,7 @@
 	height: 189.4mm;
 	/*[disabled]border:1px solid #000000;*/
 }
-.A4Landscape DIV.marginBox
+.bloom-frontMatter.A4Landscape DIV.marginBox
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;

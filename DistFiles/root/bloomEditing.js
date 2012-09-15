@@ -1,5 +1,4 @@
- // VERTICALLY ALIGN FUNCTION
-$.fn.VAlign = function() {
+$.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         var ah = $(this).height();
         var ph = $(this).parent().height();
@@ -594,10 +593,10 @@ function ResizeUsingPercentages(e,ui){
      //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 
      //do it initially
-     $(".bloom-verticalAlign").VAlign();
+     $(".bloom-centerVertically").CenterVerticallyInParent();
      //reposition as needed
-     $(".bloom-verticalAlign").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
-         $(this).VAlign();
+     $(".bloom-centerVertically").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
+         $(this).CenterVerticallyInParent();
      });
 
 

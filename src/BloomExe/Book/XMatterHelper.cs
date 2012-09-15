@@ -142,7 +142,6 @@ namespace Bloom.Book
 							t.Value =""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
 					}
 				}
-
 			}
 		}
 
