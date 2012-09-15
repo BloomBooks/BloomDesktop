@@ -1,4 +1,23 @@
-//Do the little bit of jscript needed even when we're just displaying the document
+$.fn.CenterVerticallyInParent = function () {
+    return this.each(function (i) {
+
+    //TODO: this height() thing is a mystery. Whereas Firebug will say the box is, say, 53px, this will say 675, so that no centering is possible
+        var ah = $(this).height();
+        var ph = $(this).parent().height();
+        var mh = Math.ceil((ph - ah) / 2);
+        $(this).css('margin-top', mh);
+
+        ///There is a bug in wkhtmltopdf where it determines the height of these incorrectly, causing, in a multlingual situation, the 1st text box to hog up all the room and
+        //push the other guys off the page. So the hack solution of the moment is to remember the correct height here, in gecko-land, and use it over there to set the max-height.
+        //See bloomPreview.SetMaxHeightForHtmlToPDFBug()
+        $(this).children().each(function () {
+            var h = $(this).height();
+            $(this).attr('data-firefoxHeight', h);
+        });
+    });
+};
+
+ //Do the little bit of jscript needed even when we're just displaying the document
 
 function SetMaxHeightForHtmlToPDFBug(element)
 {
@@ -36,6 +55,19 @@ jQuery(document).ready(function () {
         }
     });
 
-     $(".bloom-verticalAlign").each(function(){SetMaxHeightForHtmlToPDFBug($(this))});
+
+    //--------------------------------
+    //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
+
+    //TODO: this is't working yet, (see CenterVerticallyInParent) but in any case one todo is to trigger
+    //on something different. When the user invokes "layout-style-SplitAcrossPages" mode (e.g. via the menu in the publish tab),
+    //then we want to impose this on text that wouldn't
+    //normally have it (e.g. it might be normally centered top or bottom).
+    //Put another way, we need to eventually do this centering based on the page style, not the class on the element.
+    //Like I say, it doesn't work yet anyhow...
+
+    $(".bloom-centerVertically").CenterVerticallyInParent();
+
+    $(".bloom-centerVertically").each(function () { SetMaxHeightForHtmlToPDFBug($(this)) });
 
 });

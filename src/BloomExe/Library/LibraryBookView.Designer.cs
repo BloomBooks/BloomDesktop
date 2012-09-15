@@ -108,6 +108,7 @@
 			this.localizationExtender1.SetLocalizingId(this, "LibraryBookView.LibraryBookView");
 			this.Name = "LibraryBookView";
 			this.Size = new System.Drawing.Size(900, 450);
+			this.Resize += new System.EventHandler(this.LibraryBookView_Resize);
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 

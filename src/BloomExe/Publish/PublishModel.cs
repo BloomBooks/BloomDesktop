@@ -59,12 +59,11 @@ namespace Bloom.Publish
 
 		public PublishView View { get; set; }
 
-
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
 			if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
-				//	View.MakeBooklet();
+				PageLayout = _bookSelection.CurrentSelection.GetLayout();
 			}
 		}
 
@@ -75,32 +74,25 @@ namespace Bloom.Publish
 
 			try
 			{
-
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 				XmlDocument dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
+
+				//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
+				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom,PageLayout);
+				PageLayout.UpdatePageSplitMode(dom);
+
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
-				using (var tempHtml = TempFile.WithExtension(".htm"))
+				using(var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom))
 				{
-					XmlWriterSettings settings = new XmlWriterSettings();
-					settings.Indent = true;
-					settings.CheckCharacters = true;
-
-					using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-					{
-						dom.WriteContentTo(writer);
-						writer.Close();
-					}
-					var sizeAndOrientation = SizeAndOrientation.GetSizeAndOrientation(_bookSelection.CurrentSelection.RawDom,
-																					  "A5Portrait");
 					if (doWorkEventArgs.Cancel)
 						return;
 
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, sizeAndOrientation.PageSizeName, sizeAndOrientation.IsLandScape,
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
 									  _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
 				}
 			}
@@ -160,6 +152,19 @@ namespace Bloom.Publish
 
 		public BookletPortions BookletPortion { get; set; }
 
+		/// <summary>
+		/// The book itself has a layout, but we can override it here during publishing
+		/// </summary>
+		public Layout PageLayout { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+				return false;
+
+			var m = (PublishModel)obj ;
+			return m.BookletPortion == BookletPortion && m.PageLayout == PageLayout;
+		}
 
 		public void Save()
 		{
@@ -215,9 +220,13 @@ namespace Bloom.Publish
 		public void DebugCurrentPDFLayout()
 		{
 			var dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 
-			var tempHtml = TempFile.WithExtension(".htm"); //nb: we intentially don't ever delete this
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
+			PageLayout.UpdatePageSplitMode(dom);
+
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
+			//var tempHtml = TempFile.WithExtension(".htm");
 
 			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
 			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
@@ -227,6 +236,15 @@ namespace Bloom.Publish
 			}
 
 			System.Diagnostics.Process.Start(tempHtml.Path);
+		}
+
+		public void RefreshValuesUponActivation()
+		{
+			if (BookSelection.CurrentSelection!=null)
+			{
+				PageLayout = _bookSelection.CurrentSelection.GetLayout();
+			}
+
 		}
 	}
 }

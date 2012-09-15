@@ -15,7 +15,7 @@ namespace BloomTests.Book
 		public void GetConfigurationsFromConfigurationOptionsString_Simple()
 		{
 
-			var x = SizeAndOrientation.GetConfigurationsFromConfigurationOptionsString("{'layouts': ['A4Landscape']}");
+			var x = Layout.GetConfigurationsFromConfigurationOptionsString("{'layouts': ['A4Landscape']}");
 			Assert.AreEqual(1, x.Count());
 			Assert.AreEqual("A4", x.First().SizeAndOrientation.PageSizeName);
 			Assert.IsTrue(x.First().SizeAndOrientation.IsLandScape);
@@ -28,7 +28,7 @@ namespace BloomTests.Book
 		'A5Portrait',
 		{'A4Landscape' : { 'Styles': ['Default', 'SideBySide']}}
 	]}";
-			var x = SizeAndOrientation.GetConfigurationsFromConfigurationOptionsString(json);
+			var x = Layout.GetConfigurationsFromConfigurationOptionsString(json);
 			Assert.AreEqual(3, x.Count());
 			Assert.AreEqual("A5", x.First().SizeAndOrientation.PageSizeName);
 			Assert.IsFalse(x.First().SizeAndOrientation.IsLandScape);

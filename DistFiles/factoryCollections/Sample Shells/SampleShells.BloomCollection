@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project version="0.1">
-  <Iso639Code>en</Iso639Code>
-  <LanguageName>English</LanguageName>
+<Collection version="0.2">
+  <Language1Iso639Code>en</Language1Iso639Code>
+  <Language2Iso639Code>tpi</Language2Iso639Code>
+  <Language3Iso639Code></Language3Iso639Code>
+  <Language1Name>English</Language1Name>
   <IsSourceCollection>True</IsSourceCollection>
-</Project>
+  <XMatterPack>Factory</XMatterPack>
+  <Country></Country>
+  <Province></Province>
+  <District></District>
+</Collection>

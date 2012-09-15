@@ -126,7 +126,7 @@ namespace BloomTests.Book
 				"//div[contains(@class,'cover')]//img[@src='HL0014-1.png']", 1);
 		}
 
-		[Test, Ignore("Current architecture gives spreads this responsibility for updating to Book, so can't be tested here.")]
+		[Test, Ignore("Current architecture spreads this responsibility for updating to Book, so can't be tested here.")]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
 		{
 			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
@@ -231,7 +231,7 @@ namespace BloomTests.Book
 						 <textarea lang='en'>This is some English</textarea>
 						</p>
 					</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
+			string sourceTemplateFolder = GetShellBookFolder(body,null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			//nb: testid is used rather than id because id is replaced with a guid when the copy is made
 
@@ -266,7 +266,7 @@ namespace BloomTests.Book
 							<textarea lang='en'>LanguageName</textarea>
 						</p>
 					</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//textarea", 1);
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
@@ -291,7 +291,7 @@ namespace BloomTests.Book
 								<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 							</p>
 						</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 		}
@@ -305,7 +305,7 @@ namespace BloomTests.Book
 								<textarea data-book='bookTitle' class='vernacularBookTitle' lang='en'>Book Name</textarea>
 							 </p>
 						</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
 		}
@@ -320,7 +320,7 @@ namespace BloomTests.Book
 			var body = @"<div class='bloom-page bloom-frontMatter'>don't keep me</div>
 						<div class='bloom-page'>keep me</div>
 						<div class='bloom-page bloom-backMatter'>don't keep me</div>";
-			string sourceTemplateFolder = GetShellBookFolder(body);
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[contains(@class,'bloom-frontMatter')]");
 			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[contains(@class,'bloom-backMatter')]");
@@ -352,11 +352,12 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_NameSameAsShell()
+		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_FileNameSameAsShell()
 		{
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 			Assert.AreEqual("guitar", Path.GetFileName(folderPath));
 		}
+
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_BookWithDefaultNameAlreadyExists_NameGetsNumberSuffix()
@@ -370,7 +371,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedName()
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedFileName()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
 
@@ -380,6 +381,42 @@ namespace BloomTests.Book
 			Assert.AreEqual("My Book.htm", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(bookFolderPath));
 			Assert.IsTrue(File.Exists(path));
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDiv()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var path = GetPathToHtml(bookFolderPath);
+
+			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsNoDefaultNameMetaElement()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='defaultNameForDerivedBooks']", 0);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_ShellHasNoDefaultNameDirective_bookTitleAttibutesSameAsShell()
+		{
+			var shellFolderPath = GetShellBookFolder(
+				@" <div id='bloomDataDiv'>
+					  <div data-book='bookTitle' lang='en'>Vaccinations</div>
+					  <div data-book='bookTitle' lang='tpi'>Tambu Sut</div>
+					</div>", null);
+			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='Vaccinations']", 1);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
 
@@ -611,9 +648,11 @@ namespace BloomTests.Book
 						 <p class='bloom-translationGroup'>
 							<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
-					</div>");
+					</div>",
+						   null//no defaultNameForDerivedBooks
+						   );
 		}
-		private string GetShellBookFolder(string bodyContents)
+		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks)
 		{
 			var content =
 				@"<?xml version='1.0' encoding='utf-8' ?>
@@ -623,11 +662,16 @@ namespace BloomTests.Book
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />
-					<meta name='defaultNameForDerivedBooks' content='guitar'/>
-				</head>
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />";
+			if(!string.IsNullOrEmpty(defaultNameForDerivedBooks))
+			{
+				content += @"<meta name='defaultNameForDerivedBooks' content='"+defaultNameForDerivedBooks+"'/>";
+			}
+			content+= @"</head>
 				<body class='a5Portrait'>" +
 				bodyContents + "</body></html>";
+
+
 			string folder = _shellCollectionFolder.Combine("guitar");
 			Directory.CreateDirectory(folder);
 			string shellFolderPath = Path.Combine(folder, "guitar.htm");

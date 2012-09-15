@@ -31,7 +31,7 @@ namespace Bloom.Book
 
 		public Page(Book book, XmlElement sourcePage,  string caption, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
-			_id = sourcePage.Attributes["id"].Value;
+			_id = FixPageId(sourcePage.Attributes["id"].Value);
 			//_getThumbnail = getThumbnail;
 			Guard.AgainstNull(book,"Book");
 			Book = book;
@@ -41,6 +41,22 @@ namespace Bloom.Book
 			ReadPageTags(sourcePage);
 			//ReadPageLabel(sourcePage);
 		}
+
+		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
+		//page of every book. This screws up thumbnail caching.
+		private string FixPageId(string id)
+		{
+			//Note: there were 4 other xmatter pages with teh same problem, but I'm only fixing
+			//the cover page one a the moment. We've solved the larger problem for new books (or those
+			//with rebuilt front matter).
+			const string guidMistakenlyUsedForEveryCoverPage = "74731b2d-18b0-420f-ac96-6de20f659810";
+			if (id == guidMistakenlyUsedForEveryCoverPage)
+			{
+				return Guid.NewGuid().ToString();
+			}
+			return id;
+		}
+
 //
 //    	private void ReadPageLabel(XmlElement sourcePage)
 //    	{

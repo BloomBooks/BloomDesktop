@@ -68,7 +68,7 @@ namespace Bloom.Book
 				File.Move(oldNamedFile, newNamedFile);
 
 				//the destination may change here...
-				newBookFolder = SetupNewDocumentContents(newBookFolder);
+				newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
 
 				if(OnNextRunSimulateFailureMakingBook)
 					throw new ApplicationException("Simulated failure for unit test");
@@ -108,12 +108,12 @@ namespace Bloom.Book
 			return defaultValue;
 		}
 
-		private string SetupNewDocumentContents(string initialPath)
+		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
 			//SetMetaDataElement(storage, "")
 
-			UpdateEditabilityIndicator(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
+			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
 			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
 			//	for shells, we'll still have pages.
@@ -141,7 +141,24 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
 				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation);
+				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
+			}
+
+			//NB: no multi-lingual name suggestion ability yet
+			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
+			//var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
+			if (nameSuggestion.Count > 0)
+			{
+				var metaTag = (XmlElement) nameSuggestion[0];
+				var name = metaTag.GetAttribute("content");
+				SetDataDivElement(storage.Dom, "bookTitle", "en", name);
+				metaTag.ParentNode.RemoveChild(metaTag);
+			}
+			else
+			{
+				//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
+				//that the shell used, e.g. "Vaccinations".
+				//We don't have to do anything special to get that.
 			}
 
 
@@ -150,10 +167,13 @@ namespace Bloom.Book
 			SetInitialMultilingualSetting(storage.Dom, multilingualLevel);
 
 
-					//If this is a shell book, make elements to hold the vernacular
+			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
+
+			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				SetupIdAndLineage(div, div);
+				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
+				SetupIdAndLineage(sourceDiv, div);
 				SetupPage(div, _collectionSettings, null, null);
 			}
 
@@ -192,7 +212,7 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-		private void UpdateEditabilityIndicator(BookStorage storage)
+		private void UpdateEditabilityMetadata(BookStorage storage)
 		{
 
 			//Here's the logic: If we're in a shell-making library, then it's safe to say that a newly-
@@ -200,7 +220,18 @@ namespace Bloom.Book
 			//prevent us from editing it while in a shell-making collections, since we don't honor this
 			//tag in shell-making collections.
 			if(_isSourceCollection)
+			{
 				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
+			}
+
+#if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
+			//things like picture dictionaries could be used repeatedly
+			//but things from Basic Book are normally not.
+			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
+#else
+			var x = "false";
+#endif
+			BookStorage.UpdateMetaElement(storage.Dom, "SuitableForMakingShells", x);
 		}
 
 
@@ -217,16 +248,17 @@ namespace Bloom.Book
 
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
-			//"data-" is an html5 attribute you can put on any element. We're using that on the page div
-
 			//NB: this works even if the parent and child are the same, which is the case when making a new book
-			//but not when we're adding an individual template page.
+			//but not when we're adding an individual template page. (Later: Huh?)
 
-			string parentId = parentPageDiv.GetAttribute("id");
 			childPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-			string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pageLineage", string.Empty);
-			childPageDiv.SetAttribute("data-pageLineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+			if (parentPageDiv != null) //until we get the xmatter also coming in, xmatter pages will have no parentDiv available
+			{
+				string parentId = parentPageDiv.GetAttribute("id");
+				string parentLineage = parentPageDiv.GetOptionalStringAttribute("data-pagelineage", string.Empty);
+				childPageDiv.SetAttribute("data-pagelineage", (parentLineage + ";" + parentId).Trim(new char[] {';'}));
+			}
 		}
 
 
@@ -277,7 +309,20 @@ namespace Bloom.Book
 			dataDiv.AppendChild(d);
 		}
 
+		private void SetDataDivElement(XmlNode dom, string key, string lang, string value)
+		{
+			var dataDiv = GetOrCreateDataDiv(dom);
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			{
+				dataDiv.RemoveChild(e);
+			}
 
+			var d = dataDiv.OwnerDocument.CreateElement("div");
+			d.SetAttribute("data-book", key);
+			d.SetAttribute("lang", lang);
+			d.InnerXml = value;
+			dataDiv.AppendChild(d);
+		}
 		/// <summary>
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
 		/// then everytime someone created a new book based on it, it too would be trilingual.

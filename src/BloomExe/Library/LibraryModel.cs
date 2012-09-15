@@ -122,15 +122,16 @@ namespace Bloom.Library
 			Process.Start(_bookSelection.CurrentSelection.FolderPath);
 		}
 
-		public void UpdateFrontMatter()
+		public void BringBookUpToDate()
 		{
 			var b = _bookSelection.CurrentSelection;
 			_bookSelection.SelectBook(null);
 
 			using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
 			{
-				dlg.ShowAndDoWork(progress=>b.UpdateXMatter(progress));
+				dlg.ShowAndDoWork(progress=>b.BringBookUpToDate(progress));
 			}
+
 			_bookSelection.SelectBook(b);
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -160,22 +161,22 @@ namespace Bloom
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
 			_browser.NoDefaultContextMenu = true;
-			_browser.ShowContextMenu += new EventHandler<GeckoContextMenuEventArgs>(OnShowContextMenu);
+			_browser.ShowContextMenu += OnShowContextMenu;
 
-			_browser.Navigating += new EventHandler<GeckoNavigatingEventArgs>(_browser_Navigating);
+			_browser.Navigating += _browser_Navigating;
 		   // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
 			//necessarily need).  When I comment this out, I get an error if the href had, for example,
 			//"bloom" for the protocol.  We could probably install that as a protocol, rather than
 			//using the click to just get a target and go from there, if we wanted.
-			_browser.DomClick += new EventHandler<GeckoDomEventArgs>(OnBrowser_DomClick);
+			_browser.DomClick += OnBrowser_DomClick;
 
-			_browser.DomKeyPress += new EventHandler<GeckoDomKeyEventArgs>(OnDomKeyPress);
+			_browser.DomKeyPress += OnDomKeyPress;
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
-			//_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
+			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
 			var errorsToHide = new List<string>();
@@ -213,6 +214,11 @@ namespace Bloom
 
 			RaiseGeckoReady();
 	   }
+
+		private void _browser_DocumentCompleted(object sender, EventArgs e)
+		{
+			//no: crashes (at least in Sept 2012) AutoZoom();
+		}
 
 		/// <summary>
 		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard
@@ -299,6 +305,12 @@ namespace Bloom
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
+
+
+			//_setInitialZoomTimer.Enabled = true;
+
+			Application.Idle += new EventHandler(Application_Idle);
+
 		   //NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
 //    		if(_tempHtmlFile!=null)
 //    		{
@@ -307,6 +319,22 @@ namespace Bloom
 //    		}
 			//didn't seem to do anything:  _browser.WebBrowserFocus.SetFocusAtFirstElement();
 		}
+
+		void Application_Idle(object sender, EventArgs e)
+		{
+			Application.Idle -= new EventHandler(Application_Idle);
+
+			ZoomToFullWidth();
+
+			//this is the only safe way I've found to do a programatic zoom: trigger a resize event at idle time!
+			//NB: if we instead directly call AutoZoom() here, we get a accessviolation pretty easily
+
+			//But even though on my machine this doesn't crash, switching between books makes the resizing
+			//stop working, so that even manually reziing the window won't get us a new zoom
+/*			var original = Size.Height;
+			Size = new Size(Size.Width, Size.Height + 1);
+			Size = new Size(Size.Width, original);
+	*/	}
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
@@ -322,11 +350,27 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
-			_pageDom = dom;
+			_pageDom =(XmlDocument) dom;//.CloneNode(true); //clone because we want to modify it a bit
+
+			/*	This doesn't work for the 1st book shown, or when you change book sizes.
+			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
+			*/
+			XmlElement body = (XmlElement) _pageDom.GetElementsByTagName("body")[0];
+			var scale = GetScaleToShowWholeWidthOfPage();
+			if (scale > 0f)
+			{
+				body.SetAttribute("style", GetZoomCSS(scale));
+			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
+		}
+
+		private static string GetZoomCSS(float scale)
+		{
+			//return "";
+			return string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
 		}
 
 		private void SetNewTempFile(TempFile tempFile)
@@ -368,6 +412,7 @@ namespace Bloom
 		{
 			_afterValidatingTimer.Enabled = false;
 			//LoadPageDomFromBrowser();
+			//AutoZoom();
 		}
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
@@ -382,7 +427,7 @@ namespace Bloom
 			if (_pageDom.SelectNodes("//textarea").Count > 0)
 				Debug.Fail("Oh, a chance to test bluring textarea's!");
 #endif
-			//I (John) don't use textareas anymore... I stick with divs.
+			//as of august 2012 textareas only occur in the Calendar
 	//		if (_pageDom.SelectNodes("//textarea").Count >0)
 			{
 				//This approach was to force an onblur so that we can get at the actual user-edited value.
@@ -390,7 +435,7 @@ namespace Bloom
 				//_browser.WebBrowserFocus.Deactivate();
 				//_browser.WebBrowserFocus.Activate();
 
-				//now, we just do the blur directly. This has not been tested, because we don't have an docs with inputs or text areas at the moment
+				//now, we just do the blur directly.
 				var activeElement = _browser.Window.Document.ActiveElement;
 				if(activeElement!=null)
 					activeElement.Blur();
@@ -549,6 +594,62 @@ namespace Bloom
 		public void ShowHtml(string html)
 		{
 			_browser.LoadHtml(html);
+		}
+
+		private void Browser_Resize(object sender, EventArgs e)
+		{
+			ZoomToFullWidth();
+		}
+
+		private float GetScaleToShowWholeWidthOfPage()
+		{
+			if (_browser != null)
+			{
+				var div = _browser.Document.ActiveElement;
+				if (div != null)
+				{
+					div = div.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
+					if (div != null)
+					{
+						if (div.ScrollWidth > _browser.Width)
+						{
+							var widthWeNeed = div.ScrollWidth + 100 + 100/*for qtips*/;
+							return ((float)_browser.Width) / widthWeNeed;
+
+						}
+						else
+						{
+							return 1.0f;
+						}
+					}
+				}
+			}
+			return 0f;
+		}
+
+		private void ZoomToFullWidth()
+		{
+			var scale = GetScaleToShowWholeWidthOfPage();
+			if(scale>0f)
+			{
+				SetZoom(scale);
+			}
+		}
+
+		private void SetZoom(float scale)
+		{
+/*			//Dangerous. See https://bitbucket.org/geckofx/geckofx-11.0/issue/12/setfullzoom-doesnt-work
+			//and if I get it to work (by only calling it from onresize, it stops working after you navigate
+
+			var geckoMarkupDocumentViewer = _browser.GetMarkupDocumentViewer();
+			if (geckoMarkupDocumentViewer != null)
+			{
+				geckoMarkupDocumentViewer.SetFullZoomAttribute(scale);
+			}
+*/
+			//so we stick it in the css instead
+			_browser.Document.Body.Style.CssText = string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
+			_browser.Window.ScrollTo(0,0);
 		}
 	}
 

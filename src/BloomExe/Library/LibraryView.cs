@@ -74,5 +74,10 @@ namespace Bloom.Library
 		{
 			get { return _topBarControl; }
 		}
+
+		private void LibraryView_Load(object sender, EventArgs e)
+		{
+
+		}
 	}
 }
