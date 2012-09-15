@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes7 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes8 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes9 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes10 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
 			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
@@ -141,7 +141,7 @@
 			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._deletePageButton.Image = null;
 			this._deletePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._deletePageButton.ImageAttributes = imageAttributes6;
+			this._deletePageButton.ImageAttributes = imageAttributes1;
 			this._deletePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._deletePageButton.ImageBorderEnabled = false;
 			this._deletePageButton.ImageDropShadow = false;
@@ -182,7 +182,7 @@
 			this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._undoButton.Image = null;
 			this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._undoButton.ImageAttributes = imageAttributes7;
+			this._undoButton.ImageAttributes = imageAttributes2;
 			this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._undoButton.ImageBorderEnabled = false;
 			this._undoButton.ImageDropShadow = false;
@@ -222,7 +222,7 @@
 			this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._cutButton.Image = null;
 			this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._cutButton.ImageAttributes = imageAttributes8;
+			this._cutButton.ImageAttributes = imageAttributes3;
 			this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._cutButton.ImageBorderEnabled = false;
 			this._cutButton.ImageDropShadow = false;
@@ -262,7 +262,7 @@
 			this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._pasteButton.Image = null;
 			this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._pasteButton.ImageAttributes = imageAttributes9;
+			this._pasteButton.ImageAttributes = imageAttributes4;
 			this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._pasteButton.ImageBorderEnabled = false;
 			this._pasteButton.ImageDropShadow = false;
@@ -303,7 +303,7 @@
 			this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._copyButton.Image = null;
 			this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._copyButton.ImageAttributes = imageAttributes10;
+			this._copyButton.ImageAttributes = imageAttributes5;
 			this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._copyButton.ImageBorderEnabled = false;
 			this._copyButton.ImageDropShadow = false;
@@ -369,6 +369,7 @@
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
 			this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
+			this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, Localization.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._layoutChoices, "._layoutChoices");
 			this._layoutChoices.Name = "_layoutChoices";
 			this._layoutChoices.Size = new System.Drawing.Size(50, 19);
