@@ -31,8 +31,15 @@ namespace Bloom.ToPalaso.Experimental
 			Progress.AddStatusProgress(_status);
 			Progress.AddMessageProgress(_messageLabelProgress);
 			Progress.Add(new ApplicationDoEventsProgress());//this will keep our UI alive
+			var stringProgress = new StringBuilderProgress();
+			Progress.Add(stringProgress);
 			Application.Idle += StartWorking;
 			ShowDialog();
+			if (Progress.ErrorEncountered)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a problem performing that operation.\r\n\r\n"+stringProgress.Text);
+			}
+
 		}
 
 		void StartWorking(object sender, EventArgs e)

@@ -179,7 +179,7 @@ namespace Bloom.Book
 
 			if (IsInEditableLibrary && !HasFatalError)
             {
-                UpdateFieldsAndVariables(RawDom);
+				UpdateFieldsAndVariables(FolderPath, RawDom);
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				RawDom.AddStyleSheet(@"languageDisplay.css");
             }
@@ -276,6 +276,7 @@ namespace Bloom.Book
 					{
 						return "Title Missing";
 					}
+					t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
 					return t;
 				}
 				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
@@ -370,9 +371,17 @@ namespace Bloom.Book
             AddCoverColor(dom, CoverColor);
         	AddUIDictionary(dom);
 			AddUISettings(dom);
-			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			UpdateMultilingualSettings(dom);
 			return dom;
         }
+
+		private void UpdateMultilingualSettings(XmlDocument dom)
+		{
+			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code,
+			                                         _collectionSettings.Language2Iso639Code,
+			                                         _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2,
+			                                         MultilingualContentLanguage3);
+		}
 
 		/// <summary>
 		/// stick in a json with various string values/translations we want to make available to the javascript
@@ -576,7 +585,7 @@ namespace Bloom.Book
                 return null;
             }
 
-            XmlDocument bookDom = GetBookDomWithStyleSheet("previewMode.css");
+            XmlDocument bookDom = GetBookDomWithStyleSheets("previewMode.css","thumbnail.css");
 
             AddCoverColor(bookDom, CoverColor);
             HideEverythingButFirstPageAndRemoveScripts(bookDom);
@@ -612,11 +621,15 @@ namespace Bloom.Book
             }
         }
 
-        private XmlDocument GetBookDomWithStyleSheet(string cssFileName)
+        private XmlDocument GetBookDomWithStyleSheets(params string[] cssFileNames)
         {
             XmlDocument dom = (XmlDocument) _storage.GetRelocatableCopyOfDom(_log);
-            dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(cssFileName));
-			_storage.SortStyleSheetLinks(dom);
+			var fileLocator = _storage.GetFileLocator();
+			foreach (var cssFileName in cssFileNames)
+        	{
+        		dom.AddStyleSheet(fileLocator.LocateFile(cssFileName));
+        	}
+        	_storage.SortStyleSheetLinks(dom);
         	return dom;
         }
 
@@ -747,7 +760,7 @@ namespace Bloom.Book
             {
                 return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
             }
-            var dom= GetBookDomWithStyleSheet("previewMode.css");
+            var dom= GetBookDomWithStyleSheets("previewMode.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -757,7 +770,7 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				RebuildXMatter(dom, new NullProgress());
+				BringBookUpToDate(dom, new NullProgress());
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
     		var primaryLanguage = _collectionSettings.Language1Iso639Code;
@@ -771,33 +784,87 @@ namespace Bloom.Book
             return dom;
         }
 
-		public void UpdateXMatter(IProgress progress)
+		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			RebuildXMatter(RawDom, progress);
+			BringBookUpToDate(RawDom, progress);
 			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
-    	private void RebuildXMatter(XmlDocument dom, IProgress progress)
+    	private void BringBookUpToDate(XmlDocument bookDOM, IProgress progress)
     	{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
     		var data = LoadDataSetFromCollectionSettings(false);
 			GatherDataItemsFromDom(data, "*", RawDom);
-    		var helper = new XMatterHelper(dom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
-    		XMatterHelper.RemoveExistingXMatter(dom);
-			Layout layout = Layout.FromDom(dom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+    		var helper = new XMatterHelper(bookDOM, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
+    		XMatterHelper.RemoveExistingXMatter(bookDOM);
+			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter..."); 
-			helper.InjectXMatter(data.WritingSystemCodes, layout);
-    		BookStarter.PrepareElementsInPageOrDocument(dom, _collectionSettings);
+			helper.InjectXMatter(FolderPath,data.WritingSystemCodes, layout);
+    		BookStarter.PrepareElementsInPageOrDocument(bookDOM, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-			UpdateDomWIthDataItems(data, "*", dom);
+			UpdateDomWIthDataItems(FolderPath, data, "*", bookDOM);
     		if(Type == Book.BookType.Publication)
-				UpdateAllImageMetadataHtmlAttributesAndSave(progress);
+    		{
+    			ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
+				UpdatePageFromFactoryTemplates(bookDOM, progress); 
+				_storage.Save();
+    		}
     	}
 
-    	public Color CoverColor { get; set; }
+		private void UpdatePageFromFactoryTemplates(XmlDocument bookDom, IProgress progress)
+		{
+			var originalLayout = Layout.FromDom(bookDom, Layout.A5Portrait);
+
+			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("templatePages.htm"));
+
+			progress.WriteStatus("Updating pages that were based on Basic Book...");
+			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
+			{
+				var templateId = templatePageDiv.GetStringAttribute("id");
+				if (string.IsNullOrEmpty(templateId))
+					return;
+
+				var templatePageClasses = templatePageDiv.GetAttribute("class");
+				//note, lineage is a series of guids separated by a semicolon
+				foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//body/div[contains(@data-pagelineage, '" + templateId + "')]"))
+				{
+					pageDiv.SetAttribute("class", templatePageClasses);
+
+					//now for all the editable elements within the page
+					int count = 0;
+					foreach (XmlElement templateElement in templatePageDiv.SafeSelectNodes("div/div"))
+					{
+						UpdateDivInsidePage(count, templateElement, pageDiv, progress);
+						++count;
+					}
+				}
+			}
+
+			//custom layout gets messed up when we copy classes over from, for example, Basic Book
+			SetLayout(originalLayout);
+
+			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
+			UpdateMultilingualSettings(bookDom);
+		}
+
+		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
+		{
+			XmlElement targetElement = targetPage.SelectSingleNode("div/div[" + (zeroBasedCount + 1).ToString() + "]") as XmlElement;
+			if (targetElement == null)
+			{
+				progress.WriteError("Book had less than the expected number of divs on page " + targetPage.GetAttribute("id") +
+				                    ", so it cannot be completely updated.");
+				return;
+			}
+			targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
+		}
+
+		public Color CoverColor { get; set; }
 
         public bool IsShellOrTemplate
         {
@@ -1177,6 +1244,7 @@ namespace Bloom.Book
             BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, MultilingualContentLanguage2, MultilingualContentLanguage3);//, LockedExceptForTranslation);
             ClearEditableValues(newPageDiv);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
             newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 
             var elementOfPageBefore = FindPageDiv(pageBefore);
@@ -1318,7 +1386,7 @@ namespace Bloom.Book
     	/// </summary>
     	/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
     	/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
-    	public DataSet UpdateFieldsAndVariables(XmlDocument domToRead)
+    	public DataSet UpdateFieldsAndVariables(string folderPath, XmlDocument domToRead)
         {
 			var data = LoadDataSetFromCollectionSettings(false);
 
@@ -1334,7 +1402,7 @@ namespace Bloom.Book
     				Debug.WriteLine("Gathered: {0}[{1}]={2}", item.Key,form.WritingSystemId, form.Form );
     			}   			
     		}
-			UpdateDomWIthDataItems(data, "*", RawDom);
+			UpdateDomWIthDataItems(folderPath, data, "*", RawDom);
 
     		UpdateTitle(data);
 			return data;
@@ -1346,9 +1414,9 @@ namespace Bloom.Book
 
     		if (data.TextVariables.TryGetValue("bookTitle", out title))
     		{
-    			XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
+				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
-    			SetTitle(t);
+				SetTitle(t);
     		}
     	}
 
@@ -1525,7 +1593,7 @@ namespace Bloom.Book
 
         public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion)
         {
-            var dom = GetBookDomWithStyleSheet("previewMode.css");
+            var dom = GetBookDomWithStyleSheets("previewMode.css");
             //dom.LoadXml(_storage.Dom.OuterXml);
         	
 			//whereas the base is to our embedded server during editing, it's to the file folder
@@ -1597,8 +1665,8 @@ namespace Bloom.Book
 			
 
 			Debug.WriteLine("before update: " + dataDiv.OuterXml);
-			
-			var data = UpdateFieldsAndVariables(domToRead);
+
+			var data = UpdateFieldsAndVariables(FolderPath, domToRead);
 			data.UpdateGenericLanguageString("contentLanguage1",_collectionSettings.Language1Iso639Code, false);
 			data.UpdateGenericLanguageString("contentLanguage2", String.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
 			data.UpdateGenericLanguageString("contentLanguage3", String.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
@@ -1743,7 +1811,7 @@ namespace Bloom.Book
 		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr', 
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
-		private void UpdateDomWIthDataItems(DataSet data, string elementName, XmlDocument targetDom)
+		private void UpdateDomWIthDataItems( string folderPath, DataSet data, string elementName, XmlDocument targetDom)
 		{
 			Check();
 
@@ -1762,7 +1830,13 @@ namespace Bloom.Book
 						if (node.Name.ToLower() == "img")
 						{
 							var imageName = WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+							var oldImageName = WebUtility.HtmlDecode(node.GetAttribute("src"));
 							node.SetAttribute("src", imageName);
+							if (oldImageName != imageName)
+							{
+								Guard.AgainstNull(folderPath,"folderPath");
+								ImageMetadataUpdater.UpdateImgMetdataAttributesToMatchImage(folderPath, node, new NullProgress());
+							}
 						}
 						else
 						{
@@ -1841,7 +1915,9 @@ namespace Bloom.Book
 
     	public void RebuildThumbNailAsync(Action<Book, Image> callback, Action<Book, Exception> errorCallback)
     	{
-    		_storage.RemoveBookThumbnail();
+			if (!_storage.RemoveBookThumbnail())
+				return;
+
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
 			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this,image), 
 				error=>
@@ -1917,7 +1993,7 @@ namespace Bloom.Book
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
 
 
-			UpdateDomWIthDataItems(data, "*",RawDom);
+			UpdateDomWIthDataItems(FolderPath, data, "*",RawDom);
 
 			//UpdateDomWIthDataItems() is not able to remove items yet, so we do it explicity
 
@@ -1987,117 +2063,12 @@ namespace Bloom.Book
 			return metadata;
 		}
 
-
-		public IEnumerable<string> GetImagePaths()
-		{
-			foreach (var path in Directory.EnumerateFiles(_storage.FolderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
-			{
-				if ((path.ToLower() =="placeholder.png") || path.ToLower()==("license.png") || path.ToLower() == ("thumbnail.png"))
-					continue;
-				yield return path;
-			}
-		}
-
 		/// <summary>
 		/// This is used when the user elects to apply the same image metadata to all images.
 		/// </summary>
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
-			progress.WriteStatus("Starting...");
-			
-			//First update the images themselves
-
-			int completed = 0;
-			var imgElements = GetImagePaths();
-			foreach (string path in imgElements)
-			{
-				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
-				progress.WriteStatus("Copying to "+ Path.GetFileName(path));
-				using (var image = PalasoImage.FromFile(path))
-				{
-					image.Metadata = metadata;
-					image.SaveUpdatedMetadataIfItMakesSense();
-				}
-				++completed;
-			}
-
-			//Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to 
-			//whether the info is there or missing or whatever.
-
-			foreach (XmlElement img in RawDom.SafeSelectNodes("//img"))
-			{
-				UpdateImgMetdataAttributesToMatchImage(img, progress, metadata);
-			}
-
-			_storage.Save();
-		}
-
-		public void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress)
-		{
-			UpdateImgMetdataAttributesToMatchImage(imgElement, progress, null);
-		}
-
-		private void UpdateImgMetdataAttributesToMatchImage(XmlElement imgElement, IProgress progress, Metadata metadata)
-		{
-			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower(); 
-			if (fileName == "placeholder.png" || fileName == "license.png")
-				return;
-
-			if(string.IsNullOrEmpty(fileName))
-			{
-				Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage() Warning: img has no or empty src attribute");
-				//Debug.Fail(" (Debug only) img has no or empty src attribute"); 
-				return; // they have bigger problems, which aren't appropriate to deal with here.
-			}
-			if(metadata ==null)
-			{
-				progress.WriteStatus("Reading metadata from "+fileName);
-				var path = FolderPath.CombineForPath(fileName);
-				if (!File.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
-				{
-					imgElement.RemoveAttribute("data-copyright");
-					imgElement.RemoveAttribute("data-creator");
-					imgElement.RemoveAttribute("data-license");
-					Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage()  Image " + path + " is missing"); 
-					Debug.Fail(" (Debug only) Image " + path + " is missing"); 
-					return;
-				}
-				using (var image = PalasoImage.FromFile(path))
-				{
-					metadata = image.Metadata;
-				}
-			}
-
-			progress.WriteStatus("Writing metadata to HTML for " + fileName);
-
-			imgElement.SetAttribute("data-copyright",
-			                 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
-			imgElement.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
-			imgElement.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
-		}
-
-
-		/// <summary>
-		/// We mirror several metadata tags in the html for quick access by the UI.
-		/// This method makes sure they are all up to date.
-		/// </summary>
-		/// <param name="progress"> </param>
-		public void UpdateAllImageMetadataHtmlAttributesAndSave(IProgress progress)
-		{
-			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to 
-			//whether the info is there or missing or whatever.
-
-			var imgElements = RawDom.SafeSelectNodes("//img");
-			int completed=0;
-			foreach (XmlElement img in imgElements)
-			{
-				progress.ProgressIndicator.PercentCompleted =(int) (100.0* (float)completed/(float)imgElements.Count);
-				//("Updating image metadata in html for +"); 
-				UpdateImgMetdataAttributesToMatchImage(img, progress);
-				completed++;
-			}
-
+			ImageMetadataUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,RawDom, metadata, progress);
 			_storage.Save();
 		}
     }

@@ -361,7 +361,12 @@ namespace Bloom.Edit
 			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
         }
 
-        public XmlDocument GetXmlDocumentForCurrentPage()
+		public void RefreshDisplayOfCurrentPage()
+		{
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+		}
+
+    	public XmlDocument GetXmlDocumentForCurrentPage()
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
             return _domForCurrentPage;

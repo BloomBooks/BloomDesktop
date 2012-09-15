@@ -184,6 +184,7 @@ namespace Bloom.Edit
 						//have the data div.
 						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
 						_model.SaveNow();
+						_model.RefreshDisplayOfCurrentPage();//the cleanup() that is part of Save removes qtips, so let' redraw everything
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
@@ -310,6 +311,7 @@ namespace Bloom.Edit
 			if (ge.Target.ClassName.Contains("sourceTextTab"))
 			{
 				RememberSourceTabChoice(ge.Target);
+				return;
 			}
         	if (ge.Target.ClassName.Contains("changeImageButton"))
                 OnChangeImage(ge);
@@ -578,9 +580,13 @@ namespace Bloom.Edit
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(l.ToString());
 					item.Tag = l;
+					//we don't allow the split options here
+					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
+					{
+						item.Enabled = false;
+						item.ToolTipText = "This option is only available in the Publish tab.";
+					}
 					item.Text = l.ToString();
-					item.Checked = l.ToString() == layout.ToString();
-					item.CheckOnClick = true;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 

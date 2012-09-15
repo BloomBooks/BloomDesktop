@@ -94,7 +94,8 @@ namespace Bloom.Publish
 				//		that the page was too big, leading to an extra page at the end.
 				//		Experimentation showed that 1.041 kept the marge box steady.
 				var arguments = string.Format(
-					"--print-media-type " +
+					"--no-background "+ //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+					" --print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
 #if DEBUG
@@ -132,11 +133,20 @@ namespace Bloom.Publish
 					                  		                               5*60, progress
 					                  		                               , (s) =>
 					                  		                                 	{
-					                  		                                 		//progress.WriteVerbose(s);
 					                  		                                 		progress.WriteStatus(s);
-					                  		                                 		
-																					//this wakes up the dialog, which then calls the Refresh() we need
-																					((BackgroundWorker) args.Argument).ReportProgress(100);
+
+					                  		                                 		try
+					                  		                                 		{
+																						//this wakes up the dialog, which then calls the Refresh() we need
+																						((BackgroundWorker)args.Argument).ReportProgress(100);
+					                  		                                 		}
+					                  		                                 		catch (Exception)
+					                  		                                 		{
+#if DEBUG
+					                  		                                 			throw;
+#endif
+					                  		                                 			//swallow an complaints about it already being completed (bl-233)
+					                  		                                 		}
 					                  		                                 	});
 					                  	});
 				} 

@@ -200,9 +200,9 @@ namespace Bloom.Library
 
     	private string GetTitleToDisplay(Book.Book book)
     	{
-			int kMaxCaptionLetters = 20;
+			int kMaxCaptionLetters = 17;
 			var title = book.TitleBestForUserDisplay;
-			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters) + "…" : title;
+			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
     	}
 
     	/// <summary>
@@ -365,9 +365,9 @@ namespace Bloom.Library
 		RecreateOneThumbnail(SelectedBook);
 		}
 
-		private void _updateFrontMatterToolStripMenu_Click(object sender, EventArgs e)
+		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
-			_model.UpdateFrontMatter();
+			_model.BringBookUpToDate();
 		}
 
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
@@ -379,6 +379,12 @@ namespace Bloom.Library
 		{
 			Process.Start(ProjectContext.InstalledCollectionsDirectory);
 		}
+
+		private void LibraryListView_Load(object sender, EventArgs e)
+		{
+		
+		}
+
 
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.

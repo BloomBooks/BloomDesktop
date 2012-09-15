@@ -5,50 +5,21 @@
 	height: 189.4mm;
 	/*[disabled]border:1px solid #000000;*/
 }
-.A4Landscape DIV.marginBox
+.bloom-frontMatter.A4Landscape DIV.marginBox
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;
 }
+.A4Portrait DIV.marginBox
+{
+/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 269.3mm;
+}
 /*....Title*/
-.A5Portrait.cover .bloom-translationGroup.coverTitle
+.bloom-translationGroup.coverTitle
 {
 	width: 100%;
 	text-align: center;
-}
-.A5Landscape.cover .bloom-translationGroup.coverTitle
-{
-	width: 100%;
-	text-align: center;
-}
-.A4Landscape.cover .bloom-translationGroup.coverTitle
-{
-	width: 100%;
-	text-align: center;
-}
-/*...................Vernacular*/
-.A5Portrait.cover .bookTitle.bloom-content1
-{
-	font-size: 250%;
-	height: 3.3cm;
-	width: 100%;
-	display: block;
-	line-height: 1;
-}
-.A5Landscape.cover .bookTitle.bloom-content1
-{
-	font-size: 300%;
-	height: 1.5cm;
-	width: 100%;
-	display: block;
-}
-.A4Landscape.cover .bookTitle.bloom-content1
-{
-	font-size: 250%;
-	height: 2.8cm;
-	width: 100%;
-	display: block;
-	line-height: 1.2;
 }
 /*....................National 1*/
 .A5Portrait.cover .bookTitle.bloom-contentNational1
@@ -57,6 +28,10 @@
 	height: 1.3cm;
 	width: 100%;
 	display: block;
+	/*+placement:anchor-top-left 0px 130px;*/
+	position: absolute;
+	left: 0px;
+	top: 130px;
 }
 .A5Landscape.cover .bookTitle.bloom-contentNational1
 {
@@ -74,21 +49,82 @@
 	font-size: 120%;
 	height: 0.8cm;
 	width: 100%;
-	/*+placement:anchor-top-left -4px 112px;*/
+	/*+placement:anchor-top-left 0px 112px;*/
 	position: absolute;
-	left: -4px;
+	left: 0px;
 	top: 112px;
 	display: block;
+}
+.A4Portrait.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 120%;
+	height: 0.8cm;
+	width: 100%;
+	/*+placement:anchor-top-left 0px 110px;*/
+	position: absolute;
+	left: 0px;
+	top: 110px;
+	display: block;
+}
+/*Note: this vernacular/conent1 must come *after* the National1 block, else when we have English as the only language,
+It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.
+...................Vernacular*/
+.A5Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 3.3cm;
+	width: 100%;
+	display: block;
+	line-height: 1;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.A5Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 300%;
+	height: 1.5cm;
+	width: 100%;
+	display: block;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.A4Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 2.8cm;
+	width: 100%;
+	display: block;
+	line-height: 1.2;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.A4Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 2.8cm;
+	width: 100%;
+	display: block;
+	line-height: 1.2;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
 }
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer
 {
 	height: 10cm;
 	width: 100%;
-	/*+placement:shift 1px 19px;*/
-	position: relative;
-	left: 1px;
-	top: 19px;
+	/*+placement:anchor-top-left 0px 193px;*/
+	position: absolute;
+	left: 0px;
+	top: 193px;
 }
 .A5Landscape.cover DIV.bloom-imageContainer
 {
@@ -108,6 +144,15 @@
 	left: 0px;
 	top: 158px;
 }
+.A4Portrait.cover DIV.bloom-imageContainer
+{
+	height: 17.1cm;
+	width: 100%;
+	/*+placement:anchor-top-left 0px 158px;*/
+	position: absolute;
+	left: 0px;
+	top: 158px;
+}
 /*.....Small cover credits*/
 DIV.bloom-editable.smallCoverCredits
 {
@@ -119,11 +164,21 @@ DIV.bloom-editable.smallCoverCredits
 	top: 599px;
 	height: 49px;
 }
+.A4Portrait DIV.bloom-editable.smallCoverCredits
+{
+	font-size: 100%;
+	text-align: center;
+	/*+placement:anchor-top-left 0px 834px;*/
+	position: absolute;
+	left: 0px;
+	top: 834px;
+	height: 49px;
+}
 /*.......Topic*/
 DIV.coverBottomBookTopic
 {
 	/*[disabled]overflow:hidden;*/
-	width: 61%;
+	width: 6cm;
 	/*+placement:anchor-bottom-right 0 0;*/
 	position: absolute;
 	right: 0;
@@ -186,14 +241,25 @@ DIV.titlePage
 {
 	text-align: center;
 }
-/*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titePageTitleBlock DIV.bloom-content1
+#funding
 {
-	font-size: 150%;
-	height: 111px;
-	text-align: center;
+	height: 73px;
 	width: 100%;
+	/*+placement:anchor-top-left 0mm 88.4mm;*/
+	position: absolute;
+	left: 0mm;
+	top: 88.4mm;
+}
+#funding .bloom-contentNational1
+{
 	display: block;
+}
+/*Unless otherwise positioned and made visible, hide all the language elements in there*/
+DIV#titePageTitleBlock DIV.bloom-contentNational2
+{
+	height: 35px;
+	text-align: center;
+	width: 419px;
 }
 DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
@@ -207,33 +273,19 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 	display: block;
 	font-size: 100%;
 }
-DIV#titePageTitleBlock DIV.bloom-contentNational2
+/*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
+It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
+DIV#titePageTitleBlock DIV.bloom-content1
 {
-	height: 35px;
+	font-size: 150%;
+	height: 111px;
 	text-align: center;
-	width: 419px;
-}
-DIV.ISBNContainer
-{
-	/*+placement:anchor-top-left 0px 330px;*/
+	width: 100%;
+	display: block;
+	/*+placement:anchor-top-left 0px 0px;*/
 	position: absolute;
 	left: 0px;
-	top: 330px;
-	width: 100%;
-	/*[disabled]line-height:12pt;*/
-	/*[disabled]font-family:arial;*/
-}
-DIV.ISBNContainer DIV
-{
-	/*[disabled]height:21px;*/
-	display: inline-block;
-	text-align: center;
-	/*[disabled]+placement:shift 1px 3px;*/
-	min-width: 120px;
-	line-height: normal;
-	font-size: 100%;
-	vertical-align: text-bottom;
-	min-height: 18px;
+	top: 0px;
 }
 .titlePage .titleN1
 {
@@ -272,6 +324,10 @@ DIV.titlePage .credits.bloom-contentNational1
 	width: 100%;
 	display: block;
 	font-size: 100%;
+	/*+placement:anchor-top-left 0px 174px;*/
+	position: absolute;
+	left: 0px;
+	top: 174px;
 }
 DIV.titlePage DIV#languageInformation
 {
@@ -280,14 +336,14 @@ DIV.titlePage DIV#languageInformation
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	height: 86px;
+	height: 57px;
 }
-DIV.titlePage DIV.langName.bloom-contentNational1, DIV.titlePage DIV.langName.bloom-contentNational2
+DIV.titlePage DIV.langName.bloom-contentNational1
 {
 	display: block;
 	/*[empty]border:;*/
 }
-DIV.titlePage DIV.langName.bloom-content1
+DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
 /*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
@@ -331,7 +387,7 @@ DIV.verso DIV
 }
 DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
-	height: 4.3cm;
+	height: 5cm;
 	width: 100%;
 	display: block !important;
 }
@@ -357,15 +413,19 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
 	width: 100%;
 	height: 129px;
-	/*+placement:shift 0px 29px;*/
+	/*+placement:shift 0px 37px;*/
 	position: relative;
 	left: 0px;
-	top: 29px;
+	top: 37px;
 }
 .A5Landscape DIV#versoLicenseAndCopyright
 {
 	width: 100%;
 	height: 129px;
+	/*+placement:shift 0px 16px;*/
+	position: relative;
+	left: 0px;
+	top: 16px;
 }
 DIV.licenseNotes
 {
@@ -389,6 +449,22 @@ IMG.licenseImage
 	position: absolute;
 	left: 39%;
 	top: 60px;
+}
+.A4Portrait IMG.licenseImage
+{
+	/*[disabled]width:114px;*/
+	/*[disabled]height:34px;*/
+	/*+placement:anchor-top-left 7.6cm 1cm;*/
+	position: absolute;
+	left: 7.6cm;
+	top: 1cm;
+}
+.A4Landscape IMG.licenseImage
+{
+	/*+placement:anchor-top-left 454px 58px;*/
+	position: absolute;
+	left: 454px;
+	top: 58px;
 }
 BUTTON#editCopyrightAndLicense
 {
@@ -432,4 +508,19 @@ DIV.versionAcknowledgments
 {
 	height: 100%;
 	text-align: center;
+}
+DIV.ISBNContainer
+{
+	width: 100%;
+	/*[disabled]line-height:12pt;*/
+	/*[disabled]font-family:arial;*/
+	/*+placement:anchor-bottom-left 2px 216px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 216px;
+	display: inline;
+}
+DIV.ISBNContainer DIV
+{
+	display: inline;
 }

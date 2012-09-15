@@ -52,7 +52,7 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			CreateHelper().InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'verso')]", 1); 
@@ -60,6 +60,23 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][@id='firstPage']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[6][contains(@class,'bloom-backMatter')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[7][contains(@class,'bloom-backMatter')]", 1);
+		}
+
+
+		/// <summary>
+		/// Initially, we were re-using "74731b2d-18b0-420f-ac96-6de20f659810" for every book,
+		/// making the htmlthumbnailer's caching system totally messed up.
+		/// </summary>
+		[Test]
+		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
+		{
+			CreateHelper().InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
+			var id1 = ((XmlElement) _dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+			Setup(); //reset for another round
+			CreateHelper().InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
+			var id2 = ((XmlElement)_dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+
+			Assert.AreNotEqual(id1,id2);
 		}
 
 		[Test]
@@ -73,7 +90,7 @@ namespace BloomTests.Book
 			var helper = CreateHelper();
 			helper.XMatterDom = frontMatterDom;
 
-			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			helper.InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
@@ -96,7 +113,7 @@ namespace BloomTests.Book
 			var helper = CreateHelper();
 			helper.XMatterDom = xMatterDom;
 
-			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			helper.InjectXMatter(null, _dataSet.WritingSystemCodes, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][@id='firstPage']", 1);
