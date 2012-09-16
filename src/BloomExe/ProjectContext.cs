@@ -12,6 +12,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
+using Bloom.SendReceive;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
@@ -322,7 +323,7 @@ namespace Bloom
 			try
 			{
 				var configuration = new ProjectFolderConfiguration(_collectionPath);
-				Bloom_ChorusPlugin.LibraryFolderInChorus.AddFileInfoToFolderConfiguration(configuration);
+				LibraryFolderInChorus.AddFileInfoToFolderConfiguration(configuration);
 
 
 				using (var dlg = new SyncDialog(configuration,

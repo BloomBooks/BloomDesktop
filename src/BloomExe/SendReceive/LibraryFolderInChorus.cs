@@ -1,6 +1,6 @@
 ﻿using Chorus.sync;
 
-namespace Bloom_ChorusPlugin
+namespace Bloom.SendReceive
 {
 	public class LibraryFolderInChorus
 	{
