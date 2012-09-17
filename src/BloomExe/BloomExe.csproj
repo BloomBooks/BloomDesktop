@@ -159,6 +159,7 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="SendReceiver.cs" />
     <Compile Include="SendReceive\LibraryFolderInChorus.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
       <SubType>Component</SubType>
