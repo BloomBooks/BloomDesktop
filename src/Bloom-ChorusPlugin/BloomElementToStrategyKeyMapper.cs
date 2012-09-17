@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using Chorus.Utilities.code;
 using Chorus.merge.xml.generic;
+using Palaso.Code;
 
-namespace Chorus.FileTypeHanders.html
+namespace Bloom_ChorusPlugin
 {
-	internal class BloomElementToStrategyKeyMapper : IKeyFinder
+	internal class BloomElementToStrategyKeyMapper : IElementToMergeStrategyKeyMapper
 	{
 		/// <summary>
 		/// Get key to use to find ElementStrategy in the collection held by MergeStrategies

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,16 +11,10 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
-using Bloom.SendReceive;
 using Bloom.Workspace;
 using Bloom.web;
-using Chorus;
-using Chorus.UI.Sync;
-using Chorus.VcsDrivers.Mercurial;
-using Chorus.sync;
 using Palaso.Extensions;
 using Palaso.IO;
-using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -34,17 +27,11 @@ namespace Bloom
 		private ILifetimeScope _scope;
 
 		private BloomServer _bloomServer;
-		private ChorusSystem _chorusSystem;
-		private string _collectionPath;
 		private ImageServer _imageServer;
-
 		public Form ProjectWindow { get; private set; }
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
-
-			_collectionPath = projectSettingsPath;
-
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -106,6 +93,9 @@ namespace Bloom
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
 
+				builder.Register<SendReceiver>(c => new SendReceiver(Path.GetDirectoryName(projectSettingsPath))).InstancePerLifetimeScope();
+
+
 				//This deserves some explanation:
 				//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
 				//That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
@@ -120,7 +110,7 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 
@@ -258,6 +248,11 @@ namespace Bloom
 			}
 		}
 
+		public SendReceiver SendReceiver
+		{
+			get { return _scope.Resolve<SendReceiver>(); }
+		}
+
 
 		public static string GetBloomAppDataFolder()
 		{
@@ -306,55 +301,6 @@ namespace Bloom
 					"Could not add a link for this shell library in the user collections directory");
 			}
 
-		}
-
-
-		public void CheckInNow()
-		{
-			if (_chorusSystem == null)
-				return;
-
-			//nb: we're not really using the message yet, at least, not showing it to the user
-			if (!string.IsNullOrEmpty(HgRepository.GetEnvironmentReadinessMessage("en")))
-			{
-				Palaso.Reporting.Logger.WriteEvent("Chorus Checkin not possible: {0}", HgRepository.GetEnvironmentReadinessMessage("en"));
-			}
-
-			try
-			{
-				var configuration = new ProjectFolderConfiguration(_collectionPath);
-				LibraryFolderInChorus.AddFileInfoToFolderConfiguration(configuration);
-
-
-				using (var dlg = new SyncDialog(configuration,
-					   SyncUIDialogBehaviors.StartImmediatelyAndCloseWhenFinished,
-					   SyncUIFeatures.Minimal))
-				{
-					dlg.Text = "Bloom Automatic Backup";
-					dlg.SyncOptions.DoMergeWithOthers = false;
-					dlg.SyncOptions.DoPullFromOthers = false;
-					dlg.SyncOptions.DoSendToOthers = true;
-					dlg.SyncOptions.RepositorySourcesToTry.Clear();
-					dlg.SyncOptions.CheckinDescription = string.Format("[{0}:{1}] auto", Application.ProductName, Application.ProductVersion);
-					dlg.UseTargetsAsSpecifiedInSyncOptions = true;
-
-					dlg.ShowDialog();
-
-					if (dlg.FinalStatus.WarningEncountered ||  //not finding the backup media only counts as a warning
-						dlg.FinalStatus.ErrorEncountered)
-					{
-						ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
-														"There was a problem during auto backup. Chorus said:\r\n\r\n" +
-														dlg.FinalStatus.LastWarning + "\r\n" +
-														dlg.FinalStatus.LastError);
-					}
-				}
-			}
-			catch (Exception error)
-			{
-				Palaso.Reporting.Logger.WriteEvent("Error during Backup: {0}", error.Message);
-				//TODO we need some passive way indicating the health of the backup system
-			}
 		}
 
 	}

@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml;
-using Bloom_ChorusPlugin;
 using Chorus.FileTypeHanders;
-using Chorus.Utilities;
-using Chorus.Utilities.code;
 using Chorus.VcsDrivers.Mercurial;
 using Chorus.merge;
 using Chorus.merge.xml.generic;
-using Chorus.sync;
+using Palaso.Code;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Xml;
 
-namespace Chorus.FileTypeHanders.html
+namespace Bloom_ChorusPlugin
 {
 	public class BloomHtmlFileTypeHandler : IChorusFileTypeHandler
 	{
@@ -82,7 +78,7 @@ namespace Chorus.FileTypeHanders.html
 
 		private static void SetupElementStrategies(XmlMerger merger)
 		{
-			merger.MergeStrategies.KeyFinder = new BloomElementToStrategyKeyMapper();
+			merger.MergeStrategies.ElementToMergeStrategyKeyMapper = new BloomElementToStrategyKeyMapper();
 
 			merger.MergeStrategies.SetStrategy("html", ElementStrategy.CreateSingletonElement());
 			merger.MergeStrategies.SetStrategy("head", ElementStrategy.CreateSingletonElement());
@@ -164,7 +160,7 @@ namespace Chorus.FileTypeHanders.html
 
 		public uint MaximumFileSize
 		{
-			get { throw new NotImplementedException(); }
+			get { return UInt32.MaxValue; }
 		}
 
 	}

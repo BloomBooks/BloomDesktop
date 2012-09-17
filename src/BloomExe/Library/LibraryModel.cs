@@ -19,12 +19,14 @@ namespace Bloom.Library
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly SendReceiver _sendReceiver;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
 		private List<BookCollection> _bookCollections;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
+			SendReceiver sendReceiver,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
@@ -33,6 +35,7 @@ namespace Bloom.Library
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
 			_collectionSettings = collectionSettings;
+			_sendReceiver = sendReceiver;
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -103,10 +106,12 @@ namespace Bloom.Library
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
-				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",_bookSelection.CurrentSelection.Title )))
+				var title = _bookSelection.CurrentSelection.Title;
+				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",title )))
 				{
 					TheOneEditableCollection.DeleteBook(book);
 					_bookSelection.SelectBook(null);
+					_sendReceiver.CheckInNow("Deleted " + title);
 				}
 			}
 		}

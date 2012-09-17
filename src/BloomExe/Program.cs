@@ -379,6 +379,15 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
+			try
+			{
+				_projectContext.SendReceiver.CheckInNow("End of Bloom Session");
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
+			}
+
 			_projectContext.Dispose();
 			_projectContext = null;
 
