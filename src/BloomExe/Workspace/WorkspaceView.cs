@@ -9,6 +9,7 @@ using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
+using Chorus;
 using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
@@ -24,6 +25,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
+		private readonly ChorusSystem _chorusSystem;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -44,7 +46,9 @@ namespace Bloom.Workspace
 							 EditBookCommand editBookCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
-							 FeedbackDialog.Factory feedbackDialogFactory
+							 FeedbackDialog.Factory feedbackDialogFactory,
+							ChorusSystem chorusSystem
+
 			)
 		{
 			_model = model;
@@ -52,6 +56,7 @@ namespace Bloom.Workspace
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
+			_chorusSystem = chorusSystem;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -321,6 +326,14 @@ namespace Bloom.Workspace
 		{
 			//when doing videos at this really low resolution, there's just no room for this
 			_panelHoldingToolStrip.Visible = this.Width > 820;
+		}
+
+		private void _sendReceiveButton_Click(object sender, EventArgs e)
+		{
+			using(var dlg = _chorusSystem.WinForms.CreateSynchronizationDialog())
+			{
+				dlg.ShowDialog();
+			}
 		}
 	}
 

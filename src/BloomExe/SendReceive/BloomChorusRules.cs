@@ -2,7 +2,7 @@
 
 namespace Bloom.SendReceive
 {
-	public class LibraryFolderInChorus
+	public class BloomChorusRules
 	{
 		public static void AddFileInfoToFolderConfiguration(ProjectFolderConfiguration config)
 		{

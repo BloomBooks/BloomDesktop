@@ -13,6 +13,7 @@ using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Workspace;
 using Bloom.web;
+using Chorus;
 using Palaso.Extensions;
 using Palaso.IO;
 
@@ -92,8 +93,9 @@ namespace Bloom
 					typeof(RelocatePageEvent),
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
-
-				builder.Register<SendReceiver>(c => new SendReceiver(Path.GetDirectoryName(projectSettingsPath))).InstancePerLifetimeScope();
+				var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
+				builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
+				builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
 
 
 				//This deserves some explanation:

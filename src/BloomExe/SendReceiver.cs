@@ -1,65 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.SendReceive;
 using Chorus;
 using Chorus.UI.Sync;
-using Chorus.VcsDrivers.Mercurial;
-using Chorus.sync;
+using Palaso.Extensions;
 using Palaso.Reporting;
 
 namespace Bloom
 {
 	public class SendReceiver : IDisposable
 	{
-
 		private ChorusSystem _chorusSystem;
-		private string _collectionPath;
+		private readonly Form _formWithContextForInvokingErrorDialogs;
 
-		public SendReceiver(string collectionPath)
+		public SendReceiver(ChorusSystem chorusSystem, Form formWithContextForInvokingErrorDialogs)
 		{
-			_collectionPath = collectionPath;
-			_chorusSystem = new ChorusSystem(collectionPath);
+			_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
+			_chorusSystem = chorusSystem;
+			BloomChorusRules.AddFileInfoToFolderConfiguration(_chorusSystem.ProjectFolderConfiguration);
 		}
 
 		public void CheckInNow(string message)
 		{
-			if (_chorusSystem == null)
-				return;
+			_chorusSystem.AsyncLocalCheckIn(BloomLabelForCheckins+ message,
+											(result) =>
+												{
+													if (result.ErrorEncountered != null)
+													{
+														_formWithContextForInvokingErrorDialogs.BeginInvoke(new Action(() =>
+																													   Palaso.Reporting.ErrorReport.NotifyUserOfProblem
+																														(result.ErrorEncountered,
+																														 "Error while creating a milestone in the local Send/Receive repository")))
+															;
+													}
+												});
+		}
 
-			//nb: we're not really using the message yet, at least, not showing it to the user
-			if (!string.IsNullOrEmpty(HgRepository.GetEnvironmentReadinessMessage("en")))
-			{
-				Palaso.Reporting.Logger.WriteEvent("Chorus Checkin not possible: {0}", HgRepository.GetEnvironmentReadinessMessage("en"));
-			}
+		private static string BloomLabelForCheckins
+		{
+			get { return "[Bloom "+Palaso.Reporting.ErrorReport.VersionNumberString+"]"; }
+		}
 
+		public void CheckPointWithDialog(string dialogTitle)
+		{
 			try
 			{
-				var configuration = new ProjectFolderConfiguration(_collectionPath);
-				LibraryFolderInChorus.AddFileInfoToFolderConfiguration(configuration);
-
-
-				using (var dlg = new SyncDialog(configuration,
-					   SyncUIDialogBehaviors.StartImmediatelyAndCloseWhenFinished,
-					   SyncUIFeatures.Minimal))
+				using (var dlg = new SyncDialog(_chorusSystem.ProjectFolderConfiguration,
+												SyncUIDialogBehaviors.StartImmediatelyAndCloseWhenFinished,
+												SyncUIFeatures.Minimal))
 				{
-					dlg.Text = "AUTO " + message;
+					dlg.Text = dialogTitle;
 					dlg.SyncOptions.DoMergeWithOthers = false;
 					dlg.SyncOptions.DoPullFromOthers = false;
-					dlg.SyncOptions.DoSendToOthers = true;
+					dlg.SyncOptions.DoSendToOthers = false;
 					dlg.SyncOptions.RepositorySourcesToTry.Clear();
-					dlg.SyncOptions.CheckinDescription = string.Format("[{0}:{1}] auto", Application.ProductName, Application.ProductVersion);
+					dlg.SyncOptions.CheckinDescription = string.Format(BloomLabelForCheckins+" auto");
 					dlg.UseTargetsAsSpecifiedInSyncOptions = true;
 
 					dlg.ShowDialog();
 
-					if (dlg.FinalStatus.WarningEncountered ||  //not finding the backup media only counts as a warning
+					if (dlg.FinalStatus.WarningEncountered || //not finding the backup media only counts as a warning
 						dlg.FinalStatus.ErrorEncountered)
 					{
-						ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
-														"There was a problem during auto backup. Chorus said:\r\n\r\n" +
+						ErrorReport.NotifyUserOfProblem(dlg.FinalStatus.LastException,
+														"There was a problem  while storing history in repository. Chorus said:\r\n\r\n" +
 														dlg.FinalStatus.LastWarning + "\r\n" +
 														dlg.FinalStatus.LastError);
 					}
@@ -67,7 +75,7 @@ namespace Bloom
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.Logger.WriteEvent("Error during Backup: {0}", error.Message);
+				Palaso.Reporting.Logger.WriteEvent("Error while storing history in repository: {0}", error.Message);
 				//TODO we need some passive way indicating the health of the backup system
 			}
 		}
