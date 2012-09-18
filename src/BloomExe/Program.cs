@@ -381,7 +381,7 @@ namespace Bloom
 		{
 			try
 			{
-				_projectContext.SendReceiver.CheckInNow("End of Bloom Session");
+				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
 			}
 			catch (Exception error)
 			{
