@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
@@ -37,8 +36,6 @@
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this._sendReceiveButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -53,6 +50,7 @@
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
+			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
@@ -116,69 +114,6 @@
 			// localizationExtender1
 			// 
 			this.localizationExtender1.LocalizationManagerId = "Bloom";
-			// 
-			// _tabStrip
-			// 
-			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._tabStrip.FlipButtons = false;
-			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
-			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._collectionTab,
-            this._editTab,
-            this._publishTab});
-			this.localizationExtender1.SetLocalizableToolTip(this._tabStrip, null);
-			this.localizationExtender1.SetLocalizationComment(this._tabStrip, null);
-			this.localizationExtender1.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
-			this._tabStrip.Location = new System.Drawing.Point(0, 0);
-			this._tabStrip.Name = "_tabStrip";
-			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-			this._tabStrip.SelectedTab = this._publishTab;
-			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
-			this._tabStrip.TabIndex = 15;
-			this._tabStrip.Text = "tabStrip1";
-			this._tabStrip.UseVisualStyles = false;
-			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
-			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
-			// 
-			// _sendReceiveButton
-			// 
-			this._sendReceiveButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._sendReceiveButton.BorderColor = System.Drawing.Color.Transparent;
-			this._sendReceiveButton.DisabledTextColor = System.Drawing.Color.Gray;
-			this._sendReceiveButton.FlatAppearance.BorderSize = 0;
-			this._sendReceiveButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._sendReceiveButton.FocusRectangleEnabled = true;
-			this._sendReceiveButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._sendReceiveButton.Image = null;
-			this._sendReceiveButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._sendReceiveButton.ImageAttributes = imageAttributes1;
-			this._sendReceiveButton.ImageBorderColor = System.Drawing.Color.Transparent;
-			this._sendReceiveButton.ImageBorderEnabled = false;
-			this._sendReceiveButton.ImageDropShadow = false;
-			this._sendReceiveButton.ImageFocused = null;
-			this._sendReceiveButton.ImageInactive = null;
-			this._sendReceiveButton.ImageMouseOver = null;
-			this._sendReceiveButton.ImageNormal = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
-			this._sendReceiveButton.ImagePressed = null;
-			this._sendReceiveButton.InnerBorderColor = System.Drawing.Color.Transparent;
-			this._sendReceiveButton.InnerBorderColor_Focus = System.Drawing.Color.Transparent;
-			this._sendReceiveButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-			this.localizationExtender1.SetLocalizableToolTip(this._sendReceiveButton, null);
-			this.localizationExtender1.SetLocalizationComment(this._sendReceiveButton, null);
-			this.localizationExtender1.SetLocalizingId(this._sendReceiveButton, "SendReceiveButton");
-			this._sendReceiveButton.Location = new System.Drawing.Point(259, 14);
-			this._sendReceiveButton.Name = "_sendReceiveButton";
-			this._sendReceiveButton.OffsetPressedContent = true;
-			this._sendReceiveButton.Size = new System.Drawing.Size(68, 54);
-			this._sendReceiveButton.StretchImage = false;
-			this._sendReceiveButton.TabIndex = 29;
-			this._sendReceiveButton.Text = "Send/Receive";
-			this._sendReceiveButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this._sendReceiveButton.TextDropShadow = false;
-			this._sendReceiveButton.UseVisualStyleBackColor = false;
-			this._sendReceiveButton.Click += new System.EventHandler(this._sendReceiveButton_Click);
 			// 
 			// _settingsButton
 			// 
@@ -337,6 +272,30 @@
 			this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
 			this._uiLanguageMenu.Text = "English";
 			// 
+			// _tabStrip
+			// 
+			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._tabStrip.FlipButtons = false;
+			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._collectionTab,
+            this._editTab,
+            this._publishTab});
+			this.localizationExtender1.SetLocalizableToolTip(this._tabStrip, null);
+			this.localizationExtender1.SetLocalizationComment(this._tabStrip, null);
+			this.localizationExtender1.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
+			this._tabStrip.Location = new System.Drawing.Point(0, 0);
+			this._tabStrip.Name = "_tabStrip";
+			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
+			this._tabStrip.SelectedTab = this._publishTab;
+			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
+			this._tabStrip.TabIndex = 15;
+			this._tabStrip.Text = "tabStrip1";
+			this._tabStrip.UseVisualStyles = false;
+			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
+			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
+			// 
 			// _collectionTab
 			// 
 			this._collectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
@@ -406,7 +365,6 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._sendReceiveButton);
 			this.Controls.Add(this._panelHoldingToolStrip);
 			this.Controls.Add(this._toolSpecificPanel);
 			this.Controls.Add(this._containerPanel);
@@ -456,7 +414,6 @@
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _sendReceiveButton;
 
 
     }

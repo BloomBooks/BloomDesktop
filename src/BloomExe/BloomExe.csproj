@@ -794,6 +794,7 @@
     <Content Include="README.jQuery.vsdoc.txt" />
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\sendreceiveToolbarButton.png" />
+    <None Include="Resources\PackageFlat.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
