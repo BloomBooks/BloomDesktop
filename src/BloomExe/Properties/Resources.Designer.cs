@@ -253,6 +253,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Favicon16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Favicon16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap feedback24x24 {
             get {
                 object obj = ResourceManager.GetObject("feedback24x24", resourceCulture);
@@ -423,19 +433,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap PackageFlat32x32 {
+        internal static System.Drawing.Bitmap PackageFlat {
             get {
-                object obj = ResourceManager.GetObject("PackageFlat32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap PackageFlat48x47 {
-            get {
-                object obj = ResourceManager.GetObject("PackageFlat48x47", resourceCulture);
+                object obj = ResourceManager.GetObject("PackageFlat", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -536,6 +536,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap sad_large {
             get {
                 object obj = ResourceManager.GetObject("sad_large", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap sendreceiveToolbarButton {
+            get {
+                object obj = ResourceManager.GetObject("sendreceiveToolbarButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

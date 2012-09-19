@@ -35,6 +35,7 @@
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
+			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -46,14 +47,13 @@
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+			this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
-			this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
@@ -110,6 +110,10 @@
 			this._toolStrip.Size = new System.Drawing.Size(272, 68);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
+			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
 			// _settingsButton
 			// 
@@ -240,6 +244,21 @@
 			this._webSiteMenuItem.Text = "Web Site";
 			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
 			// 
+			// toolStripMenuItem1
+			// 
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(171, 6);
+			// 
+			// _showLogMenuItem
+			// 
+			this.localizationExtender1.SetLocalizableToolTip(this._showLogMenuItem, null);
+			this.localizationExtender1.SetLocalizationComment(this._showLogMenuItem, null);
+			this.localizationExtender1.SetLocalizingId(this._showLogMenuItem, ".showEventLogToolStripMenuItem");
+			this._showLogMenuItem.Name = "_showLogMenuItem";
+			this._showLogMenuItem.Size = new System.Drawing.Size(174, 22);
+			this._showLogMenuItem.Text = "Show Event Log";
+			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
+			// 
 			// _uiLanguageMenu
 			// 
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -252,10 +271,6 @@
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
 			this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
 			this._uiLanguageMenu.Text = "English";
-			// 
-			// localizationExtender1
-			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
 			// 
 			// _tabStrip
 			// 
@@ -345,21 +360,6 @@
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			// 
-			// toolStripMenuItem1
-			// 
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(171, 6);
-			// 
-			// _showLogMenuItem
-			// 
-			this.localizationExtender1.SetLocalizableToolTip(this._showLogMenuItem, null);
-			this.localizationExtender1.SetLocalizationComment(this._showLogMenuItem, null);
-			this.localizationExtender1.SetLocalizingId(this._showLogMenuItem, ".showEventLogToolStripMenuItem");
-			this._showLogMenuItem.Name = "_showLogMenuItem";
-			this._showLogMenuItem.Size = new System.Drawing.Size(174, 22);
-			this._showLogMenuItem.Text = "Show Event Log";
-			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
 			// 
 			// WorkspaceView
 			// 
