@@ -12,6 +12,7 @@ namespace Bloom.Library
 	public partial class LibraryBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
+		private readonly SendReceiver _sendReceiver;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
 		private bool _reshowPending = false;
@@ -20,12 +21,14 @@ namespace Bloom.Library
 		public delegate LibraryBookView Factory();//autofac uses this
 
 		public LibraryBookView(BookSelection bookSelection,
+			SendReceiver sendReceiver,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
+			_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
@@ -99,7 +102,11 @@ namespace Bloom.Library
 			{
 				try
 				{
+					//nb: don't move this to after the raise command, as the selection changes
+					var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
+
 					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
+					_sendReceiver.CheckInNow(checkinNotice);
 				}
 				catch(Exception error)
 				{

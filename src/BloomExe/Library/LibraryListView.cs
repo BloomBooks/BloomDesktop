@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Chorus;
 using Palaso.IO;
 
 
@@ -18,6 +19,7 @@ namespace Bloom.Library
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
+		private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private Pen _boundsPen;
 		private Font _headerFont;
@@ -27,10 +29,12 @@ namespace Bloom.Library
 		private DateTime _lastClickTime;
 		private bool _collectionLoadPending;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
+			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
+			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_libraryFlow.HorizontalScroll.Visible = false;
@@ -380,7 +384,29 @@ namespace Bloom.Library
 			Process.Start(ProjectContext.InstalledCollectionsDirectory);
 		}
 
-		private void LibraryListView_Load(object sender, EventArgs e)
+		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)
+		{
+			using(var dlg = _historyAndNotesDialogFactory())
+			{
+				dlg.ShowDialog();
+			}
+		}
+
+		private void OnShowNotesMenu(object sender, EventArgs e)
+		{
+			using (var dlg = _historyAndNotesDialogFactory())
+			{
+				dlg.ShowNotesFirst = true;
+				dlg.ShowDialog();
+			}
+		}
+
+		private void label3_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _vernacularCollectionMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 
 		}

@@ -42,7 +42,9 @@
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
 			this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
-			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this._vernacularCollectionMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._showHistoryMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this._showNotesMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._libraryFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
@@ -59,9 +61,11 @@
 			this.pretendLabel = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
+			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.contextMenuStrip1.SuspendLayout();
 			this._sourcePaneMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
+			this._vernacularCollectionMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
@@ -171,6 +175,40 @@
 			// 
 			this._localizationExtender.LocalizationManagerId = "Bloom";
 			// 
+			// _vernacularCollectionMenuStrip
+			// 
+			this._vernacularCollectionMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._showHistoryMenu,
+            this._showNotesMenu});
+			this._localizationExtender.SetLocalizableToolTip(this._vernacularCollectionMenuStrip, null);
+			this._localizationExtender.SetLocalizationComment(this._vernacularCollectionMenuStrip, null);
+			this._localizationExtender.SetLocalizingId(this._vernacularCollectionMenuStrip, "contextMenuStrip2.contextMenuStrip2");
+			this._vernacularCollectionMenuStrip.Name = "_vernacularCollectionMenuStrip";
+			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(179, 70);
+			this._vernacularCollectionMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this._vernacularCollectionMenuStrip_Opening);
+			// 
+			// _showHistoryMenu
+			// 
+			this._localizationExtender.SetLocalizableToolTip(this._showHistoryMenu, null);
+			this._localizationExtender.SetLocalizationComment(this._showHistoryMenu, null);
+			this._localizationExtender.SetLocalizationPriority(this._showHistoryMenu, Localization.LocalizationPriority.Medium);
+			this._localizationExtender.SetLocalizingId(this._showHistoryMenu, ".showHistoryToolStripMenuItem");
+			this._showHistoryMenu.Name = "_showHistoryMenu";
+			this._showHistoryMenu.Size = new System.Drawing.Size(178, 22);
+			this._showHistoryMenu.Text = "Collection History...";
+			this._showHistoryMenu.Click += new System.EventHandler(this.OnVernacularProjectHistoryClick);
+			// 
+			// _showNotesMenu
+			// 
+			this._showNotesMenu.Enabled = false;
+			this._localizationExtender.SetLocalizableToolTip(this._showNotesMenu, null);
+			this._localizationExtender.SetLocalizationComment(this._showNotesMenu, null);
+			this._localizationExtender.SetLocalizingId(this._showNotesMenu, ".showNotesToolStripMenuItem");
+			this._showNotesMenu.Name = "_showNotesMenu";
+			this._showNotesMenu.Size = new System.Drawing.Size(178, 22);
+			this._showNotesMenu.Text = "Collection Notes...";
+			this._showNotesMenu.Click += new System.EventHandler(this.OnShowNotesMenu);
+			// 
 			// splitContainer1
 			// 
 			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
@@ -200,6 +238,7 @@
 			// 
 			this._libraryFlow.AutoScroll = true;
 			this._libraryFlow.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._libraryFlow.ContextMenuStrip = this._vernacularCollectionMenuStrip;
 			this._libraryFlow.Controls.Add(this.label1);
 			this._libraryFlow.Controls.Add(this.label2);
 			this._libraryFlow.Controls.Add(this.label3);
@@ -448,11 +487,11 @@
 			this._localizationExtender.SetLocalizingId(this, "LibraryListView.LibraryListView");
 			this.Name = "LibraryListView";
 			this.Size = new System.Drawing.Size(350, 562);
-			this.Load += new System.EventHandler(this.LibraryListView_Load);
 			this.BackColorChanged += new System.EventHandler(this.OnBackColorChanged);
 			this.contextMenuStrip1.ResumeLayout(false);
 			this._sourcePaneMenuStrip.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).EndInit();
+			this._vernacularCollectionMenuStrip.ResumeLayout(false);
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -496,5 +535,8 @@
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsProtectionHelper;
 		private System.Windows.Forms.ContextMenuStrip _sourcePaneMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+		private System.Windows.Forms.ContextMenuStrip _vernacularCollectionMenuStrip;
+		private System.Windows.Forms.ToolStripMenuItem _showHistoryMenu;
+		private System.Windows.Forms.ToolStripMenuItem _showNotesMenu;
     }
 }

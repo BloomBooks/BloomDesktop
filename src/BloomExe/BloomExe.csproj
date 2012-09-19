@@ -66,6 +66,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
+    <Reference Include="Chorus">
+      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
     </Reference>
@@ -80,6 +83,9 @@
     </Reference>
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
+    </Reference>
+    <Reference Include="LibChorus">
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -153,6 +159,14 @@
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Library\HistoryAndNotesDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Library\HistoryAndNotesDialog.Designer.cs">
+      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SendReceiver.cs" />
+    <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -394,6 +408,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Library\HistoryAndNotesDialog.resx">
+      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
@@ -776,6 +793,8 @@
   <ItemGroup>
     <Content Include="README.jQuery.vsdoc.txt" />
     <None Include="Resources\sad_large.png" />
+    <None Include="Resources\sendreceiveToolbarButton.png" />
+    <None Include="Resources\PackageFlat.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

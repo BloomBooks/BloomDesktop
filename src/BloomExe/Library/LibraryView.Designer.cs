@@ -29,16 +29,79 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
-			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarControl = new System.Windows.Forms.Panel();
-			this._makeBloomPackButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
 			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-			this.splitContainer1.SuspendLayout();
+			this._toolStrip = new System.Windows.Forms.ToolStrip();
+			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
+			this._makeBloomPackButton = new System.Windows.Forms.ToolStripButton();
+			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarControl.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+			this._toolStrip.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+			this.splitContainer1.SuspendLayout();
 			this.SuspendLayout();
+			// 
+			// _topBarControl
+			// 
+			this._topBarControl.Controls.Add(this._toolStrip);
+			this._topBarControl.Location = new System.Drawing.Point(223, 224);
+			this._topBarControl.Name = "_topBarControl";
+			this._topBarControl.Size = new System.Drawing.Size(327, 70);
+			this._topBarControl.TabIndex = 15;
+			// 
+			// localizationExtender1
+			// 
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			// 
+			// _toolStrip
+			// 
+			this._toolStrip.BackColor = System.Drawing.Color.Transparent;
+			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._sendReceiveButton,
+            this._makeBloomPackButton});
+			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this.localizationExtender1.SetLocalizableToolTip(this._toolStrip, null);
+			this.localizationExtender1.SetLocalizationComment(this._toolStrip, null);
+			this.localizationExtender1.SetLocalizationPriority(this._toolStrip, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
+			this._toolStrip.Location = new System.Drawing.Point(0, 0);
+			this._toolStrip.Name = "_toolStrip";
+			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this._toolStrip.Size = new System.Drawing.Size(327, 54);
+			this._toolStrip.TabIndex = 31;
+			this._toolStrip.Text = "_toolStrip";
+			// 
+			// _sendReceiveButton
+			// 
+			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._sendReceiveButton.Image = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
+			this._sendReceiveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._sendReceiveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._sendReceiveButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._sendReceiveButton, null);
+			this.localizationExtender1.SetLocalizingId(this._sendReceiveButton, "SendReceiveutton");
+			this._sendReceiveButton.Name = "_sendReceiveButton";
+			this._sendReceiveButton.Size = new System.Drawing.Size(82, 43);
+			this._sendReceiveButton.Text = "Send/Receive";
+			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
+			// _makeBloomPackButton
+			// 
+			this._makeBloomPackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._makeBloomPackButton.Image = global::Bloom.Properties.Resources.PackageFlat;
+			this._makeBloomPackButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._makeBloomPackButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.localizationExtender1.SetLocalizableToolTip(this._makeBloomPackButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._makeBloomPackButton, null);
+			this.localizationExtender1.SetLocalizationPriority(this._makeBloomPackButton, Localization.LocalizationPriority.Medium);
+			this.localizationExtender1.SetLocalizingId(this._makeBloomPackButton, "LibraryView._makeBloomPackButton");
+			this._makeBloomPackButton.Name = "_makeBloomPackButton";
+			this._makeBloomPackButton.Size = new System.Drawing.Size(136, 51);
+			this._makeBloomPackButton.Text = "Open/Create Collection";
+			this._makeBloomPackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
 			// 
 			// splitContainer1
 			// 
@@ -53,58 +116,7 @@
 			this.splitContainer1.SplitterDistance = 333;
 			this.splitContainer1.SplitterWidth = 10;
 			this.splitContainer1.TabIndex = 0;
-			// 
-			// _topBarControl
-			// 
-			this._topBarControl.Controls.Add(this._makeBloomPackButton);
-			this._topBarControl.Location = new System.Drawing.Point(223, 224);
-			this._topBarControl.Name = "_topBarControl";
-			this._topBarControl.Size = new System.Drawing.Size(327, 70);
-			this._topBarControl.TabIndex = 15;
-			// 
-			// _makeBloomPackButton
-			// 
-			this._makeBloomPackButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._makeBloomPackButton.BorderColor = System.Drawing.Color.Transparent;
-			this._makeBloomPackButton.DisabledTextColor = System.Drawing.Color.Gray;
-			this._makeBloomPackButton.FlatAppearance.BorderSize = 0;
-			this._makeBloomPackButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._makeBloomPackButton.FocusRectangleEnabled = true;
-			this._makeBloomPackButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._makeBloomPackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._makeBloomPackButton.Image = null;
-			this._makeBloomPackButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._makeBloomPackButton.ImageAttributes = imageAttributes1;
-			this._makeBloomPackButton.ImageBorderColor = System.Drawing.Color.Transparent;
-			this._makeBloomPackButton.ImageBorderEnabled = false;
-			this._makeBloomPackButton.ImageDropShadow = false;
-			this._makeBloomPackButton.ImageFocused = null;
-			this._makeBloomPackButton.ImageInactive = null;
-			this._makeBloomPackButton.ImageMouseOver = null;
-			this._makeBloomPackButton.ImageNormal = global::Bloom.Properties.Resources.PackageFlat48x47;
-			this._makeBloomPackButton.ImagePressed = null;
-			this._makeBloomPackButton.InnerBorderColor = System.Drawing.Color.Transparent;
-			this._makeBloomPackButton.InnerBorderColor_Focus = System.Drawing.Color.Transparent;
-			this._makeBloomPackButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-			this.localizationExtender1.SetLocalizableToolTip(this._makeBloomPackButton, null);
-			this.localizationExtender1.SetLocalizationComment(this._makeBloomPackButton, null);
-			this.localizationExtender1.SetLocalizationPriority(this._makeBloomPackButton, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this._makeBloomPackButton, "LibraryView._makeBloomPackButton");
-			this._makeBloomPackButton.Location = new System.Drawing.Point(19, 0);
-			this._makeBloomPackButton.Name = "_makeBloomPackButton";
-			this._makeBloomPackButton.OffsetPressedContent = true;
-			this._makeBloomPackButton.Size = new System.Drawing.Size(104, 70);
-			this._makeBloomPackButton.StretchImage = false;
-			this._makeBloomPackButton.TabIndex = 11;
-			this._makeBloomPackButton.Text = "Make BloomPack";
-			this._makeBloomPackButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this._makeBloomPackButton.TextDropShadow = false;
-			this._makeBloomPackButton.UseVisualStyleBackColor = false;
-			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
-			// 
-			// localizationExtender1
-			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			this.splitContainer1.TabStop = false;
 			// 
 			// LibraryView
 			// 
@@ -117,10 +129,13 @@
 			this.Name = "LibraryView";
 			this.Size = new System.Drawing.Size(773, 518);
 			this.Load += new System.EventHandler(this.LibraryView_Load);
+			this._topBarControl.ResumeLayout(false);
+			this._topBarControl.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+			this._toolStrip.ResumeLayout(false);
+			this._toolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
-			this._topBarControl.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -128,9 +143,11 @@
         #endregion
 
 		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _makeBloomPackButton;
 		public System.Windows.Forms.Panel _topBarControl;
 		private Localization.UI.LocalizationExtender localizationExtender1;
+		private System.Windows.Forms.ToolStrip _toolStrip;
+		private System.Windows.Forms.ToolStripButton _sendReceiveButton;
+		private System.Windows.Forms.ToolStripButton _makeBloomPackButton;
 
 
     }

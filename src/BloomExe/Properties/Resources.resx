@@ -130,8 +130,8 @@
   <data name="library32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\library32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="paste32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\paste32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="thumbnail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\thumbnail.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeleteMessageBoxImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteMessageBoxImage.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -139,14 +139,14 @@
   <data name="Usb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Usb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="thumbnail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\thumbnail.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="paste32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\paste32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="deletePage24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\deletePage24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="print" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\print.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="newBook" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\newBook.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="uservoice16x161" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\uservoice16x161.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -166,6 +166,9 @@
   <data name="settings16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="sendreceiveToolbarButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sendreceiveToolbarButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="settings24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -177,6 +180,9 @@
   </data>
   <data name="undo32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\undo32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sad_large" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sad_large.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="simplePages" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\simplePages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -196,20 +202,17 @@
   <data name="Cut16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cut16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="newBook1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\newBook1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="uservoice16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\uservoice16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="info16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\info16x16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="print" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\print.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="feedback24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\feedback24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="insideBookletPages" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\insideBookletPages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="spinner" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\spinner.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="copyDisable16x161" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\copyDisable16x161.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -241,17 +244,14 @@
   <data name="deletePage16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\deletePage16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PackageFlat32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PackageFlat32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="WelcomeHeader" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\WelcomeHeader.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="newBook1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\newBook1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="pdf16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pdf16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Error70x70" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Error70x70.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="WelcomeHeader" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WelcomeHeader.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeletePage32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePage32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -262,11 +262,14 @@
   <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="spinner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\spinner.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="info16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\info16x16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="undoDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\undoDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Error70x70" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Error70x70.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Copy16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -277,11 +280,8 @@
   <data name="coverOnly" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\coverOnly.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PackageFlat48x47" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PackageFlat48x47.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="newBook" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\newBook.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="insideBookletPages" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\insideBookletPages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PagePlaceHolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pagePlaceHolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -301,7 +301,10 @@
   <data name="Paste16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Paste16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="sad_large" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\sad_large.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Favicon16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Favicon16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PackageFlat" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PackageFlat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

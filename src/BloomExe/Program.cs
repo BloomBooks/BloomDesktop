@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.Properties;
+using Chorus;
 using Localization;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -378,6 +379,15 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
+			try
+			{
+				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
+			}
+
 			_projectContext.Dispose();
 			_projectContext = null;
 

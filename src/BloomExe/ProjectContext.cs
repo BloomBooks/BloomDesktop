@@ -13,9 +13,9 @@ using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Workspace;
 using Bloom.web;
+using Chorus;
 using Palaso.Extensions;
 using Palaso.IO;
-using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -33,7 +33,6 @@ namespace Bloom
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
-
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -84,6 +83,7 @@ namespace Bloom
 					typeof(TemplateInsertionCommand),
 					typeof(DeletePageCommand),
 					typeof(EditBookCommand),
+					typeof(SendReceiveCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
 					typeof(BookRenamedEvent),
@@ -94,6 +94,12 @@ namespace Bloom
 					typeof(RelocatePageEvent),
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
+
+				var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
+
+				builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
+				builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
+
 
 				//This deserves some explanation:
 				//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
@@ -109,7 +115,7 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 
@@ -247,6 +253,12 @@ namespace Bloom
 			}
 		}
 
+		public SendReceiver SendReceiver
+		{
+			get { return _scope.Resolve<SendReceiver>(); }
+		}
+
+
 		public static string GetBloomAppDataFolder()
 		{
 			var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
@@ -257,6 +269,8 @@ namespace Bloom
 				Directory.CreateDirectory(d);
 			return d;
 		}
+
+
 
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
@@ -293,5 +307,6 @@ namespace Bloom
 			}
 
 		}
+
 	}
 }
