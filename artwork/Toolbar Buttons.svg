@@ -565,15 +565,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.3997252"
-     inkscape:cx="-636.25217"
+     inkscape:cx="-438.02479"
      inkscape:cy="-66.030562"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1280"
-     inkscape:window-height="1002"
-     inkscape:window-x="1592"
+     inkscape:window-width="1399"
+     inkscape:window-height="878"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
@@ -584,7 +584,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1321,7 +1321,10 @@
     </g>
     <g
        transform="matrix(0.30493678,0,0,0.30493678,215.02205,-134.52979)"
-       id="g4178">
+       id="g4178"
+       inkscape:export-filename="C:\dev\Bloom\src\BloomExe\Resources\PackageFlat.png"
+       inkscape:export-xdpi="33.25"
+       inkscape:export-ydpi="33.25">
       <path
          sodipodi:nodetypes="cccccccc"
          d="m -1868.7431,662.02242 -73.964,31.2031 c 41.2029,63.05559 1.1959,70.6326 124.0558,83.57517 l 54.5244,-42.20497 0.5618,-16.44748 -3.3199,-22.5717 1.2433,-25.05579 z"
@@ -1800,9 +1803,9 @@
     <g
        id="g4692-60"
        transform="matrix(0.76920793,0,0,0.76920793,-168.83547,-13.231356)"
-       inkscape:export-filename="C:\dev\Bloom\artwork\PackageFlat48x47.png"
-       inkscape:export-xdpi="65.793762"
-       inkscape:export-ydpi="65.793762">
+       inkscape:export-filename="C:\dev\Bloom\src\BloomExe\Resources\PackageFlat.png"
+       inkscape:export-xdpi="47.529999"
+       inkscape:export-ydpi="47.529999">
       <rect
          style="fill:none;stroke:#ffffff;stroke-width:0;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:0.66666669;stroke-opacity:1;stroke-dasharray:none"
          id="rect4824-2-7-9-9-9-0"
@@ -1956,9 +1959,9 @@
     <g
        id="g2978"
        transform="matrix(0.79649742,0,0,0.79649742,-533.97947,-1258.6855)"
-       inkscape:export-filename="C:\dev\wesayDev\artwork\sendreceive32x32.png"
-       inkscape:export-xdpi="90"
-       inkscape:export-ydpi="90">
+       inkscape:export-filename="C:\dev\Bloom\src\BloomExe\Resources\sendreceiveToolbarButton.png"
+       inkscape:export-xdpi="70.699997"
+       inkscape:export-ydpi="70.699997">
       <path
          style="fill:#404040;fill-opacity:1;stroke:none"
          d="m -531.625,-32.59375 -12.34375,18.21875 -5.8125,-4 2.5,13.28125 7.625,-1.375 2.40625,-3.25 -2.90625,-2 c 4.97906,-7.014647 8.95462,-13.876285 12.375,-18.28125 z"
