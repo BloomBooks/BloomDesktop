@@ -111,7 +111,7 @@ namespace Bloom.Library
 				{
 					TheOneEditableCollection.DeleteBook(book);
 					_bookSelection.SelectBook(null);
-					_sendReceiver.CheckInNow("Deleted " + title);
+					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
 				}
 			}
 		}

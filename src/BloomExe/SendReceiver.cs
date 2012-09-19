@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.SendReceive;
@@ -16,17 +17,28 @@ namespace Bloom
 	{
 		private ChorusSystem _chorusSystem;
 		private readonly Form _formWithContextForInvokingErrorDialogs;
+		public static bool SendReceiveDisabled;
 
 		public SendReceiver(ChorusSystem chorusSystem, Form formWithContextForInvokingErrorDialogs)
 		{
 			_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
-			_chorusSystem = chorusSystem;
-			BloomChorusRules.AddFileInfoToFolderConfiguration(_chorusSystem.ProjectFolderConfiguration);
+
+			//we don't do chorus on our source tree
+			SendReceiveDisabled = chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
+
+			if (!SendReceiveDisabled)
+			{
+				_chorusSystem = chorusSystem;
+				BloomChorusRules.AddFileInfoToFolderConfiguration(_chorusSystem.ProjectFolderConfiguration);
+			}
 		}
 
 		public void CheckInNow(string message)
 		{
-			_chorusSystem.AsyncLocalCheckIn(BloomLabelForCheckins+ message,
+			if (SendReceiveDisabled)
+				return; //we don't do chorus on our source tree
+
+			_chorusSystem.AsyncLocalCheckIn(BloomLabelForCheckins + " "+ message,
 											(result) =>
 												{
 													if (result.ErrorEncountered != null)
@@ -42,11 +54,14 @@ namespace Bloom
 
 		private static string BloomLabelForCheckins
 		{
-			get { return "[Bloom "+Palaso.Reporting.ErrorReport.VersionNumberString+"]"; }
+			get { return "[Bloom:"+Application.ProductVersion+"]"; }
 		}
 
 		public void CheckPointWithDialog(string dialogTitle)
 		{
+			if (SendReceiveDisabled)
+				return; //we don't do chorus on our source tree
+
 			try
 			{
 				using (var dlg = new SyncDialog(_chorusSystem.ProjectFolderConfiguration,

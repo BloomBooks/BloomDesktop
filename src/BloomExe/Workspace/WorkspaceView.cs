@@ -44,6 +44,7 @@ namespace Bloom.Workspace
 							 PublishView.Factory pdfViewFactory,
 							 CollectionSettingsDialog.Factory settingsDialogFactory,
 							 EditBookCommand editBookCommand,
+							SendReceiveCommand sendReceiveCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
@@ -61,6 +62,7 @@ namespace Bloom.Workspace
 			InitializeComponent();
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
+
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
 			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 
@@ -85,6 +87,7 @@ namespace Bloom.Workspace
 			_uiLanguageMenu.Visible = true;
 #endif
 			editBookCommand.Subscribe(OnEditBook);
+			sendReceiveCommand.Subscribe(OnSendReceive);
 
 			//Cursor = Cursors.AppStarting;
 			Application.Idle += new EventHandler(Application_Idle);
@@ -131,6 +134,14 @@ namespace Bloom.Workspace
 //			}
 
 			SetupUILanguageMenu();
+		}
+
+		private void OnSendReceive(object obj)
+		{
+			using (var dlg = _chorusSystem.WinForms.CreateSynchronizationDialog())
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 		void OnSettingsProtectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -19,6 +19,7 @@ namespace Bloom.Edit
 		private readonly LanguageSettings _languageSettings;
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly SendReceiver _sendReceiver;
 		private XmlDocument _domForCurrentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
@@ -41,13 +42,15 @@ namespace Bloom.Edit
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			LibraryClosing libraryClosingEvent,
-			CollectionSettings collectionSettings)
+			CollectionSettings collectionSettings,
+			SendReceiver sendReceiver)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_languageSettings = languageSettings;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
+			_sendReceiver = sendReceiver;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -73,6 +76,10 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
+				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
+				//won't polute the history
+				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
+
 			}
 		}
 

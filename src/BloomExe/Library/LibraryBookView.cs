@@ -102,8 +102,11 @@ namespace Bloom.Library
 			{
 				try
 				{
+					//nb: don't move this to after the raise command, as the selection changes
+					var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
+
 					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
-					_sendReceiver.CheckInNow("Created " + _bookSelection.CurrentSelection.Title);
+					_sendReceiver.CheckInNow(checkinNotice);
 				}
 				catch(Exception error)
 				{

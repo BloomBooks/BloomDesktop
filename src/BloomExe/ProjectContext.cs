@@ -83,6 +83,7 @@ namespace Bloom
 					typeof(TemplateInsertionCommand),
 					typeof(DeletePageCommand),
 					typeof(EditBookCommand),
+					typeof(SendReceiveCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
 					typeof(BookRenamedEvent),
@@ -93,7 +94,9 @@ namespace Bloom
 					typeof(RelocatePageEvent),
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
+
 				var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
+
 				builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
 				builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
 

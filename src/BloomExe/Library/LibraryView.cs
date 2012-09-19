@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Bloom.Workspace;
 using Ionic.Zip;
 using Localization;
 using Palaso.Reporting;
@@ -16,10 +17,13 @@ namespace Bloom.Library
 
 		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
 			LibraryBookView.Factory templateBookViewFactory,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent,
+			SendReceiveCommand sendReceiveCommand)
 		{
 			_model = model;
 			InitializeComponent();
+
+			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			_collectionListView = libraryListViewFactory();
 			_collectionListView.Dock = DockStyle.Fill;
@@ -31,7 +35,9 @@ namespace Bloom.Library
 
 			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
-
+			_sendReceiveButton.Click+=new EventHandler((x,y)=>sendReceiveCommand.Raise(this));
+			_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
+			;
 			selectedTabChangedEvent.Subscribe(c=>
 												{
 													if (c.To == this)
