@@ -20,6 +20,9 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 	<Package  Compressed="yes" InstallerVersion="200" />
   <!--  <Icon Id="BloomPackIcon.BloomPack" SourceFile="..\..\artwork\BloomPack.ico" /> -->
 
+	<MajorUpgrade   Schedule="afterInstallInitialize"
+  DowngradeErrorMessage="A later version of Bloom is already installed. If you really want to downgrade, first uninstall Bloom, then do this install again."/>
+
 	<Upgrade Id ="$(var.Property_UpgradeCode)" >
 	  <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
 	  <UpgradeVersion Minimum ="0.0.0" IncludeMinimum ="yes" Maximum ="$(var.Property_ProductVersion)" IncludeMaximum ="no" Property ="OLDERVERSIONBEINGUPGRADED" />
@@ -285,7 +288,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <Custom Action="ListenerServiceDeleteReservation" Before="InstallFinalize">Installed AND VersionNT >= 600 </Custom>
 -->
 
-	  <RemoveExistingProducts After="InstallInitialize" />
+<!-- now handled by the MajorUpgrade task      <RemoveExistingProducts After="InstallInitialize" />  -->
 
 	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
 		  <Custom Action='LaunchBloom' After="InstallFinalize">NOT Installed</Custom>
