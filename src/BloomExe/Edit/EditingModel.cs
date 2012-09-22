@@ -5,6 +5,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ToPalaso.Experimental;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -388,13 +389,13 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ChangePicture(GeckoElement img, PalasoImage imageInfo)
+		public void ChangePicture(GeckoElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			try
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo);
+				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo, progress);
 
 				//we have to save so that when asked by the thumnailer, the book will give the proper image
 				SaveNow();

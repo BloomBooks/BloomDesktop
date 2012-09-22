@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Palaso.CommandLineProcessing;
 using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -14,7 +16,7 @@ using Palaso.Xml;
 
 namespace Bloom.Book
 {
-	public class ImageMetadataUpdater
+	public class ImageUpdater
 	{
 		public static void CopyImageMetadataToWholeBook(string folderPath, XmlDocument dom, Metadata metadata, IProgress progress)
 		{
@@ -118,6 +120,28 @@ namespace Bloom.Book
 				UpdateImgMetdataAttributesToMatchImage(folderPath, img, progress);
 				completed++;
 			}
+		}
+
+
+		public static void CompressImages(string folderPath, IProgress progress)
+		{
+
+			var imageFiles = Directory.GetFiles(folderPath, "*.png");
+			int completed = 0;
+			foreach (string path in imageFiles)
+			{
+				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
+				CompressImage(path, progress);
+				completed++;
+			}
+		}
+
+		public static void CompressImage(string path, IProgress progress)
+		{
+			progress.WriteStatus("Compressing image: " + Path.GetFileName(path));
+			var pngoutPath = FileLocator.GetFileDistributedWithApplication("optipng.exe");
+			var result = CommandLineRunner.Run(pngoutPath, "\"" + path + "\"", Encoding.UTF8, Path.GetDirectoryName(path), 300, progress,
+											   (s) => progress.WriteMessage(s));
 		}
 	}
 }

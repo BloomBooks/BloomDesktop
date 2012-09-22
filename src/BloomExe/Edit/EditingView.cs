@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.ToPalaso;
+using Bloom.ToPalaso.Experimental;
+using BloomTemp;
 using Newtonsoft.Json.Linq;
 using Palaso.Extensions;
+using Palaso.Progress.LogBox;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -426,26 +431,82 @@ namespace Bloom.Edit
 					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
 				return;
 			}
-			if (!Clipboard.ContainsImage())
 
+			Image clipboardImage = null;
+			try
 			{
-				MessageBox.Show("Before you can paste an image, copy one onto your 'clipboard', from another program.");
-				return;
+				clipboardImage = GetImageFromClipboard();
+				if (clipboardImage == null)
+				{
+					MessageBox.Show("Before you can paste an image, copy one onto your 'clipboard', from another program.");
+					return;
+				}
+
+				if (ge.Target.ClassName.Contains("licenseImage"))
+					return;
+
+				var imageElement = GetImageNode(ge);
+				if (imageElement == null)
+					return;
+				Cursor = Cursors.WaitCursor;
+
+				using (var temp = new TempFile())
+				{
+					clipboardImage.Save(temp.Path, ImageFormat.Png);
+					using (var progressDialog = new ProgressDialogBackground())
+					{
+						progressDialog.ShowAndDoWork((progress, args) =>
+														 {
+															 ImageUpdater.CompressImage(temp.Path, progress);
+														 });
+					}
+					using (var palasoImage = PalasoImage.FromFile(temp.Path))
+					{
+						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+					}
+				}
 			}
-
-			if (ge.Target.ClassName.Contains("licenseImage"))
-				return;
-
-			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
-				return;
-			Cursor = Cursors.WaitCursor;
-			using (var image = new PalasoImage(Clipboard.GetImage()))
+			catch (Exception error)
 			{
-				_model.ChangePicture(imageElement, image);
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
+			}
+			finally
+			{
+				if (clipboardImage != null)
+					clipboardImage.Dispose();
 			}
 			Cursor = Cursors.Default;
 		}
+
+		private Image GetImageFromClipboard()
+		{
+			if(Clipboard.ContainsImage())
+				return Clipboard.GetImage();
+
+			var dataObject = Clipboard.GetDataObject();
+			if(dataObject==null)
+			   return null;
+
+		   //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
+			if (dataObject.GetDataPresent(DataFormats.FileDrop))
+			{
+				//This line gets all the file paths that were selected in explorer
+				string[] files = dataObject.GetData(DataFormats.FileDrop) as string[];
+				//Get the name of the file. This line only gets the first file name if many file were selected in explorer
+				string path = files[0];
+
+				try
+				{
+					return Image.FromFile(path);
+				}
+				catch (Exception)
+				{
+					return null;//not an image
+				}
+			}
+			return null;
+		}
+
 
 		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
 		{
@@ -512,7 +573,7 @@ namespace Bloom.Edit
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						_model.ChangePicture(imageElement, dlg.ImageInfo);
+						 _model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
 					}
 					catch(System.IO.IOException error)
 					{

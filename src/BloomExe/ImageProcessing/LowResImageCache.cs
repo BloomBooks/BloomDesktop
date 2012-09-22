@@ -146,7 +146,16 @@ namespace Bloom.ImageProcessing
 							return originalPath;
 						}
 
-						_paths.Add(originalPath, temp);//remember it so we can reuse if they show it again, and later delete
+						try
+						{
+							_paths.Add(originalPath, temp);//remember it so we can reuse if they show it again, and later delete
+						}
+						catch (Exception)
+						{
+							// it happens sometimes that though it wasn't in the _paths when we entered, it is now
+							// I haven't tracked it down... possibly we get a new request for the image while we're busy compressing it?
+						}
+
 						return temp;
 					}
 				}

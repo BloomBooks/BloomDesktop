@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Bloom.Book;
+using Bloom.ToPalaso;
+using Palaso.Progress.LogBox;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 using Gecko;
@@ -15,7 +17,7 @@ namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, XmlDocument dom, GeckoElement img, PalasoImage imageInfo)
+		public void ChangePicture(string bookFolderPath, XmlDocument dom, GeckoElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);
@@ -37,41 +39,52 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Makes the image png if it's not a jpg, makes white transparent, and saves in the book's folder.
+		/// Makes the image png if it's not a jpg, makes white transparent, compresses it, and saves in the book's folder.
 		/// Replaces any file with the same name.
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
 		private string ProcessAndCopyImage(PalasoImage imageInfo, string bookFolderPath)
 		{
+
 			var isJpeg = ShouldSaveAsJpeg(imageInfo);
 			try
 			{
 
-				using (Bitmap image = new Bitmap(imageInfo.Image))//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
-				{
-
-
-					//photographs don't work if you try to make the white transparent
-					if(!isJpeg && image is Bitmap)
-						((Bitmap)image).MakeTransparent(Color.White); //make white look realistic against background
-
-
-					string imageFileName = GetImageFileName(bookFolderPath, imageInfo, isJpeg);
-					var dest = Path.Combine(bookFolderPath, imageFileName);
-					if (File.Exists(dest))
+					using (Bitmap image = new Bitmap(imageInfo.Image))
+						//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
 					{
-						try
+						//photographs don't work if you try to make the white transparent
+						if (!isJpeg && image is Bitmap)
 						{
-							File.Delete(dest);
+							((Bitmap) image).MakeTransparent(Color.White);
+								//make white look realistic against background
 						}
-						catch (System.IO.IOException error)
+
+						string imageFileName = GetImageFileName(bookFolderPath, imageInfo, isJpeg);
+						var dest = Path.Combine(bookFolderPath, imageFileName);
+						if (File.Exists(dest))
 						{
-							throw new ApplicationException("Bloom could not replace the image "+imageFileName+", probably because Bloom itself has it locked.");
+							try
+							{
+								File.Delete(dest);
+							}
+							catch (System.IO.IOException error)
+							{
+								throw new ApplicationException("Bloom could not replace the image " + imageFileName +
+															   ", probably because Bloom itself has it locked.");
+							}
 						}
-					}
-					image.Save(dest, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
-					imageInfo.Metadata.Write(dest);
-					return imageFileName;
+						image.Save(dest, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+						if (!isJpeg)
+						{
+							using (var dlg = new ProgressDialogBackground())
+							{
+								dlg.ShowAndDoWork((progress, args) => ImageUpdater.CompressImage(dest, progress));
+							}
+						}
+						imageInfo.Metadata.Write(dest);
+
+						return imageFileName;
 				}
 			}
 			catch (System.IO.IOException)
@@ -132,6 +145,20 @@ namespace Bloom.Edit
 
 		private bool ShouldSaveAsJpeg(PalasoImage imageInfo)
 		{
+			/*
+			 * Note, each guid is VERY SIMILAR. The difference is only in the last 2 digits of the 1st group.
+			   Undefined  B96B3CA9
+				MemoryBMP  B96B3CAA
+				BMP    B96B3CAB
+				EMF    B96B3CAC
+				WMF    B96B3CAD
+				JPEG    B96B3CAE
+				PNG    B96B3CAF
+				GIF    B96B3CB0
+				TIFF    B96B3CB1
+				EXIF    B96B3CB2
+				Icon    B96B3CB5
+			 */
 			if(ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
 

@@ -14,6 +14,7 @@ using Bloom.Publish;
 using Localization;
 using Newtonsoft.Json;
 using Palaso.Code;
+using Palaso.CommandLineProcessing;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress.LogBox;
@@ -808,8 +809,9 @@ namespace Bloom.Book
 			UpdateDomWIthDataItems(FolderPath, data, "*", bookDOM);
 			if(Type == Book.BookType.Publication)
 			{
-				ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
+				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
 				UpdatePageFromFactoryTemplates(bookDOM, progress);
+				ImageUpdater.CompressImages(FolderPath, progress);
 				_storage.Save();
 			}
 		}
@@ -1835,7 +1837,7 @@ namespace Bloom.Book
 							if (oldImageName != imageName)
 							{
 								Guard.AgainstNull(folderPath,"folderPath");
-								ImageMetadataUpdater.UpdateImgMetdataAttributesToMatchImage(folderPath, node, new NullProgress());
+								ImageUpdater.UpdateImgMetdataAttributesToMatchImage(folderPath, node, new NullProgress());
 							}
 						}
 						else
@@ -2068,7 +2070,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
-			ImageMetadataUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,RawDom, metadata, progress);
+			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,RawDom, metadata, progress);
 			_storage.Save();
 		}
 	}
