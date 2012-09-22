@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Ionic.Zip;
 using Palaso.Reporting;
@@ -192,5 +193,25 @@ namespace Bloom.Library
     	{
     		return TheOneEditableCollection.Name+".BloomPack";
     	}
+
+        public void DoChecksAndUpdatesOfAllBooks()
+        {
+            using (var dlg = new ProgressDialogBackground())
+            {
+                dlg.ShowAndDoWork((progress, args) =>
+                                      {
+                                          var books = TheOneEditableCollection.GetBooks();
+                                          int i = 0;
+                                          foreach (var book in books)
+                                          {
+                                              i++;
+                                              //gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
+                                              progress.WriteMessage("Processing "+book.TitleBestForUserDisplay +" "+i+"/"+books.Count());
+                                              book.BringBookUpToDate(progress);
+                                          }
+                                      }
+                    );
+            }
+        }
     }
 }
