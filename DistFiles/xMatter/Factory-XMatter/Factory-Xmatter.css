@@ -174,6 +174,26 @@ DIV.bloom-editable.smallCoverCredits
 	top: 834px;
 	height: 49px;
 }
+DIV.ISBNContainer
+{
+	width: 100%;
+	/*[disabled]line-height:12pt;*/
+	/*[disabled]font-family:arial;*/
+	/*+placement:anchor-bottom-left 2px 216px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 216px;
+}
+DIV.ISBNContainer .bloom-editable
+{
+	width: 4.3cm !important;
+	display: inline-block;
+	vertical-align: text-top;
+}
+.ISBNContainer SPAN
+{
+	vertical-align: top;
+}
 /*.......Topic*/
 DIV.coverBottomBookTopic
 {
@@ -508,19 +528,4 @@ DIV.versionAcknowledgments
 {
 	height: 100%;
 	text-align: center;
-}
-DIV.ISBNContainer
-{
-	width: 100%;
-	/*[disabled]line-height:12pt;*/
-	/*[disabled]font-family:arial;*/
-	/*+placement:anchor-bottom-left 2px 216px;*/
-	position: absolute;
-	left: 2px;
-	bottom: 216px;
-	display: inline;
-}
-DIV.ISBNContainer DIV
-{
-	display: inline;
 }
