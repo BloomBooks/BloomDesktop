@@ -70,7 +70,10 @@ namespace Bloom
 					}
 					return;
 				}
-
+				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+				{
+					Settings.Default.MruProjects.AddNewPath(args[0]);
+				}
 				Splasher.Show();
 				SetUpReporting();
 				Settings.Default.Save();
