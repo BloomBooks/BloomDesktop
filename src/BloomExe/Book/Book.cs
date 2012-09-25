@@ -1324,31 +1324,41 @@ namespace Bloom.Book
 		{
 			Debug.Assert(IsInEditableLibrary);
 
-			XmlElement divElement = (XmlElement) pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
-			string pageDivId = divElement.GetAttribute("id");
-
-			var page = GetPageFromStorage(pageDivId);
-			page.InnerXml = divElement.InnerXml;
-
-			//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-			var data = UpdateVariablesAndDataDiv(pageDom);
 
 			try
 			{
-				_storage.Save();
+				XmlElement divElement = (XmlElement)pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				string pageDivId = divElement.GetAttribute("id");
+
+				var page = GetPageFromStorage(pageDivId);
+
+				page.InnerXml = divElement.InnerXml;
+
+				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
+				var data = UpdateVariablesAndDataDiv(pageDom);
+
+				try
+				{
+					_storage.Save();
+				}
+				catch (Exception error)
+				{
+					ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
+				}
+
+				//todo: first page only:
+				var oldPath = FolderPath;
+				UpdateBookFolderAndFileNames(data);
+
+				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
+				//e.g., look for the class "cover"
+				InvokeContentsChanged(null); //enhance: above we could detect if anything actually changed
+
 			}
 			catch (Exception error)
 			{
-				ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
 			}
-
-			//todo: first page only:
-			var oldPath = FolderPath;
-			UpdateBookFolderAndFileNames(data);
-
-			//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
-			//e.g., look for the class "cover"
-			InvokeContentsChanged(null);//enhance: above we could detect if anything actually changed
 		}
 
 
