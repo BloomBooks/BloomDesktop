@@ -104,5 +104,17 @@ namespace Bloom.Properties {
                 this["ImageHandler"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowSendReceive {
+            get {
+                return ((bool)(this["ShowSendReceive"]));
+            }
+            set {
+                this["ShowSendReceive"] = value;
+            }
+        }
     }
 }

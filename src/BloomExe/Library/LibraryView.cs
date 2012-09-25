@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Bloom.Properties;
 using Bloom.Workspace;
 using Ionic.Zip;
 using Localization;
@@ -35,6 +36,8 @@ namespace Bloom.Library
 
 			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
+			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
+
 			_sendReceiveButton.Click+=new EventHandler((x,y)=>sendReceiveCommand.Raise(this));
 			_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
 			;

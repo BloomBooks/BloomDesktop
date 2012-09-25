@@ -28,6 +28,16 @@ namespace Bloom.Collection
 				_language3Label.Text = "Language 3";
 			}
 
+			_showSendReceive.CheckState = Settings.Default.ShowSendReceive ? CheckState.Checked : CheckState.Unchecked;
+			_showSendReceive.CheckStateChanged += (sender, args) =>
+													  {
+														  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
+																							 CheckState.Checked;
+
+														  _restartRequired = true;
+														  UpdateDisplay();
+													  };
+
 			switch(Settings.Default.ImageHandler)
 			{
 				case "":
@@ -194,6 +204,16 @@ namespace Bloom.Collection
 		{
 			Logger.WriteEvent("Entered Settings Dialog");
 			UsageReporter.SendNavigationNotice("Entered Settings Dialog");
+		}
+
+		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _useImageServer_CheckedChanged_1(object sender, EventArgs e)
+		{
+
 		}
 	}
 }
