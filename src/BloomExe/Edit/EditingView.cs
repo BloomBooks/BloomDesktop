@@ -453,13 +453,13 @@ namespace Bloom.Edit
 				using (var temp = new TempFile())
 				{
 					clipboardImage.Save(temp.Path, ImageFormat.Png);
-					using (var progressDialog = new ProgressDialogBackground())
-					{
-						progressDialog.ShowAndDoWork((progress, args) =>
-														 {
-															 ImageUpdater.CompressImage(temp.Path, progress);
-														 });
-					}
+//                    using (var progressDialog = new ProgressDialogBackground())
+//                    {
+//                        progressDialog.ShowAndDoWork((progress, args) =>
+//                                                         {
+//                                                             ImageUpdater.CompressImage(temp.Path, progress);
+//                                                         });
+//                    }
 					using (var palasoImage = PalasoImage.FromFile(temp.Path))
 					{
 						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
