@@ -470,7 +470,8 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-					Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, PathToExistingHtml + ".bak");
+				{    Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null);}
+
 			}
 		}
 
