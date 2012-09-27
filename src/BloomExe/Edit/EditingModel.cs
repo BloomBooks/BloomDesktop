@@ -27,7 +27,7 @@ namespace Bloom.Edit
 		private EditingView _view;
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
-
+		private bool _inProcessOfDeleting;
 
 		//public event EventHandler UpdatePageList;
 
@@ -107,11 +107,24 @@ namespace Bloom.Edit
 
 		private void OnDeletePage()
 		{
-			_domForCurrentPage = null;//prevent us trying to save it later, as the page selection changes
-			_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
-			_view.UpdatePageList(false);
-			Logger.WriteEvent("DeletePage");
-			UsageReporter.SendNavigationNotice("DeletePage");
+			try
+			{
+				_inProcessOfDeleting = true;
+				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+				_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
+				_view.UpdatePageList(false);
+				Logger.WriteEvent("DeletePage");
+				UsageReporter.SendNavigationNotice("DeletePage");
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+																 "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
+			}
+			finally
+			{
+				_inProcessOfDeleting = false;
+			}
 		}
 
 		private void OnRelocatePage(RelocatePageInfo info)
@@ -356,9 +369,10 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("changing page selection");
 			if (_view != null)
 			{
-				if (_previouslySelectedPage!=null && _domForCurrentPage != null)
+				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					SaveNow();
+					if(_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;

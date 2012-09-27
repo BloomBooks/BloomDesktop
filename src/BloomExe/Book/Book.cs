@@ -1167,21 +1167,7 @@ namespace Bloom.Book
 
 			if (_pagesCache == null)
 			{
-				_pagesCache = new List<IPage>();
-
-				int pageNumber = 0;
-				foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
-				{
-					//review: we want to show titles for template books, numbers for other books.
-					//this here requires that titles be removed when the page is inserted, kind of a hack.
-					var caption = GetPageLabelFromDiv(pageNode);
-					if (String.IsNullOrEmpty(caption))
-					{
-						caption = "";//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
-					}
-					_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _collectionSettings.Language1Iso639Code));
-					++pageNumber;
-				}
+				BuildPageCache();
 			}
 
 			foreach (var page in _pagesCache)
@@ -1190,6 +1176,45 @@ namespace Bloom.Book
 			}
 		}
 
+		private void BuildPageCache()
+		{
+			_pagesCache = new List<IPage>();
+
+			int pageNumber = 0;
+			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				//review: we want to show titles for template books, numbers for other books.
+				//this here requires that titles be removed when the page is inserted, kind of a hack.
+				var caption = GetPageLabelFromDiv(pageNode);
+				if (String.IsNullOrEmpty(caption))
+				{
+					caption = "";
+						//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
+				}
+				_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _collectionSettings.Language1Iso639Code));
+				++pageNumber;
+			}
+		}
+
+
+		private IPage GetPageToShowAfterDeletion(IPage page)
+		{
+			Guard.AgainstNull(_pagesCache, "_pageCache");
+			var matchingPageEvenIfNotActualObject = _pagesCache.First(p => p.Id == page.Id);
+			Guard.AgainstNull(matchingPageEvenIfNotActualObject, "Couldn't find page with matching id in cache");
+			var index = _pagesCache.IndexOf(matchingPageEvenIfNotActualObject);
+			Guard.Against(index <0, "Couldn't find page in cache");
+
+			if (index == _pagesCache.Count - 1)//if it's the last page
+			{
+				if (index < 1) //if it's the only page
+					throw new ApplicationException("Bloom should not have allowed you to delete the last remaining page.");
+				return _pagesCache[index - 1];//give the preceding page
+			}
+
+
+			return _pagesCache[index + 1]; //give the following page
+		}
 
 		public IEnumerable<IPage> GetTemplatePages()
 		{
@@ -1251,7 +1276,12 @@ namespace Bloom.Book
 
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
-			_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
+
+			BuildPageCache();
+			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
+			Guard.AgainstNull(newPage,"could not find the page we just added");
+			_pageSelection.SelectPage(newPage);
+			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
 			_storage.Save();
 			if (_pageListChangedEvent != null)
@@ -1259,8 +1289,6 @@ namespace Bloom.Book
 
 			InvokeContentsChanged(null);
 		}
-
-
 
 		private void ClearEditableValues(XmlElement newPageElement)
 		{
@@ -1280,24 +1308,15 @@ namespace Bloom.Book
 			if(GetPageCount() <2)
 				return;
 
+			var pageToShowNext = GetPageToShowAfterDeletion(page);
+
 			ClearPagesCache();
+			//_pagesCache.Remove(page);
 
 			var pageNode = FindPageDiv(page);
 		   pageNode.ParentNode.RemoveChild(pageNode);
-	//        InvokePageDeleted(page);
 
-			var prevNod = pageNode.PreviousSibling;
-			if(prevNod == null)
-			{
-				_pageSelection.SelectPage(FirstPage);
-			}
-			else
-			{
-				_pageSelection.SelectPage(FirstPage);
-
-				//todo       var previousPage = GetPageFromNode(pageNode);
-//                _pageSelection.SelectPage(previousPage);
-			}
+		   _pageSelection.SelectPage(pageToShowNext);
 			_storage.Save();
 			if(_pageListChangedEvent !=null)
 				_pageListChangedEvent.Raise(null);
