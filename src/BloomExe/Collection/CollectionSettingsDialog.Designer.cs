@@ -48,6 +48,8 @@
             this._xmatterPackLabel = new System.Windows.Forms.Label();
             this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this._bloomCollectionName = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this._aboutProjectInformationSetingsButton = new System.Windows.Forms.Button();
             this._districtText = new System.Windows.Forms.TextBox();
             this._provinceText = new System.Windows.Forms.TextBox();
@@ -56,13 +58,14 @@
             this._districtLabel = new System.Windows.Forms.Label();
             this._provinceLabel = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this._showSendReceive = new System.Windows.Forms.CheckBox();
             this._useImageServer = new System.Windows.Forms.CheckBox();
             this._okButton = new System.Windows.Forms.Button();
             this._restartReminder = new System.Windows.Forms.Label();
             this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
             this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this._showSendReceive = new System.Windows.Forms.CheckBox();
+            this._cancelButton = new System.Windows.Forms.Button();
             this._tab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -340,6 +343,8 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this._bloomCollectionName);
+            this.tabPage3.Controls.Add(this.label1);
             this.tabPage3.Controls.Add(this._aboutProjectInformationSetingsButton);
             this.tabPage3.Controls.Add(this._districtText);
             this.tabPage3.Controls.Add(this._provinceText);
@@ -356,6 +361,33 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Project Information";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // _bloomCollectionName
+            // 
+            this._bloomCollectionName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.localizationExtender1.SetLocalizableToolTip(this._bloomCollectionName, null);
+            this.localizationExtender1.SetLocalizationComment(this._bloomCollectionName, null);
+            this.localizationExtender1.SetLocalizationPriority(this._bloomCollectionName, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizingId(this._bloomCollectionName, "CollectionSettingsDialog.BloomProjectName");
+            this._bloomCollectionName.Location = new System.Drawing.Point(32, 246);
+            this._bloomCollectionName.Name = "_bloomCollectionName";
+            this._bloomCollectionName.Size = new System.Drawing.Size(214, 25);
+            this._bloomCollectionName.TabIndex = 22;
+            this._bloomCollectionName.TextChanged += new System.EventHandler(this._bloomCollectionName_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.localizationExtender1.SetLocalizableToolTip(this.label1, null);
+            this.localizationExtender1.SetLocalizationComment(this.label1, null);
+            this.localizationExtender1.SetLocalizationPriority(this.label1, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizingId(this.label1, "CollectionSettingsDialog.BloomCollectionName");
+            this.label1.Location = new System.Drawing.Point(28, 224);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(158, 19);
+            this.label1.TabIndex = 21;
+            this.label1.Text = "Bloom Collection Name";
             // 
             // _aboutProjectInformationSetingsButton
             // 
@@ -467,6 +499,20 @@
             this.tabPage4.Text = "Program Settings";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
+            // _showSendReceive
+            // 
+            this._showSendReceive.AutoSize = true;
+            this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
+            this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
+            this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._showSendReceive");
+            this._showSendReceive.Location = new System.Drawing.Point(50, 83);
+            this._showSendReceive.Name = "_showSendReceive";
+            this._showSendReceive.Size = new System.Drawing.Size(281, 23);
+            this._showSendReceive.TabIndex = 1;
+            this._showSendReceive.Text = "(Experimental) Show Send/Receive Button";
+            this._showSendReceive.UseVisualStyleBackColor = true;
+            // 
             // _useImageServer
             // 
             this._useImageServer.AutoSize = true;
@@ -479,7 +525,6 @@
             this._useImageServer.TabIndex = 0;
             this._useImageServer.Text = "Use Image Server to reduce memory usage with large images.";
             this._useImageServer.UseVisualStyleBackColor = true;
-            this._useImageServer.CheckedChanged += new System.EventHandler(this._useImageServer_CheckedChanged_1);
             // 
             // _okButton
             // 
@@ -487,7 +532,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
             this.localizationExtender1.SetLocalizationComment(this._okButton, null);
             this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
-            this._okButton.Location = new System.Drawing.Point(533, 386);
+            this._okButton.Location = new System.Drawing.Point(438, 383);
             this._okButton.Name = "_okButton";
             this._okButton.Size = new System.Drawing.Size(75, 23);
             this._okButton.TabIndex = 1;
@@ -505,7 +550,7 @@
             this.localizationExtender1.SetLocalizationComment(this._restartReminder, null);
             this.localizationExtender1.SetLocalizationPriority(this._restartReminder, Localization.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
-            this._restartReminder.Location = new System.Drawing.Point(128, 389);
+            this._restartReminder.Location = new System.Drawing.Point(33, 386);
             this._restartReminder.Name = "_restartReminder";
             this._restartReminder.Size = new System.Drawing.Size(399, 17);
             this._restartReminder.TabIndex = 19;
@@ -528,27 +573,30 @@
             // 
             this.localizationExtender1.LocalizationManagerId = "Bloom";
             // 
-            // _showSendReceive
+            // _cancelButton
             // 
-            this._showSendReceive.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
-            this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._showSendReceive");
-            this._showSendReceive.Location = new System.Drawing.Point(50, 83);
-            this._showSendReceive.Name = "_showSendReceive";
-            this._showSendReceive.Size = new System.Drawing.Size(281, 23);
-            this._showSendReceive.TabIndex = 1;
-            this._showSendReceive.Text = "(Experimental) Show Send/Receive Button";
-            this._showSendReceive.UseVisualStyleBackColor = true;
-            this._showSendReceive.CheckedChanged += new System.EventHandler(this._showSendReceive_CheckedChanged);
+            this._cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this._cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.localizationExtender1.SetLocalizableToolTip(this._cancelButton, null);
+            this.localizationExtender1.SetLocalizationComment(this._cancelButton, null);
+            this.localizationExtender1.SetLocalizingId(this._cancelButton, "Common.CancelButton");
+            this._cancelButton.Location = new System.Drawing.Point(533, 383);
+            this._cancelButton.Name = "_cancelButton";
+            this._cancelButton.Size = new System.Drawing.Size(75, 23);
+            this._cancelButton.TabIndex = 21;
+            this._cancelButton.Text = "&Cancel";
+            this._cancelButton.UseVisualStyleBackColor = true;
+            this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
             // 
             // CollectionSettingsDialog
             // 
             this.AcceptButton = this._okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this._cancelButton;
             this.ClientSize = new System.Drawing.Size(620, 421);
+            this.ControlBox = false;
+            this.Controls.Add(this._cancelButton);
             this.Controls.Add(this.settingsProtectionLauncherButton1);
             this.Controls.Add(this._restartReminder);
             this.Controls.Add(this._okButton);
@@ -560,8 +608,9 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "CollectionSettingsDialog";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Settings";
-            this.Load += new System.EventHandler(this.CollectionSettingsDialog_Load);
+            this.Load += new System.EventHandler(this.OnLoad);
             this._tab.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -591,8 +640,7 @@
 		protected System.Windows.Forms.Label _language3Name;
 		protected System.Windows.Forms.Label _language3Label;
 		protected System.Windows.Forms.Label _language2Name;
-		protected System.Windows.Forms.Label _language2Label;
-		protected System.Windows.Forms.Label _language1Name;
+        protected System.Windows.Forms.Label _language2Label;
 		private System.Windows.Forms.Label _xmatterPackLabel;
 		private System.Windows.Forms.ComboBox _xmatterPackCombo;
 		private System.Windows.Forms.TextBox _districtText;
@@ -612,5 +660,9 @@
 		private System.Windows.Forms.CheckBox _useImageServer;
 		private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.CheckBox _showSendReceive;
+        protected System.Windows.Forms.Label _language1Name;
+        private System.Windows.Forms.TextBox _bloomCollectionName;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button _cancelButton;
 	}
 }
