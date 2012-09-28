@@ -212,6 +212,11 @@ namespace Bloom
 			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
 			GeckoPreferences.User["browser.zoom.full"] = true;
 
+			//in firefox 14, at least, there was a bug such that if you have more than one lang on the page, all are check with English
+			//until we get past that, it's just annoying
+
+			GeckoPreferences.User["layout.spellcheckDefault"] = 0;
+
 			RaiseGeckoReady();
 	   }
 
@@ -406,6 +411,7 @@ namespace Bloom
 				_browser.Navigate(_url);
 			}
 		}
+
 
 
 		private void _afterValidatingTimer_Tick(object sender, EventArgs e)
