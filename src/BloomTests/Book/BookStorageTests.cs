@@ -187,10 +187,11 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='my special b.css' type='text/css' />
 				<link rel='stylesheet' href='Factory-Xmatter.css' type='text/css' />
 				<link rel='stylesheet' href='my special a.css' type='text/css' />
+				<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css' />
 				<link rel='stylesheet' href='my special c.css' type='text/css' />
 				<link rel='stylesheet' href='Basic book.css' type='text/css' />
-				<link rel='stylesheet' href='../collection.css' type='text/css' />
-				<link rel='stylesheet' href='book.css' type='text/css' />
+				<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css' />
+				<link rel='stylesheet' href='customBookStyles.css' type='text/css' />
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
 				<link rel='stylesheet' href='languageDisplay.css' type='text/css' />
 				<link rel='stylesheet' href='../../editMode.css' type='text/css' />
@@ -211,8 +212,9 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[6][@href='my special a.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[7][@href='my special b.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='my special c.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../collection.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='book.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../settingsCollectionStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='../customCollectionStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Xml;
 using Palaso.Xml;
 
@@ -11,6 +12,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class StyleSheetLinkSorter : IComparer<XmlElement>
 	{
+		const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
 		private static Dictionary<string, int> _values;
 
 		private static void Init()
@@ -24,10 +26,12 @@ namespace Bloom.Book
 				_values.Add("editoriginalmode.css", 40);
 				_values.Add("previewmode.css", 50);
 
-				//in here would come the template-specific stuff, but we don't know those names
+				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
+				//for the template-specific stuff, but we don't know those names
 
-				_values.Add("collection.css", 1000); // the almost last word
-				_values.Add("book.css", 2000); // the very last word
+				_values.Add("settingsCollectionStyles.css".ToLower(), 1000);
+				_values.Add("customCollectionStyles.css".ToLower(), 2000); // the almost last word
+				_values.Add("customBookStyles.css".ToLower(), 3000); // the very last word
 			}
 		}
 
@@ -41,6 +45,7 @@ namespace Bloom.Book
 			int xValue = GetValue(x);
 			int yValue = GetValue(y);
 
+			Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
 			if (xValue == yValue)
 				return String.Compare(x, y);
 
@@ -59,7 +64,7 @@ namespace Bloom.Book
 					|| (s.ToLower().EndsWith("\\"+pair.Key)))
 					return pair.Value;
 			}
-			return 100;
+			return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;
 		}
 	}
 }

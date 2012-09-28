@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -42,6 +44,8 @@ namespace Bloom.Collection
 		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
+			DefaultLanguage1FontName = GetDefaultFontName();
+
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
 			Language2Iso639Code = collectionInfo.Language2Iso639Code;
 			Language3Iso639Code = collectionInfo.Language3Iso639Code;
@@ -53,6 +57,7 @@ namespace Bloom.Collection
 			XMatterPackName = collectionInfo.XMatterPackName;
 			Save();
 		}
+
 		/// <summary>
 		/// can be used whether the library exists already, or not
 		/// </summary>
@@ -163,15 +168,41 @@ namespace Bloom.Collection
 			XElement library = new XElement("Collection");
 			library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
+			library.Add(new XElement("Language1Name", Language1Name));
+			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
-			library.Add(new XElement("Language1Name", Language1Name));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
+
 			library.Save(SettingsFilePath);
+
+			SavesettingsCollectionStylesCss();
+		}
+
+		private void SavesettingsCollectionStylesCss()
+		{
+			string path = FolderPath.CombineForPath("settingsCollectionStyles.css");
+
+			try
+			{
+				var sb = new StringBuilder();
+				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
+				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
+				sb.AppendLine();
+				sb.AppendLine("BODY");
+				sb.AppendLine("{");
+				sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
+				sb.AppendLine("}");
+				File.WriteAllText(path, sb.ToString());
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -185,6 +216,8 @@ namespace Bloom.Collection
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
+				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
+
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");
@@ -196,6 +229,21 @@ namespace Bloom.Collection
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
 																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
 				throw;
+			}
+
+			try
+			{
+				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
+				if(File.Exists(oldcustomCollectionStylesPath))
+				{
+					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
+
+					File.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
+				}
+			}
+			catch (Exception)
+			{
+				//ah well, we tried, no big deal, only a couple of beta testers used this old name
 			}
 		}
 
@@ -250,6 +298,8 @@ namespace Bloom.Collection
 			}
 		}
 
+		public string DefaultLanguage1FontName { get; set; }
+
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newCollectionName)
 		{
@@ -295,16 +345,21 @@ namespace Bloom.Collection
 																 name);
 			}
 		}
-	}
 
-//    public class NewCollectionInfo
-//    {
-//        public string PathToSettingsFile;
-//        public string Language1Iso639Code;
-//		public string Language2Iso639Code="en";
-//		public string Language3Iso639Code;
-//		public string LanguageName;
-//    	public string XMatterPackName= "Factory";
-//        public bool IsSourceCollection;
-//    }
+		private string GetDefaultFontName()
+		{
+			foreach (var candidate in new[] { "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
+			{
+				string lower = candidate.ToLower();
+				if (FontFamily.Families.FirstOrDefault(f =>
+														   {
+															   return f.Name.ToLower() == lower;
+														   }) != null)
+				{
+					return candidate;
+				}
+			}
+			return SystemFonts.DefaultFont.Name;
+		}
+	}
 }

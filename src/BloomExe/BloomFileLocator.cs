@@ -30,7 +30,7 @@ namespace Bloom
 			//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
 			//itself, in case they're looking for something inside it
 			return base.GetSearchPaths().Concat(new[] { Path.GetDirectoryName(xMatterFolder.PathToFolder), xMatterFolder.PathToFolder,
-				_collectionSettings.FolderPath // collection.css
+				_collectionSettings.FolderPath // settingsCollectionStyles.css & customCollectionStyles.css
 			});
 		}
 

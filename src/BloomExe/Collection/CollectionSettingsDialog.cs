@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -130,6 +131,7 @@ namespace Bloom.Collection
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
+			_collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
@@ -207,9 +209,20 @@ namespace Bloom.Collection
 			_provinceText.Text = _collectionSettings.Province;
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
+			LoadFontCombo();
 
 			Logger.WriteEvent("Entered Settings Dialog");
 			UsageReporter.SendNavigationNotice("Entered Settings Dialog");
+		}
+
+		private void LoadFontCombo()
+		{
+			foreach (FontFamily fontFamily in FontFamily.Families)
+			{
+				_fontCombo.Items.Add(fontFamily.Name);
+				if(fontFamily.Name == _collectionSettings.DefaultLanguage1FontName)
+					_fontCombo.SelectedIndex = _fontCombo.Items.Count-1;
+			}
 		}
 
 
@@ -224,5 +237,12 @@ namespace Bloom.Collection
 			if (_bloomCollectionName.Text.Trim() != _collectionSettings.CollectionName)
 				RestartRequired();
 		}
+
+		private void _fontCombo_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if(_fontCombo.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
+				RestartRequired();
+		}
+
 	}
 }

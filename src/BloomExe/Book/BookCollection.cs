@@ -27,7 +27,7 @@ namespace Bloom.Book
 		private readonly BookStarter.Factory _bookStarterFactory;
 		private readonly BookSelection _bookSelection;
 		private readonly EditBookCommand _editBookCommand;
-		private readonly CollectionSettings _collectionSettings;
+
 		//private Color[] kCoverColors = new Color[] { Color.FromArgb(225, 0, 0), Color.FromArgb(0, 225, 0), Color.FromArgb(0, 0, 225), Color.FromArgb(180, 180, 180) };
 		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176,222,228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
 		private int _coverColorIndex = 0;
@@ -62,7 +62,7 @@ namespace Bloom.Book
 
 		private void MakeCollectionCSSIfMissing()
 		{
-			string path = Path.Combine(_path, "collection.css");
+			string path = Path.Combine(_path, "customCollectionStyles.css");
 			if(File.Exists(path))
 				return;
 			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("root","collection styles override template.css"),path);

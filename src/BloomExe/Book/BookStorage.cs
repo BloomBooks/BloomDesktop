@@ -206,12 +206,16 @@ namespace Bloom.Book
 
 		private void EnsureHasCollectionAndBookStylesheets(XmlDocument dom)
 		{
-			string cssFilePath = _fileLocator.LocateFile(@"collection.css");
-			if (!string.IsNullOrEmpty(cssFilePath))
-				EnsureHasStyleSheet(dom, cssFilePath);
+			string autocssFilePath = _fileLocator.LocateFile(@"settingsCollectionStyles.css");
+			if (!string.IsNullOrEmpty(autocssFilePath))
+				EnsureHasStyleSheet(dom, autocssFilePath);
 
-			if (File.Exists(Path.Combine(_folderPath, "book.css")))
-				EnsureHasStyleSheet(dom,"book.css");
+			string customCssFilePath = _fileLocator.LocateFile(@"customCollectionStyles.css");
+			if (!string.IsNullOrEmpty(customCssFilePath))
+				EnsureHasStyleSheet(dom, customCssFilePath);
+
+			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
+				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
 		private void EnsureHasStyleSheet(XmlDocument dom, string path)

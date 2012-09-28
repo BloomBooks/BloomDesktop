@@ -44,6 +44,8 @@
             this._language1Name = new System.Windows.Forms.Label();
             this._language1Label = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label2 = new System.Windows.Forms.Label();
+            this._fontCombo = new System.Windows.Forms.ComboBox();
             this._aboutBookMakingSettingsButton = new System.Windows.Forms.Button();
             this._xmatterPackLabel = new System.Windows.Forms.Label();
             this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
@@ -64,8 +66,8 @@
             this._restartReminder = new System.Windows.Forms.Label();
             this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
             this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._cancelButton = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._tab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -281,6 +283,8 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label2);
+            this.tabPage2.Controls.Add(this._fontCombo);
             this.tabPage2.Controls.Add(this._aboutBookMakingSettingsButton);
             this.tabPage2.Controls.Add(this._xmatterPackLabel);
             this.tabPage2.Controls.Add(this._xmatterPackCombo);
@@ -294,6 +298,33 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Book Making";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.localizationExtender1.SetLocalizableToolTip(this.label2, null);
+            this.localizationExtender1.SetLocalizationComment(this.label2, null);
+            this.localizationExtender1.SetLocalizationPriority(this.label2, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizingId(this.label2, "CollectionSettingsDialog.Font");
+            this.label2.Location = new System.Drawing.Point(27, 40);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(37, 19);
+            this.label2.TabIndex = 22;
+            this.label2.Text = "Font";
+            // 
+            // _fontCombo
+            // 
+            this._fontCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this._fontCombo.FormattingEnabled = true;
+            this.localizationExtender1.SetLocalizableToolTip(this._fontCombo, null);
+            this.localizationExtender1.SetLocalizationComment(this._fontCombo, null);
+            this.localizationExtender1.SetLocalizingId(this._fontCombo, "CollectionSettingsDialog._xmatterPackCombo");
+            this._fontCombo.Location = new System.Drawing.Point(31, 62);
+            this._fontCombo.Name = "_fontCombo";
+            this._fontCombo.Size = new System.Drawing.Size(146, 25);
+            this._fontCombo.TabIndex = 21;
+            this._fontCombo.SelectedIndexChanged += new System.EventHandler(this._fontCombo_SelectedIndexChanged);
             // 
             // _aboutBookMakingSettingsButton
             // 
@@ -323,7 +354,7 @@
             this.localizationExtender1.SetLocalizationComment(this._xmatterPackLabel, null);
             this.localizationExtender1.SetLocalizationPriority(this._xmatterPackLabel, Localization.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.label1");
-            this._xmatterPackLabel.Location = new System.Drawing.Point(25, 32);
+            this._xmatterPackLabel.Location = new System.Drawing.Point(27, 124);
             this._xmatterPackLabel.Name = "_xmatterPackLabel";
             this._xmatterPackLabel.Size = new System.Drawing.Size(156, 19);
             this._xmatterPackLabel.TabIndex = 1;
@@ -336,7 +367,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._xmatterPackCombo, null);
             this.localizationExtender1.SetLocalizationComment(this._xmatterPackCombo, null);
             this.localizationExtender1.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
-            this._xmatterPackCombo.Location = new System.Drawing.Point(29, 54);
+            this._xmatterPackCombo.Location = new System.Drawing.Point(31, 146);
             this._xmatterPackCombo.Name = "_xmatterPackCombo";
             this._xmatterPackCombo.Size = new System.Drawing.Size(146, 25);
             this._xmatterPackCombo.TabIndex = 0;
@@ -664,5 +695,7 @@
         private System.Windows.Forms.TextBox _bloomCollectionName;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _cancelButton;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox _fontCombo;
 	}
 }
