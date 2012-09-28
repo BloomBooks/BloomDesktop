@@ -8,6 +8,7 @@ namespace Bloom.SendReceive
 		{
 			config.ExcludePatterns.Add("**.back");
 			config.ExcludePatterns.Add("**.js");
+			config.ExcludePatterns.Add("**.bak");
 			ProjectFolderConfiguration.AddExcludedVideoExtensions(config); // For now at least.
 
 			config.IncludePatterns.Add("**.html");
@@ -15,7 +16,6 @@ namespace Bloom.SendReceive
 			config.IncludePatterns.Add("**.png");
 			config.IncludePatterns.Add("**.jpg");
 			config.IncludePatterns.Add("**.css");
-			config.IncludePatterns.Add("**.js");
 			config.IncludePatterns.Add("**.txt");
 			config.IncludePatterns.Add("*.bloomCollection");
 		}
