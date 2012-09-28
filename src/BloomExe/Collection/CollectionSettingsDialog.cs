@@ -5,6 +5,7 @@ using Bloom.Book;
 using Bloom.Properties;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
+using Palaso.Extensions;
 
 namespace Bloom.Collection
 {
@@ -72,10 +73,8 @@ namespace Bloom.Collection
 				_removeLanguage3Link.Visible = true;
 			}
 
-			_countryText.Text = _collectionSettings.Country;
-			_provinceText.Text = _collectionSettings.Province;
-			_districtText.Text = _collectionSettings.District;
 			_restartReminder.Visible = _restartRequired;
+			_okButton.Text = _restartRequired ? "Restart" : "&OK";
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());
@@ -136,6 +135,8 @@ namespace Bloom.Collection
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
 				_collectionSettings.Language3Iso639Code = null;
 
+			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
+				_collectionSettings.AttemptSaveAsToNewName(_bloomCollectionName.Text.SanitizeFilename('-'));
 			_collectionSettings.Save();
 
 			Logger.WriteEvent("Closing Settings Dialog");
@@ -200,20 +201,28 @@ namespace Bloom.Collection
 			UpdateDisplay();
 		}
 
-		private void CollectionSettingsDialog_Load(object sender, EventArgs e)
+		private void OnLoad(object sender, EventArgs e)
 		{
+			_countryText.Text = _collectionSettings.Country;
+			_provinceText.Text = _collectionSettings.Province;
+			_districtText.Text = _collectionSettings.District;
+			_bloomCollectionName.Text = _collectionSettings.CollectionName;
+
 			Logger.WriteEvent("Entered Settings Dialog");
 			UsageReporter.SendNavigationNotice("Entered Settings Dialog");
 		}
 
-		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
-		{
 
+		private void _cancelButton_Click(object sender, EventArgs e)
+		{
+			this.DialogResult = DialogResult.Cancel;
+			Close();
 		}
 
-		private void _useImageServer_CheckedChanged_1(object sender, EventArgs e)
+		private void _bloomCollectionName_TextChanged(object sender, EventArgs e)
 		{
-
+			if (_bloomCollectionName.Text.Trim() != _collectionSettings.CollectionName)
+				RestartRequired();
 		}
 	}
 }

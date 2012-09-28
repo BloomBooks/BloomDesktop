@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Palaso.Reporting;
@@ -253,6 +254,46 @@ namespace Bloom.Collection
 		public static string GetPathForNewSettings(string parentFolderPath, string newCollectionName)
 		{
 			return parentFolderPath.CombineForPath(newCollectionName, newCollectionName + ".bloomCollection");
+		}
+
+		public void AttemptSaveAsToNewName(string name)
+		{
+			name = name.Trim().SanitizeFilename('-');
+			var newName = name + ".BloomCollection";
+
+			if (name == CollectionName.Trim())
+				return;
+
+			//first try renaming the collections settings file
+			try
+			{   Save();
+				var current = SettingsFilePath;
+				var newPath = Path.Combine(Path.GetDirectoryName(SettingsFilePath), newName);
+				File.Move(current, newPath);
+				SettingsFilePath = newPath;
+			}
+			catch (Exception e1)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e1,
+																 "Bloom was unable to change the collection name to '{0}'",
+																 name);
+			}
+
+			//now try renaming the directory
+			try
+			{
+				var existingDirectory = Path.GetDirectoryName(SettingsFilePath);
+				var parentDirectory = Path.GetDirectoryName(existingDirectory);
+				var newDirectory = Path.Combine(parentDirectory, name);
+				Directory.Move(existingDirectory, newDirectory);
+				SettingsFilePath = Path.Combine(newDirectory, newName);
+			}
+			catch (Exception e2)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e2,
+																 "Bloom did change the collection name to {0}, but was unable to change name of the folder. Perhaps there is already a folder with that name?",
+																 name);
+			}
 		}
 	}
 
