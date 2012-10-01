@@ -372,7 +372,7 @@ namespace Bloom.Edit
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
 						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
