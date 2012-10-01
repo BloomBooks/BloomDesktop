@@ -37,9 +37,9 @@ You can also set other CSS properties, like line-height. The following says "Any
 	line-height: 1 !important;
 }
 
-Note: you can also add a file named "book.css" in the book folder, to limit the effects of the rules to just that one book.
+Note: you can also add a file named "customBookStyles.css" in the book folder, to limit the effects of the rules to just that one book.
 
-Note: Bloom/web browsers will ignore everything inside these these star-slash markers, so the real content starts below:
+Note: Bloom/web browsers will ignore everything inside these star-slash markers, so the real content starts below:
 */
 
 BODY
