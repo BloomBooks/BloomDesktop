@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.SendReceive;
 
 namespace Bloom.Library
 {

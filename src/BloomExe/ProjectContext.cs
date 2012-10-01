@@ -11,6 +11,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
+using Bloom.SendReceive;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;

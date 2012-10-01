@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
-using Bloom.SendReceive;
 using Chorus;
 using Chorus.UI.Sync;
-using Palaso.Extensions;
 using Palaso.Reporting;
 
-namespace Bloom
+namespace Bloom.SendReceive
 {
 	public class SendReceiver : IDisposable
 	{
@@ -56,6 +49,7 @@ namespace Bloom
 		{
 			get { return "[Bloom:"+Application.ProductVersion+"]"; }
 		}
+
 
 		public void CheckPointWithDialog(string dialogTitle)
 		{
