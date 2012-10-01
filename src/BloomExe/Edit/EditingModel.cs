@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Palaso.Progress.LogBox;
 using Palaso.Reporting;

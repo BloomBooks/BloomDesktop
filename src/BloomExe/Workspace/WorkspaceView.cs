@@ -10,6 +10,7 @@ using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
 using Chorus;
+using Chorus.UI.Sync;
 using Localization;
 using Messir.Windows.Forms;
 using Palaso.IO;
@@ -138,9 +139,13 @@ namespace Bloom.Workspace
 
 		private void OnSendReceive(object obj)
 		{
-			using (var dlg = _chorusSystem.WinForms.CreateSynchronizationDialog())
+			using (SyncDialog dlg = (SyncDialog) _chorusSystem.WinForms.CreateSynchronizationDialog())
 			{
 				dlg.ShowDialog();
+				if(dlg.SyncResult.DidGetChangesFromOthers)
+				{
+					Invoke(ReopenCurrentProject);
+				}
 			}
 		}
 
@@ -337,14 +342,6 @@ namespace Bloom.Workspace
 		{
 			//when doing videos at this really low resolution, there's just no room for this
 			_panelHoldingToolStrip.Visible = this.Width > 820;
-		}
-
-		private void _sendReceiveButton_Click(object sender, EventArgs e)
-		{
-			using(var dlg = _chorusSystem.WinForms.CreateSynchronizationDialog())
-			{
-				dlg.ShowDialog();
-			}
 		}
 	}
 
