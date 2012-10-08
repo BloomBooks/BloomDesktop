@@ -113,7 +113,7 @@ namespace Bloom.ToPalaso
 		[Category("Misc"),
 		Description("Determines the ToolTip shown when the mouse hovers over the disabled control."),
 		Localizable(true),
-		Editor(typeof(MultilineStringEditor), typeof(UITypeEditor)),
+		Editor("MultilineStringEditor", "UITypeEditor"),
 		DefaultValue("")]
 		public string GetToolTipWhenDisabled(Control p_control)
 		{
