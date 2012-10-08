@@ -86,6 +86,7 @@ namespace Bloom.Library
 
 		void LoadCollectionsAtIdleTime(object sender, EventArgs e)
 		{
+			Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime);
 			if (!_collectionLoadPending)
 				return;
 			_collectionLoadPending = false;
