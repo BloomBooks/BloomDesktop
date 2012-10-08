@@ -3,6 +3,8 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -53,7 +55,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AeroWizard">
-      <HintPath>..\..\packages\AeroWizard.1.2.1\lib\3.5\AeroWizard.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
@@ -120,7 +122,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Design" />
     <Reference Include="System.Reactive">
       <HintPath>..\..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
     </Reference>
@@ -153,6 +154,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="OpenCreateGetCollectionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OpenCreateGetCollectionDialog.Designer.cs">
+      <DependentUpon>OpenCreateGetCollectionDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -402,6 +409,9 @@
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCreateGetCollectionDialog.resx">
+      <DependentUpon>OpenCreateGetCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
@@ -795,6 +805,9 @@
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\sendreceiveToolbarButton.png" />
     <None Include="Resources\PackageFlat.png" />
+    <None Include="Resources\cloneFromChorusHub.png" />
+    <None Include="Resources\cloneFromInternet.png" />
+    <None Include="Resources\cloneFromUsb.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
