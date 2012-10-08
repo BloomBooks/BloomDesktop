@@ -96,10 +96,22 @@ namespace Bloom
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
 
-				var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
 
-				builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
-				builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
+
+				try
+				{
+					//nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
+					//going to be able to do HG for some reason.
+					var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
+					builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
+					builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
+					chorusSystem.Init(string.Empty/*user name*/);
+				}
+				catch (Exception error)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+						"There was a problem loading the Chorus Send/Receive system for this collection. Bloom will try to limp along, but you'll need technical help to resolve this. If you have not other choice, find this folder: {0}, move it somewhere safe, and restart Bloom.", Path.GetDirectoryName(projectSettingsPath).CombineForPath(".hg"));
+				}
 
 
 				//This deserves some explanation:
