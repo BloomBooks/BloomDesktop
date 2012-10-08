@@ -86,7 +86,8 @@ namespace Bloom.Library
 
         void LoadCollectionsAtIdleTime(object sender, EventArgs e)
         {
-			if (!_collectionLoadPending)
+            Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime); 
+            if (!_collectionLoadPending)
 				return;
         	_collectionLoadPending = false;
 			Cursor = Cursors.WaitCursor;
