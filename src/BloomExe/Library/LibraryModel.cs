@@ -21,7 +21,7 @@ namespace Bloom.Library
         private readonly BookSelection _bookSelection;
         private readonly string _pathToLibrary;
     	private readonly CollectionSettings _collectionSettings;
-    	private readonly SendReceiver _sendReceiver;
+        private readonly SendReceiver _sendReceiver;
     	private readonly SourceCollectionsList _sourceCollectionsList;
         private readonly BookCollection.Factory _bookCollectionFactory;
     	private readonly EditBookCommand _editBookCommand;

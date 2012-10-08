@@ -13,7 +13,7 @@ namespace Bloom.Library
     public partial class LibraryBookView : UserControl
     {
         private readonly BookSelection _bookSelection;
-    	private readonly SendReceiver _sendReceiver;
+        private readonly SendReceiver _sendReceiver;
     	private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
         private readonly EditBookCommand _editBookCommand;
     	private bool _reshowPending = false;
