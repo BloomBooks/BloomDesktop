@@ -235,7 +235,7 @@ namespace Bloom
 			if (e.CtrlKey && e.KeyChar == 'v')
 			{
 				Debug.WriteLine("Ctrl-v pressed.");
-				if (!_pasteCommand.Enabled)
+				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
