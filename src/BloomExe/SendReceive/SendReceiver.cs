@@ -6,6 +6,25 @@ using Palaso.Reporting;
 
 namespace Bloom.SendReceive
 {
+//    public interface SendReceiver
+//    {
+//        void CheckInNow(string message);
+//        void CheckPointWithDialog(string dialogTitle);
+//    }
+//
+//    public class NullSendReceiver : SendReceiver
+//    {
+//        public void CheckInNow(string message)
+//        {
+//
+//        }
+//
+//        public void CheckPointWithDialog(string dialogTitle)
+//        {
+//
+//        }
+//    }
+
 	public class SendReceiver : IDisposable
 	{
 		private ChorusSystem _chorusSystem;
@@ -17,7 +36,7 @@ namespace Bloom.SendReceive
 			_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
 
 			//we don't do chorus on our source tree
-			SendReceiveDisabled = chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
+			SendReceiveDisabled = !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
 
 			if (!SendReceiveDisabled)
 			{
