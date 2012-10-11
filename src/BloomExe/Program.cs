@@ -6,6 +6,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
+using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus;
 using Localization;
@@ -347,7 +348,7 @@ namespace Bloom
 				//The user can cancel that if they want to go looking for a collection on disk.
 				if(Settings.Default.MruProjects.Latest == null)
 				{
-					var path=OpenAndCreateCollectionDialog.CreateNewCollection();
+					var path = NewCollectionWizard.CreateNewCollection();
 					if (!string.IsNullOrEmpty(path) && File.Exists(path))
 					{
 						OpenCollection(path);

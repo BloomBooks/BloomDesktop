@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using Bloom;
-using Bloom.NewCollection;
+using Bloom.CollectionCreating;
 using NUnit.Framework;
 
 namespace BloomTests
@@ -16,7 +16,7 @@ namespace BloomTests
 			Application.EnableVisualStyles();
 
 			Browser.SetUpXulRunner();
-			using (var dlg = new NewCollectionWizard(false, DefaultParentDirectoryForLibraries()))
+			using (var dlg = new NewCollectionWizard(false))
 			{
 				dlg.ShowDialog();
 			}
@@ -28,7 +28,7 @@ namespace BloomTests
 			Application.EnableVisualStyles();
 
 			Browser.SetUpXulRunner();
-			using (var dlg = new NewCollectionWizard(true, DefaultParentDirectoryForLibraries()))
+			using (var dlg = new NewCollectionWizard(true))
 			{
 				dlg.ShowDialog();
 			}

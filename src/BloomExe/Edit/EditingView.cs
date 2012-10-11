@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.CollectionTab;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;

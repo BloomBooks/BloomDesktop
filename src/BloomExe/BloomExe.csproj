@@ -160,22 +160,16 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
-    <Compile Include="OpenCreateGetCollectionDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="OpenCreateGetCollectionDialog.Designer.cs">
-      <DependentUpon>OpenCreateGetCollectionDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Library\HistoryAndNotesDialog.cs">
+    <Compile Include="CollectionTab\HistoryAndNotesDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Library\HistoryAndNotesDialog.Designer.cs">
+    <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="SendReceive\SendReceiver.cs" />
@@ -221,36 +215,36 @@
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </Compile>
     <Compile Include="ImageProcessing\LowResImageCache.cs" />
-    <Compile Include="Library\IBloomTabArea.cs" />
-    <Compile Include="Library\ListHeader.cs">
+    <Compile Include="CollectionTab\IBloomTabArea.cs" />
+    <Compile Include="CollectionTab\ListHeader.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\ListHeader.Designer.cs">
+    <Compile Include="CollectionTab\ListHeader.Designer.cs">
       <DependentUpon>ListHeader.cs</DependentUpon>
     </Compile>
     <Compile Include="Collection\ShortcutMaker.cs" />
-    <Compile Include="NewCollection\LanguageLocationControl.cs">
+    <Compile Include="CollectionCreating\LanguageLocationControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewCollection\LanguageLocationControl.Designer.cs">
+    <Compile Include="CollectionCreating\LanguageLocationControl.Designer.cs">
       <DependentUpon>LanguageLocationControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\LanguageIdControl.cs">
+    <Compile Include="CollectionCreating\LanguageIdControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewCollection\LanguageIdControl.Designer.cs">
+    <Compile Include="CollectionCreating\LanguageIdControl.Designer.cs">
       <DependentUpon>LanguageIdControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\CollectionNameControl.cs">
+    <Compile Include="CollectionCreating\CollectionNameControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewCollection\CollectionNameControl.Designer.cs">
+    <Compile Include="CollectionCreating\CollectionNameControl.Designer.cs">
       <DependentUpon>CollectionNameControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\NewCollectionWizard.cs">
+    <Compile Include="CollectionCreating\NewCollectionWizard.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewCollection\NewCollectionWizard.Designer.cs">
+    <Compile Include="CollectionCreating\NewCollectionWizard.Designer.cs">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
@@ -313,7 +307,7 @@
       <DependentUpon>SourceTextControl.cs</DependentUpon>
     </Compile>
     <Compile Include="LanguageSettings.cs" />
-    <Compile Include="Library\FlyingImage.cs">
+    <Compile Include="CollectionTab\FlyingImage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Collection\CollectionSettingsDialog.cs">
@@ -333,23 +327,23 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewCollection\KindOfCollectionControl.cs">
+    <Compile Include="CollectionCreating\KindOfCollectionControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="NewCollection\KindOfCollectionControl.Designer.cs">
+    <Compile Include="CollectionCreating\KindOfCollectionControl.Designer.cs">
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="ToPalaso\OpenCreateCloneControl.cs">
+    <Compile Include="CollectionChoosing\MostRecentPathsList.cs" />
+    <Compile Include="CollectionChoosing\OpenCreateCloneControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ToPalaso\OpenCreateCloneControl.designer.cs">
+    <Compile Include="CollectionChoosing\OpenCreateCloneControl.designer.cs">
       <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="OpenAndCreateCollectionDialog.cs">
+    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OpenAndCreateCollectionDialog.Designer.cs">
+    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.Designer.cs">
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageSelection.cs" />
@@ -371,17 +365,17 @@
     <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Book\BookCollection.cs" />
     <Compile Include="Book\BookSelection.cs" />
-    <Compile Include="Library\LibraryListView.cs">
+    <Compile Include="CollectionTab\LibraryListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryListView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryListView.Designer.cs">
       <DependentUpon>LibraryListView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Library\LibraryModel.cs" />
-    <Compile Include="Library\LibraryView.cs">
+    <Compile Include="CollectionTab\LibraryModel.cs" />
+    <Compile Include="CollectionTab\LibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryView.Designer.cs">
       <DependentUpon>LibraryView.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageListView.cs">
@@ -419,16 +413,13 @@
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenCreateGetCollectionDialog.resx">
-      <DependentUpon>OpenCreateGetCollectionDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\HistoryAndNotesDialog.resx">
+    <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
@@ -446,19 +437,19 @@
     <EmbeddedResource Include="HtmlLabel.resx">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\ListHeader.resx">
+    <EmbeddedResource Include="CollectionTab\ListHeader.resx">
       <DependentUpon>ListHeader.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\LanguageLocationControl.resx">
+    <EmbeddedResource Include="CollectionCreating\LanguageLocationControl.resx">
       <DependentUpon>LanguageLocationControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\LanguageIdControl.resx">
+    <EmbeddedResource Include="CollectionCreating\LanguageIdControl.resx">
       <DependentUpon>LanguageIdControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\CollectionNameControl.resx">
+    <EmbeddedResource Include="CollectionCreating\CollectionNameControl.resx">
       <DependentUpon>CollectionNameControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\NewCollectionWizard.resx">
+    <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
@@ -485,10 +476,10 @@
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryListView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryView.resx">
       <DependentUpon>LibraryView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\PageListView.resx">
@@ -512,7 +503,7 @@
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryBookView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryBookView.resx">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
@@ -521,13 +512,13 @@
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewCollection\KindOfCollectionControl.resx">
+    <EmbeddedResource Include="CollectionCreating\KindOfCollectionControl.resx">
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\OpenCreateCloneControl.resx">
+    <EmbeddedResource Include="CollectionChoosing\OpenCreateCloneControl.resx">
       <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpenAndCreateCollectionDialog.resx">
+    <EmbeddedResource Include="CollectionChoosing\OpenAndCreateCollectionDialog.resx">
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -555,10 +546,10 @@
       <DependentUpon>Shell.cs</DependentUpon>
     </Compile>
     <Compile Include="StyleSheetService.cs" />
-    <Compile Include="Library\LibraryBookView.cs">
+    <Compile Include="CollectionTab\LibraryBookView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryBookView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryBookView.Designer.cs">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\TemplatePagesView.cs">

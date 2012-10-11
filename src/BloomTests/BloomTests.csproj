@@ -147,6 +147,7 @@
     <Compile Include="Book\PageTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PdfMakerTests.cs" />
+    <Compile Include="OpenCreateDialogTests.cs" />
     <Compile Include="ToPalaso\MostRecentPathsTests.cs" />
     <Compile Include="ToPalaso\ProgresDialogTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />

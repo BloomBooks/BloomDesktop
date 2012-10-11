@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
+using Bloom.CollectionTab;
 using Bloom.Edit;
 using Palaso.Reporting;
 

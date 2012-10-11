@@ -37,9 +37,9 @@ namespace Bloom.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Bloom.ToPalaso.MostRecentPathsList MruProjects {
+        public global::Bloom.CollectionChoosing.MostRecentPathsList MruProjects {
             get {
-                return ((global::Bloom.ToPalaso.MostRecentPathsList)(this["MruProjects"]));
+                return ((global::Bloom.CollectionChoosing.MostRecentPathsList)(this["MruProjects"]));
             }
             set {
                 this["MruProjects"] = value;
