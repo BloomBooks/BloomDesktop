@@ -40,9 +40,9 @@
             this._openAndCreateControl.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this._openAndCreateControl.BackColor = System.Drawing.Color.White;
             this._openAndCreateControl.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this._openAndCreateControl.Location = new System.Drawing.Point(0, 25);
+            this._openAndCreateControl.Location = new System.Drawing.Point(12, 12);
             this._openAndCreateControl.Name = "_openAndCreateControl";
-            this._openAndCreateControl.Size = new System.Drawing.Size(768, 358);
+            this._openAndCreateControl.Size = new System.Drawing.Size(756, 371);
             this._openAndCreateControl.TabIndex = 0;
             // 
             // OpenAndCreateCollectionDialog

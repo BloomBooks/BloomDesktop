@@ -42,11 +42,6 @@ namespace Bloom.CollectionChoosing
 		  }
 
 		/// <summary>
-		/// use this to change the format of the group labels
-		/// </summary>
-		public Label TemplateLabel { get { return _templateLabel;}}
-
-		/// <summary>
 		/// Client should use this, at least, to set the icon (the image) for mru items
 		/// </summary>
 		public Button TemplateButton { get { return _templateButton; } }
@@ -54,17 +49,18 @@ namespace Bloom.CollectionChoosing
 
 		private void LoadButtons()
 		{
-			flowLayoutPanel1.Controls.Clear();
-			var createAndGetGroup = new TableLayoutPanel();
-			createAndGetGroup.AutoSize = true;
-			AddCreateChoices(createAndGetGroup);
+			_templateButton.Parent.Controls.Remove(_templateButton);
+
+//            var createAndGetGroup = new TableLayoutPanel();
+//            createAndGetGroup.AutoSize = true;
+			//AddCreateChoices(createAndGetGroup);
 		  //  AddGetChoices(createAndGetGroup);
 
-			var openChoices = new TableLayoutPanel();
-			openChoices.AutoSize = true;
+
+
 			//AddSection("Open", openChoices);
-			AddOpenLibraryChoices(openChoices);
-			flowLayoutPanel1.Controls.AddRange(new Control[] { createAndGetGroup, openChoices });
+			AddOpenChoices();
+			//flowLayoutPanel1.Controls.AddRange(new Control[] { createAndGetGroup, openChoices });
 		}
 
 //        private void AddSection(string sectionName, TableLayoutPanel panel)
@@ -79,18 +75,18 @@ namespace Bloom.CollectionChoosing
 //            panel.Controls.Add(label);
 //        }
 
-		private void AddFileChoice(string path, TableLayoutPanel panel)
+		private void AddFileChoice(string path,int index)
 		{
-			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "template", true, openRecentLibrary_LinkClicked, panel);
+			const int kRowOffsetForMRUChoices = 1;
+			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, "template", true, openRecentLibrary_LinkClicked, index+kRowOffsetForMRUChoices);
 			button.Tag = path;
 		}
 
 
 		private Button AddChoice(string localizedLabel, string localizedTooltip, string imageKey, bool enabled,
-   EventHandler clickHandler, TableLayoutPanel panel)
+   EventHandler clickHandler, int row)
 		{
-			panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-			panel.RowCount++;
+
 			var button = new Button();
 			button.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
@@ -104,7 +100,7 @@ namespace Bloom.CollectionChoosing
 			else
 			{
 				button.ImageKey = imageKey;
-				button.ImageList = _imageList;
+				//button.ImageList = _imageList;
 			}
 			button.ImageAlign = ContentAlignment.MiddleLeft;
 			button.Click += clickHandler;
@@ -118,32 +114,27 @@ namespace Bloom.CollectionChoosing
 			button.Enabled = enabled;
 
 			toolTip1.SetToolTip(button, localizedTooltip);
-			panel.Controls.Add(button);
+			tableLayoutPanel2.Controls.Add(button);
+			tableLayoutPanel2.SetRow(button, row);
 			return button;
 		}
 
-		private void AddCreateChoices(TableLayoutPanel panel)
-		{
-			//AddSection("Create", panel);
-			AddChoice(_createNewLibraryButtonLabel, string.Empty, "newLibrary", true, CreateNewLibrary_LinkClicked, panel);
-		   // For wesay, we can add a method to allow the client dialog to add ones like this:
-			//AddChoice("Create new project from FLEx LIFT export", string.Empty, "flex", true, OnCreateLibraryFromFLEx_LinkClicked, panel);
-		}
 
-		private void AddGetChoices(TableLayoutPanel panel)
-		{
-		  //  AddSection("Get", panel);
-			//nb: we want these always enabled, so that we can give a message explaining about hg if needed
 
-			var usbButton = AddChoice("Get From USB drive", "Get a library from a Chorus repository on a USB flash drive", "getFromUsb", true, OnGetFromUsb, panel);
-			var internetButton = AddChoice("Get from Internet", "Get a library from a Chorus repository which is hosted on the internet (e.g. languagedepot.org) and put it on this computer",
-				"getFromInternet", true, OnGetFromInternet, panel);
-//            if (!string.IsNullOrEmpty(Chorus.VcsDrivers.Mercurial.HgRepository.GetEnvironmentReadinessMessage("en")))
-//            {
-//                usbButton.ForeColor = Color.Gray;
-//                internetButton.ForeColor = Color.Gray;
-//            }
-		}
+//        private void AddGetChoices(TableLayoutPanel panel)
+//        {
+//          //  AddSection("Get", panel);
+//            //nb: we want these always enabled, so that we can give a message explaining about hg if needed
+//
+//            var usbButton = AddChoice("Get From USB drive", "Get a library from a Chorus repository on a USB flash drive", "getFromUsb", true, OnGetFromUsb, panel);
+//            var internetButton = AddChoice("Get from Internet", "Get a library from a Chorus repository which is hosted on the internet (e.g. languagedepot.org) and put it on this computer",
+//                "getFromInternet", true, OnGetFromInternet, panel);
+////            if (!string.IsNullOrEmpty(Chorus.VcsDrivers.Mercurial.HgRepository.GetEnvironmentReadinessMessage("en")))
+////            {
+////                usbButton.ForeColor = Color.Gray;
+////                internetButton.ForeColor = Color.Gray;
+////            }
+//        }
 
 		private void OnGetFromInternet(object sender, EventArgs e)
 		{
@@ -190,25 +181,27 @@ namespace Bloom.CollectionChoosing
 //            return Directory.GetFiles(directoryPath, "*.WeSayConfig").Length > 0;
 //        }
 
-		private void AddOpenLibraryChoices(TableLayoutPanel panel)
+		private void AddOpenChoices()
 		{
+			int count = 0;
+
 			if (_mruList != null)
 			{
-				int count = 0;
+
 				foreach (string path in _mruList.Paths)
 				{
-					AddFileChoice(path, panel);
+					AddFileChoice(path, count);
 					++count;
-					if (count > 2)
+					if (count > 3)
 						break;
 
 				}
 			}
 			else
 			{
-				AddChoice("MRU list must be set at runtime", string.Empty, "blah blah", true, null, panel);
+				//AddChoice("MRU list must be set at runtime", string.Empty, "blah blah", true, null, panel);
 			}
-			AddChoice(_browseLabel, string.Empty, "browse", true, OnBrowseForExistingLibraryClick, panel);
+			AddChoice(_browseLabel, string.Empty, "browse", true, OnBrowseForExistingLibraryClick, count);
 		}
 
 		private void openRecentLibrary_LinkClicked(object sender, EventArgs e)
@@ -277,10 +270,6 @@ namespace Bloom.CollectionChoosing
 
 
 
-		private void _templateButton_Click(object sender, EventArgs e)
-		{
-
-		}
 	}
 
 
