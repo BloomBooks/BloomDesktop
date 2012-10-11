@@ -142,6 +142,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutDialog.Designer.cs">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\ImageUpdater.cs" />
@@ -334,11 +340,11 @@
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="ToPalaso\WelcomeControl.cs">
+    <Compile Include="ToPalaso\OpenCreateCloneControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ToPalaso\WelcomeControl.designer.cs">
-      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    <Compile Include="ToPalaso\OpenCreateCloneControl.designer.cs">
+      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
     </Compile>
     <Compile Include="OpenAndCreateCollectionDialog.cs">
       <SubType>Form</SubType>
@@ -406,6 +412,9 @@
       <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutDialog.resx">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -515,8 +524,8 @@
     <EmbeddedResource Include="NewCollection\KindOfCollectionControl.resx">
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
-      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    <EmbeddedResource Include="ToPalaso\OpenCreateCloneControl.resx">
+      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OpenAndCreateCollectionDialog.resx">
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>

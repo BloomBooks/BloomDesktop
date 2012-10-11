@@ -290,7 +290,10 @@ namespace Bloom.Workspace
 
 		private void toolStripMenuItem1_Click(object sender, EventArgs e)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "1 About.htm"));
+			using(var dlg = new AboutDialog())
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 
