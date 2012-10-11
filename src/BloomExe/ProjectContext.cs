@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;

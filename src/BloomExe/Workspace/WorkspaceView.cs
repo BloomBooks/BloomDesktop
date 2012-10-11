@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Properties;
