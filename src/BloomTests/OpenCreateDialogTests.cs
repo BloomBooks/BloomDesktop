@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Bloom;
 using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using NUnit.Framework;
@@ -13,6 +14,7 @@ namespace BloomTests.ToPalaso
 		[Test, Ignore("By hand only")]
 		public void LaunchDemoDialog()
 		{
+			Browser.SetUpXulRunner();
 			var mru = new MostRecentPathsList();
 			foreach (var dir in Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{

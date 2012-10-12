@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -36,7 +37,7 @@ namespace Bloom.CollectionCreating
 //													Path.Combine(root, dirs[dirs.Length - 1]));
 //				}
 
-				htmlLabel1.ColorName = "gray";
+				htmlLabel1.ForeColor = Color.Gray;
 				htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
 								_collectionInfo.PathToSettingsFile);
 			}
@@ -44,7 +45,7 @@ namespace Bloom.CollectionCreating
 			{
 				if (_collectionNameControl.Text.Length > 0)
 				{
-					htmlLabel1.ColorName = "red";
+					htmlLabel1.ForeColor = Color.Red;
 					if (DestinationAlreadyExists)
 					{
 						htmlLabel1.HTML = string.Format("There is already a collection with that name, at <a href='file://{0}'>{0}</a>.\r\nPlease pick a unique name.", Path.GetDirectoryName(_collectionInfo.PathToSettingsFile));

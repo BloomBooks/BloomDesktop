@@ -9,7 +9,6 @@ namespace Bloom.CollectionCreating
 {
 	public partial class NewCollectionWizard : Form
 	{
-		private readonly string _pathToNewLibraryDirectory;
 		private NewCollectionSettings _collectionInfo;
 
 		public static string CreateNewCollection()
@@ -74,7 +73,7 @@ namespace Bloom.CollectionCreating
 			if (caller is LanguageIdControl)
 			{
 				var pattern = Localization.LocalizationManager.GetString("NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
-				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_pathToNewLibraryDirectory, string.Format(pattern,_collectionInfo.Language1Name));
+				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, string.Format(pattern, _collectionInfo.Language1Name));
 				//_collectionInfo.CollectionName = ;
 
 

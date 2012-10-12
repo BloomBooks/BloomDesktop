@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
 using Palaso.Extensions;
@@ -16,7 +17,6 @@ namespace Bloom
 
 		public HtmlLabel()
 		{
-			ColorName = "black";
 			InitializeComponent();
 		}
 
@@ -37,13 +37,14 @@ namespace Bloom
 				if (_browser!=null)
 				{
 					_browser.Visible = !string.IsNullOrEmpty(_html);
+					var htmlColor = ColorTranslator.ToHtml(ForeColor);
 					if(_browser.Visible)
-						_browser.LoadHtml("<span style=\"color:"+ColorName+"; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html+"</span>");
+						_browser.LoadHtml("<span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span>");
 				}
 			}
 		}
 
-		public string ColorName;
+		//public string ColorName;
 
 		private void HtmlLabel_Load(object sender, EventArgs e)
 		{

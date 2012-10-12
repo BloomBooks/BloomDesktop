@@ -68,6 +68,8 @@
             this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
             this._cancelButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this._showLocalizationControls = new System.Windows.Forms.CheckBox();
+            this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
             this._tab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -517,6 +519,8 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this._showExperimentalTemplates);
+            this.tabPage4.Controls.Add(this._showLocalizationControls);
             this.tabPage4.Controls.Add(this._showSendReceive);
             this.tabPage4.Controls.Add(this._useImageServer);
             this.localizationExtender1.SetLocalizableToolTip(this.tabPage4, null);
@@ -527,26 +531,28 @@
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage4.Size = new System.Drawing.Size(610, 318);
             this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Program Settings";
+            this.tabPage4.Text = "Advanced Program Settings";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // _showSendReceive
             // 
             this._showSendReceive.AutoSize = true;
+            this._showSendReceive.Enabled = false;
             this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._showSendReceive");
-            this._showSendReceive.Location = new System.Drawing.Point(50, 83);
+            this._showSendReceive.Location = new System.Drawing.Point(50, 78);
             this._showSendReceive.Name = "_showSendReceive";
-            this._showSendReceive.Size = new System.Drawing.Size(281, 23);
+            this._showSendReceive.Size = new System.Drawing.Size(291, 23);
             this._showSendReceive.TabIndex = 1;
-            this._showSendReceive.Text = "(Experimental) Show Send/Receive Button";
+            this._showSendReceive.Text = "(Experimental) Show Send/Receive Controls";
             this._showSendReceive.UseVisualStyleBackColor = true;
             // 
             // _useImageServer
             // 
             this._useImageServer.AutoSize = true;
+            this._useImageServer.Enabled = false;
             this.localizationExtender1.SetLocalizableToolTip(this._useImageServer, null);
             this.localizationExtender1.SetLocalizationComment(this._useImageServer, null);
             this.localizationExtender1.SetLocalizingId(this._useImageServer, "checkBox1.checkBox1");
@@ -618,6 +624,36 @@
             this._cancelButton.Text = "&Cancel";
             this._cancelButton.UseVisualStyleBackColor = true;
             this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
+            // 
+            // _showLocalizationControls
+            // 
+            this._showLocalizationControls.AutoSize = true;
+            this._showLocalizationControls.Enabled = false;
+            this.localizationExtender1.SetLocalizableToolTip(this._showLocalizationControls, null);
+            this.localizationExtender1.SetLocalizationComment(this._showLocalizationControls, null);
+            this.localizationExtender1.SetLocalizationPriority(this._showLocalizationControls, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizingId(this._showLocalizationControls, "CollectionSettingsDialog._showSendReceive");
+            this._showLocalizationControls.Location = new System.Drawing.Point(50, 121);
+            this._showLocalizationControls.Name = "_showLocalizationControls";
+            this._showLocalizationControls.Size = new System.Drawing.Size(371, 23);
+            this._showLocalizationControls.TabIndex = 2;
+            this._showLocalizationControls.Text = "(Experimental) Show User Interface Localization Controls";
+            this._showLocalizationControls.UseVisualStyleBackColor = true;
+            // 
+            // _showExperimentalTemplates
+            // 
+            this._showExperimentalTemplates.AutoSize = true;
+            this._showExperimentalTemplates.Enabled = false;
+            this.localizationExtender1.SetLocalizableToolTip(this._showExperimentalTemplates, null);
+            this.localizationExtender1.SetLocalizationComment(this._showExperimentalTemplates, null);
+            this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog._showExperimentalTemplates");
+            this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 164);
+            this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
+            this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
+            this._showExperimentalTemplates.TabIndex = 3;
+            this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary, Calendar)";
+            this._showExperimentalTemplates.UseVisualStyleBackColor = true;
             // 
             // CollectionSettingsDialog
             // 
@@ -697,5 +733,7 @@
         private System.Windows.Forms.Button _cancelButton;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox _fontCombo;
+        private System.Windows.Forms.CheckBox _showExperimentalTemplates;
+        private System.Windows.Forms.CheckBox _showLocalizationControls;
 	}
 }
