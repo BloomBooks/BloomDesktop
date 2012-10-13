@@ -35,7 +35,6 @@
             this._toolSpecificPanel = new System.Windows.Forms.Panel();
             this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
             this._toolStrip = new System.Windows.Forms.ToolStrip();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
             this._settingsButton = new System.Windows.Forms.ToolStripButton();
             this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
             this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -43,14 +42,15 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deepBloomPaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this._divider2 = new System.Windows.Forms.ToolStripSeparator();
             this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this._divider3 = new System.Windows.Forms.ToolStripSeparator();
             this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this._divider4 = new System.Windows.Forms.ToolStripSeparator();
             this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
+            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
             this._tabStrip = new Messir.Windows.Forms.TabStrip();
             this._collectionTab = new Messir.Windows.Forms.TabStripButton();
             this._editTab = new Messir.Windows.Forms.TabStripButton();
@@ -112,10 +112,6 @@
             this._toolStrip.TabIndex = 28;
             this._toolStrip.Text = "_toolStrip";
             // 
-            // localizationExtender1
-            // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
-            // 
             // _settingsButton
             // 
             this._settingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -138,7 +134,8 @@
             this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.localizationExtender1.SetLocalizableToolTip(this._openCreateCollectionButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._openCreateCollectionButton, null);
+            this.localizationExtender1.SetLocalizationComment(this._openCreateCollectionButton, "This is is the button you use to create a new collection, open a new one, or get " +
+        "one from a repository somewhere");
             this.localizationExtender1.SetLocalizingId(this._openCreateCollectionButton, "Open/CreateCollectionButton");
             this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
             this._openCreateCollectionButton.Size = new System.Drawing.Size(70, 43);
@@ -154,12 +151,12 @@
             this.toolStripSeparator1,
             this._releaseNotesMenuItem,
             this.deepBloomPaperToolStripMenuItem,
-            this.toolStripSeparator2,
+            this._divider2,
             this._makeASuggestionMenuItem,
             this._webSiteMenuItem,
-            this.toolStripMenuItem1,
+            this._divider3,
             this._showLogMenuItem,
-            this.toolStripMenuItem2,
+            this._divider4,
             this._aboutBloomMenuItem});
             this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this._helpMenu.Image = global::Bloom.Properties.Resources.help24x24;
@@ -194,6 +191,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._releaseNotesMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._releaseNotesMenuItem, null);
+            this.localizationExtender1.SetLocalizationPriority(this._releaseNotesMenuItem, Localization.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._releaseNotesMenuItem, "._releaseNotesMenuItem");
             this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
             this._releaseNotesMenuItem.Size = new System.Drawing.Size(174, 22);
@@ -205,16 +203,17 @@
             this.deepBloomPaperToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
             this.localizationExtender1.SetLocalizableToolTip(this.deepBloomPaperToolStripMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this.deepBloomPaperToolStripMenuItem, null);
+            this.localizationExtender1.SetLocalizationPriority(this.deepBloomPaperToolStripMenuItem, Localization.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this.deepBloomPaperToolStripMenuItem, ".deepBloomPaperToolStripMenuItem");
             this.deepBloomPaperToolStripMenuItem.Name = "deepBloomPaperToolStripMenuItem";
             this.deepBloomPaperToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.deepBloomPaperToolStripMenuItem.Text = "Deep Bloom Paper";
             this.deepBloomPaperToolStripMenuItem.Click += new System.EventHandler(this.deepBloomPaperToolStripMenuItem_Click);
             // 
-            // toolStripSeparator2
+            // _divider2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(171, 6);
+            this._divider2.Name = "_divider2";
+            this._divider2.Size = new System.Drawing.Size(171, 6);
             // 
             // _makeASuggestionMenuItem
             // 
@@ -237,10 +236,10 @@
             this._webSiteMenuItem.Text = "Web Site";
             this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
             // 
-            // toolStripMenuItem1
+            // _divider3
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(171, 6);
+            this._divider3.Name = "_divider3";
+            this._divider3.Size = new System.Drawing.Size(171, 6);
             // 
             // _showLogMenuItem
             // 
@@ -252,10 +251,10 @@
             this._showLogMenuItem.Text = "Show Event Log";
             this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
             // 
-            // toolStripMenuItem2
+            // _divider4
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(171, 6);
+            this._divider4.Name = "_divider4";
+            this._divider4.Size = new System.Drawing.Size(171, 6);
             // 
             // _aboutBloomMenuItem
             // 
@@ -280,6 +279,10 @@
             this._uiLanguageMenu.Name = "_uiLanguageMenu";
             this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
             this._uiLanguageMenu.Text = "English";
+            // 
+            // localizationExtender1
+            // 
+            this.localizationExtender1.LocalizationManagerId = "Bloom";
             // 
             // _tabStrip
             // 
@@ -418,12 +421,12 @@
 		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem deepBloomPaperToolStripMenuItem;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+		private System.Windows.Forms.ToolStripSeparator _divider2;
 		private Localization.UI.LocalizationExtender localizationExtender1;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
-		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+		private System.Windows.Forms.ToolStripSeparator _divider3;
 		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripSeparator _divider4;
 
 
     }

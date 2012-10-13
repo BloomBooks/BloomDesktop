@@ -52,7 +52,9 @@ namespace Bloom.CollectionTab
         	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
 			_settingsProtectionHelper.ManageComponent(_openFolderOnDisk);
-			
+
+		    _showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
+
         }
 
     	private void OnBookSelectionChanged(object sender, EventArgs e)
@@ -156,8 +158,11 @@ namespace Bloom.CollectionTab
     		    	
 					if(isSuitableSourceForThisEditableCollection || collection.Type== BookCollection.CollectionType.TheOneEditableCollection)
 					{
-						loadedAtLeastOneBook = true;
-						AddOneBook(book, flowLayoutPanel);
+                        if (!book.IsExperimental || Settings.Default.ShowExperimentalBooks)
+                        {
+                            loadedAtLeastOneBook = true;
+                            AddOneBook(book, flowLayoutPanel);
+                        }
 					} 
     		    }
     		    catch (Exception error)

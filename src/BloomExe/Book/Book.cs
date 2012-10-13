@@ -1063,7 +1063,16 @@ namespace Bloom.Book
 		}
 
 
-		/// <summary>
+        public bool IsExperimental
+        {
+            get
+            {
+                string metaValue = GetMetaValue("experimental", "false");
+                return metaValue == "true" || metaValue == "yes";
+            }
+        }
+        
+        /// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
 		/// </summary>
 		public bool IsSuitableForMakingShells

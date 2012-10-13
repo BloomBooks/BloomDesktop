@@ -45,6 +45,7 @@
             this._vernacularCollectionMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this._showHistoryMenu = new System.Windows.Forms.ToolStripMenuItem();
             this._showNotesMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._libraryFlow = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
@@ -62,7 +63,6 @@
             this.label9 = new System.Windows.Forms.Label();
             this._dividerPanel = new System.Windows.Forms.Panel();
             this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this._sourcePaneMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._localizationExtender)).BeginInit();
@@ -210,6 +210,16 @@
             this._showNotesMenu.Size = new System.Drawing.Size(265, 22);
             this._showNotesMenu.Text = "Collection Notes...";
             this._showNotesMenu.Click += new System.EventHandler(this.OnShowNotesMenu);
+            // 
+            // _doChecksAndUpdatesOfAllBooksToolStripMenuItem
+            // 
+            this._localizationExtender.SetLocalizableToolTip(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, null);
+            this._localizationExtender.SetLocalizationComment(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, null);
+            this._localizationExtender.SetLocalizingId(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, ".doChecksAndUpdatesOfAllBooksToolStripMenuItem");
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Name = "_doChecksAndUpdatesOfAllBooksToolStripMenuItem";
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Text = "Do Checks and Updates of All Books";
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Click += new System.EventHandler(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -477,16 +487,6 @@
             this._dividerPanel.Name = "_dividerPanel";
             this._dividerPanel.Size = new System.Drawing.Size(350, 1);
             this._dividerPanel.TabIndex = 6;
-            // 
-            // _doChecksAndUpdatesOfAllBooksToolStripMenuItem
-            // 
-            this._localizationExtender.SetLocalizableToolTip(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, null);
-            this._localizationExtender.SetLocalizationComment(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, null);
-            this._localizationExtender.SetLocalizingId(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, ".doChecksAndUpdatesOfAllBooksToolStripMenuItem");
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Name = "_doChecksAndUpdatesOfAllBooksToolStripMenuItem";
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Text = "Do Checks and Updates of All Books";
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Click += new System.EventHandler(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click);
             // 
             // LibraryListView
             // 

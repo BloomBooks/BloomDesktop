@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using Bloom.CollectionChoosing;
+
 namespace Bloom.Properties {
     
     
@@ -37,9 +39,9 @@ namespace Bloom.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Bloom.CollectionChoosing.MostRecentPathsList MruProjects {
+        public MostRecentPathsList MruProjects {
             get {
-                return ((global::Bloom.CollectionChoosing.MostRecentPathsList)(this["MruProjects"]));
+                return ((MostRecentPathsList)(this["MruProjects"]));
             }
             set {
                 this["MruProjects"] = value;
@@ -114,6 +116,30 @@ namespace Bloom.Properties {
             }
             set {
                 this["ShowSendReceive"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowLocalizationControls {
+            get {
+                return ((bool)(this["ShowLocalizationControls"]));
+            }
+            set {
+                this["ShowLocalizationControls"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowExperimentalBooks {
+            get {
+                return ((bool)(this["ShowExperimentalBooks"]));
+            }
+            set {
+                this["ShowExperimentalBooks"] = value;
             }
         }
     }
