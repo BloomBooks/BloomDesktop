@@ -17,7 +17,7 @@ namespace BloomTests
 	[TestFixture]
 	public class SendReceiveTests
 	{
-		[Test]
+		[Test, Ignore("not yet")]
 		public void CreateOrLocate_FolderHasAccentedLetter_FindsIt()
 		{
 			using (var setup = new RepositorySetup("Abé Books"))
@@ -26,7 +26,7 @@ namespace BloomTests
 			}
 		}
 
-		[Test]
+		[Test, Ignore("not yet")]
 		public void CreateOrLocate_FolderHasAccentedLetter2_FindsIt()
 		{
 			using (var testRoot = new TemporaryFolder("bloom sr test"))
