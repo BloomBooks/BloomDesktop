@@ -75,19 +75,20 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-
-#if DEBUG //this would turn it on when we want it hidden until localization is more complete
-			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
-#endif
+			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
+			_settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
+			_settingsLauncherHelper.ManageComponent(_divider2);
+			_settingsLauncherHelper.ManageComponent(_divider3);
+			_settingsLauncherHelper.ManageComponent(_divider4);
 
 			OnSettingsProtectionChanged(this, null);//initial setup
 			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
 
 
-			_uiLanguageMenu.Visible = false; // not ready for users
-#if DEBUG
-			_uiLanguageMenu.Visible = true;
-#endif
+			_uiLanguageMenu.Visible = Settings.Default.ShowLocalizationControls;
+			if (Settings.Default.ShowLocalizationControls)
+				_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
 

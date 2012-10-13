@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
+using Bloom.Properties;
 using Palaso.i18n;
 using Palaso.Extensions;
 
@@ -69,7 +70,7 @@ namespace Bloom.CollectionChoosing
 			foreach (Control control in tableLayoutPanel2.Controls)
 			{
 				if (control.Tag == "sendreceive")
-					control.Visible = false;
+					control.Visible = Settings.Default.ShowSendReceive;
 			}
 		}
 

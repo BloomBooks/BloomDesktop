@@ -30,15 +30,17 @@ namespace Bloom.Collection
 				_language3Label.Text = "Language 3";
 			}
 
-			_showSendReceive.CheckState = Settings.Default.ShowSendReceive ? CheckState.Checked : CheckState.Unchecked;
-			_showSendReceive.CheckStateChanged += (sender, args) =>
-													  {
-														  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
-																							 CheckState.Checked;
-
-														  _restartRequired = true;
-														  UpdateDisplay();
-													  };
+			_showLocalizationControls.Checked = Settings.Default.ShowLocalizationControls;
+			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
+			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
+//		    _showSendReceive.CheckStateChanged += (sender, args) =>
+//		                                              {
+//		                                                  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
+//		                                                                                     CheckState.Checked;
+//
+//                                                          _restartRequired = true;
+//		                                                  UpdateDisplay();
+//		                                              };
 
 			switch(Settings.Default.ImageHandler)
 			{
@@ -242,6 +244,24 @@ namespace Bloom.Collection
 		{
 			if(_fontCombo.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
 				RestartRequired();
+		}
+
+		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.ShowSendReceive = _showSendReceive.Checked;
+			RestartRequired();
+		}
+
+		private void _showLocalizationControls_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.ShowLocalizationControls = _showLocalizationControls.Checked;
+			RestartRequired();
+		}
+
+		private void _showExperimentalTemplates_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.ShowExperimentalBooks = _showExperimentalTemplates.Checked;
+			RestartRequired();
 		}
 
 	}
