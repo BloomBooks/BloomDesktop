@@ -9,7 +9,7 @@ using Chorus.merge;
 using Chorus.merge.xml.generic;
 using Palaso.Code;
 using Palaso.IO;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using Palaso.Xml;
 
 namespace Bloom_ChorusPlugin

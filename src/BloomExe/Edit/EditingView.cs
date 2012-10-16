@@ -14,7 +14,7 @@ using Bloom.ToPalaso.Experimental;
 using BloomTemp;
 using Newtonsoft.Json.Linq;
 using Palaso.Extensions;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;

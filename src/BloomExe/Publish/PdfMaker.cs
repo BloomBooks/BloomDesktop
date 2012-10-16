@@ -9,7 +9,7 @@ using Bloom.ToPalaso;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;

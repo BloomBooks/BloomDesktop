@@ -8,7 +8,7 @@ using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.ToPalaso;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 using Gecko;

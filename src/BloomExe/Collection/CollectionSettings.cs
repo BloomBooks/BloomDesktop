@@ -361,6 +361,18 @@ namespace Bloom.Collection
             }
             return SystemFonts.DefaultFont.Name;
         }
+
+	    public static string FindSettingsFileInFolder(string folderPath)
+	    {
+	        try
+	        {
+	            return Directory.GetFiles(folderPath, "*.BloomCollection").First();
+	        }
+	        catch (Exception)
+	        {
+	            throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
+	        }
+	    }
     }
 }
 
