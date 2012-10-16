@@ -1,4 +1,7 @@
-﻿namespace Bloom.ToPalaso.Experimental
+﻿using Palaso.Progress;
+using Palaso.UI.WindowsForms.Progress;
+
+namespace Bloom.ToPalaso.Experimental
 {
 	partial class ProgressDialogForeground
 	{
@@ -29,7 +32,7 @@
 		private void InitializeComponent()
 		{
 			this.ProgressBar = new Palaso.Progress.SimpleProgressIndicator();
-			this._status = new Palaso.Progress.LogBox.SimpleStatusProgress();
+			this._status = new SimpleStatusProgress();
 			this._messageLabelProgress = new Bloom.ToPalaso.MessageLabelProgress();
 			this.SuspendLayout();
 			// 
@@ -96,7 +99,7 @@
 		#endregion
 
 		public Palaso.Progress.SimpleProgressIndicator ProgressBar;
-		public Palaso.Progress.LogBox.SimpleStatusProgress _status;
+		public SimpleStatusProgress _status;
 		private ToPalaso.MessageLabelProgress _messageLabelProgress;
 	}
 }

@@ -100,7 +100,6 @@ namespace Bloom.CollectionChoosing
 			//
 			// button6
 			//
-			this.button6.Enabled = false;
 			this.button6.FlatAppearance.BorderSize = 0;
 			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -119,7 +118,6 @@ namespace Bloom.CollectionChoosing
 			//
 			// button7
 			//
-			this.button7.Enabled = false;
 			this.button7.FlatAppearance.BorderSize = 0;
 			this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -138,7 +136,6 @@ namespace Bloom.CollectionChoosing
 			//
 			// button8
 			//
-			this.button8.Enabled = false;
 			this.button8.FlatAppearance.BorderSize = 0;
 			this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button8.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));

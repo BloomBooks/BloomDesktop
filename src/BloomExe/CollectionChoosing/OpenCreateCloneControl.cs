@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Chorus.UI.Clone;
 using Palaso.i18n;
 using Palaso.Extensions;
 
@@ -15,7 +16,6 @@ namespace Bloom.CollectionChoosing
 		private MostRecentPathsList _mruList;
 		private Func<string> _createNewLibraryAndReturnPath;
 		private string _filterString;
-		private Func<string, bool> _looksLikeValidLibraryPredicate;
 
 		public event EventHandler DoneChoosingOrCreatingLibrary;
 
@@ -31,14 +31,11 @@ namespace Bloom.CollectionChoosing
 						 string createNewLibraryButtonLabel,
 						 string browseForOtherLibrarysLabel,
 						 string filterString,
-						 Func<string, bool> looksLikeValidLibraryPredicate,
 						 Func<string> createNewLibraryAndReturnPath)
 		{
 			_filterString = filterString;
 			_createNewLibraryAndReturnPath = createNewLibraryAndReturnPath;
 			_mruList = mruList;
-			_looksLikeValidLibraryPredicate = looksLikeValidLibraryPredicate;
-			//this.pictureBox1.Image = headerImage;
 		}
 
 		/// <summary>
@@ -116,54 +113,48 @@ namespace Bloom.CollectionChoosing
 
 		private void OnGetFromInternet(object sender, EventArgs e)
 		{
-			//            if (!Chorus.UI.Misc.ReadinessDialog.ChorusIsReady)
-			//            {
-			//                using (var dlg = new Chorus.UI.Misc.ReadinessDialog())
-			//                {
-			//                    dlg.ShowDialog();
-			//                    return;
-			//                }
-			//            }
-
-			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
-				//e.g. mydocuments/wesay
-				Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+				SelectAndCloneProject(dlg);
 			}
-			//			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(_defaultParentDirectoryForLibrarys))
-			//            {
-			//                if (DialogResult.Cancel == dlg.ShowDialog())
-			//                    return;
-			//				SelectLibraryAndClose(dlg.PathToNewLibrary);
-			//            }
 		}
 
 		private void OnGetFromUsb(object sender, EventArgs e)
 		{
-			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
-				//e.g. mydocuments/wesay
-				Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+				SelectAndCloneProject(dlg);
 			}
-			//			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(_defaultParentDirectoryForLibrarys))
-			//            {
-			//            	dlg.Model.LibraryFilter = dir => _looksLikeValidLibraryPredicate(dir);
-			//                if (DialogResult.Cancel == dlg.ShowDialog())
-			//                    return;
-			//				SelectLibraryAndClose(dlg.PathToNewLibrary);
-			//            }
 		}
-
 		private void OnGetFromChorusHub(object sender, EventArgs e)
 		{
-
+			using (var dlg = new Chorus.UI.Clone.GetCloneFromChorusHubDialog(new GetCloneFromChorusHubModel(NewCollectionWizard.DefaultParentDirectoryForCollections)))
+			{
+				SelectAndCloneProject(dlg);
+			}
 		}
 
-		//        private static bool GetLooksLikeWeSayLibrary(string directoryPath)
-		//        {
-		//            return Directory.GetFiles(directoryPath, "*.WeSayConfig").Length > 0;
-		//        }
+		private void SelectAndCloneProject(ICloneSourceDialog dlg)
+		{
+			try
+			{
+				if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+				{
+					Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+				}
+				dlg.SetFilePatternWhichMustBeFoundInHgDataFolder("*.bloom_collection.i");
 
+				if (DialogResult.Cancel == ((Form)dlg).ShowDialog())
+					return;
+
+				SelectCollectionAndClose(CollectionSettings.FindSettingsFileInFolder(dlg.PathToNewlyClonedFolder));
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
+																 error.Message);
+			}
+		}
 
 		private void OnOpenRecentCollection(object sender, EventArgs e)
 		{

@@ -13,7 +13,7 @@ using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;

@@ -17,7 +17,6 @@ namespace Bloom.CollectionChoosing
 				 "Create new collection",
 				 "Browse for other collections on this computer...",
 				 "Bloom Collections|*.bloomLibrary;*.bloomCollection",
-				 dir => true,
 				 () => NewCollectionWizard.CreateNewCollection());
 
 			_openAndCreateControl.DoneChoosingOrCreatingLibrary += (x, y) =>

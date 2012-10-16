@@ -13,7 +13,7 @@ using Bloom.Properties;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
-using Palaso.Progress.LogBox;
+using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
