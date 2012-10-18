@@ -11,7 +11,8 @@
 <!-- good intro to the component vs. file thing, and why each file here is a separate component:
 http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension"
+	  xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
 
   <Product Id="$(var.Property_ProductCode)" Name="Bloom $(var.Property_ProductVersion)" Language="1033"
 			 Version="$(var.Property_ProductVersion)" Manufacturer="SIL"
@@ -82,6 +83,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
 			<File Id="BloomPackIcon" Name="BloomPackIcon.ico" Source="..\..\artwork\BloomPack.ico" />
 			<File Id="BloomCollectionIcon" Name="BloomCollectionIcon.ico" Source="..\..\artwork\BloomCollectionIcon.ico" />
+
+			<fire:FirewallException Id="ChorusHubFireWallException" Name="Bloom Access to Chorus Hub" Program="[#Bloom.exe]" Scope="localSubnet" IgnoreFailure="yes"/>
 
 			<!--- todo: icons for Bloom files -->
 

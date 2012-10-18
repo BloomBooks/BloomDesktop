@@ -67,6 +67,10 @@
 	<Compile Include="..\..\output\installer\GeneratedXulRunner.wxs" />
   </ItemGroup>
   <ItemGroup>
+	  <WixExtension Include="WixFirewallExtension">
+	  <HintPath>$(WixExtDir)\WixFirewallExtension.dll</HintPath>
+	  <Name>WixFirewallExtension</Name>
+	</WixExtension>
 	<WixExtension Include="WixUtilExtension">
 	  <HintPath>C:\Program Files\Windows Installer XML v3.5\bin\WixUtilExtension.dll</HintPath>
 	</WixExtension>
