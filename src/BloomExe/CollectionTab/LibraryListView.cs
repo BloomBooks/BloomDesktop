@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 
 namespace Bloom.CollectionTab
@@ -17,8 +18,6 @@ namespace Bloom.CollectionTab
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
 		private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
-		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
-		private Pen _boundsPen;
 		private Font _headerFont;
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
@@ -45,9 +44,6 @@ namespace Bloom.CollectionTab
 			_editableBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);//, FontStyle.Bold);
 			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
 
-			//_listView.OwnerDraw = true;
-			 //_listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
-			_boundsPen = new Pen(Brushes.DarkGray, 2);
 			//enhance: move to model
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
@@ -56,6 +52,7 @@ namespace Bloom.CollectionTab
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
 		}
+
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
@@ -88,9 +85,14 @@ namespace Bloom.CollectionTab
 			Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime);
 			if (!_collectionLoadPending)
 				return;
+			ReloadCollectionButtons();
+		}
+
+		private void ReloadCollectionButtons()
+		{
 			_collectionLoadPending = false;
 			Cursor = Cursors.WaitCursor;
-			Application.DoEvents();//needed to get the wait cursor to show
+			Application.DoEvents(); //needed to get the wait cursor to show
 
 			_libraryFlow.SuspendLayout();
 
@@ -100,7 +102,7 @@ namespace Bloom.CollectionTab
 
 			var library = collections.First();
 			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-			var invisibleHackPartner = new Label() { Text = "", Width = 0 };
+			var invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_libraryFlow.Controls.Add(invisibleHackPartner);
 			var libraryHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 			libraryHeader.Label.Text = _model.VernacularLibraryNamePhrase;
@@ -109,15 +111,16 @@ namespace Bloom.CollectionTab
 			LoadOneCollection(library, _libraryFlow);
 
 			_collectionFlow.Controls.Clear();
-			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground };
+			var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 
-			string shellSourceHeading = Localization.LocalizationManager.GetString("sourcesForNewShellsHeading", "Sources For New Shells");
+			string shellSourceHeading = Localization.LocalizationManager.GetString("sourcesForNewShellsHeading",
+																				   "Sources For New Shells");
 			string bookSourceHeading = Localization.LocalizationManager.GetString("bookSourceHeading", "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
-			 invisibleHackPartner = new Label() { Text = "", Width = 0 };
-			 _collectionFlow.Controls.Add(invisibleHackPartner);
-			 _collectionFlow.Controls.Add(bookSourcesHeader);
-			_collectionFlow.SetFlowBreak(bookSourcesHeader,true);
+			invisibleHackPartner = new Label() {Text = "", Width = 0};
+			_collectionFlow.Controls.Add(invisibleHackPartner);
+			_collectionFlow.Controls.Add(bookSourcesHeader);
+			_collectionFlow.SetFlowBreak(bookSourcesHeader, true);
 
 			foreach (BookCollection collection in _model.GetBookCollections().Skip(1))
 			{
@@ -125,19 +128,25 @@ namespace Bloom.CollectionTab
 					_collectionFlow.SetFlowBreak(_collectionFlow.Controls[_collectionFlow.Controls.Count - 1], true);
 
 				int indexForHeader = _collectionFlow.Controls.Count;
-				if(LoadOneCollection(collection, _collectionFlow))
+				if (LoadOneCollection(collection, _collectionFlow))
 				{
 					//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-					invisibleHackPartner = new Label() { Text = "", Width = 0 };
+					invisibleHackPartner = new Label() {Text = "", Width = 0};
 					_collectionFlow.Controls.Add(invisibleHackPartner);
 					_collectionFlow.Controls.SetChildIndex(invisibleHackPartner, indexForHeader);
 
 					//We showed at least one book, so now go back and insert the header
-					var collectionHeader = new Label() { Text = collection.Name, Size = new Size(_collectionFlow.Width - 20, 15), ForeColor = Palette.TextAgainstDarkBackground, Padding = new Padding(10, 0, 0, 0) };
+					var collectionHeader = new Label()
+											   {
+												   Text = collection.Name,
+												   Size = new Size(_collectionFlow.Width - 20, 15),
+												   ForeColor = Palette.TextAgainstDarkBackground,
+												   Padding = new Padding(10, 0, 0, 0)
+											   };
 					collectionHeader.Margin = new Padding(0, 10, 0, 0);
 					collectionHeader.Font = _headerFont;
 					_collectionFlow.Controls.Add(collectionHeader);
-					_collectionFlow.Controls.SetChildIndex(collectionHeader, indexForHeader+1);
+					_collectionFlow.Controls.SetChildIndex(collectionHeader, indexForHeader + 1);
 					_collectionFlow.SetFlowBreak(collectionHeader, true);
 				}
 			}
@@ -307,15 +316,19 @@ namespace Bloom.CollectionTab
 			if(obj.To is LibraryView)
 			{
 				Book.Book book = SelectedBook;
-				if (book == null || SelectedButton == null)
-					return;
-
-				SelectedButton.Text = GetTitleToDisplay(book);
-
-				if (_reshowPending)
+				if (book != null && SelectedButton != null)
 				{
-					_reshowPending = false;
-					RecreateOneThumbnail(book);
+					SelectedButton.Text = GetTitleToDisplay(book);
+
+					if (_reshowPending)
+					{
+						_reshowPending = false;
+						RecreateOneThumbnail(book);
+					}
+				}
+				if (_collectionLoadPending)
+				{
+					ReloadCollectionButtons();
 				}
 			}
 		}
@@ -419,6 +432,19 @@ namespace Bloom.CollectionTab
 			_model.DoChecksAndUpdatesOfAllBooks();
 		}
 
+
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.

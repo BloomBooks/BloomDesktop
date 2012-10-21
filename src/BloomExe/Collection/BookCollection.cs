@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Bloom.Collection;
+using Bloom.Book;
 using Bloom.Edit;
 using Palaso.Reporting;
 
-namespace Bloom.Book
+namespace Bloom.Collection
 {
 	public class BookCollection
 	{
@@ -22,7 +22,7 @@ namespace Bloom.Book
 		public EventHandler CollectionChanged;
 
 		private readonly string _path;
-		private readonly Book.Factory _bookFactory;
+		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookStarter.Factory _bookStarterFactory;
 		private readonly BookSelection _bookSelection;
@@ -39,7 +39,7 @@ namespace Bloom.Book
 		}
 
 		public BookCollection(string path, CollectionType collectionType,
-			Book.Factory bookFactory, BookStorage.Factory storageFactory,
+			Book.Book.Factory bookFactory, BookStorage.Factory storageFactory,
 			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			  EditBookCommand editBookCommand)
@@ -70,7 +70,7 @@ namespace Bloom.Book
 
 		public CollectionType Type { get; private set; }
 
-		private void CreateFromSourceBook(Book sourceBook)
+		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
 			string newBookFolder = null;
 
@@ -133,7 +133,7 @@ namespace Bloom.Book
 				CollectionChanged.Invoke(this, null);
 		}
 
-		public void DeleteBook(Book book)
+		public void DeleteBook(Book.Book book)
 		{
 			if(!book.Delete())
 				return;
@@ -157,13 +157,13 @@ namespace Bloom.Book
 
 		}
 
-		private List<Book> _books;
+		private List<Book.Book> _books;
 		private void ListOfBooksIsOutOfDate()
 		{
 			_books = null;
 		}
 
-		public virtual IEnumerable<Book> GetBooks()
+		public virtual IEnumerable<Book.Book> GetBooks()
 		{
 			if (_books == null)
 			{
@@ -175,7 +175,7 @@ namespace Bloom.Book
 
 		private void LoadBooks()
 		{
-			_books = new List<Book>();
+			_books = new List<Book.Book>();
 			foreach(string path in Directory.GetDirectories(_path))
 			{
 				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"

@@ -363,7 +363,7 @@
     <Compile Include="Event.cs" />
     <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
-    <Compile Include="Book\BookCollection.cs" />
+    <Compile Include="Collection\BookCollection.cs" />
     <Compile Include="Book\BookSelection.cs" />
     <Compile Include="CollectionTab\LibraryListView.cs">
       <SubType>UserControl</SubType>
