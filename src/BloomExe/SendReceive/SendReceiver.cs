@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Bloom.Properties;
 using Chorus;
 using Chorus.UI.Sync;
 using Palaso.Reporting;
@@ -36,7 +37,7 @@ namespace Bloom.SendReceive
 			_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
 
 			//we don't do chorus on our source tree
-			SendReceiveDisabled = !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
+			SendReceiveDisabled = !Settings.Default.ShowSendReceive || !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
 
 			if (!SendReceiveDisabled)
 			{
