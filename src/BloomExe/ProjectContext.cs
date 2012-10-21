@@ -12,6 +12,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
+using Bloom.Publish;
 using Bloom.SendReceive;
 using Bloom.Workspace;
 using Bloom.web;
@@ -127,6 +128,12 @@ namespace Bloom
 				{
 					return;
 				}
+
+
+
+				builder.Register<IPdfMaker>(c => new GeckoPdfMaker()).InstancePerLifetimeScope();
+
+			   // builder.Register<IPdfMaker>(c => new PdfMaker()).InstancePerLifetimeScope();
 
 
 				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();

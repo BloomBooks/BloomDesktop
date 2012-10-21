@@ -19,7 +19,7 @@ namespace Bloom.Publish
 	/// <summary>
 	/// Creates a pdf from Html, optionally layed out in various booklet layouts
 	/// </summary>
-	public class PdfMaker
+	public class PdfMaker : IPdfMaker
 	{
 		/// <summary>
 		///

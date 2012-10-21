@@ -43,11 +43,11 @@ namespace Bloom.Publish
 
 		private readonly BookSelection _bookSelection;
 		private Book.Book _currentlyLoadedBook;
-		private PdfMaker _pdfMaker;
+		private IPdfMaker _pdfMaker;
 		private readonly CollectionSettings _collectionSettings;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
+		public PublishModel(BookSelection bookSelection, IPdfMaker pdfMaker, CollectionSettings collectionSettings)
 		{
 			BookSelection = bookSelection;
 			_bookSelection = bookSelection;
