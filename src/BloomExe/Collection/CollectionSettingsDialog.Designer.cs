@@ -540,7 +540,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showExperimentalTemplates, null);
             this.localizationExtender1.SetLocalizationComment(this._showExperimentalTemplates, null);
             this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog._showExperimentalTemplates");
+            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.ShowExperimentalTemplates");
             this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 164);
             this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
             this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
@@ -555,7 +555,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showLocalizationControls, null);
             this.localizationExtender1.SetLocalizationComment(this._showLocalizationControls, null);
             this.localizationExtender1.SetLocalizationPriority(this._showLocalizationControls, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showLocalizationControls, "CollectionSettingsDialog._showSendReceive");
+            this.localizationExtender1.SetLocalizingId(this._showLocalizationControls, "CollectionSettingsDialog.ShowLocalizationControls");
             this._showLocalizationControls.Location = new System.Drawing.Point(50, 121);
             this._showLocalizationControls.Name = "_showLocalizationControls";
             this._showLocalizationControls.Size = new System.Drawing.Size(371, 23);
@@ -570,7 +570,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._showSendReceive");
+            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._ShowSendReceive");
             this._showSendReceive.Location = new System.Drawing.Point(50, 78);
             this._showSendReceive.Name = "_showSendReceive";
             this._showSendReceive.Size = new System.Drawing.Size(291, 23);
