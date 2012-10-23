@@ -18,6 +18,7 @@ using Bloom.web;
 using Chorus;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -314,7 +315,11 @@ namespace Bloom
 			{
 				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.InstalledCollectionsDirectory);
 			}
-			catch (Exception e)
+			catch (ApplicationException e)
+			{
+			    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
+			}
+            catch (Exception e)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Could not add a link for this shell library in the user collections directory");
