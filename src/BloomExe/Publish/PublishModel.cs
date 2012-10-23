@@ -61,7 +61,7 @@ namespace Bloom.Publish
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			if (_currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
+			if (BookSelection!=null && View!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
 				PageLayout = _bookSelection.CurrentSelection.GetLayout();
 			}
