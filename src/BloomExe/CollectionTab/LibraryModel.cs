@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
@@ -165,7 +166,7 @@ namespace Bloom.CollectionTab
 						pleaseWait.BringToFront();
 						Application.DoEvents();//actually show it
 						Cursor.Current = Cursors.WaitCursor;
-						using (var zip = new ZipFile())
+						using (var zip = new ZipFile(Encoding.UTF8))
 						{
 							string dir = TheOneEditableCollection.PathToDirectory;
 							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
