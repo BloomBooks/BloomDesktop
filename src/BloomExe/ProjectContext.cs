@@ -18,6 +18,7 @@ using Bloom.web;
 using Chorus;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -313,6 +314,10 @@ namespace Bloom
 			try
 			{
 				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.InstalledCollectionsDirectory);
+			}
+			catch (ApplicationException e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
 			}
 			catch (Exception e)
 			{
