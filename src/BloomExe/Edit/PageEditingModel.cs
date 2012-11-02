@@ -175,7 +175,8 @@ namespace Bloom.Edit
 		{
 			UpdateMetadataAttributesOnImage(img, imageInfo);
 
-			img.Click(); //wake up javascript to update overlays
+			throw new NotImplementedException("geckofx 15 breakage");
+//            img.Click(); //wake up javascript to update overlays
 		}
 
 		public static void UpdateMetadataAttributesOnImage(GeckoElement img, PalasoImage imageInfo)

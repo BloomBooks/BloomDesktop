@@ -76,12 +76,14 @@ namespace Bloom.Edit
 
 			var body = doc.GetElementsByTagName("body").First();
 			GeckoElement div = doc.CreateElement("div");
-			div.Id = "output";
+			throw new NotImplementedException("geckofx 15 breakage");
+			//div.Id = "output";
 			body.AppendChild(div);
 
 			_browser.RunJavaScript("gatherSettings()");
 
-			FormData = div.InnerHtml;
+			throw new NotImplementedException("geckofx 15 breakage");
+			//FormData = div.InnerHtml;
 			DialogResult = DialogResult.OK;
 			Close();
 

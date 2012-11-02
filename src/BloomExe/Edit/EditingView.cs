@@ -368,9 +368,10 @@ namespace Bloom.Edit
 		private void RememberSourceTabChoice(GeckoElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
-			var start = 1+ target.OuterHtml.IndexOf("#");
-			var end = target.OuterHtml.IndexOf("\">");
-			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
+			throw new NotImplementedException("geckofx 15 breakage");
+//            var start = 1 + target.OuterHtml.IndexOf("#");
+//    		var end = target.OuterHtml.IndexOf("\">");
+//    		Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
 

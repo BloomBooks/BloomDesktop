@@ -166,8 +166,7 @@ namespace Bloom.Publish
 				}
 				catch (IOException e)
 				{
-					//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
-					//but we had a report (BL-211) of that move failing.
+					//(BL-211) TODO: we can get here for a different reason: the source file is still in use
 					throw new ApplicationException(
 							string.Format("Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.\r\n\r\nDetails: {1}",
 										  outputPdfPath, e.Message));
