@@ -71,8 +71,11 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="geckofx-11">
-      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
+    <Reference Include="geckofx-core-15">
+      <HintPath>..\..\lib\dotnet\geckofx-core-15.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms-15">
+      <HintPath>..\..\lib\dotnet\Geckofx-Winforms-15.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
@@ -171,6 +174,12 @@
     </Compile>
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\GeckoPdfComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Publish\GeckoPdfComponent.Designer.cs">
+      <DependentUpon>GeckoPdfComponent.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\GeckoPdfMaker.cs" />
     <Compile Include="Publish\IPdfMaker.cs" />
@@ -423,6 +432,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\GeckoPdfComponent.resx">
+      <DependentUpon>GeckoPdfComponent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
