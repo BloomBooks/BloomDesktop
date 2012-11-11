@@ -378,6 +378,7 @@ namespace Bloom.CollectionTab
 		private void deleteMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DeleteBook(SelectedBook);
+			ReloadCollectionButtons();
 		}
 
 		private void _updateThumbnailMenu_Click(object sender, EventArgs e)

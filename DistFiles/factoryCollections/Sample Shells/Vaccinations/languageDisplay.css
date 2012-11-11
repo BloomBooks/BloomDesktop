@@ -3,12 +3,12 @@ Its purpose is to hide elements that are in languages that will not be printed i
 
 
 /* Hide all textareas and other editable fields in translation groups which aren't in the current vernacular */
-/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang="en"])
+/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang=""])
 {
 	display: none;
 }
 
-DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="en"])
+DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang=""])
 {
    display: none;
 }
@@ -16,15 +16,15 @@ DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="en"])
 
 /*tems that are contained by  a bloom-translationGroup are made visible according to the monolingual/bilingual/trilingual settings*/
 /* NB: we must explicitly specify DIV and Textarea as the final element, else <br> in a div will be marked as display:none, leaving us with just one line in the div */
-.bloom-monolingual *.bloom-translationGroup DIV.bloom-editable:not(.bloom-content1), .bloom-monolingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1)
+.bloom-monolingual *.bloom-translationGroup DIV:not(.bloom-content1), .bloom-monolingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1)
 {
 	display: none !important;
 }
-.bloom-bilingual *.bloom-translationGroup DIV.bloom-editable:not(.bloom-content1):not(.bloom-content2), .bloom-bilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2)
+.bloom-bilingual *.bloom-translationGroup DIV:not(.bloom-content1):not(.bloom-content2), .bloom-bilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2)
 {
 	display: none !important;
 }
-.bloom-trilingual *.bloom-translationGroup DIV.bloom-editable:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3), .bloom-trilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3)
+.bloom-trilingual *.bloom-translationGroup DIV:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3), .bloom-trilingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3)
 {
 	display: none !important;
 }
