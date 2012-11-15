@@ -15,7 +15,7 @@ namespace Bloom_ChorusPlugin
 		/// <param name="element">The element currently being processed, that the key if needed for.</param>
 		/// <returns>The key in the MergeStrategies disctionary that is used to look up the ElementStrategy.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <param name="element" /> is null.</exception>
-		public string GetKeyFromElement(IEnumerable<string> keys, XmlNode element)
+		public string GetKeyFromElement(HashSet<string> keys, XmlNode element)
 		{
 			Guard.AgainstNull(keys, "keys is null.");
 			Guard.AgainstNull(element, "Element is null.");

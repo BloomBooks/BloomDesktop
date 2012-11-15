@@ -22,7 +22,7 @@ namespace BloomTests
 		{
 			using (var setup = new RepositorySetup("Abé Books"))
 			{
-				Assert.NotNull(HgRepository.CreateOrLocate(setup.Repository.PathToRepo, new ConsoleProgress()));
+				Assert.NotNull(HgRepository.CreateOrUseExisting(setup.Repository.PathToRepo, new ConsoleProgress()));
 			}
 		}
 
@@ -34,8 +34,8 @@ namespace BloomTests
 				string path = Path.Combine(testRoot.FolderPath, "Abé Books");
 				Directory.CreateDirectory(path);
 
-				Assert.NotNull(HgRepository.CreateOrLocate(path, new ConsoleProgress()));
-				Assert.NotNull(HgRepository.CreateOrLocate(path, new ConsoleProgress()));
+				Assert.NotNull(HgRepository.CreateOrUseExisting(path, new ConsoleProgress()));
+				Assert.NotNull(HgRepository.CreateOrUseExisting(path, new ConsoleProgress()));
 			}
 		}
 	  }

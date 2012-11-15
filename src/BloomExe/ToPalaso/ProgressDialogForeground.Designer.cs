@@ -31,7 +31,7 @@ namespace Bloom.ToPalaso.Experimental
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.ProgressBar = new Palaso.Progress.SimpleProgressIndicator();
+			this.ProgressBar = new SimpleProgressIndicator();
 			this._status = new SimpleStatusProgress();
 			this._messageLabelProgress = new Bloom.ToPalaso.MessageLabelProgress();
 			this.SuspendLayout();
@@ -98,7 +98,7 @@ namespace Bloom.ToPalaso.Experimental
 
 		#endregion
 
-		public Palaso.Progress.SimpleProgressIndicator ProgressBar;
+		public SimpleProgressIndicator ProgressBar;
 		public SimpleStatusProgress _status;
 		private ToPalaso.MessageLabelProgress _messageLabelProgress;
 	}

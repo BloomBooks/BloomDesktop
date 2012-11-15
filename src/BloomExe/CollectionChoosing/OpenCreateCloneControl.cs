@@ -6,6 +6,7 @@ using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus.UI.Clone;
+using Palaso.UI.WindowsForms.Extensions;
 using Palaso.i18n;
 using Palaso.Extensions;
 

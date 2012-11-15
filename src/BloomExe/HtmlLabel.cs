@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
 using Palaso.Extensions;
+using Palaso.UI.WindowsForms.Extensions;
 
 namespace Bloom
 {
