@@ -245,14 +245,25 @@ namespace Bloom.Edit
 
         	Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
+            CheckFontAvailablility();
+
         	Cursor = Cursors.WaitCursor;
         	_model.ViewVisibleNowDoSlowStuff();
         	Cursor = Cursors.Default;
         }
 
+        private void CheckFontAvailablility()
+        {
+            var fontMessage = _model.GetFontAvailabilityMessage();
+            if(!string.IsNullOrEmpty(fontMessage))
+            {
+                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
+                                                                 fontMessage);
+            }
+        }
 
 
-		/// <summary>
+        /// <summary>
 	   /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
@@ -454,7 +465,7 @@ namespace Bloom.Edit
                 Cursor = Cursors.WaitCursor;
 
                 //nb: later, code closer to the the actual book folder will
-                //ammend this file name if there is already an "image.png"
+                //improve this file name
                 using (var temp = new TempFile())
                 {
                     clipboardImage.Save(temp.Path, ImageFormat.Png);
