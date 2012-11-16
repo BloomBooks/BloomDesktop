@@ -14,11 +14,13 @@ using Bloom.ToPalaso.Experimental;
 using BloomTemp;
 using Newtonsoft.Json.Linq;
 using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using TempFile = Palaso.IO.TempFile;
 
 namespace Bloom.Edit
 {
@@ -451,6 +453,8 @@ namespace Bloom.Edit
 					return;
 				Cursor = Cursors.WaitCursor;
 
+				//nb: later, code closer to the the actual book folder will
+				//ammend this file name if there is already an "image.png"
 				using (var temp = new TempFile())
 				{
 					clipboardImage.Save(temp.Path, ImageFormat.Png);
@@ -478,6 +482,8 @@ namespace Bloom.Edit
 			}
 			Cursor = Cursors.Default;
 		}
+
+
 
 		private Image GetImageFromClipboard()
 		{
