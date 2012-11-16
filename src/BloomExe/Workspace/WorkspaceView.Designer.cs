@@ -108,7 +108,7 @@
             this._toolStrip.Location = new System.Drawing.Point(0, 0);
             this._toolStrip.Name = "_toolStrip";
             this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this._toolStrip.Size = new System.Drawing.Size(272, 46);
+            this._toolStrip.Size = new System.Drawing.Size(272, 65);
             this._toolStrip.TabIndex = 28;
             this._toolStrip.Text = "_toolStrip";
             // 
@@ -138,8 +138,8 @@
         "one from a repository somewhere");
             this.localizationExtender1.SetLocalizingId(this._openCreateCollectionButton, "Open/CreateCollectionButton");
             this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
-            this._openCreateCollectionButton.Size = new System.Drawing.Size(70, 43);
-            this._openCreateCollectionButton.Text = "Collections";
+            this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);
+            this._openCreateCollectionButton.Text = "Other Collection";
             this._openCreateCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this._openCreateCollectionButton.ToolTipText = "Open/Create/Get Collection";
             this._openCreateCollectionButton.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);

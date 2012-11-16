@@ -23,8 +23,9 @@ namespace Bloom.Edit
 			img.SetAttribute("src", imageFileName);
 			UpdateMetdataAttributesOnImgElement(img, imageInfo);
 		}
-	
-		/// <summary>
+
+
+        /// <summary>
 		/// for testing.... todo: maybe they should test ProcessAndCopyImage() directly, instead
 		/// </summary>
         public void ChangePicture(string bookFolderPath, XmlDocument dom, string imageId, PalasoImage imageInfo)
@@ -115,7 +116,7 @@ namespace Bloom.Edit
         private static string GetImageFileName(string bookFolderPath, PalasoImage imageInfo, bool isJpeg)
         {
             string s;
-            if(string.IsNullOrEmpty(imageInfo.FileName))
+            if(string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
             {
 				// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
 				// in order to differentiate from what is already there. We don't try and be smart somehow and
