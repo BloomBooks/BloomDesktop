@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
@@ -489,6 +490,20 @@ namespace Bloom.Edit
 			{
 				dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
 			}
+		}
+
+		public string GetFontAvailabilityMessage()
+		{
+			var name = _collectionSettings.DefaultLanguage1FontName.ToLower();
+
+			if(null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
+			{
+				var s = Localization.LocalizationManager.GetString("FontMissing",
+														   "The current selected " +
+														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
+				return string.Format(s, _collectionSettings.DefaultLanguage1FontName);
+			}
+			return null;
 		}
 	}
 
