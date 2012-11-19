@@ -139,7 +139,7 @@ namespace BloomTests.Book
 //			var dom = book.RawDom;
 //			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 //			textarea1.InnerText = "peace";
-//			book.UpdateFieldsAndVariables();
+//			book.UpdateFieldsAndVariables_TEMPFORTESTS();
 //			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 //			Assert.AreEqual("peace", textarea2.InnerText);
 //		}
@@ -152,7 +152,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
@@ -163,7 +163,7 @@ namespace BloomTests.Book
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='bb']");
 			Assert.AreEqual("aa", textarea2.InnerText);
 		}
@@ -185,7 +185,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
 		}
@@ -200,7 +200,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']",1);
@@ -215,7 +215,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
 			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']", 1);
@@ -235,7 +235,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;
 			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle']");
 			textArea.InnerText ="blue";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
 			Assert.AreEqual("blue", title.InnerText);
 		}
@@ -259,14 +259,14 @@ namespace BloomTests.Book
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Vaccinations", nationalTitle.InnerText);
 
 			//now switch the national language to Tok Pisin
 
 			_collectionSettings.Language2Iso639Code = "tpi";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
 		}
@@ -280,7 +280,7 @@ namespace BloomTests.Book
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='French']",1);
 		}
 
@@ -298,7 +298,7 @@ namespace BloomTests.Book
 
 			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='en']");
 			textArea.InnerText = "shrub";
-			book.UpdateFieldsAndVariables(null,dom);
+			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
 			title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
 			Assert.AreEqual("shrub", title.InnerText);
 		}
@@ -662,7 +662,7 @@ namespace BloomTests.Book
 
 			_bookDom = new BookDom(@"<html><head></head><body><div data-book='hello'>world</div></body></html>");
 			var book = CreateBook();
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']",1);//NB microsoft uses 1 as the first. W3c uses 0.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and text()='world']",1);
 		}
@@ -674,7 +674,7 @@ namespace BloomTests.Book
 			_bookDom = new BookDom(@"<html><head></head><body></body></html>");
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages("okm", "kbt");
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
@@ -686,7 +686,7 @@ namespace BloomTests.Book
 			_bookDom = new BookDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages(null, null);
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3']", 0);
 		}
 
@@ -696,7 +696,7 @@ namespace BloomTests.Book
 
 			_bookDom = new BookDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			Assert.AreEqual("okm", book.MultilingualContentLanguage2);
 			Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
 		}
@@ -715,7 +715,7 @@ namespace BloomTests.Book
 			e.InnerText = "bonjour";
 			book.RawDom.SelectSingleNode("//body").AppendChild(e);
 
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='en' and text()='hi']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='fr' and text()='bonjour']", 1);
@@ -729,7 +729,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 
-			book.UpdateVariablesAndDataDiv(_bookDom.RawDom);
+			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
 		}

@@ -81,7 +81,9 @@ namespace Bloom.Book
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
-				UpdateFieldsAndVariables(FolderPath, RawDom);
+				var data  = GetDataDivHelper(_storage.Dom).UpdateFieldsAndVariables();
+				UpdateTitle(data);
+
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				RawDom.AddStyleSheet(@"languageDisplay.css");
 			}
@@ -161,7 +163,8 @@ namespace Bloom.Book
 			get
 			{
 				var data = new DataSet();
-				GatherDataItemsFromDom(data, "div", GetOrCreateDataDiv());
+				var h = GetDataDivHelper(_storage.Dom);
+				h.GatherDataItemsFromXElement(data, "div", h.GetOrCreateDataDiv());
 				DataItem title;
 				if (data.TextVariables.TryGetValue("bookTitle", out title))
 				{
@@ -269,17 +272,17 @@ namespace Bloom.Book
 				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
 			}
 			_storage.SortStyleSheetLinks(dom);
-			AddJavaScriptForEditing(dom.RawDom);
+			AddJavaScriptForEditing(dom);
 			AddCoverColor(dom, CoverColor);
-			AddUIDictionary(dom.RawDom);
-			AddUISettings(dom.RawDom);
-			UpdateMultilingualSettings(dom.RawDom);
+			AddUIDictionary(dom);
+			AddUISettings(dom);
+			UpdateMultilingualSettings(dom);
 			return dom;
 		}
 
-		private void UpdateMultilingualSettings(XmlDocument dom)
+		private void UpdateMultilingualSettings(BookDom dom)
 		{
-			BookStarter.UpdateContentLanguageClasses(dom, _collectionSettings.Language1Iso639Code,
+			BookStarter.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
 													 _collectionSettings.Language2Iso639Code,
 													 _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2,
 													 MultilingualContentLanguage3);
@@ -289,13 +292,13 @@ namespace Bloom.Book
 		/// stick in a json with various string values/translations we want to make available to the javascript
 		/// </summary>
 		/// <param name="singlePageHtmlDom"></param>
-		private void AddUIDictionary(XmlDocument singlePageHtmlDom)
+		private void AddUIDictionary(BookDom singlePageHtmlDom)
 		{
-			XmlElement dictionaryScriptElement = singlePageHtmlDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
+			XmlElement dictionaryScriptElement = singlePageHtmlDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
 			if (dictionaryScriptElement != null)
 				dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
 
-			dictionaryScriptElement = singlePageHtmlDom.CreateElement("script");
+			dictionaryScriptElement = singlePageHtmlDom.RawDom.CreateElement("script");
 			dictionaryScriptElement.SetAttribute("type", "text/javascript");
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
@@ -313,13 +316,13 @@ namespace Bloom.Book
 			AddLocalizedHintContentsToDictionary(singlePageHtmlDom, d);
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
 
-			singlePageHtmlDom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
+			singlePageHtmlDom.RawDom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
 		}
 
-		private void AddLocalizedHintContentsToDictionary(XmlDocument singlePageHtmlDom, Dictionary<string, string> dictionary)
+		private void AddLocalizedHintContentsToDictionary(BookDom singlePageHtmlDom, Dictionary<string, string> dictionary)
 		{
 			string idPrefix="";
-			var pageElement = singlePageHtmlDom.SelectSingleNode("//div") as XmlElement;
+			var pageElement = singlePageHtmlDom.RawDom.SelectSingleNode("//div") as XmlElement;
 			if (GetIsFrontMatterPage(pageElement))
 			{
 				idPrefix = "FrontMatter." + _collectionSettings.XMatterPackName + ".";
@@ -328,7 +331,7 @@ namespace Bloom.Book
 			{
 				idPrefix = "BackMatter." + _collectionSettings.XMatterPackName + ".";
 			}
-			foreach (XmlElement element in singlePageHtmlDom.SelectNodes("//*[@data-hint]"))
+			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[@data-hint]"))
 			{
 				//why aren't we just doing: element.SetAttribute("data-hint", translation);  instead of bothering to write out a dictionary?
 				//because (especially since we're currently just assuming it is in english), we would later save it with the translation, and then next time try to translate that, and poplute the
@@ -370,13 +373,13 @@ namespace Bloom.Book
 		/// <summary>
 		/// stick in a json with various settings we want to make available to the javascript
 		/// </summary>
-		private void AddUISettings(XmlDocument dom)
+		private void AddUISettings(BookDom dom)
 		{
-			XmlElement element = dom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
+			XmlElement element = dom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
 			if (element != null)
 				element.ParentNode.RemoveChild(element);
 
-			element = dom.CreateElement("script");
+			element = dom.RawDom.CreateElement("script");
 			element.SetAttribute("type", "text/javascript");
 			element.SetAttribute("id", "ui-settings");
 			var d = new Dictionary<string, string>();
@@ -393,7 +396,7 @@ namespace Bloom.Book
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
-			dom.SelectSingleNode("//head").InsertAfter(element, null);
+			dom.RawDom.SelectSingleNode("//head").InsertAfter(element, null);
 		}
 
 		private static void AddDictionaryValue(XmlDocument dom, XmlElement dictionaryDiv, string key, string value)
@@ -404,16 +407,16 @@ namespace Bloom.Book
 			dictionaryDiv.AppendChild(div);
 		}
 
-		private void AddJavaScriptForEditing(XmlDocument dom)
+		private void AddJavaScriptForEditing(BookDom dom)
 		{
-			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
+			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head");
 		   // AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("jquery-1.4.4.min.js"));
 			AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
 		}
 
-		private void AddJavascriptFile(XmlDocument dom, XmlElement node, string pathToJavascript)
+		private void AddJavascriptFile(BookDom dom, XmlElement node, string pathToJavascript)
 		{
-			XmlElement element = node.AppendChild(dom.CreateElement("script")) as XmlElement;
+			XmlElement element = node.AppendChild(dom.RawDom.CreateElement("script")) as XmlElement;
 			element.SetAttribute("type", "text/javascript");
 			element.SetAttribute("src", "file://"+ pathToJavascript);
 			node.AppendChild(element);
@@ -460,7 +463,7 @@ namespace Bloom.Book
 			_storage.SortStyleSheetLinks(dom);
 
 			AddCoverColor(dom, CoverColor);
-			AddPreviewJScript(dom.RawDom);
+			AddPreviewJScript(dom);
 
 			return dom;
 		}
@@ -678,7 +681,7 @@ namespace Bloom.Book
 			BookStarter.UpdateContentLanguageClasses(dom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 			AddCoverColor(dom, CoverColor);
 
-			AddPreviewJScript(dom.RawDom);
+			AddPreviewJScript(dom);
 			return dom;
 		}
 
@@ -690,12 +693,20 @@ namespace Bloom.Book
 			_bookRefreshEvent.Raise(this);
 		}
 
-		private void BringBookUpToDate(BookDom bookDOM, IProgress progress)
+		private void BringBookUpToDate(BookDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-			var data = LoadDataSetFromCollectionSettings(false);
-			GatherDataItemsFromDom(data, "*", RawDom);
+			var data = DataDivHelper.LoadDataSetFromCollectionSettings(false,_collectionSettings);
+			GetDataDivHelper(bookDOM).GatherDataItemsFromXElement(data, "*", RawDom);
+			//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
+			//todo: move this logic to DDH
+			if (String.IsNullOrEmpty(MultilingualContentLanguage2))
+				MultilingualContentLanguage2 = data.TextVariables.ContainsKey("contentLanguage2") ? data.TextVariables["contentLanguage2"].TextAlternatives["*"] : null;
+			if (String.IsNullOrEmpty(MultilingualContentLanguage3))
+				MultilingualContentLanguage3 = data.TextVariables.ContainsKey("contentLanguage3") ? data.TextVariables["contentLanguage3"].TextAlternatives["*"] : null;
+
+
 			var helper = new XMatterHelper(bookDOM.RawDom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM.RawDom);
 			Layout layout = Layout.FromDom(bookDOM.RawDom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
@@ -703,7 +714,7 @@ namespace Bloom.Book
 			helper.InjectXMatter(FolderPath,data.WritingSystemCodes, layout);
 			BookStarter.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-			UpdateDomWIthDataItems(FolderPath, data, "*", bookDOM.RawDom);
+			DataDivHelper.UpdateDomWIthDataItems(FolderPath, data, "*", bookDOM.RawDom);
 			if(Type == Book.BookType.Publication)
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
@@ -748,7 +759,7 @@ namespace Bloom.Book
 			SetLayout(originalLayout);
 
 			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
-			UpdateMultilingualSettings(bookDom.RawDom);
+			UpdateMultilingualSettings(bookDom);
 		}
 
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
@@ -1006,19 +1017,10 @@ namespace Bloom.Book
 			MultilingualContentLanguage2 = language2Code;
 			MultilingualContentLanguage3 = language3Code;
 
-			RemoveDataDivElement("contentLanguage1");
-			RemoveDataDivElement("contentLanguage2");
-			RemoveDataDivElement("contentLanguage3");
-			AddDataDivBookVariable("contentLanguage1", "*", _collectionSettings.Language1Iso639Code);
-			if (MultilingualContentLanguage2 != null)
-			{
-				AddDataDivBookVariable("contentLanguage2", "*", language2Code);
-			}
-			if (MultilingualContentLanguage3 != null)
-			{
-				AddDataDivBookVariable("contentLanguage3", "*", language3Code);
-			}
+			GetDataDivHelper(_storage.Dom).SetLanguageCodes(language2Code, language3Code,MultilingualContentLanguage2,MultilingualContentLanguage3);
 		}
+
+
 
 		private void AddCoverColor(BookDom dom, Color coverColor)
 		{
@@ -1041,7 +1043,7 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddPreviewJScript(XmlDocument dom)
+		private void AddPreviewJScript(BookDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 //			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
@@ -1260,7 +1262,7 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				var data = UpdateVariablesAndDataDiv(pageDom.RawDom);
+				var data = GetDataDivHelper(pageDom).UpdateVariablesAndDataDiv();
 
 				try
 				{
@@ -1287,19 +1289,27 @@ namespace Bloom.Book
 		}
 
 
-		/// <summary>
-		/// Gets the first element with the given tag & id, within the page-div with the given id.
-		/// </summary>
-		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId)
+		/// <param name="whichDom">This is usually the dom of the book, but it may be of a page we're working on</param>
+		/// <returns></returns>
+		private DataDivHelper GetDataDivHelper(BookDom whichDom)
 		{
-			var query = String.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
-			var matches = _storage.Dom.SafeSelectNodes(query);
-			if (matches.Count != 1)
-			{
-				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
-			}
-			return (XmlElement)matches[0];
+			return new DataDivHelper(whichDom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3,_collectionSettings);
 		}
+
+
+//        /// <summary>
+//        /// Gets the first element with the given tag & id, within the page-div with the given id.
+//        /// </summary>
+//        private XmlElement GetStorageNode(string pageDivId, string tag, string elementId)
+//        {
+//            var query = String.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
+//            var matches = _storage.Dom.SafeSelectNodes(query);
+//            if (matches.Count != 1)
+//            {
+//                throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
+//            }
+//            return (XmlElement)matches[0];
+//        }
 
 
 		/// <summary>
@@ -1316,34 +1326,7 @@ namespace Bloom.Book
 			return (XmlElement)matches[0];
 		}
 
-		/// <summary>
-		/// Go through the document, reading in values from fields, and then pushing variable values back into fields.
-		/// Here we're calling "fields" the html supplying or receiving the data, and "variables" being key-value pairs themselves, which
-		/// are, for library variables, saved in a separate file.
-		/// </summary>
-		/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
-		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
-		public DataSet UpdateFieldsAndVariables(string folderPath, XmlDocument domToRead)
-		{
-			var data = LoadDataSetFromCollectionSettings(false);
 
-			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
-			// If we don't like that, we'd need to create an event to notice when field are changed.
-
-			GatherDataItemsFromDom(data, "*", domToRead);
-
-			foreach (var item in data.TextVariables)
-			{
-				foreach (var form in item.Value.TextAlternatives.Forms)
-				{
-					Debug.WriteLine("Gathered: {0}[{1}]={2}", item.Key,form.WritingSystemId, form.Form );
-				}
-			}
-			UpdateDomWIthDataItems(folderPath, data, "*", RawDom);
-
-			UpdateTitle(data);
-			return data;
-		}
 
 		private void UpdateTitle(DataSet data)
 		{
@@ -1382,58 +1365,6 @@ namespace Bloom.Book
 		}
 
 
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="makeGeneric">When we're showing shells, we don't wayt to make it confusing by populating them with this library's data</param>
-		/// <returns></returns>
-		private DataSet LoadDataSetFromCollectionSettings(bool makeGeneric)
-		{
-			var data = new DataSet();
-
-
-			data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
-			data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
-
-			if (makeGeneric)
-			{
-				data.WritingSystemCodes.Add("V", _collectionSettings.Language2Iso639Code);//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true); //review: maybe this should be, like 'xyz"
-				data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
-				data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
-				data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
-				data.AddGenericLanguageString("country", "Your Country", true);
-				data.AddGenericLanguageString("province", "Your Province", true);
-				data.AddGenericLanguageString("district", "Your District", true);
-				data.AddGenericLanguageString("languageLocation", "(Language Location)", true);
-			}
-			else
-			{
-				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
-				data.AddLanguageString("*", "nameOfLanguage", _collectionSettings.Language1Name, true);
-				data.AddLanguageString("*", "nameOfNationalLanguage1", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code), true);
-				data.AddLanguageString("*", "nameOfNationalLanguage2", _collectionSettings.GetLanguage3Name(_collectionSettings.Language2Iso639Code), true);
-				data.AddGenericLanguageString("iso639Code", _collectionSettings.Language1Iso639Code, true);
-				data.AddGenericLanguageString("country", _collectionSettings.Country, true);
-				data.AddGenericLanguageString("province", _collectionSettings.Province, true);
-				data.AddGenericLanguageString("district", _collectionSettings.District, true);
-				string location = "";
-				if(!String.IsNullOrEmpty(_collectionSettings.Province))
-					location +=  _collectionSettings.Province+@", ";
-				if (!String.IsNullOrEmpty(_collectionSettings.District))
-					location +=  _collectionSettings.District;
-
-				location = location.TrimEnd(new[] {' '}).TrimEnd(new[] {','});
-
-				if (!String.IsNullOrEmpty(_collectionSettings.Country))
-				{
-					location += "<br/>"+_collectionSettings.Country;
-				}
-
-				data.AddGenericLanguageString("languageLocation", location, true);
-			}
-			return data;
-		}
 
 
 
@@ -1551,7 +1482,7 @@ namespace Bloom.Book
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(dom, Color.White);
-			AddPreviewJScript(dom.RawDom);
+			AddPreviewJScript(dom);
 			return dom.RawDom;
 		}
 
@@ -1589,244 +1520,6 @@ namespace Bloom.Book
 
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
-		}
-
-		/// <summary>
-		/// Create or update the data div with all the data-book values in the document
-		/// </summary>
-		/// <param name="domToRead">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
-		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
-		public DataSet UpdateVariablesAndDataDiv(XmlDocument domToRead)
-		{
-			XmlElement dataDiv = GetOrCreateDataDiv();
-
-
-			Debug.WriteLine("before update: " + dataDiv.OuterXml);
-
-			var data = UpdateFieldsAndVariables(FolderPath, domToRead);
-			data.UpdateGenericLanguageString("contentLanguage1",_collectionSettings.Language1Iso639Code, false);
-			data.UpdateGenericLanguageString("contentLanguage2", String.IsNullOrEmpty(MultilingualContentLanguage2) ? null : MultilingualContentLanguage2, false);
-			data.UpdateGenericLanguageString("contentLanguage3", String.IsNullOrEmpty(MultilingualContentLanguage3) ? null : MultilingualContentLanguage3, false);
-
-			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
-			foreach (var v in data.TextVariables)
-			{
-				if (v.Value.IsCollectionValue)
-					continue;//we don't save these out here
-
-				//Debug.WriteLine("before: " + dataDiv.OuterXml);
-
-				foreach (var languageForm in v.Value.TextAlternatives.Forms)
-				{
-					XmlNode node = dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", v.Key, languageForm.WritingSystemId));
-					if (null == node)
-					{
-						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId, languageForm.Form);
-
-						AddDataDivBookVariable(v.Key, languageForm.WritingSystemId, languageForm.Form);
-						Debug.WriteLine("nop: " + dataDiv.OuterXml);
-					}
-					else
-					{
-						if(languageForm.Form==null)//a null value removes the entry entirely
-						{
-							node.ParentNode.RemoveChild(node);
-						}
-						else
-						{
-							node.InnerXml = languageForm.Form;
-						}
-						Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId, languageForm.Form);
-						Debug.WriteLine("now: " + dataDiv.OuterXml);
-					}
-				}
-			}
-			Debug.WriteLine("after update: " + dataDiv.OuterXml);
-			return data;
-		}
-
-		private void AddDataDivBookVariable(string key, string lang, string form)
-		{
-			var d = RawDom.CreateElement("div");
-			d.SetAttribute("data-book", key);
-			d.SetAttribute("lang", lang);
-			d.InnerXml = form;
-			GetOrCreateDataDiv().AppendChild(d);
-		}
-
-		private void RemoveDataDivElement(string key)
-		{
-			var dataDiv = GetOrCreateDataDiv();
-			foreach(XmlNode e in  dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
-			{
-				dataDiv.RemoveChild(e);
-			}
-		}
-
-
-
-		private XmlElement GetOrCreateDataDiv()
-		{
-			var dataDiv = RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
-			if (dataDiv == null)
-			{
-				dataDiv = RawDom.CreateElement("div");
-				dataDiv.SetAttribute("id", "bloomDataDiv");
-				RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
-			}
-			return dataDiv;
-		}
-
-		/// <summary>
-		/// walk throught the sourceDom, collecting up values from elements that have data-book or data-library attributes.
-		/// </summary>
-		private void GatherDataItemsFromDom(DataSet data, string elementName, XmlNode sourceDom /* can be the whole sourceDom or just a page */)
-		{
-			try
-			{
-				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
-
-				var nodesOfInterest = sourceDom.SafeSelectNodes(query);
-
-				foreach (XmlElement node in nodesOfInterest)
-				{
-					bool isLibrary = false;
-
-					var key = node.GetAttribute("data-book").Trim();
-					if (key == String.Empty)
-					{
-						key = node.GetAttribute("data-library").Trim();
-						isLibrary = true;
-					}
-
-					string value = node.InnerXml.Trim();//may contain formatting
-					if (node.Name.ToLower() == "img")
-					{
-						value = node.GetAttribute("src");
-						//Make the name of the image safe for showing up in raw html (not just in the relatively safe confines of the src attribut),
-						//becuase it's going to show up between <div> tags.  E.g. "Land & Water.png" as the cover page used to kill us.
-						value = WebUtility.HtmlEncode(WebUtility.HtmlDecode(value));
-					}
-					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
-					{
-						var lang = node.GetOptionalStringAttribute("lang", "*");
-						if (lang == "")//the above doesn't stop a "" from getting through
-							lang = "*";
-						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" || node.GetOptionalStringAttribute("contenteditable", "false") == "true") && (lang == "V" || lang == "N1" || lang == "N2"))
-						{
-							throw new ApplicationException("Editable element (e.g. TextArea) should not have placeholder @lang attributes (V,N1,N2): " + _storage.FileName + "\r\n\r\n" + node.OuterXml);
-						}
-
-						//if we don't have a value for this variable and this language, add it
-						if (!data.TextVariables.ContainsKey(key))
-						{
-							var t = new MultiTextBase();
-							t.SetAlternative(lang, value);
-							data.TextVariables.Add(key, new DataItem(t, isLibrary));
-						}
-						else if (!data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
-						{
-							var t = data.TextVariables[key].TextAlternatives;
-							t.SetAlternative(lang, value);
-						}
-					}
-				}
-
-				//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
-				if(String.IsNullOrEmpty(MultilingualContentLanguage2))
-					MultilingualContentLanguage2 = data.TextVariables.ContainsKey("contentLanguage2") ? data.TextVariables["contentLanguage2"].TextAlternatives["*"] : null;
-				if (String.IsNullOrEmpty(MultilingualContentLanguage3))
-					MultilingualContentLanguage3 = data.TextVariables.ContainsKey("contentLanguage3") ? data.TextVariables["contentLanguage3"].TextAlternatives["*"] : null;
-			}
-			catch (Exception error)
-			{
-				throw new ApplicationException("Error in GatherDataItemsFromDom(," + elementName + "). RawDom was:\r\n" + RawDom.OuterXml, error);
-			}
-		}
-
-		/// <summary>
-		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
-		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
-		/// </summary>
-		private void UpdateDomWIthDataItems( string folderPath, DataSet data, string elementName, XmlDocument targetDom)
-		{
-			Check();
-
-			try
-			{
-				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
-				var nodesOfInterest = targetDom.SafeSelectNodes(query);
-
-				foreach (XmlElement node in nodesOfInterest)
-				{
-					var key = node.GetAttribute("data-book").Trim();
-					if (key == String.Empty)
-						key = node.GetAttribute("data-library").Trim();//"library" is the old name for what is now "collection"
-					if (!String.IsNullOrEmpty(key) && data.TextVariables.ContainsKey(key))
-					{
-						if (node.Name.ToLower() == "img")
-						{
-							var imageName = WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
-							var oldImageName = WebUtility.HtmlDecode(node.GetAttribute("src"));
-							node.SetAttribute("src", imageName);
-							if (oldImageName != imageName)
-							{
-								Guard.AgainstNull(folderPath,"folderPath");
-								ImageUpdater.UpdateImgMetdataAttributesToMatchImage(folderPath, node, new NullProgress());
-							}
-						}
-						else
-						{
-							var lang = node.GetOptionalStringAttribute("lang", "*");
-							if (lang == "N1" || lang == "N2" || lang == "V")
-								lang = data.WritingSystemCodes[lang];
-
-//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
-//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
-//							{
-//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
-//								targetDom.RemoveChild(node);
-//							}
-//							else
-							if (!String.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
-							{
-								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { lang, "*"});//, "en", "fr", "es" });//review: I really hate to lose the data, but I admit, this is trying a bit too hard :-)
-
-
-								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
-								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
-								//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
-								//was giving "", which we then used to remove our nice values.
-								//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
-								//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
-								//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-								if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
-									continue;
-
-								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-								if (data.WritingSystemCodes.Count !=0 && lang == data.WritingSystemCodes["N2"] && s == data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new string[] { data.WritingSystemCodes["N1"], "*" }))
-								{
-									s = ""; //don't show it in N2, since it's the same as N1
-								}
-								node.InnerXml = s;
-								//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
-							}
-						}
-					}
-					else
-					{
-						//Review: Leave it to the ui to let them fill it in?  At the moment, we're only allowing that on textarea's. What if it's something else?
-					}
-					//Debug.WriteLine("123: "+key+" "+ RawDom.SelectSingleNode("//div[@id='bloomDataDiv']").OuterXml);
-
-
-				}
-			}
-			catch (Exception error)
-			{
-				throw new ApplicationException("Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" + targetDom.OuterXml, error);
-			}
-			Check();
 		}
 
 
@@ -1909,96 +1602,7 @@ namespace Bloom.Book
 			SizeAndOrientation.AddClassesForLayout(RawDom, layout);
 		}
 
-		public void UpdateLicenseMetdata(Metadata metadata)
-		{
-			var data = new DataSet();
-			GatherDataItemsFromDom(data, "*", RawDom);
 
-			var copyright = metadata.CopyrightNotice;
-			data.UpdateLanguageString("*", "copyright", copyright, false);
-
-			var description = metadata.License.GetDescription("en");
-			data.UpdateLanguageString("en","licenseDescription", description, false);
-
-			var licenseUrl = metadata.License.Url;
-			data.UpdateLanguageString("*", "licenseUrl", licenseUrl, false);
-
-			var licenseNotes = metadata.License.RightsStatement;
-			data.UpdateLanguageString("*", "licenseNotes", licenseNotes, false);
-
-			var licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
-			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
-
-
-			UpdateDomWIthDataItems(FolderPath, data, "*",RawDom);
-
-			//UpdateDomWIthDataItems() is not able to remove items yet, so we do it explicity
-
-			RemoveDataDivElementIfEmptyValue("licenseDescription", description);
-			RemoveDataDivElementIfEmptyValue("licenseImage", licenseImageName);
-			RemoveDataDivElementIfEmptyValue("licenseUrl", licenseUrl);
-			RemoveDataDivElementIfEmptyValue("copyright", copyright);
-			RemoveDataDivElementIfEmptyValue("licenseNotes", licenseNotes);
-		}
-
-		private void RemoveDataDivElementIfEmptyValue(string key, string value)
-		{
-			if (string.IsNullOrEmpty(value))
-			{
-				foreach (XmlElement node in _storage.Dom.SafeSelectNodes("//div[@id='bloomDataDiv']//div[@data-book='" + key + "']"))
-				{
-					node.ParentNode.RemoveChild(node);
-				}
-			}
-		}
-
-		public Metadata GetLicenseMetadata()
-		{
-			var data = new DataSet();
-			GatherDataItemsFromDom(data,"*", RawDom);
-			var metadata = new Metadata();
-			DataItem d;
-			if(data.TextVariables.TryGetValue("copyright", out d))
-			{
-				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
-			}
-			string licenseUrl="";
-			if (data.TextVariables.TryGetValue("licenseUrl", out d))
-			{
-				licenseUrl = d.TextAlternatives.GetFirstAlternative();
-			}
-
-			//Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
-			if (licenseUrl == null || licenseUrl.Trim() == "")
-			{
-				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-				//custom licenses live in this field
-				if (data.TextVariables.TryGetValue("licenseNotes", out d))
-				{
-					var licenseNotes = d.TextAlternatives.GetFirstAlternative();
-
-					metadata.License = new CustomLicense() {RightsStatement = licenseNotes};
-				}
-				else
-				{
-					//how to detect a null license was chosen? We're using the fact that it has a description, but nothing else.
-					if (data.TextVariables.TryGetValue("licenseDescription", out d))
-					{
-						metadata.License = new NullLicense(); //"contact the copyright owner
-					}
-					else
-					{
-						//looks like the first time. Nudge them with a nice default
-						metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-					}
-				}
-			}
-			else
-			{
-				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
-			}
-			return metadata;
-		}
 
 		/// <summary>
 		/// This is used when the user elects to apply the same image metadata to all images.
@@ -2007,6 +1611,26 @@ namespace Bloom.Book
 		{
 			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,RawDom, metadata, progress);
 			_storage.Save();
+		}
+
+		public Metadata GetLicenseMetadata()
+		{
+			return GetDataDivHelper(_storage.Dom).GetLicenseMetadata();
+		}
+
+		public void UpdateLicenseMetdata(Metadata metadata)
+		{
+			GetDataDivHelper(_storage.Dom).UpdateLicenseMetdata(metadata);
+		}
+
+		public void UpdateFieldsAndVariables_TEMPFORTESTS(XmlDocument dom)
+		{
+			GetDataDivHelper(new BookDom(dom)).UpdateFieldsAndVariables();
+		}
+
+		public void UpdateVariablesAndDataDivTEMPFORTESTS(BookDom bookDom)
+		{
+			GetDataDivHelper(bookDom).UpdateVariablesAndDataDiv();
 		}
 	}
 }
