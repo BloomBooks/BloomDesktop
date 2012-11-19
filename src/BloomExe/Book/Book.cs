@@ -26,105 +26,6 @@ using Palaso.Xml;
 
 namespace Bloom.Book
 {
-	public class ErrorBook : Book
-	{
-		public readonly Exception Exception;
-		private readonly string _folderPath;
-		private bool _canDelete;
-
-		/// <summary>
-		/// this is a bit of a hack to handle representing a book for which we got an exception while loading the storage... a better architecture wouldn't have this...
-		/// </summary>
-		public ErrorBook(Exception exception, string folderPath, bool canDelete)
-		{
-			Exception = exception;
-			_folderPath = folderPath;
-			Id = folderPath;
-			_canDelete = canDelete;
-			Logger.WriteEvent("Created ErrorBook with exception message: " + Exception.Message);
-		}
-
-		public override string Title
-		{
-			get
-			{
-				return Path.GetFileName(FolderPath);//actually gives us the leaf directory name
-			}
-		}
-		public override string FolderPath
-		{
-			get { return _folderPath; }
-		}
-
-		public override bool CanDelete
-		{
-			get { return _canDelete; }
-		}
-
-
-		public override void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
-		{
-			callback(Resources.Error70x70);
-		}
-
-		public XmlDocument GetEditableHtmlDomForPage(IPage page)
-		{
-			return GetErrorDOM();
-		}
-
-		public override bool CanUpdate
-		{
-			get { return false; }
-		}
-
-		public override bool HasFatalError
-		{
-			get { return true; }
-		}
-
-		public override bool Delete()
-		{
-			var didDelete= Palaso.UI.WindowsForms.FileSystem.ConfirmRecycleDialog.Recycle(_folderPath);
-			if(didDelete)
-				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
-			return didDelete;
-		}
-
-		private XmlDocument GetErrorDOM()
-		{
-			var dom = new XmlDocument();
-			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
-
-			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
-
-			builder.Append("</body></html>");
-			dom.LoadXml(builder.ToString());
-			return dom;
-		}
-
-		public override XmlDocument GetPreviewHtmlFileForWholeBook()
-		{
-			return GetErrorDOM();
-		}
-
-		public override XmlDocument RawDom
-		{
-			get
-			{
-				throw new ApplicationException("An ErrorBook was asked for a RawDom. The ErrorBook's exception message is "+Exception.Message);
-			}
-		}
-
-		public override void SetTitle(string t)
-		{
-			Logger.WriteEvent("An ErrorBook was asked to set title.  The ErrorBook's exception message is "+Exception.Message);
-		}
-	}
-
 	public class Book
 	{
 		//public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
@@ -185,7 +86,7 @@ namespace Bloom.Book
 				RawDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
-			Guard.Against(_storage.Dom.InnerXml=="","Bloom could not parse the xhtml of this document");
+			Guard.Against(_storage.Dom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsSourceCollection;
 
 		}
@@ -740,7 +641,7 @@ namespace Bloom.Book
 
 		public virtual XmlDocument RawDom
 		{
-			get {return  _storage.Dom; }
+			get {return  _storage.Dom.RawDom; }
 		}
 
 		public virtual string FolderPath
@@ -882,7 +783,7 @@ namespace Bloom.Book
 			get
 			{
 				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
-				var x = _storage.Dom.SafeSelectNodes(String.Format("//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _collectionSettings.Language1Iso639Code));
+				var x = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{0}']", _collectionSettings.Language1Iso639Code));
 				return x.Count > 0;
 			}
 
@@ -913,7 +814,7 @@ namespace Bloom.Book
 				if (LockedDown)
 					return false;
 
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='pageTemplateSource']"));
+				var node = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='pageTemplateSource']"));
 				return node.Count > 0;
 			}
 		}
@@ -930,7 +831,7 @@ namespace Bloom.Book
 				if (LockedDown)
 					return false;
 
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeImages' and @content='false']"));
+				var node = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='canChangeImages' and @content='false']"));
 				return node.Count == 0;
 			}
 		}
@@ -945,7 +846,7 @@ namespace Bloom.Book
 				if (LockedDown)
 					return false;
 
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeLicense' and @content='false']"));
+				var node = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='canChangeLicense' and @content='false']"));
 				return node.Count == 0;
 			}
 		}
@@ -962,7 +863,7 @@ namespace Bloom.Book
 				if (LockedDown)
 					return false;
 
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='canChangeOriginalAcknowledgments' and @content='false']"));
+				var node = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='canChangeOriginalAcknowledgments' and @content='false']"));
 				return node.Count == 0;
 			}
 		}
@@ -977,7 +878,7 @@ namespace Bloom.Book
 				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
 
-				var node = _storage.Dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
+				var node = _storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
 				return node.Count > 0;
 			}
 		}
@@ -1190,7 +1091,7 @@ namespace Bloom.Book
 			_pagesCache = new List<IPage>();
 
 			int pageNumber = 0;
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement pageNode in _storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				//review: we want to show titles for template books, numbers for other books.
 				//this here requires that titles be removed when the page is inserted, kind of a hack.
@@ -1230,7 +1131,7 @@ namespace Bloom.Book
 			if (_log.ErrorEncountered)
 				yield break;
 
-			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
+			foreach (XmlElement pageNode in _storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
 				var caption = GetPageLabelFromDiv(pageNode);
 				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
@@ -1264,7 +1165,7 @@ namespace Bloom.Book
 		private XmlElement FindPageDiv(IPage page)
 		{
 			//review: could move to page
-			return _storage.Dom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv) as XmlElement;
+			return _storage.Dom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv) as XmlElement;
 		}
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
@@ -1273,7 +1174,7 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 
-			XmlDocument dom = _storage.Dom;
+			XmlDocument dom = _storage.Dom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 
@@ -1396,7 +1297,7 @@ namespace Bloom.Book
 		private XmlElement GetStorageNode(string pageDivId, string tag, string elementId)
 		{
 			var query = String.Format("//div[@id='{0}']//{1}[@id='{2}']", pageDivId, tag, elementId);
-			var matches = _storage.Dom.SafeSelectNodes(query);
+			var matches = _storage.Dom.RawDom.SafeSelectNodes(query);
 			if (matches.Count != 1)
 			{
 				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
@@ -1411,7 +1312,7 @@ namespace Bloom.Book
 		private XmlElement GetPageFromStorage(string pageDivId)
 		{
 			var query = String.Format("//div[@id='{0}']", pageDivId);
-			var matches = _storage.Dom.SafeSelectNodes(query);
+			var matches = _storage.Dom.RawDom.SafeSelectNodes(query);
 			if (matches.Count != 1)
 			{
 				throw new ApplicationException("Expected one match for this query, but got " + matches.Count + ": " + query);
@@ -1583,7 +1484,7 @@ namespace Bloom.Book
 
 		private XmlNodeList GetPageElements()
 		{
-			return _storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
+			return _storage.Dom.RawDom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
 		}
 
 		private bool CanRelocatePageAsRequested(IPage page, int indexOfItemAfterRelocation)
@@ -1599,7 +1500,7 @@ namespace Bloom.Book
 		private int GetIndexLastFrontkMatterPage()
 		{
 			XmlElement lastFrontMatterPage =
-				_storage.Dom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
+				_storage.Dom.RawDom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
 			if(lastFrontMatterPage==null)
 				return -1;
 			return GetIndexOfPage(lastFrontMatterPage);
@@ -1608,7 +1509,7 @@ namespace Bloom.Book
 		private int GetIndexOfFirstBackMatterPage()
 		{
 			XmlElement firstBackMatterPage =
-				_storage.Dom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-backMatter')])[position()=1]") as XmlElement;
+				_storage.Dom.RawDom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-backMatter')])[position()=1]") as XmlElement;
 			if (firstBackMatterPage == null)
 				return -1;
 			return GetIndexOfPage(firstBackMatterPage);
@@ -1672,7 +1573,7 @@ namespace Bloom.Book
 		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
 		{
 			//NB: all we support at the moment is specifying "Calendar"
-			if(_storage.Dom.SafeSelectNodes(String.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count>0)
+			if(_storage.Dom.RawDom.SafeSelectNodes(String.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count>0)
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 				return PublishModel.BookletLayoutMethod.SideFold;

@@ -27,7 +27,7 @@ namespace Bloom.Book
 
 	public interface IBookStorage
 	{
-		XmlDocument Dom { get; }
+		BookDom Dom { get; }
 		Book.BookType BookType { get; }
 		//string GetTemplateName();
 		string Key { get; }
@@ -40,7 +40,7 @@ namespace Bloom.Book
 		XmlDocument GetRelocatableCopyOfDom(IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
-		string SaveHtml(XmlDocument bookDom);
+		string SaveHtml(BookDom bookDom);
 		//string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
@@ -75,7 +75,7 @@ namespace Bloom.Book
 			_bookRenamedEvent = bookRenamedEvent;
 			_fileLocator.AddPath(folderPath);
 
-			Dom = new XmlDocument();
+			Dom = new BookDom();
 
 			RequireThat.Directory(folderPath).Exists();
 			if (!File.Exists(PathToExistingHtml))
@@ -106,14 +106,15 @@ namespace Bloom.Book
 					//hack so we can package this for palaso reporting
 //                    var ex = new XmlSyntaxException(ErrorMessages);
 //                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
-					Dom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
+					Dom.RawDom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
 					Logger.WriteEvent("{0}: There is a problem with the html structure of this book which will require expert help: {1}", PathToExistingHtml, ErrorMessages);
 			   }
 				else
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 
-					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml); //with throw if there are errors
+					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
+					Dom = new BookDom(xmlDomFromHtmlFile); //with throw if there are errors
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -123,7 +124,7 @@ namespace Bloom.Book
 
 				//add a unique id for our use
 				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
-				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
+				foreach (XmlElement node in Dom.RawDom.SafeSelectNodes("/html/body/div"))
 				{
 					//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
 					//page of every book. This screws up thumbnail caching.
@@ -365,7 +366,7 @@ namespace Bloom.Book
 
 		}
 
-		public XmlDocument Dom
+		public BookDom Dom
 		{
 			get;
 			private set;
@@ -449,11 +450,11 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
 
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
-			BookStorage.UpdateMetaElement(Dom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			BookStorage.UpdateMetaElement(Dom.RawDom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
 			if(null!= Assembly.GetEntryAssembly()) // null during unit tests
 			{
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
-				BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
+				BookStorage.UpdateMetaElement(Dom.RawDom, "BloomFormatVersion", kBloomFormatVersion);
 			}
 			string tempPath = SaveHtml(Dom);
 
@@ -481,13 +482,13 @@ namespace Bloom.Book
 
 
 
-		public string SaveHtml(XmlDocument dom)
+		public string SaveHtml(BookDom dom)
 		{
 			string tempPath = Path.GetTempFileName();
-			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
-			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
+			MakeCssLinksAppropriateForStoredFile(dom.RawDom,_folderPath);
+			SetBaseForRelativePaths(dom.RawDom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
 
-			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
+			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
 
@@ -601,13 +602,13 @@ namespace Bloom.Book
 
 		public XmlDocument GetRelocatableCopyOfDom(IProgress log)
 		{
-			XmlDocument dom = (XmlDocument)Dom.Clone();
+			BookDom relocatableDom = Dom.Clone();
 
-			SetBaseForRelativePaths(dom, _folderPath,true);
-			EnsureHasCollectionAndBookStylesheets(dom);
-			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
+			SetBaseForRelativePaths(relocatableDom.RawDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom.RawDom);
+			UpdateStyleSheetLinkPaths(relocatableDom.RawDom, _fileLocator, log);
 
-			return dom;
+			return relocatableDom.RawDom;
 		}
 
 		public void SortStyleSheetLinks(XmlDocument dom)
@@ -703,7 +704,7 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
 		{
-			var title = XmlUtils.GetTitleOfHtml(Dom, null);
+			var title = Dom.Title;
 			if (title != null)
 			{
 				SetBookName(title);

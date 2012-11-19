@@ -118,17 +118,17 @@ namespace Bloom.Book
 			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
 			//	for shells, we'll still have pages.
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.RawDom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
 
-			XMatterHelper.RemoveExistingXMatter(storage.Dom);
+			XMatterHelper.RemoveExistingXMatter(storage.Dom.RawDom);
 
 			//remove ISBN number, if the original had one
-			RemoveDataDivElement(storage.Dom, "ISBN");
+			RemoveDataDivElement(storage.Dom.RawDom, "ISBN");
 
-			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
+			var sizeAndOrientation = Layout.FromDom(storage.Dom.RawDom, Layout.A5Portrait);
 
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
@@ -139,19 +139,19 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
 				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
-				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
+				var helper = new XMatterHelper(storage.Dom.RawDom,_collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
 			}
 
 			//NB: no multi-lingual name suggestion ability yet
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
+			var nameSuggestion = storage.Dom.RawDom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 			//var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
 			if (nameSuggestion.Count > 0)
 			{
 				var metaTag = (XmlElement) nameSuggestion[0];
 				var name = metaTag.GetAttribute("content");
-				SetDataDivElement(storage.Dom, "bookTitle", "en", name);
+				SetDataDivElement(storage.Dom.RawDom, "bookTitle", "en", name);
 				metaTag.ParentNode.RemoveChild(metaTag);
 			}
 			else
@@ -163,14 +163,14 @@ namespace Bloom.Book
 
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
-			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom, "defaultMultilingualLevel", "1"));
-			SetInitialMultilingualSetting(storage.Dom, multilingualLevel);
+			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
+			SetInitialMultilingualSetting(storage.Dom.RawDom, multilingualLevel);
 
 
 			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
 
 			//If this is a shell book, make elements to hold the vernacular
-			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement div in storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
 				SetupIdAndLineage(sourceDiv, div);
@@ -221,7 +221,7 @@ namespace Bloom.Book
 			//tag in shell-making collections.
 			if(_isSourceCollection)
 			{
-				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
+				BookStorage.UpdateMetaElement(storage.Dom.RawDom, "lockedDownAsShell", "true");
 			}
 
 #if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
@@ -231,7 +231,7 @@ namespace Bloom.Book
 #else
 			var x = "false";
 #endif
-			BookStorage.UpdateMetaElement(storage.Dom, "SuitableForMakingShells", x);
+			BookStorage.UpdateMetaElement(storage.Dom.RawDom, "SuitableForMakingShells", x);
 		}
 
 
@@ -566,7 +566,7 @@ namespace Bloom.Book
 			string name = Path.GetFileName(sourcePath);
 
 			var storage = _bookStorageFactory(sourcePath);
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
+			var nameSuggestion = storage.Dom.RawDom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 			if(nameSuggestion.Count>0)
 			{
 				name = ((XmlElement) nameSuggestion[0]).GetAttribute("content");

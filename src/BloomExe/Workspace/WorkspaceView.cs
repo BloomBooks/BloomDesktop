@@ -348,6 +348,30 @@ namespace Bloom.Workspace
 			//when doing videos at this really low resolution, there's just no room for this
 			_panelHoldingToolStrip.Visible = this.Width > 820;
 		}
+
+		private void WorkspaceView_Load(object sender, EventArgs e)
+		{
+			CheckDPISettings();
+		}
+
+		private void CheckDPISettings()
+		{
+			Graphics g = this.CreateGraphics();
+			try
+			{
+				var dx = g.DpiX;
+				var dy = g.DpiY;
+				if(dx!=96 || dy!=96)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+						"The \"Custom text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Please change the DPI back to the default setting, using the 'Display' Control Panel.", dx);
+				}
+			}
+			finally
+			{
+				g.Dispose();
+			}
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
