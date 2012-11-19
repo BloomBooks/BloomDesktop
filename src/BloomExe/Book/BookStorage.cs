@@ -37,7 +37,7 @@ namespace Bloom.Book
 		string PathToExistingHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		XmlDocument GetRelocatableCopyOfDom(IProgress log);
+		BookDom GetRelocatableCopyOfDom(IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(BookDom bookDom);
@@ -47,7 +47,7 @@ namespace Bloom.Book
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		bool RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
-		void SortStyleSheetLinks(XmlDocument dom);
+		void SortStyleSheetLinks(BookDom dom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -122,17 +122,7 @@ namespace Bloom.Book
 
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
-				//add a unique id for our use
-				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
-				foreach (XmlElement node in Dom.RawDom.SafeSelectNodes("/html/body/div"))
-				{
-					//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
-					//page of every book. This screws up thumbnail caching.
-					const string guidMistakenlyUsedForEveryCoverPage = "74731b2d-18b0-420f-ac96-6de20f659810";
-					if(string.IsNullOrEmpty(node.GetAttribute("id"))
-						||(node.GetAttribute("id") == guidMistakenlyUsedForEveryCoverPage))
-						node.SetAttribute("id", Guid.NewGuid().ToString());
-				}
+				Dom.UpdatePageDivs();
 
 				UpdateSupportFiles();
 
@@ -205,7 +195,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void EnsureHasCollectionAndBookStylesheets(XmlDocument dom)
+		private void EnsureHasCollectionAndBookStylesheets(BookDom dom)
 		{
 			string autocssFilePath = _fileLocator.LocateFile(@"settingsCollectionStyles.css");
 			if (!string.IsNullOrEmpty(autocssFilePath))
@@ -219,7 +209,7 @@ namespace Bloom.Book
 				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private void EnsureHasStyleSheet(XmlDocument dom, string path)
+		private void EnsureHasStyleSheet(BookDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -230,7 +220,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		private void UpdateStyleSheetLinkPaths(XmlDocument dom, IFileLocator fileLocator, IProgress log)
+		private void UpdateStyleSheetLinkPaths(BookDom dom, IFileLocator fileLocator, IProgress log)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -272,7 +262,7 @@ namespace Bloom.Book
 		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
 		/// </summary>
 		/// <param name="dom"></param>
-		private void StripStyleSheetLinkPaths(XmlDocument dom)
+		private void StripStyleSheetLinkPaths(BookDom dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -287,32 +277,16 @@ namespace Bloom.Book
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private static void MakeCssLinksAppropriateForStoredFile(XmlDocument dom, string folderPath)
+		private static void MakeCssLinksAppropriateForStoredFile(BookDom dom, string folderPath)
 		{
 			RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 		}
 
-		/// <summary>
-		/// creates if necessary, then updates the named <meta></meta> in the head of the html
-		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="name"></param>
-		/// <param name="value"></param>
-		public static void UpdateMetaElement(XmlDocument dom, string name, string value)
-		{
-			XmlElement n = dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
-			if (n == null)
-			{
-				n = dom.CreateElement("meta");
-				n.SetAttribute("name", name);
-				dom.SelectSingleNode("//head").AppendChild(n);
-			}
-			n.SetAttribute("content", value);
-		}
 
-		public static void RemoveModeStyleSheets(XmlDocument dom)
+
+		public static void RemoveModeStyleSheets(BookDom dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -332,19 +306,11 @@ namespace Bloom.Book
 
 
 
-		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath, bool pointAtEmbeddedServer)
+		public static void SetBaseForRelativePaths(BookDom dom, string folderPath, bool pointAtEmbeddedServer)
 		{
-		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
-		   if (head == null)
-			   return;
-
-			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
-			{
-				head.RemoveChild(baseNode);
-			}
+			string path = "";
 			if (!string.IsNullOrEmpty(folderPath))
 			{
-				var baseElement = dom.CreateElement("base");
 				if (pointAtEmbeddedServer && Settings.Default.ImageHandler=="http" && ImageServer.IsAbleToUsePort)
 				{
 					//this is only used by relative paths, and only img src's are left relative.
@@ -354,17 +320,17 @@ namespace Bloom.Book
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
 					uri = ImageServer.GetPathEndingInSlash() + uri;
-					baseElement.SetAttribute("href", uri);
+					path = uri;
 				}
 				else
 				{
-					baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+					path = "file://" + folderPath + Path.DirectorySeparatorChar;
 				}
-
-				head.AppendChild(baseElement);
 			}
-
+			dom.SetBaseForRelativePaths(path);
 		}
+
+
 
 		public BookDom Dom
 		{
@@ -450,11 +416,11 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
 
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
-			BookStorage.UpdateMetaElement(Dom.RawDom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
 			if(null!= Assembly.GetEntryAssembly()) // null during unit tests
 			{
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
-				BookStorage.UpdateMetaElement(Dom.RawDom, "BloomFormatVersion", kBloomFormatVersion);
+				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
 			string tempPath = SaveHtml(Dom);
 
@@ -485,8 +451,8 @@ namespace Bloom.Book
 		public string SaveHtml(BookDom dom)
 		{
 			string tempPath = Path.GetTempFileName();
-			MakeCssLinksAppropriateForStoredFile(dom.RawDom,_folderPath);
-			SetBaseForRelativePaths(dom.RawDom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
+			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
+			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
 
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
@@ -495,7 +461,7 @@ namespace Bloom.Book
 
 		public static string ValidateBook(string path)
 		{
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);//with throw if there are errors
+			var dom = new BookDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));//with throw if there are errors
 
 			var ids = new List<string>();
 			var builder = new StringBuilder();
@@ -523,7 +489,7 @@ namespace Bloom.Book
 				builder.AppendLine(message);
 		}
 
-		private static void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
+		private static void EnsureIdsAreUnique(BookDom dom, string elementTag, List<string> ids, StringBuilder builder)
 		{
 			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
 			{
@@ -600,18 +566,18 @@ namespace Bloom.Book
 //            }
 //        }
 
-		public XmlDocument GetRelocatableCopyOfDom(IProgress log)
+		public BookDom GetRelocatableCopyOfDom(IProgress log)
 		{
 			BookDom relocatableDom = Dom.Clone();
 
-			SetBaseForRelativePaths(relocatableDom.RawDom, _folderPath, true);
-			EnsureHasCollectionAndBookStylesheets(relocatableDom.RawDom);
-			UpdateStyleSheetLinkPaths(relocatableDom.RawDom, _fileLocator, log);
+			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
-			return relocatableDom.RawDom;
+			return relocatableDom;
 		}
 
-		public void SortStyleSheetLinks(XmlDocument dom)
+		public void SortStyleSheetLinks(BookDom dom)
 		{
 			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))

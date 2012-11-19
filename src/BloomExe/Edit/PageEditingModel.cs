@@ -17,7 +17,7 @@ namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, XmlDocument dom, GeckoElement img, PalasoImage imageInfo, IProgress progress)
+		public void ChangePicture(string bookFolderPath, GeckoElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);

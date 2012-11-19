@@ -169,14 +169,13 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
 				</head></html>";
 
-			var dom = new XmlDocument();
-			dom.LoadXml(content);
+			var dom = new BookDom(content);
 			var storage = GetInitialStorage();
 
 			storage.SortStyleSheetLinks(dom);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[1][@href='basePage.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[2][@href='../../previewMode.css']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//head/link[1][@href='basePage.css']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//head/link[2][@href='../../previewMode.css']", 1);
 		}
 
 		[Test]
@@ -198,11 +197,11 @@ namespace BloomTests.Book
 
 				</head></html>";
 
-			var dom = new XmlDocument();
-			dom.LoadXml(content);
+			var bd = new BookDom(content);
 			var storage = GetInitialStorage();
 
-			storage.SortStyleSheetLinks(dom);
+			storage.SortStyleSheetLinks(bd);
+			var dom= bd.RawDom;
 
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[1][@href='basePage.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[2][@href='languageDisplay.css']", 1);

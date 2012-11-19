@@ -61,9 +61,78 @@ namespace Bloom.Book
 			get { return _dom; }
 		}
 
+		public string InnerXml
+		{
+			get { return _dom.InnerXml; }
+		}
+
 		public BookDom Clone()
 		{
 			return new BookDom(RawDom);
+		}
+
+		public void UpdatePageDivs()
+		{
+			//add a unique id for our use
+			//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
+			foreach (XmlElement node in _dom.SafeSelectNodes("/html/body/div"))
+			{
+				//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
+				//page of every book. This screws up thumbnail caching.
+				const string guidMistakenlyUsedForEveryCoverPage = "74731b2d-18b0-420f-ac96-6de20f659810";
+				if (String.IsNullOrEmpty(node.GetAttribute("id"))
+					|| (node.GetAttribute("id") == guidMistakenlyUsedForEveryCoverPage))
+					node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
+		}
+
+		/// <summary>
+		/// creates if necessary, then updates the named <meta></meta> in the head of the html
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		public void UpdateMetaElement(string name, string value)
+		{
+			XmlElement n = _dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
+			if (n == null)
+			{
+				n = _dom.CreateElement("meta");
+				n.SetAttribute("name", name);
+				_dom.SelectSingleNode("//head").AppendChild(n);
+			}
+			n.SetAttribute("content", value);
+		}
+
+
+		public void SetBaseForRelativePaths(string path)
+		{
+			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
+			if (head == null)
+				return;
+
+			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+			{
+				head.RemoveChild(baseNode);
+			}
+			var baseElement = _dom.CreateElement("base");
+			baseElement.SetAttribute("href", path);
+			head.AppendChild(baseElement);
+		}
+
+		public void AddStyleSheet(string locateFile)
+		{
+			RawDom.AddStyleSheet(locateFile);
+		}
+
+		public XmlNodeList SafeSelectNodes(string xpath)
+		{
+			return RawDom.SafeSelectNodes(xpath);
+		}
+
+		public XmlElement SelectSingleNodeHonoringDefaultNS(string xpath)
+		{
+			return _dom.SelectSingleNodeHonoringDefaultNS(xpath) as XmlElement;
 		}
 	}
 }

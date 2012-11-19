@@ -49,7 +49,7 @@ namespace Bloom.Book
 			callback(Resources.Error70x70);
 		}
 
-		public XmlDocument GetEditableHtmlDomForPage(IPage page)
+		public BookDom GetEditableHtmlDomForPage(IPage page)
 		{
 			return GetErrorDOM();
 		}
@@ -72,7 +72,7 @@ namespace Bloom.Book
 			return didDelete;
 		}
 
-		private XmlDocument GetErrorDOM()
+		private BookDom GetErrorDOM()
 		{
 			var dom = new XmlDocument();
 			var builder = new StringBuilder();
@@ -84,11 +84,10 @@ namespace Bloom.Book
 			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
 
 			builder.Append("</body></html>");
-			dom.LoadXml(builder.ToString());
-			return dom;
+			return new BookDom(builder.ToString());
 		}
 
-		public override XmlDocument GetPreviewHtmlFileForWholeBook()
+		public override BookDom GetPreviewHtmlFileForWholeBook()
 		{
 			return GetErrorDOM();
 		}

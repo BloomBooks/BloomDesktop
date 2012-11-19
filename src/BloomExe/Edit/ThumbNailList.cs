@@ -135,7 +135,7 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page),
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page).RawDom,
 													  Palette.TextAgainstDarkBackground,
 													  false, image => RefreshOneThumbnailCallback(page, image),
 													  error=> HandleThumbnailerError(page, error));

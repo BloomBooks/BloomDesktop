@@ -23,7 +23,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SendReceiver _sendReceiver;
-		private XmlDocument _domForCurrentPage;
+		private BookDom _domForCurrentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
@@ -390,7 +390,7 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
-		public XmlDocument GetXmlDocumentForCurrentPage()
+		public BookDom GetXmlDocumentForCurrentPage()
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			return _domForCurrentPage;
@@ -411,7 +411,7 @@ namespace Bloom.Edit
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, _domForCurrentPage, img, imageInfo, progress);
+				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
 
 				//we have to save so that when asked by the thumnailer, the book will give the proper image
 				SaveNow();

@@ -47,8 +47,7 @@ namespace BloomTests.Book
 			_storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(()=>
 																							  {
 																								  return
-																									  _bookDom.Clone().
-																										  RawDom;
+																									  _bookDom.Clone();
 																							  });// review: the real thing does more than just clone
 			_storage.Setup(x => x.GetFileLocator()).Returns(()=>_fileLocator.Object);
 
@@ -113,7 +112,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
-			var result = CreateBook().GetPreviewHtmlFileForWholeBook().StripXHtmlNameSpace();
+			var result = CreateBook().GetPreviewHtmlFileForWholeBook().RawDom.StripXHtmlNameSpace();
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter'))]", 3);
 		}
 
@@ -427,7 +426,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.SetLayout(new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait") });
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]", 1);
 		}
 
 		[Test]

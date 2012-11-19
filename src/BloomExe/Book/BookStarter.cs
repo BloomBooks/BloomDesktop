@@ -221,7 +221,7 @@ namespace Bloom.Book
 			//tag in shell-making collections.
 			if(_isSourceCollection)
 			{
-				BookStorage.UpdateMetaElement(storage.Dom.RawDom, "lockedDownAsShell", "true");
+				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
 #if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
@@ -231,7 +231,7 @@ namespace Bloom.Book
 #else
 			var x = "false";
 #endif
-			BookStorage.UpdateMetaElement(storage.Dom.RawDom, "SuitableForMakingShells", x);
+			storage.Dom.UpdateMetaElement("SuitableForMakingShells", x);
 		}
 
 
