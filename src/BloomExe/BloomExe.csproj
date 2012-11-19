@@ -150,6 +150,8 @@
     </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="Book\BookDom.cs" />
+    <Compile Include="Book\ErrorBook.cs" />
     <Compile Include="Book\ImageUpdater.cs" />
     <Compile Include="Book\Layout.cs" />
     <Compile Include="Book\SizeAndOrientation.cs" />
@@ -529,6 +531,8 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -814,10 +818,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy ..\..\lib\msvcr100.dll $(OutDir)
-copy ..\..\lib\libtidy.dll $(OutDir)
-copy ..\..\lib\dotnet\Interop.AcroPDFLib.dll $(OutDir)
-copy ..\..\lib\dotnet\Interop.Acrobat.dll $(OutDir)
+    <PostBuildEvent>copy $(SolutionDir)\lib\msvcr100.dll $(OutDir)
+copy $(SolutionDir)\lib\libtidy.dll $(OutDir)
+copy $(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll $(OutDir)
+copy $(SolutionDir)\lib\dotnet\Interop.Acrobat.dll $(OutDir)
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

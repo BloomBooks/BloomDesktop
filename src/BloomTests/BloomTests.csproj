@@ -111,8 +111,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Palaso.TestUtilities.dll</HintPath>
     </Reference>
-    <Reference Include="PalasoUIWindowsForms, Version=1.7.3.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PalasoUIWindowsForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -131,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Book\BookCollectionTests.cs" />
+    <Compile Include="Book\BookDOMTests.cs" />
     <Compile Include="Book\BookTests.cs" />
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
