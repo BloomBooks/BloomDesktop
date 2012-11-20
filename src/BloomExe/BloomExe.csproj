@@ -151,7 +151,7 @@
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\BookDom.cs" />
-    <Compile Include="Book\DataDivHelper.cs" />
+    <Compile Include="Book\BookData.cs" />
     <Compile Include="Book\ErrorBook.cs" />
     <Compile Include="Book\ImageUpdater.cs" />
     <Compile Include="Book\Layout.cs" />
