@@ -146,130 +146,19 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
+		public void BringBookUpToDate_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
 		{
 			var book = CreateBook();
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
+			book.BringBookUpToDate(new NullProgress());
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 
 
-		[Test]
-		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
-		{
-			var book = CreateBook();
-			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='bb']");
-			Assert.AreEqual("aa", textarea2.InnerText);
-		}
 
-
-		[Test]
-		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
-		{
-			SetDom(@"<div class='bloom-page' id='guid2'>
-						<p>
-							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
-						</p>
-					</div>
-				<div class='bloom-page' id='0a99fad3-0a17-4240-a04e-86c2dd1ec3bd'>
-						<p class='centered' lang='xyz' data-book='bookTitle' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
-				</div>
-			");
-			var book = CreateBook();
-			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
-			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
-			Assert.AreEqual("peace", paragraph.InnerText);
-		}
-
-
-		[Test]
-		public void UpdateFieldsAndVariables_ElementHasMultipleLanguages_OnlyTheVernacularChanged()
-		{
-			var book = CreateBook();
-			var dom = book.RawDom;
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='1' and text()='tree']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
-			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
-			Assert.AreEqual("peace", textarea2.InnerText);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']",1);
-		}
-
-		[Test]
-		public void UpdateFieldsAndVariables_ElementIsNationalLanguage_UpdatesOthers()
-		{
-			var book = CreateBook();
-			var dom = book.RawDom;
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and @id='1' and text()='tree']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='dog']", 1);
-			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='2']");
-			textarea1.InnerText = "peace";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@lang='xyz' and @id='copyOfVTitle']");
-			Assert.AreEqual("peace", textarea2.InnerText);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en' and text()='tree']", 1);
-		}
-
-
-		[Test]
-		public void UpdateFieldsAndVariables_HadNoTitleChangeVernacularTitle_SetTitleElement()
-		{
-			SetDom(@"<div class='bloom-page' id='guid2'>
-						<p>
-							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
-						</p>
-					</div>
-			");
-			var book = CreateBook();
-			var dom = book.RawDom;
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle']");
-			textArea.InnerText ="blue";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
-			Assert.AreEqual("blue", title.InnerText);
-		}
-
-
-
-		[Test]
-		public void UpdateFieldsAndVariables_BookTitleInSpanOnSecondPage_UpdatesH2OnFirstWithCurrentNationalLang()
-		{
-			SetDom(@"<div class='bloom-page titlePage'>
-						<div class='pageContent'>
-							<h2 data-book='bookTitle' lang='N1'>{national book title}</h2>
-						</div>
-					</div>
-				<div class='bloom-page verso'>
-					<div class='pageContent'>
-						(<span lang='en' data-book='bookTitle'>Vaccinations</span><span lang='tpi' data-book='bookTitle'>Tambu Sut</span>)
-						<br />
-					</div>
-				</div>
-			");
-			var book = CreateBook();
-			var dom = book.RawDom;
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
-			Assert.AreEqual("Vaccinations", nationalTitle.InnerText);
-
-			//now switch the national language to Tok Pisin
-
-			_collectionSettings.Language2Iso639Code = "tpi";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
-			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
-		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
@@ -285,23 +174,6 @@ namespace BloomTests.Book
 		}
 
 
-		[Test]
-		public void UpdateFieldsAndVariables_HadTitleChangeEnglishTitle_ChangesTitleElement()
-		{
-			var book = CreateBook();
-			var dom = book.RawDom;
-			XmlElement head = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-			head.AppendChild(dom.CreateElement("title")).InnerText = "original";
-
-			XmlElement title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
-			Assert.AreEqual("tree", title.InnerText);
-
-			XmlElement textArea = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='en']");
-			textArea.InnerText = "shrub";
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
-			title = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//title");
-			Assert.AreEqual("shrub", title.InnerText);
-		}
 
 
 
@@ -691,16 +563,15 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateDataDiv_DomHas2ContentLanguages_PulledIntoBookProperties()
+		public void BringBookUpToDate_DomHas2ContentLanguages_PulledIntoBookProperties()
 		{
 
 			_bookDom = new BookDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
+			book.BringBookUpToDate(new NullProgress());
 			Assert.AreEqual("okm", book.MultilingualContentLanguage2);
 			Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
 		}
-
 
 		[Test]
 		public void UpdateDataDiv_NewLangAdded_AddedToDataDiv()
@@ -784,6 +655,21 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
 		}
 
+
+
+		[Test]
+		public void Constructor_HadNoTitleButDOMHasItInADataItem_TitleElementIsSet()
+		{
+			SetDom(@"<div class='bloom-page' id='guid2'>
+						<p>
+							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
+						</p>
+					</div>");
+			var book = CreateBook();
+			var title = (XmlElement)book.RawDom.SelectSingleNodeHonoringDefaultNS("//title");
+			Assert.AreEqual("original", title.InnerText);
+		}
+
 		private void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
@@ -795,6 +681,35 @@ namespace BloomTests.Book
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
 				img.SaveUpdatedMetadataIfItMakesSense();
 			}
+		}
+
+
+		[Test]
+		public void SavePage_HadTitleChangeEnglishTitle_ChangesTitleElement()
+		{
+			_bookDom = new BookDom(@"
+				<html><head></head><body>
+					  <div class='bloom-page' id='guid1'>
+							<div data-book='bookTitle' lang='en'>original</div>
+					   </div>
+				  </body></html>");
+
+			var book = CreateBook();
+			var dom = book.RawDom;
+
+			Assert.AreEqual("original", book.Title);
+
+
+			//simulate editing the page
+			var pageDom = new BookDom(@"
+				<html><head></head><body>
+					  <div class='bloom-page' id='guid1'>
+							<div data-book='bookTitle' lang='en'>newTitle</div>
+					   </div>
+				  </body></html>");
+
+			book.SavePage(pageDom);
+			Assert.AreEqual("newTitle", book.Title);
 		}
 
 

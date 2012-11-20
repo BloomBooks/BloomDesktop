@@ -1250,8 +1250,6 @@ namespace Bloom.Book
 		public void SavePage(BookDom pageDom)
 		{
 			Debug.Assert(IsInEditableLibrary);
-
-
 			try
 			{
 				XmlElement divElement = (XmlElement)pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
@@ -1262,7 +1260,7 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				var data = GetDataDivHelper(pageDom).UpdateVariablesAndDataDiv();
+				UpdateData(pageDom);
 
 				try
 				{
@@ -1273,19 +1271,22 @@ namespace Bloom.Book
 					ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
 				}
 
-				//todo: first page only:
-				var oldPath = FolderPath;
-				UpdateBookFolderAndFileNames(data);
+				_storage.UpdateBookFileAndFolderName(_collectionSettings);
 
 				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
 				//e.g., look for the class "cover"
 				InvokeContentsChanged(null); //enhance: above we could detect if anything actually changed
-
 			}
 			catch (Exception error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
 			}
+		}
+
+		private void UpdateData(BookDom pageDom)
+		{
+			var data = GetDataDivHelper(pageDom).UpdateVariablesAndDataDiv();
+			UpdateTitle(data);
 		}
 
 
@@ -1330,11 +1331,11 @@ namespace Bloom.Book
 
 		private void UpdateTitle(DataSet data)
 		{
+			//TODO: push this getting into the DataDivHelper class and just use the SetTitle(ddh.GetTitle) Needs a test 1st
 			DataItem title;
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				XmlUtils.GetOrCreateElement(RawDom,"//html", "head");
 				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
 				SetTitle(t);
 			}
@@ -1357,18 +1358,6 @@ namespace Bloom.Book
 				titleNode.InnerText = justTheText;
 			}
 		}
-
-		private void UpdateBookFolderAndFileNames(DataSet data)
-		{
-			UpdateTitle(data);
-			_storage.UpdateBookFileAndFolderName(_collectionSettings);
-		}
-
-
-
-
-
-
 
 		private void Check()
 		{

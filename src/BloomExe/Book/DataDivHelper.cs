@@ -12,19 +12,35 @@ using Palaso.Xml;
 namespace Bloom.Book
 {
 	/// <summary>
-	/// This class manages the "data div" of a bloom document.
-	/// The "data div" of a bloom book is a non-visible div in which hosts all maner of data about the book, including
-	/// copyright, what languages are currently visible, etc.
+	/// This class manages the "data-*" elements of a bloom document.
 	/// </summary>
-	/// <remarks>Here's a sample of a simple one:
-	///     <div id="bloomDataDiv">
-	///         <div data-book="bookTitle" lang="en">My Book</div>
-	///         <div data-book="contentLanguage1">aiw</div>
-	///         <div data-book="coverImage" lang="*">placeholder.png</div>
-	///         <div data-book="contentLanguage1" lang="*">aiw</div>
-	///     </div>
+	/// <remarks>
+	/// At the beginning of the document, we have a special div for holding book-wide data.
+	/// It may hosts all maner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
+		   /*<div id="bloomDataDiv">
+			  <div data-book="bookTitle" lang="en">Awito Builds a toilet</div>
+			  <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
+			  <div data-book="coverImage" lang="*">tmpABDB.png</div>
+			  <div data-book="topic" lang="tpi">Health</div>
+			  <div data-book="contentLanguage1" lang="*">en</div>
+			  <div data-book="contentLanguage2" lang="*">tpi</div>
+			  <div data-book="copyright" lang="*">Copyright © 1994, National Department of Education</div>
+			  <div data-book="licenseImage" lang="*">license.png?1348557455942</div>
+			  <div data-book="licenseUrl" lang="en">http://creativecommons.org/licenses/by-nc-sa/3.0/</div>
+			  <div data-book="licenseDescription" lang="en">You may not use this work for commercial purposes. You may adapt or build upon this work, but you may distribute the resulting work only under the same or similar license to this one.You must attribute the work in the manner specified by the author.</div>
+			  <div data-book="originalAcknowledgments" lang="tpi">Book Development by:  Curriculum Development Division</div>
+			</div>
+			*/
+	/// After the bloomDataDiv, elements with "data-*" attributes can occur throughout a book, for example on the cover page:
+	/*    <div class="bloom-page">
+		<div class="bloom-translationGroup coverTitle">
+		  <div data-book="bookTitle" lang="en">Awito Builds a house</div>
+		  <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
+		</div>
+	*/
+	/// This class must keep these in sync
 	/// </remarks>
-	class DataDivHelper
+	public class DataDivHelper
 	{
 		private readonly BookDom _dom;
 		private readonly string _folderPath;
@@ -372,7 +388,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public void UpdateLicenseMetdata(Metadata metadata)
+		public void SetLicenseMetdata(Metadata metadata)
 		{
 			var data = new DataSet();
 			GatherDataItemsFromXElement(data, "*", _dom.RawDom);
