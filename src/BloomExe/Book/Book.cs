@@ -81,7 +81,7 @@ namespace Bloom.Book
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
-				var data  = GetDataDivHelper(_storage.Dom).UpdateFieldsAndVariables();
+				var data  = GetBookData(_storage.Dom).SynchronizeDataItemsThroughoutDOM();
 				UpdateTitle(data);
 
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
@@ -162,29 +162,23 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var data = new DataSet();
-				var h = GetDataDivHelper(_storage.Dom);
-				h.GatherDataItemsFromXElement(data, "div", h.GetOrCreateDataDiv());
-				DataItem title;
-				if (data.TextVariables.TryGetValue("bookTitle", out title))
+				var list = new List<string>();
+				list.Add(_collectionSettings.Language1Iso639Code);
+				if (_collectionSettings.Language2Iso639Code != null)
+					list.Add(_collectionSettings.Language2Iso639Code);
+				if (_collectionSettings.Language3Iso639Code != null)
+					list.Add(_collectionSettings.Language3Iso639Code);
+				list.Add("en");
+
+				var ddh = GetBookData(_storage.Dom);
+				var title = ddh.GetMultiTextVariableOrEmpty("bookTitle");
+				var t = title.GetBestAlternativeString(list);
+				if(string.IsNullOrEmpty(t))
 				{
-					XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
-					var list = new List<string>();
-					list.Add(_collectionSettings.Language1Iso639Code);
-					if(_collectionSettings.Language2Iso639Code !=null)
-						list.Add(_collectionSettings.Language2Iso639Code);
-					if (_collectionSettings.Language3Iso639Code != null)
-						list.Add(_collectionSettings.Language3Iso639Code);
-					list.Add("en");
-					var t = title.TextAlternatives.GetBestAlternativeString(list);
-					if(string.IsNullOrEmpty(t))
-					{
-						return "Title Missing";
-					}
-					t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
-					return t;
+					return "Title Missing";
 				}
-				return "title missing"; //different case is intentional so we can tell which it was if we ever get a bug report
+				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+				return t;
 			}
 		}
 
@@ -697,24 +691,25 @@ namespace Bloom.Book
 		{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-			var data = DataDivHelper.LoadDataSetFromCollectionSettings(false,_collectionSettings);
-			GetDataDivHelper(bookDOM).GatherDataItemsFromXElement(data, "*", RawDom);
+			//var data = BookData.GartherDataItemsFromCollectionSettings(false,_collectionSettings);
+			var dataDivHelper = GetBookData(bookDOM);
+			//dataDivHelper.GatherDataItemsFromXElement(data, "*", RawDom);
 			//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
-			//todo: move this logic to DDH
 			if (String.IsNullOrEmpty(MultilingualContentLanguage2))
-				MultilingualContentLanguage2 = data.TextVariables.ContainsKey("contentLanguage2") ? data.TextVariables["contentLanguage2"].TextAlternatives["*"] : null;
+				MultilingualContentLanguage2 = dataDivHelper.GetVariableOrNull("contentLanguage2","*");
+
 			if (String.IsNullOrEmpty(MultilingualContentLanguage3))
-				MultilingualContentLanguage3 = data.TextVariables.ContainsKey("contentLanguage3") ? data.TextVariables["contentLanguage3"].TextAlternatives["*"] : null;
+				MultilingualContentLanguage3 = dataDivHelper.GetVariableOrNull("contentLanguage3", "*");
 
 
 			var helper = new XMatterHelper(bookDOM.RawDom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM.RawDom);
 			Layout layout = Layout.FromDom(bookDOM.RawDom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
-			helper.InjectXMatter(FolderPath,data.WritingSystemCodes, layout);
+			helper.InjectXMatter(FolderPath,dataDivHelper.GetWritingSystemCodes(), layout);
 			BookStarter.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-			DataDivHelper.UpdateDomWIthDataItems(FolderPath, data, "*", bookDOM.RawDom);
+			dataDivHelper.SynchronizeDataItemsThroughoutDOM();
 			if(Type == Book.BookType.Publication)
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
@@ -1017,7 +1012,7 @@ namespace Bloom.Book
 			MultilingualContentLanguage2 = language2Code;
 			MultilingualContentLanguage3 = language3Code;
 
-			GetDataDivHelper(_storage.Dom).SetLanguageCodes(language2Code, language3Code,MultilingualContentLanguage2,MultilingualContentLanguage3);
+			GetBookData(_storage.Dom).SetLanguageCodes(language2Code, language3Code,MultilingualContentLanguage2,MultilingualContentLanguage3);
 		}
 
 
@@ -1260,7 +1255,8 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				UpdateData(pageDom);
+				var data = GetBookData(_storage.Dom).UpdateVariablesAndDataDiv(page);
+				UpdateTitle(data);
 
 				try
 				{
@@ -1272,6 +1268,8 @@ namespace Bloom.Book
 				}
 
 				_storage.UpdateBookFileAndFolderName(_collectionSettings);
+				//review used to have   UpdateBookFolderAndFileNames(data);
+
 
 				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
 				//e.g., look for the class "cover"
@@ -1283,18 +1281,12 @@ namespace Bloom.Book
 			}
 		}
 
-		private void UpdateData(BookDom pageDom)
-		{
-			var data = GetDataDivHelper(pageDom).UpdateVariablesAndDataDiv();
-			UpdateTitle(data);
-		}
-
 
 		/// <param name="whichDom">This is usually the dom of the book, but it may be of a page we're working on</param>
 		/// <returns></returns>
-		private DataDivHelper GetDataDivHelper(BookDom whichDom)
+		private BookData GetBookData(BookDom whichDom)
 		{
-			return new DataDivHelper(whichDom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3,_collectionSettings);
+			return new BookData(whichDom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3,_collectionSettings);
 		}
 
 
@@ -1331,7 +1323,7 @@ namespace Bloom.Book
 
 		private void UpdateTitle(DataSet data)
 		{
-			//TODO: push this getting into the DataDivHelper class and just use the SetTitle(ddh.GetTitle) Needs a test 1st
+			//TODO: push this getting into the BookData class and just use the SetTitle(ddh.GetTitle) Needs a test 1st
 			DataItem title;
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
@@ -1604,22 +1596,22 @@ namespace Bloom.Book
 
 		public Metadata GetLicenseMetadata()
 		{
-			return GetDataDivHelper(_storage.Dom).GetLicenseMetadata();
+			return GetBookData(_storage.Dom).GetLicenseMetadata();
 		}
 
 		public void UpdateLicenseMetdata(Metadata metadata)
 		{
-			GetDataDivHelper(_storage.Dom).UpdateLicenseMetdata(metadata);
+			GetBookData(_storage.Dom).SetLicenseMetdata(metadata);
 		}
 
 		public void UpdateFieldsAndVariables_TEMPFORTESTS(XmlDocument dom)
 		{
-			GetDataDivHelper(new BookDom(dom)).UpdateFieldsAndVariables();
+			GetBookData(new BookDom(dom)).SynchronizeDataItemsFromContentsOfElement((XmlElement) dom.FirstChild);
 		}
 
 		public void UpdateVariablesAndDataDivTEMPFORTESTS(BookDom bookDom)
 		{
-			GetDataDivHelper(bookDom).UpdateVariablesAndDataDiv();
+			GetBookData(bookDom).UpdateVariablesAndDataDiv((XmlElement) bookDom.RawDom.FirstChild);
 		}
 	}
 }

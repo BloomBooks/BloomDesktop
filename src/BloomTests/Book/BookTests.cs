@@ -169,7 +169,7 @@ namespace BloomTests.Book
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.UpdateFieldsAndVariables_TEMPFORTESTS(dom);
+			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='French']",1);
 		}
 

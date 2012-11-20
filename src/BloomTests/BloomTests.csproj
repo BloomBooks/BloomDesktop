@@ -136,7 +136,7 @@
     <Compile Include="Book\BookTests.cs" />
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
-    <Compile Include="Book\DataDivHelperTests.cs" />
+    <Compile Include="Book\BookDataTests.cs" />
     <Compile Include="Book\LayoutTests.cs" />
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
