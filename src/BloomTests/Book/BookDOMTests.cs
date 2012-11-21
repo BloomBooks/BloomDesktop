@@ -13,14 +13,14 @@ namespace BloomTests.Book
 		[Test]
 		public void Title_EmptyDom_RoundTrips()
 		{
-			var dom = new BookDom();
+			var dom = new HtmlDom();
 			dom.Title = "foo";
 			Assert.AreEqual("foo",dom.Title);
 		}
 		[Test]
 		public void Title_CanChange()
 		{
-			var dom = new BookDom();
+			var dom = new HtmlDom();
 			dom.Title = "one";
 			dom.Title = "two";
 			Assert.AreEqual("two", dom.Title);
@@ -28,7 +28,7 @@ namespace BloomTests.Book
 		[Test]
 		public void Title_HasHtml_Stripped()
 		{
-			var dom = new BookDom();
+			var dom = new HtmlDom();
 			dom.Title = "<b>one</b>1";
 			Assert.AreEqual("one1", dom.Title);
 		}

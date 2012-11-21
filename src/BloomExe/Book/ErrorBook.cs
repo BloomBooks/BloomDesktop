@@ -49,7 +49,7 @@ namespace Bloom.Book
 			callback(Resources.Error70x70);
 		}
 
-		public BookDom GetEditableHtmlDomForPage(IPage page)
+		public HtmlDom GetEditableHtmlDomForPage(IPage page)
 		{
 			return GetErrorDOM();
 		}
@@ -72,7 +72,7 @@ namespace Bloom.Book
 			return didDelete;
 		}
 
-		private BookDom GetErrorDOM()
+		private HtmlDom GetErrorDOM()
 		{
 			var dom = new XmlDocument();
 			var builder = new StringBuilder();
@@ -84,10 +84,10 @@ namespace Bloom.Book
 			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
 
 			builder.Append("</body></html>");
-			return new BookDom(builder.ToString());
+			return new HtmlDom(builder.ToString());
 		}
 
-		public override BookDom GetPreviewHtmlFileForWholeBook()
+		public override HtmlDom GetPreviewHtmlFileForWholeBook()
 		{
 			return GetErrorDOM();
 		}
@@ -98,11 +98,6 @@ namespace Bloom.Book
 			{
 				throw new ApplicationException("An ErrorBook was asked for a RawDom. The ErrorBook's exception message is "+Exception.Message);
 			}
-		}
-
-		public override void SetTitle(string t)
-		{
-			Logger.WriteEvent("An ErrorBook was asked to set title.  The ErrorBook's exception message is "+Exception.Message);
 		}
 	}
 }

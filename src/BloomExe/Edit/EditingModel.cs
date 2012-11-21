@@ -23,7 +23,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SendReceiver _sendReceiver;
-		private BookDom _domForCurrentPage;
+		private HtmlDom _domForCurrentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
@@ -148,15 +148,6 @@ namespace Bloom.Edit
 			Logger.WriteEvent("InsertTemplatePage");
 		}
 
-		public string CurrentBookName
-		{
-			get
-			{
-				if (_bookSelection.CurrentSelection == null)
-					return "----";
-				return _bookSelection.CurrentSelection.Title;
-			}
-		}
 
 		public bool HaveCurrentEditableBook
 		{
@@ -390,7 +381,7 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
-		public BookDom GetXmlDocumentForCurrentPage()
+		public HtmlDom GetXmlDocumentForCurrentPage()
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			return _domForCurrentPage;

@@ -118,17 +118,17 @@ namespace Bloom.Book
 			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
 			//	for shells, we'll still have pages.
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.RawDom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
 				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
 			}
 
-			XMatterHelper.RemoveExistingXMatter(storage.Dom.RawDom);
+			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
 			//remove ISBN number, if the original had one
 			RemoveDataDivElement(storage.Dom.RawDom, "ISBN");
 
-			var sizeAndOrientation = Layout.FromDom(storage.Dom.RawDom, Layout.A5Portrait);
+			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
 
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
@@ -139,7 +139,7 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
 				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
-				var helper = new XMatterHelper(storage.Dom.RawDom,_collectionSettings.XMatterPackName, _fileLocator);
+				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
 			}
@@ -373,7 +373,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
 		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string vernacularIso, string national1Iso, string national2Iso, string contentLanguageIso2, string contentLanguageIso3)
+		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, string vernacularIso, string national1Iso, string national2Iso, string contentLanguageIso2, string contentLanguageIso3)
 		{
 			var multilingualClass = "bloom-monolingual";
 			var contentLanguages = new Dictionary<string, string>();
@@ -392,7 +392,7 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+			foreach (XmlElement pageDiv in elementOrDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 			{
 				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
@@ -400,7 +400,7 @@ namespace Bloom.Book
 				AddClassIfMissing(pageDiv, multilingualClass);
 			}
 
-			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
+			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
 			{
 				var isXMatter = group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]").Count > 0;
 				foreach (XmlElement e in group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not

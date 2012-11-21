@@ -18,7 +18,7 @@ namespace Bloom.Book
 {
 	public class ImageUpdater
 	{
-		public static void CopyImageMetadataToWholeBook(string folderPath, XmlDocument dom, Metadata metadata, IProgress progress)
+		public static void CopyImageMetadataToWholeBook(string folderPath, HtmlDom dom, Metadata metadata, IProgress progress)
 		{
 			progress.WriteStatus("Starting...");
 

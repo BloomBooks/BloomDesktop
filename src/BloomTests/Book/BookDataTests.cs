@@ -13,11 +13,20 @@ namespace BloomTests.Book
 	[TestFixture]
 	public sealed class BookDataTests
 	{
+		private CollectionSettings _collectionSettings;
+
+		[SetUp]
+		public void Setup()
+		{
+			_collectionSettings = new CollectionSettings(new NewCollectionSettings() {
+				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
+				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
 		{
-			var dom=new BookDom(@"<html ><head></head><body>
+			var dom=new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid3'>
 					<p>
 						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
@@ -26,7 +35,7 @@ namespace BloomTests.Book
 					</p>
 				</div>
 				</body></html>");
-			var ddh = new BookData(dom, "pretendPath", "one", "two", "three", new CollectionSettings());
+			var ddh = new BookData(dom, "pretendPath", "one", "two", "three", _collectionSettings);
 			ddh.UpdateVariablesAndDataDivThroughDOM();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			Assert.AreEqual("aa", textarea2.InnerText);
@@ -36,7 +45,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
 		{
-			var dom = new BookDom(@"<html ><head></head><body>
+			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid2'>
 						<p>
 							<textarea lang='xyz' data-book='bookTitle'>original</textarea>
@@ -48,7 +57,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			var ddh = new BookData(dom, "pretendPath", "one", "two", "three", new CollectionSettings());
+			var ddh = new BookData(dom, "pretendPath", "one", "two", "three", _collectionSettings);
 			ddh.SynchronizeDataItemsThroughoutDOM();
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);
@@ -58,7 +67,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateFieldsAndVariables_OneDataItemChanges_ItemsWithThatLanguageAlsoUpdated()
 		{
-			var dom = new BookDom(@"<html ><head></head><body>
+			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>EnglishTitle</textarea>
@@ -85,7 +94,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateFieldsAndVariables_EnglishDataItemChanges_VernItemsUntouched()
 		{
-			var dom = new BookDom(@"<html ><head></head><body>
+			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>EnglishTitle</textarea>
@@ -114,7 +123,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateFieldsAndVariables_BookTitleInSpanOnSecondPage_UpdatesH2OnFirstWithCurrentNationalLang()
 		{
-			var dom = new BookDom(@"<html ><head></head><body>
+			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page titlePage'>
 						<div class='pageContent'>
 							<h2 data-book='bookTitle' lang='N1'>{national book title}</h2>
@@ -140,5 +149,43 @@ namespace BloomTests.Book
 			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
 		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_NewLangAdded_AddedToDataDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body><div data-book='someVariable' lang='en'>hi</div></body></html>");
+
+			var e = dom.RawDom.CreateElement("div");
+			e.SetAttribute("data-book", "someVariable");
+			e.SetAttribute("lang", "fr");
+			e.InnerText = "bonjour";
+			dom.RawDom.SelectSingleNode("//body").AppendChild(e);
+			var data = new BookData(dom, "pretendPath", "one", "two", "three", new CollectionSettings());
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='someVariable' and @lang='en' and text()='hi']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='someVariable' and @lang='fr' and text()='bonjour']", 1);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_HasDataLibraryValues_LibraryValuesNotPutInDataDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body><div data-book='someVariable' lang='en'>hi</div><div data-library='user' lang='en'>john</div></body></html>");
+			var data = new BookData(dom, "pretendPath", "one", "two", "three", new CollectionSettings());
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_DoesNotExist_MakesOne()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body><div data-book='someVariable'>world</div></body></html>");
+			var data = new BookData(dom, "pretendPath", "one", "two", "three", new CollectionSettings());
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='someVariable' and text()='world']", 1);
+		}
+
 	}
 }

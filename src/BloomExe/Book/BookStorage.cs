@@ -27,7 +27,7 @@ namespace Bloom.Book
 
 	public interface IBookStorage
 	{
-		BookDom Dom { get; }
+		HtmlDom Dom { get; }
 		Book.BookType BookType { get; }
 		//string GetTemplateName();
 		string Key { get; }
@@ -37,17 +37,17 @@ namespace Bloom.Book
 		string PathToExistingHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		BookDom GetRelocatableCopyOfDom(IProgress log);
+		HtmlDom GetRelocatableCopyOfDom(IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
-		string SaveHtml(BookDom bookDom);
+		string SaveHtml(HtmlDom bookDom);
 		//string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		bool RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
-		void SortStyleSheetLinks(BookDom dom);
+		void SortStyleSheetLinks(HtmlDom dom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -75,7 +75,7 @@ namespace Bloom.Book
 			_bookRenamedEvent = bookRenamedEvent;
 			_fileLocator.AddPath(folderPath);
 
-			Dom = new BookDom();
+			Dom = new HtmlDom();
 
 			RequireThat.Directory(folderPath).Exists();
 			if (!File.Exists(PathToExistingHtml))
@@ -114,7 +114,7 @@ namespace Bloom.Book
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 
 					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
-					Dom = new BookDom(xmlDomFromHtmlFile); //with throw if there are errors
+					Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -195,7 +195,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void EnsureHasCollectionAndBookStylesheets(BookDom dom)
+		private void EnsureHasCollectionAndBookStylesheets(HtmlDom dom)
 		{
 			string autocssFilePath = _fileLocator.LocateFile(@"settingsCollectionStyles.css");
 			if (!string.IsNullOrEmpty(autocssFilePath))
@@ -209,7 +209,7 @@ namespace Bloom.Book
 				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private void EnsureHasStyleSheet(BookDom dom, string path)
+		private void EnsureHasStyleSheet(HtmlDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -220,7 +220,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		private void UpdateStyleSheetLinkPaths(BookDom dom, IFileLocator fileLocator, IProgress log)
+		private void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -262,7 +262,7 @@ namespace Bloom.Book
 		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
 		/// </summary>
 		/// <param name="dom"></param>
-		private void StripStyleSheetLinkPaths(BookDom dom)
+		private void StripStyleSheetLinkPaths(HtmlDom dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -277,7 +277,7 @@ namespace Bloom.Book
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private static void MakeCssLinksAppropriateForStoredFile(BookDom dom, string folderPath)
+		private static void MakeCssLinksAppropriateForStoredFile(HtmlDom dom, string folderPath)
 		{
 			RemoveModeStyleSheets(dom);
 			dom.AddStyleSheet("previewMode.css");
@@ -286,7 +286,7 @@ namespace Bloom.Book
 
 
 
-		public static void RemoveModeStyleSheets(BookDom dom)
+		public static void RemoveModeStyleSheets(HtmlDom dom)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -306,7 +306,7 @@ namespace Bloom.Book
 
 
 
-		public static void SetBaseForRelativePaths(BookDom dom, string folderPath, bool pointAtEmbeddedServer)
+		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath, bool pointAtEmbeddedServer)
 		{
 			string path = "";
 			if (!string.IsNullOrEmpty(folderPath))
@@ -332,7 +332,7 @@ namespace Bloom.Book
 
 
 
-		public BookDom Dom
+		public HtmlDom Dom
 		{
 			get;
 			private set;
@@ -448,7 +448,7 @@ namespace Bloom.Book
 
 
 
-		public string SaveHtml(BookDom dom)
+		public string SaveHtml(HtmlDom dom)
 		{
 			string tempPath = Path.GetTempFileName();
 			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
@@ -461,7 +461,7 @@ namespace Bloom.Book
 
 		public static string ValidateBook(string path)
 		{
-			var dom = new BookDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));//with throw if there are errors
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));//with throw if there are errors
 
 			var ids = new List<string>();
 			var builder = new StringBuilder();
@@ -489,7 +489,7 @@ namespace Bloom.Book
 				builder.AppendLine(message);
 		}
 
-		private static void EnsureIdsAreUnique(BookDom dom, string elementTag, List<string> ids, StringBuilder builder)
+		private static void EnsureIdsAreUnique(HtmlDom dom, string elementTag, List<string> ids, StringBuilder builder)
 		{
 			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
 			{
@@ -566,9 +566,9 @@ namespace Bloom.Book
 //            }
 //        }
 
-		public BookDom GetRelocatableCopyOfDom(IProgress log)
+		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
 		{
-			BookDom relocatableDom = Dom.Clone();
+			HtmlDom relocatableDom = Dom.Clone();
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
 			EnsureHasCollectionAndBookStylesheets(relocatableDom);
@@ -577,7 +577,7 @@ namespace Bloom.Book
 			return relocatableDom;
 		}
 
-		public void SortStyleSheetLinks(BookDom dom)
+		public void SortStyleSheetLinks(HtmlDom dom)
 		{
 			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))

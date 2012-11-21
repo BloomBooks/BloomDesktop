@@ -169,7 +169,7 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
 				</head></html>";
 
-			var dom = new BookDom(content);
+			var dom = new HtmlDom(content);
 			var storage = GetInitialStorage();
 
 			storage.SortStyleSheetLinks(dom);
@@ -197,7 +197,7 @@ namespace BloomTests.Book
 
 				</head></html>";
 
-			var bd = new BookDom(content);
+			var bd = new HtmlDom(content);
 			var storage = GetInitialStorage();
 
 			storage.SortStyleSheetLinks(bd);

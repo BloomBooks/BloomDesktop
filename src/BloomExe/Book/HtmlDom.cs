@@ -1,35 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Xml;
 using Palaso.Xml;
 
 namespace Bloom.Book
 {
 	/// <summary>
-	/// BookDom just encapsulates the really low-level DOM operations; it doesn't really know
-	/// about Books per se, but it has DOM operators so that code operating on the DOM can be
-	/// simpler
+	/// HtmlDom manages the lower-level operations on a Bloom XHTML DOM.
+	/// These doms can be a whole book, or just one page we're currently editing.
+	/// They are actually XHTML, though when we save or send to a browser, we always convert to plain html.
 	/// </summary>
-	public class BookDom
+	public class HtmlDom
 	{
 		private XmlDocument _dom;
 
-		public BookDom()
+		public HtmlDom()
 		{
 			_dom = new XmlDocument();
 			_dom.LoadXml("<html></html>");
 		}
 
-		public BookDom(XmlDocument domToClone)
+		public HtmlDom(XmlDocument domToClone)
 		{
 			_dom = (XmlDocument) domToClone.Clone();
 		}
-		public BookDom(string xml)
+
+		public HtmlDom(string xhtml)
 		{
 			_dom = new XmlDocument();
-			_dom.LoadXml(xml);
+			_dom.LoadXml(xhtml);
+		}
+
+		public XmlElement Head
+		{
+			get
+			{
+				return XmlUtils.GetOrCreateElement(_dom, "html", "head");
+			}
 		}
 
 		public string Title
@@ -40,13 +46,13 @@ namespace Bloom.Book
 				var t = value.Trim();
 				if (!String.IsNullOrEmpty(t))
 				{
-					var headNode = XmlUtils.GetOrCreateElement(_dom,"html", "head");
+					var makeSureItsThere = Head;
 					var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 					//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
 
-					//so we set the xml (not the text) of the node
+					//so we set the xhtml (not the text) of the node
 					titleNode.InnerXml = t;
-					//then ask it for the text again (will drop the xml)
+					//then ask it for the text again (will drop the xhtml)
 					var justTheText = titleNode.InnerText.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
 					//then clear it
 					titleNode.InnerXml = "";
@@ -66,9 +72,9 @@ namespace Bloom.Book
 			get { return _dom.InnerXml; }
 		}
 
-		public BookDom Clone()
+		public HtmlDom Clone()
 		{
-			return new BookDom(RawDom);
+			return new HtmlDom(RawDom);
 		}
 
 		public void UpdatePageDivs()
@@ -89,9 +95,6 @@ namespace Bloom.Book
 		/// <summary>
 		/// creates if necessary, then updates the named <meta></meta> in the head of the html
 		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="name"></param>
-		/// <param name="value"></param>
 		public void UpdateMetaElement(string name, string value)
 		{
 			XmlElement n = _dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
@@ -129,10 +132,24 @@ namespace Bloom.Book
 		{
 			return RawDom.SafeSelectNodes(xpath);
 		}
+		public XmlElement SelectSingleNode(string xpath)
+		{
+			return RawDom.SelectSingleNode(xpath) as XmlElement;
+		}
 
 		public XmlElement SelectSingleNodeHonoringDefaultNS(string xpath)
 		{
 			return _dom.SelectSingleNodeHonoringDefaultNS(xpath) as XmlElement;
 		}
+
+		public void AddJavascriptFile(string pathToJavascript)
+		{
+			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
+			element.SetAttribute("type", "text/javascript");
+			element.SetAttribute("src", "file://" + pathToJavascript);
+			Head.AppendChild(element);
+		}
+
+
 	}
 }

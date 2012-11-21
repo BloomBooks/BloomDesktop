@@ -109,7 +109,7 @@ namespace Bloom.CollectionTab
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
-				var title = _bookSelection.CurrentSelection.Title;
+				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",title )))
 				{
 					TheOneEditableCollection.DeleteBook(book);

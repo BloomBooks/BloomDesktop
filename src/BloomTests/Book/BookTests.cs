@@ -32,14 +32,14 @@ namespace BloomTests.Book
 		private TemporaryFolder _testFolder;
 		private TemporaryFolder _tempFolder;
 		private CollectionSettings _collectionSettings;
-		private BookDom _bookDom;
+		private HtmlDom _bookDom;
 
 		[SetUp]
 		public void Setup()
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.SetupGet(x => x.LooksOk).Returns(true);
-			_bookDom = new BookDom(GetThreePageDom());
+			_bookDom = new HtmlDom(GetThreePageDom());
 			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
@@ -511,7 +511,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetDefaultBookletLayout_NotSpecified_Fold()
 		{
-			_bookDom = new BookDom(@"<html ><head>
+			_bookDom = new HtmlDom(@"<html ><head>
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetDefaultBookletLayout());
@@ -521,7 +521,7 @@ namespace BloomTests.Book
 		public void GetDefaultBookletLayout_CalendarSpecified_Calendar()
 		{
 
-			_bookDom = new BookDom(@"<html ><head>
+			_bookDom = new HtmlDom(@"<html ><head>
 									<meta name='defaultBookletLayout' content='Calendar'/>
 									</head><body></body></html>");
 			var book = CreateBook();
@@ -529,36 +529,21 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateDataDiv_DoesNotExist_MakesOne()
+		public void SetMultilingualContentLanguages_HasTrilingualLanguages_AddsToDataDiv()
 		{
-
-			_bookDom = new BookDom(@"<html><head></head><body><div data-book='hello'>world</div></body></html>");
-			var book = CreateBook();
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']",1);//NB microsoft uses 1 as the first. W3c uses 0.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and text()='world']",1);
-		}
-
-		[Test]
-		public void UpdateDataDiv_HasTrilingualLanguages_AddsToDataDiv()
-		{
-
-			_bookDom = new BookDom(@"<html><head></head><body></body></html>");
+			_bookDom = new HtmlDom(@"<html><head></head><body></body></html>");
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages("okm", "kbt");
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
 		}
 		[Test]
-		public void UpdateDataDiv_ThirdContentLangTurnedOff_RemovedFromDataDiv()
+		public void SetMultilingualContentLanguages_ThirdContentLangTurnedOff_RemovedFromDataDiv()
 		{
-
-			_bookDom = new BookDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			_bookDom = new HtmlDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.SetMultilingualContentLanguages(null, null);
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3']", 0);
 		}
 
@@ -566,44 +551,14 @@ namespace BloomTests.Book
 		public void BringBookUpToDate_DomHas2ContentLanguages_PulledIntoBookProperties()
 		{
 
-			_bookDom = new BookDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
+			_bookDom = new HtmlDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>okm</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.BringBookUpToDate(new NullProgress());
 			Assert.AreEqual("okm", book.MultilingualContentLanguage2);
 			Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
 		}
 
-		[Test]
-		public void UpdateDataDiv_NewLangAdded_AddedToDataDiv()
-		{
 
-			_bookDom = new BookDom(@"<html><head></head><body><div data-book='hello' lang='en'>hi</div></body></html>");
-			var book = CreateBook();
-
-			var e = book.RawDom.CreateElement("div");
-			e.SetAttribute("data-book", "hello");
-			e.SetAttribute("lang", "fr");
-			e.InnerText = "bonjour";
-			book.RawDom.SelectSingleNode("//body").AppendChild(e);
-
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='en' and text()='hi']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='hello' and @lang='fr' and text()='bonjour']", 1);
-		}
-
-		[Test]
-		public void UpdateDataDiv_HasDataLibraryValues_LibraryValuesNotPutInDataDiv()
-		{
-
-			_bookDom = new BookDom(@"<html><head></head><body><div data-book='hello' lang='en'>hi</div><div data-library='user' lang='en'>john</div></body></html>");
-			var book = CreateBook();
-
-
-			book.UpdateVariablesAndDataDivTEMPFORTESTS(_bookDom);
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
-		}
 
 		/// <summary>
 		/// regression test... when we rebuild the xmatter, we also need to update the html attributes that let us
@@ -613,7 +568,7 @@ namespace BloomTests.Book
 		public void UpdateXMatter_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
 		{
 
-			_bookDom = new BookDom(@"
+			_bookDom = new HtmlDom(@"
 				<html>
 					<body>
 						<div id='bloomDataDiv'>
@@ -634,7 +589,7 @@ namespace BloomTests.Book
 		public void UpdateImgMetdataAttributesToMatchImage_HtmlForImgGetsMetaDataAttributes()
 		{
 
-			_bookDom = new BookDom(@"
+			_bookDom = new HtmlDom(@"
 				<html>
 					<body>
 					   <div class='bloom-page'>
@@ -687,21 +642,21 @@ namespace BloomTests.Book
 		[Test]
 		public void SavePage_HadTitleChangeEnglishTitle_ChangesTitleElement()
 		{
-			_bookDom = new BookDom(@"
+			_bookDom = new HtmlDom(@"
 				<html><head></head><body>
-					  <div class='bloom-page' id='guid1'>
-							<div data-book='bookTitle' lang='en'>original</div>
-					   </div>
+					<div id='bloomDataDiv'>
+						  <div data-book='bookTitle' lang='en'>original</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						 <div data-book='bookTitle' lang='en'>original</div>
+					</div>
 				  </body></html>");
 
 			var book = CreateBook();
-			var dom = book.RawDom;
-
 			Assert.AreEqual("original", book.Title);
 
-
 			//simulate editing the page
-			var pageDom = new BookDom(@"
+			var pageDom = new HtmlDom(@"
 				<html><head></head><body>
 					  <div class='bloom-page' id='guid1'>
 							<div data-book='bookTitle' lang='en'>newTitle</div>
@@ -760,7 +715,7 @@ namespace BloomTests.Book
 
 		private void SetDom(string bodyContents)
 		{
-			_bookDom = new BookDom(@"<html ><head></head><body>" + bodyContents + "</body></html>");
+			_bookDom = new HtmlDom(@"<html ><head></head><body>" + bodyContents + "</body></html>");
 		}
 	}
 }

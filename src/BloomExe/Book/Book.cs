@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,31 +12,23 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
-using Localization;
-using Newtonsoft.Json;
 using Palaso.Code;
-using Palaso.CommandLineProcessing;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
-using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
 namespace Bloom.Book
 {
 	public class Book
 	{
-		//public const string ClassOfHiddenElements = "hideMe"; //"visibility:hidden !important; position:fixed  !important;";
-
 		public delegate Book Factory(BookStorage storage, bool projectIsEditable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
 
-		private  List<string> _builtInConstants = new List<string>(new[] { "bookTitle", "topic", "nameOfLanguage" });
 		private HtmlThumbNailer _thumbnailProvider;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -45,18 +38,11 @@ namespace Bloom.Book
 
 		public event EventHandler ContentsChanged;
 
-//        public enum SizeAndShapeChoice
-//		{
-//			Unknown, A5Landscape, A5Portrait, A4Landscape, A4Portrait, A3Landscape,USLetterPortrait,USLetterLandscape,USHalfLetterPortrait,USHalfLetterLandscape
-//		}
-
 		private IProgress _log = new StringBuilderProgress();
 		private bool _haveCheckedForErrorsAtLeastOnce;
 
 		//for moq'ing only
 		public Book(){}
-
-
 
 		public Book(IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
 		   CollectionSettings collectionSettings, HtmlThumbNailer thumbnailProvider,
@@ -78,19 +64,15 @@ namespace Bloom.Book
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
 
-
 			if (IsInEditableLibrary && !HasFatalError)
 			{
-				var data  = GetBookData(_storage.Dom).SynchronizeDataItemsThroughoutDOM();
-				UpdateTitle(data);
+				GetBookData(_storage.Dom).SynchronizeDataItemsThroughoutDOM();
 
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
-				RawDom.AddStyleSheet(@"languageDisplay.css");
+				_storage.Dom.AddStyleSheet(@"languageDisplay.css");
 			}
 
 			Guard.Against(_storage.Dom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
-			//LockedExceptForTranslation = HasSourceTranslations && !_librarySettings.IsSourceCollection;
-
 		}
 
 
@@ -99,58 +81,6 @@ namespace Bloom.Book
 			EventHandler handler = ContentsChanged;
 			if (handler != null) handler(this, e);
 		}
-
- /*       public SizeAndShapeChoice SizeAndShape
-		{
-			get
-			{
-				if(_storage.Dom ==null)//at least during early development, we're allowing books with no actual htm page
-				{
-					return SizeAndShapeChoice.Unknown;
-				}
-				var body = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//body");
-				var bodyClass = body.GetStringAttribute("class");
-				if (bodyClass.Contains("a5Portrait"))
-				{
-					return SizeAndShapeChoice.A5Portrait;
-				}
-				else if (bodyClass.Contains("a5Landscape"))
-				{
-					return SizeAndShapeChoice.A5Landscape;
-				}
-				else if (bodyClass.Contains("A4Portrait"))
-				{
-					return SizeAndShapeChoice.A4Portrait;
-				}
-				else if (bodyClass.Contains("A5Landscape"))
-				{
-					return SizeAndShapeChoice.A5Landscape;
-				}
-				else if (bodyClass.Contains("A3Landscape"))
-				{
-					return SizeAndShapeChoice.A3Landscape;
-				}
-				else if (bodyClass.Contains("USLetterPortrait"))
-				{
-					return SizeAndShapeChoice.USLetterPortrait;
-				}
-				else if (bodyClass.Contains("USLetterLandscape"))
-				{
-					return SizeAndShapeChoice.USLetterLandscape;
-				}
-				else if (bodyClass.Contains("USHalfLetterPortrait"))
-				{
-					return SizeAndShapeChoice.USHalfLetterPortrait;
-				}
-				else if (bodyClass.Contains("USHalfLetterLandscape"))
-				{
-					return SizeAndShapeChoice.USHalfLetterLandscape;
-				}
-
-				else return SizeAndShapeChoice.Unknown;
-			}
-		}
-		*/
 
 		public enum BookType { Unknown, Template, Shell, Publication }
 
@@ -191,7 +121,7 @@ namespace Bloom.Book
 			{
 				if (Type == BookType.Publication)
 				{
-					//REVIEW: evaluate and document when we would choose the value in the html over the name of the folder.
+					//REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.
 					//1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
 
 
@@ -200,8 +130,8 @@ namespace Bloom.Book
 //                        return "unknown";
 //                    return (node.InnerText);
 					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Language1Iso639Code);
-					var s = XmlUtils.GetTitleOfHtml(RawDom, null);
-					if(s==null)
+					var s = _storage.Dom.Title;
+					if(string.IsNullOrEmpty(s))
 						return Path.GetFileName(_storage.FolderPath);
 					return s;
 				}
@@ -233,7 +163,7 @@ namespace Bloom.Book
 					callback(Resources.Error70x70);
 					return;
 				}
-				string folderForCachingThumbnail = null;
+				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = _storage.FolderPath;
 
@@ -241,40 +171,46 @@ namespace Bloom.Book
 			}
 			catch (Exception err)
 			{
-				Debug.Fail(err.Message);
 				callback(Resources.Error70x70);
+				Debug.Fail(err.Message);
 			}
 		}
 
-		public virtual BookDom GetEditableHtmlDomForPage(IPage page)
+		public virtual HtmlDom GetEditableHtmlDomForPage(IPage page)
 		{
 			if (_log.ErrorEncountered)
 			{
 				return GetErrorDom();
 			}
 
-			var dom = GetHtmlDomWithJustOnePage(page);
-			BookStorage.RemoveModeStyleSheets(dom);
-			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
+			var pageDom = GetHtmlDomWithJustOnePage(page);
+			BookStorage.RemoveModeStyleSheets(pageDom);
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
 			if(LockedDown)
 			{
-				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
 			}
 			else
 			{
-				dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
 			}
-			_storage.SortStyleSheetLinks(dom);
-			AddJavaScriptForEditing(dom);
-			AddCoverColor(dom, CoverColor);
-			AddUIDictionary(dom);
-			AddUISettings(dom);
-			UpdateMultilingualSettings(dom);
-			return dom;
+			_storage.SortStyleSheetLinks(pageDom);
+			AddJavaScriptForEditing(pageDom);
+			AddCoverColor(pageDom, CoverColor);
+			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
+			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
+			UpdateMultilingualSettings(pageDom);
+			return pageDom;
 		}
 
-		private void UpdateMultilingualSettings(BookDom dom)
+		private void AddJavaScriptForEditing(HtmlDom dom)
+		{
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
+		}
+
+
+		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
 			BookStarter.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
 													 _collectionSettings.Language2Iso639Code,
@@ -282,146 +218,12 @@ namespace Bloom.Book
 													 MultilingualContentLanguage3);
 		}
 
-		/// <summary>
-		/// stick in a json with various string values/translations we want to make available to the javascript
-		/// </summary>
-		/// <param name="singlePageHtmlDom"></param>
-		private void AddUIDictionary(BookDom singlePageHtmlDom)
-		{
-			XmlElement dictionaryScriptElement = singlePageHtmlDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
-			if (dictionaryScriptElement != null)
-				dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
-
-			dictionaryScriptElement = singlePageHtmlDom.RawDom.CreateElement("script");
-			dictionaryScriptElement.SetAttribute("type", "text/javascript");
-			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
-			var d = new Dictionary<string, string>();
-			d.Add(_collectionSettings.Language1Iso639Code, _collectionSettings.Language1Name);
-			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code) && !d.ContainsKey(_collectionSettings.Language2Iso639Code))
-				d.Add(_collectionSettings.Language2Iso639Code, _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
-			if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code) && !d.ContainsKey(_collectionSettings.Language3Iso639Code))
-				d.Add(_collectionSettings.Language3Iso639Code, _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
-
-			d.Add("vernacularLang", _collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
-			d.Add("{V}", _collectionSettings.Language1Name);
-			d.Add("{N1}", _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code));
-			d.Add("{N2}", _collectionSettings.GetLanguage3Name(_collectionSettings.Language3Iso639Code));
-
-			AddLocalizedHintContentsToDictionary(singlePageHtmlDom, d);
-			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}",JsonConvert.SerializeObject(d));
-
-			singlePageHtmlDom.RawDom.SelectSingleNode("//head").InsertAfter(dictionaryScriptElement, null);
-		}
-
-		private void AddLocalizedHintContentsToDictionary(BookDom singlePageHtmlDom, Dictionary<string, string> dictionary)
-		{
-			string idPrefix="";
-			var pageElement = singlePageHtmlDom.RawDom.SelectSingleNode("//div") as XmlElement;
-			if (GetIsFrontMatterPage(pageElement))
-			{
-				idPrefix = "FrontMatter." + _collectionSettings.XMatterPackName + ".";
-			}
-			else if (GetIsBackMatterPage(pageElement))
-			{
-				idPrefix = "BackMatter." + _collectionSettings.XMatterPackName + ".";
-			}
-			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[@data-hint]"))
-			{
-				//why aren't we just doing: element.SetAttribute("data-hint", translation);  instead of bothering to write out a dictionary?
-				//because (especially since we're currently just assuming it is in english), we would later save it with the translation, and then next time try to translate that, and poplute the
-				//list of strings that we tell people to translate
-				var key = element.GetAttribute("data-hint");
-				if(!dictionary.ContainsKey(key))
-				{
-					string translation;
-					var id = idPrefix + key;
-					if(key.Contains("{lang}"))
-					{
-						translation = LocalizationManager.GetDynamicString("Bloom", id, key, "Put {lang} in your translation, so it can be replaced by the language name.");
-					}
-					else
-					{
-						translation = LocalizationManager.GetDynamicString("Bloom", id, key);
-					}
-					dictionary.Add(key, translation);
-				}
-			}
-		}
-
-		public static bool GetIsFrontMatterPage(XmlElement page)
-		{
-			return XMatterHelper.IsFrontMatterPage(page);
-		}
-
-		public static bool GetIsBackMatterPage(XmlElement page)
-		{
-			return XMatterHelper.IsBackMatterPage(page);
-		}
-
-
-		private static bool ContainsClass(XmlNode element, string className)
-		{
-			return ((XmlElement)element).GetAttribute("class").Contains(className);
-		}
-
-		/// <summary>
-		/// stick in a json with various settings we want to make available to the javascript
-		/// </summary>
-		private void AddUISettings(BookDom dom)
-		{
-			XmlElement element = dom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
-			if (element != null)
-				element.ParentNode.RemoveChild(element);
-
-			element = dom.RawDom.CreateElement("script");
-			element.SetAttribute("type", "text/javascript");
-			element.SetAttribute("id", "ui-settings");
-			var d = new Dictionary<string, string>();
-
-			d.Add("urlOfUIFiles", "file:///" + _storage.GetFileLocator().LocateDirectory("ui", "ui files directory"));
-			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
-			{
-				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
-			}
-
-			d.Add("languageForNewTextBoxes", _collectionSettings.Language1Iso639Code);
-
-			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
-
-			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
-
-			dom.RawDom.SelectSingleNode("//head").InsertAfter(element, null);
-		}
-
-		private static void AddDictionaryValue(XmlDocument dom, XmlElement dictionaryDiv, string key, string value)
-		{
-			var div = dom.CreateElement("div");
-			div.SetAttribute("data-key", key);
-			div.InnerText = value;
-			dictionaryDiv.AppendChild(div);
-		}
-
-		private void AddJavaScriptForEditing(BookDom dom)
-		{
-			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head");
-		   // AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("jquery-1.4.4.min.js"));
-			AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
-		}
-
-		private void AddJavascriptFile(BookDom dom, XmlElement node, string pathToJavascript)
-		{
-			XmlElement element = node.AppendChild(dom.RawDom.CreateElement("script")) as XmlElement;
-			element.SetAttribute("type", "text/javascript");
-			element.SetAttribute("src", "file://"+ pathToJavascript);
-			node.AppendChild(element);
-		}
-
-		private BookDom GetHtmlDomWithJustOnePage(IPage page)
+		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
 		{
 
 			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom(_log);
 			var head = relocatableCopyOfDom.RawDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
-			var dom = new BookDom(@"<html>"+head+"<body></body></html>");
+			var dom = new HtmlDom(@"<html>"+head+"<body></body></html>");
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
@@ -438,45 +240,24 @@ namespace Bloom.Book
 		}
 
 
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="page"></param>
-		/// <param name="iso639CodeToShow">NB: this isn't always the vernacular. If we're showing template pages, it will be, um, English?</param>
-		/// <returns></returns>
-		public BookDom GetPreviewXmlDocumentForPage(IPage page)
+		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
 			if(_log.ErrorEncountered)
 			{
 				return GetErrorDom();
 			}
-			var dom = GetHtmlDomWithJustOnePage(page);
-			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			dom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
+			var pageDom = GetHtmlDomWithJustOnePage(page);
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
 
-			_storage.SortStyleSheetLinks(dom);
+			_storage.SortStyleSheetLinks(pageDom);
 
-			AddCoverColor(dom, CoverColor);
-			AddPreviewJScript(dom);
+			AddCoverColor(pageDom, CoverColor);
+			AddPreviewJScript(pageDom);
 
-			return dom;
+			return pageDom;
 		}
 
-		private static void AddSheet(XmlDocument dom, XmlNode head, string cssFilePath, bool useFullFilePath)
-		{
-			var link = dom.CreateElement("link");
-			link.SetAttribute("rel", "stylesheet");
-			if (useFullFilePath)
-			{
-				link.SetAttribute("href", "file://" + cssFilePath);
-			}
-			else
-			{
-				link.SetAttribute("href", Path.GetFileName(cssFilePath));
-			}
-			link.SetAttribute("type", "text/css");
-			head.AppendChild(link);
-		}
 		public XmlDocument GetPreviewXmlDocumentForFirstPage()
 		{
 			if (_log.ErrorEncountered)
@@ -520,7 +301,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private BookDom GetBookDomWithStyleSheets(params string[] cssFileNames)
+		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
 			var fileLocator = _storage.GetFileLocator();
@@ -534,7 +315,7 @@ namespace Bloom.Book
 
 		public virtual string StoragePageFolder { get { return _storage.FolderPath; } }
 
-		private BookDom GetPageListingErrorsWithBook(string contents)
+		private HtmlDom GetPageListingErrorsWithBook(string contents)
 		{
 			var builder = new StringBuilder();
 			builder.Append("<html><body>");
@@ -547,10 +328,10 @@ namespace Bloom.Book
 				builder.AppendFormat("<li>{0}</li>\n", WebUtility.HtmlEncode(line));
 			}
 			builder.Append("</body></html>");
-			return new BookDom(builder.ToString());
+			return new HtmlDom(builder.ToString());
 		}
 
-		private BookDom GetErrorDom()
+		private HtmlDom GetErrorDom()
 		{
 			var builder = new StringBuilder();
 			builder.Append("<html><body>");
@@ -561,7 +342,7 @@ namespace Bloom.Book
 			builder.Append(((StringBuilderProgress)_log).Text);
 
 			builder.Append("</body></html>");
-			return new BookDom(builder.ToString());
+			return new HtmlDom(builder.ToString());
 		}
 
 
@@ -644,7 +425,7 @@ namespace Bloom.Book
 
 		public virtual string Id { get; set; }
 
-		public virtual BookDom GetPreviewHtmlFileForWholeBook()
+		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
 		{
 			//we may already know we have an error (we might not discover until later)
 			if (HasFatalError)
@@ -655,7 +436,7 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var dom= GetBookDomWithStyleSheets("previewMode.css");
+			var previewDom= GetBookDomWithStyleSheets("previewMode.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -665,29 +446,36 @@ namespace Bloom.Book
 
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
-				BringBookUpToDate(dom, new NullProgress());
+				BringBookUpToDate(previewDom, new NullProgress());
 			}
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-			BookStarter.UpdateContentLanguageClasses(dom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
-			AddCoverColor(dom, CoverColor);
+			BookStarter.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			AddCoverColor(previewDom, CoverColor);
 
-			AddPreviewJScript(dom);
-			return dom;
+			AddPreviewJScript(previewDom);
+			return previewDom;
 		}
 
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
 			BringBookUpToDate(_storage.Dom, progress);
+			if (Type == Book.BookType.Publication)
+			{
+				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
+				UpdatePageFromFactoryTemplates(_storage.Dom, progress);
+				ImageUpdater.CompressImages(FolderPath, progress);
+				_storage.Save();
+			}
 			_storage.Save();
 			_bookRefreshEvent.Raise(this);
 		}
 
-		private void BringBookUpToDate(BookDom bookDOM /* may be a 'preview' version*/, IProgress progress)
+		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
@@ -702,26 +490,19 @@ namespace Bloom.Book
 				MultilingualContentLanguage3 = dataDivHelper.GetVariableOrNull("contentLanguage3", "*");
 
 
-			var helper = new XMatterHelper(bookDOM.RawDom, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
-			XMatterHelper.RemoveExistingXMatter(bookDOM.RawDom);
-			Layout layout = Layout.FromDom(bookDOM.RawDom, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+			var helper = new XMatterHelper(bookDOM, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
+			XMatterHelper.RemoveExistingXMatter(bookDOM);
+			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
 			helper.InjectXMatter(FolderPath,dataDivHelper.GetWritingSystemCodes(), layout);
 			BookStarter.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 			dataDivHelper.SynchronizeDataItemsThroughoutDOM();
-			if(Type == Book.BookType.Publication)
-			{
-				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, RawDom, progress);
-				UpdatePageFromFactoryTemplates(bookDOM, progress);
-				ImageUpdater.CompressImages(FolderPath, progress);
-				_storage.Save();
-			}
 		}
 
-		private void UpdatePageFromFactoryTemplates(BookDom bookDom, IProgress progress)
+		private void UpdatePageFromFactoryTemplates(HtmlDom bookDom, IProgress progress)
 		{
-			var originalLayout = Layout.FromDom(bookDom.RawDom, Layout.A5Portrait);
+			var originalLayout = Layout.FromDom(bookDom, Layout.A5Portrait);
 
 			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
 
@@ -759,7 +540,7 @@ namespace Bloom.Book
 
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
 		{
-			XmlElement targetElement = targetPage.SelectSingleNode("div/div[" + (zeroBasedCount + 1).ToString() + "]") as XmlElement;
+			XmlElement targetElement = targetPage.SelectSingleNode("div/div[" + (zeroBasedCount + 1).ToString(CultureInfo.InvariantCulture) + "]") as XmlElement;
 			if (targetElement == null)
 			{
 				progress.WriteError("Book had less than the expected number of divs on page " + targetPage.GetAttribute("id") +
@@ -1017,7 +798,7 @@ namespace Bloom.Book
 
 
 
-		private void AddCoverColor(BookDom dom, Color coverColor)
+		private void AddCoverColor(HtmlDom dom, Color coverColor)
 		{
 			var colorValue = ColorTranslator.ToHtml(coverColor);
 //            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
@@ -1038,7 +819,7 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddPreviewJScript(BookDom dom)
+		private void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 //			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
@@ -1054,8 +835,7 @@ namespace Bloom.Book
 //			})";
 //			header.AppendChild(script);
 
-			XmlElement head = dom.SelectSingleNodeHonoringDefaultNS("//head") as XmlElement;
-			AddJavascriptFile(dom, head, _storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1083,7 +863,6 @@ namespace Bloom.Book
 		{
 			_pagesCache = new List<IPage>();
 
-			int pageNumber = 0;
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				//review: we want to show titles for template books, numbers for other books.
@@ -1094,8 +873,7 @@ namespace Bloom.Book
 					caption = "";
 						//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 				}
-				_pagesCache.Add(CreatePageDecriptor(pageNode, caption, _collectionSettings.Language1Iso639Code));
-				++pageNumber;
+				_pagesCache.Add(CreatePageDecriptor(pageNode, caption));
 			}
 		}
 
@@ -1127,8 +905,7 @@ namespace Bloom.Book
 			foreach (XmlElement pageNode in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
 				var caption = GetPageLabelFromDiv(pageNode);
-				var iso639CodeToShow = "";//REVIEW: should it be "en"?  what will the Lorum Ipsum's be?
-				yield return CreatePageDecriptor(pageNode, caption, iso639CodeToShow);
+				yield return CreatePageDecriptor(pageNode, caption);
 			}
 		}
 
@@ -1142,7 +919,7 @@ namespace Bloom.Book
 			return caption;
 		}
 
-		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string iso639Code)//, Action<Image> thumbNailReadyCallback)
+		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
 		{
 			return new Page(this, pageNode, caption,
 //				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
@@ -1242,21 +1019,19 @@ namespace Bloom.Book
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
 		/// </summary>
-		public void SavePage(BookDom pageDom)
+		public void SavePage(HtmlDom editedPageDom)
 		{
 			Debug.Assert(IsInEditableLibrary);
 			try
 			{
-				XmlElement divElement = (XmlElement)pageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				//replace the corresponding page contents in our DOM with what is in this PageDom
+				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
-
 				var page = GetPageFromStorage(pageDivId);
-
 				page.InnerXml = divElement.InnerXml;
 
 				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				var data = GetBookData(_storage.Dom).UpdateVariablesAndDataDiv(page);
-				UpdateTitle(data);
+				GetBookData(_storage.Dom).UpdateVariablesAndDataDiv(editedPageDom.RawDom);
 
 				try
 				{
@@ -1284,7 +1059,7 @@ namespace Bloom.Book
 
 		/// <param name="whichDom">This is usually the dom of the book, but it may be of a page we're working on</param>
 		/// <returns></returns>
-		private BookData GetBookData(BookDom whichDom)
+		private BookData GetBookData(HtmlDom whichDom)
 		{
 			return new BookData(whichDom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3,_collectionSettings);
 		}
@@ -1319,44 +1094,6 @@ namespace Bloom.Book
 			return (XmlElement)matches[0];
 		}
 
-
-
-		private void UpdateTitle(DataSet data)
-		{
-			//TODO: push this getting into the BookData class and just use the SetTitle(ddh.GetTitle) Needs a test 1st
-			DataItem title;
-
-			if (data.TextVariables.TryGetValue("bookTitle", out title))
-			{
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code});
-				SetTitle(t);
-			}
-		}
-
-		public virtual void SetTitle(string t)
-		{
-			if (!String.IsNullOrEmpty(t.Trim()))
-			{
-				var titleNode = XmlUtils.GetOrCreateElement(RawDom, "//head", "title");
-				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
-
-				//so we set the xml (not the text) of the node
-				titleNode.InnerXml = t;
-				//then ask it for the text again (will drop the xml)
-				var justTheText = titleNode.InnerText.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-				//then clear it
-				titleNode.InnerXml = "";
-				//and set the text again!
-				titleNode.InnerText = justTheText;
-			}
-		}
-
-		private void Check()
-		{
-//    		XmlNode p = RawDom.SelectSingleNode("//p[@class='titleV']");
-//    		Debug.Assert(p.InnerXml.Length < 25);
-		}
-
 		/// <summary>
 		/// Move a page to somewhere else in the book
 		/// </summary>
@@ -1364,7 +1101,7 @@ namespace Bloom.Book
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
 
-			if(!CanRelocatePageAsRequested(page, indexOfItemAfterRelocation))
+			if(!CanRelocatePageAsRequested(indexOfItemAfterRelocation))
 			{
 
 				return false;
@@ -1395,7 +1132,7 @@ namespace Bloom.Book
 			return _storage.Dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
 		}
 
-		private bool CanRelocatePageAsRequested(IPage page, int indexOfItemAfterRelocation)
+		private bool CanRelocatePageAsRequested(int indexOfItemAfterRelocation)
 		{
 			int upperBounds = GetIndexOfFirstBackMatterPage();
 			if (upperBounds < 0)
@@ -1442,29 +1179,29 @@ namespace Bloom.Book
 
 		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion)
 		{
-			var dom = GetBookDomWithStyleSheets("previewMode.css");
+			var printingDom = GetBookDomWithStyleSheets("previewMode.css");
 			//dom.LoadXml(_storage.Dom.OuterXml);
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
-			BookStorage.SetBaseForRelativePaths(dom, FolderPath, false);
+			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath, false);
 
 			switch (bookletPortion)
 			{
 				case PublishModel.BookletPortions.None:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					HidePages(dom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					HidePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					HidePages(dom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					HidePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
-			AddCoverColor(dom, Color.White);
-			AddPreviewJScript(dom);
-			return dom.RawDom;
+			AddCoverColor(printingDom, Color.White);
+			AddPreviewJScript(printingDom);
+			return printingDom.RawDom;
 		}
 
 		/// <summary>
@@ -1554,14 +1291,14 @@ namespace Bloom.Book
 
 		public Layout GetLayout()
 		{
-			return Layout.FromDom(RawDom, Layout.A5Portrait);
+			return Layout.FromDom(_storage.Dom, Layout.A5Portrait);
 		}
 
 		public IEnumerable<Layout> GetLayoutChoices()
 		{
 			try
 			{
-				return SizeAndOrientation.GetLayoutChoices(RawDom, _storage.GetFileLocator());
+				return SizeAndOrientation.GetLayoutChoices(_storage.Dom, _storage.GetFileLocator());
 			}
 			catch (Exception error)
 			{
@@ -1569,20 +1306,11 @@ namespace Bloom.Book
 				throw error;
 			}
 		}
-//
-//		public IEnumerable GetLayoutChoices()
-//		{
-//			if (choice.Options.TryGetValue("Layout", out layouts))
-//				{
-//					foreach (var layout in layouts)
-//					{
-//		}
 
 		public void SetLayout(Layout layout)
 		{
-			SizeAndOrientation.AddClassesForLayout(RawDom, layout);
+			SizeAndOrientation.AddClassesForLayout(_storage.Dom, layout);
 		}
-
 
 
 		/// <summary>
@@ -1590,7 +1318,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
-			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,RawDom, metadata, progress);
+			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,_storage.Dom, metadata, progress);
 			_storage.Save();
 		}
 
@@ -1604,14 +1332,9 @@ namespace Bloom.Book
 			GetBookData(_storage.Dom).SetLicenseMetdata(metadata);
 		}
 
-		public void UpdateFieldsAndVariables_TEMPFORTESTS(XmlDocument dom)
+		public void SetTitle(string name)
 		{
-			GetBookData(new BookDom(dom)).SynchronizeDataItemsFromContentsOfElement((XmlElement) dom.FirstChild);
-		}
-
-		public void UpdateVariablesAndDataDivTEMPFORTESTS(BookDom bookDom)
-		{
-			GetBookData(bookDom).UpdateVariablesAndDataDiv((XmlElement) bookDom.RawDom.FirstChild);
+			_storage.Dom.Title = name;
 		}
 	}
 }

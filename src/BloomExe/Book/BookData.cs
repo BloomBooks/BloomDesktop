@@ -43,7 +43,7 @@ namespace Bloom.Book
 	/// </remarks>
 	public class BookData
 	{
-		private readonly BookDom _dom;
+		private readonly HtmlDom _dom;
 		private readonly string _folderPath;
 		private readonly string _language1Iso639Code;
 		private readonly string _multilingualContentLanguage2;
@@ -58,7 +58,7 @@ namespace Bloom.Book
 		/// <param name="multilingualContentLanguage2"> </param>
 		/// <param name="multilingualContentLanguage3"> </param>
 		/// <param name="collectionSettings"> </param>
-		public BookData(BookDom dom, string folderPath, string language1Iso639Code,
+		public BookData(HtmlDom dom, string folderPath, string language1Iso639Code,
 							 string multilingualContentLanguage2, string multilingualContentLanguage3,
 							 CollectionSettings collectionSettings)
 		{
@@ -73,16 +73,16 @@ namespace Bloom.Book
 		}
 
 
-		public DataSet UpdateVariablesAndDataDivThroughDOM()
+		public void UpdateVariablesAndDataDivThroughDOM()
 		{
-			return UpdateVariablesAndDataDiv((XmlElement) _dom.RawDom.FirstChild);
+			UpdateVariablesAndDataDiv((XmlElement) _dom.RawDom.FirstChild);
 		}
 
 		/// <summary>
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
 		/// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-		public DataSet UpdateVariablesAndDataDiv(XmlElement elementToReadFrom)
+		public void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
 
@@ -137,7 +137,8 @@ namespace Bloom.Book
 				}
 			}
 			Debug.WriteLine("after update: " + dataDiv.OuterXml);
-			return data;
+
+			UpdateTitle(data);
 		}
 
 		private void AddDataDivBookVariable(string key, string lang, string form)
@@ -170,9 +171,9 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-		public DataSet SynchronizeDataItemsThroughoutDOM()
+		public void SynchronizeDataItemsThroughoutDOM()
 		{
-			return SynchronizeDataItemsFromContentsOfElement((XmlElement) _dom.RawDom.FirstChild);
+			SynchronizeDataItemsFromContentsOfElement((XmlElement) _dom.RawDom.FirstChild);
 		}
 
 		/// <summary>
@@ -181,7 +182,7 @@ namespace Bloom.Book
 		/// are, for library variables, saved in a separate file.
 		/// </summary>
 		/// <param name="elementToReadFrom"> </param>
-		public DataSet SynchronizeDataItemsFromContentsOfElement(XmlElement elementToReadFrom)
+		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom)
 		{
 			DataSet data = GartherDataItemsFromCollectionSettings(false, _collectionSettings);
 
@@ -192,6 +193,7 @@ namespace Bloom.Book
 			SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(_folderPath, data, "*", _dom.RawDom);
 
+			UpdateTitle(data);
 			return data;
 		}
 
@@ -262,7 +264,7 @@ namespace Bloom.Book
 		{
 			try
 			{
-				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
+				string query = String.Format(".//{0}[(@data-book or @data-library)]", elementName);
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -559,5 +561,17 @@ namespace Bloom.Book
 			}
 #endif
 		}
+
+		private void UpdateTitle(DataSet data)
+		{
+			DataItem title;
+
+			if (data.TextVariables.TryGetValue("bookTitle", out title))
+			{
+				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code });
+				_dom.Title = t;
+			}
+		}
+
 	}
 }
