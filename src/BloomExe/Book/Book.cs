@@ -40,6 +40,7 @@ namespace Bloom.Book
 
 		private IProgress _log = new StringBuilderProgress();
 		private bool _haveCheckedForErrorsAtLeastOnce;
+		private readonly BookData _bookData;
 
 		//for moq'ing only
 		public Book(){}
@@ -63,10 +64,11 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
+			_bookData = new BookData(_storage.Dom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3, _collectionSettings);
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
-				GetBookData(_storage.Dom).SynchronizeDataItemsThroughoutDOM();
+				_bookData.SynchronizeDataItemsThroughoutDOM();
 
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				_storage.Dom.AddStyleSheet(@"languageDisplay.css");
@@ -100,8 +102,7 @@ namespace Bloom.Book
 					list.Add(_collectionSettings.Language3Iso639Code);
 				list.Add("en");
 
-				var ddh = GetBookData(_storage.Dom);
-				var title = ddh.GetMultiTextVariableOrEmpty("bookTitle");
+				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
 				var t = title.GetBestAlternativeString(list);
 				if(string.IsNullOrEmpty(t))
 				{
@@ -479,25 +480,24 @@ namespace Bloom.Book
 		{
 			progress.WriteStatus("Gathering Data...");
 //now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-			//var data = BookData.GartherDataItemsFromCollectionSettings(false,_collectionSettings);
-			var dataDivHelper = GetBookData(bookDOM);
+
 			//dataDivHelper.GatherDataItemsFromXElement(data, "*", RawDom);
 			//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
 			if (String.IsNullOrEmpty(MultilingualContentLanguage2))
-				MultilingualContentLanguage2 = dataDivHelper.GetVariableOrNull("contentLanguage2","*");
+				MultilingualContentLanguage2 = _bookData.GetVariableOrNull("contentLanguage2", "*");
 
 			if (String.IsNullOrEmpty(MultilingualContentLanguage3))
-				MultilingualContentLanguage3 = dataDivHelper.GetVariableOrNull("contentLanguage3", "*");
+				MultilingualContentLanguage3 = _bookData.GetVariableOrNull("contentLanguage3", "*");
 
 
 			var helper = new XMatterHelper(bookDOM, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
 			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
-			helper.InjectXMatter(FolderPath,dataDivHelper.GetWritingSystemCodes(), layout);
+			helper.InjectXMatter(FolderPath, _bookData.GetWritingSystemCodes(), layout);
 			BookStarter.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-			dataDivHelper.SynchronizeDataItemsThroughoutDOM();
+			_bookData.SynchronizeDataItemsThroughoutDOM();
 		}
 
 		private void UpdatePageFromFactoryTemplates(HtmlDom bookDom, IProgress progress)
@@ -793,7 +793,7 @@ namespace Bloom.Book
 			MultilingualContentLanguage2 = language2Code;
 			MultilingualContentLanguage3 = language3Code;
 
-			GetBookData(_storage.Dom).SetLanguageCodes(language2Code, language3Code,MultilingualContentLanguage2,MultilingualContentLanguage3);
+			_bookData.SetLanguageCodes(language2Code, language3Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
 		}
 
 
@@ -1031,7 +1031,7 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				GetBookData(_storage.Dom).UpdateVariablesAndDataDiv(editedPageDom.RawDom);
+				_bookData.UpdateVariablesAndDataDiv(editedPageDom.RawDom);
 
 				try
 				{
@@ -1054,14 +1054,6 @@ namespace Bloom.Book
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
 			}
-		}
-
-
-		/// <param name="whichDom">This is usually the dom of the book, but it may be of a page we're working on</param>
-		/// <returns></returns>
-		private BookData GetBookData(HtmlDom whichDom)
-		{
-			return new BookData(whichDom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3,_collectionSettings);
 		}
 
 
@@ -1324,12 +1316,12 @@ namespace Bloom.Book
 
 		public Metadata GetLicenseMetadata()
 		{
-			return GetBookData(_storage.Dom).GetLicenseMetadata();
+			return _bookData.GetLicenseMetadata();
 		}
 
 		public void UpdateLicenseMetdata(Metadata metadata)
 		{
-			GetBookData(_storage.Dom).SetLicenseMetdata(metadata);
+			_bookData.SetLicenseMetdata(metadata);
 		}
 
 		public void SetTitle(string name)
