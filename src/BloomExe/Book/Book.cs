@@ -64,7 +64,7 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
-			_bookData = new BookData(_storage.Dom, FolderPath, _collectionSettings.Language1Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3, _collectionSettings);
+			_bookData = new BookData(_storage.Dom, FolderPath, _collectionSettings.Language1Iso639Code,_collectionSettings);
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
@@ -215,8 +215,8 @@ namespace Bloom.Book
 		{
 			BookStarter.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
 													 _collectionSettings.Language2Iso639Code,
-													 _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2,
-													 MultilingualContentLanguage3);
+													 _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2,
+													 _bookData.MultilingualContentLanguage3);
 		}
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
@@ -454,7 +454,7 @@ namespace Bloom.Book
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-			BookStarter.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			BookStarter.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 			AddCoverColor(previewDom, CoverColor);
 
 			AddPreviewJScript(previewDom);
@@ -479,17 +479,6 @@ namespace Bloom.Book
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
 			progress.WriteStatus("Gathering Data...");
-//now we need the template fields in that xmatter to be updated to this document, this national language, etc.
-
-			//dataDivHelper.GatherDataItemsFromXElement(data, "*", RawDom);
-			//review: the desired behavior here is not clear. At the moment I'm saying, if we have a CL2 or CL3, I don't care what's in the xml, it's probably just behind
-			if (String.IsNullOrEmpty(MultilingualContentLanguage2))
-				MultilingualContentLanguage2 = _bookData.GetVariableOrNull("contentLanguage2", "*");
-
-			if (String.IsNullOrEmpty(MultilingualContentLanguage3))
-				MultilingualContentLanguage3 = _bookData.GetVariableOrNull("contentLanguage3", "*");
-
-
 			var helper = new XMatterHelper(bookDOM, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
 			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
@@ -705,26 +694,6 @@ namespace Bloom.Book
 		}
 
 
-		/// <summary>
-		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
-		/// </summary>
-		public string MultilingualContentLanguage2
-		{
-			//REVIEW: this is messy, essentially storing the same datum in a property *and* the data-div.  Would it be too slow to just keep it in the data-div alone?
-			get;
-
-			/* only SetMultilingualContentLanguages should use this*/
-			private set;
-		}
-
-		/// <summary>
-		/// For trilingual books, this is the third language to show
-		/// </summary>
-		public string MultilingualContentLanguage3 { get;
-			/* only SetMultilingualContentLanguages should use this*/
-			private set;
-		}
-
 		public string ThumbnailPath
 		{
 			get { return Path.Combine(FolderPath, "thumbnail.png"); }
@@ -768,32 +737,26 @@ namespace Bloom.Book
 			}//we imaging a future "unlikely"
 		}
 
+		/// <summary>
+		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
+		/// </summary>
+		public string MultilingualContentLanguage2
+		{
+			get { return _bookData.MultilingualContentLanguage2; }
+		}
+
+		/// <summary>
+		/// For trilingual books, this is the third language to show
+		/// </summary>
+		public string MultilingualContentLanguage3
+		{
+			get { return _bookData.MultilingualContentLanguage3; }
+		}
+
+
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
-			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
-				language2Code = null;
-			if (language3Code == _collectionSettings.Language1Iso639Code)
-				language3Code = null;
-			if (language2Code == language3Code)	//can't use the same lang twice
-				language3Code = null;
-
-			if (String.IsNullOrEmpty(language2Code))
-			{
-				if(!String.IsNullOrEmpty(language3Code))
-				{
-					language2Code = language3Code; //can't have a 3 without a 2
-					language3Code = null;
-				}
-				else
-					language2Code = null;
-			}
-			if (language3Code == "")
-				language3Code = null;
-
-			MultilingualContentLanguage2 = language2Code;
-			MultilingualContentLanguage3 = language3Code;
-
-			_bookData.SetLanguageCodes(language2Code, language3Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+			_bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 		}
 
 
@@ -949,7 +912,7 @@ namespace Bloom.Book
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
-			BookStarter.SetupPage(newPageDiv, _collectionSettings, MultilingualContentLanguage2, MultilingualContentLanguage3);//, LockedExceptForTranslation);
+			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			ClearEditableValues(newPageDiv);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
@@ -1030,8 +993,7 @@ namespace Bloom.Book
 				var page = GetPageFromStorage(pageDivId);
 				page.InnerXml = divElement.InnerXml;
 
-				//notice, we supply this pageDom paramenter which means "read from this only", so that what you just did overwrites other instances in the doc, including the data-div
-				_bookData.UpdateVariablesAndDataDiv(editedPageDom.RawDom);
+				 _bookData.SuckInDataFromEditedDom(editedPageDom);
 
 				try
 				{
@@ -1248,7 +1210,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in _storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				BookStarter.PrepareElementsInPageOrDocument(div, _collectionSettings);
-				BookStarter.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, MultilingualContentLanguage2, MultilingualContentLanguage3);
+				BookStarter.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 			}
 
 		}

@@ -46,8 +46,6 @@ namespace Bloom.Book
 		private readonly HtmlDom _dom;
 		private readonly string _folderPath;
 		private readonly string _language1Iso639Code;
-		private readonly string _multilingualContentLanguage2;
-		private readonly string _multilingualContentLanguage3;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly DataSet _dataset;
 
@@ -59,17 +57,39 @@ namespace Bloom.Book
 		/// <param name="multilingualContentLanguage3"> </param>
 		/// <param name="collectionSettings"> </param>
 		public BookData(HtmlDom dom, string folderPath, string language1Iso639Code,
-							 string multilingualContentLanguage2, string multilingualContentLanguage3,
 							 CollectionSettings collectionSettings)
 		{
 			_dom = dom;
 			_folderPath = folderPath;
 			_language1Iso639Code = language1Iso639Code;
-			_multilingualContentLanguage2 = multilingualContentLanguage2;
-			_multilingualContentLanguage3 = multilingualContentLanguage3;
 			_collectionSettings = collectionSettings;
 			_dataset = GartherDataItemsFromCollectionSettings(false, _collectionSettings);
-			GatherDataItemsFromXElement(_dataset, "*", _dom.RawDom);
+			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+
+		}
+
+		/// <summary>
+		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
+		/// </summary>
+		public string MultilingualContentLanguage2
+		{
+			get
+			{
+				GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+				return GetVariableOrNull("contentLanguage2", "*");
+			}
+		}
+
+		/// <summary>
+		/// For trilingual books, this is the third language to show
+		/// </summary>
+		public string MultilingualContentLanguage3
+		{
+			get
+			{
+				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
+				return GetVariableOrNull("contentLanguage3", "*");
+			}
 		}
 
 
@@ -78,11 +98,21 @@ namespace Bloom.Book
 			UpdateVariablesAndDataDiv((XmlElement) _dom.RawDom.FirstChild);
 		}
 
+
+		/// <summary>
+		/// Create or update the data div with all the data-book values in the document
+		/// </summary>
+		/// <param name="dom">This is either the whole document, or a page div that we just edited and want to read from.</param>
+		public void SuckInDataFromEditedDom(HtmlDom dom)
+		{
+			UpdateVariablesAndDataDiv(dom.RawDom);
+		}
+
 		/// <summary>
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
 		/// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-		public void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
+		private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
 
@@ -91,13 +121,13 @@ namespace Bloom.Book
 			DataSet data = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
 			data.UpdateGenericLanguageString("contentLanguage1", _language1Iso639Code, false);
 			data.UpdateGenericLanguageString("contentLanguage2",
-											 String.IsNullOrEmpty(_multilingualContentLanguage2)
+											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
-												 : _multilingualContentLanguage2, false);
+												 : MultilingualContentLanguage2, false);
 			data.UpdateGenericLanguageString("contentLanguage3",
-											 String.IsNullOrEmpty(_multilingualContentLanguage3)
+											 String.IsNullOrEmpty(MultilingualContentLanguage3)
 												 ? null
-												 : _multilingualContentLanguage3, false);
+												 : MultilingualContentLanguage3, false);
 
 			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
@@ -150,12 +180,26 @@ namespace Bloom.Book
 			GetOrCreateDataDiv().AppendChild(d);
 		}
 
+		private void SetDataDivBookVariable(string key, string value, bool isCollectionValue)
+		{
+			RemoveDataDivElement(key);
+			if(!string.IsNullOrEmpty(value))
+			{
+				AddDataDivBookVariable(key,"*",value);
+				_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
+			}
+		}
+
 		private void RemoveDataDivElement(string key)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
 			foreach (XmlNode e in  dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
 			{
 				dataDiv.RemoveChild(e);
+			}
+			if(_dataset.TextVariables.ContainsKey(key))
+			{
+				_dataset.TextVariables.Remove(key);
 			}
 		}
 
@@ -189,7 +233,7 @@ namespace Bloom.Book
 			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			GatherDataItemsFromXElement(data, "*", elementToReadFrom);
+			GatherDataItemsFromXElement(data, elementToReadFrom);
 			SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(_folderPath, data, "*", _dom.RawDom);
 
@@ -259,9 +303,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// walk throught the sourceDom, collecting up values from elements that have data-book or data-library attributes.
 		/// </summary>
-		private void GatherDataItemsFromXElement(DataSet data, string elementName, XmlNode sourceElement
+		private void GatherDataItemsFromXElement(DataSet data, XmlNode sourceElement
 			/* can be the whole sourceDom or just a page */)
 		{
+			string elementName = "*";
 			try
 			{
 				string query = String.Format(".//{0}[(@data-book or @data-library)]", elementName);
@@ -420,27 +465,10 @@ namespace Bloom.Book
 			}
 		}
 
-		public void SetLanguageCodes(string language2Code, string language3Code, string multilingualContentLanguage2,
-									 string multilingualContentLanguage3)
-		{
-			RemoveDataDivElement("contentLanguage1");
-			RemoveDataDivElement("contentLanguage2");
-			RemoveDataDivElement("contentLanguage3");
-			AddDataDivBookVariable("contentLanguage1", "*", _collectionSettings.Language1Iso639Code);
-			if (multilingualContentLanguage2 != null)
-			{
-				AddDataDivBookVariable("contentLanguage2", "*", language2Code);
-			}
-			if (multilingualContentLanguage3 != null)
-			{
-				AddDataDivBookVariable("contentLanguage3", "*", language3Code);
-			}
-		}
-
 		public void SetLicenseMetdata(Metadata metadata)
 		{
 			var data = new DataSet();
-			GatherDataItemsFromXElement(data, "*", _dom.RawDom);
+			GatherDataItemsFromXElement(data,  _dom.RawDom);
 
 			string copyright = metadata.CopyrightNotice;
 			data.UpdateLanguageString("*", "copyright", copyright, false);
@@ -484,7 +512,7 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			var data = new DataSet();
-			GatherDataItemsFromXElement(data, "*", _dom.RawDom);
+			GatherDataItemsFromXElement(data, _dom.RawDom);
 			var metadata = new Metadata();
 			DataItem d;
 			if (data.TextVariables.TryGetValue("copyright", out d))
@@ -573,5 +601,31 @@ namespace Bloom.Book
 			}
 		}
 
+
+		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
+		{
+			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
+				language2Code = null;
+			if (language3Code == _collectionSettings.Language1Iso639Code)
+				language3Code = null;
+			if (language2Code == language3Code)	//can't use the same lang twice
+				language3Code = null;
+
+			if (String.IsNullOrEmpty(language2Code))
+			{
+				if (!String.IsNullOrEmpty(language3Code))
+				{
+					language2Code = language3Code; //can't have a 3 without a 2
+					language3Code = null;
+				}
+				else
+					language2Code = null;
+			}
+			if (language3Code == "")
+				language3Code = null;
+
+			SetDataDivBookVariable("contentLanguage2", language2Code,false);
+			SetDataDivBookVariable("contentLanguage3", language3Code, false);
+		}
 	}
 }

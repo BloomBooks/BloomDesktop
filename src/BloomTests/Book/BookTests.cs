@@ -528,24 +528,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
 
-		[Test]
-		public void SetMultilingualContentLanguages_HasTrilingualLanguages_AddsToDataDiv()
-		{
-			_bookDom = new HtmlDom(@"<html><head></head><body></body></html>");
-			var book = CreateBook();
-			book.SetMultilingualContentLanguages("okm", "kbt");
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and text()='xyz']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
-		}
-		[Test]
-		public void SetMultilingualContentLanguages_ThirdContentLangTurnedOff_RemovedFromDataDiv()
-		{
-			_bookDom = new HtmlDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
-			var book = CreateBook();
-			book.SetMultilingualContentLanguages(null, null);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3']", 0);
-		}
 
 		[Test]
 		public void BringBookUpToDate_DomHas2ContentLanguages_PulledIntoBookProperties()
