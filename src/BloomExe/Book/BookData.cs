@@ -45,23 +45,18 @@ namespace Bloom.Book
 	{
 		private readonly HtmlDom _dom;
 		private readonly string _folderPath;
-		private readonly string _language1Iso639Code;
+		private readonly Action<XmlElement> _updateImgNode;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly DataSet _dataset;
 
 		/// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
-		/// Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
-		/// <param name="folderPath"> </param>
-		/// <param name="language1Iso639Code"> </param>
-		/// <param name="multilingualContentLanguage2"> </param>
-		/// <param name="multilingualContentLanguage3"> </param>
+		///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
 		/// <param name="collectionSettings"> </param>
-		public BookData(HtmlDom dom, string folderPath, string language1Iso639Code,
-							 CollectionSettings collectionSettings)
+		/// <param name="updateImgNodeCallback">This is a callback so as not to introduce dependencies on ImageUpdater & the current folder path</param>
+		public BookData(HtmlDom dom, CollectionSettings collectionSettings, Action<XmlElement> updateImgNodeCallback)
 		{
 			_dom = dom;
-			_folderPath = folderPath;
-			_language1Iso639Code = language1Iso639Code;
+			_updateImgNode = updateImgNodeCallback;
 			_collectionSettings = collectionSettings;
 			_dataset = GartherDataItemsFromCollectionSettings(false, _collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
@@ -108,6 +103,11 @@ namespace Bloom.Book
 			UpdateVariablesAndDataDiv(dom.RawDom);
 		}
 
+		public void SynchronizeDataItemsThroughoutDOM()
+		{
+			SynchronizeDataItemsFromContentsOfElement((XmlElement)_dom.RawDom.FirstChild);
+		}
+
 		/// <summary>
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
@@ -119,7 +119,7 @@ namespace Bloom.Book
 			Debug.WriteLine("before update: " + dataDiv.OuterXml);
 
 			DataSet data = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
-			data.UpdateGenericLanguageString("contentLanguage1", _language1Iso639Code, false);
+			data.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
 			data.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
@@ -215,10 +215,7 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-		public void SynchronizeDataItemsThroughoutDOM()
-		{
-			SynchronizeDataItemsFromContentsOfElement((XmlElement) _dom.RawDom.FirstChild);
-		}
+
 
 		/// <summary>
 		/// Go through the document, reading in values from fields, and then pushing variable values back into fields.
@@ -235,7 +232,7 @@ namespace Bloom.Book
 
 			GatherDataItemsFromXElement(data, elementToReadFrom);
 			SendDataToDebugConsole(data);
-			UpdateDomFromDataSet(_folderPath, data, "*", _dom.RawDom);
+			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
 			UpdateTitle(data);
 			return data;
@@ -374,7 +371,7 @@ namespace Bloom.Book
 		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
-		public static void UpdateDomFromDataSet(string folderPath, DataSet data, string elementName,
+		private void UpdateDomFromDataSet(DataSet data, string elementName,
 												XmlDocument targetDom)
 		{
 			try
@@ -398,8 +395,8 @@ namespace Bloom.Book
 							node.SetAttribute("src", imageName);
 							if (oldImageName != imageName)
 							{
-								Guard.AgainstNull(folderPath, "folderPath");
-								ImageUpdater.UpdateImgMetdataAttributesToMatchImage(folderPath, node, new NullProgress());
+								Guard.AgainstNull(_updateImgNode, "_updateImgNode");
+								_updateImgNode(node);
 							}
 						}
 						else
@@ -486,7 +483,7 @@ namespace Bloom.Book
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
 
 
-			UpdateDomFromDataSet(_folderPath, data, "*", _dom.RawDom);
+			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
 			//UpdateDomFromDataSet() is not able to remove items yet, so we do it explicity
 

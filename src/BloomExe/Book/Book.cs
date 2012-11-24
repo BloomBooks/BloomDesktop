@@ -64,7 +64,8 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
-			_bookData = new BookData(_storage.Dom, FolderPath, _collectionSettings.Language1Iso639Code,_collectionSettings);
+			_bookData = new BookData(_storage.Dom,
+					_collectionSettings, imgNode => ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress()));
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
@@ -124,13 +125,6 @@ namespace Bloom.Book
 				{
 					//REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.
 					//1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
-
-
-					//                    var node = _storage.Dom.SelectSingleNodeHonoringDefaultNS("//textarea[contains(@class,'vernacularBookTitle')]");
-//                    if (node == null)
-//                        return "unknown";
-//                    return (node.InnerText);
-					//var s =  _storage.GetVernacularTitleFromHtml(_librarySettings.Language1Iso639Code);
 					var s = _storage.Dom.Title;
 					if(string.IsNullOrEmpty(s))
 						return Path.GetFileName(_storage.FolderPath);
