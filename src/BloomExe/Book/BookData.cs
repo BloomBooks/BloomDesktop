@@ -5,7 +5,6 @@ using System.Net;
 using System.Xml;
 using Bloom.Collection;
 using Palaso.Code;
-using Palaso.Progress;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;

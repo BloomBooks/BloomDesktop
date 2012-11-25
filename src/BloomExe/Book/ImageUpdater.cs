@@ -107,7 +107,7 @@ namespace Bloom.Book
 		/// This method makes sure they are all up to date.
 		/// </summary>
 		/// <param name="progress"> </param>
-		public static void UpdateAllHtmlDataAttributesForAllImgElements(string folderPath, XmlDocument dom, IProgress progress)
+		public static void UpdateAllHtmlDataAttributesForAllImgElements(string folderPath, HtmlDom dom, IProgress progress)
 		{
 			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
 			//whether the info is there or missing or whatever.

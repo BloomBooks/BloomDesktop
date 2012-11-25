@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Xml;
+using Palaso.Reporting;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -150,6 +154,108 @@ namespace Bloom.Book
 			Head.AppendChild(element);
 		}
 
+
+		public  void RemoveModeStyleSheets()
+		{
+			foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if (href == null)
+				{
+					continue;
+				}
+
+				var fileName = Path.GetFileName(href);
+				if (fileName.Contains("edit") || fileName.Contains("preview"))
+				{
+					linkNode.ParentNode.RemoveChild(linkNode);
+				}
+			}
+		}
+
+		public string ValidateBook(string descriptionOfBookForErrorLog)
+		{
+			var ids = new List<string>();
+			var builder = new StringBuilder();
+
+			Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page", builder);
+			EnsureIdsAreUnique(this, "textarea", ids, builder);
+			EnsureIdsAreUnique(this, "p", ids, builder);
+			EnsureIdsAreUnique(this, "img", ids, builder);
+
+			//TODO: validate other things, including html
+			var x = builder.ToString().Trim();
+			if (x.Length == 0)
+				Logger.WriteEvent("HtmlDom.ValidateBook({0}): No Errors", descriptionOfBookForErrorLog);
+			else
+			{
+				Logger.WriteEvent("HtmlDom.ValidateBook({0}): {1}", descriptionOfBookForErrorLog, x);
+			}
+
+			return builder.ToString();
+		}
+
+
+		private static void Ensure(bool passes, string message, StringBuilder builder)
+		{
+			if (!passes)
+				builder.AppendLine(message);
+		}
+
+		private static void EnsureIdsAreUnique(HtmlDom dom, string elementTag, List<string> ids, StringBuilder builder)
+		{
+			foreach (XmlElement element in dom.SafeSelectNodes("//" + elementTag + "[@id]"))
+			{
+				var id = element.GetAttribute("id");
+				if (ids.Contains(id))
+					builder.AppendLine("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
+				else
+					ids.Add(id);
+			}
+		}
+
+		public void SortStyleSheetLinks()
+		{
+			List<XmlElement> links = new List<XmlElement>();
+			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				links.Add(link);
+			}
+			if (links.Count < 2)
+				return;
+
+			var headNode = links[0].ParentNode;
+
+			//clear them out
+			foreach (var xmlElement in links)
+			{
+				headNode.RemoveChild(xmlElement);
+			}
+
+			links.Sort(new StyleSheetLinkSorter());
+
+			//add them back
+			foreach (var xmlElement in links)
+			{
+				headNode.AppendChild(xmlElement);
+			}
+		 }
+		/// <summary>
+		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
+		/// </summary>
+		/// <param name="dom"></param>
+		private void StripStyleSheetLinkPaths(HtmlDom dom)
+		{
+			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if (href == null)
+				{
+					continue;
+				}
+				linkNode.SetAttribute("href", Path.GetFileName(href));
+			}
+		}
 
 	}
 }
