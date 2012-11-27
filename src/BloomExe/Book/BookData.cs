@@ -170,7 +170,7 @@ namespace Bloom.Book
 			UpdateTitle(data);
 		}
 
-		private void AddDataDivBookVariable(string key, string lang, string form)
+		public void AddDataDivBookVariable(string key, string lang, string form)
 		{
 			XmlElement d = _dom.RawDom.CreateElement("div");
 			d.SetAttribute("data-book", key);
@@ -179,7 +179,7 @@ namespace Bloom.Book
 			GetOrCreateDataDiv().AppendChild(d);
 		}
 
-		private void SetDataDivBookVariable(string key, string value, bool isCollectionValue)
+		public void SetDataDivBookVariable(string key, string value, bool isCollectionValue)
 		{
 			RemoveDataDivElement(key);
 			if(!string.IsNullOrEmpty(value))
@@ -189,7 +189,17 @@ namespace Bloom.Book
 			}
 		}
 
-		private void RemoveDataDivElement(string key)
+		public void SetDataDivBookVariable(string key, string value, string lang)
+		{
+			RemoveDataDivElement(key);
+			if (!string.IsNullOrEmpty(value))
+			{
+				AddDataDivBookVariable(key, lang, value);
+				_dataset.UpdateGenericLanguageString(key, value, false);
+			}
+		}
+
+		public void RemoveDataDivElement(string key)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
 			foreach (XmlNode e in  dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))

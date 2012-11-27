@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Palaso.Code;
+using Palaso.Extensions;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -115,8 +117,7 @@ namespace Bloom.Book
 		public void SetBaseForRelativePaths(string path)
 		{
 			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
-			if (head == null)
-				return;
+			Guard.AgainstNull(head,"Expected the DOM to already have a head element");
 
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
@@ -240,22 +241,75 @@ namespace Bloom.Book
 				headNode.AppendChild(xmlElement);
 			}
 		 }
-		/// <summary>
-		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-		/// </summary>
-		/// <param name="dom"></param>
-		private void StripStyleSheetLinkPaths(HtmlDom dom)
+
+//        /// <summary>
+//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
+//        /// </summary>
+//        /// <param name="dom"></param>
+//        private void StripStyleSheetLinkPaths(HtmlDom dom)
+//        {
+//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+//            {
+//                var href = linkNode.GetAttribute("href");
+//                if (href == null)
+//                {
+//                    continue;
+//                }
+//                linkNode.SetAttribute("href", Path.GetFileName(href));
+//            }
+//        }
+
+		public string GetMetaValue(string name, string defaultValue)
 		{
-			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			if (node.Count > 0)
 			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-				linkNode.SetAttribute("href", Path.GetFileName(href));
+				return ((XmlElement)node[0]).GetAttribute("content");
+			}
+			return defaultValue;
+		}
+
+		public void RemoveMetaValue(string name)
+		{
+			foreach (XmlElement n in _dom.SafeSelectNodes("//head/meta[@name='" + name + "']"))
+			{
+				n.ParentNode.RemoveChild(n);
 			}
 		}
 
+		public static void AddClass(XmlElement e, string className)
+		{
+			e.SetAttribute("class", (e.GetAttribute("class") + " " + className).Trim());
+		}
+
+		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
+		{
+
+			var classes = xmlElement.GetAttribute("class");
+			var original = classes;
+
+			if (String.IsNullOrEmpty(classes))
+				return;
+			var parts = classes.SplitTrimmed(' ');
+
+			classes = "";
+			foreach (var part in parts)
+			{
+				if (!part.StartsWith(classPrefix))
+					classes += part + " ";
+			}
+			xmlElement.SetAttribute("class", classes.Trim());
+
+			//	Debug.WriteLine("RemoveClassesBeginingWith    " + xmlElement.InnerText+"     |    "+original + " ---> " + classes);
+		}
+
+
+		public static void AddClassIfMissing(XmlElement element, string className)
+		{
+			string classes = element.GetAttribute("class");
+			if (classes.Contains(className))
+				return;
+			element.SetAttribute("class", (classes + " " + className).Trim());
+		}
 	}
 }

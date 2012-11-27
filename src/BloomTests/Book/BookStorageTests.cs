@@ -109,8 +109,6 @@ namespace BloomTests.Book
 		[Test]
 		public void SetBookName_FolderWithNameAlreadyExists_AddsANumberToName()
 		{
-
-
 			using (var original = new TemporaryFolder(_folder, "original"))
 			using (var x = new TemporaryFolder(_folder, "foo"))
 			using (var y = new TemporaryFolder(_folder, "foo1"))

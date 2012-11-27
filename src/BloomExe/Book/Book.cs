@@ -210,7 +210,7 @@ namespace Bloom.Book
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			BookStarter.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
 													 _collectionSettings.Language2Iso639Code,
 													 _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
@@ -369,7 +369,7 @@ namespace Bloom.Book
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
 				if(Type!=BookType.Publication)
 					return null;
-				string templateKey = GetMetaValue("pageTemplateSource", "");
+				string templateKey = _dom.GetMetaValue("pageTemplateSource", "");
 
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
@@ -392,15 +392,6 @@ namespace Bloom.Book
 				return book;
 		}
 
-		private string GetMetaValue(string name, string defaultValue)
-		{
-			var nameSuggestion = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
-			if (nameSuggestion.Count > 0)
-			{
-				return ((XmlElement)nameSuggestion[0]).GetAttribute("content");
-			}
-			return defaultValue;
-		}
 
 		public BookType Type
 		{
@@ -451,7 +442,7 @@ namespace Bloom.Book
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-			BookStarter.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 			AddCoverColor(previewDom, CoverColor);
 
 			AddPreviewJScript(previewDom);
@@ -481,7 +472,7 @@ namespace Bloom.Book
 			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
 			helper.InjectXMatter(FolderPath, _bookData.GetWritingSystemCodes(), layout);
-			BookStarter.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
+			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 			_bookData.SynchronizeDataItemsThroughoutDOM();
 		}
@@ -708,7 +699,7 @@ namespace Bloom.Book
 		public bool IsSuitableForVernacularLibrary
 		{
 			get {
-				string metaValue = GetMetaValue("SuitableForMakingVernacularBooks", "yes");
+				string metaValue = _dom.GetMetaValue("SuitableForMakingVernacularBooks", "yes");
 				return metaValue == "yes" || metaValue == "definitely"; }//the 'template maker' says "no"
 		}
 
@@ -717,7 +708,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				string metaValue = GetMetaValue("experimental", "false");
+				string metaValue = _dom.GetMetaValue("experimental", "false");
 				return metaValue == "true" || metaValue == "yes";
 			}
 		}
@@ -729,7 +720,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				string metaValue = GetMetaValue("SuitableForMakingShells", "no");
+				string metaValue = _dom.GetMetaValue("SuitableForMakingShells", "no");
 				return metaValue == "yes" || metaValue == "definitely"; //the 'template maker' says "no|
 			}//we imaging a future "unlikely"
 		}
@@ -1206,10 +1197,9 @@ namespace Bloom.Book
 
 			foreach (XmlElement div in _dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				BookStarter.PrepareElementsInPageOrDocument(div, _collectionSettings);
-				BookStarter.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 			}
-
 		}
 
 		public void RebuildThumbNailAsync(Action<Book, Image> callback, Action<Book, Exception> errorCallback)

@@ -43,7 +43,7 @@ namespace BloomTests.Book
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
 											});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), new LanguageSettings("xyz", new string[0]), _librarySettings.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), _librarySettings.Object);
 
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
@@ -420,170 +420,9 @@ namespace BloomTests.Book
 		}
 
 
-		[Test]
-		public void UpdateContentLanguageClasses_NewPage_AddsContentLanguageClasses()
-		{
-			var contents = @"<div class='bloom-page'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							<textarea lang='222'></textarea>
-							<textarea lang='333'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement) dom.SafeSelectNodes("//div[@class='bloom-page']")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, "222", "333");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='222' and contains(@class, 'bloom-content2')]", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='333' and contains(@class, 'bloom-content3')]", 1);
-		}
-
-
-		[Test]
-		public void UpdateContentLanguageClasses_FrontMatterPage_AddsNationalLanguageClasses()
-		{
-			var contents = @"<div class='bloom-page bloom-frontMatter'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							<textarea lang='fr'></textarea>
-							<textarea lang='es'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, "222", "333");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr' and contains(@class, 'bloom-contentNational1')]", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es' and contains(@class, 'bloom-contentNational2')]", 1);
-		}
-
-		[Test]
-		public void UpdateContentLanguageClasses_ExistingPageWith3rdLangRemoved_RemovesContentLanguageClassButLeavesOtherClasses()
-		{
-			var contents = @"<div class='bloom-page'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							<textarea class='bloom-content2' lang='222'></textarea>
-							<textarea  class='foo bloom-content3 bar' lang='333'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, "222", null);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='222' and contains(@class, 'bloom-content2')]", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='333' and contains(@class, 'bloom-content3')]", 0);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='333' and contains(@class, 'foo')]", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='333' and contains(@class, 'bar')]", 1);
-		}
-
-
-		[Test]
-		public void UpdateContentLanguageClasses_MonoLingualBook_AddsBloomMonolingualClassToTranslationGroup()
-		{
-			var contents = @"<div class='bloom-page bloom-bilingual'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, null, null);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-bilingual')]", 0);//should remove that one
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-monolingual')]", 1);
-		}
-
-		[Test]
-		public void UpdateContentLanguageClasses_BilingualBook_AddsBloomBilingualClassToTranslationGroup()
-		{
-			var contents = @"<div class='bloom-page  bloom-trilingual'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, "222", null);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-monolingual')]", 0);//should remove that one
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-bilingual')]", 1);
-		}
-
-		[Test]
-		public void UpdateContentLanguageClasses_TrilingualBook_AddsBloomTrilingualClassToTranslationGroup()
-		{
-			var contents = @"<div class='bloom-page  bloom-bilingual'>
-						<div class='bloom-translationGroup'>
-							<textarea lang='en'></textarea>
-							</div>
-						</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
-			BookStarter.UpdateContentLanguageClasses(pageDiv, "xyz", _librarySettings.Object.Language2Iso639Code, _librarySettings.Object.Language3Iso639Code, "222", "333");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-bilingual')]", 0);//should remove that one
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-trilingual')]", 1);
-		}
 
 
 
-		[Test]
-		public void PrepareElementsOnPage_HasNonEditableDiv_LeavesAlone()
-		{
-			var contents = @"<div class='bloom-page'>
-						<table class='bloom-translationGroup'> <!-- table is used for vertical alignment of the div on some pages -->
-						 <td>
-							<div lang='en'>This is some English</div>
-						</td>
-						</table>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-
-			BookStarter.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[@class='bloom-page']")[0], _librarySettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//td/div[@lang='en']", 1);
-		}
-
-		[Test]
-		public void PrepareElementsOnPage_HasTextAreaInsideTranslationGroup_MakesVernacularAndNational()
-		{
-			var contents = @"<div class='bloom-page bloom-translationGroup'>
-						<textarea lang='en'>This is some English</textarea>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-
-			BookStarter.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],_librarySettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
-		}
-
-		/// <summary>
-		/// this is an abnormal situation, but I did see it (there was another problem with V lang id)
-		/// The key challenge for the code is, there's no prototype div to copy.
-		/// </summary>
-		[Test]
-		public void PrepareElementsOnPage_HasEmptyTranslationGroup_MakesVernacularAndNational()
-		{
-			var contents = @"<div class='bloom-page bloom-translationGroup'>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-
-			BookStarter.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 3);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
-		}
 
 
 		[Test]

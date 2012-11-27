@@ -45,7 +45,7 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "root"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), new LanguageSettings("xyz", new string[0]), library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 

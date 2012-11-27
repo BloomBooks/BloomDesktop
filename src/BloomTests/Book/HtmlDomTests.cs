@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using NUnit.Framework;
 using Bloom.Book;
 using Palaso.TestUtilities;
@@ -9,7 +10,7 @@ using Palaso.TestUtilities;
 namespace BloomTests.Book
 {
 	[TestFixture]
-	public sealed class BookDomTests
+	public sealed class HtmlDomTests
 	{
 		[Test]
 		public void Title_EmptyDom_RoundTrips()
@@ -33,6 +34,75 @@ namespace BloomTests.Book
 			dom.Title = "<b>one</b>1";
 			Assert.AreEqual("one1", dom.Title);
 		}
+
+		[Test]
+		public void SetBaseForRelativePaths_NoHead_Throw()
+		{
+			var dom = new HtmlDom(
+						  @"<html></html>");
+			Assert.Throws<ArgumentNullException>(() => dom.SetBaseForRelativePaths("theBase"));
+		}
+		[Test]
+		public void SetBaseForRelativePaths_NoExistingBase_Adds()
+		{
+			var dom = new HtmlDom(
+						  @"<html><head/></html>");
+			dom.SetBaseForRelativePaths("theBase");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='theBase']", 1);
+		}
+		[Test]
+		public void SetBaseForRelativePaths_HasExistingBase_Replaces()
+		{
+			var dom = new HtmlDom(
+						  @"<html><head><base href='original'/></head></html>");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 1);
+			dom.SetBaseForRelativePaths("new");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 0);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='new']", 1);
+		}
+
+		[Test]
+		public void RemoveMetaValue_IsThere_RemovesIt()
+		{
+			var dom = new HtmlDom(
+						  @"<html><head>
+				<meta name='one' content='1'/>
+				</head></html>");
+			dom.RemoveMetaValue("one");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='one']", 0);
+		}
+		[Test]
+		public void RemoveMetaValue_NotThere_OK()
+		{
+			var dom = new HtmlDom();
+			dom.RemoveMetaValue("notthere");
+		}
+
+		[Test]
+		public void AddClassIfMissing_AlreadyThere_LeavesAlone()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml(@"<div class='one two three'/>");
+			HtmlDom.AddClassIfMissing((XmlElement) dom.FirstChild, "two");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='one two three']",1);
+		}
+		[Test]
+		public void AddClassIfMissing_Missing_Adds()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml(@"<div class='one three'/>");
+			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='one three two']", 1);
+		}
+		[Test]
+		public void AddClassIfMissing_NoClasses_Adds()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml(@"<div class=''/>");
+			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
+		}
+
 		[Test]
 		public void SortStyleSheetLinks_LeavesBasePageBeforePreviewMode()
 		{
