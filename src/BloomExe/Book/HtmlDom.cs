@@ -22,7 +22,7 @@ namespace Bloom.Book
 		public HtmlDom()
 		{
 			_dom = new XmlDocument();
-			_dom.LoadXml("<html></html>");
+			_dom.LoadXml("<html><head></head><body></body></html>");
 		}
 
 		public HtmlDom(XmlDocument domToClone)

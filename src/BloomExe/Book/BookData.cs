@@ -43,10 +43,10 @@ namespace Bloom.Book
 	public class BookData
 	{
 		private readonly HtmlDom _dom;
-		private readonly string _folderPath;
 		private readonly Action<XmlElement> _updateImgNode;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly DataSet _dataset;
+		private XmlElement _dataDiv;
 
 		/// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
 		///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
@@ -57,9 +57,9 @@ namespace Bloom.Book
 			_dom = dom;
 			_updateImgNode = updateImgNodeCallback;
 			_collectionSettings = collectionSettings;
-			_dataset = GartherDataItemsFromCollectionSettings(false, _collectionSettings);
+			GetOrCreateDataDiv();
+			_dataset = GartherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
-
 		}
 
 		/// <summary>
@@ -89,7 +89,7 @@ namespace Bloom.Book
 
 		public void UpdateVariablesAndDataDivThroughDOM()
 		{
-			UpdateVariablesAndDataDiv((XmlElement) _dom.RawDom.FirstChild);
+			UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild);
 		}
 
 
@@ -104,7 +104,7 @@ namespace Bloom.Book
 
 		public void SynchronizeDataItemsThroughoutDOM()
 		{
-			SynchronizeDataItemsFromContentsOfElement((XmlElement)_dom.RawDom.FirstChild);
+			SynchronizeDataItemsFromContentsOfElement(_dom.RawDom.FirstChild);
 		}
 
 		/// <summary>
@@ -113,9 +113,7 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
 		private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
 		{
-			XmlElement dataDiv = GetOrCreateDataDiv();
-
-			Debug.WriteLine("before update: " + dataDiv.OuterXml);
+			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
 			DataSet data = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
 			data.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
@@ -128,46 +126,56 @@ namespace Bloom.Book
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
-			Debug.WriteLine("xyz: " + dataDiv.OuterXml);
+			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
 			{
-				if (v.Value.IsCollectionValue)
-					continue; //we don't save these out here
+				if (!v.Value.IsCollectionValue)
+					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
+			}
+			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
-				//Debug.WriteLine("before: " + dataDiv.OuterXml);
+			UpdateTitle(data);
+		}
 
-				foreach (LanguageForm languageForm in v.Value.TextAlternatives.Forms)
+		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
+		{
+			//Debug.WriteLine("before: " + dataDiv.OuterXml);
+
+			if(multiText.Count==0)
+			{
+				RemoveDataDivElementIfEmptyValue(key,null);
+			}
+			foreach (LanguageForm languageForm in multiText.Forms)
+			{
+				XmlNode node =
+					_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
+														   languageForm.WritingSystemId));
+				if (null == node)
 				{
-					XmlNode node =
-						dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", v.Key,
-															   languageForm.WritingSystemId));
-					if (null == node)
+					if (!string.IsNullOrEmpty(languageForm.Form))
 					{
-						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId,
+						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
 										languageForm.Form);
-
-						AddDataDivBookVariable(v.Key, languageForm.WritingSystemId, languageForm.Form);
-						Debug.WriteLine("nop: " + dataDiv.OuterXml);
+						_dataset.UpdateLanguageString(key, languageForm.Form, languageForm.WritingSystemId, false);
+						Debug.WriteLine("nop: " + _dataDiv.OuterXml);
+						AddDataDivBookVariable(key, languageForm.WritingSystemId, languageForm.Form);
+					}
+				}
+				else
+				{
+					if (string.IsNullOrEmpty(languageForm.Form)) //a null value removes the entry entirely
+					{
+						node.ParentNode.RemoveChild(node);
 					}
 					else
 					{
-						if (languageForm.Form == null) //a null value removes the entry entirely
-						{
-							node.ParentNode.RemoveChild(node);
-						}
-						else
-						{
-							node.InnerXml = languageForm.Form;
-						}
-						Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", v.Key, languageForm.WritingSystemId,
-										languageForm.Form);
-						Debug.WriteLine("now: " + dataDiv.OuterXml);
+						node.InnerXml = languageForm.Form;
 					}
+					Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
+									languageForm.Form);
+					Debug.WriteLine("now: " + _dataDiv.OuterXml);
 				}
 			}
-			Debug.WriteLine("after update: " + dataDiv.OuterXml);
-
-			UpdateTitle(data);
 		}
 
 		public void AddDataDivBookVariable(string key, string lang, string form)
@@ -179,49 +187,55 @@ namespace Bloom.Book
 			GetOrCreateDataDiv().AppendChild(d);
 		}
 
-		public void SetDataDivBookVariable(string key, string value, bool isCollectionValue)
+		public void Set(string key, string value, bool isCollectionValue)
 		{
-			RemoveDataDivElement(key);
-			if(!string.IsNullOrEmpty(value))
+			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
+			UpdateSingleTextVariableThroughoutDOM(key, _dataset.TextVariables[key].TextAlternatives);
+		}
+
+		public void Set(string key, string value, string lang)
+		{
+			_dataset.UpdateLanguageString(key, value, lang, false);
+			if(_dataset.TextVariables.ContainsKey(key))
 			{
-				AddDataDivBookVariable(key,"*",value);
-				_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
+				UpdateSingleTextVariableThroughoutDOM(key,_dataset.TextVariables[key].TextAlternatives);
+			}
+			else //we go this path if we just removed the last value from the multitext
+			{
+				RemoveDataDivElementIfEmptyValue(key, value);
 			}
 		}
 
-		public void SetDataDivBookVariable(string key, string value, string lang)
+		public void RemoveSingleForm(string key, string lang)
 		{
-			RemoveDataDivElement(key);
-			if (!string.IsNullOrEmpty(value))
-			{
-				AddDataDivBookVariable(key, lang, value);
-				_dataset.UpdateGenericLanguageString(key, value, false);
-			}
+			Set(key, null, lang);
 		}
-
-		public void RemoveDataDivElement(string key)
+		public void RemoveAllForms(string key)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
-			foreach (XmlNode e in  dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
 			{
 				dataDiv.RemoveChild(e);
 			}
-			if(_dataset.TextVariables.ContainsKey(key))
+			if (_dataset.TextVariables.ContainsKey(key))
 			{
 				_dataset.TextVariables.Remove(key);
 			}
 		}
 
+
 		private XmlElement GetOrCreateDataDiv()
 		{
-			var dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
-			if (dataDiv == null)
+			if(_dataDiv!=null)
+				return _dataDiv;
+			_dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
+			if (_dataDiv == null)
 			{
-				dataDiv = _dom.RawDom.CreateElement("div");
-				dataDiv.SetAttribute("id", "bloomDataDiv");
-				_dom.RawDom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
+				_dataDiv = _dom.RawDom.CreateElement("div");
+				_dataDiv.SetAttribute("id", "bloomDataDiv");
+				_dom.RawDom.SelectSingleNode("//body").InsertAfter(_dataDiv, null);
 			}
-			return dataDiv;
+			return _dataDiv;
 		}
 
 
@@ -234,7 +248,7 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom"> </param>
 		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom)
 		{
-			DataSet data = GartherDataItemsFromCollectionSettings(false, _collectionSettings);
+			DataSet data = GartherDataItemsFromCollectionSettings(_collectionSettings);
 
 			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
@@ -247,52 +261,44 @@ namespace Bloom.Book
 			return data;
 		}
 
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="makeGeneric">When we're showing shells, we don't wayt to make it confusing by populating them with this library's data</param>
-		/// <param name="collectionSettings"> </param>
-		/// <returns></returns>
-		private static DataSet GartherDataItemsFromCollectionSettings(bool makeGeneric,
-																	  CollectionSettings collectionSettings)
+		private static DataSet GartherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
 		{
 			var data = new DataSet();
-
 
 			data.WritingSystemCodes.Add("N1", collectionSettings.Language2Iso639Code);
 			data.WritingSystemCodes.Add("N2", collectionSettings.Language3Iso639Code);
 
-			if (makeGeneric)
-			{
-				data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
-					//This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-				data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
-					//review: maybe this should be, like 'xyz"
-				data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
-				data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
-				data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
-				data.AddGenericLanguageString("country", "Your Country", true);
-				data.AddGenericLanguageString("province", "Your Province", true);
-				data.AddGenericLanguageString("district", "Your District", true);
-				data.AddGenericLanguageString("languageLocation", "(Language Location)", true);
-			}
-			else
+//            if (makeGeneric)
+//            {
+//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
+//                    //This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
+//                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+//                    //review: maybe this should be, like 'xyz"
+//                data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
+//                data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
+//                data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
+//                data.AddGenericLanguageString("country", "Your Country", true);
+//                data.AddGenericLanguageString("province", "Your Province", true);
+//                data.AddGenericLanguageString("district", "Your District", true);
+//                data.AddGenericLanguageString("languageLocation", "(Language Location)", true);
+//            }
+//            else
 			{
 				data.WritingSystemCodes.Add("V", collectionSettings.Language1Iso639Code);
-				data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1Name, true);
-				data.AddLanguageString("*", "nameOfNationalLanguage1",
-									   collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code), true);
-				data.AddLanguageString("*", "nameOfNationalLanguage2",
-									   collectionSettings.GetLanguage3Name(collectionSettings.Language2Iso639Code), true);
-				data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
-				data.AddGenericLanguageString("country", collectionSettings.Country, true);
-				data.AddGenericLanguageString("province", collectionSettings.Province, true);
-				data.AddGenericLanguageString("district", collectionSettings.District, true);
+				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1Name, "*", true);
+				data.AddLanguageString("nameOfNationalLanguage1",
+									   collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code), "*", true);
+				data.AddLanguageString("nameOfNationalLanguage2",
+									   collectionSettings.GetLanguage3Name(collectionSettings.Language2Iso639Code), "*", true);
+				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
+				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
+				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
 				string location = "";
-				if (!String.IsNullOrEmpty(collectionSettings.Province))
-					location += collectionSettings.Province + @", ";
 				if (!String.IsNullOrEmpty(collectionSettings.District))
-					location += collectionSettings.District;
+					location += collectionSettings.District + @", ";
+				if (!String.IsNullOrEmpty(collectionSettings.Province))
+					location += collectionSettings.Province;
 
 				location = location.TrimEnd(new[] {' '}).TrimEnd(new[] {','});
 
@@ -301,7 +307,7 @@ namespace Bloom.Book
 					location += "<br/>" + collectionSettings.Country;
 				}
 
-				data.AddGenericLanguageString("languageLocation", location, true);
+				data.UpdateGenericLanguageString("languageLocation", location, true);
 			}
 			return data;
 		}
@@ -477,16 +483,16 @@ namespace Bloom.Book
 			GatherDataItemsFromXElement(data,  _dom.RawDom);
 
 			string copyright = metadata.CopyrightNotice;
-			data.UpdateLanguageString("*", "copyright", copyright, false);
+			data.UpdateLanguageString("copyright", copyright, "*", false);
 
 			string description = metadata.License.GetDescription("en");
-			data.UpdateLanguageString("en", "licenseDescription", description, false);
+			data.UpdateLanguageString("licenseDescription", description, "en", false);
 
 			string licenseUrl = metadata.License.Url;
-			data.UpdateLanguageString("*", "licenseUrl", licenseUrl, false);
+			data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
 
 			string licenseNotes = metadata.License.RightsStatement;
-			data.UpdateLanguageString("*", "licenseNotes", licenseNotes, false);
+			data.UpdateLanguageString("licenseNotes", licenseNotes, "*", false);
 
 			string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
@@ -564,17 +570,21 @@ namespace Bloom.Book
 			return metadata;
 		}
 
-		public string GetVariableOrNull(string name, string writingSystem)
+		public string GetVariableOrNull(string key, string writingSystem)
 		{
-			return _dataset.TextVariables.ContainsKey(name)
-					   ? _dataset.TextVariables[name].TextAlternatives[writingSystem]
+			var f= _dataset.TextVariables.ContainsKey(key)
+					   ? _dataset.TextVariables[key].TextAlternatives[writingSystem]
 					   : null;
+
+			if (string.IsNullOrEmpty(f))//the TextAlternatives thing gives "", whereas we want null
+				return null;
+			return f;
 		}
 
-		public MultiTextBase GetMultiTextVariableOrEmpty(string name)
+		public MultiTextBase GetMultiTextVariableOrEmpty(string key)
 		{
-			return _dataset.TextVariables.ContainsKey(name)
-					   ? _dataset.TextVariables[name].TextAlternatives
+			return _dataset.TextVariables.ContainsKey(key)
+					   ? _dataset.TextVariables[key].TextAlternatives
 					   : new MultiTextBase();
 		}
 
@@ -630,8 +640,8 @@ namespace Bloom.Book
 			if (language3Code == "")
 				language3Code = null;
 
-			SetDataDivBookVariable("contentLanguage2", language2Code,false);
-			SetDataDivBookVariable("contentLanguage3", language3Code, false);
+			Set("contentLanguage2", language2Code,false);
+			Set("contentLanguage3", language3Code, false);
 		}
 	}
 }

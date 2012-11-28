@@ -119,7 +119,7 @@ namespace Bloom.Book
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
-			bookData.RemoveDataDivElement("ISBN");//ISBN number of the original doesn't apply to derivatives
+			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
 			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
 
@@ -160,7 +160,7 @@ namespace Bloom.Book
 //	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 
 			if(nameSuggestion!=null)
-				bookData.SetDataDivBookVariable("bookTitle",nameSuggestion,"en");
+				bookData.Set("bookTitle",nameSuggestion,"en");
 			storage.Dom.RemoveMetaValue("defaultNameForDerivedBooks");
 
 //	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag

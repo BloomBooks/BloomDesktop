@@ -54,15 +54,15 @@ namespace Bloom.Book
 			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
 
 			if (oneTwoOrThreeContentLanguages < 3)
-				bookData.RemoveDataDivElement("contentLanguage3");
+				bookData.RemoveAllForms("contentLanguage3");
 			if (oneTwoOrThreeContentLanguages < 2)
-				bookData.RemoveDataDivElement("contentLanguage2");
+				bookData.RemoveAllForms("contentLanguage2");
 
-			bookData.SetDataDivBookVariable("contentLanguage1", collectionSettings.Language1Iso639Code, false);
+			bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
 			if (oneTwoOrThreeContentLanguages > 1)
-				bookData.SetDataDivBookVariable("contentLanguage2", collectionSettings.Language2Iso639Code, false);
+				bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
 			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
-				bookData.SetDataDivBookVariable("contentLanguage3", collectionSettings.Language3Iso639Code, false);
+				bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
 		}
 
 
