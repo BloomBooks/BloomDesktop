@@ -312,7 +312,7 @@ namespace Bloom.Book
 		private void SetDataDivElement(XmlNode dom, string key, string lang, string value)
 		{
 			var dataDiv = GetOrCreateDataDiv(dom);
-			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}' and @lang='lang']", key)))
 			{
 				dataDiv.RemoveChild(e);
 			}
