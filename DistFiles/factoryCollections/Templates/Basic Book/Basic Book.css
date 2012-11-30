@@ -78,9 +78,15 @@ DIV.imageOnTop DIV.bloom-imageContainer
 /*above so buttons show*/
 	z-index: 1000;
 }
+/*Note, to make bottomAlign work takes these 2 rules: one on the container (translationgroup) and another on the element*/
+.imageOnTop.layout-style-BottomAlign .bloom-translationGroup
+{
+	display: table;
+}
 .imageOnTop.layout-style-BottomAlign DIV.bloom-editable
 {
 	vertical-align: bottom;
+	display: table-cell;
 }
 /*.......A4L Stacked*/
 .imageOnTop.A4Landscape DIV.bloom-imageContainer
