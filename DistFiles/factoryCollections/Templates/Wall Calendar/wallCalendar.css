@@ -93,7 +93,7 @@ TD P
 .calendarBottomPageHeader
 {
 	text-align: center;
-	font: 240%
+	font: 240% sans-serif;
 	width: 100%;
 	height: 32px;
 }
@@ -103,4 +103,9 @@ TD P
 	position: relative;
 	left: -34px;
 	top: -7px;
+}
+/*Sinc this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
+.marginBox
+{
+	margin-left: 0.3cm !important;
 }
