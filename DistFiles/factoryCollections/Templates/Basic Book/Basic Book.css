@@ -70,14 +70,6 @@ TEXTAREA
 	height: 1.6cm;
 	position: relative;
 }
-DIV.bloom-page:after
-{
-	position: static;
-	/*+placement:anchor-top-left 7.5cm 20.3cm;*/
-	position: absolute;
-	left: 7.5cm;
-	top: 20.3cm;
-}
 /*Image On Top*/
 DIV.imageOnTop DIV.bloom-imageContainer
 {
