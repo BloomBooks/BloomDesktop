@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Bloom;
+using Bloom.Book;
 using NUnit.Framework;
+using Palaso.IO;
 using Palaso.TestUtilities;
 
 namespace BloomTests
@@ -30,6 +34,19 @@ namespace BloomTests
 		public void GetXmlDomFromHtml_HasErrors_ReportsError()
 		{
 			Assert.Throws<ApplicationException>(() => XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html><head>    <blahblah> </head></html>"));
+		}
+
+		[Test]
+		public void SaveAsHTML_HasXHTMLSelfClosingDiv_ChangesToHTMLStandard()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div data-book='test'/></body></html>");
+			using(var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.IsTrue(text.Contains("</div>"), text);
+			}
 		}
 	}
 }
