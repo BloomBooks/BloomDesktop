@@ -461,7 +461,7 @@ namespace Bloom.Edit
 				}
 				var pages = _bookSelection.CurrentSelection.GetPages();
 				// ReSharper disable PossibleMultipleEnumeration
-				//if (!pages.Any())
+				if (!pages.Any())
 				{
 					var exception = new ApplicationException(
 						string.Format(
