@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Xml;
@@ -446,22 +447,40 @@ namespace Bloom.Edit
 
         public IPage DeterminePageWhichWouldPrecedeNextInsertion()
         {
-			if (_view != null)
-			{
-				var pagesStartingWithCurrentSelection =
-					_bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
-				var candidates = pagesStartingWithCurrentSelection.ToArray();
-				for (int i = 0; i < candidates.Length - 1; i++)
-				{
-					if (!candidates[i + 1].Required)
-					{
-						return candidates[i];
-					}
-				}
-				IPage lastGuyWHoCanHaveAnInsertionAfterHim = _bookSelection.CurrentSelection.GetPages().Last(p => !p.IsBackMatter);
-				return lastGuyWHoCanHaveAnInsertionAfterHim;
-			}
-        	return null;
+            if (_view != null)
+            {
+                var pagesStartingWithCurrentSelection =
+                    _bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
+                var candidates = pagesStartingWithCurrentSelection.ToArray();
+                for (int i = 0; i < candidates.Length - 1; i++)
+                {
+                    if (!candidates[i + 1].Required)
+                    {
+                        return candidates[i];
+                    }
+                }
+                var pages = _bookSelection.CurrentSelection.GetPages();
+                // ReSharper disable PossibleMultipleEnumeration
+                //if (!pages.Any())
+                {
+                    var exception = new ApplicationException(
+                        string.Format(
+                            @"_bookSelection.CurrentSelection.GetPages() gave no pages (BL-262 repro).
+                                      Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
+                            _bookSelection.CurrentSelection.TitleBestForUserDisplay,
+                            _bookSelection.CurrentSelection.CheckForErrors(), 
+                            _bookSelection.CurrentSelection.RawDom.OuterXml,
+                            new StackTrace().ToString()));
+
+                    ErrorReport.NotifyUserOfProblem(exception,
+                                                    "There was a problem looking through the pages of this book. If you can send emails, please click 'details' and send this report to the developers.");
+                    return null;
+                }
+                IPage lastGuyWHoCanHaveAnInsertionAfterHim = pages.Last(p => !p.IsBackMatter);
+                // ReSharper restore PossibleMultipleEnumeration
+                return lastGuyWHoCanHaveAnInsertionAfterHim;
+            }
+            return null;
         }
 
         public bool CanChangeImages()
