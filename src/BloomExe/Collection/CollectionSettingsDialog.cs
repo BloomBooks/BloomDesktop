@@ -16,12 +16,14 @@ namespace Bloom.Collection
 
 		private readonly CollectionSettings _collectionSettings;
 		private XMatterPackFinder _xmatterPackFinder;
+		private readonly QueueRenameOfCollection _queueRenameOfCollection;
 		private bool _restartRequired;
 
-		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
+			_queueRenameOfCollection = queueRenameOfCollection;
 			InitializeComponent();
 			if(_collectionSettings.IsSourceCollection)
 			{
@@ -140,7 +142,10 @@ namespace Bloom.Collection
 				_collectionSettings.Language3Iso639Code = null;
 
 			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
-				_collectionSettings.AttemptSaveAsToNewName(_bloomCollectionName.Text.SanitizeFilename('-'));
+			{
+				_queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
+				//_collectionSettings.AttemptSaveAsToNewName(_bloomCollectionName.Text.SanitizeFilename('-'));
+			}
 			_collectionSettings.Save();
 
 			Logger.WriteEvent("Closing Settings Dialog");
@@ -236,8 +241,11 @@ namespace Bloom.Collection
 
 		private void _bloomCollectionName_TextChanged(object sender, EventArgs e)
 		{
-			if (_bloomCollectionName.Text.Trim() != _collectionSettings.CollectionName)
-				RestartRequired();
+			if (_bloomCollectionName.Text.Trim() == _collectionSettings.CollectionName)
+				return;
+
+
+			RestartRequired();
 		}
 
 		private void _fontCombo_SelectedIndexChanged(object sender, EventArgs e)

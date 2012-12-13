@@ -177,4 +177,19 @@ namespace Bloom
 
 		}
 	}
+
+
+	/// <summary>
+	/// It's tricky to change the collection folder while a book is open,
+	/// so we just queue it and have the project do the rename when we close/reopen
+	/// </summary>
+	public class QueueRenameOfCollection : Event<string>
+	{
+		public QueueRenameOfCollection()
+			: base("QueueRenameOfCollection", LoggingLevel.Major)
+		{
+
+		}
+	}
+
 }
