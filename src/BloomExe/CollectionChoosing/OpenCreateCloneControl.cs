@@ -202,5 +202,11 @@ namespace Bloom.CollectionChoosing
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
 		}
+
+
+		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			HelpLauncher.Show(null, "Chorus_Help.chm", "Chorus/Chorus_overview.htm");
+		}
 	}
 }

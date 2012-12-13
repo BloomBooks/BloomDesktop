@@ -41,7 +41,7 @@ namespace Bloom.CollectionChoosing
 			this._templateButton = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this._lookingForSourceCollectionsHtml = new Bloom.HtmlLabel();
-			this.htmlLabel2 = new Bloom.HtmlLabel();
+			this._readMoreLink = new System.Windows.Forms.LinkLabel();
 			this.tableLayoutPanel2.SuspendLayout();
 			this.SuspendLayout();
 			//
@@ -64,7 +64,7 @@ namespace Bloom.CollectionChoosing
 			this.tableLayoutPanel2.Controls.Add(this._templateButton, 0, 1);
 			this.tableLayoutPanel2.Controls.Add(this.label1, 2, 0);
 			this.tableLayoutPanel2.Controls.Add(this._lookingForSourceCollectionsHtml, 0, 6);
-			this.tableLayoutPanel2.Controls.Add(this.htmlLabel2, 2, 4);
+			this.tableLayoutPanel2.Controls.Add(this._readMoreLink, 2, 4);
 			this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -216,20 +216,18 @@ namespace Bloom.CollectionChoosing
 			this._lookingForSourceCollectionsHtml.Size = new System.Drawing.Size(889, 25);
 			this._lookingForSourceCollectionsHtml.TabIndex = 27;
 			//
-			// htmlLabel2
+			// _readMoreLink
 			//
-			this.htmlLabel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.htmlLabel2.Enabled = false;
-			this.htmlLabel2.Font = new System.Drawing.Font("Segoe UI", 9.75F);
-			this.htmlLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
-			this.htmlLabel2.HTML = "<a href=\"help://chorus/overview\">Read more</a> about collaborating with Chorus Se" +
-	"nd/Receive";
-			this.htmlLabel2.Location = new System.Drawing.Point(360, 195);
-			this.htmlLabel2.Margin = new System.Windows.Forms.Padding(0);
-			this.htmlLabel2.Name = "htmlLabel2";
-			this.htmlLabel2.Size = new System.Drawing.Size(411, 45);
-			this.htmlLabel2.TabIndex = 28;
-			this.htmlLabel2.Tag = "sendreceive";
+			this._readMoreLink.AutoSize = true;
+			this._readMoreLink.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._readMoreLink.Location = new System.Drawing.Point(363, 210);
+			this._readMoreLink.Margin = new System.Windows.Forms.Padding(3, 15, 3, 0);
+			this._readMoreLink.Name = "_readMoreLink";
+			this._readMoreLink.Size = new System.Drawing.Size(63, 13);
+			this._readMoreLink.TabIndex = 30;
+			this._readMoreLink.TabStop = true;
+			this._readMoreLink.Text = "Read More";
+			this._readMoreLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._readMoreLabel_Click);
 			//
 			// OpenCreateCloneControl
 			//
@@ -258,8 +256,8 @@ namespace Bloom.CollectionChoosing
 		private System.Windows.Forms.Button _templateButton;
 		private System.Windows.Forms.Label label1;
 		private HtmlLabel _lookingForSourceCollectionsHtml;
-		private HtmlLabel htmlLabel2;
 		private System.Windows.Forms.Button _browseButton;
+		private System.Windows.Forms.LinkLabel _readMoreLink;
 
 	}
 }
