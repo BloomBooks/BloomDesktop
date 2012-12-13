@@ -137,6 +137,7 @@
     <Compile Include="Book\LayoutTests.cs" />
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
+    <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="SendReceiveTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
