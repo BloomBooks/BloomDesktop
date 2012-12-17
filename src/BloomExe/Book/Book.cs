@@ -1220,7 +1220,7 @@ namespace Bloom.Book
 					});
 		}
 
-		private void CheckForErrors()
+		public string CheckForErrors()
 		{
 			var errors = _storage.GetValidateErrors();
 			_haveCheckedForErrorsAtLeastOnce = true;
@@ -1228,6 +1228,7 @@ namespace Bloom.Book
 			{
 				_log.WriteError(errors);
 			}
+			return errors ?? "";
 		}
 
 		public Layout GetLayout()

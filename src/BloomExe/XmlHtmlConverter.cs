@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using BloomTemp;
@@ -179,6 +180,8 @@ namespace Bloom
 			settings.Indent = true;
 			settings.CheckCharacters = true;
 			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+			//I know... bizarre
+			typeof(XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(settings, XmlOutputMethod.Html);
 
 			using (var writer = XmlWriter.Create(tempPath, settings))
 			{

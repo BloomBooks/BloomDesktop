@@ -22,8 +22,9 @@ namespace Bloom
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent)
+		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
 		{
+			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName);
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
@@ -42,7 +43,6 @@ namespace Bloom
 													});
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
-				Settings.Default.MruProjects.AddNewPath(_collectionSettings.SettingsFilePath);
 				UserWantsToOpeReopenProject = true;
 				Close();
 			});
@@ -58,7 +58,22 @@ namespace Bloom
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
+			//get everything saved (under the old collection name, if we are changing the name and restarting)
 			_libraryClosingEvent.Raise(null);
+
+			//change the collection name now, when it's safe
+			try
+			{
+				if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
+					_collectionSettings.AttemptSaveAsToNewName(_nameToChangeCollectionUponClosing);
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom could not rename the project to '{0}'", _nameToChangeCollectionUponClosing);
+			}
+
+			Settings.Default.MruProjects.AddNewPath(_collectionSettings.SettingsFilePath);
+
 			base.OnClosing(e);
 		}
 
@@ -86,6 +101,7 @@ namespace Bloom
 		public bool UserWantsToOpenADifferentProject { get; set; }
 
 		public bool UserWantsToOpeReopenProject;
+		private string _nameToChangeCollectionUponClosing;
 
 
 		private void Shell_Activated(object sender, EventArgs e)

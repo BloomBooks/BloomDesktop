@@ -83,10 +83,6 @@ namespace Bloom
 
 				Browser.SetUpXulRunner();
 
-#if !DEBUG
-			SetUpErrorHandling();
-#endif
-
 				StartUpShellBasedOnMostRecentUsedIfPossible();
 				Application.Idle += new EventHandler(Application_Idle);
 

@@ -95,6 +95,7 @@ namespace Bloom
 					typeof(BookRefreshEvent),
 					typeof(BookSelection),
 					typeof(RelocatePageEvent),
+					typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
 					typeof(EditingModel)}.Contains(t));
 

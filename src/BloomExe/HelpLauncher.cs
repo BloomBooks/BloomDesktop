@@ -7,7 +7,7 @@ using Palaso.IO;
 
 namespace Bloom
 {
-	class HelpLauncher
+	public class HelpLauncher
 	{
 		public static void Show(Control parent)
 		{
@@ -15,7 +15,12 @@ namespace Bloom
 		}
 		public static void Show(Control parent, string topic)
 		{
-			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication("Bloom.CHM"), topic);
+			Show(parent, "Bloom.CHM", topic);
+		}
+
+		public static void Show(Control parent, string helpFileName, string topic)
+		{
+			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication(helpFileName), topic);
 		}
 	}
 }

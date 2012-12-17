@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.web;
+using Palaso.Code;
 using Palaso.IO;
 using Palaso.Reporting;
 
@@ -214,19 +215,35 @@ namespace Bloom.ImageProcessing
 
 		public void Dispose()
 		{
-			_isDisposing = true;
-			//the container that gave us this will dispose of it: _cache.Dispose();
-			_cache = null;
-
-			if (_listener != null)
+			try
 			{
-				_stop.Set();
-				_listenerThread.Join();
-				_listener.Stop();
+				_isDisposing = true;
+				//the container that gave us this will dispose of it: _cache.Dispose();
+				_cache = null;
 
-				_listener.Close();
+				if (_listener != null)
+				{
+					//prompted by the mysterious BL 273, Crash while closing down the imageserver
+					Guard.AgainstNull(_listenerThread, "_listenerThread");
+					//prompted by the mysterious BL 273, Crash while closing down the imageserver
+					Guard.AgainstNull(_stop, "_stop");
+
+					_stop.Set();
+					_listenerThread.Join();
+					_listener.Stop();
+
+					_listener.Close();
+				}
+				_listener = null;
 			}
-			_listener = null;
+			catch (Exception e)
+			{   //prompted by the mysterious BL 273, Crash while closing down the imageserver
+#if DEBUG
+				throw;
+#else       //just quitely report this
+				Palaso.Reporting.UsageReporter.SendEvent("ImageServer","Error", e.Message+" "+e.StackTrace, ErrorReport.GetVersionForErrorReporting(),0);
+#endif
+			}
 		}
 
 

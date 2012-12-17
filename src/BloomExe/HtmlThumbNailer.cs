@@ -164,6 +164,17 @@ namespace Bloom
 						}
 
 						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+
+						/* saw crash here, shortly after startup:
+						 * 1) opened an existing book
+						 * 2) added a title
+						 * 3) added a dog from aor
+						 * 4) got this crash
+						 *    at Gecko.nsIDOMXPathEvaluator.CreateNSResolver(nsIDOMNode nodeResolver)
+							   at Gecko.GeckoNode.GetElements(String xpath) in C:\dev\geckofx11hatton\Skybound.Gecko\DOM\GeckoNode.cs:line 222
+							   at Bloom.HtmlThumbNailer.ProcessOrder(ThumbnailOrder order) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 167
+							   at Bloom.HtmlThumbNailer.Application_Idle(Object sender, EventArgs e) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 53
+						 */
 						var div = browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
 						if (div == null)
 						{

@@ -16,7 +16,7 @@ namespace Bloom.Publish
 	/// </summary>
 	public class PublishModel : IDisposable
 	{
-		public BookSelection BookSelection { get; set; }
+		public BookSelection BookSelection { get; private set; }
 
 		public string PdfFilePath { get; private set; }
 
@@ -41,7 +41,6 @@ namespace Bloom.Publish
 			Calendar
 		}
 
-		private readonly BookSelection _bookSelection;
 		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
 		private readonly CollectionSettings _collectionSettings;
@@ -50,7 +49,6 @@ namespace Bloom.Publish
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
 		{
 			BookSelection = bookSelection;
-			_bookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
 			_collectionSettings = collectionSettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
@@ -61,9 +59,10 @@ namespace Bloom.Publish
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			if (BookSelection!=null && View!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
+			//some of this checking is about bl-272, which was replicated by having one book, going to publish, then deleting that last book.
+			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
-				PageLayout = _bookSelection.CurrentSelection.GetLayout();
+				PageLayout = BookSelection.CurrentSelection.GetLayout();
 			}
 		}
 
@@ -76,7 +75,7 @@ namespace Bloom.Publish
 			{
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-				XmlDocument dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+				XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
@@ -93,7 +92,7 @@ namespace Bloom.Publish
 						return;
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  _bookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
+									  BookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
 				}
 			}
 			catch (Exception e)
@@ -219,7 +218,7 @@ namespace Bloom.Publish
 
 		public void DebugCurrentPDFLayout()
 		{
-			var dom = _bookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
 
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
 			PageLayout.UpdatePageSplitMode(dom);
@@ -242,7 +241,7 @@ namespace Bloom.Publish
 		{
 			if (BookSelection.CurrentSelection!=null)
 			{
-				PageLayout = _bookSelection.CurrentSelection.GetLayout();
+				PageLayout = BookSelection.CurrentSelection.GetLayout();
 			}
 
 		}
