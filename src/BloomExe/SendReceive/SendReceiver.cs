@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Chorus;
 using Chorus.UI.Sync;
+using Palaso.Code;
 using Palaso.Reporting;
 
 namespace Bloom.SendReceive
@@ -28,13 +29,23 @@ namespace Bloom.SendReceive
 
 	public class SendReceiver : IDisposable
 	{
+		private readonly Func<Form> _getFormWithContextForInvokingErrorDialogs;
 		private ChorusSystem _chorusSystem;
-		private readonly Form _formWithContextForInvokingErrorDialogs;
+		//private readonly Form _formWithContextForInvokingErrorDialogs;
 		public static bool SendReceiveDisabled;
 
-		public SendReceiver(ChorusSystem chorusSystem, Form formWithContextForInvokingErrorDialogs)
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="chorusSystem"></param>
+		/// <param name="getFormWithContextForInvokingErrorDialogs">using a function here rather than a value
+		/// becuase this class is created by the dependency injection system while building up this for (a
+		/// project window), so that value isn't available yet.</param>
+		public SendReceiver(ChorusSystem chorusSystem, Func<Form> getFormWithContextForInvokingErrorDialogs )//, Form formWithContextForInvokingErrorDialogs)
 		{
-			_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
+			_getFormWithContextForInvokingErrorDialogs = getFormWithContextForInvokingErrorDialogs;
+			//Guard.AgainstNull(formWithContextForInvokingErrorDialogs, "formWithContextForInvokingErrorDialogs");
+			//_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
 
 			//we don't do chorus on our source tree
 			SendReceiveDisabled = !Settings.Default.ShowSendReceive || !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
@@ -46,8 +57,10 @@ namespace Bloom.SendReceive
 			}
 		}
 
+
 		public void CheckInNow(string message)
 		{
+			Guard.AgainstNull(_getFormWithContextForInvokingErrorDialogs(),"_getFormWithContextForInvokingErrorDialogs()");
 			if (SendReceiveDisabled)
 				return; //we don't do chorus on our source tree
 
@@ -56,7 +69,7 @@ namespace Bloom.SendReceive
 												{
 													if (result.ErrorEncountered != null)
 													{
-														_formWithContextForInvokingErrorDialogs.BeginInvoke(new Action(() =>
+														_getFormWithContextForInvokingErrorDialogs().BeginInvoke(new Action(() =>
 																													   Palaso.Reporting.ErrorReport.NotifyUserOfProblem
 																														(result.ErrorEncountered,
 																														 "Error while creating a milestone in the local Send/Receive repository")))

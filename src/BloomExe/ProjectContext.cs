@@ -107,7 +107,7 @@ namespace Bloom
 					//going to be able to do HG for some reason.
 					var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
 					builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
-					builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, ProjectWindow)).InstancePerLifetimeScope();
+					builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem,()=>ProjectWindow)).InstancePerLifetimeScope();
 					chorusSystem.Init(string.Empty/*user name*/);
 				}
 				catch (Exception error)
