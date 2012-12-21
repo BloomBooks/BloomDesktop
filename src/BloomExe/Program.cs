@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -32,6 +33,7 @@ namespace Bloom
 		private static Mutex _oneInstancePerProjectMutex;
 #else
 		private static Mutex _onlyOneBloomMutex;
+		private static DateTime _earliestWeShouldCloseTheSplashScreen;
 #endif
 
 		[STAThread]
@@ -46,7 +48,7 @@ namespace Bloom
 				if (!GrabMutexForBloom())
 					return;
 
-				TimeBomb();
+				OldVersionCheck();
 
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
@@ -75,7 +77,9 @@ namespace Bloom
 				{
 					Settings.Default.MruProjects.AddNewPath(args[0]);
 				}
+				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(7);
 				Splasher.Show();
+
 				SetUpReporting();
 				Settings.Default.Save();
 
@@ -114,8 +118,11 @@ namespace Bloom
 
 		private static void Application_Idle(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(Application_Idle);
-			Splasher.Close();
+			if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
+			{
+				Application.Idle -= new EventHandler(Application_Idle);
+				Splasher.Close();
+			}
 		}
 
 
@@ -474,18 +481,48 @@ namespace Bloom
 				);
 		}
 
-		public static void TimeBomb()
+		public static void OldVersionCheck()
 		{
 			var asm = Assembly.GetExecutingAssembly();
 			var file = asm.CodeBase.Replace("file:", string.Empty);
 			file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 			if(DateTime.UtcNow.Subtract(fi.LastWriteTimeUtc).Days > 90)// nb: "create time" is stuck at may 2011, for some reason. Arrrggghhhh
-				//if (DateTime.UtcNow.Subtract(fi.CreationTimeUtc).Seconds > 100)
 				{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-					"Sorry, this beta version of Bloom is now over 90 days old.  Please get a new version at bloom.palaso.org");
-					Process.GetCurrentProcess().Kill();
+					try
+					{
+						if (Dns.GetHostAddresses("ftpx.sil.org.pg").Length > 0)
+						{
+							if(DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the folder on the Ukarumpa FTP site where you can get a new one.","OLD BETA",MessageBoxButtons.YesNo))
+							{
+								Process.Start("ftp://ftp.sil.org.pg/Software/LCORE/LangTran/Groups/LangTran_win_Literacy/");
+								Process.GetCurrentProcess().Kill();
+							}
+							return;
+						}
+					}
+					catch (Exception)
+					{
+					}
+
+					try
+					{
+						if (Dns.GetHostAddresses("bloom.palaso.org").Length > 0)
+						{
+							if (DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the web page where you can get a new one.", "OLD BETA", MessageBoxButtons.YesNo))
+							{
+								Process.Start("http://bloom.palaso.org/download");
+								Process.GetCurrentProcess().Kill();
+							}
+							return;
+						}
+					}
+					catch (Exception)
+					{
+					}
+
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloom.palaso.org.");
 			}
 
 		}

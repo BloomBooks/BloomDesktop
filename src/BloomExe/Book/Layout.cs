@@ -83,7 +83,7 @@ namespace Bloom.Book
 			return (SizeAndOrientation.ToString() + " " + s).Trim();
 		}
 
-		public static Layout FromDom(XmlDocument dom, Layout defaultIfMissing)
+		public static Layout FromDom(HtmlDom dom, Layout defaultIfMissing)
 		{
 			var firstPage = dom.SelectSingleNode("descendant-or-self::div[contains(@class,'bloom-page')]");
 			if (firstPage == null)

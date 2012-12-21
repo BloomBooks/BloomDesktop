@@ -90,7 +90,7 @@ namespace Bloom.CollectionTab
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
 
 				_browser.Visible = true;
-				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
+				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				_editBookButton.Visible = _bookSelection.CurrentSelection.IsInEditableLibrary && !_bookSelection.CurrentSelection.HasFatalError;
 				_reshowPending = false;

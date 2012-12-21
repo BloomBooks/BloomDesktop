@@ -27,7 +27,7 @@ namespace Bloom.Book
 
 	public interface IBookStorage
 	{
-		XmlDocument Dom { get; }
+		HtmlDom Dom { get; }
 		Book.BookType BookType { get; }
 		//string GetTemplateName();
 		string Key { get; }
@@ -37,17 +37,16 @@ namespace Bloom.Book
 		string PathToExistingHtml { get; }
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
-		XmlDocument GetRelocatableCopyOfDom(IProgress log);
+		HtmlDom GetRelocatableCopyOfDom(IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
-		string SaveHtml(XmlDocument bookDom);
+		string SaveHtml(HtmlDom bookDom);
 		//string GetVernacularTitleFromHtml(string Iso639Code);
 		void SetBookName(string name);
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		bool RemoveBookThumbnail();
 		IFileLocator GetFileLocator();
-		void SortStyleSheetLinks(XmlDocument dom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -63,6 +62,7 @@ namespace Bloom.Book
 		private readonly BookRenamedEvent _bookRenamedEvent;
 		public string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
+		private readonly HtmlDom _dom; //never remove the readonly: this is shared by others
 
 		public delegate BookStorage Factory(string folderPath);//autofac uses this
 
@@ -75,7 +75,7 @@ namespace Bloom.Book
 			_bookRenamedEvent = bookRenamedEvent;
 			_fileLocator.AddPath(folderPath);
 
-			Dom = new XmlDocument();
+			_dom = new HtmlDom();
 
 			RequireThat.Directory(folderPath).Exists();
 			if (!File.Exists(PathToExistingHtml))
@@ -106,14 +106,15 @@ namespace Bloom.Book
 					//hack so we can package this for palaso reporting
 //                    var ex = new XmlSyntaxException(ErrorMessages);
 //                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
-					Dom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
+					_dom.RawDom.LoadXml("<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
 					Logger.WriteEvent("{0}: There is a problem with the html structure of this book which will require expert help: {1}", PathToExistingHtml, ErrorMessages);
 			   }
 				else
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 
-					Dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml); //with throw if there are errors
+					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
+					_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
@@ -121,17 +122,7 @@ namespace Bloom.Book
 
 				//UpdateStyleSheetLinkPaths(fileLocator);
 
-				//add a unique id for our use
-				//review: bookstarter sticks in the ids, this one updates (and skips if it it didn't have an id before). At a minimum, this needs explanation
-				foreach (XmlElement node in Dom.SafeSelectNodes("/html/body/div"))
-				{
-					//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
-					//page of every book. This screws up thumbnail caching.
-					const string guidMistakenlyUsedForEveryCoverPage = "74731b2d-18b0-420f-ac96-6de20f659810";
-					if(string.IsNullOrEmpty(node.GetAttribute("id"))
-						||(node.GetAttribute("id") == guidMistakenlyUsedForEveryCoverPage))
-						node.SetAttribute("id", Guid.NewGuid().ToString());
-				}
+				Dom.UpdatePageDivs();
 
 				UpdateSupportFiles();
 
@@ -204,7 +195,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void EnsureHasCollectionAndBookStylesheets(XmlDocument dom)
+		private void EnsureHasCollectionAndBookStylesheets(HtmlDom dom)
 		{
 			string autocssFilePath = _fileLocator.LocateFile(@"settingsCollectionStyles.css");
 			if (!string.IsNullOrEmpty(autocssFilePath))
@@ -218,7 +209,7 @@ namespace Bloom.Book
 				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private void EnsureHasStyleSheet(XmlDocument dom, string path)
+		private void EnsureHasStyleSheet(HtmlDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -229,7 +220,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		private void UpdateStyleSheetLinkPaths(XmlDocument dom, IFileLocator fileLocator, IProgress log)
+		private void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
 		{
 			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
 			{
@@ -267,83 +258,22 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-		/// </summary>
-		/// <param name="dom"></param>
-		private void StripStyleSheetLinkPaths(XmlDocument dom)
-		{
-			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-				linkNode.SetAttribute("href", Path.GetFileName(href));
-			}
-		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private static void MakeCssLinksAppropriateForStoredFile(XmlDocument dom, string folderPath)
+		private static void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
-			RemoveModeStyleSheets(dom);
+			dom.RemoveModeStyleSheets();
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 		}
 
-		/// <summary>
-		/// creates if necessary, then updates the named <meta></meta> in the head of the html
-		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="name"></param>
-		/// <param name="value"></param>
-		public static void UpdateMetaElement(XmlDocument dom, string name, string value)
+
+		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath, bool pointAtEmbeddedServer)
 		{
-			XmlElement n = dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
-			if (n == null)
-			{
-				n = dom.CreateElement("meta");
-				n.SetAttribute("name", name);
-				dom.SelectSingleNode("//head").AppendChild(n);
-			}
-			n.SetAttribute("content", value);
-		}
-
-		public static void RemoveModeStyleSheets(XmlDocument dom)
-		{
-			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-
-				var fileName = Path.GetFileName(href);
-				if (fileName.Contains("edit") || fileName.Contains("preview"))
-				{
-					linkNode.ParentNode.RemoveChild(linkNode);
-				}
-			}
-		}
-
-
-
-		public static void SetBaseForRelativePaths(XmlDocument dom, string folderPath, bool pointAtEmbeddedServer)
-		{
-		   var head = dom.SelectSingleNodeHonoringDefaultNS("//head");
-		   if (head == null)
-			   return;
-
-			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
-			{
-				head.RemoveChild(baseNode);
-			}
+			string path = "";
 			if (!string.IsNullOrEmpty(folderPath))
 			{
-				var baseElement = dom.CreateElement("base");
 				if (pointAtEmbeddedServer && Settings.Default.ImageHandler=="http" && ImageServer.IsAbleToUsePort)
 				{
 					//this is only used by relative paths, and only img src's are left relative.
@@ -353,22 +283,21 @@ namespace Bloom.Book
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
 					uri = ImageServer.GetPathEndingInSlash() + uri;
-					baseElement.SetAttribute("href", uri);
+					path = uri;
 				}
 				else
 				{
-					baseElement.SetAttribute("href", "file://" + folderPath + Path.DirectorySeparatorChar);
+					path = "file://" + folderPath + Path.DirectorySeparatorChar;
 				}
-
-				head.AppendChild(baseElement);
 			}
-
+			dom.SetBaseForRelativePaths(path);
 		}
 
-		public XmlDocument Dom
+
+
+		public HtmlDom Dom
 		{
-			get;
-			private set;
+			get {return _dom;}
 		}
 
 		public Book.BookType BookType
@@ -449,11 +378,11 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})",PathToExistingHtml);
 
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
-			BookStorage.UpdateMetaElement(Dom, "Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
 			if(null!= Assembly.GetEntryAssembly()) // null during unit tests
 			{
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
-				BookStorage.UpdateMetaElement(Dom, "BloomFormatVersion", kBloomFormatVersion);
+				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
 			string tempPath = SaveHtml(Dom);
 
@@ -481,58 +410,23 @@ namespace Bloom.Book
 
 
 
-		public string SaveHtml(XmlDocument dom)
+		public string SaveHtml(HtmlDom dom)
 		{
 			string tempPath = Path.GetTempFileName();
-			MakeCssLinksAppropriateForStoredFile(dom,_folderPath);
+			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
 
-			return XmlHtmlConverter.SaveDOMAsHtml5(dom, tempPath);
+			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
 
 
 		public static string ValidateBook(string path)
 		{
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(path);//with throw if there are errors
-
-			var ids = new List<string>();
-			var builder = new StringBuilder();
-
-			Ensure(dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count >0, "Must have at least one page", builder);
-			EnsureIdsAreUnique(dom, "textarea", ids, builder);
-			EnsureIdsAreUnique(dom, "p", ids, builder);
-			EnsureIdsAreUnique(dom, "img", ids, builder);
-
-			//TODO: validate other things, including html
-			var x = builder.ToString().Trim();
-			if (x.Length == 0)
-				Logger.WriteEvent("BookStorage.ValidateBook({0}): No Errors", path);
-			else
-			{
-				Logger.WriteEvent("BookStorage.ValidateBook({0}): {1}", path, x);
-			}
-
-			return builder.ToString();
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));//with throw if there are errors
+			return dom.ValidateBook(path);
 		}
 
-		private static void Ensure(bool passes, string message, StringBuilder builder)
-		{
-			if (!passes)
-				builder.AppendLine(message);
-		}
-
-		private static void EnsureIdsAreUnique(XmlDocument dom, string elementTag, List<string> ids, StringBuilder builder)
-		{
-			foreach (XmlElement element in dom.SafeSelectNodes("//"+elementTag+"[@id]"))
-			{
-				var id = element.GetAttribute("id");
-				if (ids.Contains(id))
-					builder.AppendLine("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
-				else
-					ids.Add(id);
-			}
-		}
 
 		/// <summary>
 		///
@@ -575,68 +469,19 @@ namespace Bloom.Book
 			return false;
 		}
 
-		/// <summary>
-		/// Get a path to a file that has whatever it needs (in terms of the links, base, etc) to
-		/// come out right for WkHtmlToPdf.  It turns out that this means no file:\\, so no <base>,
-		/// etc.  Which is fine as long as the way we save the file is without this stuff, as
-		/// it really should be, because that way you can take it to another location or computer
-		/// and it will still look right in a browser.
-		/// </summary>
-		/// <param name="log"> </param>
-		/// <param name="bookletStyle"></param>
-//        public string GetHtmlFileForPrintingWithWkHtmlToPdf(PublishModel.BookletStyleChoices bookletStyle)
-//        {
-//            switch (bookletStyle)
-//            {
-//                case PublishModel.BookletStyleChoices.None:
-//                    return PathToHtml;
-//                case PublishModel.BookletStyleChoices.BookletCover:
-//                    break;
-//                case PublishModel.BookletStyleChoices.BookletPages:
-//                    break;
-//                default:
-//                    throw new ArgumentOutOfRangeException("bookletStyle");
-//            }
-//        }
 
-		public XmlDocument GetRelocatableCopyOfDom(IProgress log)
+		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
 		{
-			XmlDocument dom = (XmlDocument)Dom.Clone();
+			HtmlDom relocatableDom = Dom.Clone();
 
-			SetBaseForRelativePaths(dom, _folderPath,true);
-			EnsureHasCollectionAndBookStylesheets(dom);
-			UpdateStyleSheetLinkPaths(dom, _fileLocator, log);
+			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
-			return dom;
+			return relocatableDom;
 		}
 
-		public void SortStyleSheetLinks(XmlDocument dom)
-		{
-			List<XmlElement> links = new List<XmlElement>();
-			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
-			{
-				links.Add(link);
-			}
-			if (links.Count < 2)
-				return;
 
-			var headNode = links[0].ParentNode;
-
-			//clear them out
-			foreach (var xmlElement in links)
-			{
-				headNode.RemoveChild(xmlElement);
-			}
-
-			links.Sort(new StyleSheetLinkSorter());
-
-			//add them back
-			foreach (var xmlElement in links)
-			{
-				headNode.AppendChild(xmlElement);
-			}
-
-		}
 
 		public bool DeleteBook()
 		{
@@ -703,37 +548,12 @@ namespace Bloom.Book
 
 		public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
 		{
-			var title = XmlUtils.GetTitleOfHtml(Dom, null);
+			var title = Dom.Title;
 			if (title != null)
 			{
 				SetBookName(title);
 			}
 		}
-
-//    	public string GetVernacularTitleFromHtml(string Iso639Code)
-//        {
-//
-//            var textWithTitle = Dom.SelectSingleNodeHonoringDefaultNS(
-//                string.Format("//textarea[@data-book='bookTitle' and @lang='{0}']", Iso639Code));
-//            if (textWithTitle == null)
-//            {
-//                Logger.WriteEvent("UpdateBookFileAndFolderName(): Could not find title in html.");
-//                return null;
-//            }
-//            string title = textWithTitle.InnerText.Trim();
-//            if (string.IsNullOrEmpty(title))
-//            {
-//                Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was empty.");
-//            	return null;
-//            }
-//			if (title.StartsWith("{"))
-//			{
-//				Logger.WriteEvent("UpdateBookFileAndFolderName(): Found title element but it was still an unchanged template.");
-//				return null;
-//			}
-//            return title;
-//        }
-
 
 		private string SanitizeNameForFileSystem(string name)
 		{

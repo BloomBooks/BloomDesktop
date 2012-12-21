@@ -118,15 +118,15 @@ namespace Bloom.Book
 					};
 		}
 
-		public static void AddClassesForLayout(XmlNode node, Layout layout)
+		public static void AddClassesForLayout(HtmlDom dom, Layout layout)
 		{
-			UpdatePageSizeAndOrientationClasses(node, layout);
+			UpdatePageSizeAndOrientationClasses(dom.RawDom, layout);
 		}
 
-		public static IEnumerable<Layout> GetLayoutChoices(XmlNode node, IFileLocator fileLocator)
+		public static IEnumerable<Layout> GetLayoutChoices(HtmlDom dom, IFileLocator fileLocator)
 		{
 			//here we walk through all the stylesheets, looking for one with the special style which tells us which page/orientations it supports
-			foreach (XmlElement link in node.SafeSelectNodes("//link[@rel='stylesheet']"))
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLower().Contains("mode") || fileName.ToLower().Contains("page") ||

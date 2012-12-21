@@ -28,7 +28,7 @@ namespace BloomTests.Book
 				BookStorageFactory, null,null, new CreateFromSourceBookCommand(), new EditBookCommand());
 		}
 
-		 Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
+		 Bloom.Book.Book BookFactory(IBookStorage storage, bool editable)
 		 {
 			 return new Bloom.Book.Book(storage, true, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
 													  new PageSelection(),

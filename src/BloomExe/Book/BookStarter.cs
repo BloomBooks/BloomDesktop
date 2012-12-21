@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
-using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
-using Palaso.Text;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -21,17 +18,15 @@ namespace Bloom.Book
 	{
 		private readonly IFileLocator _fileLocator;
 		private readonly BookStorage.Factory _bookStorageFactory;
-		private LanguageSettings _languageSettings;
 		private readonly CollectionSettings _collectionSettings;
 		private bool _isSourceCollection;
 
 		public delegate BookStarter Factory();//autofac uses this
 
-		public BookStarter(IChangeableFileLocator fileLocator, BookStorage.Factory bookStorageFactory, LanguageSettings languageSettings, CollectionSettings collectionSettings)
+		public BookStarter(IChangeableFileLocator fileLocator, BookStorage.Factory bookStorageFactory, CollectionSettings collectionSettings)
 		{
 			_fileLocator = fileLocator;
 			_bookStorageFactory = bookStorageFactory;
-			_languageSettings = languageSettings;
 			_collectionSettings = collectionSettings;
 			_isSourceCollection = collectionSettings.IsSourceCollection;
 		}
@@ -111,8 +106,7 @@ namespace Bloom.Book
 		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
-			//SetMetaDataElement(storage, "")
-
+			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
 			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
@@ -125,12 +119,67 @@ namespace Bloom.Book
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
-			//remove ISBN number, if the original had one
-			RemoveDataDivElement(storage.Dom, "ISBN");
+			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
 			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
 
-			//now add in the xmatter from the currently selected xmatter pack
+			InjectXMatter(initialPath, storage, sizeAndOrientation);
+
+			SetBookTitle(storage, bookData);
+
+			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
+			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
+			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel, _collectionSettings);
+
+			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
+
+			//If this is a shell book, make elements to hold the vernacular
+			foreach (XmlElement div in storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
+				SetupIdAndLineage(sourceDiv, div);
+				SetupPage(div, _collectionSettings, null, null);
+			}
+
+			storage.Save();
+
+			//REVIEW this actually undoes the setting of the intial files name:
+			//      storage.UpdateBookFileAndFolderName(_librarySettings);
+			return storage.FolderPath;
+		}
+
+		private static void SetBookTitle(BookStorage storage, BookData bookData)
+		{
+//NB: no multi-lingual name suggestion ability yet
+
+			//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
+			//that the shell used, e.g. "Vaccinations".
+			//We don't have to do anything special to get that.
+			string kdefaultName = null;
+			var nameSuggestion = storage.Dom.GetMetaValue("defaultNameForDerivedBooks", kdefaultName);
+//	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
+
+			if(nameSuggestion!=null)
+				bookData.Set("bookTitle",nameSuggestion,"en");
+			storage.Dom.RemoveMetaValue("defaultNameForDerivedBooks");
+
+//	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
+//	        if (nameSuggestion.Count > 0)
+//	        {
+//	            var metaTag = (XmlElement) nameSuggestion[0];
+//	            var name = metaTag.GetAttribute("content");
+//	            bookData.SetDataDivBookVariable("bookTitle", name, "en");
+//	            metaTag.ParentNode.RemoveChild(metaTag);
+//	        }
+//	        else
+//	        {
+//
+//	        }
+		}
+
+		private void InjectXMatter(string initialPath, BookStorage storage, Layout sizeAndOrientation)
+		{
+//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
@@ -139,53 +188,10 @@ namespace Bloom.Book
 				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
 				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
 				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
-				var helper = new XMatterHelper(storage.Dom,_collectionSettings.XMatterPackName, _fileLocator);
+				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
 			}
-
-			//NB: no multi-lingual name suggestion ability yet
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
-			//var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
-			if (nameSuggestion.Count > 0)
-			{
-				var metaTag = (XmlElement) nameSuggestion[0];
-				var name = metaTag.GetAttribute("content");
-				SetDataDivElement(storage.Dom, "bookTitle", "en", name);
-				metaTag.ParentNode.RemoveChild(metaTag);
-			}
-			else
-			{
-				//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
-				//that the shell used, e.g. "Vaccinations".
-				//We don't have to do anything special to get that.
-			}
-
-
-			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
-			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom, "defaultMultilingualLevel", "1"));
-			SetInitialMultilingualSetting(storage.Dom, multilingualLevel);
-
-
-			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
-
-			//If this is a shell book, make elements to hold the vernacular
-			foreach (XmlElement div in storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
-			{
-				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
-				SetupIdAndLineage(sourceDiv, div);
-				SetupPage(div, _collectionSettings, null, null);
-			}
-
-
-
-	//		SizeAndOrientation.SetLayout(storage.Dom, sizeAndOrientation.ToString());
-
-			storage.Save();
-
-			//REVIEW this actually undoes the setting of the intial files name:
-			//      storage.UpdateBookFileAndFolderName(_librarySettings);
-			return storage.FolderPath;
 		}
 
 		private void RemoveDataDivElement(XmlNode dom, string key)
@@ -221,7 +227,7 @@ namespace Bloom.Book
 			//tag in shell-making collections.
 			if(_isSourceCollection)
 			{
-				BookStorage.UpdateMetaElement(storage.Dom, "lockedDownAsShell", "true");
+				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
 #if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
@@ -231,13 +237,13 @@ namespace Bloom.Book
 #else
 			var x = "false";
 #endif
-			BookStorage.UpdateMetaElement(storage.Dom, "SuitableForMakingShells", x);
+			storage.Dom.UpdateMetaElement("SuitableForMakingShells", x);
 		}
 
 
 		public static void SetupPage(XmlElement pageDiv, CollectionSettings collectionSettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
-			PrepareElementsInPageOrDocument(pageDiv, collectionSettings);//, inShellMode);
+			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, collectionSettings);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -262,316 +268,13 @@ namespace Bloom.Book
 		}
 
 
-		private static bool ContainsClass(XmlNode element, string className)
-		{
-			return ((XmlElement) element).GetAttribute("class").Contains(className);
-		}
-
-		private static void AddClassIfMissing(XmlElement element, string className)
-		{
-			string classes = element.GetAttribute("class");
-			if (classes.Contains(className))
-				return;
-			element.SetAttribute("class", (classes + " "+className).Trim());
-		}
-
-		/// <summary>
-		/// For each group of editable elements in the div which have lang attributes, make a new element
-		/// with the lang code of the vernacular.
-		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
-		/// </summary>
-		/// <param name="node"></param>
-		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)//, bool inShellMode)
-		{
-			PrepareElementsOnPageOneLanguage(node, collectionSettings.Language1Iso639Code);
-
-			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
-			BookStarter.PrepareElementsOnPageOneLanguage(node,collectionSettings.Language2Iso639Code);
-
-			//nb: really we need to have a place where we list the bilgual/triligual desires, and that may be book specific
-			if(!string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
-			{
-				BookStarter.PrepareElementsOnPageOneLanguage(node, collectionSettings.Language3Iso639Code);
-			}
-		}
-
-		private void SetDataDivElement(XmlNode dom, string key, string value)
-		{
-			var dataDiv = GetOrCreateDataDiv(dom);
-			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
-			{
-				dataDiv.RemoveChild(e);
-			}
-
-			var d = dataDiv.OwnerDocument.CreateElement("div");
-			d.SetAttribute("data-book", key);
-			d.InnerXml = value;
-			dataDiv.AppendChild(d);
-		}
-
-		private void SetDataDivElement(XmlNode dom, string key, string lang, string value)
-		{
-			var dataDiv = GetOrCreateDataDiv(dom);
-			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}' and @lang='lang']", key)))
-			{
-				dataDiv.RemoveChild(e);
-			}
-
-			var d = dataDiv.OwnerDocument.CreateElement("div");
-			d.SetAttribute("data-book", key);
-			d.SetAttribute("lang", lang);
-			d.InnerXml = value;
-			dataDiv.AppendChild(d);
-		}
-		/// <summary>
-		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
-		/// then everytime someone created a new book based on it, it too would be trilingual.
-		/// </summary>
-		/// <param name="pageDivOrDocumentDom"></param>
-		/// <param name="oneTwoOrThreeContentLanguages"></param>
-		public  void SetInitialMultilingualSetting(XmlDocument documentDom, int oneTwoOrThreeContentLanguages)
-		{
-			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
-
-			if(oneTwoOrThreeContentLanguages < 3)
-				RemoveDataDivElement(documentDom, "contentLanguage3");
-			if (oneTwoOrThreeContentLanguages < 2)
-				RemoveDataDivElement(documentDom, "contentLanguage2");
-
-			SetDataDivElement(documentDom, "contentLanguage1", _collectionSettings.Language1Iso639Code);
-			if (oneTwoOrThreeContentLanguages > 1)
-				SetDataDivElement(documentDom, "contentLanguage2", _collectionSettings.Language2Iso639Code);
-			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
-				SetDataDivElement(documentDom, "contentLanguage3", _collectionSettings.Language3Iso639Code);
-
-			/* these are fine but not needed
-
-			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (
-				XmlElement pageDiv in
-					documentDom.SafeSelectNodes(
-						"//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter'))]"))
-			{
-				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
-				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
-				RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
-				AddClassIfMissing(pageDiv, multilingualClass);
-			}
-
-			//now, if those old content classes are still around, some other code might try to "fix" our multilingual setting. So let's just clear them out
-			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
-			{
-				foreach (XmlElement e in group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
-				{
-					RemoveClassesBeginingWith(e, "bloom-content");
-				}
-			}
-
-			 */
-		}
-
-		/// <summary>
-		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
-		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode pageDivOrDocumentDom, string vernacularIso, string national1Iso, string national2Iso, string contentLanguageIso2, string contentLanguageIso3)
-		{
-			var multilingualClass = "bloom-monolingual";
-			var contentLanguages = new Dictionary<string, string>();
-			contentLanguages.Add(vernacularIso, "bloom-content1");
-
-			if (!string.IsNullOrEmpty(contentLanguageIso2) && vernacularIso!= contentLanguageIso2)
-			{
-				multilingualClass = "bloom-bilingual";
-				contentLanguages.Add(contentLanguageIso2, "bloom-content2");
-			}
-			if (!string.IsNullOrEmpty(contentLanguageIso3) && vernacularIso != contentLanguageIso3 && contentLanguageIso2 != contentLanguageIso3 )
-			{
-				multilingualClass = "bloom-trilingual";
-				Debug.Assert(!string.IsNullOrEmpty(contentLanguageIso2), "shouldn't have a content3 lang with no content2 lang");
-				contentLanguages.Add(contentLanguageIso3, "bloom-content3");
-			}
-
-			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in pageDivOrDocumentDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
-			{
-				RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
-				RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
-				RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
-				AddClassIfMissing(pageDiv, multilingualClass);
-			}
-
-			foreach (XmlElement group in pageDivOrDocumentDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
-			{
-				var isXMatter = group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]").Count > 0;
-				foreach (XmlElement e in group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
-				{
-					var lang = e.GetAttribute("lang");
-					RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
-					if (isXMatter && lang == national1Iso)
-					{
-						AddClass(e,"bloom-contentNational1");
-					}
-					if (isXMatter && !string.IsNullOrEmpty(national2Iso) && lang == national2Iso)
-					{
-						AddClass(e, "bloom-contentNational2");
-					}
-					foreach (var language in contentLanguages)
-					{
-						if(lang == language.Key)
-						{
-							AddClass(e, language.Value);
-							break;//don't check the other languages
-						}
-					}
-				}
-			}
-		}
-
-		private static void AddClass( XmlElement e,string className)
-		{
-			e.SetAttribute("class", (e.GetAttribute("class") + " "+className).Trim());
-		}
-
-		private static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
-		{
-
-			var classes = xmlElement.GetAttribute("class");
-			var original = classes;
-
-			if (string.IsNullOrEmpty(classes))
-				return;
-			var parts = classes.SplitTrimmed(' ');
-
-			classes = "";
-			foreach (var part in parts)
-			{
-				if (!part.StartsWith(classPrefix))
-					classes += part + " ";
-			}
-			xmlElement.SetAttribute("class", classes.Trim());
-
-		//	Debug.WriteLine("RemoveClassesBeginingWith    " + xmlElement.InnerText+"     |    "+original + " ---> " + classes);
-		}
 
 
-
-
-		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
-		{
-			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
-			{
-				MakeElementWithLanguageForOneGroup(groupElement, isoCode, "*");
-				//remove any elements in teh translationgroup which don't have a lang
-				foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang)]"))
-				{
-					elementWithoutLanguage.ParentNode.RemoveChild(elementWithoutLanguage);
-				}
-			}
-
-
-			//any text areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
-			foreach (
-				XmlElement element in
-					pageDiv.SafeSelectNodes(//NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
-						"//textarea[not(@lang)] | //*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
-				)
-			{
-				element.SetAttribute("lang", isoCode);
-			}
-
-			foreach (XmlElement e in pageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
-			{
-				foreach (var node in e.ChildNodes)
-				{
-					XmlText t = node as XmlText;
-					if (t != null && t.Value.StartsWith("{"))
-						t.Value = "";
-							//otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
-				}
-			}
-		}
-
-		/// <summary>
-		/// For each group (meaning they have a common parent) of editable items, we
-		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
-		/// </summary>
-		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode, string elementTag)
-		{
-			XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
-
-//true, this is a weird situation...			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-//				return;
-
-			var elementsAlreadyInThisLanguage = from XmlElement x in editableElementsWithinTheIndicatedParagraph
-									  where x.GetAttribute("lang") == isoCode
-									  select x;
-			if (elementsAlreadyInThisLanguage.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
-				return;
-
-			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
-				return;
-
-			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
-			XmlElement newElementInThisLanguage;
-			if (prototype == null)// something bad happened here in the past, or the template wasn't created correctly
-			{
-				newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
-				newElementInThisLanguage.SetAttribute("class", "bloom-editable");
-				newElementInThisLanguage.SetAttribute("contenteditable", "true");
-				groupElement.AppendChild(newElementInThisLanguage);
-			}
-			else  //this is the normal situation, where we're just copying the first element
-			{
-				newElementInThisLanguage = (XmlElement)prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
-			}
-			newElementInThisLanguage.SetAttribute("lang",isoCode);
-			//if there is an id, get rid of it, because we don't want 2 elements with the same id
-			newElementInThisLanguage.RemoveAttribute("id");
-			newElementInThisLanguage.InnerText = string.Empty;
-		}
-
-		/// <summary>
-		/// All textareas which are just the same thing in different languages must by contained within a paragraph.
-		/// </summary>
-		/// <param name="pageDiv"></param>
-		/// <returns></returns>
-//		private static IEnumerable<XmlElement> GetEditableGroupsInSinglePageDiv(XmlElement node)
-//	    {
-////			foreach (XmlElement element in node.SafeSelectNodes("//textarea | //*[(@contentEditable='true' or  @contenteditable='true')]"))
-////	        {
-////	        	yield return (XmlElement) element.ParentNode;
-////	        }
-//	    }
-
-
-		/// <summary>
-		/// Get those paragraphs which look like we're supposed to localize them via variables (not via editing)
-		/// </summary>
-		/// <remarks>maybe the "AndText" part won't be desirable...</remarks>
-		/// <param name="pageDiv"></param>
-		/// <returns></returns>
-		private static IEnumerable<XmlElement> GetParagraphsWithFieldsAndTextInSinglePageDiv(XmlElement pageDiv)
-		{
-			foreach (XmlElement paragraph in pageDiv.SafeSelectNodes("//p[@data-book or @data-library]"))
-			{
-				var text = paragraph.InnerText.Trim();
-			   if (!string.IsNullOrEmpty(text))
-				yield return pageDiv;
-			}
-		}
 
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
-
-			string name = Path.GetFileName(sourcePath);
-
 			var storage = _bookStorageFactory(sourcePath);
-			var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
-			if(nameSuggestion.Count>0)
-			{
-				name = ((XmlElement) nameSuggestion[0]).GetAttribute("content");
-			}
-
+			var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  Path.GetFileName(sourcePath));
 			int i = 0;
 			string suffix = "";
 

@@ -18,7 +18,7 @@ namespace Bloom.Book
 {
 	public class ImageUpdater
 	{
-		public static void CopyImageMetadataToWholeBook(string folderPath, XmlDocument dom, Metadata metadata, IProgress progress)
+		public static void CopyImageMetadataToWholeBook(string folderPath, HtmlDom dom, Metadata metadata, IProgress progress)
 		{
 			progress.WriteStatus("Starting...");
 
@@ -68,7 +68,11 @@ namespace Bloom.Book
 			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
 			if (fileName == "placeholder.png" || fileName == "license.png")
 				return;
-
+			var end = fileName.IndexOf('?');
+			if (end > 0)
+			{
+				fileName = fileName.Substring(0, end);
+			}
 			if (string.IsNullOrEmpty(fileName))
 			{
 				Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage() Warning: img has no or empty src attribute");
@@ -107,7 +111,7 @@ namespace Bloom.Book
 		/// This method makes sure they are all up to date.
 		/// </summary>
 		/// <param name="progress"> </param>
-		public static void UpdateAllHtmlDataAttributesForAllImgElements(string folderPath, XmlDocument dom, IProgress progress)
+		public static void UpdateAllHtmlDataAttributesForAllImgElements(string folderPath, HtmlDom dom, IProgress progress)
 		{
 			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
 			//whether the info is there or missing or whatever.

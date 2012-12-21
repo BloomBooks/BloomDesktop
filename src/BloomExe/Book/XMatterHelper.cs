@@ -19,7 +19,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class XMatterHelper
 	{
-		private readonly XmlDocument _bookDom;
+		private readonly HtmlDom _bookDom;
 		private readonly string _nameOfXMatterPack;
 
 		/// <summary>
@@ -29,7 +29,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
 		/// <param name="fileLocator">The locator needs to be able tell use the path to an xmater html file, given its name</param>
-		public XMatterHelper(XmlDocument bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
+		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
 		{
 			_bookDom = bookDom;
 			_nameOfXMatterPack = nameOfXMatterPack;
@@ -99,21 +99,21 @@ namespace Bloom.Book
 			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
-			XmlNode divBeforeNextFrontMattterPage = _bookDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
+			XmlNode divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
 //			if(folderPath!=null)//null in some unit test that don't care about images
 //				ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(folderPath, XMatterDom, new NullProgress());
 
 			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
-				var newPageDiv = _bookDom.ImportNode(xmatterPage, true) as XmlElement;
+				var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as XmlElement;
 				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
 				if (IsBackMatterPage(xmatterPage))
 				{
 					//note: this is redundant unless this is the 1st backmatterpage in the list
-					divBeforeNextFrontMattterPage = _bookDom.SelectSingleNode("//body/div[last()]");
+					divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[last()]");
 				}
 
 				//we want the xmatter pages to match what we found in the source book
@@ -129,7 +129,7 @@ namespace Bloom.Book
 					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
 				}
 
-				_bookDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
+				_bookDom.RawDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
 				divBeforeNextFrontMattterPage = newPageDiv;
 
 				//enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
@@ -170,8 +170,7 @@ namespace Bloom.Book
 		/// <summary>
 		///remove any x-matter in the book
 		/// </summary>
-		/// <param name="storage"></param>
-		public static void RemoveExistingXMatter(XmlDocument dom)
+		public static void RemoveExistingXMatter(HtmlDom dom)
 		{
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]"))
 			{

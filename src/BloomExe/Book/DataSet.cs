@@ -4,7 +4,7 @@ using Palaso.Text;
 namespace Bloom.Book
 {
 	/// <summary>
-	/// Holds the values we inject and gather from the document.
+	/// Acts as a cache of values we inject and gather from the document.
 	/// </summary>
 	public class DataSet
 	{
@@ -24,36 +24,35 @@ namespace Bloom.Book
 
 		public Dictionary<string, DataItem> TextVariables { get; private set; }
 
-		public void AddGenericLanguageString(string key, string value, bool isCollectionValue)
-		{
-			var code = new MultiTextBase();
-			code.SetAlternative("*", value);
-			TextVariables.Add(key, new DataItem(code, isCollectionValue));
-		}
 
 		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
 		{
-			var code = new MultiTextBase();
-			code.SetAlternative("*", value);
+			var text = new MultiTextBase();
+			text.SetAlternative("*", value);
 			if(TextVariables.ContainsKey(key))
 			{
 				TextVariables.Remove(key);
 			}
-			TextVariables.Add(key, new DataItem(code, isCollectionValue));
+			TextVariables.Add(key, new DataItem(text, isCollectionValue));
 		}
 
-		public void UpdateLanguageString(string writingSystemId, string key, string value, bool isCollectionValue)
+		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
 		{
-			var code = new MultiTextBase();
-			code.SetAlternative(writingSystemId, value);
-			if (TextVariables.ContainsKey(key))
+			DataItem dataItem;
+			MultiTextBase text;
+			if(TextVariables.TryGetValue(key,out dataItem))
+				text = dataItem.TextAlternatives;
+			else
 			{
-				TextVariables.Remove(key);
+				text = new MultiTextBase();
 			}
-			TextVariables.Add(key, new DataItem(code, isCollectionValue));
+			text.SetAlternative(writingSystemId, value);
+			TextVariables.Remove(key);
+			if(text.Count>0)
+				TextVariables.Add(key, new DataItem(text, isCollectionValue));
 		}
 
-		public void AddLanguageString(string writingSystemId, string key, string value, bool isCollectionValue)
+		public void AddLanguageString(string key, string value, string writingSystemId, bool isCollectionValue)
 		{
 			if(!TextVariables.ContainsKey(key))
 			{
