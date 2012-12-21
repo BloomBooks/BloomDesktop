@@ -108,7 +108,7 @@
             this._toolStrip.Location = new System.Drawing.Point(0, 0);
             this._toolStrip.Name = "_toolStrip";
             this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this._toolStrip.Size = new System.Drawing.Size(272, 65);
+            this._toolStrip.Size = new System.Drawing.Size(272, 46);
             this._toolStrip.TabIndex = 28;
             this._toolStrip.Text = "_toolStrip";
             // 
@@ -386,6 +386,7 @@
             this.localizationExtender1.SetLocalizingId(this, "WorkspaceView.WorkspaceView");
             this.Name = "WorkspaceView";
             this.Size = new System.Drawing.Size(1098, 540);
+            this.Load += new System.EventHandler(this.WorkspaceView_Load);
             this.Resize += new System.EventHandler(this.WorkspaceView_Resize);
             this._panelHoldingToolStrip.ResumeLayout(false);
             this._panelHoldingToolStrip.PerformLayout();

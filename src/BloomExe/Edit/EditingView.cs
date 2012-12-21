@@ -303,7 +303,7 @@ namespace Bloom.Edit
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				var dom = _model.GetXmlDocumentForCurrentPage();
 				_browser1.Focus();
-				_browser1.Navigate(dom);
+				_browser1.Navigate(dom.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
 			}
