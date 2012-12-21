@@ -68,7 +68,7 @@ namespace Bloom.Book
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
 			_bookData = new BookData(_dom,
-					_collectionSettings, imgNode => ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress()));
+					_collectionSettings, UpdateImageMetadataAttributes);
 
 			if (IsInEditableLibrary && !HasFatalError)
 			{
@@ -392,11 +392,15 @@ namespace Bloom.Book
 				return book;
 		}
 
+		public BookType TypeOverrideForUnitTests;
 
 		public BookType Type
 		{
 			get
 			{
+				if(TypeOverrideForUnitTests != BookType.Unknown)
+					return TypeOverrideForUnitTests;
+
 				return IsInEditableLibrary ? BookType.Publication : BookType.Template; //TODO
 				//return _storage.BookType;
 			}
@@ -433,6 +437,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
+			//shells & templates are stored without frontmatter. This will add and update the frontmatter to our preivew dom
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
 				BringBookUpToDate(previewDom, new NullProgress());
@@ -474,7 +479,23 @@ namespace Bloom.Book
 			helper.InjectXMatter(FolderPath, _bookData.GetWritingSystemCodes(), layout);
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-			_bookData.SynchronizeDataItemsThroughoutDOM();
+
+
+			//hack
+			if(bookDOM == _dom)//we already have a data for this
+			{
+				_bookData.SynchronizeDataItemsThroughoutDOM();
+			}
+			else //used for making a preview dom
+			{
+				var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
+				bd.SynchronizeDataItemsThroughoutDOM();
+			}
+		}
+
+		private void UpdateImageMetadataAttributes(XmlElement imgNode)
+		{
+			ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress());
 		}
 
 		private void UpdatePageFromFactoryTemplates(HtmlDom bookDom, IProgress progress)

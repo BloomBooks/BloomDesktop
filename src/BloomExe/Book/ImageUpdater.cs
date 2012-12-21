@@ -68,7 +68,11 @@ namespace Bloom.Book
 			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
 			if (fileName == "placeholder.png" || fileName == "license.png")
 				return;
-
+			var end = fileName.IndexOf('?');
+			if (end > 0)
+			{
+				fileName = fileName.Substring(0, end);
+			}
 			if (string.IsNullOrEmpty(fileName))
 			{
 				Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage() Warning: img has no or empty src attribute");

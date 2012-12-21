@@ -53,6 +53,7 @@ namespace BloomTests.Book
 
 			_testFolder = new TemporaryFolder("BookTests");
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
+			MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path,"original.png"));
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 
 
@@ -547,9 +548,8 @@ namespace BloomTests.Book
 		/// know the state of the image metadata without having to open the image up (slow).
 		/// </summary>
 		[Test, Ignore("breaks on team city for some reason")]
-		public void UpdateXMatter_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
+		public void BringBookUpToDate_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
 		{
-
 			_bookDom = new HtmlDom(@"
 				<html>
 					<body>
@@ -567,10 +567,44 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']",1);
 		}
 
+		private TempFile MakeTempImage(string name)
+		{
+			using (var x = new Bitmap(100, 100))
+			{
+				x.Save(Path.Combine(Path.GetTempPath(), name), ImageFormat.Png);
+			}
+			return TempFile.TrackExisting(name);
+		}
+
+		[Test]
+		public void GetPreviewHtmlFileForWholeBook_InjectedCoverHasCorrectImage()
+		{
+			_bookDom =
+				new HtmlDom(
+					@"
+				<html>
+					<body>
+						<div id='bloomDataDiv'>
+							<div data-book='coverImage'>theCover.png</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+
+			//only shells & templates get updated (xmatter injected)
+			book.TypeOverrideForUnitTests = Bloom.Book.Book.BookType.Shell;
+			var imagePath = book.FolderPath.CombineForPath("theCover.png");
+			MakeSamplePngImageWithMetadata(imagePath);
+
+			//book.BringBookUpToDate(new NullProgress());
+			var dom = book.GetPreviewHtmlFileForWholeBook();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='theCover.png']", 1);
+		}
+
 		[Test, Ignore("breaks on team city for some reason")]
 		public void UpdateImgMetdataAttributesToMatchImage_HtmlForImgGetsMetaDataAttributes()
 		{
-
 			_bookDom = new HtmlDom(@"
 				<html>
 					<body>
