@@ -812,10 +812,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(SolutionDir)\lib\msvcr100.dll $(OutDir)
-copy $(SolutionDir)\lib\libtidy.dll $(OutDir)
-copy $(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll $(OutDir)
-copy $(SolutionDir)\lib\dotnet\Interop.Acrobat.dll $(OutDir)
+    <PostBuildEvent>copy /Y "$(SolutionDir)\lib\msvcr100.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\libtidy.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
