@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
 <!-- will be used later on in this file.  this value should be B U I  LD_SCRIPT_MUST_REPLACE_AT_RUNTIME (in quotes) -->
-<?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
+<?define Property_ProductVersion = "0.9.999" ?>
 <!--this is replaced at build time by the msbuild 'package' target -->
 <?define Property_ProductCode = "*" ?>
 <!-- auto-generate a new guid each time -->
@@ -53,6 +53,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	<Property Id ="ALLUSERS">1</Property>
 
 	<Directory Id="TARGETDIR" Name="SourceDir">
+		<!-- Mercurial requires this Visual C++ Runtime thing. Many computers will already have it, but MS recommends each app install it this way, using this merge module-->
+		<Merge Id="VisualC++SharedRuntimeForMercurial" SourceFile="..\..\lib\Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
 
 		<Directory Id="CommonAppDataFolder">
 			<Directory Id="BloomCommonAppData" Name="Bloom">
@@ -79,7 +81,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Directory Id="XulRunnerDir" Name="XulRunner"/>
 		  <Component Id="Bloom.exe" Guid="{A3493982-C68A-4f01-93BC-5F92B380CF89}">
 			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
-
 			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
 			<File Id="BloomPackIcon" Name="BloomPackIcon.ico" Source="..\..\artwork\BloomPack.ico" />
 			<File Id="BloomCollectionIcon" Name="BloomCollectionIcon.ico" Source="..\..\artwork\BloomCollectionIcon.ico" />
@@ -215,6 +216,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	<Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
 	  <ComponentRef Id ="removeShortcutDir"/>
 	  <MergeRef Id="ChorusMergeModule" />
+	  <MergeRef Id="VisualC++SharedRuntimeForMercurial" />
 	  <ComponentRef Id="autofac.dll"/>
 	  <ComponentRef Id="Palaso.dll"/>
 	  <ComponentRef Id="LocalizationManager.dll"/>
