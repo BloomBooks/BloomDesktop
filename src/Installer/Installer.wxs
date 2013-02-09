@@ -55,7 +55,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	<Directory Id="TARGETDIR" Name="SourceDir">
 		<!-- Mercurial requires this Visual C++ Runtime thing. Many computers will already have it, but MS recommends each app install it this way, using this merge module-->
 		<Merge Id="VisualC++SharedRuntimeForMercurial" SourceFile="..\..\lib\Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
-		<Merge Id="VisualC++SharedRuntimeForMercurialPolicy" SourceFile="..\..\lib\policy_Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
+		<Merge Id="VisualC++SharedRuntimeForMercurialPolicy" SourceFile="..\..\lib\policy_9_0_Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
 
 		<Directory Id="CommonAppDataFolder">
 			<Directory Id="BloomCommonAppData" Name="Bloom">
