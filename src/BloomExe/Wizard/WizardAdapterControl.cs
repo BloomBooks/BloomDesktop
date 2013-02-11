@@ -89,12 +89,8 @@ namespace Bloom.Wizard
 							page.AeroPage.Controls.AddRange(page.Controls.Cast<Control>().ToArray());
 
 							_aeroWizard.Pages.Add(page.AeroPage);
-						}
 
-						_aeroWizard.ParentChanged += (s, e) =>
-						{
-							Console.WriteLine("parent changed");
-						};
+						}
 
 						this.Controls.Add(_aeroWizard);
 
@@ -339,6 +335,21 @@ namespace Bloom.Wizard
 				SetText(value);
 			}
 		}
+
+		public new Size Size
+		{
+			get
+			{
+				return _page.Size;
+			}
+			set
+			{
+				_page.Size = value;
+			}
+		}
+
+
+
 
 		#endregion
 
