@@ -147,7 +147,7 @@ namespace Bloom.CollectionCreating
 
 		}
 
-		private void _finishPage_Initialize(object sender, AeroWizard.WizardPageInitEventArgs e)
+		private void _finishPage_Initialize(object sender, EventArgs e)
 		{
 			var pattern = "OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.";
 			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));

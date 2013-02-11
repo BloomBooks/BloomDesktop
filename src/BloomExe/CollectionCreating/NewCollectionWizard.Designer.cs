@@ -149,7 +149,7 @@
 			this._finishPage.Size = new System.Drawing.Size(637, 310);
 			this._finishPage.TabIndex = 3;
 			this._finishPage.Text = "Ready To Create New Collection";
-			this._finishPage.Initialize += new System.EventHandler<AeroWizard.WizardPageInitEventArgs>(this._finishPage_Initialize);
+			this._finishPage.Initialize += this._finishPage_Initialize;
 			// 
 			// betterLabel1
 			// 

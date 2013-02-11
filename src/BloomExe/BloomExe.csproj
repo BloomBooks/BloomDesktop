@@ -168,6 +168,7 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Platform\Platform.cs" />
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
@@ -263,6 +264,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ImageProcessing\ImageServer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Wizard\WinForms\WizardControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Wizard\WinForms\WizardPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Wizard\WizardAdapterControl.cs">
