@@ -64,7 +64,7 @@
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
-      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
+      <HintPath>..\..\..\geckofx-11.0\Skybound.Gecko\bin\x86\Debug_Linux\geckofx-11.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
