@@ -21,6 +21,7 @@ namespace Bloom.Wizard.WinForms
 		Button _nextAndFinishedButton;
 		Button _backButton;
 		Button _cancelButton;
+		PictureBox _wizardIconPictureBox;
 
 		int _currentPageIndex;
 		WizardPage _currentShownPage;
@@ -89,8 +90,11 @@ namespace Bloom.Wizard.WinForms
 
 		public void EndInit()
 		{
-			// TODO: draw TitleIcon somewhere.
-			_tableLayoutPanel.Controls.Add(new Label { Text = Title, AutoSize = true, Font = new Font(new FontFamily("Arial"),14) }, 0, 0);
+			_wizardIconPictureBox = new PictureBox { SizeMode = PictureBoxSizeMode.StretchImage, ClientSize = new Size(16,16)/*this.TitleIcon.Size*/, Image = TitleIcon.ToBitmap() };
+			var titlePanel = new Panel { Dock = DockStyle.Fill };
+			titlePanel.Controls.Add(_wizardIconPictureBox);
+			titlePanel.Controls.Add(new Label { Text = Title, AutoSize = true, Font = new Font(new FontFamily("Arial"), 11), Left =_wizardIconPictureBox.Width + 4 });
+			_tableLayoutPanel.Controls.Add(titlePanel, 0, 0);
 
 			ShowPage(0);
 
