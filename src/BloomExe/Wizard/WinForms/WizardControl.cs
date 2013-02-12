@@ -66,33 +66,46 @@ namespace Bloom.Wizard.WinForms
 		public void BeginInit()
 		{
 			const int SeperatorSize = 10;
-			_backButton = new Button { Text = "Back", Size = new Size(100, 25), Left = 0, Top = 0 };
-			_nextAndFinishedButton = new Button { Text = "Next", Size = new Size(100, 25), Left = _backButton.Left + _backButton.Width + SeperatorSize, Top = 0 };
-			_cancelButton = new Button { Text = "Cancel", Size = new Size(100, 25), Left = _nextAndFinishedButton.Left + _nextAndFinishedButton.Width + SeperatorSize, Top = 0 };
+			_backButton = new Button { Text = "Back", Size = new Size(100, 25)};
+			_nextAndFinishedButton = new Button { Text = "Next", Size = new Size(100, 25)};
+			_cancelButton = new Button { Text = "Cancel", Size = new Size(100, 25)};
 			_tableLayoutPanel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3 };
-			_tableLayoutPanel.RowStyles.Add(new RowStyle());
-			_tableLayoutPanel.RowStyles.Add(new RowStyle());
-			_tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+			_tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+			_tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+			_tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+
+			var buttonTableLayoutPanel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 1, ColumnCount = 4 };
+			buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+			buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+			buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+			buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+
+			buttonTableLayoutPanel.Controls.Add(_backButton, 1, 0);
+			buttonTableLayoutPanel.Controls.Add(_nextAndFinishedButton, 2, 0);
+			buttonTableLayoutPanel.Controls.Add(_cancelButton, 3, 0);
+
+			_tableLayoutPanel.Controls.Add(buttonTableLayoutPanel, 0, 2);
 		}
 
 		public void EndInit()
 		{
 			// TODO: draw TitleIcon somewhere.
-			_tableLayoutPanel.Controls.Add(new Label { Text = Title }, 0, 0);
+			_tableLayoutPanel.Controls.Add(new Label { Text = Title, AutoSize = true, Font = new Font(new FontFamily("Arial"),14) }, 0, 0);
 
 			ShowPage(0);
 
 			_nextAndFinishedButton.Click += nextAndFinishedButton_Click;
 			_backButton.Click += _backButton_Click;
 			_cancelButton.Click += _cancelButton_Click;
-			var panel = new Panel();
-			panel.Dock = DockStyle.Fill;
-			panel.Controls.Add(_backButton);
-			panel.Controls.Add(_nextAndFinishedButton);
-			panel.Controls.Add(_cancelButton);
-			_tableLayoutPanel.Controls.Add(panel, 0, 2);
 
 		   this.Controls.Add(_tableLayoutPanel);
+		}
+
+		protected override void OnSizeChanged(EventArgs e)
+		{
+			_tableLayoutPanel.Width = this.Width;
+
+			base.OnSizeChanged(e);
 		}
 
 		void _cancelButton_Click(object sender, EventArgs e)
@@ -146,6 +159,7 @@ namespace Bloom.Wizard.WinForms
 			_currentShownPage = Pages[pageNumber];
 			_currentShownPage.InvokeInitializeEvent();
 			_tableLayoutPanel.Controls.Add(_currentShownPage, 0, 1);
+			_currentShownPage.Dock = DockStyle.Fill;
 			_backButton.Enabled = pageNumber != 0;
 			_nextAndFinishedButton.Enabled = _currentShownPage.AllowNext;
 			_currentShownPage.AllowNextChanged -= _currentShownPage_AllowNextChanged;
