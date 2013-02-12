@@ -1,0 +1,22 @@
+#experimentNotice IMG
+{
+	/*+placement:float-left 0px 0px;*/
+	float: left;
+	position: relative;
+	left: 0px;
+	top: 0px;
+	margin-right: 11px;
+}
+#experimentNotice
+{
+	color: #000000;
+	/*+placement:shift 0px 0px;*/
+	position: relative;
+	left: 0px;
+	top: 0px;
+}
+DIV#experimentNotice
+{
+	margin-top: 16px;
+	margin-left: 13px;
+}

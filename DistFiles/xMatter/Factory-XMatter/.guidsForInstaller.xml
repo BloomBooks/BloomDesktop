@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="a5_landscape_factory_xmatter.css" Guid="ea55ed47-fc3e-4150-bedf-cfed1cad6aea" />
+  <File Id="a5_portrait_factory_xmatter.css" Guid="f8a6c480-b068-4066-b461-3544e58f24bd" />
+  <File Id="Factory_XMatter.htm" Guid="5d315f03-6c73-4999-91f5-4b738a49bf3d" />
+  <File Id="Factory_Xmatter.css" Guid="cbae7687-00f5-49ef-8a97-4e823cec11db" />
+</InstallerMetadata>

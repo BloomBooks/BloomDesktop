@@ -18,6 +18,7 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            _listView = null;
         }
 
         #region Component Designer generated code
@@ -43,10 +44,12 @@
 			// _listView
 			// 
 			this._listView.BackColor = System.Drawing.SystemColors.MenuHighlight;
+			this._listView.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._listView.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._listView.ForeColor = System.Drawing.Color.White;
+			this._listView.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this._listView.LargeImageList = this._thumbnailImageList;
 			this._listView.Location = new System.Drawing.Point(0, 0);
+			this._listView.Margin = new System.Windows.Forms.Padding(0, 3, 0, 3);
 			this._listView.MultiSelect = false;
 			this._listView.Name = "_listView";
 			this._listView.OwnerDraw = true;
@@ -55,9 +58,9 @@
 			this._listView.UseCompatibleStateImageBehavior = false;
 			this._listView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this._listView_DrawItem);
 			this._listView.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
-			this._listView.MouseUp += new System.Windows.Forms.MouseEventHandler(this._listView_MouseUp);
-			this._listView.MouseMove += new System.Windows.Forms.MouseEventHandler(this._listView_MouseMove);
 			this._listView.MouseDown += new System.Windows.Forms.MouseEventHandler(this._listView_MouseDown);
+			this._listView.MouseMove += new System.Windows.Forms.MouseEventHandler(this._listView_MouseMove);
+			this._listView.MouseUp += new System.Windows.Forms.MouseEventHandler(this._listView_MouseUp);
 			// 
 			// ThumbNailList
 			// 

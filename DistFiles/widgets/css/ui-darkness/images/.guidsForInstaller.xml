@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="ui_bg_flat_30_cccccc_40x100.png2" Guid="1cb2651e-41ca-4efb-89fa-ce8550b0aa62" />
+  <File Id="ui_bg_flat_50_5c5c5c_40x100.png2" Guid="2fe92797-9f52-4e45-a853-f9b48702bc36" />
+  <File Id="ui_bg_glass_20_555555_1x400.png2" Guid="ad10d3d7-e088-4147-a0a4-200e185e393d" />
+  <File Id="ui_bg_glass_40_0078a3_1x400.png" Guid="640550e3-85c2-451a-a5f7-f9fe83a5a0b9" />
+  <File Id="ui_bg_glass_40_ffc73d_1x400.png2" Guid="0e175714-7d86-4cf1-b134-f2297c239d49" />
+  <File Id="ui_bg_gloss_wave_25_333333_500x100.png" Guid="f1c3e9eb-0335-4982-9f05-2a3717bb826f" />
+  <File Id="ui_bg_highlight_soft_80_eeeeee_1x100.png2" Guid="b480a642-0f63-4667-9818-19a2c80eb3c8" />
+  <File Id="ui_bg_inset_soft_25_000000_1x100.png" Guid="c1dd7536-3054-43d9-9520-3dc85fb2bf38" />
+  <File Id="ui_bg_inset_soft_30_f58400_1x100.png" Guid="436b2860-baba-4982-8570-5774e8c0e17a" />
+  <File Id="ui_icons_222222_256x240.png3" Guid="504a3f3a-50c5-49a3-9f46-b17868795b16" />
+  <File Id="ui_icons_4b8e0b_256x240.png2" Guid="9fc91232-71f5-4834-8389-551acc5c4f27" />
+  <File Id="ui_icons_a83300_256x240.png2" Guid="fa3495b3-8765-4eab-b6f9-4d7bf59cd72b" />
+  <File Id="ui_icons_cccccc_256x240.png2" Guid="9bbcc93c-53de-47c0-9a3c-418153a5c25a" />
+  <File Id="ui_icons_ffffff_256x240.png2" Guid="9bb421db-d513-4ca9-8674-bc2f49ef8522" />
+</InstallerMetadata>

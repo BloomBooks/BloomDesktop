@@ -10,3 +10,28 @@ glob:templates/A4LandscapeBooklet/starter.pdf
 glob:src/_ReSharper.Bloom/*
 
 glob:*\_ReSharper*
+glob:Bloom VS2010.suo
+relre:_ReSharper.Bloom VS2010/*
+glob:Bloom VS2010.sln.orig
+glob:HL - Health
+glob:Stuff to convert
+glob:_ReSharper
+glob:_ReSharper*
+syntax: glob
+Szn's Shell Books - Copy
+lib/xulrunner
+lib/XulRunner*
+lib/xulrunner*
+**.idea
+DistFiles/root/tmp*
+*.pdb
+lib/dotnet/Palaso*.dll
+DistFiles/factoryCollections/Templates/BasicBook/basePage.css
+DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
+DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
+*.bak
+**/Sample Shells/**/previewMode.css
+**/Sample Shells/**/languageDisplay.css
+**/Sample Shells/**/basePage.css
+**/Templates/**/previewMode.css
+**/Templates/**/basePage.css

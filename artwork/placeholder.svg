@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.48.0 r9654"
+   width="595.27559pt"
+   height="841.88976pt"
+   sodipodi:docname="placeholder.svg"
+   version="1.1">
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs5" />
+  <sodipodi:namedview
+     inkscape:window-height="826"
+     inkscape:window-width="1092"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="0.37724655"
+     inkscape:cx="177.49681"
+     inkscape:cy="628.13303"
+     inkscape:window-x="1600"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg2"
+     showgrid="false"
+     inkscape:window-maximized="0" />
+  <rect
+     style="fill:#729fcf;stroke:#eeeeec;stroke-width:3;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:6, 6;stroke-dashoffset:0"
+     id="rect2985"
+     width="935.7276"
+     height="1129.235"
+     x="885.36261"
+     y="26.507877"
+     ry="1.1490486" />
+  <path
+     sodipodi:type="star"
+     style="fill:#888a85;stroke:#888a85;stroke-width:4.02476977999999970;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0"
+     id="path1549"
+     sodipodi:sides="5"
+     sodipodi:cx="495.56927"
+     sodipodi:cy="257.0004"
+     sodipodi:r1="32.004192"
+     sodipodi:r2="22.067102"
+     sodipodi:arg1="0.60613533"
+     sodipodi:arg2="2.801306"
+     inkscape:flatsided="false"
+     inkscape:rounded="1.08"
+     inkscape:randomized="0"
+     d="m 521.87211,275.23304 c -43.01606,-29.58772 2.17555,-28.10945 -47.10459,-10.86759 -26.51418,9.27664 3.60143,50.21506 11.5895,23.28462 14.8469,-50.05381 27.40597,-6.61722 -4.22043,-48.15739 -17.01594,-22.34985 -46.64446,18.94247 -18.56363,18.21761 52.19194,-1.34723 14.76226,24.01979 44.49622,-18.89531 15.99775,-23.08961 -32.42929,-38.50798 -23.06246,-12.02552 17.40949,49.22117 -18.28239,21.46227 31.7206,36.47944 26.9031,8.07969 26.60206,-42.7417 4.31025,-25.64979 -41.43228,31.7676 -26.0614,-10.75537 -24.8918,41.44086 0.62927,28.08312 48.87026,12.09215 25.72634,-3.82693 z"
+     transform="matrix(5.6624103,0,0,5.6624103,-2378.899,-1143.7704)"
+     inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\A5Portrait\placeHolder.png"
+     inkscape:export-xdpi="60.563259"
+     inkscape:export-ydpi="60.563259" />
+  <path
+     sodipodi:type="arc"
+     style="fill:#babdb6;stroke:#babdb6;stroke-width:4.02476977999999970;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0"
+     id="path1551"
+     sodipodi:cx="530.98846"
+     sodipodi:cy="261.93216"
+     sodipodi:rx="8.8174267"
+     sodipodi:ry="8.8174267"
+     d="m 539.80589,261.93216 a 8.8174267,8.8174267 0 1 1 -17.63485,0 8.8174267,8.8174267 0 1 1 17.63485,0 z"
+     transform="matrix(5.6624103,0,0,5.6624103,-2583.6883,-1179.3119)"
+     inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\A5Portrait\placeHolder.png"
+     inkscape:export-xdpi="60.563259"
+     inkscape:export-ydpi="60.563259" />
+</svg>

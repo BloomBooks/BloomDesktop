@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="a5LandscapeBookletBlue.png" Guid="4ad9313d-a171-48f8-a433-8b8ebb1c26e6" />
+  <File Id="a5LandscapeBookletPurple.png" Guid="0d157a09-ddd8-47ae-b2d3-a056074befb5" />
+  <File Id="a5LandscapeBookletYellow.png" Guid="53b3c262-9e2c-4d12-8f61-af247ba30fe2" />
+  <File Id="a5Portrait.svg" Guid="cb328867-7b08-4cc3-bc2b-5de6e941b977" />
+  <File Id="a5portraitBooklet.png" Guid="7f63b8ec-396b-4d32-9cc5-20bf81719841" />
+  <File Id="a5PortraitBookletBlue.png" Guid="7be55e0c-aa45-4919-8adb-def443d2d72a" />
+  <File Id="a5PortraitBookletGreen.png" Guid="dfb694c5-30a4-4682-9c05-66658d25d7d2" />
+  <File Id="a5portraitBookletPink.png" Guid="4a3b925c-54bb-4076-84a7-fb332929ef13" />
+  <File Id="a5PortraitBookletPurple.png" Guid="6e9b17a3-f001-45d6-9321-7ec63065bc69" />
+  <File Id="a5portraitBookletYellow.png" Guid="30afcd1b-89ec-4eb9-acf4-88c659c4977f" />
+  <File Id="edit.png" Guid="0f994e63-90c1-4f7c-8f59-e6d0e8699047" />
+  <File Id="library.png" Guid="37ce2017-5e22-4f7b-b2a1-d369f38ab207" />
+  <File Id="publish.png" Guid="d17611be-1146-422c-9ebb-05f1916ae13d" />
+  <File Id="info.png" Guid="ce094a0e-ef67-4686-b091-f75936d18615" />
+  <File Id="info16x16.png" Guid="a5cc52a3-a2a9-4594-b40d-163dde7775b3" />
+  <File Id="open.png" Guid="c7c67a19-e007-43a9-87ee-23fe5f944688" />
+  <File Id="wait30transparent.gif" Guid="46a22562-e187-440b-9c00-8c6e903d121e" />
+  <File Id="library32x32.png" Guid="6910df94-e5f4-4da3-aca8-b0446afb8937" />
+  <File Id="edit32x32.png" Guid="d28cc2c3-a582-40c3-afc4-7cc10b2e731c" />
+  <File Id="publish32x32.png" Guid="67aca047-5ec9-49b8-b4ca-d99c9278e066" />
+  <File Id="newLibrary32x32.png" Guid="b36e9c2e-f7ea-4fed-b371-60e056537fd9" />
+</InstallerMetadata>

@@ -1,34 +1,45 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
-using Bloom.Edit;
+using Bloom.Book;
+using BloomTemp;
+using Palaso.Reporting;
 
-namespace Bloom
+namespace Bloom.Edit
 {
     public partial class PageListView : UserControl
     {
         private readonly PageSelection _pageSelection;
-        private readonly DeletePageCommand _deletePageCommand;
-    	private Book _book;
+        private readonly EditingModel _model;
+        private bool _dontForwardSelectionEvent;
+        private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection, DeletePageCommand deletePageCommand, RelocatePageEvent relocatePageEvent)
+        public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider)
         {
             _pageSelection = pageSelection;
-            _deletePageCommand = deletePageCommand;
-			this.Font= SystemFonts.MessageBoxFont;
+            _model = model;
+            this.Font= SystemFonts.MessageBoxFont;
             InitializeComponent();
+        	_thumbNailList.Thumbnailer = thumbnailProvider;
         	_thumbNailList.CanSelect = true;
+			_thumbNailList.PreferPageNumbers = true;
+		    _thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
-            _thumbNailList.PageSelectedChanged+=new EventHandler(OnSelectedThumbnailChanged);
+            _thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
         }
 
-        private void OnSelectedThumbnailChanged(object page, EventArgs e)
+
+        private void OnPageSelectedChanged(object page, EventArgs e)
         {
             if (page == null)
                 return;
-            _pageSelection.SelectPage(page as Page);            
+            if (!_dontForwardSelectionEvent)
+            {
+				_pageSelection.SelectPage(page as Page);
+            }
         }
         
         private void PageListView_BackColorChanged(object sender, EventArgs e)
@@ -36,9 +47,10 @@ namespace Bloom
             _thumbNailList.BackColor = BackColor;
         }
 
-        public void SetBook(Book book)//review: could do this instead by giving this class the bookselection object
+        public void SetBook(Book.Book book)//review: could do this instead by giving this class the bookselection object
         {
-            _book = book;
+          //  return;
+            
             if (book == null)
             {
                 _thumbNailList.SetItems(new Page[] { });
@@ -47,43 +59,55 @@ namespace Bloom
             {
                 _thumbNailList.SetItems(new IPage[] { new PlaceHolderPage() }.Concat(book.GetPages()));
               //  _thumbNailList.SetItems(book.GetPages());
+                
+                if(_pageWeThinkShouldBeSelected !=null)
+                {
+                    //this var will be set previously when someone told us the page we're to select,
+                    //but had not yet given us leave to do the time-consuming process of actually
+                    //making the thumbnails and showing them.
+                    SelectThumbnailWithoutSendingEvent(_pageWeThinkShouldBeSelected);
+                }
             }
         }
 
-        private void deletePageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _book.DeletePage(_pageSelection.CurrentSelection);          
-        }
-    }
+		public void UpdateThumbnailAsync(IPage page)
+		{
+			Logger.WriteMinorEvent("Updating thumbnail for page"); 
+			
+			//else, it just gives us the cached copy
+			_thumbNailList.Thumbnailer.PageChanged(page.Id);
+			_thumbNailList.UpdateThumbnailAsync(page);
+		}
 
-    /// <summary>
-    /// This is just so the first (top-left) thumbnail is empty, so that the cover page appears in the second column.
-    /// </summary>
-    public class PlaceHolderPage     : IPage
-    {
-        public string Id
+        public void Clear()
         {
-            get { return null; }
+            _thumbNailList.SetItems(new IPage[]{});
         }
 
-        public string Caption
+        public void SelectThumbnailWithoutSendingEvent(IPage page)
         {
-            get { return null; }
+            _pageWeThinkShouldBeSelected = page;
+            try
+            {
+                _dontForwardSelectionEvent = true;
+                _thumbNailList.SelectPage(page);
+            }
+            finally
+            {
+                _dontForwardSelectionEvent = false;
+            }
+
+            _thumbNailList.SetPageInsertionPoint(_model.DeterminePageWhichWouldPrecedeNextInsertion());
         }
 
-        public Image Thumbnail
+        protected IPage SelectedPage
         {
-            get { return new Bitmap(32,32); }
+            get { return _pageWeThinkShouldBeSelected; }
         }
 
-        public string XPathToDiv
-        {
-            get { return null; }
-        }
-
-        public XmlNode GetDivNodeForThisPage()
-        {
-            return null;
-        }
+    	public void EmptyThumbnailCache()
+    	{
+    		_thumbNailList.EmptyThumbnailCache();
+    	}
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bloom.CollectionChoosing;
 using Bloom.ToPalaso;
 using NUnit.Framework;
 
