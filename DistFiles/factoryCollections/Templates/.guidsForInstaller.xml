@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="placeHolder.png2" Guid="ad8468ef-2eec-4f4f-8c37-ac3892d1f53d" />
+  <File Id="placeHolder.png3" Guid="23283dd3-5f00-4697-8539-1eb3577b092c" />
+  <File Id="placeHolder.png1" Guid="f5a82beb-16dd-4531-a27c-5883a0941cf8" />
+  <File Id="Templates.BloomCollection" Guid="6da0e49c-35b2-46ad-abda-818238bf0134" />
+</InstallerMetadata>

@@ -1,0 +1,111 @@
+/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+#bloom-supportedPageConfigurations
+{
+	content: "A5Landscape";
+}
+/*Top with Picture and a little text*/
+.calendarMonthTop .bloom-imageContainer
+{
+	width: 100%;
+	height: 363px;
+}
+.bloom-translationGroup.calendarBelowBigPictureText
+{
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	text-align: center;
+	width: 100%;
+	height: 64px;
+	display: table !important;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content1
+{
+	display: table-cell !important;
+	vertical-align: bottom;
+	width: 100%;
+	min-height: 14pt;
+}
+/*Bottom with day grid*/
+.month TABLE
+{
+	padding: 1cm;
+}
+DIV.calendarMonthTop DIV.imageHolder
+{
+	/*+placement:anchor-top-left 42px 45px;*/
+	position: absolute;
+	left: 42px;
+	top: 45px;
+	width: 690px;
+	height: 383px;
+}
+.month THEAD TD
+{
+	font-weight: bold;
+	font-size: larger;
+}
+.month THEAD TH
+{
+	width: 3em;
+	text-align: center;
+}
+.month TD
+{
+	text-align: center;
+}
+.calendarMonthBottom TABLE
+{
+}
+.calendarMonthBottom TH
+{
+	text-align: center;
+	font-weight: bold;
+}
+.calendarMonthBottom TD
+{
+	width: 96px;
+	height: 50px;
+	border: 1px solid #000000;
+	padding: 0 0 0 2px;
+	vertical-align: top;
+}
+TD P
+{
+	margin-left: 1cm;
+	/*+placement:shift -35px -1px;*/
+	position: relative !important;
+	left: -35px !important;
+	top: -1px !important;
+}
+.calendarMonthBottom TD TEXTAREA
+{
+	width: 90%;
+	height: 62%;
+	font-size: 90%;
+	/*+placement:shift 5px -3px;*/
+	position: relative;
+	left: 5px;
+	top: -3px;
+	line-height: 11pt;
+}
+.calendarBottomPageHeader
+{
+	text-align: center;
+	font: 240% sans-serif;
+	width: 100%;
+	height: 32px;
+}
+.calendarMonthBottom TD P
+{
+	/*+placement:shift -34px -7px;*/
+	position: relative;
+	left: -34px;
+	top: -7px;
+}
+/*Sinc this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
+.marginBox
+{
+	margin-left: 0.3cm !important;
+}

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="A5Portrait.css" Guid="16853c4d-829c-4963-86c9-23f232871f46" />
+  <File Id="placeHolder.png1" Guid="b5a88671-add7-4472-9a51-307028b2009f" />
+  <File Id="templatePages.htm1" Guid="53d85f22-6c4b-4d50-a8b2-fc81bf055169" />
+  <File Id="basePage.css2" Guid="a741e984-1cf2-4614-9ab3-dd3c63ef9369" />
+  <File Id="previewMode.css2" Guid="395e8909-8201-4a22-89f8-94d45b995e64" />
+  <File Id="thumbnail.png1" Guid="16b4c918-880a-40f7-b957-d29745ff42c3" />
+  <File Id="A5Portrait.css1" Guid="da0181f5-0921-45b6-a34e-06ea872275c6" />
+  <File Id="templatePages.htm" Guid="5c1f1874-f1d5-4fd8-a8c1-ad8f04a561b2" />
+  <File Id="basePage.css3" Guid="a9911bf1-dc13-4fd5-8018-e6a544ce218e" />
+  <File Id="placeHolder.png2" Guid="16bd8477-73dc-4a72-a640-d88a5b99aa79" />
+  <File Id="previewMode.css3" Guid="b5303e92-23aa-48f7-adad-f1a2c32be793" />
+  <File Id="thumbnail.png3" Guid="d609a0cd-97de-4a34-9c41-18c466403a99" />
+  <File Id="BasePage.css1" Guid="69bf75c6-c515-4458-8c99-d188a60a3cdd" />
+  <File Id="by_nc.svg" Guid="86d1ff6c-2be3-446d-8e29-539f0b91244a" />
+  <File Id="CC_BY_NC.png" Guid="f147d6c6-3664-4f2b-bba2-378df78fb0d5" />
+  <File Id="HL0014_1.png" Guid="921c7b00-fcfc-4d64-be4c-1ad89e25a810" />
+  <File Id="HL0014_2.png" Guid="74a8af9c-8135-4f7f-a819-1c8cb69c2257" />
+  <File Id="HL0014_3.png" Guid="c947e2a4-88cd-46e1-801d-6466dafd60db" />
+  <File Id="HL0014_4.png" Guid="9377578e-f16d-4122-a2a3-11480db0fd1c" />
+  <File Id="HL0014_5.png" Guid="b066a1ac-9d03-4bc6-a8ca-cb6ebecb7ce8" />
+  <File Id="HL0014_6.png" Guid="ac849fd4-c13b-4898-be26-65b2af4de46c" />
+  <File Id="HL0014_7.png" Guid="b0bd5f1f-1100-4780-9777-5be5c6cf871d" />
+  <File Id="HL0014_8.png" Guid="6c3f44e2-b140-43a0-aa40-3d3698a7d037" />
+  <File Id="languageDisplay.css1" Guid="9738b32c-5581-44b8-bd5e-a507aa2d11b8" />
+  <File Id="previewMode.css1" Guid="fa8f5a6c-8b14-430b-9a5f-aebdff46c39d" />
+  <File Id="Vaccinations.htm" Guid="b0c37ba0-52fc-49e0-be5c-66b10a65a316" />
+  <File Id="Vaccinations.htm.bak" Guid="bda943d3-eec9-40f6-ab72-bd507a3f235f" />
+  <File Id="BasePage.css" Guid="bc20d05a-fee2-4c5f-8336-4a5ad262195b" />
+  <File Id="languageDisplay.css" Guid="db5f0224-89cc-4f2e-aeb2-f5ff17a880ee" />
+  <File Id="placeHolder.png" Guid="2f87d478-5e71-421e-b5cc-f7b907d83dc2" />
+  <File Id="previewMode.css" Guid="ed1200dd-4b16-40ba-88ca-010cba3f23b7" />
+  <File Id="thumbnail.png" Guid="6d03c5d0-641c-410e-9f2b-f57d15d51022" />
+</InstallerMetadata>

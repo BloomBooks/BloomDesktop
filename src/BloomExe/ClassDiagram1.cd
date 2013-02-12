@@ -1,0 +1,980 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Bloom.AboutDialog" Collapsed="true">
+	<Position X="24.25" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>EIACAAgAACAACAEAAACAAEADAAAAAAAAAAQAAgBAABA=</HashCode>
+	  <FileName>AboutDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ApplicationContainer" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="27.75" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAgAAAACAAAAAAAAAAACAAAAAAAAAAAAAEAAAAAAA=</HashCode>
+	  <FileName>ApplicationContainer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.BloomFileLocator" Collapsed="true">
+	<Position X="36.5" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgAAgAAAgAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>BloomFileLocator.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Browser" Collapsed="true">
+	<Position X="29.5" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ABAAoAggBHIAQARAIIyBBMACgkRRAqCQQAARKCQSEAA=</HashCode>
+	  <FileName>Browser.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Command" Collapsed="true">
+	<Position X="5.25" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAIQAAAAAAAAIAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Bloom.CutCommand" Collapsed="true">
+	<Position X="0.75" Y="4.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CopyCommand" Collapsed="true">
+	<Position X="3" Y="4.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.PasteCommand" Collapsed="true">
+	<Position X="5.25" Y="4.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.UndoCommand" Collapsed="true">
+	<Position X="7.5" Y="4.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.DeletePageCommand" Collapsed="true">
+	<Position X="9.75" Y="4.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Event&lt;TPayload&gt;" Collapsed="true">
+	<Position X="11.5" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAgAAAAAACAAIAAAAAAAAAAAAACAAAAAAAACCAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Bloom.TabChangedDetails" Collapsed="true">
+	<Position X="38.25" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SelectedTabAboutToChangeEvent" Collapsed="true">
+	<Position X="3.75" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SelectedTabChangedEvent" Collapsed="true">
+	<Position X="6" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CreateFromSourceBookCommand" Collapsed="true">
+	<Position X="8.25" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.LibraryClosing" Collapsed="true">
+	<Position X="10.5" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.EditBookCommand" Collapsed="true">
+	<Position X="12.75" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SendReceiveCommand" Collapsed="true">
+	<Position X="15" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.PageListChangedEvent" Collapsed="true">
+	<Position X="17.25" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.BookRenamedEvent" Collapsed="true">
+	<Position X="19.5" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.BookRefreshEvent" Collapsed="true">
+	<Position X="21.75" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.RelocatePageInfo" Collapsed="true">
+	<Position X="27.75" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAQAAQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.RelocatePageEvent" Collapsed="true">
+	<Position X="1.5" Y="1.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.HelpLauncher" Collapsed="true">
+	<Position X="38.25" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>HelpLauncher.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.HtmlLabel" Collapsed="true">
+	<Position X="41.75" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAEACAAIAAAAACAAEACgAAAAAAQAAAAAAAAAAA=</HashCode>
+	  <FileName>HtmlLabel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.HtmlThumbNailer" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="24.25" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AABAAAABACEGgAAEAQgAAAgAAAEAACAAAAAAAAARAAo=</HashCode>
+	  <FileName>HtmlThumbNailer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.ThumbnailOrder" Collapsed="true">
+	<Position X="33" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAhAAAAAAAAAQAQAAAAAAAAAAAAIgQACAAAQAAAAQAA=</HashCode>
+	  <FileName>HtmlThumbNailer.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.LanguageSettings" Collapsed="true">
+	<Position X="36.5" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAgA=</HashCode>
+	  <FileName>LanguageSettings.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Palette" Collapsed="true">
+	<Position X="29.5" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAg=</HashCode>
+	  <FileName>Palette.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Program" Collapsed="true">
+	<Position X="36.5" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>CAEIAAAAAAEAAAFQABAgAAAABIQCCAAQgAAABAAQACA=</HashCode>
+	  <FileName>Program.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ProjectContext" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="41.75" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAIAACAACIACIgAAAAAQAAAAIEAAAAAAAAAAQAAAAI=</HashCode>
+	  <FileName>ProjectContext.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.ResolveShortcut" Collapsed="true">
+	<Position X="31.25" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAACCAACAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+	  <FileName>ResolveShortcut.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Shell" Collapsed="true">
+	<Position X="40" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>BAAJAGkCkCIEAAICAAmAgAAKAAACAAAAAAAAACAAAAA=</HashCode>
+	  <FileName>Shell.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SimpleMessageDialog" Collapsed="true">
+	<Position X="24.25" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAACAAAAAAAACAAAACAAAAAAAAAAAAQAAAAAA=</HashCode>
+	  <FileName>SimpleMessageDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SourceCollectionsList" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="29.5" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAEIAAAAAABAAAAAAAEAIAAAAAEAAQAAAAAAA=</HashCode>
+	  <FileName>SourceCollectionsList.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.SplashScreen" Collapsed="true">
+	<Position X="34.75" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAACAAQAACAAABAAAACgAAACAAAAAUAAAAAAAABAAAA=</HashCode>
+	  <FileName>SplashScreen.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Splasher" Collapsed="true">
+	<Position X="33" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAQAAAAAAAAAAAAAABAAAAAAEAAAgAAAAAACAAAA=</HashCode>
+	  <FileName>SplashScreen.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.XmlHtmlConverter" Collapsed="true">
+	<Position X="27.75" Y="9.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAIAAAAgAQAAAAAAAAAAFAAAAAA=</HashCode>
+	  <FileName>XmlHtmlConverter.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.ErrorBook" Collapsed="true">
+	<Position X="6.5" Y="7.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AEAAAAAEAAAAAUIAAAgACCEEAAEAAAQAAABBAQAAAAA=</HashCode>
+	  <FileName>Book\Book.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.Book" Collapsed="true">
+	<Position X="6.5" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ENAaoezckME4BtI0EeNqDCGkOlHkDiwIDRmtAQkQhEA=</HashCode>
+	  <FileName>Book\Book.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.BookSelection" Collapsed="true">
+	<Position X="24.25" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>CAAAAAAAAAAAAAAAAAAAAAAgQAAAAQAAAAAAQAAAAAA=</HashCode>
+	  <FileName>Book\BookSelection.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.BookStarter" Collapsed="true">
+	<Position X="26" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AQggBKAAgAAIAgQACIBAQBEiZASAAACggAAAAAEAAAA=</HashCode>
+	  <FileName>Book\BookStarter.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.BookStorage" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="27.75" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ADAIAIoACUAGECwAAAgAAGAiCpBAAEWAIEAwAEhAAAQ=</HashCode>
+	  <FileName>Book\BookStorage.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Book.DataSet" Collapsed="true">
+	<Position X="24.25" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IAAgAAAAAQAAAEAAAQAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+	  <FileName>Book\DataSet.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.DataItem" Collapsed="true">
+	<Position X="41.75" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Book\DataSet.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.ImageUpdater" Collapsed="true">
+	<Position X="27.75" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AABAAAAAAAAAAAAAAAAAQAIAAIAAAAAAAAAAAAAAQCA=</HashCode>
+	  <FileName>Book\ImageUpdater.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.Layout" Collapsed="true">
+	<Position X="38.25" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AACAAAAAAAAQAAAEAAAAAAAAAEAAAAAABAAREGAAAAA=</HashCode>
+	  <FileName>Book\Layout.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.Page" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="41.75" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AIAKAAAEAAEAAABgYABACAAAABCAAIAACAEEAAgAgAA=</HashCode>
+	  <FileName>Book\Page.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Book.SizeAndOrientation" Collapsed="true">
+	<Position X="26" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>QAAAAEAAAICBAAAFEABAAAAgAAgAAAAAAAAgEAAAAAA=</HashCode>
+	  <FileName>Book\SizeAndOrientation.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.StyleSheetLinkSorter" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="36.5" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAIAAAIAAAAAAAAAAAAAAAAAAAAAAAAABCAAAAACA=</HashCode>
+	  <FileName>Book\StyleSheetLinkSorter.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Book.XMatterHelper" Collapsed="true">
+	<Position X="41.75" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ABAAAAAAAAABAEAAAhAAAAAAFAAAAAQAAIAAAAAgAAA=</HashCode>
+	  <FileName>Book\XMatterHelper.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.XMatterInfo" Collapsed="true">
+	<Position X="24.25" Y="9.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAACAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Book\XMatterInfo.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Book.XMatterPackFinder" Collapsed="true">
+	<Position X="26" Y="9.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAACQAAAAAAEAQAAAAAAAABAAAAIAAAAAAAAA=</HashCode>
+	  <FileName>Book\XMatterPackFinder.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.BloomPack.BloomPackInstallDialog" Collapsed="true">
+	<Position X="38.25" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AEAgAAAAACACAAAAAACAAAACAAAAAIAAEAxAAABAABA=</HashCode>
+	  <FileName>Collection\BloomPack\BloomPackInstallDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.BookCollection" Collapsed="true">
+	<Position X="41.75" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ABAAAACAEgACgBAAFCABgAQCQIBAAAAAAQAQCQAAAAE=</HashCode>
+	  <FileName>Collection\BookCollection.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.NewCollectionSettings" Collapsed="true">
+	<Position X="3.5" Y="7.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Collection\CollectionSettings.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.CollectionSettings" Collapsed="true">
+	<Position X="3.5" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAA8YAKIAACAAAAgAoBACIQBAYAAAAAQIAAAgAAAAI=</HashCode>
+	  <FileName>Collection\CollectionSettings.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.CollectionSettingsDialog" Collapsed="true">
+	<Position X="34.75" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IAyDyAQhiKAAdBEACgiABgAyAJhAhYAOkIYRECQBALU=</HashCode>
+	  <FileName>Collection\CollectionSettingsDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Collection.ShortcutMaker" Collapsed="true">
+	<Position X="41.75" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Collection\ShortcutMaker.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionChoosing.MostRecentPathsList" Collapsed="true">
+	<Position X="33" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAgAAAAAAACAAEAAAAAAAAgAAAAAAAAAAAAAAIAAAA=</HashCode>
+	  <FileName>CollectionChoosing\MostRecentPathsList.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionChoosing.OpenAndCreateCollectionDialog" Collapsed="true">
+	<Position X="38.25" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAACAAAAACAAAAAAAASAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>CollectionChoosing\OpenAndCreateCollectionDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionChoosing.OpenCreateCloneControl" Collapsed="true">
+	<Position X="40" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>BAJAAAARECAQgBAAABSQCQACIAwDAgAAAEAHAIEAgAA=</HashCode>
+	  <FileName>CollectionChoosing\OpenCreateCloneControl.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionCreating.CollectionNameControl" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="33" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAJAAAAACAABAAAAACAAAQKAEAABAAAAQASAgAAAgA=</HashCode>
+	  <FileName>CollectionCreating\CollectionNameControl.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.CollectionCreating.KindOfCollectionControl" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="31.25" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IAABKAIAACAABAAAAACAAAQCAAAAAAAAAAACQAAAAAQ=</HashCode>
+	  <FileName>CollectionCreating\KindOfCollectionControl.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.CollectionCreating.LanguageIdControl" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="33" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AIABCAAAACAABACAAACAAAQCAAAABAAAAAACAAAAAAA=</HashCode>
+	  <FileName>CollectionCreating\LanguageIdControl.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.CollectionCreating.LanguageLocationControl" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="34.75" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAABAAAAACAABAAAAACAAAUiAAAAgAAAAAASQCAAAIA=</HashCode>
+	  <FileName>CollectionCreating\LanguageLocationControl.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.CollectionCreating.NewCollectionWizard" Collapsed="true">
+	<Position X="34.75" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>EAAAECAAALYAACAgCADiDAQWAAAgAAAAAQAASACAAQg=</HashCode>
+	  <FileName>CollectionCreating\NewCollectionWizard.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.FlyingImage" Collapsed="true">
+	<Position X="34.75" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAQABAAAAAAAAAAAAQAAAAAEgAAABAAIAAAACAAAAA=</HashCode>
+	  <FileName>CollectionTab\FlyingImage.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.HistoryAndNotesDialog" Collapsed="true">
+	<Position X="40" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AACAAAAAACAAQAAAAACAIAACAAAAAAAEAAAAAAAABAI=</HashCode>
+	  <FileName>CollectionTab\HistoryAndNotesDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.LibraryBookView" Collapsed="true">
+	<Position X="40" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAICAAAFCiAAAAAADACABEAiAoABAAAAAAACCAAAAMQ=</HashCode>
+	  <FileName>CollectionTab\LibraryBookView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.LibraryListView" Collapsed="true">
+	<Position X="41.75" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ANDAAgwBBHSYAhsCHgCBZEQDwOEJAdSAQQIJDgCBAIQ=</HashCode>
+	  <FileName>CollectionTab\LibraryListView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.LibraryModel" Collapsed="true">
+	<Position X="24.25" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AFQAEAAAgIgCCAEABCAAAAAkQIIgAAAEASAAFAAAAiA=</HashCode>
+	  <FileName>CollectionTab\LibraryModel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.CollectionTab.LibraryView" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="26" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>BAAAAAIAgKAAAAAgAgCAAAACABAABYAAAAAAgAAAABU=</HashCode>
+	  <FileName>CollectionTab\LibraryView.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.CollectionTab.ListHeader" Collapsed="true">
+	<Position X="27.75" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAECAAAAAAAACAAAACAABAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>CollectionTab\ListHeader.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.ConfigurationDialog" Collapsed="true">
+	<Position X="36.5" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAQAAAECAIAAAAJACCAEACAIAAAAAAAAQAAQAAABQ=</HashCode>
+	  <FileName>Edit\ConfigurationDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.Configurator" Collapsed="true">
+	<Position X="38.25" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>EAAACAAAAAACAAAAAMQAAAAIACogQAAAAAAAAAEQAQA=</HashCode>
+	  <FileName>Edit\Configurator.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.ConfirmRemovePageDialog" Collapsed="true">
+	<Position X="40" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAABAAKAACQYAAEAAACABEACgAAgAAAAAAAAAAAAAAQ=</HashCode>
+	  <FileName>Edit\ConfirmRemovePageDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.DynamicJson" Collapsed="true">
+	<Position X="26" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AABlAABJAAgBAAgEhEAAhIBCCDlCAAIAABADABBAAAA=</HashCode>
+	  <FileName>Edit\DynamicJson.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.EditingModel" Collapsed="true">
+	<Position X="27.75" Y="2.5" Width="1.5" />
+	<NestedTypes>
+	  <Delegate Name="Bloom.Edit.EditingModel.Factory" Collapsed="true">
+		<TypeIdentifier>
+		  <NewMemberFileName>Edit\EditingModel.cs</NewMemberFileName>
+		</TypeIdentifier>
+	  </Delegate>
+	  <Class Name="Bloom.Edit.EditingModel.ContentLanguage" Collapsed="true">
+		<TypeIdentifier>
+		  <NewMemberFileName>Edit\EditingModel.cs</NewMemberFileName>
+		</TypeIdentifier>
+	  </Class>
+	</NestedTypes>
+	<TypeIdentifier>
+	  <HashCode>AACAYEgA2gAiAAAQDIBCgAAkAKDAINA4ADIASQAADAA=</HashCode>
+	  <FileName>Edit\EditingModel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.TemplateInsertionCommand" Collapsed="true">
+	<Position X="26" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAEAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Edit\EditingModel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.EditingView" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="29.5" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>hkAoDAgAWfACUAIkgpOJBWADIgBRDcBQ2QAhAFAQAAw=</HashCode>
+	  <FileName>Edit\EditingView.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Edit.FlowThumbNailList" Collapsed="true">
+	<Position X="33" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AQAAAAGAACAAgAAAAQCAAIACAIAIgAAAAAAIEAAAAAA=</HashCode>
+	  <FileName>Edit\FlowThumbNailList.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.PageEditingModel" Collapsed="true">
+	<Position X="24.25" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAGAAAAAAIAAAAgAAAAAAgAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+	  <FileName>Edit\PageEditingModel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.PageListView" Collapsed="true">
+	<Position X="26" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAIAAAAEALACABAAAgGAAAACAAAAAAAAAQCAAABCVAA=</HashCode>
+	  <FileName>Edit\PageListView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.PageSelection" Collapsed="true">
+	<Position X="27.75" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>CAAAAAAAAAAAAAAAAAAAAAAgAAAAAQEAAAAAQAAAAAA=</HashCode>
+	  <FileName>Edit\PageSelection.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.PlaceHolderPage" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="33" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAKAAAAAAEAAABgAAAACAAAAAAAAIAACAAEAAAAgAg=</HashCode>
+	  <FileName>Edit\PlaceHolderPage.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Edit.SourceTextControl" Collapsed="true">
+	<Position X="31.25" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AACAAAAIACAAAAAACAKAAAACAAAQAAAAAAAABAABAAA=</HashCode>
+	  <FileName>Edit\SourceTextControl.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.TemplatePagesView" Collapsed="true">
+	<Position X="27.75" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAYAAAAAAiAAABAABACAAAACAABAAAAAAAAAAABAAIA=</HashCode>
+	  <FileName>Edit\TemplatePagesView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.ThumbNailList" Collapsed="true">
+	<Position X="31.25" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AQIIAAGBKKCAgQIAIAiBAIAqQABIgCEBAQAIEBAAEAE=</HashCode>
+	  <FileName>Edit\ThumbNailList.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Edit.SortListViewItemByIndex" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="27.75" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+	  <FileName>Edit\ThumbNailList.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SayMore.UI.Utilities.JSONUtils" Collapsed="true">
+	<Position X="29.5" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAEAgAAAAAAQAAAAAAAAAAAAAAAAAAg=</HashCode>
+	  <FileName>Edit\JSONUtils.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ImageProcessing.ImageServer" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="26" Y="3.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgAIAIAAAKIKAAAAAAAACAAAIEAQAACAAAABAABAAAA=</HashCode>
+	  <FileName>ImageProcessing\ImageServer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.ImageProcessing.WebClientWithTimeout" Collapsed="true">
+	<Position X="34.75" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAQAIAAAA=</HashCode>
+	  <FileName>ImageProcessing\ImageServer.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ImageProcessing.LowResImageCache" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="29.5" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAACACAAQAAAEAAACAAgAAACAAABAAAAAAAAA=</HashCode>
+	  <FileName>ImageProcessing\LowResImageCache.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Properties.Resources" Collapsed="true">
+	<Position X="33" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IJ4IHMRAhkAQikAIACYFlAFAAUSkUABA8IBMI0CkAsQ=</HashCode>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Properties.Settings" Collapsed="true">
+	<Position X="38.25" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAEEAAAAAAAAAAAAAAIBAAAAAJKAAAIAAEAAAFAAA=</HashCode>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Publish.AdobeReaderControl" Collapsed="true">
+	<Position X="26" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAIAAAAaAAAAAAAACAAAACAAEAAAAAAAAAAAAMAAQ=</HashCode>
+	  <FileName>Publish\AdobeReaderControl.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Publish.PdfMaker" Collapsed="true">
+	<Position X="31.25" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAABAABAAAAAACAABAAAA=</HashCode>
+	  <FileName>Publish\PdfMaker.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Publish.CancellableNullProgress" Collapsed="true">
+	<Position X="31.25" Y="1.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+	  <FileName>Publish\PdfMaker.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Publish.PublishModel" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="24.25" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAIIAgiABAAQQjAAAIAkAAAEBAAAAYAAEAAAAAAA=</HashCode>
+	  <FileName>Publish\PublishModel.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Publish.PublishView" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="26" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ABIABAKBACABEQBgAwGFAACCABQEJQBAAAAFIAAHATQ=</HashCode>
+	  <FileName>Publish\PublishView.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.SendReceive.BloomChorusRules" Collapsed="true">
+	<Position X="34.75" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>SendReceive\BloomChorusRules.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.SendReceive.SendReceiver" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="36.5" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgIAAAAAACAAAAAAQAAAACAAAAAAAAAAEAAAAAACAAA=</HashCode>
+	  <FileName>SendReceive\SendReceiver.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Skybound.Gecko.GeckoStyleSheetService" Collapsed="true">
+	<Position X="36.5" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAgAAAAAAAAAAAAACAAAAAAAAAEABAAAAAAAAAAAAA=</HashCode>
+	  <FileName>StyleSheetService.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="BloomTemp.TempLiftFile" Collapsed="true">
+	<Position X="0.5" Y="7.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>TempFiles.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="BloomTemp.TempFile" Collapsed="true">
+	<Position X="0.5" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAQAAACACAAIAAACACAAAAEAAAAAAAAAAAAAAQAA=</HashCode>
+	  <FileName>TempFiles.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BloomTemp.TemporaryFolder" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="29.5" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAIAIMAACACAAAAAAAACCAAAAEAAAAAAAABAAAAAAA=</HashCode>
+	  <FileName>TempFiles.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.ToPalaso.BetterSplitContainer" Collapsed="true">
+	<Position X="29.5" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAACAAAACAAACAAAACAAAAAAAAIAAAAAACAAE=</HashCode>
+	  <FileName>ToPalaso\BetterSplitContainer.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ToPalaso.BetterToolTip" Collapsed="true">
+	<Position X="31.25" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAICgioAgCAAAkAMAIAAgAAAAgIAAgAAAAAAAACAAAE=</HashCode>
+	  <FileName>ToPalaso\BetterToolTip.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ToPalaso.BetterTooltipTransparentOverlay" Collapsed="true">
+	<Position X="33" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>ToPalaso\BetterTooltipTransparentOverlay.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ToPalaso.MessageLabelProgress" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="31.25" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAIAAgEAwAASRAAAAEAAAAAABAAAAAAAIEFAAA=</HashCode>
+	  <FileName>ToPalaso\MessageLabelProgress.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.ToPalaso.ProgressDialogBackground" Collapsed="true">
+	<Position X="38.25" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAEABAACACEAAAAACAAAACAAAAAAAAABQAAACAAAA=</HashCode>
+	  <FileName>ToPalaso\ProgressDialogBackground.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.ToPalaso.Experimental.ProgressDialogForeground" Collapsed="true">
+	<Position X="40" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IEAAEAAAACAAEAAAAkCAAAACAAAAAAAAAAAAAACAAIA=</HashCode>
+	  <FileName>ToPalaso\ProgressDialogForeground.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.web.BloomServer" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="40" Y="0.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>gAAAACAAgCACBAAAAABAAAAAAAAAACCIAIBAAAAAAAA=</HashCode>
+	  <FileName>web\BloomServer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.web.RequestInfo" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="29.5" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AQAAAAAAAAQAAAAAQAAAAIAIAAAAAAAAAEAQAAAAAAA=</HashCode>
+	  <FileName>web\BloomServer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.web.PretendRequestInfo" Collapsed="true" BaseTypeListCollapsed="true">
+	<Position X="34.75" Y="5.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AgAAAAAAAASIAAAAQAAAAIAIAAAAAAAAIAAQAAAAAAA=</HashCode>
+	  <FileName>web\BloomServer.cs</FileName>
+	</TypeIdentifier>
+	<Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Bloom.Library.WebLibraryView" Collapsed="true">
+	<Position X="36.5" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAKAAAAAAAADAAAACAAAAAAAAAQAAAAAAAAA=</HashCode>
+	  <FileName>web\WebLibraryView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Workspace.FeedbackDialog" Collapsed="true">
+	<Position X="31.25" Y="2.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAQAAAACAABAAAAACAAEACAIAEAACAAAQAAAAAABA=</HashCode>
+	  <FileName>Workspace\FeedbackDialog.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Workspace.TabStripRenderer" Collapsed="true">
+	<Position X="24.25" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ACyARAICAACAIQAEIgBAAAEBBKQAAEAACEAEAIiAIAA=</HashCode>
+	  <FileName>Workspace\TabStripRenderer.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Workspace.WorkspaceModel" Collapsed="true">
+	<Position X="38.25" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAIAAAABADAAAAAAAAAAAAAEAAACBAIACAQA=</HashCode>
+	  <FileName>Workspace\WorkspaceModel.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Workspace.WorkspaceView" Collapsed="true">
+	<Position X="40" Y="8.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>IEgAIAEBJGcFiAEUBgKEYIUCIgiAAAUAAEFIIRAaQJY=</HashCode>
+	  <FileName>Workspace\WorkspaceView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Bloom.Workspace.NoBorderToolStripRenderer" Collapsed="true">
+	<Position X="36.5" Y="4.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Workspace\WorkspaceView.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Messir.Windows.Forms.SelectedTabChangedEventArgs" Collapsed="true">
+	<Position X="34.75" Y="6.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQA=</HashCode>
+	  <FileName>Workspace\TabStrip.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Messir.Windows.Forms.TabStrip" Collapsed="true">
+	<Position X="40" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ICIAAAACAAAAgAEAgQAAEMAAAABEAAAAAAKgAAgAAQA=</HashCode>
+	  <FileName>Workspace\TabStrip.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Class Name="Messir.Windows.Forms.TabStripButton" Collapsed="true">
+	<Position X="41.75" Y="7.5" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAgACAGAiAAAAAAAACAABAAQEIAAIBAAgAEAA=</HashCode>
+	  <FileName>Workspace\TabStrip.cs</FileName>
+	</TypeIdentifier>
+  </Class>
+  <Interface Name="Bloom.ICommand" Collapsed="true">
+	<Position X="27.75" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAIQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Command.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.IEvent" Collapsed="true">
+	<Position X="29.5" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>Event.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.ITemplateFinder" Collapsed="true">
+	<Position X="36.5" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>SourceCollectionsList.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.Book.IBookStorage" Collapsed="true">
+	<Position X="26" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>ABAAAIAAAAAGACwAAAAAAGAACABAAEAAIEAAAEhAAAA=</HashCode>
+	  <FileName>Book\BookStorage.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.Book.IPage" Collapsed="true">
+	<Position X="31.25" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAKAAAAAAEAAABgAAAACAAAAAAAAIAACAAEAAAAgAA=</HashCode>
+	  <FileName>Book\Page.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.CollectionCreating.IPageControl" Collapsed="true">
+	<Position X="33" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>CollectionCreating\NewCollectionWizard.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.CollectionTab.IBloomTabArea" Collapsed="true">
+	<Position X="24.25" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAABAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>CollectionTab\IBloomTabArea.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Skybound.Gecko.nsIStyleSheetService" Collapsed="true">
+	<Position X="38.25" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>BAAAAAAAAAIAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+	  <FileName>StyleSheetService.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Interface Name="Bloom.web.IRequestInfo" Collapsed="true">
+	<Position X="34.75" Y="10.75" Width="1.5" />
+	<TypeIdentifier>
+	  <HashCode>AAAAAAAAAAQAAAAAQAAAAIAIAAAAAAAAAAAQAAAAAAA=</HashCode>
+	  <FileName>web\BloomServer.cs</FileName>
+	</TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -146,28 +146,26 @@ namespace BloomTemp
 			return new TempFile(path, true);
 		}
 
-		public static TempFile CreateHtm()
-		{
-			return TempFile.TrackExisting(GetHtmlTempPath());
-		}
-		public static TempFile CreateHtm(string contents)
-		{
-			var t = TempFile.TrackExisting(GetHtmlTempPath());
-			using (var stream = File.CreateText(t.Path))
-			{
-				stream.WriteLine("contents");
-			}
-			return t;
-		}
-		public static TempFile CreateHtm(XmlNode dom)
+
+
+		public static TempFile CreateHtm5FromXml(XmlNode dom)
 		{
 			var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
-			using (var writer = XmlWriter.Create(temp.Path))
+
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
+			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html;
+
+			using (var writer = XmlWriter.Create(temp.Path, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
+			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + File.ReadAllText(temp.Path));
 
 			return temp;
 		}
@@ -253,6 +251,18 @@ namespace BloomTemp
 			return s;
 		}
 
+		public string GetPathForNewTempFile(bool doCreateTheFile, string extension)
+		{
+			extension = extension.TrimStart('.');
+			var s = System.IO.Path.Combine(_path, System.IO.Path.GetRandomFileName() + "." + extension);
+
+			if (doCreateTheFile)
+			{
+				File.Create(s).Close();
+			}
+			return s;
+		}
+
 		public TempFile GetNewTempFile(bool doCreateTheFile)
 		{
 			string s = System.IO.Path.GetRandomFileName();
@@ -302,14 +312,20 @@ namespace BloomTemp
 				{
 					try
 					{
-						Console.WriteLine(e.Message);
+						Debug.WriteLine(e.Message);
 						//maybe we can at least clear it out a bit
 						string[] files = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
 						foreach (string s in files)
 						{
-							File.Delete(s);
+							try
+							{
+								File.Delete(s);
+							}
+							catch (Exception)
+							{
+							}
 						}
-						//sleep and try again (seems to work)
+						//sleep and try again (in case some other thread will  let go of them)
 						Thread.Sleep(1000);
 						Directory.Delete(folder, true);
 					}

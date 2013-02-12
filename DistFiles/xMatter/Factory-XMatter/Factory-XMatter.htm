@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Factory-default Front & Back Matter</title>
+	<link rel="stylesheet" href="Factory-Xmatter.css" type="text/css" />
+</head>
+<body>
+	<!-- FRONT COVER --->
+	<div class="bloom-page cover coverColor bloom-frontMatter  A5Portrait" data-page="required singleton"
+		id="74731b2d-18b0-420f-ac96-6de20f659810">
+		<div class="pageLabel" lang="en">
+			Front Cover</div>
+		<div class="marginBox">
+			<div class="bloom-translationGroup coverTitle">
+				<div data-book="bookTitle" data-hint="Book title in {lang}" class="bookTitle bloom-editable">
+				</div>
+			</div>
+			<div class="bloom-imageContainer">
+				<img data-book='coverImage' src="placeholder.png" />
+			</div>
+
+			<div class="bloom-editable smallCoverCredits" data-book='smallCoverCredits' lang="V" data-hint="*You may use this space for author/illustrator, or anything else."></div>
+
+			<div class="coverBottomLangName">
+				<div data-library="nameOfLanguage" lang="N1">
+					{Lang in N1}</div>
+				<!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get two copies
+			<div data-library="nameOfLanguage" lang="N2"  class="">{Lang in N2}</div> -->
+			</div>
+
+			<div class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode" data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic">
+				<!-- NB: don't be tempted to move the data-hint up to the div. If you do, it will be visible even when the user isn't allowed to edit it. Down on the textarea, jscript will scipt it when it's readonly -->
+				<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable">
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Inside Front Cover CREDITS PAGE --->
+	<div class="bloom-page verso cover coverColor bloom-frontMatter  A5Portrait" data-page="required singleton"
+		id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
+		<div class="pageLabel" lang="en">Credits Page</div>
+		<div class="marginBox">
+			<div class="bloom-translationGroup originalAcknowledgments">
+				<div contenteditable="true" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments"
+					class="bloom-editable bloom-readOnlyInTranslationMode">
+					{Original Acknowledgments}</div>
+			</div>
+			<div class="bloom-metaData" id="versoLicenseAndCopyright" data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright & License">
+				<div data-book="copyright" class="copyright " lang="*">
+					{copyright}</div>
+				<img data-book="licenseImage" class="licenseImage" src="" />
+				<div data-book="licenseUrl" class="licenseUrl" lang="en">
+					{License Url}</div>
+				<div data-book="licenseNotes" class="licenseNotes" lang="en">
+					{License Notes}</div>
+				<!--might need to change -->
+				<div data-book="licenseDescription" class="licenseDescription" lang="en">
+					{License Description}</div>
+			</div>
+			 <div class="ISBNContainer" data-hint="International Standard Book Number. Leave blank if you don't have one of these.">
+				<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span><div data-book="ISBN"
+					class="bloom-editable" lang="*">
+				</div>
+			</div>
+			<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
+			<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode" lang="N1"
+				data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
+			</div>
+		</div>
+	</div>
+	<!-- TITLE PAGE --->
+	<div class="bloom-page titlePage bloom-frontMatter bloom-startPageNumbering A5Portrait"
+		data-page="required singleton" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
+		<div class="pageLabel" lang="en">
+			Title Page</div>
+		<div class="marginBox">
+			<div id="titePageTitleBlock" class="bloom-translationGroup">
+				<div data-book='bookTitle' class="bloom-editable" data-hint="Book title in {lang}">
+				</div>
+			</div>
+			<div id="originalContributions" class="bloom-translationGroup">
+				<div data-book="originalContributions" class="credits bloom-editable bloom-readOnlyInTranslationMode"
+					data-hint="The contributions made by writers, illustrators, editors, etc., in {lang}">
+				</div>
+			</div>
+			<div id="funding" class="bloom-translationGroup">
+				<div data-book="funding" class="funding bloom-editable"
+					data-hint="Use this to acknowledge any funding agencies.">
+				</div>
+			</div>
+			<div id="languageInformation">
+				<div class="bloom-translationGroup">
+					<div data-library="nameOfLanguage" class="langName">
+					</div>
+				</div>
+				<div class="bloom-translationGroup">
+					<div data-library="dialect" class="langName">
+					</div>
+				</div>
+				<div class="bloom-translationGroup">
+					<div data-library="languageLocation" class="langName">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="bloom-page  cover coverColor insideBackCover bloom-backMatter A5Portrait" data-page="required singleton" id="502BE62F-A4D0-4225-A598-1A203FA73239">
+		<div class="pageLabel" lang="en">Inside Back Cover</div>
+		<div class="marginBox">
+			<div class="bloom-editable" data-book='insideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+			</div>
+		</div>
+	</div>
+	<div class="bloom-page  cover coverColor outsideBackCover bloom-backMatter A5Portrait" data-page="required singleton" id="Div1">
+		<div class="pageLabel" lang="en">Outside Back Cover</div>
+		<div class="marginBox">
+			<div class="bloom-editable" data-book='outsideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+			</div>
+		</div>
+	</div>
+</body>
+</html>

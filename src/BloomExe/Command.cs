@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace Bloom
 {
@@ -8,41 +10,44 @@ namespace Bloom
 	/// </summary>
 	public interface ICommand
 	{
-		string Id { get; }
 		void Execute();
-		bool Enabled { get; }
-		event EventHandler EnabledChanged;
+		bool Enabled { get; set; }
+		//event EventHandler EnabledChanged;
 	}
 
 	public abstract class Command : ICommand
 	{
-		public event EventHandler EnabledChanged;
-		private bool _enabled;
-		public Command(string id)
+		//public event EventHandler EnabledChanged;
+		public bool Enabled { get; set; }
+		public Command()
 		{
-			Id = id;
 			Enabled = true;
 		}
-		public string Id
-		{ get; private set; }
 
-		public bool Enabled
+//		public bool Enabled
+//		{
+//			get {return Implementer !=null && _enabled; }
+//			private set
+//			{
+//				_enabled = value;
+//				if (EnabledChanged != null)
+//				{
+//					EnabledChanged.Invoke(this, null);
+//				}
+//			}
+//        }
+	   public Action Implementer { get; set;}
+
+		public void Execute()
 		{
-			get { return _enabled; }
-			private set
-			{
-				_enabled = value;
-				if (EnabledChanged != null)
-				{
-					EnabledChanged.Invoke(this, null);
-				}
-			}
-
+			Implementer();
 		}
-
-		public abstract void Execute();
 	}
 
-
+	public class CutCommand : Command { }
+	public class CopyCommand : Command { }
+	public class PasteCommand : Command{}
+	public class UndoCommand : Command { }
+	public class DeletePageCommand : Command { }
 
 }

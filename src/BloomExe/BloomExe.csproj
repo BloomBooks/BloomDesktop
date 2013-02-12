@@ -1,39 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bloom</RootNamespace>
-    <AssemblyName>Bloom</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <StartupObject>Bloom.Program</StartupObject>
-    <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
-    <SccProjectName>&lt;Project Location In Database&gt;</SccProjectName>
-    <SccLocalPath>&lt;Local Binding Root of Project&gt;</SccLocalPath>
-    <SccAuxPath>&lt;Source Control Database&gt;</SccAuxPath>
-    <SccProvider>Mercurial Source Control Package</SccProvider>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\..\output\debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <CustomCommands>
       <CustomCommands>
         <Command type="BeforeBuild" command="" />
@@ -43,26 +31,93 @@
       <EnvironmentVariables>
         <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/ " />
         <Variable name="LD_LIBRARY_PATH" value="/usr/lib/xulrunner-1.9.2.13/" />
-        <Variable name="_DISPLAY" value=":2.0" />
-        <Variable name="GC_DONT_GC" value="1" />
       </EnvironmentVariables>
     </EnvironmentVariables>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\output\release\</OutputPath>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Bloom</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AeroWizard">
+      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="AxInterop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Chorus">
+      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="geckofx-11">
+      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.Acrobat">
+      <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Interop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Ionic.Zip.Reduced">
+      <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
+    </Reference>
+    <Reference Include="LibChorus">
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
+    </Reference>
+    <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LocalizationManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="PdfDroplet">
+      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -73,9 +128,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Autofac, Version=2.2.4.900, Culture=neutral, PublicKeyToken=17863af14b0044da">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\Autofac.dll</HintPath>
+    <Reference Include="TidyManaged">
+      <HintPath>..\..\lib\TidyManaged.dll</HintPath>
+    </Reference>
     </Reference>
     <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
@@ -95,9 +150,158 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutDialog.Designer.cs">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ApplicationContainer.cs" />
-    <Compile Include="BookStarter.cs" />
-    <Compile Include="BookStorage.cs" />
+    <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="Book\RuntimeInformationInjector.cs" />
+    <Compile Include="Book\HtmlDom.cs" />
+    <Compile Include="Book\BookData.cs" />
+    <Compile Include="Book\ErrorBook.cs" />
+    <Compile Include="Book\ImageUpdater.cs" />
+    <Compile Include="Book\Layout.cs" />
+    <Compile Include="Book\SizeAndOrientation.cs" />
+    <Compile Include="Book\BookStarter.cs" />
+    <Compile Include="Book\BookStorage.cs" />
+    <Compile Include="Book\DataSet.cs" />
+    <Compile Include="Book\StyleSheetLinkSorter.cs" />
+    <Compile Include="Book\TranslationGroupManager.cs" />
+    <Compile Include="Book\XMatterHelper.cs" />
+    <Compile Include="Book\XMatterInfo.cs" />
+    <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="Edit\ConfirmRemovePageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
+      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionTab\HistoryAndNotesDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
+      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SendReceive\SendReceiver.cs" />
+    <Compile Include="SendReceive\BloomChorusRules.cs" />
+    <Compile Include="ToPalaso\BetterSplitContainer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\BetterSplitContainer.Designer.cs">
+      <DependentUpon>BetterSplitContainer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\MessageLabelProgress.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogForeground.Designer.cs">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\FlowThumbNailList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\FlowThumbNailList.Designer.cs">
+      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\ProgressDialogBackground.Designer.cs">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HelpLauncher.cs" />
+    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.Designer.cs">
+      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HtmlLabel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="HtmlLabel.Designer.cs">
+      <DependentUpon>HtmlLabel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ImageProcessing\LowResImageCache.cs" />
+    <Compile Include="CollectionTab\IBloomTabArea.cs" />
+    <Compile Include="CollectionTab\ListHeader.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\ListHeader.Designer.cs">
+      <DependentUpon>ListHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Collection\ShortcutMaker.cs" />
+    <Compile Include="CollectionCreating\LanguageLocationControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionCreating\LanguageLocationControl.Designer.cs">
+      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionCreating\LanguageIdControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionCreating\LanguageIdControl.Designer.cs">
+      <DependentUpon>LanguageIdControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionCreating\CollectionNameControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionCreating\CollectionNameControl.Designer.cs">
+      <DependentUpon>CollectionNameControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionCreating\NewCollectionWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionCreating\NewCollectionWizard.Designer.cs">
+      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Palette.cs" />
+    <Compile Include="Publish\AdobeReaderControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleMessageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimpleMessageDialog.Designer.cs">
+      <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToPalaso\BetterToolTip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Workspace\FeedbackDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workspace\FeedbackDialog.Designer.cs">
+      <DependentUpon>FeedbackDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="web\BloomServer.cs" />
+    <Compile Include="web\WebLibraryView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="web\WebLibraryView.Designer.cs">
+      <DependentUpon>WebLibraryView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\ConfigurationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Edit\ConfigurationDialog.Designer.cs">
+      <DependentUpon>ConfigurationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\Configurator.cs" />
     <Compile Include="Browser.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -105,26 +309,55 @@
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
     <Compile Include="Command.cs" />
+    <Compile Include="Edit\DynamicJson.cs" />
+    <Compile Include="Edit\JSONUtils.cs" />
     <Compile Include="Edit\PageEditingModel.cs" />
-    <Compile Include="ProjectContext.cs" />
-    <Compile Include="ToPalaso\MostRecentPathsList.cs" />
-    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\ChooseNewProjectLocationDialog.designer.cs">
-      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ToPalaso\WelcomeControl.cs">
+    <Compile Include="Edit\PlaceHolderPage.cs" />
+    <Compile Include="Edit\SourceTextControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ToPalaso\WelcomeControl.designer.cs">
-      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    <Compile Include="Edit\SourceTextControl.Designer.cs">
+      <DependentUpon>SourceTextControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="WelcomeDialog.cs">
+    <Compile Include="LanguageSettings.cs" />
+    <Compile Include="CollectionTab\FlyingImage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Collection\CollectionSettingsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WelcomeDialog.Designer.cs">
-      <DependentUpon>WelcomeDialog.cs</DependentUpon>
+    <Compile Include="Collection\CollectionSettingsDialog.Designer.cs">
+      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProjectContext.cs" />
+    <Compile Include="Collection\CollectionSettings.cs" />
+    <Compile Include="Publish\PdfMaker.cs" />
+    <Compile Include="Publish\PublishModel.cs" />
+    <Compile Include="ResolveShortcut.cs" />
+    <Compile Include="SplashScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SplashScreen.Designer.cs">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionCreating\KindOfCollectionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionCreating\KindOfCollectionControl.Designer.cs">
+      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionChoosing\MostRecentPathsList.cs" />
+    <Compile Include="CollectionChoosing\OpenCreateCloneControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionChoosing\OpenCreateCloneControl.designer.cs">
+      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.Designer.cs">
+      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageSelection.cs" />
     <Compile Include="Edit\EditingModel.cs" />
@@ -141,34 +374,22 @@
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </Compile>
     <Compile Include="Event.cs" />
-    <Compile Include="Experiment\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Experiment\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Book.cs" />
+    <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
-    <Compile Include="Library\BookCollection.cs" />
-    <Compile Include="BookSelection.cs" />
-    <Compile Include="Library\LibraryListView.cs">
+    <Compile Include="Collection\BookCollection.cs" />
+    <Compile Include="Book\BookSelection.cs" />
+    <Compile Include="CollectionTab\LibraryListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryListView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryListView.Designer.cs">
       <DependentUpon>LibraryListView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Library\LibraryModel.cs" />
-    <Compile Include="Library\LibraryView.cs">
+    <Compile Include="CollectionTab\LibraryModel.cs" />
+    <Compile Include="CollectionTab\LibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryView.Designer.cs">
       <DependentUpon>LibraryView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Experiment\PageControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Experiment\PageControl.Designer.cs">
-      <DependentUpon>PageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
@@ -176,56 +397,115 @@
     <Compile Include="Edit\PageListView.Designer.cs">
       <DependentUpon>PageListView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Page.cs" />
+    <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
-    <Compile Include="TemplateCollectionList.cs" />
-    <Compile Include="Project\ProjectModel.cs" />
-    <Compile Include="Publish\PdfView.cs">
+    <Compile Include="SourceCollectionsList.cs" />
+    <Compile Include="Workspace\TabStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Workspace\TabStripRenderer.cs" />
+    <Compile Include="Workspace\WorkspaceModel.cs" />
+    <Compile Include="Publish\PublishView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\PdfView.Designer.cs">
-      <DependentUpon>PdfView.cs</DependentUpon>
+    <Compile Include="Publish\PublishView.Designer.cs">
+      <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Library\ProjectBooksListView.cs">
+    <Compile Include="Workspace\WorkspaceView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\ProjectBooksListView.Designer.cs">
-      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Project\ProjectView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Project\ProjectView.Designer.cs">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <Compile Include="Workspace\WorkspaceView.Designer.cs">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutDialog.resx">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Browser.resx">
+      <DependentUpon>Browser.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
+      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
+      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
+      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
+      <DependentUpon>BetterSplitContainer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogForeground.resx">
+      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
+      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
+      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HtmlLabel.resx">
+      <DependentUpon>HtmlLabel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\ListHeader.resx">
+      <DependentUpon>ListHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionCreating\LanguageLocationControl.resx">
+      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionCreating\LanguageIdControl.resx">
+      <DependentUpon>LanguageIdControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionCreating\CollectionNameControl.resx">
+      <DependentUpon>CollectionNameControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
+      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimpleMessageDialog.resx">
+      <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
+      <DependentUpon>FeedbackDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="web\WebLibraryView.resx">
+      <DependentUpon>WebLibraryView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\ConfigurationDialog.resx">
+      <DependentUpon>ConfigurationDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\EditingView.resx">
       <DependentUpon>EditingView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\SourceTextControl.resx">
+      <DependentUpon>SourceTextControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ThumbNailList.resx">
       <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Experiment\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryListView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryView.resx">
       <DependentUpon>LibraryView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PdfView.resx">
-      <DependentUpon>PdfView.cs</DependentUpon>
+    <EmbeddedResource Include="Collection\CollectionSettingsDialog.resx">
+      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\ProjectBooksListView.resx">
-      <DependentUpon>ProjectBooksListView.cs</DependentUpon>
+    <EmbeddedResource Include="Publish\PublishView.resx">
+      <DependentUpon>PublishView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectView.resx">
-      <DependentUpon>ProjectView.cs</DependentUpon>
+    <EmbeddedResource Include="Workspace\WorkspaceView.resx">
+      <DependentUpon>WorkspaceView.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -233,32 +513,38 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PleaseWait.resx">
-      <DependentUpon>PleaseWait.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Library\LibraryBookView.resx">
+    <EmbeddedResource Include="CollectionTab\LibraryBookView.resx">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\ChooseNewProjectLocationDialog.resx">
-      <DependentUpon>ChooseNewProjectLocationDialog.cs</DependentUpon>
+    <EmbeddedResource Include="SplashScreen.resx">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\WelcomeControl.resx">
-      <DependentUpon>WelcomeControl.cs</DependentUpon>
+    <EmbeddedResource Include="CollectionCreating\KindOfCollectionControl.resx">
+      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WelcomeDialog.resx">
-      <DependentUpon>WelcomeDialog.cs</DependentUpon>
+    <EmbeddedResource Include="CollectionChoosing\OpenCreateCloneControl.resx">
+      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionChoosing\OpenAndCreateCollectionDialog.resx">
+      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -268,12 +554,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Publish\PleaseWait.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\PleaseWait.Designer.cs">
-      <DependentUpon>PleaseWait.cs</DependentUpon>
-    </Compile>
     <Compile Include="Shell.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -281,10 +561,10 @@
       <DependentUpon>Shell.cs</DependentUpon>
     </Compile>
     <Compile Include="StyleSheetService.cs" />
-    <Compile Include="Library\LibraryBookView.cs">
+    <Compile Include="CollectionTab\LibraryBookView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Library\LibraryBookView.Designer.cs">
+    <Compile Include="CollectionTab\LibraryBookView.Designer.cs">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\TemplatePagesView.cs">
@@ -293,7 +573,7 @@
     <Compile Include="Edit\TemplatePagesView.Designer.cs">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="XmlUtilities.cs" />
+    <Compile Include="XmlHtmlConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />
@@ -302,7 +582,9 @@
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Resources\x-office-document.png" />
   </ItemGroup>
   <ItemGroup>
@@ -324,13 +606,235 @@
     <None Include="Resources\A5Portraitl70Tall.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\geckofx\Skybound.Gecko\Skybound.Gecko.csproj">
-      <Project>{877D1A24-2D5E-4C46-A933-FCF11EA0403B}</Project>
-      <Name>Skybound.Gecko</Name>
-    </ProjectReference>
+    <None Include="Resources\DeleteMessageBoxButtonImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeleteMessageBoxImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RecycleBin.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newBook.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\info16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Error70x70.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\spinner.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pagePlaceHolder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uservoice16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\construction.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Favicon16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\library16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\library32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\feedback24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenCreateLibrary24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\help24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\publish32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\helpTab32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Usb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\print.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\coverOnly.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\insideBookletPages.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\simplePages.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\deletePage16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\deletePage24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cut16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Paste16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Undo16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\undo32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newLibrary32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newBook1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LogoForSplashScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LogoForLibraryChoosingDialog.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BloomPack64x64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Error70x701.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copyDisable16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pasteDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copyDisable16x161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\undoDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePageDisabled24x24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePageDisabled32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeletePage32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cutDisable16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="IWshRuntimeLibrary">
+      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PackageFlat32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PackageFlat48x47.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete-wordLarge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uservoice16x161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pdf16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\multilingualSettings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\thumbnail.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="README.jQuery.vsdoc.txt" />
+    <None Include="Resources\sad_large.png" />
+    <None Include="Resources\sendreceiveToolbarButton.png" />
+    <None Include="Resources\PackageFlat.png" />
+    <None Include="Resources\cloneFromChorusHub.png" />
+    <None Include="Resources\cloneFromInternet.png" />
+    <None Include="Resources\cloneFromUsb.png" />
+    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.7.2.js" />
+    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(SolutionDir)\lib\msvcr100.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\libtidy.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

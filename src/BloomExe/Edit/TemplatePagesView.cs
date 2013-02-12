@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using Bloom.Edit;
+using Bloom.Book;
 
-namespace Bloom
+namespace Bloom.Edit
 {
 	public partial class TemplatePagesView : UserControl
 	{
@@ -12,32 +13,43 @@ namespace Bloom
 
 		public delegate TemplatePagesView Factory();//autofac uses this
 
-		public TemplatePagesView(BookSelection bookSelection, TemplateInsertionCommand templateInsertionCommand)
+		public TemplatePagesView(BookSelection bookSelection, TemplateInsertionCommand templateInsertionCommand, HtmlThumbNailer thumbnailProvider)
 		{
 			_bookSelection = bookSelection;
 			_templateInsertionCommand = templateInsertionCommand;
 
 			this.Font = SystemFonts.MessageBoxFont;
 			InitializeComponent();
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			_thumbNailList.PageSelectedChanged += new EventHandler(OnPageClicked);
+			_thumbNailList.Thumbnailer = thumbnailProvider;
 		 }
 
 		void OnPageClicked(object sender, EventArgs e)
 		{
-
 			_templateInsertionCommand.Insert(sender as Page);
 		}
 
-		void OnBookSelectionChanged(object sender, EventArgs e)
+
+		public void Update()
 		{
-			if (_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.TemplateBook==null)
+			//we don't want to spend time setting up our thumnails and such when actually the
+			//user is on another tab right now
+			Debug.Assert(Visible, "Shouldn't be slowing things down by calling this when it isn't visible");
+
+			if (_bookSelection.CurrentSelection == null)
 			{
-				_thumbNailList.SetItems(new Page[] { });
+			   Clear();
+				return;
+			}
+
+			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			if(templateBook ==null)
+			{
+				Clear();
 			}
 			else
 			{
-				_thumbNailList.SetItems(((Book) _bookSelection.CurrentSelection.TemplateBook).GetPages());
+				_thumbNailList.SetItems(templateBook.GetTemplatePages());
 			}
 		}
 
@@ -46,7 +58,10 @@ namespace Bloom
 			_thumbNailList.BackColor = BackColor;
 		}
 
-
+		public void Clear()
+		{
+			_thumbNailList.SetItems(new IPage[] { });
+		}
 
 	}
 }

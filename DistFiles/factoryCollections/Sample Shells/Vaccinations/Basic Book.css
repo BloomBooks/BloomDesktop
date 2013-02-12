@@ -1,0 +1,472 @@
+/*+init {*/
+*
+{
+	position: relative;
+	margin: 0;
+	padding: 0;
+	font-size: 1em;
+}
+H1, H2, H3, H4, H5, H6, TH
+{
+	font-weight: inherit;
+}
+ADDRESS, CITE, DFN, VAR
+{
+	font-style: inherit;
+}
+CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON
+{
+	font-family: inherit;
+}
+TABLE
+{
+	border-spacing: 0;
+}
+TH
+{
+	text-align: left;
+}
+HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR
+{
+	position: static;
+}
+INPUT[type=hidden]
+{
+	display: none !important;
+}
+FIELDSET, A IMG
+{
+	border: 0;
+}
+BODY
+{
+}
+/*+}*/
+/*The following is json, read by Bloom to get size/orientation options
+STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},{"A4Portrait" : { "Styles": ["Default"]}},
+{"A4Landscape" : { "Styles": ["Default", "SideBySide", "SplitAcrossPages"]}}]}ENDLAYOUTS
+This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
+#bloom-supportedPageConfigurations
+{
+	content: "A5Portrait, A4Landscape (Layout: 'DefaultLayout SideBySideLayout')";
+}
+/*This is a dummy rule used to transmit to bloom what alternative layouts this stylesheet offers*/
+#bloom-a4landscape-alternatives
+{
+	content: Default, SideBySide;
+}
+/*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
+generic*/
+TEXTAREA
+{
+/*specifying the font again, here, really is needed*/
+	font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
+	font-size: 14pt;
+	width: 100%;
+}
+.translators
+{
+	text-align: center;
+	height: 1.6cm;
+	position: relative;
+}
+/*Image On Top*/
+DIV.imageOnTop DIV.bloom-imageContainer
+{
+	width: 100%;
+	height: 45% !important;
+/*above so buttons show*/
+	z-index: 1000;
+}
+/*Note, to make bottomAlign work takes these 2 rules: one on the container (translationgroup) and another on the element*/
+.imageOnTop.layout-style-BottomAlign .bloom-translationGroup
+{
+	display: table;
+}
+.imageOnTop.layout-style-BottomAlign DIV.bloom-editable
+{
+	vertical-align: bottom;
+	display: table-cell;
+}
+/*.......A4L Stacked*/
+.imageOnTop.A4Landscape DIV.bloom-imageContainer
+{
+	width: 100%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 70%;
+	/*[disabled]border:1px solid #000000;*/
+}
+.imageOnTop.layout-style-SplitAcrossPages DIV.bloom-imageContainer
+{
+	width: 100%;
+	height: 100% !important;
+}
+.imageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup
+{
+	width: 100%;
+/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+	/*[disabled]position:relative;*/
+/*So instead, we're settling for starting the text part of the way down*/
+	position: relative !important;
+	display: block !important;
+	/*+placement:anchor-top-left 0px 30%;*/
+	position: absolute;
+	left: 0px;
+	top: 30%;
+}
+.imageOnTop.layout-style-SplitAcrossPages .bloom-editable
+{
+	font-size: 300%;
+}
+DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
+{
+	height: 53% !important;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	display: table;
+}
+DIV.imageOnTop.A4Landscape DIV.bloom-editable
+{
+	height: 49% !important;
+	/*[disabled]+placement:anchor-top-left 549px 2px;*/
+	display: table-row;
+	width: 100%;
+}
+.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer
+{
+	width: 100%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 33% !important;
+	/*[disabled]border:1px solid #000000;*/
+}
+DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
+{
+	height: 63% !important;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	display: table;
+}
+DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
+{
+	height: 31% !important;
+	/*[disabled]+placement:anchor-top-left 549px 2px;*/
+	display: table-row;
+	width: 100%;
+}
+/*------A4L Side-by-side common*/
+.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
+{
+	width: 48%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100% !important;
+	/*[disabled]border:1px solid #000000;*/
+}
+DIV.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
+{
+	height: 100% !important;
+	width: 45%;
+	/*+placement:anchor-top-left 549px 2px;*/
+	position: absolute !important;
+	left: 549px !important;
+	top: 2px !important;
+	display: table;
+}
+DIV.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable
+{
+	height: 33% !important;
+	/*[disabled]width:45%;*/
+	/*[disabled]+placement:anchor-top-left 549px 2px;*/
+	display: table-row;
+}
+/*...... A5P mono*/
+.imageOnTop.bloom-monolingual DIV.bloom-editable
+{
+	/*[disabled]height:100%;*/
+	/*[disabled]width:100%;*/
+	/*[disabled]display:table-cell;*/
+}
+DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
+{
+	height: 48% !important;
+	width: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
+{
+	height: 48% !important;
+	width: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+/*........bilingual, placing 1st lang on top, 2nd below the picture*/
+.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer
+{
+	height: 30% !important;
+	/*+placement:anchor-top-left 0px 228px;*/
+	position: absolute;
+	left: 0px;
+	top: 228px;
+}
+.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-translationGroup
+{
+	height: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer
+{
+	height: 30% !important;
+	/*+placement:anchor-top-left 0px 35%;*/
+	position: absolute;
+	left: 0px;
+	top: 35%;
+}
+.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-translationGroup
+{
+	height: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content1
+{
+	height: 30%;
+}
+.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2
+{
+	height: 30%;
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+}
+/*--------trilingual, with 1st lang on top, 2nd and 3rd below the picture*/
+.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
+{
+	height: 27% !important;
+	/*+placement:anchor-top-left 1px 196px;*/
+	position: absolute;
+	left: 1px;
+	top: 196px;
+}
+DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
+{
+	height: 100%;
+	/*+placement:anchor-bottom-left 0 0;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+.imageOnTop.bloom-trilingual .bloom-content1
+{
+	height: 26%;
+}
+.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content2
+{
+	height: 19%;
+	/*+placement:shift 0 33%;*/
+	position: relative;
+	left: 0;
+	top: 33%;
+}
+.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content3
+{
+	height: 19%;
+	/*+placement:shift 0px 33%;*/
+	position: relative;
+	left: 0px;
+	top: 33%;
+/*this margin is to separate us from content2 a bit*/
+	margin-top: 12px;
+}
+/*Image In Middle*/
+DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV
+{
+	height: 100% !important;
+	width: 100%;
+}
+DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV
+{
+	height: 50% !important;
+	width: 100%;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
+{
+	height: 33% !important;
+	width: 100%;
+}
+DIV.imageInMiddle DIV.bloom-translationGroup.top
+{
+	height: 30%;
+	width: 100%;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
+{
+	height: 6.9cm;
+	width: 488px;
+	/*+placement:anchor-top-left 26px 30px;*/
+	position: absolute;
+	left: 26px;
+	top: 30px;
+}
+DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top
+{
+	height: 8.8cm;
+	width: 488px;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
+{
+	height: 9.1cm;
+	width: 488px;
+	/*+placement:shift 1px 365px;*/
+	position: relative;
+	left: 1px;
+	top: 365px;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 31px 311px;*/
+	position: absolute !important;
+	left: 31px !important;
+	top: 311px !important;
+	height: 152px;
+}
+DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer
+{
+	/*+placement:anchor-top-left 549px -29px;*/
+	position: absolute !important;
+	left: 549px !important;
+	top: -29px !important;
+	height: 100%;
+	width: 45%;
+}
+DIV.imageInMiddle DIV.bloom-translationGroup.bottom
+{
+	height: 30%;
+	width: 100%;
+	/*+placement:anchor-bottom-left;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
+{
+	height: 6.5cm;
+	width: 478px;
+	/*+placement:anchor-top-left 33px 490px;*/
+	position: absolute;
+	left: 33px;
+	top: 490px;
+}
+/*Image On Bottom*/
+DIV.imageOnBottom DIV.bloom-translationGroup
+{
+	width: 100%;
+	height: 50%;
+	/*+placement:anchor-top-left;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.imageOnBottom DIV.bloom-translationGroup DIV
+{
+	height: 100%;
+	width: 100%;
+}
+.imageOnBottom.bloom-bilingual DIV.bloom-translationGroup DIV
+{
+	height: 50%;
+	width: 100%;
+}
+.imageOnBottom.bloom-trilingual DIV.bloom-translationGroup DIV
+{
+	height: 33%;
+	width: 100%;
+}
+.imageOnBottom DIV.bloom-imageContainer
+{
+	height: 45%;
+	width: 100%;
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+}
+/*Image Whole Page*/
+DIV.imageWholePage DIV.bloom-imageContainer
+{
+	width: 100%;
+	height: 100%;
+}
+DIV.imageInMiddle DIV.bloom-imageContainer
+{
+	width: 100%;
+	height: 30%;
+	margin-top: 30px;
+}
+.textWholePage TEXTAREA
+{
+	height: 18.9cm;
+	margin-top: 1cm;
+}
+DIV.imageWholePage IMG
+{
+	display: table-cell;
+/*doesn't work*/
+	vertical-align: middle;
+/*doesn't work*/
+	max-height: 18.6cm;
+	max-width: 12.2cm;
+}
+DIV.imageWholePage TD
+{
+	text-align: center;
+}
+DIV.imageWholePage TABLE
+{
+	width: 556px;
+	height: 786px;
+}
+/*Text Whole Page
+The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
+DIV.textWholePage DIV.bloom-translationGroup
+{
+	width: 100%;
+	max-height: 100%;
+	/*[disabled]overflow:hidden;*/
+}
+DIV.textWholePage DIV.bloom-translationGroup DIV
+{
+	min-height: 67px;
+	/*[disabled]height:30%;*/
+}

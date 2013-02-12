@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
-<!-- will be used later on in this file.                                                                 -->
+<!-- will be used later on in this file.  this value should be B U I  LD_SCRIPT_MUST_REPLACE_AT_RUNTIME (in quotes) -->
 <?define Property_ProductVersion = "BUILD_SCRIPT_MUST_REPLACE_AT_RUNTIME" ?>
 <!--this is replaced at build time by the msbuild 'package' target -->
 <?define Property_ProductCode = "*" ?>
@@ -11,18 +11,32 @@
 <!-- good intro to the component vs. file thing, and why each file here is a separate component:
 http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension"
+	  xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
 
   <Product Id="$(var.Property_ProductCode)" Name="Bloom $(var.Property_ProductVersion)" Language="1033"
 			 Version="$(var.Property_ProductVersion)" Manufacturer="SIL"
 			 UpgradeCode="$(var.Property_UpgradeCode)">
 
 	<Package  Compressed="yes" InstallerVersion="200" />
+  <!--  <Icon Id="BloomPackIcon.BloomPack" SourceFile="..\..\artwork\BloomPack.ico" /> -->
+
+	<MajorUpgrade   Schedule="afterInstallInitialize"
+  DowngradeErrorMessage="A later version of Bloom is already installed. If you really want to downgrade, first uninstall Bloom, then do this install again."/>
 
 	<Upgrade Id ="$(var.Property_UpgradeCode)" >
 	  <UpgradeVersion Minimum ="$(var.Property_ProductVersion)" OnlyDetect ="yes" Property ="NEWVERSIONDETECTED" />
 	  <UpgradeVersion Minimum ="0.0.0" IncludeMinimum ="yes" Maximum ="$(var.Property_ProductVersion)" IncludeMaximum ="no" Property ="OLDERVERSIONBEINGUPGRADED" />
 	</Upgrade >
+
+	<!-- show the license page -->
+	<UIRef Id="WixUI_Minimal"/>
+	<!-- Top banner / 493 × 58 -->
+	<WixVariable Id='WixUIBannerBmp' Value='installerBanner.jpg' />
+	<!-- Background bitmap used on the welcome and completion dialogs / 493 × 312 -->
+	<WixVariable Id='WixUIDialogBmp' Value='installerBackground.jpg' />
+	<WixVariable Id="WixUILicenseRtf" Value="..\..\distfiles\License.rtf" />
+
 
 	<!--
 	"from the list: Don't use Advertise="yes" Advertised shortcuts are designed to allow
@@ -30,15 +44,18 @@ users to install just the shortcut for your app, then demand-install the
 rest of the app the first time the icon is run.  If this is not behavior you
 are trying to support, you're better off using non-advertised shortcuts. "-->
 
-	<PropertyRef Id="NETFRAMEWORK35" />
-	<Condition Message="Before Bloom can install, you need to install Microsoft's free .NET Framework 3.5.  A full discussion of Bloom's requirements can be found at Bloom.org/wiki/Prerequisites.">
-	  Installed OR NETFRAMEWORK35
+	<PropertyRef Id="NETFRAMEWORK40CLIENT" />
+	<Condition Message="Before Bloom can install on older computers, you need to install Microsoft's free .NET Framework 4.0 (at least the small 'client profile'.  A full discussion of Bloom's requirements can be found at http://bloom.palaso.org/download ">
+	  Installed OR NETFRAMEWORK40CLIENT OR NETFRAMEWORK40FULL
 	</Condition>
 
 	<!--because of bug, this needs to be 1 -->
 	<Property Id ="ALLUSERS">1</Property>
 
 	<Directory Id="TARGETDIR" Name="SourceDir">
+		<!-- Mercurial requires this Visual C++ Runtime thing. Many computers will already have it, but MS recommends each app install it this way, using this merge module-->
+		<Merge Id="VisualC++SharedRuntimeForMercurial" SourceFile="..\..\lib\Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
+		<Merge Id="VisualC++SharedRuntimeForMercurialPolicy" SourceFile="..\..\lib\policy_9_0_Microsoft_VC90_CRT_x86.msm" DiskId="1" Language="0"/>
 
 		<Directory Id="CommonAppDataFolder">
 			<Directory Id="BloomCommonAppData" Name="Bloom">
@@ -61,11 +78,16 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <Directory Id="ProgramFilesFolder" Name="PFiles">
 
 		<Directory Id="ProgramDir" Name="Bloom">
-
+		  <Merge  Id="ChorusMergeModule" Language="1033" SourceFile="..\..\lib\ChorusMergeModule.msm" DiskId="1" />
+		  <Directory Id="XulRunnerDir" Name="XulRunner"/>
 		  <Component Id="Bloom.exe" Guid="{A3493982-C68A-4f01-93BC-5F92B380CF89}">
 			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
-
 			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
+			<File Id="BloomPackIcon" Name="BloomPackIcon.ico" Source="..\..\artwork\BloomPack.ico" />
+			<File Id="BloomCollectionIcon" Name="BloomCollectionIcon.ico" Source="..\..\artwork\BloomCollectionIcon.ico" />
+
+			<fire:FirewallException Id="ChorusHubFireWallException" Name="Bloom Access to Chorus Hub" Program="[#Bloom.exe]" Scope="localSubnet" IgnoreFailure="yes"/>
+
 			<!--- todo: icons for Bloom files -->
 
 			<!--- connect file types to icons and program to launch -->
@@ -79,9 +101,45 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<!-- another way:                 <Registry Id='LuaReg8' Root='HKCR' Key='VisualStudio.luaproj.8.0\Shell\Open\Command' Action='write'
 					 Type='string' Value='"[ENVPATH_2005]" "%1"'/> -->
 
+			<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Bloom.BloomPack" Name="FriendlyTypeName" Value="Bloom Book Pack" Type="string" />
+
+			<!-- Bloom Collection Files -->
+			<ProgId Id='Bloom.BloomCollectionFile' Description='BloomPack file' >
+			  <Extension Id='BloomCollectionFile' ContentType='application/bloom'>
+				<!-- I know application/bloom looks weird, but it copies MSword docs -->
+				<Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
+			  </Extension>
+			</ProgId>
+
+			<Registry  Id='BloomCollectionIcon1' Root='HKCR' Key='.BloomCollection' Action='write'
+			  Type='string' Value='Bloom.BloomCollectionFile' />
+			<Registry Id='BloomCollectionIcon2' Root='HKCR' Key='Bloom.BloomCollectionFile' Action='write'
+			  Type='string' Value='Bloom Book Collection' />
+			<Registry Id='BloomCollectionIcon3' Root='HKCR' Key='Bloom.BloomCollectionFile\DefaultIcon' Action='write'
+			  Type='string' Value='[!BloomCollectionIcon], 0' />
+
+			<!-- Bloom Pack Files -->
+			<ProgId Id='Bloom.BloomPackFile' Description='BloomPack file' >
+			  <Extension Id='BloomPackFile' ContentType='application/bloom'>  <!-- I know application/bloom looks weird, but it copies MSword docs -->
+				<Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
+			  </Extension>
+			</ProgId>
+
+
+			<Registry  Id='BloomPackIcon1' Root='HKCR' Key='.BloomPack' Action='write'
+			  Type='string' Value='Bloom.BloomPackFile' />
+			<Registry Id='BloomPackIcon2' Root='HKCR' Key='Bloom.BloomPackFile' Action='write'
+			  Type='string' Value='Bloom Book Collection' />
+			<Registry Id='BloomPackIcon3' Root='HKCR' Key='Bloom.BloomPackFile\DefaultIcon' Action='write'
+			  Type='string' Value='[!BloomPackIcon], 0' />
+
 			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
 				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
 
+		  </Component>
+
+		  <Component Id="Bloom.exe.config" Guid="{5173C7E9-39FD-4438-B1C1-BA189707AA35}">
+			<File Id="Bloom.exe.config" Name="Bloom.exe.config" KeyPath="yes" Source="..\..\output\release\Bloom.exe.config" />
 		  </Component>
 
 		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
@@ -90,13 +148,67 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		   <Component Id="Palaso.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5634}">
 			<File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
 		  </Component>
+		  <Component Id="LocalizationManager.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
+			<File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
+		  </Component>
+
 		  <Component Id="PalasoUIWindowsForms.dll" Guid="{A7046B6E-668C-4a4d-A866-719922C142B5}">
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
 		  </Component>
-		  <Component Id="Palaso.Media.dll" Guid="{A42F2F76-3978-4d83-BC98-C7585B6F69D8}">
-			<File Id="Palaso.Media.dll" Name="Palaso.Media.dll" KeyPath="yes" Source="..\..\output\release\Palaso.Media.dll" />
+		  <Component Id="Newtonsoft.Json.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5644}">
+			<File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" KeyPath="yes" Source="..\..\output\release\Newtonsoft.Json.dll" />
 		  </Component>
 
+		  <Component Id="AeroWizard.dll" Guid="{233C4FD2-010D-4263-9679-633E224AA66E}">
+			<File Id="AeroWizard.dll" Name="AeroWizard.dll" KeyPath="yes" Source="..\..\output\release\AeroWizard.dll" />
+		  </Component>
+
+		  <!-- used by PalasoUIWindowsForms for talking to scanner-->
+		  <Component Id="Interop.WIA.dll" Guid="{47038218-2646-4F83-BE95-4F83A8D41811}">
+			<File Id="Interop.WIA.dll" Name="Interop.WIA.dll" KeyPath="yes" Source="..\..\output\release\Interop.WIA.dll" />
+		  </Component>
+		  <!-- web browser-->
+		  <Component Id="GeckoFx" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
+			<File Id="GeckoFx" Name="geckofx-11.dll" KeyPath="yes" Source="..\..\output\release\geckofx-11.dll" />
+		  </Component>
+		  <Component Id="libtidy.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
+			<File Id="libtidy.dll" Name="libtidy.dll" KeyPath="yes" Source="..\..\output\release\libtidy.dll" />
+		  </Component>
+		  <Component Id="tidymanaged.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC621}">
+			<File Id="tidymanaged.dll" Name="tidymanaged.dll" KeyPath="yes" Source="..\..\output\release\tidymanaged.dll" />
+		  </Component>
+		  <!-- needed by libtidy.dll on some machines that don't have it  -->
+		  <Component Id="msvcr100.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC333}">
+			<File Id="msvcr100.dll" Name="msvcr100.dll" KeyPath="yes" Source="..\..\output\release\msvcr100.dll" />
+		  </Component>
+
+		  <!-- for making windows shortcuts -->
+		  <Component Id="Interop.IWshRuntimeLibrary.dll" Guid="{11A19AC1-255B-4702-9817-061B1C415435}">
+			<File Id="Interop.IWshRuntimeLibrary.dll" Name="Interop.IWshRuntimeLibrary.dll" KeyPath="yes" Source="..\..\output\release\Interop.IWshRuntimeLibrary.dll" />
+		  </Component>
+
+		  <!-- For embedding Adobe Reader -->
+		  <Component Id="Interop.Acrobat.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D6}">
+			<File Id="Interop.Acrobat.dll" Name="Interop.Acrobat.dll" KeyPath="yes" Source="..\..\output\release\Interop.Acrobat.dll" />
+		  </Component>
+		  <Component Id="Interop.AcroPDFLib.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D7}">
+			<File Id="Interop.AcroPDFLib.dll" Name="Interop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\Interop.AcroPDFLib.dll" />
+		  </Component>
+		  <Component Id="AxInterop.AcroPDFLib.dll" Guid="{0732D404-AB9E-4EC7-97B3-91283CFCB4D8}">
+			<File Id="AxInterop.AcroPDFLib.dll" Name="AxInterop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\AxInterop.AcroPDFLib.dll" />
+		  </Component>
+
+		  <Component Id="Ionic.Zip.Reduced.dll" Guid="{D40A976F-244D-4C0E-924D-AB98040649F6}">
+			<File Id="Ionic.Zip.Reduced.dll" Name="Ionic.Zip.Reduced.dll" KeyPath="yes" Source="..\..\output\release\Ionic.Zip.Reduced.dll" />
+		  </Component>
+
+
+		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
+			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
+		  </Component>
+		  <Component Id="PdfDroplet.exe" Guid="{B192D381-F993-463E-9AA6-0920AFEFC637}">
+			<File Id="PdfDroplet.exe" Name="PdfDroplet.exe" KeyPath="yes" Source="..\..\output\release\PdfDroplet.exe" />
+		  </Component>
 		</Directory>
 	  </Directory>
 	</Directory>
@@ -104,15 +216,35 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
 	<Feature Id="ProductFeature" Level="1" Title="Basic Stuff">
 	  <ComponentRef Id ="removeShortcutDir"/>
-
+	  <MergeRef Id="ChorusMergeModule" />
+	  <MergeRef Id="VisualC++SharedRuntimeForMercurial" />
+	  <MergeRef Id="VisualC++SharedRuntimeForMercurialPolicy" />
 	  <ComponentRef Id="autofac.dll"/>
 	  <ComponentRef Id="Palaso.dll"/>
+	  <ComponentRef Id="LocalizationManager.dll"/>
 	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
-	  <ComponentRef Id="Palaso.Media.dll" />
+	  <ComponentRef Id="Interop.WIA.dll" />
+	  <ComponentRef Id="Newtonsoft.Json.dll"/>
+	  <ComponentRef Id="AeroWizard.dll"/>
+	  <ComponentRef Id="tidymanaged.dll"/>
+	  <ComponentRef Id="libtidy.dll"/>
+	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
+	  <ComponentRef Id="GeckoFx" />
+	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
+	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
+	  <ComponentRef Id="PdfSharp.dll" />
+	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
+	  <ComponentRef Id="Bloom.exe.config" />
+	  <ComponentRef Id="Interop.Acrobat.dll" />
+	  <ComponentRef Id="Interop.AcroPDFLib.dll" />
+	  <ComponentRef Id="AxInterop.AcroPDFLib.dll" />
 
 	  <ComponentGroupRef Id ="DistFiles"/>
-	  <ComponentGroupRef Id ="SampleData"/>
+	  <ComponentGroupRef Id="wkhtmltopdf" />
+	  <ComponentGroupRef Id="XulRunner" />
+
+
 
 	</Feature>
 	<Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
@@ -127,8 +259,43 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 				  ExeCommand=""
 				  Return="asyncNoWait"/>
 
+	<!-- As Bloom acts as its own http service, on Vista/Win7 we use netsh to configure a port for that -->
+	<CustomAction Id="ListenerServiceAddReservation"
+					  Execute='deferred' Impersonate='no'
+					  Directory="TARGETDIR"
+					  ExeCommand="netsh.exe http add urlacl url=http://localhost:8089/bloom/ user=everyone"
+					  Return="asyncWait" />
+	<CustomAction Id="ListenerServiceDeleteReservation"
+					  Execute='deferred' Impersonate='no'
+					  Directory="TARGETDIR"
+					  ExeCommand="netsh.exe http delete urlacl url=http://localhost:8089/bloom/ "
+					  Return="asyncWait"  />
+<!-- For WinXP, for which, reportedly, I need to use httpcfg instead of netsh -->
+	<CustomAction Id='ListenerServiceAddReservationXP'
+				  Execute='deferred' Impersonate='no'
+				  Directory="TARGETDIR"
+				  ExeCommand='httpcf set urlacl -u http://localhost:8089/bloom/ /a "D:(A;;GX;;;WD)"'
+				  Return='asyncWait' />
+	<CustomAction Id='ListenerServiceDeleteReservationXP'
+				  Execute='deferred'  Impersonate='no'
+				  Directory="TARGETDIR"
+				  ExeCommand='httpcf delete urlacl -u http://localhost:8089/bloom/'
+				  Return='asyncWait' />
+
+
 	<InstallExecuteSequence>
-	  <RemoveExistingProducts After="InstallInitialize" />
+	  <!--
+
+	  It's not clear when these are needed, so I'm commenting them out until I discover that.
+
+	  <Custom Action="ListenerServiceAddReservationXP" Before="InstallFinalize">NOT Installed AND VersionNT = 501</Custom>
+	  <Custom Action="ListenerServiceDeleteReservationXP" Before="InstallFinalize">Installed AND VersionNT = 501</Custom>
+
+	  <Custom Action="ListenerServiceAddReservation" Before="InstallFinalize">NOT Installed  AND VersionNT >= 600 </Custom>
+	  <Custom Action="ListenerServiceDeleteReservation" Before="InstallFinalize">Installed AND VersionNT >= 600 </Custom>
+-->
+
+<!-- now handled by the MajorUpgrade task      <RemoveExistingProducts After="InstallInitialize" />  -->
 
 	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
 		  <Custom Action='LaunchBloom' After="InstallFinalize">NOT Installed</Custom>

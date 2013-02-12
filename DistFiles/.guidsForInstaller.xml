@@ -6,4 +6,12 @@
   <File Id="SessionFileInfoTemplates.xml" Guid="79c9620d-5ae8-4fbb-bdcf-3a88a57c9ae0" />
   <File Id="Sponge.exe.config" Guid="8ce714ee-790b-4f15-872c-ed5e2fb8a9e2" />
   <File Id="releaseNotes.htm" Guid="7faa5799-f47a-4fb8-aebf-c7baae6aceb5" />
+  <File Id="ArtOfReadingIndexV3_en.txt" Guid="e8573384-6b06-4744-9a3d-c5c283953b93" />
+  <File Id="test.pdf" Guid="986df7b4-ce8f-45fb-9909-f7f88fb27dec" />
+  <File Id="exiftool.exe" Guid="88927445-4852-4020-9b6c-61e28d9f2854" />
+  <File Id="spinner.gif" Guid="1b644ff0-ce6b-43ea-b48d-636e470b058b" />
+  <File Id="Feedback.html" Guid="d440dcd8-e9b5-4da6-9224-5fa2d482d595" />
+  <File Id="Bloom.chw" Guid="64a937aa-553e-44c7-b8b6-db99b3f2b7f8" />
+  <File Id="Bloom.chm" Guid="eb15415f-7651-456a-81ff-41427eb7cda4" />
+  <File Id="license.rtf" Guid="a29dfa51-8a32-41f5-8a24-65cb2bde5fe5" />
 </InstallerMetadata>

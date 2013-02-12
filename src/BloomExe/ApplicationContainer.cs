@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Reflection;
 using Autofac;
+using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+
 
 namespace Bloom
 {
@@ -18,6 +20,7 @@ namespace Bloom
 			public ApplicationContainer()
 			{
 				var builder = new ContainerBuilder();
+				//builder.RegisterModule<WhiteboxProfilingModule>();
 
 				//default to InstancePerDependency, i.e., they it will make a new
 				//one each time someone asks for one
@@ -35,9 +38,9 @@ namespace Bloom
 				_container = builder.Build();
 			}
 
-			public WelcomeDialog CreateWelcomeDialog()
+			public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
 			{
-				return _container.Resolve<WelcomeDialog>();
+				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
 			public void Dispose()

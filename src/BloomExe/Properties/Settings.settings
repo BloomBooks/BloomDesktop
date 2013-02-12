@@ -8,5 +8,29 @@
     <Setting Name="MruProjects" Type="Bloom.ToPalaso.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Reporting" Type="Palaso.Reporting.ReportingSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UserInterfaceLanguage" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LastSourceLanguageViewed" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ImageHandler" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http</Value>
+    </Setting>
+    <Setting Name="ShowSendReceive" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ShowLocalizationControls" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ShowExperimentalBooks" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

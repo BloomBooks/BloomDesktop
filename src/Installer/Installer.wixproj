@@ -6,7 +6,7 @@
 	<SchemaVersion>2.0</SchemaVersion>
 	<OutputName>BloomInstaller</OutputName>
 	<OutputType>Package</OutputType>
-	<WixToolPath>C:\Program Files\Windows Installer XML v3\bin\</WixToolPath>
+	<WixToolPath>C:\Program Files\Windows Installer XML v3.5\bin\</WixToolPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
 	<OutputPath>..\..\output\installer\</OutputPath>
@@ -62,16 +62,24 @@
   </PropertyGroup>
   <ItemGroup>
 	<Compile Include="Installer.wxs" />
+	<Compile Include="wkhtmltopdf.wxs" />
 	<Compile Include="..\..\output\installer\GeneratedDistFiles.wxs" />
-	<Compile Include="..\..\output\installer\GeneratedSampleDataFiles.wxs" />
+	<Compile Include="..\..\output\installer\GeneratedXulRunner.wxs" />
   </ItemGroup>
   <ItemGroup>
+	  <WixExtension Include="WixFirewallExtension">
+	  <HintPath>$(WixExtDir)\WixFirewallExtension.dll</HintPath>
+	  <Name>WixFirewallExtension</Name>
+	</WixExtension>
 	<WixExtension Include="WixUtilExtension">
-	  <HintPath>C:\Program Files\Windows Installer XML v3\bin\WixUtilExtension.dll</HintPath>
+	  <HintPath>C:\Program Files\Windows Installer XML v3.5\bin\WixUtilExtension.dll</HintPath>
 	</WixExtension>
 	<WixExtension Include="WixNetFxExtension">
-	  <HintPath>C:\Program Files\Windows Installer XML v3\bin\WixNetFxExtension.dll</HintPath>
+	  <HintPath>C:\Program Files\Windows Installer XML v3.5\bin\WixNetFxExtension.dll</HintPath>
+	</WixExtension>
+	<WixExtension Include="WixUIExtension">
+	  <HintPath>C:\Program Files\Windows Installer XML v3\bin\WixUIExtension.dll</HintPath>
 	</WixExtension>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.0\Wix.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets" />
 </Project>

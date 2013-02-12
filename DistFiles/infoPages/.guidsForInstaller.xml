@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="construction.png" Guid="b505b7a2-9a4b-48a4-a358-5eaaba46bc61" />
+  <File Id="Release_Notes.htm" Guid="f1580fda-4283-4c56-8783-5c24dd8ec70f" />
+  <File Id="style.css" Guid="30384a4f-2c30-4c42-95a8-253ec1b9ad0e" />
+  <File Id="_0_About.htm" Guid="38de1449-7292-4b41-8eca-dccc6b7e48af" />
+  <File Id="_1_Release_Notes.htm" Guid="89accfd0-5c41-4545-bc60-321304b5b68f" />
+  <File Id="_2_Making_New_Shells.htm" Guid="cdc0df6e-5c78-415d-adfd-edc77cf0b9ed" />
+  <File Id="_3_Bloom_File_Format.htm" Guid="4274149a-a865-41bf-a571-67a72e2accac" />
+  <File Id="MakingNewShellsCollectionsFolder.png" Guid="6d6d38b4-827d-4769-8b8f-000cbec3b05f" />
+  <File Id="_0_Release_Notes.htm" Guid="b7dda83e-76a6-4687-81d2-b4293d8efd46" />
+  <File Id="_1_About.htm" Guid="e74b49aa-5e97-4537-b067-d6987c22deea" />
+  <File Id="__bloomDataDiv.png" Guid="d6814e32-ccf7-4402-b136-6e33ed0d0641" />
+  <File Id="_4_Building_Dynamic_Templates.html" Guid="18cebda5-fc7c-409c-aeda-049732b93372" />
+  <File Id="dataHint.png" Guid="cb496daa-cd84-4512-8ba2-b763fa8ab581" />
+  <File Id="MakingNewShellsChooseTemplate.png" Guid="16ea2545-1035-4b56-b79a-bd13c98c3b02" />
+  <File Id="MakingNewShellsEditBloomLibrary.png" Guid="43208310-5161-4590-aa80-ddc33a57cdd8" />
+  <File Id="MakingNewShellsLanguage.png" Guid="f35fb442-cc57-459b-9054-37eecbccdc16" />
+  <File Id="MakingNewShellsNewProject.png" Guid="484755f9-ef89-4e01-847a-79c8b27c8c30" />
+  <File Id="MakingNewShellsOpenBloomLibrary.png" Guid="7a7803b5-006d-434c-a532-e9af964e2e49" />
+  <File Id="Deep_Bloom.pdf" Guid="4583a675-0f0a-4f96-92b3-1a09348a4888" />
+</InstallerMetadata>

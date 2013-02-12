@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="a5_portrait_SIL_Philippines_xmatter.css" Guid="3feac710-49a9-46a4-8c68-23a325a03058" />
+  <File Id="A5Portrait.css2" Guid="b201ee84-c824-40dc-8107-e011c22ecd2d" />
+  <File Id="BasePage.css4" Guid="0426504d-e295-41ad-8cdc-0bcb79da8fdc" />
+  <File Id="editMode.css1" Guid="84cb45ae-0aed-4a3d-8161-c6b5ec72a9ce" />
+  <File Id="placeHolder.png4" Guid="8ba2fac9-53c5-40e9-a9d3-46219c4bc472" />
+  <File Id="SIL_Logo_Black.png" Guid="b9b63123-67e7-4b2c-808a-dc9f6e7c3159" />
+  <File Id="SIL_Philippines_XMatter.htm" Guid="3da516f6-e1d7-41fa-9190-d7b0c1bf4920" />
+  <File Id="A5Portrait.css3" Guid="fb76621f-7b56-44cf-bd59-83b551296f81" />
+  <File Id="BasePage.css5" Guid="51afeeff-1319-4724-a745-d06722bc7f03" />
+  <File Id="placeHolder.png5" Guid="6dd38f80-c9ff-4c40-b3ae-d405ee287b58" />
+  <File Id="A5Portrait.css" Guid="6ab540b6-6362-42bc-a53b-504f6bef5df3" />
+  <File Id="BasePage.css6" Guid="9c5b42bb-d084-4644-a77c-ecebb28789f0" />
+  <File Id="placeHolder.png6" Guid="184226e7-d442-4bfd-b163-eefb7fc52795" />
+</InstallerMetadata>

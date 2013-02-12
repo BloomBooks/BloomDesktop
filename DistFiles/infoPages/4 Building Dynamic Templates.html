@@ -1,0 +1,221 @@
+<html>
+<head>
+	<title>Making Dynamic Documents</title>
+	<link  rel="stylesheet" href="style.css" type="text/css" />
+	<style type="text/css">
+		ol
+		{
+			margin: 0;
+			padding: 0;
+		}
+		.c4
+		{
+			width: 468pt;
+			background-color: #ffffff;
+			padding: 72pt 72pt 72pt 72pt;
+		}
+
+		.c2
+		{
+			background-color: #00ff00;
+		}
+		.c3
+		{
+			background-color: #ffff00;
+		}
+
+	</style>
+</head>
+<body class="c4">
+	<title>Building Dynamic Temblates</title>
+	<div class="note">This is an advanced topic for web devlopers familar with jscript.</div>
+	<h1 >
+		<span>Overview</span></h1>
+	<p class="c0">
+		<span>&nbsp;Bloom supports templates that can be configured&mdash; that is, which ask
+			the user some questions, and then dynamically set up pages, using jscript. &nbsp;One
+			example is a calendar, which needs to ask the user for a year, day names, and which
+			day is the start of the week. To make such a template, you need 3 things. &nbsp;The
+			standard parts of a Bloom template folder (documented elsewhere), a configuration
+			form, and a configuration script.</span></p>
+	<h1 class="c0">
+		<span>The Template Html</span></h1>
+	<p class="c0">
+		<span>The first part is the template document itself. &nbsp;The only thing special here,
+			and it may be temporary, is that you need to set up all the javascript you&rsquo;ll
+			need for updating the dom. &nbsp;Here&rsquo;s and example from Sample Shells/A5
+			Wall Calendar/Wall Calendar.htm:</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&lt;script type=&quot;text/javascript&quot; src=&quot;jquery-1.6.4.js&quot;&gt;&lt;/script&gt;<br>
+			&lt;script type=&quot;text/javascript&quot; src=&quot;mootools-core-1.4.1-full-nocompat.js&quot;&gt;&lt;/script&gt;<br>
+			&lt;script type=&quot;text/javascript&quot; src=&quot;mootools-more-1.4.0.1.js&quot;&gt;&lt;/script&gt;<br>
+			&lt;script type=&quot;text/javascript&quot; src=&quot;configure.js&quot;&gt;&lt;/script&gt;</span></p>
+	<h1 class="c0">
+		<span>The Configuration Form</span></h1>
+	<p class="c0">
+		<span>Add a &ldquo;configuration.htm&rdquo; to your template folder. &nbsp;That file
+			should have a &lt;form&gt; element, but no &ldquo;submit&rdquo; button. &nbsp;Each
+			input element must have a name attribute, using the form &lsquo;mytemplate.someValue&rsquo;.</span></p>
+	<p class="c0">
+		<span>&nbsp;When the user asks Bloom to create document based on the template, Bloom
+			will notice the existence of the configuration.htm, and bring up a dialog box displaying
+			it. &nbsp;When the user clicks OK, Bloom gathers all the data out of the form and
+			runs the configuration script using it. </span>
+	</p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>Here&rsquo;s an example from the calendar:</span></p>
+	<p class="c0">
+		<span>&lt;form id=&#39;form&#39;&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label
+			class=&quot;year&quot;&gt;Year&lt;/label&gt;&lt;input class=&quot;year&quot; name=&quot;</span><span
+				class="c3">calendar.year</span><span>&quot; type=&quot;number&quot; value=&quot;2012&quot;/&gt;</span></p>
+	<h4 class="c0">
+		<a name="h.5vxuc0j6mec5"></a><span>Remembering Configuration Values</span></h4>
+	<p class="c0">
+		<span>Any data items which start with he word &ldquo;library.&rdquo; will be stored
+			in the file &ldquo;configuration.txt&rdquo; in the library folder. &nbsp;This string
+			will also be preserved, so that if the user makes use of your template again (say,
+			next year if the template is a calendar), your configuration form will be pre-populated
+			with what they said last time.</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>As an example, in the calendar, we don&rsquo;t necessarily need to remember the
+			year, since that will change each time you make a calendar. So in the example above,
+			we don&rsquo;t have the &ldquo;library.&rdquo; prefix. &nbsp;But if the user customizes
+			the names of the days, we want to remember that. Again, from the calendar</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&lt;h1&gt;Day Names&lt;/h1&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label&gt;Sunday&lt;/label&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input
+			name=&quot;</span><span class="c2">library</span><span class="c3">.calendar.dayAbbreviations[0</span><span>]&quot;
+				value=&quot;Sun&quot;/&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;br /&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label&gt;Monday&lt;/label&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input
+			name=&quot;</span><span class="c2">library</span><span class="c3">.calendar.dayAbbreviations[1]</span><span>&quot;
+				value=&quot;Mon&quot;/&gt;</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;br /&gt;</span></p>
+	<p class="c0 c1">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>Notice, if you have values which work best as an array, add the index numbers
+			as shown for these dayAbbreviations.</span></p>
+	<h1 class="c0">
+		<span>Configuration Script</span></h1>
+	<p class="c0">
+		<span>Add a &ldquo;configure.js&rdquo; to your template folder. &nbsp;It can have whatever
+			you want, but must include a method with this signature:</span></p>
+	<p class="c0">
+		<span>&nbsp;</span></p>
+	<p class="c0">
+		<span>function updateDom(configuration)</span></p>
+	<p class="c0">
+		<span>&nbsp;</span></p>
+	<p class="c0">
+		<span>Bloom will call this method in the context of the document&rsquo;s dom. &nbsp;Your
+			script can thus do anything it wants to the user&rsquo;s whole document, including
+			break it. &nbsp;The name &ldquo;update&rdquo; here is to remind you that this may
+			be called multiple times, as the user tweaks the configuration. &nbsp;Thus, a good
+			first step would be to remove any material you know you generated. For example,
+			with a calendar template, you would remove or re-write the contents of all the date
+			pages. &nbsp;Still in the calendar example&hellip; if you could avoid removing the
+			picture pages above each month, then users wouldn&rsquo;t lose that work just because
+			they found a misspelling in their vernacular for &ldquo;Wedensday&rdquo;. &nbsp;Configuration
+			is an object with members that match the @name attributes in the elements of the
+			configuration form. &nbsp;Here&rsquo;s the first few lines of the update in Calendar,
+			with the data from the configuration highlighted:</span></p>
+	<p class="c0">
+		<span>&nbsp;</span></p>
+	<p class="c0">
+		<span>/**</span></p>
+	<p class="c0">
+		<span>* Updates the dom to reflect the given configuration settings</span></p>
+	<p class="c0">
+		<span>* Called directly by Bloom, in a context where the current dom is the book.</span></p>
+	<p class="c0">
+		<span>* @param {configuration} members come from the name attributes of the corresponding
+			configuration.htm file.</span></p>
+	<p class="c0">
+		<span>* &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Put a new input control
+			in that file, give it a @name attribute, and the value will be available here.</span></p>
+	<p class="c0">
+		<span>*/</span></p>
+	<p class="c0">
+		<span>function updateDom(configuration) {</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$$(&quot;.bloom-vernacularBookTitle&quot;).set(&quot;text&quot;,
+		</span><span class="c3">configuration.calendar.year </span><span>+&quot; Calendar&quot;);</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var year = Number.from(</span><span
+			class="c3">configuration.calendar.year</span><span>);</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var previous = $$(&#39;.titlePage&#39;)[0];</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var originalMonthsPicturePage
+			= $$(&#39;.calendarMonthTop&#39;)[0];</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (var month = 0; month &lt;
+			12; month++) {</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var
+			monthsPicturePage = originalMonthsPicturePage.clone();</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;monthsPicturePage.removeClass(&#39;templateOnly&#39;);</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;monthsPicturePage.inject(previous,
+			&quot;after&quot;);</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var
+			monthDaysPage = generateMonth(year, month, </span><span class="c3">configuration.library.calendar.monthNames</span><span>[month],
+			</span><span class="c3">configuration.library.calendar.dayAbbreviations</span><span>);</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;monthDaysPage.inject(monthsPicturePage,
+			&quot;after&quot;);</span></p>
+	<p class="c0">
+		<span>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous
+			= monthDaysPage;</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></p>
+	<p class="c0">
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$(&#39;.templateOnly&#39;).remove();</span></p>
+	<p class="c0">
+		<span>}</span></p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+	<p class="c1 c0">
+		<span></span>
+	</p>
+</body>
+</html>
