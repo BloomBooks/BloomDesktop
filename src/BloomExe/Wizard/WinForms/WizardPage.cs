@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Bloom.Wizard.WinForms
 {
@@ -17,7 +18,8 @@ namespace Bloom.Wizard.WinForms
 
         public WizardPage()
         {
-            AllowNext = true;   
+            AllowNext = true;
+            BackColor = Color.White;
         }
 
         public bool Suppress
