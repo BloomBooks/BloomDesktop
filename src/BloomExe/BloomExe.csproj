@@ -30,7 +30,7 @@
       <EnvironmentVariables>
         <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/home/richard/src/bloom/lib/xulrunner11" />
         <Variable name="MOZ_LIBDIR" value="/home/richard/src/bloom/lib/xulrunner11" />
-        <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/" />
+        <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/:/usr/lib/cli/gtk-sharp-2.0:/usr/lib/cli/atk-sharp-2.0:/usr/lib/cli/glib-sharp-2.0" />
         <Variable name="LD_PRELOAD" value="./jemallocfix.so" />
         <Variable name="DISPLAY" value=":1" />
       </EnvironmentVariables>
