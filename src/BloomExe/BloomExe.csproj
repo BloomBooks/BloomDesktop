@@ -76,10 +76,6 @@
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
-    <Reference Include="LocalizationManager, Version=1.0.4506.21648, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\LocalizationManager.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -128,6 +124,9 @@
     </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="LocalizationManager">
+      <HintPath>..\..\..\localizationmanager\Output\Debug\LocalizationManager.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
