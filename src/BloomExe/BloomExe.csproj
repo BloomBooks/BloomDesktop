@@ -26,6 +26,14 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/home/richard/src/bloom/lib/xulrunner11" />
+        <Variable name="MOZ_LIBDIR" value="/home/richard/src/bloom/lib/xulrunner11" />
+        <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/" />
+        <Variable name="LD_PRELOAD" value="./jemallocfix.so" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\release\</OutputPath>
