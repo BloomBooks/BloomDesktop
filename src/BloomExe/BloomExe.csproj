@@ -115,7 +115,7 @@
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
-      <HintPath>..\..\lib\PdfSharp.dll</HintPath>
+      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfSharp.dll</HintPath>
     </Reference>
     <Reference Include="LocalizationManager">
       <HintPath>..\..\..\localizationmanager\Output\Debug\LocalizationManager.dll</HintPath>
