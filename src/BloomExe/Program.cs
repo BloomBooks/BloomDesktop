@@ -49,7 +49,8 @@ namespace Bloom
 				if (!GrabMutexForBloom())
 					return;
 
-				OldVersionCheck();
+				if (Platform.Utilities.Platform.IsWindows)
+					OldVersionCheck();
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
 				{
