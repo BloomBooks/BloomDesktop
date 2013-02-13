@@ -29,20 +29,20 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewCollectionWizard));
-			this.wizardControl1 = new AeroWizard.WizardControl();
-			this._welcomePage = new AeroWizard.WizardPage();
+			this.wizardControl1 = new Bloom.Wizard.WizardAdapterControl();
+            this._welcomePage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new Bloom.HtmlLabel();
-			this._kindOfCollectionPage = new AeroWizard.WizardPage();
+            this._kindOfCollectionPage = new Bloom.Wizard.WizardAdapterPage();
 			this.kindOfCollectionControl1 = new KindOfCollectionControl();
-			this._vernacularLanguagePage = new AeroWizard.WizardPage();
+            this._vernacularLanguagePage = new Bloom.Wizard.WizardAdapterPage();
 			this._vernacularLanguageIdControl = new LanguageIdControl();
-			this._languageLocationPage = new AeroWizard.WizardPage();
+            this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
 			this._languageLocationControl = new LanguageLocationControl();
-			this._finishPage = new AeroWizard.WizardPage();
+            this._finishPage = new Bloom.Wizard.WizardAdapterPage();
 			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._collectionNamePage = new AeroWizard.WizardPage();
+            this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
 			this._collectionNameControl = new CollectionNameControl();
-			this._collectionNameProblemPage = new AeroWizard.WizardPage();
+            this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			((System.ComponentModel.ISupportInitialize)(this.wizardControl1)).BeginInit();
 			this._welcomePage.SuspendLayout();
 			this._kindOfCollectionPage.SuspendLayout();
@@ -200,7 +200,8 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(684, 464);
 			this.ControlBox = false;
-			this.Controls.Add(this.wizardControl1);
+			this.Controls.Add(this.
+                wizardControl1);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "NewCollectionWizard";
@@ -222,19 +223,19 @@
 
 		#endregion
 
-		private AeroWizard.WizardControl wizardControl1;
-		private AeroWizard.WizardPage _kindOfCollectionPage;
+        private Bloom.Wizard.WizardAdapterControl wizardControl1;
+        private Bloom.Wizard.WizardAdapterPage _kindOfCollectionPage;
 		private KindOfCollectionControl kindOfCollectionControl1;
-		private AeroWizard.WizardPage _vernacularLanguagePage;
+        private Bloom.Wizard.WizardAdapterPage _vernacularLanguagePage;
 		private LanguageIdControl _vernacularLanguageIdControl;
-		private AeroWizard.WizardPage _collectionNamePage;
+        private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
 		private CollectionNameControl _collectionNameControl;
-		private AeroWizard.WizardPage _finishPage;
-		private AeroWizard.WizardPage _collectionNameProblemPage;
-		private AeroWizard.WizardPage _languageLocationPage;
+        private Bloom.Wizard.WizardAdapterPage _finishPage;
+        private Bloom.Wizard.WizardAdapterPage _collectionNameProblemPage;
+        private Bloom.Wizard.WizardAdapterPage _languageLocationPage;
 		private LanguageLocationControl _languageLocationControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
-		private AeroWizard.WizardPage _welcomePage;
+        private Bloom.Wizard.WizardAdapterPage _welcomePage;
 		private HtmlLabel _welcomeHtml;
 	}
 }
