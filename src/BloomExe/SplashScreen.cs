@@ -45,23 +45,15 @@ namespace Bloom
 
 		static public void Show()
 		{
-			if (_splashThread != null)
-				return;
-
-			_splashThread = new Thread(new ThreadStart(Splasher.ShowThread));
-			_splashThread.IsBackground = true;
-			_splashThread.ApartmentState = ApartmentState.STA;
-			_splashThread.Start();
-		}
-
-
-
-		static void ShowThread()
-		{
 			_splashForm = new SplashScreen();
 			Application.Run(_splashForm);
-//            _splashForm.ShowDialog();
 		}
+
+		static public void Hide()
+		{
+			_splashForm.Hide();
+		}
+
 
 		static public void Close()
 		{

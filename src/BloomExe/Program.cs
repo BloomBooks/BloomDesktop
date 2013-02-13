@@ -79,28 +79,34 @@ namespace Bloom
 					Settings.Default.MruProjects.AddNewPath(args[0]);
 				}
 				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(7);
+
+				EventHandler startAppOnIdle = (sender, e) =>
+				{
+					Application.Idle -= startAppOnIdle;
+
+					SetUpReporting();
+					Settings.Default.Save();
+
+					_applicationContainer = new ApplicationContainer();
+
+					Browser.SetUpXulRunner();
+
+					StartUpShellBasedOnMostRecentUsedIfPossible();
+					Application.Idle += new EventHandler(Application_Idle);
+
+					Localization.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
+					EventHandler hideSplash = (sender2, e2) =>
+					{
+						Splasher.Hide();
+						Application.Idle -= hideSplash;
+					};
+
+					Application.Idle += hideSplash;
+				};
+
+				Application.Idle += startAppOnIdle;
+
 				Splasher.Show();
-
-				SetUpReporting();
-				Settings.Default.Save();
-
-				_applicationContainer = new ApplicationContainer();
-
-				Browser.SetUpXulRunner();
-
-				StartUpShellBasedOnMostRecentUsedIfPossible();
-				Application.Idle += new EventHandler(Application_Idle);
-
-				Localization.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
-				try
-				{
-					Application.Run();
-				}
-				catch (System.AccessViolationException nasty)
-				{
-					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					System.Environment.FailFast("AccessViolationException");
-				}
 
 				Settings.Default.Save();
 
