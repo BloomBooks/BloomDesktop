@@ -61,7 +61,7 @@
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
     <Reference Include="Chorus">
-      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+      <HintPath>..\..\..\chorus\output\DebugMono\Chorus.exe</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\..\geckofx-11.0\Skybound.Gecko\bin\x86\Debug_Linux\geckofx-11.dll</HintPath>
@@ -74,22 +74,14 @@
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
     <Reference Include="LibChorus">
-      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
+      <HintPath>..\..\..\chorus\output\DebugMono\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
     <Reference Include="PdfDroplet">
-      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -127,6 +119,12 @@
     </Reference>
     <Reference Include="LocalizationManager">
       <HintPath>..\..\..\localizationmanager\Output\Debug\LocalizationManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Palaso">
+      <HintPath>..\..\..\palaso\output\DebugMono\Palaso.dll</HintPath>
+    </Reference>
+    <Reference Include="PalasoUIWindowsForms">
+      <HintPath>..\..\..\palaso\output\DebugMono\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
