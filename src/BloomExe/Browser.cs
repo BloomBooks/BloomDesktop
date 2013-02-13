@@ -59,8 +59,10 @@ namespace Bloom
 
 
 			}
+
 			//Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-			SetDllDirectory(xulRunnerPath);
+			if (Bloom.Platform.Utilities.Platform.IsWindows)
+				SetDllDirectory(xulRunnerPath);
 
 			Gecko.Xpcom.Initialize(xulRunnerPath);
 		}
