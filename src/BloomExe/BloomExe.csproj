@@ -135,6 +135,7 @@
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\..\palaso\output\DebugMono\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutDialog.cs">
