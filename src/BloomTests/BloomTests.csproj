@@ -160,9 +160,9 @@
     <Compile Include="XmlHtmlConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bloom-ChorusPlugin\Bloom-ChorusPlugin.csproj">
+    <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">
       <Project>{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}</Project>
-      <Name>Bloom-ChorusPlugin</Name>
+      <Name>BloomChorusPlugin</Name>
     </ProjectReference>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj">
       <Project>{304D5612-167C-4725-AF27-B9F2BB788B57}</Project>

@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Bloom_ChorusPlugin</RootNamespace>
-    <AssemblyName>Bloom-ChorusPlugin</AssemblyName>
+    <AssemblyName>BloomChorusPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
