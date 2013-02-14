@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Palaso.Reporting;
 
 namespace Bloom.CollectionTab
 {
@@ -338,12 +339,23 @@ namespace Bloom.CollectionTab
 		{
 			if (IsDisposed)
 				return;
-			var imageIndex = _bookThumbnails.Images.IndexOfKey(book.Id);
-			if (imageIndex > -1)
+			try
 			{
-				_bookThumbnails.Images[imageIndex] = image;
-				var button = FindBookButton(book);
-				button.Image = image;
+				var imageIndex = _bookThumbnails.Images.IndexOfKey(book.Id);
+				if (imageIndex > -1)
+				{
+					_bookThumbnails.Images[imageIndex] = image;
+					var button = FindBookButton(book);
+					button.Image = image;
+				}
+			}
+
+			catch (Exception e)
+			{
+				Logger.WriteEvent("Error refreshing thumbnail. "+e.Message);
+#if DEBUG
+				throw;
+#endif
 			}
 		}
 
