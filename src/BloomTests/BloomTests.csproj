@@ -142,7 +142,7 @@
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
-    <Compile Include="SendReceiveTests.cs" />
+    <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
     <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
@@ -160,6 +160,10 @@
     <Compile Include="XmlHtmlConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bloom-ChorusPlugin\Bloom-ChorusPlugin.csproj">
+      <Project>{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}</Project>
+      <Name>Bloom-ChorusPlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj">
       <Project>{304D5612-167C-4725-AF27-B9F2BB788B57}</Project>
       <Name>BloomExe</Name>
