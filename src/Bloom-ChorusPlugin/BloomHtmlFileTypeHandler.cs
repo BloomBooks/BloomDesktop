@@ -88,7 +88,7 @@ namespace Bloom_ChorusPlugin
 			{
 				IsAtomic = false,
 				OrderIsRelevant = false,
-				MergePartnerFinder = new FindByKeyAttribute("id"),
+				MergePartnerFinder = new FindByKeyAttribute("id"), //yes, it's a singleton of sorts, but by the id, not the tag
 			});
 
 			merger.MergeStrategies.SetStrategy("BookDataItem", new ElementStrategy(true)
