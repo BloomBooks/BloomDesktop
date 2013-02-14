@@ -142,8 +142,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Bloom.exe.config" Name="Bloom.exe.config" KeyPath="yes" Source="..\..\output\release\Bloom.exe.config" />
 		  </Component>
 
-		   <Component Id="Bloom-ChorusPlugin.dll" Guid="{A67CD8EC-8432-4493-95BF-6005B4AB5194}">
-			<File Id="Bloom-ChorusPlugin.dll" Name="Bloom-ChorusPlugin.dll" KeyPath="yes" Source="..\..\output\release\Bloom-ChorusPlugin.dll" />
+		   <Component Id="BloomChorusPlugin.dll" Guid="{A67CD8EC-8432-4493-95BF-6005B4AB5194}">
+			<File Id="BloomChorusPlugin.dll" Name="BloomChorusPlugin.dll" KeyPath="yes" Source="..\..\output\release\Bloom-ChorusPlugin.dll" />
 		  </Component>
 
 		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
@@ -240,7 +240,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
 	  <ComponentRef Id="Bloom.exe.config" />
-	  <ComponentRef Id="Bloom-ChorusPlugin.dll" />
+	  <ComponentRef Id="BloomChorusPlugin.dll" />
 	  <ComponentRef Id="Interop.Acrobat.dll" />
 	  <ComponentRef Id="Interop.AcroPDFLib.dll" />
 	  <ComponentRef Id="AxInterop.AcroPDFLib.dll" />
