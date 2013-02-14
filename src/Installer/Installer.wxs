@@ -143,23 +143,27 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  </Component>
 
 		   <Component Id="BloomChorusPlugin.dll" Guid="{A67CD8EC-8432-4493-95BF-6005B4AB5194}">
-			<File Id="BloomChorusPlugin.dll" Name="BloomChorusPlugin.dll" KeyPath="yes" Source="..\..\output\release\Bloom-ChorusPlugin.dll" />
+			<File Id="BloomChorusPlugin.dll" Name="BloomChorusPlugin.dll" KeyPath="yes" Source="..\..\output\release\BloomChorusPlugin.dll" />
 		  </Component>
 
+ <!--     Already installed by Chorus Merge Module
 		  <Component Id="autofac.dll" Guid="{AB025B7C-B3CA-435e-9A4B-192373EE12DB}">
 			<File Id="autofac.dll" Name="autofac.dll" KeyPath="yes" Source="..\..\output\release\autofac.dll" />
 		  </Component>
 		   <Component Id="Palaso.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5634}">
 			<File Id="Palaso.dll" Name="Palaso.dll" KeyPath="yes" Source="..\..\output\release\Palaso.dll" />
 		  </Component>
-		  <Component Id="LocalizationManager.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
-			<File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
-		  </Component>
 
 		  <Component Id="PalasoUIWindowsForms.dll" Guid="{A7046B6E-668C-4a4d-A866-719922C142B5}">
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
 		  </Component>
-		  <Component Id="Newtonsoft.Json.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5644}">
+-->
+		  <Component Id="LocalizationManager.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
+			<File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
+		  </Component>
+
+
+		<Component Id="Newtonsoft.Json.dll" Guid="{A46C492A-304B-47b8-A13A-7CE4896B5644}">
 			<File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" KeyPath="yes" Source="..\..\output\release\Newtonsoft.Json.dll" />
 		  </Component>
 
@@ -223,10 +227,13 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <MergeRef Id="ChorusMergeModule" />
 	  <MergeRef Id="VisualC++SharedRuntimeForMercurial" />
 	  <MergeRef Id="VisualC++SharedRuntimeForMercurialPolicy" />
-	  <ComponentRef Id="autofac.dll"/>
-	  <ComponentRef Id="Palaso.dll"/>
-	  <ComponentRef Id="LocalizationManager.dll"/>
-	  <ComponentRef Id="PalasoUIWindowsForms.dll" />
+	 <!--  Already installed by Chorus Merge Module
+	   <ComponentRef Id="autofac.dll"/>
+		<ComponentRef Id="PalasoUIWindowsForms.dll" />
+		<ComponentRef Id="Palaso.dll"/>
+	  -->
+	 <ComponentRef Id="LocalizationManager.dll"/>
+
 	  <ComponentRef Id="Interop.WIA.dll" />
 	  <ComponentRef Id="Newtonsoft.Json.dll"/>
 	  <ComponentRef Id="AeroWizard.dll"/>

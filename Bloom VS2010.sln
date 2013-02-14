@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bloom-ChorusPlugin", "src\Bloom-ChorusPlugin\Bloom-ChorusPlugin.csproj", "{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomChorusPlugin", "src\Bloom-ChorusPlugin\BloomChorusPlugin.csproj", "{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
