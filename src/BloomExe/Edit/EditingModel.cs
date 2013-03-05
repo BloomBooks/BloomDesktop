@@ -405,7 +405,7 @@ namespace Bloom.Edit
 				var editor = new PageEditingModel();
 				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
 
-				//we have to save so that when asked by the thumnailer, the book will give the proper image
+				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
 				//but then, we need the non-cleaned version back there
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
