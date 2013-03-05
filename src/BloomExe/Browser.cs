@@ -291,6 +291,10 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
 		{
+		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+			//it loses its focus.
+			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
+
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
