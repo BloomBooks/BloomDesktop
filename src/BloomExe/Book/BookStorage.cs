@@ -331,6 +331,12 @@ namespace Bloom.Book
 			if (File.Exists(p))
 				return p;
 
+			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom has a pesky bug we've been searching for, and you've found it. Most likely, you won't lose any work, but we do need to report the problem and then have you restart. Bloom will now show an error box where you can tell us anything that might help us understand how to reproduce the problem, and let you email it to us.\r\nThanks for your help!");
+				throw new ApplicationException(string.Format("In FindBookHtmlInFolder('{0}'), the folder does not exist. (ref bl-291)", folderPath));
+			}
+
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
 			candidates.Remove(folderPath.CombineForPath("configuration.htm"));
@@ -494,6 +500,11 @@ namespace Bloom.Book
 
 		public void SetBookName(string name)
 		{
+			if (!Directory.Exists(_folderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom has a pesky bug we've been searching for, and you've found it. Most likely, you won't lose any work, but we do need to report the problem and then have you restart. Bloom will now show an error box where you can tell us anything that might help us understand how to reproduce the problem, and let you email it to us.\r\nThanks for your help!");
+				throw new ApplicationException(string.Format("In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)", name,_folderPath  ));
+			}
 			name = SanitizeNameForFileSystem(name);
 
 			var currentFilePath =PathToExistingHtml;
