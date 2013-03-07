@@ -132,7 +132,7 @@ namespace Bloom
 
 			lock (this)
 			{
-				Logger.WriteMinorEvent("HtmlThumNailer: staring work on thumbnail ({0})", order.ThumbNailFilePath);
+				Logger.WriteMinorEvent("HtmlThumbNailer: starting work on thumbnail ({0})", order.ThumbNailFilePath);
 
 				_backgroundColorOfResult = order.BackgroundColorOfResult;
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
@@ -217,7 +217,7 @@ namespace Bloom
 								}
 								catch (Exception e2)
 								{
-									Logger.WriteEvent("While trying to dispose of thumnailer browsers as a result of an exception, go another: "+e2.Message);
+									Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: "+e2.Message);
 								}
 							}
 							_browserCacheForDifferentPaperSizes.Clear();

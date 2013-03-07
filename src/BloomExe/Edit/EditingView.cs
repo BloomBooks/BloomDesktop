@@ -766,7 +766,13 @@ namespace Bloom.Edit
 
 		private void EditingView_Load(object sender, EventArgs e)
 		{
-			ParentForm.Activated += new EventHandler(ParentForm_Activated);
+			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
+			//then did a callback to this view, such that ParentForm was null, and this died
+			Debug.Assert(ParentForm!=null);
+			if(ParentForm!=null)
+			{
+				ParentForm.Activated += new EventHandler(ParentForm_Activated);
+			}
 		}
 
 		public string HelpTopicUrl

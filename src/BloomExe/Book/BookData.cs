@@ -150,13 +150,15 @@ namespace Bloom.Book
 				XmlNode node =
 					_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
 														   languageForm.WritingSystemId));
+
+				_dataset.UpdateLanguageString(key, languageForm.Form, languageForm.WritingSystemId, false);
+
 				if (null == node)
 				{
 					if (!string.IsNullOrEmpty(languageForm.Form))
 					{
 						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
 										languageForm.Form);
-						_dataset.UpdateLanguageString(key, languageForm.Form, languageForm.WritingSystemId, false);
 						Debug.WriteLine("nop: " + _dataDiv.OuterXml);
 						AddDataDivBookVariable(key, languageForm.WritingSystemId, languageForm.Form);
 					}
