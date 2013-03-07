@@ -35,3 +35,7 @@ DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
 **/Sample Shells/**/basePage.css
 **/Templates/**/previewMode.css
 **/Templates/**/basePage.css
+Acorns*
+_NCrunch*
+*.vsp
+build/xulrunner*
