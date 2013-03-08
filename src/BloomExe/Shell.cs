@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using AppLimit.NetSparkle;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
@@ -21,6 +22,7 @@ namespace Bloom
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
+		private Sparkle _sparkleApplicationUpdater;
 
 		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
 		{
@@ -28,6 +30,13 @@ namespace Bloom
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
+
+			_sparkleApplicationUpdater = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml")
+											 {
+												 ShowDiagnosticWindow = false
+											 };
+
+			//_sparkleApplicationUpdater.StartLoop(true,false);
 
 #if DEBUG
 			WindowState = FormWindowState.Normal;
