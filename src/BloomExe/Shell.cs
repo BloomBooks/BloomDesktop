@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
-using AppLimit.NetSparkle;
+using NetSparkle;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-using Palaso.Reporting;
+
 
 namespace Bloom
 {
@@ -22,7 +18,7 @@ namespace Bloom
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
-		private Sparkle _sparkleApplicationUpdater;
+
 
 		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
 		{
@@ -31,12 +27,6 @@ namespace Bloom
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
-			_sparkleApplicationUpdater = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml")
-											 {
-												 ShowDiagnosticWindow = false
-											 };
-
-			//_sparkleApplicationUpdater.StartLoop(true,false);
 
 #if DEBUG
 			WindowState = FormWindowState.Normal;

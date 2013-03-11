@@ -14,8 +14,10 @@ using Chorus;
 using Chorus.UI.Sync;
 using Localization;
 using Messir.Windows.Forms;
+using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -32,7 +34,7 @@ namespace Bloom.Workspace
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private Control _previouslySelectedControl;
-
+		private Sparkle _sparkleApplicationUpdater;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
 
@@ -62,6 +64,10 @@ namespace Bloom.Workspace
 			_chorusSystem = chorusSystem;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
+
+
+			_sparkleApplicationUpdater = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
+			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
@@ -311,7 +317,11 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages","0 Release Notes.htm"));
+			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
+			using(var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon,path))
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
@@ -371,6 +381,11 @@ namespace Bloom.Workspace
 			{
 				g.Dispose();
 			}
+		}
+
+		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
+		{
+			_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
 	}
 
