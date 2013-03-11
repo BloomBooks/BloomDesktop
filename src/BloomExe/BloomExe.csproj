@@ -57,9 +57,6 @@
     <Reference Include="AeroWizard">
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
-    <Reference Include="AppLimit.NetSparkle.Net40">
-      <HintPath>..\..\lib\AppLimit.NetSparkle.Net40.dll</HintPath>
-    </Reference>
     <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -97,6 +94,9 @@
       <HintPath>..\..\lib\dotnet\LocalizationManager.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NetSparkle.Net40">
+      <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
