@@ -84,7 +84,7 @@
 			this._welcomeHtml.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this._welcomeHtml.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._welcomeHtml.HTML = "hi there";
-			this._welcomeHtml.Location = new System.Drawing.Point(0, 0);
+			this._welcomeHtml.Location = new System.Drawing.Point(110, 60);
 			this._welcomeHtml.Margin = new System.Windows.Forms.Padding(0);
 			this._welcomeHtml.Name = "_welcomeHtml";
 			this._welcomeHtml.Size = new System.Drawing.Size(637, 310);
@@ -101,7 +101,7 @@
 			// 
 			// kindOfCollectionControl1
 			// 
-			this.kindOfCollectionControl1.Location = new System.Drawing.Point(0, 3);
+			this.kindOfCollectionControl1.Location = new System.Drawing.Point(120, 70);
 			this.kindOfCollectionControl1.Name = "kindOfCollectionControl1";
 			this.kindOfCollectionControl1.Size = new System.Drawing.Size(608, 278);
 			this.kindOfCollectionControl1.TabIndex = 0;
@@ -118,7 +118,7 @@
 			// _vernacularLanguageIdControl
 			// 
 			this._vernacularLanguageIdControl.Anchor = System.Windows.Forms.AnchorStyles.None;
-			this._vernacularLanguageIdControl.Location = new System.Drawing.Point(0, 3);
+			this._vernacularLanguageIdControl.Location = new System.Drawing.Point(0, 0);
 			this._vernacularLanguageIdControl.Name = "_vernacularLanguageIdControl";
 			this._vernacularLanguageIdControl.Size = new System.Drawing.Size(634, 304);
 			this._vernacularLanguageIdControl.TabIndex = 0;
@@ -135,7 +135,7 @@
 			// _languageLocationControl
 			// 
 			this._languageLocationControl.BackColor = System.Drawing.Color.White;
-			this._languageLocationControl.Location = new System.Drawing.Point(0, 0);
+			this._languageLocationControl.Location = new System.Drawing.Point(120, 70);
 			this._languageLocationControl.Name = "_languageLocationControl";
 			this._languageLocationControl.Size = new System.Drawing.Size(615, 310);
 			this._languageLocationControl.TabIndex = 0;
@@ -158,7 +158,7 @@
 			this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.betterLabel1.Enabled = false;
 			this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.betterLabel1.Location = new System.Drawing.Point(3, 3);
+			this.betterLabel1.Location = new System.Drawing.Point(120, 60);
 			this.betterLabel1.Multiline = true;
 			this.betterLabel1.Name = "betterLabel1";
 			this.betterLabel1.ReadOnly = true;
@@ -181,7 +181,7 @@
 			this._collectionNameControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._collectionNameControl.Location = new System.Drawing.Point(0, 0);
+			this._collectionNameControl.Location = new System.Drawing.Point(120, 60);
 			this._collectionNameControl.Name = "_collectionNameControl";
 			this._collectionNameControl.Size = new System.Drawing.Size(619, 307);
 			this._collectionNameControl.TabIndex = 0;
@@ -198,10 +198,10 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.ClientSize = new System.Drawing.Size(684, 464);
 			this.ControlBox = false;
-			this.Controls.Add(this.
-                wizardControl1);
+			this.Controls.Add(this.wizardControl1);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "NewCollectionWizard";
