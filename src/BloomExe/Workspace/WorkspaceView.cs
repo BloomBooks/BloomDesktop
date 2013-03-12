@@ -2,12 +2,10 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
 using Chorus;
@@ -34,10 +32,9 @@ namespace Bloom.Workspace
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private Control _previouslySelectedControl;
-		private Sparkle _sparkleApplicationUpdater;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-
+		private Sparkle _sparkleApplicationUpdater;
 		public delegate WorkspaceView Factory(Control libraryView);
 
 //autofac uses this
@@ -52,7 +49,8 @@ namespace Bloom.Workspace
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
-							ChorusSystem chorusSystem
+							ChorusSystem chorusSystem,
+							Sparkle sparkleApplicationUpdater
 
 			)
 		{
@@ -62,12 +60,11 @@ namespace Bloom.Workspace
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
+			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-
-			_sparkleApplicationUpdater = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
-			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+		   _sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 

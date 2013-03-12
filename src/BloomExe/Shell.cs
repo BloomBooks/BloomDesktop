@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using NetSparkle;
 using Bloom.Collection;
 using Bloom.Properties;
@@ -20,12 +21,13 @@ namespace Bloom
 		private readonly WorkspaceView _workspaceView;
 
 
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
+		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection, Sparkle _sparkle)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName);
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
+
 
 
 #if DEBUG
@@ -40,9 +42,23 @@ namespace Bloom
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
+
+			_sparkle.AboutToExitForInstallerRun += ((x, cancellable) =>
+			{
+				cancellable.Cancel = false;
+				QuitForVersionUpdate = true;
+				Close();
+			});
+
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
 				UserWantsToOpeReopenProject = true;
+				Close();
+			});
+
+			SystemEvents.SessionEnding += ((x,y)=>
+			{
+				QuitForSystemShutdown=true;
 				Close();
 			});
 
@@ -51,6 +67,7 @@ namespace Bloom
 										_workspaceView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			this.Controls.Add(this._workspaceView);
+
 
 			SetWindowText();
 		}
@@ -100,6 +117,14 @@ namespace Bloom
 		public bool UserWantsToOpenADifferentProject { get; set; }
 
 		public bool UserWantsToOpeReopenProject;
+
+		/// <summary>
+		/// used when the user does an in-app installer download; after we close down, Program will read this and return control to Sparkle
+		/// </summary>
+		public bool QuitForVersionUpdate;
+
+		public bool QuitForSystemShutdown;
+
 		private string _nameToChangeCollectionUponClosing;
 
 
