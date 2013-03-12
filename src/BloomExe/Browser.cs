@@ -33,7 +33,8 @@ namespace Bloom
         private CopyCommand _copyCommand;
 		private  UndoCommand _undoCommand;
         private  CutCommand _cutCommand;
-        public event EventHandler OnBrowserClick;
+	    private bool _disposed;
+	    public event EventHandler OnBrowserClick;
 
 		
         public static void SetUpXulRunner()
@@ -142,6 +143,7 @@ namespace Bloom
 				components.Dispose();
 			}
 			base.Dispose(disposing);
+            _disposed = true;
 		}
         public GeckoWebBrowser WebBrowser { get { return _browser; } }
 
@@ -331,6 +333,9 @@ namespace Bloom
 
 		void Application_Idle(object sender, EventArgs e)
 		{
+            if (_disposed)
+                return;
+
 			Application.Idle -= new EventHandler(Application_Idle);
 
 			ZoomToFullWidth();

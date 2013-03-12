@@ -5,6 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using NetSparkle;
 
 
 namespace Bloom
@@ -29,6 +30,12 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
+                builder.Register<Sparkle>(c =>
+                                              {
+                                                  var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
+                                                  return s;
+                                              }).InstancePerLifetimeScope();
+     
 				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
@@ -43,7 +50,12 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-			public void Dispose()
+		    public Sparkle ApplicationUpdator
+		    {
+                get { return _container.Resolve<Sparkle>(); }
+		    }
+
+		    public void Dispose()
 			{
 				_container.Dispose();
 				_container = null;
