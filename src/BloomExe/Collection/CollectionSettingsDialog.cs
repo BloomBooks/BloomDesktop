@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Localization;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.Extensions;
@@ -27,9 +28,9 @@ namespace Bloom.Collection
 			InitializeComponent();
 			if(_collectionSettings.IsSourceCollection)
 			{
-				_language1Label.Text = "Language 1";
-				_language2Label.Text = "Language 2";
-				_language3Label.Text = "Language 3";
+				_language1Label.Text = LocalizationManager.GetString("Language1InSourceCollection", "Language 1", "In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label");
+				_language2Label.Text = LocalizationManager.GetString("Language2InSourceCollection", "Language 2", "In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label");
+				_language3Label.Text = LocalizationManager.GetString("Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label");
 			}
 
 			_showLocalizationControls.Checked = Settings.Default.ShowLocalizationControls;
