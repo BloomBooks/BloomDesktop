@@ -15,7 +15,6 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -491,7 +490,7 @@ namespace Bloom.Book
 
 		public bool DeleteBook()
 		{
-			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+			var didDelete= Bloom.ConfirmRecycleDialog.Recycle(_folderPath);
 			if(didDelete)
 				Logger.WriteEvent("After BookStorage.DeleteBook({0})", _folderPath);
 			return didDelete;

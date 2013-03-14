@@ -13,7 +13,6 @@ using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Ionic.Zip;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -110,7 +109,7 @@ namespace Bloom.CollectionTab
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
-				if(ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",title )))
+				if(Bloom.ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",title )))
 				{
 					TheOneEditableCollection.DeleteBook(book);
 					_bookSelection.SelectBook(null);
