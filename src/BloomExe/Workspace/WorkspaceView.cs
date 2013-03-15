@@ -35,6 +35,8 @@ namespace Bloom.Workspace
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
 		private Sparkle _sparkleApplicationUpdater;
+		private readonly LocalizationManager _localizationManager;
+
 		public delegate WorkspaceView Factory(Control libraryView);
 
 //autofac uses this
@@ -50,7 +52,8 @@ namespace Bloom.Workspace
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ChorusSystem chorusSystem,
-							Sparkle sparkleApplicationUpdater
+							Sparkle sparkleApplicationUpdater,
+							LocalizationManager localizationManager
 
 			)
 		{
@@ -61,6 +64,7 @@ namespace Bloom.Workspace
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
 			_sparkleApplicationUpdater = sparkleApplicationUpdater;
+			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -189,7 +193,7 @@ namespace Bloom.Workspace
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("menuToBringUpLocalizationDialog","More..."));
 			menu.Click += new EventHandler((a, b) =>
 											{
-												Localization.LocalizationManager.ShowLocalizationDialogBox();
+												_localizationManager.ShowLocalizationDialogBox(false);
 												SetupUILanguageMenu();
 											});
 		}
