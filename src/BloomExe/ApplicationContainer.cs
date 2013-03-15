@@ -5,6 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using Localization;
 using NetSparkle;
 
 
@@ -35,7 +36,9 @@ namespace Bloom
                                                   var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
                                                   return s;
                                               }).InstancePerLifetimeScope();
-     
+                
+                builder.Register(c => LocalizationManager).InstancePerLifetimeScope();
+
 				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
@@ -54,6 +57,8 @@ namespace Bloom
 		    {
                 get { return _container.Resolve<Sparkle>(); }
 		    }
+
+            public LocalizationManager LocalizationManager;
 
 		    public void Dispose()
 			{
