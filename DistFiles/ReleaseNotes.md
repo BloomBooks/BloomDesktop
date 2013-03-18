@@ -1,4 +1,7 @@
-## 0.933: 11 March 2003
+## 0.944: 18 March 2003
+* Initial French Localization (Thanks David Rowe)
+
+## 0.940: 11 March 2003
 * Bloom now checks for the availability of a new version and offers to download it for you
 
 ## 0.933: 5 March 2003
