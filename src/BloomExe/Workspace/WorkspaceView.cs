@@ -92,9 +92,8 @@ namespace Bloom.Workspace
 			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
 
 
-			_uiLanguageMenu.Visible = Settings.Default.ShowLocalizationControls;
-			if (Settings.Default.ShowLocalizationControls)
-				_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+			_uiLanguageMenu.Visible = true;
+		   _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);

@@ -33,7 +33,7 @@ namespace Bloom.Collection
 				_language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label");
 			}
 
-			_showLocalizationControls.Checked = Settings.Default.ShowLocalizationControls;
+
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
@@ -258,12 +258,6 @@ namespace Bloom.Collection
 		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowSendReceive = _showSendReceive.Checked;
-			RestartRequired();
-		}
-
-		private void _showLocalizationControls_CheckedChanged(object sender, EventArgs e)
-		{
-			Settings.Default.ShowLocalizationControls = _showLocalizationControls.Checked;
 			RestartRequired();
 		}
 
