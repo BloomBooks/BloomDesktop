@@ -692,7 +692,7 @@
 		<seg>{0} will be moved to the Recycle Bin.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>{0) sera déplacé à la corbeille.</seg>
+		<seg>{0} sera déplacé à la corbeille.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.cancelBtn">

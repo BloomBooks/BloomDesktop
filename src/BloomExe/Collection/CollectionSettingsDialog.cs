@@ -80,7 +80,7 @@ namespace Bloom.Collection
 			}
 
 			_restartReminder.Visible = _restartRequired;
-			_okButton.Text = _restartRequired ? "Restart" : "&OK";
+			_okButton.Text = _restartRequired ? LocalizationManager.GetString("Restart","Restart","If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton","&OK");
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());

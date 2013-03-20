@@ -96,7 +96,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._saveButton, null);
             this.localizationExtender1.SetLocalizationComment(this._saveButton, null);
             this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
-            this._saveButton.Location = new System.Drawing.Point(108, 0);
+            this._saveButton.Location = new System.Drawing.Point(139, 0);
             this._saveButton.Name = "_saveButton";
             this._saveButton.Size = new System.Drawing.Size(185, 71);
             this._saveButton.TabIndex = 15;
@@ -119,7 +119,7 @@
             this.localizationExtender1.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
             this._printButton.Location = new System.Drawing.Point(0, 0);
             this._printButton.Name = "_printButton";
-            this._printButton.Size = new System.Drawing.Size(105, 64);
+            this._printButton.Size = new System.Drawing.Size(160, 64);
             this._printButton.TabIndex = 14;
             this._printButton.Text = "&Print...";
             this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
