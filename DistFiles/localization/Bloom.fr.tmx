@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4819.32364" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.41.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4825.29714" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">0.9.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
-	<tu tuid="._contentLanguagesDropdown">
-	  <tuv xml:lang="en">
-		<seg>Multilingual Settings</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Configuration multilingue</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="._creditsMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -27,30 +22,20 @@
 	<tu tuid="._documentationMenuItem">
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Documentation</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Documentation</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="._makeASuggestionMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Make a Suggestion</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Faire une suggestion</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="._openFolderOnDisk">
-	  <tuv xml:lang="en">
-		<seg>Open Folder on Disk</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Ouvrir un dossier sur disque</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="._releaseNotesMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -61,6 +46,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="._updateFrontMatterToolStripMenu">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Update Book</seg>
 	  </tuv>
@@ -69,6 +57,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="._updateThumbnailMenu">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Update Thumbnail</seg>
 	  </tuv>
@@ -76,39 +67,10 @@
 		<seg>Mettre à jour la miniature</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="._webSiteMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Web Site</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Site web</seg>
-	  </tuv>
-	</tu>
-	<tu tuid=".checkForNewVersionToolStripMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Check For New Version</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Rechercher une nouvelle version</seg>
-	  </tuv>
-	</tu>
-	<tu tuid=".creditsMenuItem">
-	  <tuv xml:lang="en">
-		<seg>About Bloom</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>À propos de Bloom</seg>
-	  </tuv>
-	</tu>
-	<tu tuid=".deepBloomPaperToolStripMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Deep Bloom Paper</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Documentation détaillée de Bloom</seg>
-	  </tuv>
-	</tu>
 	<tu tuid=".deleteMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Delete</seg>
 	  </tuv>
@@ -117,6 +79,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".doChecksAndUpdatesOfAllBooksToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Do Checks and Updates of All Books</seg>
 	  </tuv>
@@ -124,15 +89,10 @@
 		<seg>Vérifier et mettre à jour tous les livres</seg>
 	  </tuv>
 	</tu>
-	<tu tuid=".documentationMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Documentation</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Documentation</seg>
-	  </tuv>
-	</tu>
 	<tu tuid=".openHtmlInBrowserToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Open the Html used to make this PDF, in Browser</seg>
 	  </tuv>
@@ -140,23 +100,10 @@
 		<seg>Ouvrir dans un navigateur le Html qu'on a utilisé pour créer ce PDF</seg>
 	  </tuv>
 	</tu>
-	<tu tuid=".releaseNotesMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Release Notes...</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Notes de publication...</seg>
-	  </tuv>
-	</tu>
-	<tu tuid=".showEventLogMenuItem">
-	  <tuv xml:lang="en">
-		<seg>Show Event Log</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Afficher le journal d'événements</seg>
-	  </tuv>
-	</tu>
 	<tu tuid=".showEventLogToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -167,6 +114,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".showHistoryToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collection History...</seg>
 	  </tuv>
@@ -175,6 +125,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".showNotesToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collection Notes...</seg>
 	  </tuv>
@@ -183,6 +136,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".toolStripMenuItem1">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
 	  </tuv>
@@ -190,31 +146,10 @@
 		<seg>Ouvrir le dossier de collections additionnelles</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="AdobeReaderControl.NotInstalled">
-	  <tuv xml:lang="en">
-		<seg>Please install Adobe Reader X so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Veuillez installer Adobe Reader X afin que Bloom puisse afficher votre livre final. Entretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="AdobeReaderControl.ProblemShowingPDF">
-	  <tuv xml:lang="en">
-		<seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Bizarre... Adobe Reader a produit une erreur en essayant d'afficher ce PDF. Vous pouvez toujours essayer d'enregistrer le PDF du livre.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="AdobeReaderControl.UnknownError">
-	  <tuv xml:lang="en">
-		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader X'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Désolé. Bloom n'a pas pu lancer Adobe Reader, donc Bloom ne peut pas afficher votre livre final.\nVeuillez désinstaller la version actuelle d'Adobe Reader et (ré)installer 'Adobe Reader X'.\nEntretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -227,6 +162,9 @@
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
 	  </tuv>
@@ -234,31 +172,15 @@
 		<seg>Pour mettre plus d'information sur ce livre, vous pouvez utiliser cette page, qui est la quatrième de couverture.</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.BloomCollectionName">
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
-		<seg>Bloom Collection Name</seg>
+		<seg>Advanced Program Settings</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Nom de collection Bloom</seg>
+		<seg>Configuration avancée du logiciel</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.ChangeLink">
-	  <tuv xml:lang="en">
-		<seg>Change...</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Modifier...</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="CollectionSettingsDialog.Font">
-	  <tuv xml:lang="en">
-		<seg>Font</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Police</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="CollectionSettingsDialog.ShowExperimentalTemplates">
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
 	  <tuv xml:lang="en">
 		<seg>Show Experimental Templates (e.g. Picture Dictionary, Calendar)</seg>
 	  </tuv>
@@ -266,7 +188,7 @@
 		<seg>Afficher modèles expérimentals (e.g. Dictionnaire d'images, Calendrier)</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.ShowLocalizationControls">
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
 	  <tuv xml:lang="en">
 		<seg>(Experimental) Show User Interface Localization Controls</seg>
 	  </tuv>
@@ -274,15 +196,15 @@
 		<seg>(Expérimental) Afficher contrôles de localisation de l'interface d'utilisateur</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.WindowTitle">
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
 	  <tuv xml:lang="en">
-		<seg>Settings</seg>
+		<seg>Use Image Server to reduce memory usage with large images.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Configuration</seg>
+		<seg>Utiliser 'Image Server' pour reduire l'usage de memoire quand les images sont grandes.</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._ShowSendReceive">
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
 	  <tuv xml:lang="en">
 		<seg>(Experimental) Show Send/Receive Controls</seg>
 	  </tuv>
@@ -290,7 +212,31 @@
 		<seg>(Expérimental) Afficher contrôles d'Envoyer/recevoir</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._aboutBookMakingSettingsButton">
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Book Making</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Création de livre</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+	  <tuv xml:lang="en">
+		<seg>Font</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Police</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+	  <tuv xml:lang="en">
+		<seg>Front/Back Matter Pack</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Module des pages liminaires et des parties annexes</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -298,7 +244,69 @@
 		<seg>À propos de cette configuration</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._aboutLanguageSettingsButton">
+	<tu tuid="CollectionSettingsDialog.ChangeLink">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Modifier...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+	  <tuv xml:lang="en">
+		<seg>Change...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Modifier...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+	  <note>In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 1</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Langue 1</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+	  <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 2</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Langue 2</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+	  <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 3</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Langue 3</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Languages</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Langues</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -306,15 +314,7 @@
 		<seg>À propos de cette configuration</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._aboutProjectInformationSetingsButton">
-	  <tuv xml:lang="en">
-		<seg>About These Settings</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>À propos de cette configuration</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="CollectionSettingsDialog._language1Label">
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
 	  <tuv xml:lang="en">
 		<seg>Vernacular Language</seg>
 	  </tuv>
@@ -322,7 +322,7 @@
 		<seg>Langue vernaculaire</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._language2Label">
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
 	  <tuv xml:lang="en">
 		<seg>Language 2 (e.g. National Language)</seg>
 	  </tuv>
@@ -330,7 +330,7 @@
 		<seg>Langue 2 (e.g. Langue national)</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._language3Label">
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
 	  <tuv xml:lang="en">
 		<seg>Language 3 (e.g. Regional Language)   (Optional)</seg>
 	  </tuv>
@@ -338,12 +338,70 @@
 		<seg>Langue 3 (e.g. Langue régional)   (Facultative)</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog._removeLanguageLink">
+	<tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
 	  <tuv xml:lang="en">
 		<seg>Remove</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Enlever</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+	  <tuv xml:lang="en">
+		<seg>Bloom Collection Name</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Nom de collection Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+	  <tuv xml:lang="en">
+		<seg>Country</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Pays</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+	  <tuv xml:lang="en">
+		<seg>District</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>District</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Project Information</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Information du projet</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+	  <tuv xml:lang="en">
+		<seg>Province</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Province</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+	  <tuv xml:lang="en">
+		<seg>About These Settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>À propos de cette configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.WindowTitle">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog._restartMessage">
@@ -355,6 +413,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label1">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Front/Back Matter Pack</seg>
 	  </tuv>
@@ -363,6 +422,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label3">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Province</seg>
 	  </tuv>
@@ -371,6 +433,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label5">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>District</seg>
 	  </tuv>
@@ -379,6 +444,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label7">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Country</seg>
 	  </tuv>
@@ -387,6 +455,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.tabPage1">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Languages</seg>
 	  </tuv>
@@ -395,6 +464,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.tabPage2">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Book Making</seg>
 	  </tuv>
@@ -403,11 +473,183 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.tabPage3">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Project Information</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Information du projet</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+	  <tuv xml:lang="en">
+		<seg>Update Book</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Mettre à jour le livre</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu._updateThumbnail">
+	  <tuv xml:lang="en">
+		<seg>Update Thumbnail</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Mettre à jour la miniature</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu.deleteBook">
+	  <tuv xml:lang="en">
+		<seg>Delete Book</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Supprimer</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+	  <tuv xml:lang="en">
+		<seg>Do Checks and Updates of All Books</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Vérifier et mettre à jour tous les livres</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.showHistory">
+	  <tuv xml:lang="en">
+		<seg>Collection History...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Historique de collection...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.showNotes">
+	  <tuv xml:lang="en">
+		<seg>Collection Notes...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Notes de collection...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Collections">
+	  <tuv xml:lang="en">
+		<seg>Collections</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+	  <tuv xml:lang="en">
+		<seg>Open Folder on Disk</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Ouvrir un dossier sur disque</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Open/CreateCollectionButton">
+	  <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+	  <tuv xml:lang="en">
+		<seg>Other Collection</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Autre collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SendReceive">
+	  <tuv xml:lang="en">
+		<seg>Send/Receive</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Envoyer/recevoir</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SettingsButton">
+	  <tuv xml:lang="en">
+		<seg>Settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+	  <tuv xml:lang="en">
+		<seg>Open Additional Collections Folder</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Ouvrir le dossier de collections additionnelles</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Vernacular Collection Heading">
+	  <note>The {0} is where we fill in the name of the Vernacular</note>
+	  <tuv xml:lang="en">
+		<seg>{0} Books</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Livres en langue {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._addToLibraryButton">
+	  <tuv xml:lang="en">
+		<seg>Make a book using this template</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Créer un livre à partir de ce modèle</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._editBookButton">
+	  <tuv xml:lang="en">
+		<seg>Edit this book</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Éditer ce livre</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._makeBloomPackButton">
+	  <tuv xml:lang="en">
+		<seg>Make Bloom Pack</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Créer un paquet Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.bookSourceHeading">
+	  <tuv xml:lang="en">
+		<seg>Sources For New Books</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Sources de nouveaux livres</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+	  <tuv xml:lang="en">
+		<seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Parce qu'il s'agit d'une collection source, Bloom ne propose pas des livres moules existants comme sources de nouveaux livres moules. Si vous voulez ajouter une langue à un livre moule existant, vous devez éditer la collection contenant le livre moule, plutôt que de le copier. En plus, on ne peut pas actuellement créer un livre moule à partir du 'Wall Calendar' (calendrier mural).</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.hiddenBooksNotice">
+	  <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+	  <tuv xml:lang="en">
+		<seg>Where's the rest?</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Où est le reste?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+	  <tuv xml:lang="en">
+		<seg>More...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Plus...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.sourcesForNewShellsHeading">
+	  <tuv xml:lang="en">
+		<seg>Sources For New Shells</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Sources pour créer des nouveaux livres moules</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.CancelButton">
@@ -426,15 +668,17 @@
 		<seg>&amp;OK</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Common.OkButton">
+	<tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
 	  <tuv xml:lang="en">
-		<seg>&amp;OK</seg>
+		<seg>Confirm Delete</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>&amp;OK</seg>
+		<seg>Confirmation de suppression</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.WindowTitle">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Confirm Delete</seg>
 	  </tuv>
@@ -452,6 +696,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.cancelBtn">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
 	  </tuv>
@@ -467,15 +714,7 @@
 		<seg>Supprimer</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ConfirmRemovePageDialog.DeleteButton">
-	  <tuv xml:lang="en">
-		<seg>&amp;Delete</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Supprimer</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ConfirmRemovePageDialog.WindowTitle">
+	<tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Really Delete Page?</seg>
 	  </tuv>
@@ -483,24 +722,73 @@
 		<seg>Vraiment supprimer la page?</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ConfirmRemovePageDialog._messageLabel">
+	<tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
 	  <tuv xml:lang="en">
-		<seg>This page will be permanently removed.</seg>
+		<seg>&amp;Delete</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Cette page sera supprimée définitivement.</seg>
+		<seg>Supprimer</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="DynamicBookConfigurationDialog.WindowTitle">
-	  <note>This is the dialog used to set up the wall calendar</note>
+	<tu tuid="EditTab.ConfirmRemovePageDialog.WindowTitle">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Setup</seg>
+		<seg>Really Delete Page?</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Configuration</seg>
+		<seg>Vraiment supprimer la page?</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._copyButton">
+	<tu tuid="EditTab.Edit">
+	  <tuv xml:lang="en">
+		<seg>Edit</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Édition</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.EditTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Collections</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.FontMissing">
+	  <tuv xml:lang="en">
+		<seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>La police sélectionnée est actuellement '{0}', mais elle n'est pas installée sur cet ordinateur. Une autre police sera utilisée.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.PageList.Heading">
+	  <tuv xml:lang="en">
+		<seg>Pages</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Pages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.TemplatePagesList.Heading">
+	  <tuv xml:lang="en">
+		<seg>Template Pages</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>modèles de page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._contentLanguagesDropdown">
+	  <tuv xml:lang="en">
+		<seg>Multilingual Settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration multilingue</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._copyButton">
 	  <tuv xml:lang="en">
 		<seg>Copy</seg>
 	  </tuv>
@@ -508,7 +796,7 @@
 		<seg>Copier</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._cutButton">
+	<tu tuid="EditTab._cutButton">
 	  <tuv xml:lang="en">
 		<seg>Cut</seg>
 	  </tuv>
@@ -516,7 +804,7 @@
 		<seg>Couper</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._deletePageButton">
+	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
 		<seg>Remove Page</seg>
 	  </tuv>
@@ -524,7 +812,7 @@
 		<seg>Enlever page</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._menusToolStrip">
+	<tu tuid="EditTab._menusToolStrip">
 	  <tuv xml:lang="en">
 		<seg>toolStrip1</seg>
 	  </tuv>
@@ -532,7 +820,7 @@
 		<seg>toolStrip1</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._pasteButton">
+	<tu tuid="EditTab._pasteButton">
 	  <tuv xml:lang="en">
 		<seg>Paste</seg>
 	  </tuv>
@@ -540,7 +828,7 @@
 		<seg>Coller</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="EditingView._undoButton">
+	<tu tuid="EditTab._undoButton">
 	  <tuv xml:lang="en">
 		<seg>Undo</seg>
 	  </tuv>
@@ -549,22 +837,20 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FirstTabLabel">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collections</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Collections</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="FontMissing">
-	  <tuv xml:lang="en">
-		<seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>La police sélectionnée est actuellement '{0}', mais elle n'est pas installée sur cet ordinateur. Une autre police sera utilisée.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -578,6 +864,9 @@
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Acknowledgments for translated version, in {lang}</seg>
 	  </tuv>
@@ -587,6 +876,9 @@
 	</tu>
 	<tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -600,6 +892,9 @@
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Book title in {lang}</seg>
 	  </tuv>
@@ -608,6 +903,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.Click to Edit Copyright &amp; License">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -620,6 +918,9 @@
 	<tu tuid="FrontMatter.Factory.Click to choose topic">
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Click to choose topic</seg>
 	  </tuv>
@@ -628,6 +929,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -641,6 +945,9 @@
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
 	  </tuv>
@@ -651,6 +958,9 @@
 	<tu tuid="FrontMatter.Factory.Use this to acknowledge any funding agencies.">
 	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Use this to acknowledge any funding agencies.</seg>
 	  </tuv>
@@ -658,7 +968,7 @@
 		<seg>À utiliser pour la reconnaissance des bailleurs de fonds</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Help Menu">
+	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
 	  </tuv>
@@ -666,58 +976,71 @@
 		<seg>Aide</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Language1InSourceCollection">
-	  <note>In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label</note>
+	<tu tuid="HelpMenu._makeASuggestionMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Language 1</seg>
+		<seg>Make a Suggestion</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Langue 1</seg>
+		<seg>Faire une suggestion</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Language2InSourceCollection">
-	  <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	<tu tuid="HelpMenu._webSiteMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Language 2</seg>
+		<seg>Web Site</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Langue 2</seg>
+		<seg>Site web</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Language3InSourceCollection">
-	  <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Language 3</seg>
+		<seg>Check For New Version</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Langue 3</seg>
+		<seg>Rechercher une nouvelle version</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LibraryBookView._addToLibraryButton">
+	<tu tuid="HelpMenu.creditsMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Make a book using this template</seg>
+		<seg>About Bloom</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Créer un livre à partir de ce modèle</seg>
+		<seg>À propos de Bloom</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LibraryBookView._editBookButton">
+	<tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Edit this book</seg>
+		<seg>Deep Bloom Paper</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Éditer ce livre</seg>
+		<seg>Documentation détaillée de Bloom</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LibraryView._makeBloomPackButton">
+	<tu tuid="HelpMenu.documentationMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Make Bloom Pack</seg>
+		<seg>Documentation</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Créer un paquet Bloom</seg>
+		<seg>Documentation</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="NewBookPattern">
+	<tu tuid="HelpMenu.releaseNotesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Release Notes...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Notes de publication...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.showEventLogMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Show Event Log</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Afficher le journal d'événements</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.NewBookPattern">
 	  <note>The {0} is replaced by the name of the language.</note>
 	  <tuv xml:lang="en">
 		<seg>{0} Books</seg>
@@ -726,16 +1049,31 @@
 		<seg>Livres en langue {0}</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Open/CreateCollectionButton">
-	  <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
 	  <tuv xml:lang="en">
-		<seg>Other Collection</seg>
+		<seg>Please install Adobe Reader X so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Autre collection</seg>
+		<seg>Veuillez installer Adobe Reader X afin que Bloom puisse afficher votre livre final. Entretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="PublishView.BodyOnlyRadio">
+	<tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+	  <tuv xml:lang="en">
+		<seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Bizarre... Adobe Reader a produit une erreur en essayant d'afficher ce PDF. Vous pouvez toujours essayer d'enregistrer le PDF du livre.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.AdobeReaderControl.UnknownError">
+	  <tuv xml:lang="en">
+		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader X'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Désolé. Bloom n'a pas pu lancer Adobe Reader, donc Bloom ne peut pas afficher votre livre final.\nVeuillez désinstaller la version actuelle d'Adobe Reader et (ré)installer 'Adobe Reader X'.\nEntretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.BodyOnlyRadio">
 	  <tuv xml:lang="en">
 		<seg>Booklet Inside Pages</seg>
 	  </tuv>
@@ -743,7 +1081,7 @@
 		<seg>Pages intérieures d'un livret</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="PublishView.CoverOnlyRadio">
+	<tu tuid="PublishTab.CoverOnlyRadio">
 	  <tuv xml:lang="en">
 		<seg>Cover Page</seg>
 	  </tuv>
@@ -751,7 +1089,7 @@
 		<seg>Page de titre</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="PublishView.OnPagePerPaperRadio">
+	<tu tuid="PublishTab.OnPagePerPaperRadio">
 	  <note>Instead of making a booklet, just make normal pages</note>
 	  <tuv xml:lang="en">
 		<seg>One page per piece of paper</seg>
@@ -760,7 +1098,7 @@
 		<seg>Une page par feuille de papier</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="PublishView.PrintButton">
+	<tu tuid="PublishTab.PrintButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Print...</seg>
 	  </tuv>
@@ -768,7 +1106,15 @@
 		<seg>Im&amp;primer...</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="PublishView.SaveButton">
+	<tu tuid="PublishTab.Publish">
+	  <tuv xml:lang="en">
+		<seg>Publish</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Publier</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.SaveButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Save PDF...</seg>
 	  </tuv>
@@ -777,6 +1123,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="SendReceiveutton">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Send/Receive</seg>
 	  </tuv>
@@ -784,94 +1133,26 @@
 		<seg>Envoyer/recevoir</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="SettingsButton">
-	  <tuv xml:lang="en">
-		<seg>Settings</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Configuration</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Tabs.Collections">
-	  <tuv xml:lang="en">
-		<seg>Collections</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Collections</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Tabs.Edit">
-	  <tuv xml:lang="en">
-		<seg>Edit</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Édition</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Tabs.Publish">
-	  <tuv xml:lang="en">
-		<seg>Publish</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Publier</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Vernacular Collection Heading">
-	  <note>The {0} is where we fill in the name of the Vernacular</note>
-	  <tuv xml:lang="en">
-		<seg>{0} Books</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Livres en langue {0}</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="WorkspaceView._tabStrip">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>tabStrip1</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>tabStrip1</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="bookSourceHeading">
-	  <tuv xml:lang="en">
-		<seg>Sources For New Books</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Sources de nouveaux livres</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="checkBox1.checkBox1">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Use Image Server to reduce memory usage with large images.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Utiliser 'Image Server' pour reduire l'usage de memoire quand les images sont grandes.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="hiddenBookExplanationForSourceCollections">
-	  <tuv xml:lang="en">
-		<seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Parce qu'il s'agit d'une collection source, Bloom ne propose pas des livres moules existants comme sources de nouveaux livres moules. Si vous voulez ajouter une langue à un livre moule existant, vous devez éditer la collection contenant le livre moule, plutôt que de le copier. En plus, on ne peut pas actuellement créer un livre moule à partir du 'Wall Calendar' (calendrier mural).</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="hiddenBooksNotice">
-	  <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
-	  <tuv xml:lang="en">
-		<seg>Where's the rest?</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Où est le reste?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="menuToBringUpLocalizationDialog">
-	  <tuv xml:lang="en">
-		<seg>More...</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Plus...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="newCollectionWizard.sourceCollection">
@@ -906,15 +1187,10 @@
 		<seg>Une collection de livres dans une langue locale.</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="sourcesForNewShellsHeading">
-	  <tuv xml:lang="en">
-		<seg>Sources For New Shells</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Sources pour créer des nouveaux livres moules</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="tabPage4.tabPage4">
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
 	  </tuv>
