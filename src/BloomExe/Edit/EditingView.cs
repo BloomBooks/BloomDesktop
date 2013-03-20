@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
+using Localization;
 using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
@@ -100,7 +101,7 @@ namespace Bloom.Edit
 			if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
 				return;
 
-			Debug.WriteLine("EditingView.ParentForm_Activated(): Selecting Browser");
+			Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
 //			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
 //			Debug.WriteLine("active control: " + ActiveControl.Name);
 //			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
@@ -142,7 +143,7 @@ namespace Bloom.Edit
 			{
 				if(!_model.CanEditCopyrightAndLicense)
 				{
-					MessageBox.Show("Sorry, the copyright and license for this book cannot be changed.");
+					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
 					return;
 				}
 
@@ -409,7 +410,7 @@ namespace Bloom.Edit
 						var editor = new PageEditingModel();
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
 
-						var answer = MessageBox.Show("Copy this information to all other pictures in this book?", "Picture Intellectual Proprty Information", MessageBoxButtons.YesNo);
+						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"), MessageBoxButtons.YesNo);
 						if(answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
@@ -436,7 +437,7 @@ namespace Bloom.Edit
 			if (!_model.CanChangeImages())
 			{
 				MessageBox.Show(
-					"Sorry, this book is locked down as shell. If you need to make changes to the pictures, create a library for the purposes of editing shells, and drag the book folder in there. Images will then be changeable.");
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked","Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
 
@@ -446,7 +447,8 @@ namespace Bloom.Edit
 				clipboardImage = GetImageFromClipboard();
 				if (clipboardImage == null)
 				{
-					MessageBox.Show("Before you can paste an image, copy one onto your 'clipboard', from another program.");
+					MessageBox.Show(
+						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard","Before you can paste an image, copy one onto your 'clipboard', from another program."));
 					return;
 				}
 
@@ -552,7 +554,7 @@ namespace Bloom.Edit
 			if (!currentPath.ToLower().Contains("placeholder")  //always alow them to put in something over a placeholder
 				&& !_model.CanChangeImages())
 			{
-				if(DialogResult.Cancel== MessageBox.Show("This book is locked down as shell. Are you sure you want to change the picture?","Change Image",MessageBoxButtons.OKCancel))
+				if(DialogResult.Cancel== MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning","This book is locked down as shell. Are you sure you want to change the picture?"),LocalizationManager.GetString("EditTab.ChangeImage","Change Image"),MessageBoxButtons.OKCancel))
 				{
 					return;
 				}
@@ -657,7 +659,7 @@ namespace Bloom.Edit
 					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = "This option is only available in the Publish tab.";
+						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
 					}
 					item.Text = l.ToString();
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
@@ -665,7 +667,7 @@ namespace Bloom.Edit
 
 				if(layoutChoices.Count()<2)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add("There are no other layout options for this template.");
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
 					item.Tag = null;
 					item.Enabled = false;
 				}
@@ -675,13 +677,13 @@ namespace Bloom.Edit
 				switch (_model.NumberOfDisplayedLanguages)
 				{
 					case 1:
-						_contentLanguagesDropdown.Text = "One Language";
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.monolingual", "One Language", "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page");
 						break;
 					case 2:
-						_contentLanguagesDropdown.Text = "Two Languages";
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.bilingual", "Two Languages", "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page");
 						break;
 					case 3:
-						_contentLanguagesDropdown.Text = "Three Languages";
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.trilingual", "Three Languages", "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
 						break;
 				}
 			}

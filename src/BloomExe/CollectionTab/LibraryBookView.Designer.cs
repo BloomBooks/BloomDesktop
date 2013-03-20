@@ -46,7 +46,7 @@
 			this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.localizationExtender1.SetLocalizableToolTip(this._addToCollectionButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._addToCollectionButton, null);
-			this.localizationExtender1.SetLocalizingId(this._addToCollectionButton, "LibraryBookView._addToLibraryButton");
+			this.localizationExtender1.SetLocalizingId(this._addToCollectionButton, "CollectionTab._addToLibraryButton");
 			this._addToCollectionButton.Location = new System.Drawing.Point(12, 3);
 			this._addToCollectionButton.Name = "_addToCollectionButton";
 			this._addToCollectionButton.Size = new System.Drawing.Size(250, 42);
@@ -67,7 +67,7 @@
 			this._browser.BackColor = System.Drawing.Color.DarkGray;
 			this.localizationExtender1.SetLocalizableToolTip(this._browser, null);
 			this.localizationExtender1.SetLocalizationComment(this._browser, null);
-			this.localizationExtender1.SetLocalizingId(this._browser, "LibraryBookView.Browser");
+            this.localizationExtender1.SetLocalizingId(this._browser, "CollectionTab.Browser");
 			this._browser.Location = new System.Drawing.Point(0, 3);
 			this._browser.Name = "_browser";
 			this._browser.Size = new System.Drawing.Size(897, 447);
@@ -81,7 +81,7 @@
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
 			this.localizationExtender1.SetLocalizableToolTip(this._editBookButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._editBookButton, null);
-			this.localizationExtender1.SetLocalizingId(this._editBookButton, "LibraryBookView._editBookButton");
+            this.localizationExtender1.SetLocalizingId(this._editBookButton, "CollectionTab._editBookButton");
 			this._editBookButton.Location = new System.Drawing.Point(12, 3);
 			this._editBookButton.Name = "_editBookButton";
 			this._editBookButton.Size = new System.Drawing.Size(147, 42);
@@ -105,7 +105,7 @@
 			this.Controls.Add(this._browser);
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "LibraryBookView.LibraryBookView");
+            this.localizationExtender1.SetLocalizingId(this, "CollectionTab.LibraryBookView");
 			this.Name = "LibraryBookView";
 			this.Size = new System.Drawing.Size(900, 450);
 			this.Resize += new System.EventHandler(this.LibraryBookView_Resize);

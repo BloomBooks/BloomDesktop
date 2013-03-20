@@ -60,7 +60,7 @@ namespace Bloom
 			this.tableLayout.RowCount = 2;
 			this.tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayout.Size = new System.Drawing.Size(359, 138);
+			this.tableLayout.Size = new System.Drawing.Size(363, 138);
 			this.tableLayout.TabIndex = 1;
 			this.tableLayout.SizeChanged += new System.EventHandler(this.HandleTableLayoutSizeChanged);
 			//
@@ -77,7 +77,7 @@ namespace Bloom
 			this._messageLabel.Location = new System.Drawing.Point(122, 4);
 			this._messageLabel.Margin = new System.Windows.Forms.Padding(0, 4, 0, 10);
 			this._messageLabel.Name = "_messageLabel";
-			this._messageLabel.Size = new System.Drawing.Size(237, 13);
+			this._messageLabel.Size = new System.Drawing.Size(241, 13);
 			this._messageLabel.TabIndex = 2;
 			this._messageLabel.Text = "{0} will be moved to the Recycle Bin.";
 			//
@@ -102,8 +102,8 @@ namespace Bloom
 			this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.localizationExtender1.SetLocalizableToolTip(this.cancelBtn, null);
 			this.localizationExtender1.SetLocalizationComment(this.cancelBtn, null);
-			this.localizationExtender1.SetLocalizingId(this.cancelBtn, "ConfirmRecycleDialog.cancelBtn");
-			this.cancelBtn.Location = new System.Drawing.Point(284, 112);
+			this.localizationExtender1.SetLocalizingId(this.cancelBtn, "Common.CancelButton");
+			this.cancelBtn.Location = new System.Drawing.Point(288, 112);
 			this.cancelBtn.Margin = new System.Windows.Forms.Padding(4, 0, 0, 0);
 			this.cancelBtn.Name = "cancelBtn";
 			this.cancelBtn.Size = new System.Drawing.Size(75, 26);
@@ -120,7 +120,7 @@ namespace Bloom
 			this.localizationExtender1.SetLocalizableToolTip(this.deleteBtn, null);
 			this.localizationExtender1.SetLocalizationComment(this.deleteBtn, null);
 			this.localizationExtender1.SetLocalizingId(this.deleteBtn, "ConfirmRecycleDialog.deleteBtn");
-			this.deleteBtn.Location = new System.Drawing.Point(201, 112);
+			this.deleteBtn.Location = new System.Drawing.Point(205, 112);
 			this.deleteBtn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.deleteBtn.Name = "deleteBtn";
 			this.deleteBtn.Size = new System.Drawing.Size(75, 26);
@@ -141,13 +141,13 @@ namespace Bloom
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Window;
 			this.CancelButton = this.cancelBtn;
-			this.ClientSize = new System.Drawing.Size(394, 157);
+			this.ClientSize = new System.Drawing.Size(398, 179);
 			this.ControlBox = false;
 			this.Controls.Add(this.tableLayout);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "ConfirmRecycleDialog.WindowTitle");
+			this.localizationExtender1.SetLocalizingId(this, "ConfirmRecycleDialog.ConfirmRecycleWindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.MinimumSize = new System.Drawing.Size(400, 28);

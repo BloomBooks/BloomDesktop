@@ -72,7 +72,7 @@ namespace Bloom.CollectionCreating
 
 			if (caller is LanguageIdControl)
 			{
-				var pattern = Localization.LocalizationManager.GetString("NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
+				var pattern = Localization.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, string.Format(pattern, _collectionInfo.Language1Name));
 				//_collectionInfo.CollectionName = ;
 

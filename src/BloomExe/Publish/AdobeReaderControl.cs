@@ -42,11 +42,11 @@ namespace Bloom.Publish
 			{
 				if (error.Message.Contains("0x80040154"))
 				{
-					_problemLabel.Text = LocalizationManager.GetString("AdobeReaderControl.NotInstalled", "Please install Adobe Reader X so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.");
+					_problemLabel.Text = LocalizationManager.GetString("PublishTab.AdobeReaderControl.NotInstalled", "Please install Adobe Reader X so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.");
 				}
 				else
 				{
-					_problemLabel.Text = LocalizationManager.GetString("AdobeReaderControl.UnknownError", "Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\r\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader X'.\r\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.");
+					_problemLabel.Text = LocalizationManager.GetString("PublishTab.AdobeReaderControl.UnknownError", "Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\r\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader X'.\r\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.");
 				}
 				_problemLabel.Visible = _problemPicture.Visible = true;
 				_adobeReader = null;
@@ -88,7 +88,7 @@ namespace Bloom.Publish
 			catch (Exception e)
 			{
 				_adobeReader.Hide();
-				_problemLabel.Text = LocalizationManager.GetString("AdobeReaderControl.ProblemShowingPDF", "That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.");
+				_problemLabel.Text = LocalizationManager.GetString("PublishTab.AdobeReaderControl.ProblemShowingPDF", "That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.");
 				_problemLabel.Visible = _problemPicture.Visible = true;
 				Enabled = false;
 				return false;

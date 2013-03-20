@@ -70,7 +70,7 @@
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._okButton, null);
-			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OkButton");
+			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
 			this._okButton.Location = new System.Drawing.Point(484, 447);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
@@ -95,8 +95,8 @@
 			this.Controls.Add(this._browser);
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, "This is the dialog used to set up the wall calendar");
-			this.localizationExtender1.SetLocalizationPriority(this, Localization.LocalizationPriority.Medium);
-			this.localizationExtender1.SetLocalizingId(this, "DynamicBookConfigurationDialog.WindowTitle");
+			this.localizationExtender1.SetLocalizationPriority(this, Localization.LocalizationPriority.Low);
+			this.localizationExtender1.SetLocalizingId(this, "WallCalendar.TitleOfSetupDialog");
 			this.MinimizeBox = false;
 			this.Name = "ConfigurationDialog";
 			this.ShowIcon = false;

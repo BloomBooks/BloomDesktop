@@ -1,10 +1,13 @@
-## 0.944: 18 March 2003
+## 0.945 20 March 2013
+* Reorganized and cleaned up internationalization. Some more work is yet to be done.
+
+## 0.944: 18 March 2013
 * Initial French Localization (Thanks David Rowe)
 
-## 0.940: 11 March 2003
+## 0.940: 11 March 2013
 * Bloom now checks for the availability of a new version and offers to download it for you
 
-## 0.933: 5 March 2003
+## 0.933: 5 March 2013
 * Fix problem of new title not being reflected in the thumbnail until restart
 * Improved problem of occasional cursor disappearance after coming in from another application.
 
