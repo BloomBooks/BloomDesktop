@@ -585,7 +585,7 @@
             this._useImageServer.AutoSize = true;
             this._useImageServer.Enabled = false;
             this.localizationExtender1.SetLocalizableToolTip(this._useImageServer, null);
-            this.localizationExtender1.SetLocalizationComment(this._useImageServer, null);
+            this.localizationExtender1.SetLocalizationComment(this._useImageServer, "This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.");
             this.localizationExtender1.SetLocalizingId(this._useImageServer, "CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer");
             this._useImageServer.Location = new System.Drawing.Point(50, 35);
             this._useImageServer.Name = "_useImageServer";

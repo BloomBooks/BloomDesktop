@@ -1,3 +1,6 @@
+## 0.946 20 March 2013
+* Add enough space to show french labels, where previously things were cut off.
+
 ## 0.945 20 March 2013
 * Reorganized and cleaned up internationalization. Some more work is yet to be done.
 

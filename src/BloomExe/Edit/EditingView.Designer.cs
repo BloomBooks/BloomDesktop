@@ -210,7 +210,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._undoButton, null);
             this.localizationExtender1.SetLocalizationComment(this._undoButton, null);
             this.localizationExtender1.SetLocalizingId(this._undoButton, "EditTab._undoButton");
-            this._undoButton.Location = new System.Drawing.Point(129, 0);
+            this._undoButton.Location = new System.Drawing.Point(133, 0);
             this._undoButton.Name = "_undoButton";
             this._undoButton.OffsetPressedContent = true;
             this._undoButton.Size = new System.Drawing.Size(54, 66);
@@ -253,10 +253,11 @@
             this._cutButton.Location = new System.Drawing.Point(52, 7);
             this._cutButton.Name = "_cutButton";
             this._cutButton.OffsetPressedContent = true;
-            this._cutButton.Size = new System.Drawing.Size(54, 20);
+            this._cutButton.Size = new System.Drawing.Size(75, 20);
             this._cutButton.StretchImage = false;
             this._cutButton.TabIndex = 8;
             this._cutButton.Text = "Cut";
+            this._cutButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this._cutButton.TextDropShadow = false;
             this.betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
             this.betterToolTip1.SetToolTipWhenDisabled(this._cutButton, "You need to select some text before you can cut it");
@@ -334,10 +335,11 @@
             this._copyButton.Location = new System.Drawing.Point(52, 29);
             this._copyButton.Name = "_copyButton";
             this._copyButton.OffsetPressedContent = true;
-            this._copyButton.Size = new System.Drawing.Size(54, 19);
+            this._copyButton.Size = new System.Drawing.Size(75, 19);
             this._copyButton.StretchImage = false;
             this._copyButton.TabIndex = 6;
             this._copyButton.Text = "Copy";
+            this._copyButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this._copyButton.TextDropShadow = false;
             this._copyButton.UseVisualStyleBackColor = false;
             this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
