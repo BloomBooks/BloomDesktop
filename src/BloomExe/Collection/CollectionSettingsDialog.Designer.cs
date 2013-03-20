@@ -109,7 +109,7 @@
             this.tabPage1.Controls.Add(this._language1Label);
             this.localizationExtender1.SetLocalizableToolTip(this.tabPage1, null);
             this.localizationExtender1.SetLocalizationComment(this.tabPage1, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage1, "CollectionSettingsDialog.tabPage1");
+            this.localizationExtender1.SetLocalizingId(this.tabPage1, "CollectionSettingsDialog.LanguageTab.LanguageTabLabel");
             this.tabPage1.Location = new System.Drawing.Point(4, 26);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -128,7 +128,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._aboutLanguageSettingsButton, null);
             this.localizationExtender1.SetLocalizationComment(this._aboutLanguageSettingsButton, null);
             this.localizationExtender1.SetLocalizationPriority(this._aboutLanguageSettingsButton, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog._aboutLanguageSettingsButton");
+            this.localizationExtender1.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton");
             this._aboutLanguageSettingsButton.Location = new System.Drawing.Point(477, 24);
             this._aboutLanguageSettingsButton.Name = "_aboutLanguageSettingsButton";
             this._aboutLanguageSettingsButton.Size = new System.Drawing.Size(113, 73);
@@ -144,7 +144,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._removeLanguage3Link, null);
             this.localizationExtender1.SetLocalizationComment(this._removeLanguage3Link, null);
             this.localizationExtender1.SetLocalizationPriority(this._removeLanguage3Link, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog._removeLanguageLink");
+            this.localizationExtender1.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab._removeLanguageLink");
             this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
             this._removeLanguage3Link.Name = "_removeLanguage3Link";
             this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -159,7 +159,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage3Link, null);
             this.localizationExtender1.SetLocalizationComment(this._changeLanguage3Link, null);
             this.localizationExtender1.SetLocalizationPriority(this._changeLanguage3Link, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.ChangeLink");
+            this.localizationExtender1.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage3Link.Location = new System.Drawing.Point(27, 243);
             this._changeLanguage3Link.Name = "_changeLanguage3Link";
             this._changeLanguage3Link.Size = new System.Drawing.Size(65, 19);
@@ -174,7 +174,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage2Link, null);
             this.localizationExtender1.SetLocalizationComment(this._changeLanguage2Link, null);
             this.localizationExtender1.SetLocalizationPriority(this._changeLanguage2Link, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.ChangeLink");
+            this.localizationExtender1.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage2Link.Location = new System.Drawing.Point(27, 158);
             this._changeLanguage2Link.Name = "_changeLanguage2Link";
             this._changeLanguage2Link.Size = new System.Drawing.Size(65, 19);
@@ -189,7 +189,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage1Link, null);
             this.localizationExtender1.SetLocalizationComment(this._changeLanguage1Link, null);
             this.localizationExtender1.SetLocalizationPriority(this._changeLanguage1Link, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.ChangeLink");
+            this.localizationExtender1.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage1Link.Location = new System.Drawing.Point(27, 69);
             this._changeLanguage1Link.Name = "_changeLanguage1Link";
             this._changeLanguage1Link.Size = new System.Drawing.Size(65, 19);
@@ -219,7 +219,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._language3Label, null);
             this.localizationExtender1.SetLocalizationComment(this._language3Label, null);
             this.localizationExtender1.SetLocalizationPriority(this._language3Label, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._language3Label, "CollectionSettingsDialog._language3Label");
+            this.localizationExtender1.SetLocalizingId(this._language3Label, "CollectionSettingsDialog.LanguageTab._language3Label");
             this._language3Label.Location = new System.Drawing.Point(26, 198);
             this._language3Label.Name = "_language3Label";
             this._language3Label.Size = new System.Drawing.Size(316, 19);
@@ -247,7 +247,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._language2Label, null);
             this.localizationExtender1.SetLocalizationComment(this._language2Label, null);
             this.localizationExtender1.SetLocalizationPriority(this._language2Label, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._language2Label, "CollectionSettingsDialog._language2Label");
+            this.localizationExtender1.SetLocalizingId(this._language2Label, "CollectionSettingsDialog.LanguageTab._language2Label");
             this._language2Label.Location = new System.Drawing.Point(26, 113);
             this._language2Label.Name = "_language2Label";
             this._language2Label.Size = new System.Drawing.Size(238, 19);
@@ -276,7 +276,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._language1Label, null);
             this.localizationExtender1.SetLocalizationComment(this._language1Label, null);
             this.localizationExtender1.SetLocalizationPriority(this._language1Label, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._language1Label, "CollectionSettingsDialog._language1Label");
+            this.localizationExtender1.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
             this._language1Label.Location = new System.Drawing.Point(26, 24);
             this._language1Label.Name = "_language1Label";
             this._language1Label.Size = new System.Drawing.Size(140, 19);
@@ -292,7 +292,7 @@
             this.tabPage2.Controls.Add(this._xmatterPackCombo);
             this.localizationExtender1.SetLocalizableToolTip(this.tabPage2, null);
             this.localizationExtender1.SetLocalizationComment(this.tabPage2, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage2, "CollectionSettingsDialog.tabPage2");
+            this.localizationExtender1.SetLocalizingId(this.tabPage2, "CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel");
             this.tabPage2.Location = new System.Drawing.Point(4, 26);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -308,7 +308,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this.label2, null);
             this.localizationExtender1.SetLocalizationComment(this.label2, null);
             this.localizationExtender1.SetLocalizationPriority(this.label2, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this.label2, "CollectionSettingsDialog.Font");
+            this.localizationExtender1.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Font");
             this.label2.Location = new System.Drawing.Point(27, 40);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(37, 19);
@@ -338,7 +338,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._aboutBookMakingSettingsButton, null);
             this.localizationExtender1.SetLocalizationComment(this._aboutBookMakingSettingsButton, null);
             this.localizationExtender1.SetLocalizationPriority(this._aboutBookMakingSettingsButton, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._aboutBookMakingSettingsButton, "CollectionSettingsDialog._aboutBookMakingSettingsButton");
+            this.localizationExtender1.SetLocalizingId(this._aboutBookMakingSettingsButton, "CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton");
             this._aboutBookMakingSettingsButton.Location = new System.Drawing.Point(468, 30);
             this._aboutBookMakingSettingsButton.Name = "_aboutBookMakingSettingsButton";
             this._aboutBookMakingSettingsButton.Size = new System.Drawing.Size(113, 73);
@@ -355,7 +355,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._xmatterPackLabel, null);
             this.localizationExtender1.SetLocalizationComment(this._xmatterPackLabel, null);
             this.localizationExtender1.SetLocalizationPriority(this._xmatterPackLabel, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.label1");
+            this.localizationExtender1.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack");
             this._xmatterPackLabel.Location = new System.Drawing.Point(27, 124);
             this._xmatterPackLabel.Name = "_xmatterPackLabel";
             this._xmatterPackLabel.Size = new System.Drawing.Size(156, 19);
@@ -387,7 +387,7 @@
             this.tabPage3.Controls.Add(this._provinceLabel);
             this.localizationExtender1.SetLocalizableToolTip(this.tabPage3, null);
             this.localizationExtender1.SetLocalizationComment(this.tabPage3, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.tabPage3");
+            this.localizationExtender1.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
             this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Size = new System.Drawing.Size(610, 318);
@@ -415,7 +415,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this.label1, null);
             this.localizationExtender1.SetLocalizationComment(this.label1, null);
             this.localizationExtender1.SetLocalizationPriority(this.label1, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this.label1, "CollectionSettingsDialog.BloomCollectionName");
+            this.localizationExtender1.SetLocalizingId(this.label1, "CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName");
             this.label1.Location = new System.Drawing.Point(28, 224);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(158, 19);
@@ -432,7 +432,8 @@
             this.localizationExtender1.SetLocalizableToolTip(this._aboutProjectInformationSetingsButton, null);
             this.localizationExtender1.SetLocalizationComment(this._aboutProjectInformationSetingsButton, null);
             this.localizationExtender1.SetLocalizationPriority(this._aboutProjectInformationSetingsButton, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._aboutProjectInformationSetingsButton, "CollectionSettingsDialog._aboutProjectInformationSetingsButton");
+            this.localizationExtender1.SetLocalizingId(this._aboutProjectInformationSetingsButton, "CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsBut" +
+        "ton");
             this._aboutProjectInformationSetingsButton.Location = new System.Drawing.Point(479, 21);
             this._aboutProjectInformationSetingsButton.Name = "_aboutProjectInformationSetingsButton";
             this._aboutProjectInformationSetingsButton.Size = new System.Drawing.Size(113, 88);
@@ -482,7 +483,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._countryLabel, null);
             this.localizationExtender1.SetLocalizationComment(this._countryLabel, null);
             this.localizationExtender1.SetLocalizationPriority(this._countryLabel, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.label7");
+            this.localizationExtender1.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
             this._countryLabel.Location = new System.Drawing.Point(28, 23);
             this._countryLabel.Name = "_countryLabel";
             this._countryLabel.Size = new System.Drawing.Size(59, 19);
@@ -496,7 +497,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._districtLabel, null);
             this.localizationExtender1.SetLocalizationComment(this._districtLabel, null);
             this.localizationExtender1.SetLocalizationPriority(this._districtLabel, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._districtLabel, "CollectionSettingsDialog.label5");
+            this.localizationExtender1.SetLocalizingId(this._districtLabel, "CollectionSettingsDialog.ProjectInformationTab.District");
             this._districtLabel.Location = new System.Drawing.Point(28, 155);
             this._districtLabel.Name = "_districtLabel";
             this._districtLabel.Size = new System.Drawing.Size(55, 19);
@@ -510,7 +511,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._provinceLabel, null);
             this.localizationExtender1.SetLocalizationComment(this._provinceLabel, null);
             this.localizationExtender1.SetLocalizationPriority(this._provinceLabel, Localization.LocalizationPriority.Medium);
-            this.localizationExtender1.SetLocalizingId(this._provinceLabel, "CollectionSettingsDialog.label3");
+            this.localizationExtender1.SetLocalizingId(this._provinceLabel, "CollectionSettingsDialog.ProjectInformationTab.Province");
             this._provinceLabel.Location = new System.Drawing.Point(28, 90);
             this._provinceLabel.Name = "_provinceLabel";
             this._provinceLabel.Size = new System.Drawing.Size(63, 19);
@@ -525,7 +526,7 @@
             this.tabPage4.Controls.Add(this._useImageServer);
             this.localizationExtender1.SetLocalizableToolTip(this.tabPage4, null);
             this.localizationExtender1.SetLocalizationComment(this.tabPage4, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage4, "tabPage4.tabPage4");
+            this.localizationExtender1.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
             this.tabPage4.Location = new System.Drawing.Point(4, 26);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -540,7 +541,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showExperimentalTemplates, null);
             this.localizationExtender1.SetLocalizationComment(this._showExperimentalTemplates, null);
             this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.ShowExperimentalTemplates");
+            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
             this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 164);
             this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
             this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
@@ -555,7 +556,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showLocalizationControls, null);
             this.localizationExtender1.SetLocalizationComment(this._showLocalizationControls, null);
             this.localizationExtender1.SetLocalizationPriority(this._showLocalizationControls, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showLocalizationControls, "CollectionSettingsDialog.ShowLocalizationControls");
+            this.localizationExtender1.SetLocalizingId(this._showLocalizationControls, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls");
             this._showLocalizationControls.Location = new System.Drawing.Point(50, 121);
             this._showLocalizationControls.Name = "_showLocalizationControls";
             this._showLocalizationControls.Size = new System.Drawing.Size(371, 23);
@@ -570,7 +571,7 @@
             this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog._ShowSendReceive");
+            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
             this._showSendReceive.Location = new System.Drawing.Point(50, 78);
             this._showSendReceive.Name = "_showSendReceive";
             this._showSendReceive.Size = new System.Drawing.Size(291, 23);
@@ -585,7 +586,7 @@
             this._useImageServer.Enabled = false;
             this.localizationExtender1.SetLocalizableToolTip(this._useImageServer, null);
             this.localizationExtender1.SetLocalizationComment(this._useImageServer, null);
-            this.localizationExtender1.SetLocalizingId(this._useImageServer, "checkBox1.checkBox1");
+            this.localizationExtender1.SetLocalizingId(this._useImageServer, "CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer");
             this._useImageServer.Location = new System.Drawing.Point(50, 35);
             this._useImageServer.Name = "_useImageServer";
             this._useImageServer.Size = new System.Drawing.Size(406, 23);
@@ -671,7 +672,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.localizationExtender1.SetLocalizableToolTip(this, null);
             this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "CollectionSettingsDialog.WindowTitle");
+            this.localizationExtender1.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "CollectionSettingsDialog";
