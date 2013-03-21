@@ -97,6 +97,7 @@
             // localizationExtender1
             // 
             this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this.localizationExtender1.PrefixForNewItems = "AboutDialog";
             // 
             // AboutDialog
             // 

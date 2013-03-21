@@ -1,6 +1,7 @@
 ﻿using System.Windows.Forms;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Localization;
 
 namespace Bloom.CollectionChoosing
 {
@@ -14,9 +15,7 @@ namespace Bloom.CollectionChoosing
 			_openAndCreateControl.TemplateButton.Image.Tag = "testfrombloom";
 
 			_openAndCreateControl.Init(mruList,
-				 "Create new collection",
-				 "Browse for other collections on this computer...",
-				 "Bloom Collections|*.bloomLibrary;*.bloomCollection",
+				 LocalizationManager.GetString("OpenCreateNewCollectionsDialog.Bloom Collections", "Bloom Collections", "This shows in the file-open dialog that you use to open a different bloom collection") + @"|*.bloomLibrary;*.bloomCollection",
 				 () => NewCollectionWizard.CreateNewCollection());
 
 			_openAndCreateControl.DoneChoosingOrCreatingLibrary += (x, y) =>

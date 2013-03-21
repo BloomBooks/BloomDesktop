@@ -37,7 +37,7 @@ namespace Bloom
 												  return s;
 											  }).InstancePerLifetimeScope();
 
-				builder.Register(c => LocalizationManager).InstancePerLifetimeScope();
+				builder.Register(c => LocalizationManager).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{

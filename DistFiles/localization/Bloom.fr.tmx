@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4825.29714" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4828.24544" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">0.9.000.0</prop>
-	<prop type="x-hardlinebreakreplacement">\n</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
 	<tu tuid="._creditsMenuItem">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About Bloom</seg>
@@ -21,10 +16,6 @@
 	</tu>
 	<tu tuid="._documentationMenuItem">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Documentation</seg>
 	  </tuv>
@@ -33,10 +24,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="._releaseNotesMenuItem">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Release Notes</seg>
@@ -47,8 +34,6 @@
 	</tu>
 	<tu tuid="._updateFrontMatterToolStripMenu">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Update Book</seg>
 	  </tuv>
@@ -57,8 +42,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="._updateThumbnailMenu">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Update Thumbnail</seg>
@@ -69,8 +52,6 @@
 	</tu>
 	<tu tuid=".deleteMenuItem">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Delete</seg>
 	  </tuv>
@@ -79,8 +60,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".doChecksAndUpdatesOfAllBooksToolStripMenuItem">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Do Checks and Updates of All Books</seg>
@@ -91,8 +70,6 @@
 	</tu>
 	<tu tuid=".openHtmlInBrowserToolStripMenuItem">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Open the Html used to make this PDF, in Browser</seg>
 	  </tuv>
@@ -101,10 +78,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".showEventLogToolStripMenuItem">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Show Event Log</seg>
@@ -115,8 +88,6 @@
 	</tu>
 	<tu tuid=".showHistoryToolStripMenuItem">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collection History...</seg>
 	  </tuv>
@@ -125,8 +96,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid=".showNotesToolStripMenuItem">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collection Notes...</seg>
@@ -137,8 +106,6 @@
 	</tu>
 	<tu tuid=".toolStripMenuItem1">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
 	  </tuv>
@@ -148,10 +115,6 @@
 	</tu>
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
 	  </tuv>
@@ -160,10 +123,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
@@ -189,6 +148,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>(Experimental) Show User Interface Localization Controls</seg>
 	  </tuv>
@@ -197,6 +157,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+	  <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
 	  <tuv xml:lang="en">
 		<seg>Use Image Server to reduce memory usage with large images.</seg>
 	  </tuv>
@@ -245,8 +206,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ChangeLink">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Change...</seg>
@@ -396,7 +355,6 @@
 	</tu>
 	<tu tuid="CollectionSettingsDialog.WindowTitle">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Settings</seg>
 	  </tuv>
@@ -423,8 +381,6 @@
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label3">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Province</seg>
 	  </tuv>
@@ -434,8 +390,6 @@
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label5">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>District</seg>
 	  </tuv>
@@ -444,8 +398,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.label7">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Country</seg>
@@ -588,6 +540,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab._addToLibraryButton">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Make a book using this template</seg>
 	  </tuv>
@@ -678,7 +631,6 @@
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.WindowTitle">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Confirm Delete</seg>
 	  </tuv>
@@ -696,8 +648,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.cancelBtn">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
@@ -732,7 +682,6 @@
 	</tu>
 	<tu tuid="EditTab.ConfirmRemovePageDialog.WindowTitle">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Really Delete Page?</seg>
 	  </tuv>
@@ -749,6 +698,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.EditTabLabel">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collections</seg>
 	  </tuv>
@@ -777,7 +727,7 @@
 		<seg>Template Pages</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>modèles de page</seg>
+		<seg>Modèles</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._contentLanguagesDropdown">
@@ -838,8 +788,6 @@
 	</tu>
 	<tu tuid="FirstTabLabel">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Collections</seg>
 	  </tuv>
@@ -848,10 +796,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>*You may use this space for author/illustrator, or anything else.</seg>
@@ -863,10 +807,6 @@
 	<tu tuid="FrontMatter.Factory.Acknowledgments for translated version, in {lang}">
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Acknowledgments for translated version, in {lang}</seg>
 	  </tuv>
@@ -876,10 +816,6 @@
 	</tu>
 	<tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Acknowledgments in {lang}</seg>
@@ -891,10 +827,6 @@
 	<tu tuid="FrontMatter.Factory.Book title in {lang}">
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Book title in {lang}</seg>
 	  </tuv>
@@ -903,10 +835,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.Click to Edit Copyright &amp; License">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Click to Edit Copyright &amp; License</seg>
@@ -917,10 +845,6 @@
 	</tu>
 	<tu tuid="FrontMatter.Factory.Click to choose topic">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Click to choose topic</seg>
 	  </tuv>
@@ -929,10 +853,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
@@ -944,10 +864,6 @@
 	<tu tuid="FrontMatter.Factory.The contributions made by writers, illustrators, editors, etc., in {lang}">
 	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
 	  </tuv>
@@ -956,10 +872,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="FrontMatter.Factory.Use this to acknowledge any funding agencies.">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Use this to acknowledge any funding agencies.</seg>
@@ -1051,7 +963,7 @@
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
 	  <tuv xml:lang="en">
-		<seg>Please install Adobe Reader X so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
+		<seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Veuillez installer Adobe Reader X afin que Bloom puisse afficher votre livre final. Entretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
@@ -1067,7 +979,7 @@
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.UnknownError">
 	  <tuv xml:lang="en">
-		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader X'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
+		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Désolé. Bloom n'a pas pu lancer Adobe Reader, donc Bloom ne peut pas afficher votre livre final.\nVeuillez désinstaller la version actuelle d'Adobe Reader et (ré)installer 'Adobe Reader X'.\nEntretemps vous pouvez toujours enregistrer le PDF du livre et l'ouvrir dans un autre logiciel.</seg>
@@ -1124,8 +1036,6 @@
 	</tu>
 	<tu tuid="SendReceiveutton">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Send/Receive</seg>
 	  </tuv>
@@ -1135,8 +1045,6 @@
 	</tu>
 	<tu tuid="WorkspaceView._tabStrip">
 	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>tabStrip1</seg>
 	  </tuv>
@@ -1145,8 +1053,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="checkBox1.checkBox1">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Use Image Server to reduce memory usage with large images.</seg>
@@ -1188,8 +1094,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="tabPage4.tabPage4">
-	  <prop type="x-nolongerused">true</prop>
-	  <prop type="x-nolongerused">true</prop>
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>

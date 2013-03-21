@@ -53,7 +53,7 @@ namespace Bloom.CollectionTab
 
 		public string CollectionTabLabel
 		{
-			get { return LocalizationManager.GetString("EditTab.EditTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 

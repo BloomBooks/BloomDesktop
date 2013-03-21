@@ -4,6 +4,7 @@
 * Newly localize-able:
  * Page Size/Orientation choices
  * Page thumbnail names (e.g. "Title Page", "Just Text")
+ * Open/Create Collection Dialog
 
 
 ## 0.945 20 March 2013
@@ -25,7 +26,7 @@
 
 ## 0.9: 13 October 2012
 * Partial Send/Receive support available as an opt-in experimental feature
-* Partial Localiziation support available as an opt-in experimental feature
+* Partial Localization support available as an opt-in experimental feature
 * Calendar, Picture Dictionary, and Template Maker are now an opt-in experimental feature
 
 
