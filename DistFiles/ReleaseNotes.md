@@ -1,6 +1,10 @@
-## 0.946 20 March 2013
-* Add enough space to show french labels, where previously things were cut off.
+## 0.946 21 March 2013
+* Add enough space to show French labels, where previously things were cut off.
 * Make UI Language Chooser no longer experimental, so it's now on by default.
+* Newly localize-able:
+ * Page Size/Orientation choices
+ * Page thumbnail names (e.g. "Title Page", "Just Text")
+
 
 ## 0.945 20 March 2013
 * Reorganized and cleaned up internationalization. Some more work is yet to be done.
