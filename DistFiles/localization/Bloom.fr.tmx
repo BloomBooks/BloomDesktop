@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4828.24544" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4829.26946" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">0.9.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -952,6 +952,38 @@
 		<seg>Afficher le journal d'événements</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+	  <tuv xml:lang="en">
+		<seg>Source Collection</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collection source</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+	  <tuv xml:lang="en">
+		<seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Une collection des livres moules ou des livres modèles dans une ou plusieurs langues véhiculaires, de laquelle vous pouvez créer un paquet Bloom pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+	  <tuv xml:lang="en">
+		<seg>Vernacular Collection</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collection vernaculaire</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+	  <tuv xml:lang="en">
+		<seg>A collection of books in a local language.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Une collection de livres dans une langue locale.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="NewCollectionWizard.NewBookPattern">
 	  <note>The {0} is replaced by the name of the language.</note>
 	  <tuv xml:lang="en">
@@ -1059,38 +1091,6 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Utiliser 'Image Server' pour reduire l'usage de memoire quand les images sont grandes.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="newCollectionWizard.sourceCollection">
-	  <tuv xml:lang="en">
-		<seg>Source Collection</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Collection source</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="newCollectionWizard.sourceCollectionDescription">
-	  <tuv xml:lang="en">
-		<seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Une collection des livres moules ou des livres modèles dans une ou plusieurs langues véhiculaires, de laquelle vous pouvez créer un paquet Bloom pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="newCollectionWizard.vernacularCollection">
-	  <tuv xml:lang="en">
-		<seg>Vernacular Collection</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Collection vernaculaire</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="newCollectionWizard.vernacularCollectionDescription">
-	  <tuv xml:lang="en">
-		<seg>A collection of books in a local language.</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Une collection de livres dans une langue locale.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="tabPage4.tabPage4">

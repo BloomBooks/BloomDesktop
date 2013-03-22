@@ -1,5 +1,6 @@
 ## 0.947 22 March 2013
-* New Collection Wizard is no localizable
+* New Collection Wizard is now mostly localizable
+* On first run, now detects user's OS Display Language and tries to use that, or offers other choices if it doesn't have that UI language yet.
 * Parts of Bloom that come from outside libraries, so not yet localize-able:
  * Language chooser (shows in New Collection Wizard & Settings dialog)
  * Image Toolbox
