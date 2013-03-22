@@ -28,43 +28,63 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
-			this._selectedLanguage = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this.SuspendLayout();
-			// 
-			// _lookupISOControl
-			// 
-			this._lookupISOControl.ISOCode = "qaa";
-			this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
-			this._lookupISOControl.Name = "_lookupISOControl";
-			this._lookupISOControl.Size = new System.Drawing.Size(242, 252);
-			this._lookupISOControl.TabIndex = 11;
-			this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
-			// 
-			// _selectedLanguage
-			// 
-			this._selectedLanguage.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this._selectedLanguage.Enabled = false;
-			this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-			this._selectedLanguage.Location = new System.Drawing.Point(248, 33);
-			this._selectedLanguage.Multiline = true;
-			this._selectedLanguage.Name = "_selectedLanguage";
-			this._selectedLanguage.ReadOnly = true;
-			this._selectedLanguage.Size = new System.Drawing.Size(209, 131);
-			this._selectedLanguage.TabIndex = 12;
-			this._selectedLanguage.TabStop = false;
-			this._selectedLanguage.Text = "<Language Name>";
-			// 
-			// LanguageIdControl
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._selectedLanguage);
-			this.Controls.Add(this._lookupISOControl);
-			this.Name = "LanguageIdControl";
-			this.Size = new System.Drawing.Size(521, 260);
-			this.ResumeLayout(false);
-			this.PerformLayout();
+            this.components = new System.ComponentModel.Container();
+            this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
+            this._selectedLanguage = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // _lookupISOControl
+            // 
+            this._lookupISOControl.ISOCode = "qaa";
+            this.localizationExtender1.SetLocalizableToolTip(this._lookupISOControl, null);
+            this.localizationExtender1.SetLocalizationComment(this._lookupISOControl, null);
+            this.localizationExtender1.SetLocalizationPriority(this._lookupISOControl, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
+            this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
+            this._lookupISOControl.Name = "_lookupISOControl";
+            this._lookupISOControl.Size = new System.Drawing.Size(242, 252);
+            this._lookupISOControl.TabIndex = 11;
+            this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
+            // 
+            // _selectedLanguage
+            // 
+            this._selectedLanguage.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this._selectedLanguage.Enabled = false;
+            this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.localizationExtender1.SetLocalizableToolTip(this._selectedLanguage, null);
+            this.localizationExtender1.SetLocalizationComment(this._selectedLanguage, null);
+            this.localizationExtender1.SetLocalizationPriority(this._selectedLanguage, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizingId(this._selectedLanguage, "NewCollectionWizard.LanguageIdControl._selectedLanguage");
+            this._selectedLanguage.Location = new System.Drawing.Point(248, 33);
+            this._selectedLanguage.Multiline = true;
+            this._selectedLanguage.Name = "_selectedLanguage";
+            this._selectedLanguage.ReadOnly = true;
+            this._selectedLanguage.Size = new System.Drawing.Size(209, 23);
+            this._selectedLanguage.TabIndex = 12;
+            this._selectedLanguage.TabStop = false;
+            this._selectedLanguage.Text = "<Language Name>";
+            // 
+            // localizationExtender1
+            // 
+            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this.localizationExtender1.PrefixForNewItems = "NewCollectionWizard.LanguageIdControl";
+            // 
+            // LanguageIdControl
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this._selectedLanguage);
+            this.Controls.Add(this._lookupISOControl);
+            this.localizationExtender1.SetLocalizableToolTip(this, null);
+            this.localizationExtender1.SetLocalizationComment(this, null);
+            this.localizationExtender1.SetLocalizingId(this, "NewCollectionWizard.LanguageIdControl.LanguageIdControl");
+            this.Name = "LanguageIdControl";
+            this.Size = new System.Drawing.Size(521, 260);
+            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 
@@ -72,5 +92,6 @@
 
 		private Palaso.UI.WindowsForms.WritingSystems.LookupISOControl _lookupISOControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _selectedLanguage;
+        private Localization.UI.LocalizationExtender localizationExtender1;
 	}
 }
