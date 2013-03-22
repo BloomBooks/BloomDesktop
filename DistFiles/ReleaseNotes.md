@@ -1,3 +1,13 @@
+## 0.947 22 March 2013
+* New Collection Wizard is no localizable
+* Parts of Bloom that come from outside libraries, so not yet localize-able:
+ * Language chooser (shows in New Collection Wizard & Settings dialog)
+ * Image Toolbox
+ * Send/Receive
+ * Tooltips in Publish Tab
+ * Metadata Dialogs
+ * Settings Protection Dialog
+
 ## 0.946 21 March 2013
 * Add enough space to show French labels, where previously things were cut off.
 * Make UI Language Chooser no longer experimental, so it's now on by default.

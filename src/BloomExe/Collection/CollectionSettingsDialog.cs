@@ -33,6 +33,9 @@ namespace Bloom.Collection
 				_language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label");
 			}
 
+#if !DEBUG
+			_showSendReceive.Enabled = false;
+#endif
 
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
@@ -80,7 +83,7 @@ namespace Bloom.Collection
 			}
 
 			_restartReminder.Visible = _restartRequired;
-			_okButton.Text = _restartRequired ? LocalizationManager.GetString("Restart","Restart","If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton","&OK");
+			_okButton.Text = _restartRequired ? LocalizationManager.GetString("CollectionSettingsDialog.Restart", "Restart", "If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton", "&OK");
 
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());

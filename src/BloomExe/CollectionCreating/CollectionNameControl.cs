@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Localization;
 
 namespace Bloom.CollectionCreating
 {
@@ -38,7 +39,7 @@ namespace Bloom.CollectionCreating
 //				}
 
 				htmlLabel1.ForeColor = Color.Gray;
-				htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
+				htmlLabel1.HTML = String.Format(LocalizationManager.GetString("NewCollectionWizard.CollectionWillBeCreatedAt","Collection will be created at: {0}"),
 								_collectionInfo.PathToSettingsFile);
 			}
 			else
@@ -48,11 +49,11 @@ namespace Bloom.CollectionCreating
 					htmlLabel1.ForeColor = Color.Red;
 					if (DestinationAlreadyExists)
 					{
-						htmlLabel1.HTML = string.Format("There is already a collection with that name, at <a href='file://{0}'>{0}</a>.\r\nPlease pick a unique name.", Path.GetDirectoryName(_collectionInfo.PathToSettingsFile));
+						htmlLabel1.HTML = string.Format(LocalizationManager.GetString("NewCollectionWizard.AlreadyCollectionWithThatName","There is already a collection with that name, at <a href='file://{0}'>{0}</a>.\r\nPlease pick a unique name."), Path.GetDirectoryName(_collectionInfo.PathToSettingsFile));
 					}
 					else
 					{
-						htmlLabel1.HTML = "Unable to create a new collection using that name.";
+						htmlLabel1.HTML = LocalizationManager.GetString("NewCollectionWizard.UnableToCreateANewCollectionUsingThatName","Unable to create a new collection using that name.");
 					}
 				}
 				else
