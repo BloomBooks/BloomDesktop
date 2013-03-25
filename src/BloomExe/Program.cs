@@ -427,7 +427,6 @@ namespace Bloom
 		public static void SetUpLocalization()
 		{
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
-			installedStringFileFolder = Path.GetDirectoryName(installedStringFileFolder);
 
 			try
 			{
@@ -435,7 +434,15 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+				var unusedGoesIntoStatic = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
+										   installedStringFileFolder,
+										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
 
+//                var localeasy = LocalEasy.Init(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
+//                localeasy.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
+//                localeasy.AddLocalizationPackage(NameSpace = "Palaso", ID = "Palaso", DisplayName = "Palaso", Version = Application.ProductVersion);
+//
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
 			catch (Exception error)
