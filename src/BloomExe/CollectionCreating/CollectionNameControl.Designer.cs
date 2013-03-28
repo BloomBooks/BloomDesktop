@@ -33,7 +33,7 @@
             this._exampleText = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
             this.htmlLabel1 = new Bloom.HtmlLabel();
             this._nameCollectionLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +42,7 @@
             this._collectionNameControl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._collectionNameControl, null);
             this.localizationExtender1.SetLocalizationComment(this._collectionNameControl, null);
-            this.localizationExtender1.SetLocalizationPriority(this._collectionNameControl, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._collectionNameControl, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._collectionNameControl, "NewCollectionWizard.CollectionNamePage.CollectionName");
             this._collectionNameControl.Location = new System.Drawing.Point(3, 29);
             this._collectionNameControl.Name = "_collectionNameControl";
@@ -134,6 +134,6 @@
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exampleText;
 		private HtmlLabel htmlLabel1;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _nameCollectionLabel;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
 	}
 }

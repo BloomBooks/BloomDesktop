@@ -36,7 +36,7 @@
             this._districtLabel = new System.Windows.Forms.Label();
             this._provinceLabel = new System.Windows.Forms.Label();
             this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -45,7 +45,7 @@
             this._districtText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._districtText, null);
             this.localizationExtender1.SetLocalizationComment(this._districtText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._districtText, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._districtText, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._districtText, "NewCollectionWizard.LanguageLocationControl._districtText");
             this._districtText.Location = new System.Drawing.Point(7, 154);
             this._districtText.Name = "_districtText";
@@ -57,7 +57,7 @@
             this._provinceText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._provinceText, null);
             this.localizationExtender1.SetLocalizationComment(this._provinceText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._provinceText, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._provinceText, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._provinceText, "NewCollectionWizard.LanguageLocationControl._provinceText");
             this._provinceText.Location = new System.Drawing.Point(7, 89);
             this._provinceText.Name = "_provinceText";
@@ -69,7 +69,7 @@
             this._countryText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._countryText, null);
             this.localizationExtender1.SetLocalizationComment(this._countryText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._countryText, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._countryText, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._countryText, "NewCollectionWizard.LanguageLocationControl._countryText");
             this._countryText.Location = new System.Drawing.Point(7, 22);
             this._countryText.Name = "_countryText";
@@ -175,6 +175,6 @@
 		private System.Windows.Forms.Label _districtLabel;
 		private System.Windows.Forms.Label _provinceLabel;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
 	}
 }

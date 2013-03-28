@@ -30,7 +30,7 @@
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenAndCreateCollectionDialog));
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._openAndCreateControl = new Bloom.CollectionChoosing.OpenCreateCloneControl();
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
@@ -82,7 +82,7 @@
 		#endregion
 
         private OpenCreateCloneControl _openAndCreateControl;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
 
 	}
 }

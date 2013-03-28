@@ -33,7 +33,7 @@
             this._toolStrip = new System.Windows.Forms.ToolStrip();
             this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
             this._makeBloomPackButton = new System.Windows.Forms.ToolStripButton();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._topBarControl.SuspendLayout();
             this._toolStrip.SuspendLayout();
@@ -60,7 +60,7 @@
             this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.localizationExtender1.SetLocalizableToolTip(this._toolStrip, null);
             this.localizationExtender1.SetLocalizationComment(this._toolStrip, null);
-            this.localizationExtender1.SetLocalizationPriority(this._toolStrip, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
             this._toolStrip.Location = new System.Drawing.Point(0, 0);
             this._toolStrip.Name = "_toolStrip";
@@ -91,7 +91,7 @@
             this._makeBloomPackButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.localizationExtender1.SetLocalizableToolTip(this._makeBloomPackButton, null);
             this.localizationExtender1.SetLocalizationComment(this._makeBloomPackButton, null);
-            this.localizationExtender1.SetLocalizationPriority(this._makeBloomPackButton, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._makeBloomPackButton, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._makeBloomPackButton, "CollectionTab._makeBloomPackButton");
             this._makeBloomPackButton.Name = "_makeBloomPackButton";
             this._makeBloomPackButton.Size = new System.Drawing.Size(106, 43);
@@ -109,7 +109,7 @@
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.localizationExtender1.SetLocalizableToolTip(this.splitContainer1, null);
             this.localizationExtender1.SetLocalizationComment(this.splitContainer1, null);
-            this.localizationExtender1.SetLocalizationPriority(this.splitContainer1, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this.splitContainer1, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this.splitContainer1, "LibraryView.splitContainer1");
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
@@ -145,7 +145,7 @@
 
 		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
 		public System.Windows.Forms.Panel _topBarControl;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripButton _sendReceiveButton;
 		private System.Windows.Forms.ToolStripButton _makeBloomPackButton;

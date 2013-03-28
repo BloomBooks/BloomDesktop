@@ -37,7 +37,7 @@
             this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
             this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._topBarPanel = new System.Windows.Forms.Panel();
@@ -384,7 +384,7 @@
             this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
             this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._layoutChoices, "EditTab._layoutChoices");
             this._layoutChoices.Name = "_layoutChoices";
             this._layoutChoices.Size = new System.Drawing.Size(50, 19);
@@ -479,7 +479,7 @@
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _cutButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _undoButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _deletePageButton;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 
 
     }

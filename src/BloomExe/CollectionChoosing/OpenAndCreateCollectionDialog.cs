@@ -1,7 +1,7 @@
 ﻿using System.Windows.Forms;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 
 namespace Bloom.CollectionChoosing
 {

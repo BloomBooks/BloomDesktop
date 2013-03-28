@@ -31,7 +31,7 @@
             this.components = new System.ComponentModel.Container();
             this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
             this._selectedLanguage = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -40,7 +40,7 @@
             this._lookupISOControl.ISOCode = "qaa";
             this.localizationExtender1.SetLocalizableToolTip(this._lookupISOControl, null);
             this.localizationExtender1.SetLocalizationComment(this._lookupISOControl, null);
-            this.localizationExtender1.SetLocalizationPriority(this._lookupISOControl, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
             this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
             this._lookupISOControl.Name = "_lookupISOControl";
@@ -55,7 +55,7 @@
             this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.localizationExtender1.SetLocalizableToolTip(this._selectedLanguage, null);
             this.localizationExtender1.SetLocalizationComment(this._selectedLanguage, null);
-            this.localizationExtender1.SetLocalizationPriority(this._selectedLanguage, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._selectedLanguage, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._selectedLanguage, "NewCollectionWizard.LanguageIdControl._selectedLanguage");
             this._selectedLanguage.Location = new System.Drawing.Point(248, 33);
             this._selectedLanguage.Multiline = true;
@@ -92,6 +92,6 @@
 
 		private Palaso.UI.WindowsForms.WritingSystems.LookupISOControl _lookupISOControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _selectedLanguage;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
 	}
 }

@@ -5,7 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
-using Localization;
+using L10NSharp;
 using NetSparkle;
 
 

@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Linq;
 using Bloom.Book;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 
 namespace Bloom.Edit
 {

@@ -32,7 +32,7 @@
 			this._browser = new Bloom.Browser();
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._okButton = new System.Windows.Forms.Button();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -95,7 +95,7 @@
 			this.Controls.Add(this._browser);
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, "This is the dialog used to set up the wall calendar");
-			this.localizationExtender1.SetLocalizationPriority(this, Localization.LocalizationPriority.Low);
+			this.localizationExtender1.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.Low);
 			this.localizationExtender1.SetLocalizingId(this, "WallCalendar.TitleOfSetupDialog");
 			this.MinimizeBox = false;
 			this.Name = "ConfigurationDialog";
@@ -114,6 +114,6 @@
         private Browser _browser;
         private System.Windows.Forms.Button _cancelButton;
         private System.Windows.Forms.Button _okButton;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
     }
 }
