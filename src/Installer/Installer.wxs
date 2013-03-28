@@ -158,8 +158,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
 		  </Component>
 -->
-		  <Component Id="LocalizationManager.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
-			<File Id="LocalizationManager.dll" Name="LocalizationManager.dll" KeyPath="yes" Source="..\..\output\release\LocalizationManager.dll" />
+		  <Component Id="L10NSharp.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
+			<File Id="L10NSharp.dll" Name="L10NSharp.dll" KeyPath="yes" Source="..\..\output\release\L10NSharp.dll" />
 		  </Component>
 
 
@@ -235,7 +235,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		<ComponentRef Id="PalasoUIWindowsForms.dll" />
 		<ComponentRef Id="Palaso.dll"/>
 	  -->
-	 <ComponentRef Id="LocalizationManager.dll"/>
+	 <ComponentRef Id="L10NSharp.dll"/>
 
 	  <ComponentRef Id="Interop.WIA.dll" />
 	  <ComponentRef Id="Newtonsoft.Json.dll"/>
