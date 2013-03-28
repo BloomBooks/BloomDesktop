@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
-using Localization;
+using L10NSharp;
 
 namespace Bloom.CollectionCreating
 {

@@ -10,7 +10,7 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Chorus;
 using Chorus.UI.Sync;
-using Localization;
+using L10NSharp;
 using Messir.Windows.Forms;
 using NetSparkle;
 using Palaso.IO;
@@ -168,13 +168,13 @@ namespace Bloom.Workspace
 		private void SetupUILanguageMenu()
 		{
 			_uiLanguageMenu.DropDownItems.Clear();
-			foreach (var lang in Localization.LocalizationManager.GetUILanguages(true))
+			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
 			{
 				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName);
 				item.Tag = lang;
 				item.Click += new EventHandler((a, b) =>
 												{
-													Localization.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
+													L10NSharp.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
 													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 													item.Select();
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;

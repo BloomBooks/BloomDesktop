@@ -32,7 +32,7 @@ namespace Bloom.CollectionTab
             this._sourcePaneMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
-            this._localizationExtender = new Localization.UI.LocalizationExtender(this.components);
+            this._localizationExtender = new L10NSharp.UI.LocalizationExtender(this.components);
             this._vernacularCollectionMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this._showHistoryMenu = new System.Windows.Forms.ToolStripMenuItem();
             this._showNotesMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,7 +76,7 @@ namespace Bloom.CollectionTab
             this.deleteMenuItem});
             this._localizationExtender.SetLocalizableToolTip(this._bookContextMenu, null);
             this._localizationExtender.SetLocalizationComment(this._bookContextMenu, null);
-            this._localizationExtender.SetLocalizationPriority(this._bookContextMenu, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this._bookContextMenu, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this._bookContextMenu, "CollectionTab.BookMenu.strip");
             this._bookContextMenu.Name = "contextMenuStrip1";
             this._bookContextMenu.Size = new System.Drawing.Size(182, 120);
@@ -85,7 +85,7 @@ namespace Bloom.CollectionTab
             // 
             this._localizationExtender.SetLocalizableToolTip(this._updateThumbnailMenu, null);
             this._localizationExtender.SetLocalizationComment(this._updateThumbnailMenu, null);
-            this._localizationExtender.SetLocalizationPriority(this._updateThumbnailMenu, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this._updateThumbnailMenu, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this._updateThumbnailMenu, "CollectionTab.BookMenu._updateThumbnail");
             this._updateThumbnailMenu.Name = "_updateThumbnailMenu";
             this._updateThumbnailMenu.Size = new System.Drawing.Size(181, 22);
@@ -98,7 +98,7 @@ namespace Bloom.CollectionTab
             // 
             this._localizationExtender.SetLocalizableToolTip(this._updateFrontMatterToolStripMenu, null);
             this._localizationExtender.SetLocalizationComment(this._updateFrontMatterToolStripMenu, null);
-            this._localizationExtender.SetLocalizationPriority(this._updateFrontMatterToolStripMenu, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this._updateFrontMatterToolStripMenu, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this._updateFrontMatterToolStripMenu, "CollectionTab.BookMenu._updateFrontMatterToolStrip");
             this._updateFrontMatterToolStripMenu.Name = "_updateFrontMatterToolStripMenu";
             this._updateFrontMatterToolStripMenu.Size = new System.Drawing.Size(181, 22);
@@ -112,7 +112,7 @@ namespace Bloom.CollectionTab
             // 
             this._localizationExtender.SetLocalizableToolTip(this._openFolderOnDisk, null);
             this._localizationExtender.SetLocalizationComment(this._openFolderOnDisk, null);
-            this._localizationExtender.SetLocalizationPriority(this._openFolderOnDisk, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this._openFolderOnDisk, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this._openFolderOnDisk, "CollectionTab.ContextMenu._openFolderOnDisk");
             this._openFolderOnDisk.Name = "_openFolderOnDisk";
             this._openFolderOnDisk.Size = new System.Drawing.Size(181, 22);
@@ -129,7 +129,7 @@ namespace Bloom.CollectionTab
             this.deleteMenuItem.Image = global::Bloom.Properties.Resources.DeleteMessageBoxButtonImage;
             this._localizationExtender.SetLocalizableToolTip(this.deleteMenuItem, null);
             this._localizationExtender.SetLocalizationComment(this.deleteMenuItem, null);
-            this._localizationExtender.SetLocalizationPriority(this.deleteMenuItem, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this.deleteMenuItem, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this.deleteMenuItem, "CollectionTab.BookMenu.deleteBook");
             this.deleteMenuItem.Name = "deleteMenuItem";
             this.deleteMenuItem.Size = new System.Drawing.Size(181, 22);
@@ -154,7 +154,7 @@ namespace Bloom.CollectionTab
             this.toolStripMenuItem1});
             this._localizationExtender.SetLocalizableToolTip(this._sourcePaneMenuStrip, null);
             this._localizationExtender.SetLocalizationComment(this._sourcePaneMenuStrip, null);
-            this._localizationExtender.SetLocalizationPriority(this._sourcePaneMenuStrip, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this._sourcePaneMenuStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this._sourcePaneMenuStrip, "CollectionTab.SourceBooksMenu.strip");
             this._sourcePaneMenuStrip.Name = "_sourcePaneMenuStrip";
             this._sourcePaneMenuStrip.Size = new System.Drawing.Size(260, 26);
@@ -163,7 +163,7 @@ namespace Bloom.CollectionTab
             // 
             this._localizationExtender.SetLocalizableToolTip(this.toolStripMenuItem1, null);
             this._localizationExtender.SetLocalizationComment(this.toolStripMenuItem1, null);
-            this._localizationExtender.SetLocalizationPriority(this.toolStripMenuItem1, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this.toolStripMenuItem1, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this.toolStripMenuItem1, "CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections");
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(259, 22);
@@ -182,7 +182,7 @@ namespace Bloom.CollectionTab
             this._doChecksAndUpdatesOfAllBooksToolStripMenuItem});
             this._localizationExtender.SetLocalizableToolTip(this._vernacularCollectionMenuStrip, null);
             this._localizationExtender.SetLocalizationComment(this._vernacularCollectionMenuStrip, null);
-            this._localizationExtender.SetLocalizationPriority(this._vernacularCollectionMenuStrip, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this._vernacularCollectionMenuStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this._vernacularCollectionMenuStrip, "CollectionTab.CollectionMenu.contextMenuStrip2");
             this._vernacularCollectionMenuStrip.Name = "_vernacularCollectionMenuStrip";
             this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(266, 70);
@@ -192,7 +192,7 @@ namespace Bloom.CollectionTab
             // 
             this._localizationExtender.SetLocalizableToolTip(this._showHistoryMenu, null);
             this._localizationExtender.SetLocalizationComment(this._showHistoryMenu, null);
-            this._localizationExtender.SetLocalizationPriority(this._showHistoryMenu, Localization.LocalizationPriority.Medium);
+            this._localizationExtender.SetLocalizationPriority(this._showHistoryMenu, L10NSharp.LocalizationPriority.Medium);
             this._localizationExtender.SetLocalizingId(this._showHistoryMenu, "CollectionTab.CollectionMenu.showHistory");
             this._showHistoryMenu.Name = "_showHistoryMenu";
             this._showHistoryMenu.Size = new System.Drawing.Size(265, 22);
@@ -299,7 +299,7 @@ namespace Bloom.CollectionTab
             this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
             this._localizationExtender.SetLocalizableToolTip(this.label3, null);
             this._localizationExtender.SetLocalizationComment(this.label3, null);
-            this._localizationExtender.SetLocalizationPriority(this.label3, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.label3, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.label3, "LibraryListView.label3");
             this.label3.Location = new System.Drawing.Point(0, 13);
             this.label3.Margin = new System.Windows.Forms.Padding(0);
@@ -319,7 +319,7 @@ namespace Bloom.CollectionTab
             this.button1.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
             this._localizationExtender.SetLocalizableToolTip(this.button1, null);
             this._localizationExtender.SetLocalizationComment(this.button1, null);
-            this._localizationExtender.SetLocalizationPriority(this.button1, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.button1, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.button1, "LibraryListView.button1");
             this.button1.Location = new System.Drawing.Point(3, 45);
             this.button1.Name = "button1";
@@ -339,7 +339,7 @@ namespace Bloom.CollectionTab
             this.button4.Image = global::Bloom.Properties.Resources.edit;
             this._localizationExtender.SetLocalizableToolTip(this.button4, null);
             this._localizationExtender.SetLocalizationComment(this.button4, null);
-            this._localizationExtender.SetLocalizationPriority(this.button4, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.button4, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.button4, "LibraryListView.button4");
             this.button4.Location = new System.Drawing.Point(220, 45);
             this.button4.Name = "button4";
@@ -359,7 +359,7 @@ namespace Bloom.CollectionTab
             this.button5.Image = global::Bloom.Properties.Resources.edit;
             this._localizationExtender.SetLocalizableToolTip(this.button5, null);
             this._localizationExtender.SetLocalizationComment(this.button5, null);
-            this._localizationExtender.SetLocalizationPriority(this.button5, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.button5, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.button5, "LibraryListView.button5");
             this.button5.Location = new System.Drawing.Point(3, 132);
             this.button5.Name = "button5";
@@ -389,7 +389,7 @@ namespace Bloom.CollectionTab
             this.label5.ForeColor = System.Drawing.Color.White;
             this._localizationExtender.SetLocalizableToolTip(this.label5, null);
             this._localizationExtender.SetLocalizationComment(this.label5, null);
-            this._localizationExtender.SetLocalizationPriority(this.label5, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.label5, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.label5, "LibraryListView.label5");
             this.label5.Location = new System.Drawing.Point(0, 192);
             this.label5.Margin = new System.Windows.Forms.Padding(0);
@@ -409,7 +409,7 @@ namespace Bloom.CollectionTab
             this.button6.Image = global::Bloom.Properties.Resources.edit;
             this._localizationExtender.SetLocalizableToolTip(this.button6, null);
             this._localizationExtender.SetLocalizationComment(this.button6, null);
-            this._localizationExtender.SetLocalizationPriority(this.button6, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.button6, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.button6, "LibraryListView.button6");
             this.button6.Location = new System.Drawing.Point(3, 228);
             this.button6.Name = "button6";
@@ -454,7 +454,7 @@ namespace Bloom.CollectionTab
             this.pretendLabel.ForeColor = System.Drawing.Color.WhiteSmoke;
             this._localizationExtender.SetLocalizableToolTip(this.pretendLabel, null);
             this._localizationExtender.SetLocalizationComment(this.pretendLabel, null);
-            this._localizationExtender.SetLocalizationPriority(this.pretendLabel, Localization.LocalizationPriority.NotLocalizable);
+            this._localizationExtender.SetLocalizationPriority(this.pretendLabel, L10NSharp.LocalizationPriority.NotLocalizable);
             this._localizationExtender.SetLocalizingId(this.pretendLabel, "LibraryListView.label8");
             this.pretendLabel.Location = new System.Drawing.Point(0, 0);
             this.pretendLabel.Margin = new System.Windows.Forms.Padding(0);
@@ -542,7 +542,7 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Panel _dividerPanel;
 		private System.Windows.Forms.Timer _keepFocusTimer;
-		private Localization.UI.LocalizationExtender _localizationExtender;
+		private L10NSharp.UI.LocalizationExtender _localizationExtender;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsProtectionHelper;
 		private System.Windows.Forms.ContextMenuStrip _sourcePaneMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;

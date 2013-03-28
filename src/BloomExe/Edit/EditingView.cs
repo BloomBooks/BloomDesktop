@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;

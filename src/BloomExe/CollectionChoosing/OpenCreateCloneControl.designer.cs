@@ -42,7 +42,7 @@ namespace Bloom.CollectionChoosing
 			this.label1 = new System.Windows.Forms.Label();
 			this._lookingForSourceCollectionsHtml = new Bloom.HtmlLabel();
 			this._readMoreLink = new System.Windows.Forms.LinkLabel();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
@@ -197,7 +197,7 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.localizationExtender1.SetLocalizableToolTip(this._templateButton, null);
 			this.localizationExtender1.SetLocalizationComment(this._templateButton, null);
-			this.localizationExtender1.SetLocalizationPriority(this._templateButton, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizationPriority(this._templateButton, L10NSharp.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._templateButton, "OpenCreateNewCollectionsDialog.OpenCreateCloneControl._templateButton");
 			this._templateButton.Location = new System.Drawing.Point(3, 63);
 			this._templateButton.Name = "_templateButton";
@@ -297,7 +297,7 @@ namespace Bloom.CollectionChoosing
 		private HtmlLabel _lookingForSourceCollectionsHtml;
 		private System.Windows.Forms.Button _browseButton;
 		private System.Windows.Forms.LinkLabel _readMoreLink;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 
 	}
 }

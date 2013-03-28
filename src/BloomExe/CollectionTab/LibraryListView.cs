@@ -119,9 +119,9 @@ namespace Bloom.CollectionTab
 			_collectionFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 
-			string shellSourceHeading = Localization.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
+			string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
 																				   "Sources For New Shells");
-			string bookSourceHeading = Localization.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
+			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
 																				  "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
@@ -163,7 +163,7 @@ namespace Bloom.CollectionTab
 				_missingBooksLink = new LinkLabel()
 										{
 											Text =
-												Localization.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
+												L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
 																						   "Where's the rest?",
 																						   "Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
 											Width = 200,
@@ -185,11 +185,11 @@ namespace Bloom.CollectionTab
 		{
 			if (_model.IsShellProject)
 			{
-				MessageBox.Show(Localization.LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
+				MessageBox.Show(L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
 			}
 			else
 			{
-				//MessageBox.Show(Localization.LocalizationManager.GetString("hiddenBookExplanationForVernacularCollections", "Because this is a vernacular collection, Bloom isn't offering all the same."));
+				//MessageBox.Show(L10NSharp.LocalizationManager.GetString("hiddenBookExplanationForVernacularCollections", "Because this is a vernacular collection, Bloom isn't offering all the same."));
 			}
 		}
 

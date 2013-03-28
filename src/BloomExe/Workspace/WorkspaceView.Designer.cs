@@ -51,7 +51,7 @@
             this._checkForNewVersionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._tabStrip = new Messir.Windows.Forms.TabStrip();
             this._collectionTab = new Messir.Windows.Forms.TabStripButton();
             this._editTab = new Messir.Windows.Forms.TabStripButton();
@@ -104,7 +104,7 @@
             this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.localizationExtender1.SetLocalizableToolTip(this._toolStrip, null);
             this.localizationExtender1.SetLocalizationComment(this._toolStrip, null);
-            this.localizationExtender1.SetLocalizationPriority(this._toolStrip, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
             this._toolStrip.Location = new System.Drawing.Point(0, 0);
             this._toolStrip.Name = "_toolStrip";
@@ -178,7 +178,7 @@
             this._documentationMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
             this.localizationExtender1.SetLocalizableToolTip(this._documentationMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._documentationMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._documentationMenuItem, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._documentationMenuItem, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
             this._documentationMenuItem.Name = "_documentationMenuItem";
             this._documentationMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -194,7 +194,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._releaseNotesMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._releaseNotesMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._releaseNotesMenuItem, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._releaseNotesMenuItem, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.releaseNotesMenuItem");
             this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
             this._releaseNotesMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -206,7 +206,7 @@
             this.deepBloomPaperToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
             this.localizationExtender1.SetLocalizableToolTip(this.deepBloomPaperToolStripMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this.deepBloomPaperToolStripMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this.deepBloomPaperToolStripMenuItem, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizationPriority(this.deepBloomPaperToolStripMenuItem, L10NSharp.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this.deepBloomPaperToolStripMenuItem, "HelpMenu.deepBloomPaperToolStripMenuItem");
             this.deepBloomPaperToolStripMenuItem.Name = "deepBloomPaperToolStripMenuItem";
             this.deepBloomPaperToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -223,7 +223,7 @@
             this._makeASuggestionMenuItem.Image = global::Bloom.Properties.Resources.uservoice16x161;
             this.localizationExtender1.SetLocalizableToolTip(this._makeASuggestionMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._makeASuggestionMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._makeASuggestionMenuItem, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._makeASuggestionMenuItem, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu._makeASuggestionMenuItem");
             this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
             this._makeASuggestionMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -249,7 +249,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._showLogMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._showLogMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showLogMenuItem, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this._showLogMenuItem, "HelpMenu.showEventLogMenuItem");
             this._showLogMenuItem.Name = "_showLogMenuItem";
             this._showLogMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -265,7 +265,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._checkForNewVersionMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._checkForNewVersionMenuItem, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._checkForNewVersionMenuItem, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.checkForNewVersionToolStripMenuItem");
             this._checkForNewVersionMenuItem.Name = "_checkForNewVersionMenuItem";
             this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -276,7 +276,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._aboutBloomMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._aboutBloomMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._aboutBloomMenuItem, Localization.LocalizationPriority.Medium);
+            this.localizationExtender1.SetLocalizationPriority(this._aboutBloomMenuItem, L10NSharp.LocalizationPriority.Medium);
             this.localizationExtender1.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.creditsMenuItem");
             this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
             this._aboutBloomMenuItem.Size = new System.Drawing.Size(196, 22);
@@ -291,7 +291,7 @@
             this._uiLanguageMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.localizationExtender1.SetLocalizableToolTip(this._uiLanguageMenu, null);
             this.localizationExtender1.SetLocalizationComment(this._uiLanguageMenu, null);
-            this.localizationExtender1.SetLocalizationPriority(this._uiLanguageMenu, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._uiLanguageMenu, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._uiLanguageMenu, ".toolStripDropDownButton1");
             this._uiLanguageMenu.Name = "_uiLanguageMenu";
             this._uiLanguageMenu.Size = new System.Drawing.Size(58, 19);
@@ -313,7 +313,7 @@
             this._publishTab});
             this.localizationExtender1.SetLocalizableToolTip(this._tabStrip, null);
             this.localizationExtender1.SetLocalizationComment(this._tabStrip, null);
-            this.localizationExtender1.SetLocalizationPriority(this._tabStrip, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._tabStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
             this._tabStrip.Location = new System.Drawing.Point(0, 0);
             this._tabStrip.Name = "_tabStrip";
@@ -441,7 +441,7 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem deepBloomPaperToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider2;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
 		private System.Windows.Forms.ToolStripSeparator _divider3;
 		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;

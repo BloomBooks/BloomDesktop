@@ -6,7 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionCreating
@@ -61,7 +61,7 @@ namespace Bloom.CollectionCreating
 
 			//The localizationExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
 			//so we do all of this by hand
-			var chooser = new Button();// new Localization.UI.UILanguageComboBox() { ShowOnlyLanguagesHavingLocalizations = false };
+			var chooser = new Button();// new L10NSharp.UI.UILanguageComboBox() { ShowOnlyLanguagesHavingLocalizations = false };
 			chooser.Location = new Point(100,100);
 			chooser.Size= new Size(50,50);
 			chooser.Visible = true;
@@ -96,11 +96,11 @@ namespace Bloom.CollectionCreating
 			wizardControl1.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish",
 																			"Used for the Finish button in wizards, like that used for making a New Collection");
 
-			var one = Localization.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
+			var one = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
 																 "You are almost ready to start making books.");
-			var two = Localization.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2",
+			var two = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2",
 																 "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. So the first thing we need to do is make one for you.");
-			var three = Localization.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3",
+			var three = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3",
 																   "Click 'Next' to get started.");
 			_welcomeHtml.HTML = one + "<br/>" + two + "<br/>" + three;
 		}
@@ -132,7 +132,7 @@ namespace Bloom.CollectionCreating
 
 			if (caller is LanguageIdControl)
 			{
-				var pattern = Localization.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
+				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, string.Format(pattern, _collectionInfo.Language1Name));
 				//_collectionInfo.CollectionName = ;
 

@@ -33,7 +33,7 @@
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
             this._pagesLabel = new System.Windows.Forms.Label();
             this._thumbNailList = new Bloom.Edit.ThumbNailList();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -108,6 +108,6 @@
         private System.Windows.Forms.Label _pagesLabel;
         private System.Windows.Forms.ImageList _pageThumbnails;
 		private Bloom.Edit.ThumbNailList _thumbNailList;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
     }
 }
