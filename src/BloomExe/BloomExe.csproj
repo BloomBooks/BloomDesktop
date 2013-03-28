@@ -413,6 +413,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
@@ -462,6 +463,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
@@ -492,12 +494,14 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\CollectionSettingsDialog.resx">
       <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PublishView.resx">
       <DependentUpon>PublishView.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Workspace\WorkspaceView.resx">
       <DependentUpon>WorkspaceView.cs</DependentUpon>
@@ -516,6 +520,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\TemplatePagesView.resx">
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
@@ -528,6 +533,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionChoosing\OpenAndCreateCollectionDialog.resx">
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

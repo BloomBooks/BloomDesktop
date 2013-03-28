@@ -37,7 +37,7 @@
             this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
             this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._topBarPanel = new System.Windows.Forms.Panel();
@@ -52,7 +52,7 @@
             this._browser1 = new Bloom.Browser();
             this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this.betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
             this._splitContainer1.Panel2.SuspendLayout();
             this._splitContainer1.SuspendLayout();
@@ -75,18 +75,18 @@
             // 
             this._handleMessageTimer.Tick += new System.EventHandler(this._handleMessageTimer_Tick);
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // _splitContainer1
             // 
             this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
             this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this._splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.localizationExtender1.SetLocalizableToolTip(this._splitContainer1, null);
-            this.localizationExtender1.SetLocalizationComment(this._splitContainer1, null);
-            this.localizationExtender1.SetLocalizingId(this._splitContainer1, "EditTab._splitContainer1");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._splitContainer1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._splitContainer1, null);
+            this._L10NSharpExtender.SetLocalizingId(this._splitContainer1, "EditTab._splitContainer1");
             this._splitContainer1.Location = new System.Drawing.Point(0, 0);
             this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
             this._splitContainer1.Name = "_splitContainer1";
@@ -107,9 +107,9 @@
             // _splitContainer2
             // 
             this._splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.localizationExtender1.SetLocalizableToolTip(this._splitContainer2, null);
-            this.localizationExtender1.SetLocalizationComment(this._splitContainer2, null);
-            this.localizationExtender1.SetLocalizingId(this._splitContainer2, "EditTab._splitContainer2");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._splitContainer2, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._splitContainer2, null);
+            this._L10NSharpExtender.SetLocalizingId(this._splitContainer2, "EditTab._splitContainer2");
             this._splitContainer2.Location = new System.Drawing.Point(0, 0);
             this._splitContainer2.Margin = new System.Windows.Forms.Padding(4);
             this._splitContainer2.Name = "_splitContainer2";
@@ -166,9 +166,9 @@
             this._deletePageButton.InnerBorderColor = System.Drawing.Color.Transparent;
             this._deletePageButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
             this._deletePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-            this.localizationExtender1.SetLocalizableToolTip(this._deletePageButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._deletePageButton, null);
-            this.localizationExtender1.SetLocalizingId(this._deletePageButton, "EditTab._deletePageButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._deletePageButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._deletePageButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab._deletePageButton");
             this._deletePageButton.Location = new System.Drawing.Point(193, 3);
             this._deletePageButton.Name = "_deletePageButton";
             this._deletePageButton.OffsetPressedContent = true;
@@ -207,9 +207,9 @@
             this._undoButton.InnerBorderColor = System.Drawing.Color.Transparent;
             this._undoButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
             this._undoButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-            this.localizationExtender1.SetLocalizableToolTip(this._undoButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._undoButton, null);
-            this.localizationExtender1.SetLocalizingId(this._undoButton, "EditTab._undoButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._undoButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._undoButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._undoButton, "EditTab._undoButton");
             this._undoButton.Location = new System.Drawing.Point(133, 0);
             this._undoButton.Name = "_undoButton";
             this._undoButton.OffsetPressedContent = true;
@@ -247,9 +247,9 @@
             this._cutButton.InnerBorderColor = System.Drawing.Color.Transparent;
             this._cutButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
             this._cutButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-            this.localizationExtender1.SetLocalizableToolTip(this._cutButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._cutButton, null);
-            this.localizationExtender1.SetLocalizingId(this._cutButton, "EditTab._cutButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._cutButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._cutButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._cutButton, "EditTab._cutButton");
             this._cutButton.Location = new System.Drawing.Point(52, 7);
             this._cutButton.Name = "_cutButton";
             this._cutButton.OffsetPressedContent = true;
@@ -288,9 +288,9 @@
             this._pasteButton.InnerBorderColor = System.Drawing.Color.Transparent;
             this._pasteButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
             this._pasteButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-            this.localizationExtender1.SetLocalizableToolTip(this._pasteButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._pasteButton, null);
-            this.localizationExtender1.SetLocalizingId(this._pasteButton, "EditTab._pasteButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._pasteButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._pasteButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._pasteButton, "EditTab._pasteButton");
             this._pasteButton.Location = new System.Drawing.Point(2, 5);
             this._pasteButton.Name = "_pasteButton";
             this._pasteButton.OffsetPressedContent = true;
@@ -329,9 +329,9 @@
             this._copyButton.InnerBorderColor = System.Drawing.Color.Transparent;
             this._copyButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
             this._copyButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-            this.localizationExtender1.SetLocalizableToolTip(this._copyButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._copyButton, null);
-            this.localizationExtender1.SetLocalizingId(this._copyButton, "EditTab._copyButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._copyButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._copyButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._copyButton, "EditTab._copyButton");
             this._copyButton.Location = new System.Drawing.Point(52, 29);
             this._copyButton.Name = "_copyButton";
             this._copyButton.OffsetPressedContent = true;
@@ -355,9 +355,10 @@
             this._contentLanguagesDropdown,
             this._layoutChoices});
             this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
-            this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
-            this.localizationExtender1.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
             this._menusToolStrip.Location = new System.Drawing.Point(294, 20);
             this._menusToolStrip.Name = "_menusToolStrip";
             this._menusToolStrip.Size = new System.Drawing.Size(165, 42);
@@ -369,9 +370,9 @@
             this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.localizationExtender1.SetLocalizableToolTip(this._contentLanguagesDropdown, null);
-            this.localizationExtender1.SetLocalizationComment(this._contentLanguagesDropdown, null);
-            this.localizationExtender1.SetLocalizingId(this._contentLanguagesDropdown, "EditTab._contentLanguagesDropdown");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._contentLanguagesDropdown, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._contentLanguagesDropdown, null);
+            this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab._contentLanguagesDropdown");
             this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
             this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
             this._contentLanguagesDropdown.Text = "Multilingual Settings";
@@ -382,10 +383,10 @@
             this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._layoutChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._layoutChoices, "EditTab._layoutChoices");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "EditTab._layoutChoices");
             this._layoutChoices.Name = "_layoutChoices";
             this._layoutChoices.Size = new System.Drawing.Size(50, 19);
             this._layoutChoices.Text = "Paper";
@@ -397,9 +398,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this._browser1.BackColor = System.Drawing.Color.DarkGray;
-            this.localizationExtender1.SetLocalizableToolTip(this._browser1, null);
-            this.localizationExtender1.SetLocalizationComment(this._browser1, null);
-            this.localizationExtender1.SetLocalizingId(this._browser1, "EditTab.Browser");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._browser1, null);
+            this._L10NSharpExtender.SetLocalizingId(this._browser1, "EditTab.Browser");
             this._browser1.Location = new System.Drawing.Point(0, 0);
             this._browser1.Margin = new System.Windows.Forms.Padding(5);
             this._browser1.Name = "_browser1";
@@ -411,9 +412,9 @@
             // 
             this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
             this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.localizationExtender1.SetLocalizableToolTip(this._splitTemplateAndSource, null);
-            this.localizationExtender1.SetLocalizationComment(this._splitTemplateAndSource, null);
-            this.localizationExtender1.SetLocalizingId(this._splitTemplateAndSource, "EditTab._splitTemplateAndSource");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._splitTemplateAndSource, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._splitTemplateAndSource, null);
+            this._L10NSharpExtender.SetLocalizingId(this._splitTemplateAndSource, "EditTab._splitTemplateAndSource");
             this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
             this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
             this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
@@ -436,14 +437,14 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.Controls.Add(this._splitContainer1);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "EditTab.EditingView");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "EditTab.EditingView");
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "EditingView";
             this.Size = new System.Drawing.Size(1200, 561);
             this.Load += new System.EventHandler(this.EditingView_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this._splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
             this._splitContainer1.ResumeLayout(false);
@@ -479,7 +480,7 @@
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _cutButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _undoButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _deletePageButton;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 
 
     }

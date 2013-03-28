@@ -31,17 +31,17 @@
             this.components = new System.ComponentModel.Container();
             this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
             this._selectedLanguage = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _lookupISOControl
             // 
             this._lookupISOControl.ISOCode = "qaa";
-            this.localizationExtender1.SetLocalizableToolTip(this._lookupISOControl, null);
-            this.localizationExtender1.SetLocalizationComment(this._lookupISOControl, null);
-            this.localizationExtender1.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._lookupISOControl, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._lookupISOControl, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
             this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
             this._lookupISOControl.Name = "_lookupISOControl";
             this._lookupISOControl.Size = new System.Drawing.Size(242, 252);
@@ -53,10 +53,10 @@
             this._selectedLanguage.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this._selectedLanguage.Enabled = false;
             this._selectedLanguage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.localizationExtender1.SetLocalizableToolTip(this._selectedLanguage, null);
-            this.localizationExtender1.SetLocalizationComment(this._selectedLanguage, null);
-            this.localizationExtender1.SetLocalizationPriority(this._selectedLanguage, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._selectedLanguage, "NewCollectionWizard.LanguageIdControl._selectedLanguage");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._selectedLanguage, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._selectedLanguage, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._selectedLanguage, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._selectedLanguage, "NewCollectionWizard.LanguageIdControl._selectedLanguage");
             this._selectedLanguage.Location = new System.Drawing.Point(248, 33);
             this._selectedLanguage.Multiline = true;
             this._selectedLanguage.Name = "_selectedLanguage";
@@ -66,10 +66,10 @@
             this._selectedLanguage.TabStop = false;
             this._selectedLanguage.Text = "<Language Name>";
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
-            this.localizationExtender1.PrefixForNewItems = "NewCollectionWizard.LanguageIdControl";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.PrefixForNewItems = "NewCollectionWizard.LanguageIdControl";
             // 
             // LanguageIdControl
             // 
@@ -77,12 +77,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this._selectedLanguage);
             this.Controls.Add(this._lookupISOControl);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "NewCollectionWizard.LanguageIdControl.LanguageIdControl");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "NewCollectionWizard.LanguageIdControl.LanguageIdControl");
             this.Name = "LanguageIdControl";
             this.Size = new System.Drawing.Size(521, 260);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -92,6 +92,6 @@
 
 		private Palaso.UI.WindowsForms.WritingSystems.LookupISOControl _lookupISOControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _selectedLanguage;
-        private L10NSharp.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

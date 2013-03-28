@@ -47,7 +47,7 @@
             this._bodyRadio = new System.Windows.Forms.RadioButton();
             this._coverRadio = new System.Windows.Forms.RadioButton();
             this._noBookletRadio = new System.Windows.Forms.RadioButton();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
             this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
             this._workingIndicator.SuspendLayout();
@@ -55,7 +55,7 @@
             this.tableLayoutPanel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this._menusToolStrip.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _makePdfBackgroundWorker
@@ -93,9 +93,9 @@
             this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._saveButton.ForeColor = System.Drawing.Color.Black;
             this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-            this.localizationExtender1.SetLocalizableToolTip(this._saveButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._saveButton, null);
-            this.localizationExtender1.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
             this._saveButton.Location = new System.Drawing.Point(139, 0);
             this._saveButton.Name = "_saveButton";
             this._saveButton.Size = new System.Drawing.Size(185, 71);
@@ -114,9 +114,9 @@
             this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._printButton.ForeColor = System.Drawing.Color.Black;
             this._printButton.Image = global::Bloom.Properties.Resources.print;
-            this.localizationExtender1.SetLocalizableToolTip(this._printButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._printButton, null);
-            this.localizationExtender1.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._printButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._printButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
             this._printButton.Location = new System.Drawing.Point(0, 0);
             this._printButton.Name = "_printButton";
             this._printButton.Size = new System.Drawing.Size(160, 64);
@@ -153,18 +153,18 @@
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem});
-            this.localizationExtender1.SetLocalizableToolTip(this.contextMenuStrip1, null);
-            this.localizationExtender1.SetLocalizationComment(this.contextMenuStrip1, null);
-            this.localizationExtender1.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.contextMenuStrip1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(335, 26);
             // 
             // _openinBrowserMenuItem
             // 
-            this.localizationExtender1.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
-            this.localizationExtender1.SetLocalizationComment(this._openinBrowserMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
+            this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
             this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
             this._openinBrowserMenuItem.Size = new System.Drawing.Size(334, 22);
             this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Browser";
@@ -180,9 +180,10 @@
             this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._layoutChoices});
             this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.localizationExtender1.SetLocalizableToolTip(this._menusToolStrip, null);
-            this.localizationExtender1.SetLocalizationComment(this._menusToolStrip, null);
-            this.localizationExtender1.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
             this._menusToolStrip.Location = new System.Drawing.Point(0, 0);
             this._menusToolStrip.Name = "_menusToolStrip";
             this._menusToolStrip.Size = new System.Drawing.Size(100, 47);
@@ -194,10 +195,10 @@
             this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this._layoutChoices.ForeColor = System.Drawing.Color.White;
             this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._layoutChoices, "._layoutChoices");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "._layoutChoices");
             this._layoutChoices.Name = "_layoutChoices";
             this._layoutChoices.Size = new System.Drawing.Size(85, 19);
             this._layoutChoices.Text = "Page Layout";
@@ -206,9 +207,9 @@
             // _bodyRadio
             // 
             this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
-            this.localizationExtender1.SetLocalizableToolTip(this._bodyRadio, null);
-            this.localizationExtender1.SetLocalizationComment(this._bodyRadio, null);
-            this.localizationExtender1.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._bodyRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._bodyRadio, null);
+            this._L10NSharpExtender.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
             this._bodyRadio.Location = new System.Drawing.Point(3, 50);
             this._bodyRadio.Name = "_bodyRadio";
             this._bodyRadio.Size = new System.Drawing.Size(94, 106);
@@ -233,9 +234,9 @@
             // _coverRadio
             // 
             this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
-            this.localizationExtender1.SetLocalizableToolTip(this._coverRadio, null);
-            this.localizationExtender1.SetLocalizationComment(this._coverRadio, null);
-            this.localizationExtender1.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._coverRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._coverRadio, null);
+            this._L10NSharpExtender.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
             this._coverRadio.Location = new System.Drawing.Point(3, 162);
             this._coverRadio.Name = "_coverRadio";
             this._coverRadio.Size = new System.Drawing.Size(94, 91);
@@ -259,9 +260,9 @@
             // _noBookletRadio
             // 
             this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
-            this.localizationExtender1.SetLocalizableToolTip(this._noBookletRadio, null);
-            this.localizationExtender1.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
-            this.localizationExtender1.SetLocalizingId(this._noBookletRadio, "PublishTab.OnPagePerPaperRadio");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._noBookletRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
+            this._L10NSharpExtender.SetLocalizingId(this._noBookletRadio, "PublishTab.OnPagePerPaperRadio");
             this._noBookletRadio.Location = new System.Drawing.Point(3, 259);
             this._noBookletRadio.Name = "_noBookletRadio";
             this._noBookletRadio.Size = new System.Drawing.Size(94, 108);
@@ -272,9 +273,9 @@
             this._noBookletRadio.UseVisualStyleBackColor = true;
             this._noBookletRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // _adobeReaderControl
             // 
@@ -282,9 +283,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this._adobeReaderControl.BackColor = System.Drawing.Color.White;
-            this.localizationExtender1.SetLocalizableToolTip(this._adobeReaderControl, null);
-            this.localizationExtender1.SetLocalizationComment(this._adobeReaderControl, null);
-            this.localizationExtender1.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._adobeReaderControl, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._adobeReaderControl, null);
+            this._L10NSharpExtender.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
             this._adobeReaderControl.Location = new System.Drawing.Point(103, 3);
             this._adobeReaderControl.Name = "_adobeReaderControl";
             this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
@@ -302,9 +303,9 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this._workingIndicator);
             this.Controls.Add(this._adobeReaderControl);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "PublishView.PublishView");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
             this.Name = "PublishView";
             this.Size = new System.Drawing.Size(833, 540);
             this._workingIndicator.ResumeLayout(false);
@@ -314,7 +315,7 @@
             this.contextMenuStrip1.ResumeLayout(false);
             this._menusToolStrip.ResumeLayout(false);
             this._menusToolStrip.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -329,7 +330,7 @@
 		private System.Windows.Forms.Panel _topBarPanel;
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private AdobeReaderControl _adobeReaderControl;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;

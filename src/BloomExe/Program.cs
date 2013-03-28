@@ -434,27 +434,21 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
-//                var unusedGoesIntoStatic = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
-//                                           "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
-//                                           installedStringFileFolder,
-//                                           Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
-				//L10Net L10NDotNet LocalEasy LocalEeze
-//                var localeasy = LocalEasy.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
-//                localeasy.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
-//                localeasy.AddLocalizationPackage(NameSpace = "Palaso", ID = "Palaso", DisplayName = "Palaso", Version = Application.ProductVersion);
-				/*
-					[L10NDotNet(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
-					[L10NDotNet.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
-					[Localeese.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
-					[Localeasy.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
-				 *
-				 * */
 
-				//                L10N.EndInit();
-				//product namespace staticclass
-				//L10N.Strings.GetString();
-				//L10NDotNet.L10N.GetString();
-				//  L10N.GetString();
+				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
+				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
+										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
+										   installedStringFileFolder,
+										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
+
+  /*                var l10nSystem = L10NSystem.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
+					l10nSystem.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
+					l10nSystem.AddLocalizationPackage(NameSpace = "Palaso", ID = "Palaso", DisplayName = "Palaso", Version = Application.ProductVersion);
+				or better
+						[Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
+				l10nSystem.EndInit();
+	*/
+
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
 			catch (Exception error)

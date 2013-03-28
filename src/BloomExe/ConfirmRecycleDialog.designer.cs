@@ -36,10 +36,10 @@ namespace Bloom
 			this.pictureRecycleBin = new System.Windows.Forms.PictureBox();
 			this.cancelBtn = new System.Windows.Forms.Button();
 			this.deleteBtn = new System.Windows.Forms.Button();
-			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.tableLayout.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureRecycleBin)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			//
 			// tableLayout
@@ -70,10 +70,10 @@ namespace Bloom
 			| System.Windows.Forms.AnchorStyles.Right)));
 			this._messageLabel.AutoSize = true;
 			this.tableLayout.SetColumnSpan(this._messageLabel, 2);
-			this.localizationExtender1.SetLocalizableToolTip(this._messageLabel, null);
-			this.localizationExtender1.SetLocalizationComment(this._messageLabel, "In your translation, put the {0} placeholder where you want the name of the thing" +
+			this._L10NSharpExtender.SetLocalizableToolTip(this._messageLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._messageLabel, "In your translation, put the {0} placeholder where you want the name of the thing" +
 		" to be deleted to appear.");
-			this.localizationExtender1.SetLocalizingId(this._messageLabel, "ConfirmRecycleDialog._messageLabel");
+			this._L10NSharpExtender.SetLocalizingId(this._messageLabel, "ConfirmRecycleDialog._messageLabel");
 			this._messageLabel.Location = new System.Drawing.Point(122, 4);
 			this._messageLabel.Margin = new System.Windows.Forms.Padding(0, 4, 0, 10);
 			this._messageLabel.Name = "_messageLabel";
@@ -84,9 +84,9 @@ namespace Bloom
 			// pictureRecycleBin
 			//
 			this.pictureRecycleBin.Image = global::Bloom.Properties.Resources.RecycleBin;
-			this.localizationExtender1.SetLocalizableToolTip(this.pictureRecycleBin, null);
-			this.localizationExtender1.SetLocalizationComment(this.pictureRecycleBin, null);
-			this.localizationExtender1.SetLocalizingId(this.pictureRecycleBin, "ConfirmRecycleDialog.pictureRecycleBin");
+			this._L10NSharpExtender.SetLocalizableToolTip(this.pictureRecycleBin, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.pictureRecycleBin, null);
+			this._L10NSharpExtender.SetLocalizingId(this.pictureRecycleBin, "ConfirmRecycleDialog.pictureRecycleBin");
 			this.pictureRecycleBin.Location = new System.Drawing.Point(0, 0);
 			this.pictureRecycleBin.Margin = new System.Windows.Forms.Padding(0, 0, 20, 10);
 			this.pictureRecycleBin.Name = "pictureRecycleBin";
@@ -100,9 +100,9 @@ namespace Bloom
 			this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cancelBtn.AutoSize = true;
 			this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.localizationExtender1.SetLocalizableToolTip(this.cancelBtn, null);
-			this.localizationExtender1.SetLocalizationComment(this.cancelBtn, null);
-			this.localizationExtender1.SetLocalizingId(this.cancelBtn, "Common.CancelButton");
+			this._L10NSharpExtender.SetLocalizableToolTip(this.cancelBtn, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.cancelBtn, null);
+			this._L10NSharpExtender.SetLocalizingId(this.cancelBtn, "Common.CancelButton");
 			this.cancelBtn.Location = new System.Drawing.Point(288, 112);
 			this.cancelBtn.Margin = new System.Windows.Forms.Padding(4, 0, 0, 0);
 			this.cancelBtn.Name = "cancelBtn";
@@ -117,9 +117,9 @@ namespace Bloom
 			this.deleteBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.deleteBtn.AutoSize = true;
 			this.deleteBtn.Image = global::Bloom.Properties.Resources.DeleteMessageBoxButtonImage;
-			this.localizationExtender1.SetLocalizableToolTip(this.deleteBtn, null);
-			this.localizationExtender1.SetLocalizationComment(this.deleteBtn, null);
-			this.localizationExtender1.SetLocalizingId(this.deleteBtn, "ConfirmRecycleDialog.deleteBtn");
+			this._L10NSharpExtender.SetLocalizableToolTip(this.deleteBtn, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.deleteBtn, null);
+			this._L10NSharpExtender.SetLocalizingId(this.deleteBtn, "ConfirmRecycleDialog.deleteBtn");
 			this.deleteBtn.Location = new System.Drawing.Point(205, 112);
 			this.deleteBtn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.deleteBtn.Name = "deleteBtn";
@@ -131,9 +131,9 @@ namespace Bloom
 			this.deleteBtn.UseVisualStyleBackColor = true;
 			this.deleteBtn.Click += new System.EventHandler(this.deleteBtn_Click);
 			//
-			// localizationExtender1
+			// _L10NSharpExtender
 			//
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			//
 			// ConfirmRecycleDialog
 			//
@@ -145,9 +145,9 @@ namespace Bloom
 			this.ControlBox = false;
 			this.Controls.Add(this.tableLayout);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-			this.localizationExtender1.SetLocalizableToolTip(this, null);
-			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "ConfirmRecycleDialog.ConfirmRecycleWindowTitle");
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizingId(this, "ConfirmRecycleDialog.ConfirmRecycleWindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.MinimumSize = new System.Drawing.Size(400, 28);
@@ -160,7 +160,7 @@ namespace Bloom
 			this.tableLayout.ResumeLayout(false);
 			this.tableLayout.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureRecycleBin)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -173,6 +173,6 @@ namespace Bloom
 		private System.Windows.Forms.PictureBox pictureRecycleBin;
 		private System.Windows.Forms.Button cancelBtn;
 		private System.Windows.Forms.Button deleteBtn;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
