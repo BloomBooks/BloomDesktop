@@ -33,8 +33,8 @@
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
             this._pagesLabel = new System.Windows.Forms.Label();
             this._thumbNailList = new Bloom.Edit.ThumbNailList();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _pageThumbnails
@@ -49,9 +49,9 @@
             this._pagesLabel.BackColor = System.Drawing.Color.Transparent;
             this._pagesLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._pagesLabel.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.localizationExtender1.SetLocalizableToolTip(this._pagesLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._pagesLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._pagesLabel, "EditTab.PageList.Heading");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._pagesLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._pagesLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._pagesLabel, "EditTab.PageList.Heading");
             this._pagesLabel.Location = new System.Drawing.Point(18, 3);
             this._pagesLabel.Name = "_pagesLabel";
             this._pagesLabel.Size = new System.Drawing.Size(50, 20);
@@ -67,9 +67,9 @@
             this._thumbNailList.Font = new System.Drawing.Font("Tahoma", 9F);
             this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
             this._thumbNailList.ItemWhichWouldPrecedeANewPageInsertion = null;
-            this.localizationExtender1.SetLocalizableToolTip(this._thumbNailList, null);
-            this.localizationExtender1.SetLocalizationComment(this._thumbNailList, null);
-            this.localizationExtender1.SetLocalizingId(this._thumbNailList, "PageListView.ThumbNailList");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._thumbNailList, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._thumbNailList, null);
+            this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "PageListView.ThumbNailList");
             this._thumbNailList.Location = new System.Drawing.Point(0, 40);
             this._thumbNailList.Margin = new System.Windows.Forms.Padding(0, 3, 0, 3);
             this._thumbNailList.Name = "_thumbNailList";
@@ -78,9 +78,9 @@
             this._thumbNailList.Size = new System.Drawing.Size(113, 173);
             this._thumbNailList.TabIndex = 2;
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // PageListView
             // 
@@ -91,13 +91,13 @@
             this.Controls.Add(this._thumbNailList);
             this.Controls.Add(this._pagesLabel);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "EditTab.PageList");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "EditTab.PageList");
             this.Name = "PageListView";
             this.Size = new System.Drawing.Size(116, 216);
             this.BackColorChanged += new System.EventHandler(this.PageListView_BackColorChanged);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -108,6 +108,6 @@
         private System.Windows.Forms.Label _pagesLabel;
         private System.Windows.Forms.ImageList _pageThumbnails;
 		private Bloom.Edit.ThumbNailList _thumbNailList;
-        private L10NSharp.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
     }
 }

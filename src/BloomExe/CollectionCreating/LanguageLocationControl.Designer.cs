@@ -36,17 +36,17 @@
             this._districtLabel = new System.Windows.Forms.Label();
             this._provinceLabel = new System.Windows.Forms.Label();
             this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _districtText
             // 
             this._districtText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._districtText, null);
-            this.localizationExtender1.SetLocalizationComment(this._districtText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._districtText, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._districtText, "NewCollectionWizard.LanguageLocationControl._districtText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._districtText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._districtText, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._districtText, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._districtText, "NewCollectionWizard.LanguageLocationControl._districtText");
             this._districtText.Location = new System.Drawing.Point(7, 154);
             this._districtText.Name = "_districtText";
             this._districtText.Size = new System.Drawing.Size(214, 25);
@@ -55,10 +55,10 @@
             // _provinceText
             // 
             this._provinceText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._provinceText, null);
-            this.localizationExtender1.SetLocalizationComment(this._provinceText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._provinceText, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._provinceText, "NewCollectionWizard.LanguageLocationControl._provinceText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._provinceText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._provinceText, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._provinceText, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._provinceText, "NewCollectionWizard.LanguageLocationControl._provinceText");
             this._provinceText.Location = new System.Drawing.Point(7, 89);
             this._provinceText.Name = "_provinceText";
             this._provinceText.Size = new System.Drawing.Size(214, 25);
@@ -67,10 +67,10 @@
             // _countryText
             // 
             this._countryText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._countryText, null);
-            this.localizationExtender1.SetLocalizationComment(this._countryText, null);
-            this.localizationExtender1.SetLocalizationPriority(this._countryText, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._countryText, "NewCollectionWizard.LanguageLocationControl._countryText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._countryText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._countryText, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._countryText, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._countryText, "NewCollectionWizard.LanguageLocationControl._countryText");
             this._countryText.Location = new System.Drawing.Point(7, 22);
             this._countryText.Name = "_countryText";
             this._countryText.Size = new System.Drawing.Size(214, 25);
@@ -80,9 +80,9 @@
             // 
             this._countryLabel.AutoSize = true;
             this._countryLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._countryLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._countryLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._countryLabel, "NewCollectionWizard.LocationPage.Country");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._countryLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._countryLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._countryLabel, "NewCollectionWizard.LocationPage.Country");
             this._countryLabel.Location = new System.Drawing.Point(3, 0);
             this._countryLabel.Name = "_countryLabel";
             this._countryLabel.Size = new System.Drawing.Size(59, 19);
@@ -93,9 +93,9 @@
             // 
             this._districtLabel.AutoSize = true;
             this._districtLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._districtLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._districtLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._districtLabel, "NewCollectionWizard.LocationPage.District");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._districtLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._districtLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._districtLabel, "NewCollectionWizard.LocationPage.District");
             this._districtLabel.Location = new System.Drawing.Point(3, 132);
             this._districtLabel.Name = "_districtLabel";
             this._districtLabel.Size = new System.Drawing.Size(55, 19);
@@ -106,9 +106,9 @@
             // 
             this._provinceLabel.AutoSize = true;
             this._provinceLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._provinceLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._provinceLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._provinceLabel, "NewCollectionWizard.LocationPage.Province");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._provinceLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._provinceLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._provinceLabel, "NewCollectionWizard.LocationPage.Province");
             this._provinceLabel.Location = new System.Drawing.Point(3, 67);
             this._provinceLabel.Name = "_provinceLabel";
             this._provinceLabel.Size = new System.Drawing.Size(63, 19);
@@ -124,9 +124,9 @@
             this.betterLabel1.Enabled = false;
             this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.betterLabel1.ForeColor = System.Drawing.Color.DimGray;
-            this.localizationExtender1.SetLocalizableToolTip(this.betterLabel1, null);
-            this.localizationExtender1.SetLocalizationComment(this.betterLabel1, null);
-            this.localizationExtender1.SetLocalizingId(this.betterLabel1, "NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.betterLabel1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.betterLabel1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.betterLabel1, "NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional");
             this.betterLabel1.Location = new System.Drawing.Point(242, 22);
             this.betterLabel1.Multiline = true;
             this.betterLabel1.Name = "betterLabel1";
@@ -137,10 +137,10 @@
             this.betterLabel1.Text = "These are optional. Bloom will place them in the right places on title page of bo" +
     "oks you create.";
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
-            this.localizationExtender1.PrefixForNewItems = "NewCollectionWizard.LocationPage";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.PrefixForNewItems = "NewCollectionWizard.LocationPage";
             // 
             // LanguageLocationControl
             // 
@@ -154,13 +154,13 @@
             this.Controls.Add(this._countryLabel);
             this.Controls.Add(this._districtLabel);
             this.Controls.Add(this._provinceLabel);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "NewCollectionWizard.LanguageLocationControl.LanguageLocationControl");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "NewCollectionWizard.LanguageLocationControl.LanguageLocationControl");
             this.Name = "LanguageLocationControl";
             this.Size = new System.Drawing.Size(414, 343);
             this.Leave += new System.EventHandler(this.LanguageLocationControl_Leave);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -175,6 +175,6 @@
 		private System.Windows.Forms.Label _districtLabel;
 		private System.Windows.Forms.Label _provinceLabel;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
-        private L10NSharp.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

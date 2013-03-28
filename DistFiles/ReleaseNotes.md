@@ -1,3 +1,7 @@
+## 0.950 28 March 2013
+* Image ToolBox is now mostly localizable
+* Metadata editor is now mostly localizable
+
 ## 0.947 22 March 2013
 * New Collection Wizard is now mostly localizable
 * On first run, now detects user's OS Display Language and tries to use that, or offers other choices if it doesn't have that UI language yet.

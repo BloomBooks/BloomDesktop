@@ -66,7 +66,7 @@
             this._okButton = new System.Windows.Forms.Button();
             this._restartReminder = new System.Windows.Forms.Label();
             this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._cancelButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._tab.SuspendLayout();
@@ -74,7 +74,7 @@
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _tab
@@ -106,9 +106,9 @@
             this.tabPage1.Controls.Add(this._language2Label);
             this.tabPage1.Controls.Add(this._language1Name);
             this.tabPage1.Controls.Add(this._language1Label);
-            this.localizationExtender1.SetLocalizableToolTip(this.tabPage1, null);
-            this.localizationExtender1.SetLocalizationComment(this.tabPage1, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage1, "CollectionSettingsDialog.LanguageTab.LanguageTabLabel");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.tabPage1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.tabPage1, "CollectionSettingsDialog.LanguageTab.LanguageTabLabel");
             this.tabPage1.Location = new System.Drawing.Point(4, 26);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -124,9 +124,9 @@
             this._aboutLanguageSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._aboutLanguageSettingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._aboutLanguageSettingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-            this.localizationExtender1.SetLocalizableToolTip(this._aboutLanguageSettingsButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._aboutLanguageSettingsButton, null);
-            this.localizationExtender1.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._aboutLanguageSettingsButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._aboutLanguageSettingsButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton");
             this._aboutLanguageSettingsButton.Location = new System.Drawing.Point(477, 24);
             this._aboutLanguageSettingsButton.Name = "_aboutLanguageSettingsButton";
             this._aboutLanguageSettingsButton.Size = new System.Drawing.Size(113, 73);
@@ -139,9 +139,9 @@
             // _removeLanguage3Link
             // 
             this._removeLanguage3Link.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._removeLanguage3Link, null);
-            this.localizationExtender1.SetLocalizationComment(this._removeLanguage3Link, null);
-            this.localizationExtender1.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab._removeLanguageLink");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._removeLanguage3Link, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._removeLanguage3Link, null);
+            this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab._removeLanguageLink");
             this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
             this._removeLanguage3Link.Name = "_removeLanguage3Link";
             this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -153,9 +153,9 @@
             // _changeLanguage3Link
             // 
             this._changeLanguage3Link.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage3Link, null);
-            this.localizationExtender1.SetLocalizationComment(this._changeLanguage3Link, null);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage3Link, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage3Link, null);
+            this._L10NSharpExtender.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage3Link.Location = new System.Drawing.Point(27, 243);
             this._changeLanguage3Link.Name = "_changeLanguage3Link";
             this._changeLanguage3Link.Size = new System.Drawing.Size(65, 19);
@@ -167,9 +167,9 @@
             // _changeLanguage2Link
             // 
             this._changeLanguage2Link.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage2Link, null);
-            this.localizationExtender1.SetLocalizationComment(this._changeLanguage2Link, null);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage2Link, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage2Link, null);
+            this._L10NSharpExtender.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage2Link.Location = new System.Drawing.Point(27, 158);
             this._changeLanguage2Link.Name = "_changeLanguage2Link";
             this._changeLanguage2Link.Size = new System.Drawing.Size(65, 19);
@@ -181,9 +181,9 @@
             // _changeLanguage1Link
             // 
             this._changeLanguage1Link.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._changeLanguage1Link, null);
-            this.localizationExtender1.SetLocalizationComment(this._changeLanguage1Link, null);
-            this.localizationExtender1.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage1Link, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage1Link, null);
+            this._L10NSharpExtender.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
             this._changeLanguage1Link.Location = new System.Drawing.Point(27, 69);
             this._changeLanguage1Link.Name = "_changeLanguage1Link";
             this._changeLanguage1Link.Size = new System.Drawing.Size(65, 19);
@@ -196,10 +196,10 @@
             // 
             this._language3Name.AutoSize = true;
             this._language3Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language3Name, null);
-            this.localizationExtender1.SetLocalizationComment(this._language3Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language3Name, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._language3Name, "CollectionSettingsDialog._nationalLanguage2Label");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language3Name, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language3Name, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._language3Name, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._language3Name, "CollectionSettingsDialog._nationalLanguage2Label");
             this._language3Name.Location = new System.Drawing.Point(26, 218);
             this._language3Name.Name = "_language3Name";
             this._language3Name.Size = new System.Drawing.Size(49, 19);
@@ -210,9 +210,9 @@
             // 
             this._language3Label.AutoSize = true;
             this._language3Label.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language3Label, null);
-            this.localizationExtender1.SetLocalizationComment(this._language3Label, null);
-            this.localizationExtender1.SetLocalizingId(this._language3Label, "CollectionSettingsDialog.LanguageTab._language3Label");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language3Label, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language3Label, null);
+            this._L10NSharpExtender.SetLocalizingId(this._language3Label, "CollectionSettingsDialog.LanguageTab._language3Label");
             this._language3Label.Location = new System.Drawing.Point(26, 198);
             this._language3Label.Name = "_language3Label";
             this._language3Label.Size = new System.Drawing.Size(316, 19);
@@ -223,10 +223,10 @@
             // 
             this._language2Name.AutoSize = true;
             this._language2Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language2Name, null);
-            this.localizationExtender1.SetLocalizationComment(this._language2Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language2Name, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._language2Name, "CollectionSettingsDialog._nationalLanguage1Label");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language2Name, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language2Name, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._language2Name, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._language2Name, "CollectionSettingsDialog._nationalLanguage1Label");
             this._language2Name.Location = new System.Drawing.Point(26, 133);
             this._language2Name.Name = "_language2Name";
             this._language2Name.Size = new System.Drawing.Size(49, 19);
@@ -237,9 +237,9 @@
             // 
             this._language2Label.AutoSize = true;
             this._language2Label.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language2Label, null);
-            this.localizationExtender1.SetLocalizationComment(this._language2Label, null);
-            this.localizationExtender1.SetLocalizingId(this._language2Label, "CollectionSettingsDialog.LanguageTab._language2Label");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language2Label, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language2Label, null);
+            this._L10NSharpExtender.SetLocalizingId(this._language2Label, "CollectionSettingsDialog.LanguageTab._language2Label");
             this._language2Label.Location = new System.Drawing.Point(26, 113);
             this._language2Label.Name = "_language2Label";
             this._language2Label.Size = new System.Drawing.Size(238, 19);
@@ -251,10 +251,10 @@
             // 
             this._language1Name.AutoSize = true;
             this._language1Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language1Name, null);
-            this.localizationExtender1.SetLocalizationComment(this._language1Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language1Name, L10NSharp.LocalizationPriority.NotLocalizable);
-            this.localizationExtender1.SetLocalizingId(this._language1Name, "CollectionSettingsDialog._vernacularLanguageName");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language1Name, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language1Name, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._language1Name, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._language1Name, "CollectionSettingsDialog._vernacularLanguageName");
             this._language1Name.Location = new System.Drawing.Point(26, 44);
             this._language1Name.Name = "_language1Name";
             this._language1Name.Size = new System.Drawing.Size(49, 19);
@@ -265,9 +265,9 @@
             // 
             this._language1Label.AutoSize = true;
             this._language1Label.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._language1Label, null);
-            this.localizationExtender1.SetLocalizationComment(this._language1Label, null);
-            this.localizationExtender1.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._language1Label, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._language1Label, null);
+            this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
             this._language1Label.Location = new System.Drawing.Point(26, 24);
             this._language1Label.Name = "_language1Label";
             this._language1Label.Size = new System.Drawing.Size(140, 19);
@@ -281,9 +281,9 @@
             this.tabPage2.Controls.Add(this._aboutBookMakingSettingsButton);
             this.tabPage2.Controls.Add(this._xmatterPackLabel);
             this.tabPage2.Controls.Add(this._xmatterPackCombo);
-            this.localizationExtender1.SetLocalizableToolTip(this.tabPage2, null);
-            this.localizationExtender1.SetLocalizationComment(this.tabPage2, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage2, "CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage2, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.tabPage2, null);
+            this._L10NSharpExtender.SetLocalizingId(this.tabPage2, "CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel");
             this.tabPage2.Location = new System.Drawing.Point(4, 26);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -296,9 +296,9 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this.label2, null);
-            this.localizationExtender1.SetLocalizationComment(this.label2, null);
-            this.localizationExtender1.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Font");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
+            this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Font");
             this.label2.Location = new System.Drawing.Point(27, 40);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(37, 19);
@@ -309,9 +309,9 @@
             // 
             this._fontCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._fontCombo.FormattingEnabled = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._fontCombo, null);
-            this.localizationExtender1.SetLocalizationComment(this._fontCombo, null);
-            this.localizationExtender1.SetLocalizingId(this._fontCombo, "CollectionSettingsDialog._xmatterPackCombo");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._fontCombo, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._fontCombo, null);
+            this._L10NSharpExtender.SetLocalizingId(this._fontCombo, "CollectionSettingsDialog._xmatterPackCombo");
             this._fontCombo.Location = new System.Drawing.Point(31, 62);
             this._fontCombo.Name = "_fontCombo";
             this._fontCombo.Size = new System.Drawing.Size(146, 25);
@@ -325,9 +325,9 @@
             this._aboutBookMakingSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._aboutBookMakingSettingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._aboutBookMakingSettingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-            this.localizationExtender1.SetLocalizableToolTip(this._aboutBookMakingSettingsButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._aboutBookMakingSettingsButton, null);
-            this.localizationExtender1.SetLocalizingId(this._aboutBookMakingSettingsButton, "CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBookMakingSettingsButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._aboutBookMakingSettingsButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._aboutBookMakingSettingsButton, "CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton");
             this._aboutBookMakingSettingsButton.Location = new System.Drawing.Point(468, 30);
             this._aboutBookMakingSettingsButton.Name = "_aboutBookMakingSettingsButton";
             this._aboutBookMakingSettingsButton.Size = new System.Drawing.Size(113, 73);
@@ -341,9 +341,9 @@
             // 
             this._xmatterPackLabel.AutoSize = true;
             this._xmatterPackLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._xmatterPackLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._xmatterPackLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack");
             this._xmatterPackLabel.Location = new System.Drawing.Point(27, 124);
             this._xmatterPackLabel.Name = "_xmatterPackLabel";
             this._xmatterPackLabel.Size = new System.Drawing.Size(156, 19);
@@ -354,9 +354,9 @@
             // 
             this._xmatterPackCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._xmatterPackCombo.FormattingEnabled = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._xmatterPackCombo, null);
-            this.localizationExtender1.SetLocalizationComment(this._xmatterPackCombo, null);
-            this.localizationExtender1.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackCombo, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackCombo, null);
+            this._L10NSharpExtender.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
             this._xmatterPackCombo.Location = new System.Drawing.Point(31, 146);
             this._xmatterPackCombo.Name = "_xmatterPackCombo";
             this._xmatterPackCombo.Size = new System.Drawing.Size(146, 25);
@@ -373,9 +373,9 @@
             this.tabPage3.Controls.Add(this._countryLabel);
             this.tabPage3.Controls.Add(this._districtLabel);
             this.tabPage3.Controls.Add(this._provinceLabel);
-            this.localizationExtender1.SetLocalizableToolTip(this.tabPage3, null);
-            this.localizationExtender1.SetLocalizationComment(this.tabPage3, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage3, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.tabPage3, null);
+            this._L10NSharpExtender.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
             this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Size = new System.Drawing.Size(610, 318);
@@ -386,9 +386,9 @@
             // _bloomCollectionName
             // 
             this._bloomCollectionName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._bloomCollectionName, null);
-            this.localizationExtender1.SetLocalizationComment(this._bloomCollectionName, null);
-            this.localizationExtender1.SetLocalizingId(this._bloomCollectionName, "CollectionSettingsDialog.BloomProjectName");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._bloomCollectionName, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._bloomCollectionName, null);
+            this._L10NSharpExtender.SetLocalizingId(this._bloomCollectionName, "CollectionSettingsDialog.BloomProjectName");
             this._bloomCollectionName.Location = new System.Drawing.Point(32, 246);
             this._bloomCollectionName.Name = "_bloomCollectionName";
             this._bloomCollectionName.Size = new System.Drawing.Size(214, 25);
@@ -399,9 +399,9 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this.label1, null);
-            this.localizationExtender1.SetLocalizationComment(this.label1, null);
-            this.localizationExtender1.SetLocalizingId(this.label1, "CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.label1, "CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName");
             this.label1.Location = new System.Drawing.Point(28, 224);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(158, 19);
@@ -415,9 +415,9 @@
             this._aboutProjectInformationSetingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._aboutProjectInformationSetingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._aboutProjectInformationSetingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-            this.localizationExtender1.SetLocalizableToolTip(this._aboutProjectInformationSetingsButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._aboutProjectInformationSetingsButton, null);
-            this.localizationExtender1.SetLocalizingId(this._aboutProjectInformationSetingsButton, "CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsBut" +
+            this._L10NSharpExtender.SetLocalizableToolTip(this._aboutProjectInformationSetingsButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._aboutProjectInformationSetingsButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._aboutProjectInformationSetingsButton, "CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsBut" +
         "ton");
             this._aboutProjectInformationSetingsButton.Location = new System.Drawing.Point(479, 21);
             this._aboutProjectInformationSetingsButton.Name = "_aboutProjectInformationSetingsButton";
@@ -431,9 +431,9 @@
             // _districtText
             // 
             this._districtText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._districtText, null);
-            this.localizationExtender1.SetLocalizationComment(this._districtText, null);
-            this.localizationExtender1.SetLocalizingId(this._districtText, "CollectionSettingsDialog._districtText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._districtText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._districtText, null);
+            this._L10NSharpExtender.SetLocalizingId(this._districtText, "CollectionSettingsDialog._districtText");
             this._districtText.Location = new System.Drawing.Point(32, 177);
             this._districtText.Name = "_districtText";
             this._districtText.Size = new System.Drawing.Size(214, 25);
@@ -442,9 +442,9 @@
             // _provinceText
             // 
             this._provinceText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._provinceText, null);
-            this.localizationExtender1.SetLocalizationComment(this._provinceText, null);
-            this.localizationExtender1.SetLocalizingId(this._provinceText, "CollectionSettingsDialog._provinceText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._provinceText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._provinceText, null);
+            this._L10NSharpExtender.SetLocalizingId(this._provinceText, "CollectionSettingsDialog._provinceText");
             this._provinceText.Location = new System.Drawing.Point(32, 112);
             this._provinceText.Name = "_provinceText";
             this._provinceText.Size = new System.Drawing.Size(214, 25);
@@ -453,9 +453,9 @@
             // _countryText
             // 
             this._countryText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._countryText, null);
-            this.localizationExtender1.SetLocalizationComment(this._countryText, null);
-            this.localizationExtender1.SetLocalizingId(this._countryText, "CollectionSettingsDialog._countryText");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._countryText, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._countryText, null);
+            this._L10NSharpExtender.SetLocalizingId(this._countryText, "CollectionSettingsDialog._countryText");
             this._countryText.Location = new System.Drawing.Point(32, 45);
             this._countryText.Name = "_countryText";
             this._countryText.Size = new System.Drawing.Size(214, 25);
@@ -465,9 +465,9 @@
             // 
             this._countryLabel.AutoSize = true;
             this._countryLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._countryLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._countryLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._countryLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._countryLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
             this._countryLabel.Location = new System.Drawing.Point(28, 23);
             this._countryLabel.Name = "_countryLabel";
             this._countryLabel.Size = new System.Drawing.Size(59, 19);
@@ -478,9 +478,9 @@
             // 
             this._districtLabel.AutoSize = true;
             this._districtLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._districtLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._districtLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._districtLabel, "CollectionSettingsDialog.ProjectInformationTab.District");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._districtLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._districtLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._districtLabel, "CollectionSettingsDialog.ProjectInformationTab.District");
             this._districtLabel.Location = new System.Drawing.Point(28, 155);
             this._districtLabel.Name = "_districtLabel";
             this._districtLabel.Size = new System.Drawing.Size(55, 19);
@@ -491,9 +491,9 @@
             // 
             this._provinceLabel.AutoSize = true;
             this._provinceLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._provinceLabel, null);
-            this.localizationExtender1.SetLocalizationComment(this._provinceLabel, null);
-            this.localizationExtender1.SetLocalizingId(this._provinceLabel, "CollectionSettingsDialog.ProjectInformationTab.Province");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._provinceLabel, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._provinceLabel, null);
+            this._L10NSharpExtender.SetLocalizingId(this._provinceLabel, "CollectionSettingsDialog.ProjectInformationTab.Province");
             this._provinceLabel.Location = new System.Drawing.Point(28, 90);
             this._provinceLabel.Name = "_provinceLabel";
             this._provinceLabel.Size = new System.Drawing.Size(63, 19);
@@ -505,9 +505,9 @@
             this.tabPage4.Controls.Add(this._showExperimentalTemplates);
             this.tabPage4.Controls.Add(this._showSendReceive);
             this.tabPage4.Controls.Add(this._useImageServer);
-            this.localizationExtender1.SetLocalizableToolTip(this.tabPage4, null);
-            this.localizationExtender1.SetLocalizationComment(this.tabPage4, null);
-            this.localizationExtender1.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
+            this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
             this.tabPage4.Location = new System.Drawing.Point(4, 26);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -519,10 +519,10 @@
             // _showExperimentalTemplates
             // 
             this._showExperimentalTemplates.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._showExperimentalTemplates, null);
-            this.localizationExtender1.SetLocalizationComment(this._showExperimentalTemplates, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, L10NSharp.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentalTemplates, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalTemplates, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalTemplates, L10NSharp.LocalizationPriority.Low);
+            this._L10NSharpExtender.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
             this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 120);
             this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
             this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
@@ -534,10 +534,10 @@
             // _showSendReceive
             // 
             this._showSendReceive.AutoSize = true;
-            this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
-            this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
-            this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._showSendReceive, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._showSendReceive, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
+            this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
             this._showSendReceive.Location = new System.Drawing.Point(50, 78);
             this._showSendReceive.Name = "_showSendReceive";
             this._showSendReceive.Size = new System.Drawing.Size(291, 23);
@@ -550,11 +550,11 @@
             // 
             this._useImageServer.AutoSize = true;
             this._useImageServer.Enabled = false;
-            this.localizationExtender1.SetLocalizableToolTip(this._useImageServer, null);
-            this.localizationExtender1.SetLocalizationComment(this._useImageServer, "This option will probably go away, as any bugs with the Image Server get ironed o" +
+            this._L10NSharpExtender.SetLocalizableToolTip(this._useImageServer, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._useImageServer, "This option will probably go away, as any bugs with the Image Server get ironed o" +
         "ut. This has to do with how Bloom works internally; the I.S. makes it work bette" +
         "r on slow computers.");
-            this.localizationExtender1.SetLocalizingId(this._useImageServer, "CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer");
+            this._L10NSharpExtender.SetLocalizingId(this._useImageServer, "CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer");
             this._useImageServer.Location = new System.Drawing.Point(50, 35);
             this._useImageServer.Name = "_useImageServer";
             this._useImageServer.Size = new System.Drawing.Size(406, 23);
@@ -565,9 +565,9 @@
             // _okButton
             // 
             this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._okButton, null);
-            this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
             this._okButton.Location = new System.Drawing.Point(438, 383);
             this._okButton.Name = "_okButton";
             this._okButton.Size = new System.Drawing.Size(75, 23);
@@ -582,9 +582,9 @@
             this._restartReminder.AutoSize = true;
             this._restartReminder.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._restartReminder.ForeColor = System.Drawing.Color.Green;
-            this.localizationExtender1.SetLocalizableToolTip(this._restartReminder, null);
-            this.localizationExtender1.SetLocalizationComment(this._restartReminder, null);
-            this.localizationExtender1.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);
+            this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
             this._restartReminder.Location = new System.Drawing.Point(33, 386);
             this._restartReminder.Name = "_restartReminder";
             this._restartReminder.Size = new System.Drawing.Size(399, 17);
@@ -595,26 +595,26 @@
             // settingsProtectionLauncherButton1
             // 
             this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.localizationExtender1.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
-            this.localizationExtender1.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
-            this.localizationExtender1.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
             this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 350);
             this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
             this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
             this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
             this.settingsProtectionLauncherButton1.TabIndex = 20;
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // _cancelButton
             // 
             this._cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this._cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.localizationExtender1.SetLocalizableToolTip(this._cancelButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._cancelButton, null);
-            this.localizationExtender1.SetLocalizingId(this._cancelButton, "Common.CancelButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._cancelButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._cancelButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._cancelButton, "Common.CancelButton");
             this._cancelButton.Location = new System.Drawing.Point(533, 383);
             this._cancelButton.Name = "_cancelButton";
             this._cancelButton.Size = new System.Drawing.Size(75, 23);
@@ -637,9 +637,9 @@
             this.Controls.Add(this._okButton);
             this.Controls.Add(this._tab);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "CollectionSettingsDialog";
@@ -655,7 +655,7 @@
             this.tabPage3.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -690,7 +690,7 @@
 		private System.Windows.Forms.Button _aboutLanguageSettingsButton;
 		private System.Windows.Forms.Button _aboutBookMakingSettingsButton;
 		private System.Windows.Forms.Button _aboutProjectInformationSetingsButton;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox _useImageServer;
 		private System.Windows.Forms.ToolTip toolTip1;
