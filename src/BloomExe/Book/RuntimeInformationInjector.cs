@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Properties;
@@ -102,6 +103,18 @@ namespace Bloom.Book
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 
 			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
+
+			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition" };
+			var builder = new StringBuilder();
+			builder.Append("[");
+			foreach (var topic in topics)
+			{
+				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, "shows in the topics chooser in the edit tab");
+				builder.Append("\""+localized+"\", ");
+			}
+			builder.Append("]");
+			d.Add("topics", builder.ToString().Replace(", ]","]"));
+//            d.Add("topics", "['Agriculture', 'Animal Stories', 'Business', 'Culture', 'Community Living', 'Dictionary', 'Environment', 'Fiction', 'Health', 'How To', 'Math', 'Non Fiction', 'Spiritual', 'Personal Development', 'Primer', 'Science', 'Tradition']".Replace("'", "\\\""));
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
