@@ -18,3 +18,4 @@ document.write('<script type="text/javascript" src="' +dir+ 'jquery.watermark.js
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.resize.js"></script>');
 document.write('<script type="text/javascript" src="' + dir + 'bloomEditing.js"></script>');
+document.write('<script type="text/javascript" src="' + dir + 'StyleEditing.js"></script>');
