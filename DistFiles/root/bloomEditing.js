@@ -141,6 +141,37 @@ function AddToolbox(){
     })
 }
 
+//Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
+//onto the page
+function AddStyleEditBox() {
+    $("div.bloom-editable:visible").each(function () {
+        $(this).qtipSecondary({
+            content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
+
+            position: {
+                my: 'bottom right',
+                at: 'bottom left'
+            },
+            show: { ready: true },
+            //              hide: {
+            //  event: hideEvents
+            //},
+               events: {
+                render: function (event, api) {
+                         $(this).find('#smallerFontButton').click(function() {
+                             MakeBoxTextSmaller($(this));
+                         });
+                     }
+               },
+                style: {
+                classes: 'ui-tooltip-red'
+            }
+        })
+
+    })
+}
+
+
 function AddExperimentalNotice(element) {
     $(element).qtipSecondary({
         content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomProgramFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
@@ -520,6 +551,7 @@ function ResizeUsingPercentages(e,ui){
      });
 
      AddToolbox();
+     AddStyleEditBox();
 
      //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
      jQuery("textarea").blur(function () {
@@ -789,6 +821,9 @@ function ResizeUsingPercentages(e,ui){
      $('div.bloom-editable').each(function () {
          $(this).attr('contentEditable', 'true');
      });
+
+
+
      // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
      // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
      // an attribute, so it can't be included in css.
