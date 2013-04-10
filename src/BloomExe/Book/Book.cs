@@ -993,6 +993,7 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);
+//                 _collectionSettings.UpdateCustomValuesAndSave(_bookData.GetCollectionVariables());
 
 				try
 				{

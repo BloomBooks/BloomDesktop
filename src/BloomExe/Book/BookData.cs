@@ -659,9 +659,9 @@ namespace Bloom.Book
 			Set("contentLanguage3", language3Code, false);
 		}
 
-		public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
-		{
-			return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
-		}
+//        public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
+//        {
+//            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
+//        }
 	}
 }
