@@ -210,14 +210,14 @@ BUTTON.moveButton
 	z-index: 1000;
 	background-size: contain;
 }
-TEXTAREA, DIV.bloom-editable
+TEXTAREA, DIV.bloom-editable, TD
 {
-	border: thin solid #C0B9B9;
+	border: thin dotted #D7D2D2;
 	/*[disabled]min-height:34px;*/
 	min-width: 2mm;
 }
 /*need a darker border when we have a background color*/
-.coverColor TEXTAREA, DIV.bloom-editable
+.coverColor TEXTAREA, .coverColor DIV.bloom-editable
 {
 	border: thin solid #908B8B;
 }
@@ -226,7 +226,7 @@ IMG.hoverUp
 	background-color: #DFDFDF;
 	border: 1px outset #000000;
 }
-TEXTAREA:focus, DIV.bloom-editable:focus
+TEXTAREA:focus, DIV.bloom-editable:focus, TD:focus
 {
 	border: 1px solid rgba(82, 168, 236, 0.6);
 	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
