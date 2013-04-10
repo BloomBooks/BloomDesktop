@@ -214,6 +214,7 @@ TEXTAREA, DIV.bloom-editable
 {
 	border: thin solid #C0B9B9;
 	/*[disabled]min-height:34px;*/
+	min-width: 2mm;
 }
 /*need a darker border when we have a background color*/
 .coverColor TEXTAREA, DIV.bloom-editable
