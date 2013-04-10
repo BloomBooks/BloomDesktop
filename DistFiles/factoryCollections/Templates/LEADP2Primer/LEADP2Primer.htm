@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="defaultNameForDerivedBooks" content="P2 Primer">
+	<meta name="SuitableForMakingShells" content="yes">
+	<meta name="bookLineage" content="">
+	<meta name="bloomBookId" content="14133A54-BB3C-438D-A591-4F7A2BC5FC71">
+	<meta name="Generator" content="Bloom Version 0.9.0 (apparent build date: 4/10/2013) (Debug version)">
+	<meta name="BloomFormatVersion" content="0.8">
+	<meta name="pageTemplateSource" content="LEADP2Primer">
+	<meta name="experimental" content="true" />
+
+	<title>Reader</title>
+	<link rel="stylesheet" href="LEADP2Primer.css" type="text/css">
+		<link rel="stylesheet" href="languageDisplay.css" type="text/css">
+	<link rel="stylesheet" href="previewMode.css" type="text/css">
+	<link rel="stylesheet" href="basePage.css" type="text/css">
+	<base href="">
+</head>
+
+<body>
+	<div id="bloomDataDiv">
+		<div data-book="bookTitle" lang="en">
+			LEAD P2 Reader
+		</div>
+
+		<div data-book="contentLanguage1" lang="*">
+			en
+		</div>
+
+		<div data-book="coverImage" lang="*">
+			placeholder.png
+		</div>
+
+		<div data-book="topic" lang="en">
+			Primer</div>
+
+	</div>
+
+	<div class="bloom-page cover coverColor bloom-frontMatter B5Portrait" data-page="required singleton" id="f912849c-277f-4778-a0bd-9496dac8ef58">
+		<div class="pageLabel" lang="en">
+			Front Cover
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup coverTitle">
+				<div data-book="bookTitle" data-hint="Book title in {lang}" class="bookTitle bloom-editable bloom-contentNational1 bloom-content1" contenteditable="true" lang=
+				"en">
+					Reader
+				</div>
+			</div>
+
+			<div style="opacity: 1; overflow: hidden;" class="bloom-imageContainer"><img style="width: 549px; height: 539px; margin-left: 0px; margin-top: 4px;" alt=
+			"This picture, placeholder.png, is missing or was loading too slowly." data-book="coverImage" src="placeholder.png" height="539" width="549"></div>
+
+			<div class="bloom-editable smallCoverCredits" data-book="smallCoverCredits" data-hint="*You may use this space for author/illustrator, or anything else."
+			contenteditable="true" lang="en"></div>
+
+			<div class="coverBottomLangName">
+				<div data-library="nameOfLanguage" lang="en">
+					English
+				</div><!-- maybe bring this back when we aren't storing the language name in lang '*'. Else we just get two copies
+																					<div data-library="nameOfLanguage" lang="N2"  class="">{Lang in N2}</div> -->
+			</div>
+
+			<div aria-describedby="ui-tooltip-2" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode" data-functiononhintclick="ShowTopicChooser()"
+			data-hint="Click to choose topic">
+				<!-- NB: don't be tempted to move the data-hint up to the div. If you do, it will be visible even when the user isn't allowed to edit it. Down on the textarea, jscript will scipt it when it's readonly -->
+
+				<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable bloom-contentNational1 bloom-content1" contenteditable="true" lang="en"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="bloom-page verso cover coverColor bloom-frontMatter B5Portrait" data-page="required singleton" id="03d3fdf0-4635-4b34-8bd2-45807fadcd08">
+		<div class="pageLabel" lang="en">
+			Credits Page
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup originalAcknowledgments">
+				<div aria-describedby="ui-tooltip-3" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments" class=
+				"bloom-editable bloom-readOnlyInTranslationMode bloom-contentNational1 bloom-content1" contenteditable="true" lang="en"></div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-4" class="bloom-metaData" id="versoLicenseAndCopyright" data-functiononhintclick="bookMetadataEditor" data-hint=
+			"Click to Edit Copyright &amp; License">
+				<div data-book="copyright" class="copyright" lang="*"></div><img alt="" data-book="licenseImage" class="licenseImage" src="">
+
+				<div data-book="licenseUrl" class="licenseUrl" lang="en"></div>
+
+				<div data-book="licenseNotes" class="licenseNotes" lang="en"></div><!--might need to change -->
+
+				<div data-book="licenseDescription" class="licenseDescription" lang="en"></div>
+			</div>
+
+			<div class="ISBNContainer" data-hint="International Standard Book Number. Leave blank if you don't have one of these.">
+				<span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span>
+
+				<div aria-describedby="ui-tooltip-1" data-book="ISBN" class="bloom-editable" contenteditable="true" lang="*"></div>
+			</div><!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
+
+			<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint=
+			"Acknowledgments for translated version, in {lang}" contenteditable="true" lang="en"></div>
+		</div>
+	</div>
+
+	<div class="bloom-page titlePage bloom-frontMatter bloom-startPageNumbering B5Portrait" data-page="required singleton" id="618935fd-426a-479e-ac4f-01b156369ee9">
+		<div class="pageLabel" lang="en">
+			Title Page
+		</div>
+
+		<div class="marginBox">
+			<div id="titePageTitleBlock" class="bloom-translationGroup">
+				<div aria-describedby="ui-tooltip-3" data-book="bookTitle" class="bloom-editable bloom-contentNational1 bloom-content1" data-hint="Book title in {lang}"
+				contenteditable="true" lang="en">
+					Reader
+				</div>
+			</div>
+
+			<div id="originalContributions" class="bloom-translationGroup">
+				<div aria-describedby="ui-tooltip-4" data-book="originalContributions" class=
+				"credits bloom-editable bloom-readOnlyInTranslationMode bloom-contentNational1 bloom-content1" data-hint=
+				"The contributions made by writers, illustrators, editors, etc., in {lang}" contenteditable="true" lang="en"></div>
+			</div>
+
+			<div id="funding" class="bloom-translationGroup">
+				<div aria-describedby="ui-tooltip-5" data-book="funding" class="funding bloom-editable bloom-contentNational1 bloom-content1" data-hint=
+				"Use this to acknowledge any funding agencies." contenteditable="true" lang="en"></div>
+			</div>
+
+			<div id="languageInformation">
+				<div class="bloom-translationGroup">
+					<div data-library="nameOfLanguage" class="langName bloom-contentNational1 bloom-content1" lang="en">
+						English
+					</div>
+				</div>
+
+				<div class="bloom-translationGroup">
+					<div data-library="dialect" class="langName bloom-contentNational1 bloom-content1" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup">
+					<div data-library="languageLocation" class="langName bloom-contentNational1 bloom-content1" lang="en"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_alphabet bloom-page bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="2D539768-7112-428A-8A81-4B574647AC2C">
+		<div class="pageLabel" lang="en">
+			Alphabet
+		</div>
+
+		<div class="marginBox">
+			<div aria-describedby="ui-tooltip-1" class="bloom-translationGroup ThemeStyle" data-hint="Our Alphabet" data-collection="List.AlphabetChart">
+				<div aria-describedby="ui-tooltip-0" class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+			</div>
+
+			<div class="centeringContainer">
+				<ul aria-describedby="ui-tooltip-2" id="myTasks" class="AlphabetGrid" data-hint="To add another letter, go to the last letter and press Enter." contenteditable=
+				"true" lang="en">
+					<li>A a</li>
+
+					<li>B b</li>
+
+					<li>D d</li>
+
+					<li>E e</li>
+
+					<li>F f</li>
+
+					<li>G g</li>
+
+					<li>H h</li>
+
+					<li>I i</li>
+
+					<li>J j</li>
+
+					<li>K k</li>
+
+					<li>L l</li>
+
+					<li>M m</li>
+
+					<li>N n</li>
+
+					<li>Ng ng</li>
+
+					<li>O o</li>
+
+					<li>P p</li>
+
+					<li>Q q</li>
+
+					<li>R r</li>
+
+					<li>S s</li>
+
+					<li>T t</li>
+
+					<li>U u</li>
+
+					<li>V v</li>
+
+					<li>W w</li>
+
+					<li>X x</li>
+
+					<li>Y y</li>
+
+					<li>Z z</li>
+
+					<li><br></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day1 bloom-page themePage bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="1B6562FF-5068-4B66-A88B-7C6FFD7B126B">
+		<div class="pageLabel" lang="en">
+			Day 1
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-3" class="bloom-editable bloom-content1" data-hint="Today's Theme" contenteditable="true" lang="en">
+					Lorem ipsum Today's Theme
+				</div>
+			</div>
+
+			<div style="opacity: 1; overflow: hidden;" class="bloom-imageContainer roundedBorder"><img style="width: 325px; height: 319px; margin-left: 102px; margin-top: 0px;"
+			alt="This picture, placeHolder.png, is missing or was loading too slowly." src="placeHolder.png" height="319" width="325"></div>
+
+			<div class="centeringContainer">
+				<div class="blockInlineContainer">
+					<div class="bloom-translationGroup StoryTitleHeader">
+						<div class="bloom-editable bloom-content1" data-hint="Title of Story, Part 1" contenteditable="true" lang="en">
+							Lorem ipsum dolor
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-5" class="bloom-translationGroup StoryTextStyle" data-hint=
+			"Story Text Part 1 Here.&lt;br/&gt;term 1: 4-6 sentences&lt;br/&gt;term 2: 6-8 sentences&lt;br/&gt;term 3: 8-10 sentences">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse a nisi orci, non lacinia neque. Donec posuere, dolor sit amet vulputate luctus, nibh orci
+					porta risus, in fringilla quam sem ac leo. Suspendisse ultrices rhoncus tortor, non auctor tellus adipiscing ultricies. Suspendisse laoreet congue sodales.
+					Aenean vitae lorem odio, a dapibus orci. Donec fermentum nunc in eros ultricies in blandit lorem consequat. Phasellus viverra libero sit amet arcu tristique
+					vel auctor lectus lacinia.
+				</div>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					1
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day2 bloom-page bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="4CD0F38D-7DEC-4995-AC5D-3CC0C2F1833C">
+		<div class="pageLabel" lang="en">
+			Day 2
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-4" class="bloom-editable bloom-content1" data-hint="The Sub-Theme" contenteditable="true" lang="en">
+					Lorem ipsum The Sub-Theme
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup VocabularyHeader">
+				<div class="bloom-editable bloom-content1" data-hint="Our Vocabulary Words" data-collection="Heading.VocabularyWords" contenteditable="true" lang="en">
+					Lorem ipsum Our Vocabulary Words
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-6" class="bloom-translationGroup VocabularyWordsStyle" data-hint="List vocabulary words here, to model the spelling">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-7" class="bloom-translationGroup MakingAndBreakingHeader" data-hint="Making and Breaking" data-collection=
+			"Heading.MakingAndBreaking">
+				<div aria-describedby="ui-tooltip-3" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum Making and Breaking
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-8" class="MakingAndBreakingStyle" data-hint="Show how we take a word, add affixes, and get new words">
+				<table>
+					<tbody>
+						<tr>
+							<td contenteditable="true" lang="en">teach</td>
+
+							<td contenteditable="true" lang="en">teacher-er</td>
+
+							<td contenteditable="true" lang="en">teacher</td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en">teach</td>
+
+							<td contenteditable="true" lang="en">teacher-er-s</td>
+
+							<td contenteditable="true" lang="en">teachers</td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+
+							<td contenteditable="true" lang="en"></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+						</tr>
+
+						<tr>
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+
+							<td contenteditable="true" lang="en"><br></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					2
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day3 bloom-page themePage bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="1A6562FF-5068-4B66-A88B-7C6FFD7B1263">
+		<div class="pageLabel" lang="en">
+			Day 3
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-3" class="bloom-editable bloom-content1" data-hint="Today's Theme" contenteditable="true" lang="en">
+					Lorem ipsum Today's Theme
+				</div>
+			</div>
+
+			<div style="opacity: 1; overflow: hidden;" class="bloom-imageContainer roundedBorder"><img style="width: 325px; height: 319px; margin-left: 102px; margin-top: 0px;"
+			alt="This picture, placeHolder.png, is missing or was loading too slowly." src="placeHolder.png" height="319" width="325"></div>
+
+			<div class="centeringContainer">
+				<div class="blockInlineContainer">
+					<div class="bloom-translationGroup StoryTitleHeader">
+						<div class="bloom-editable bloom-content1" data-hint="Title of Story, Part 2" contenteditable="true" lang="en">
+							Lorem ipsum Story Title pt 2
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-5" class="bloom-translationGroup StoryTextStyle" data-hint=
+			"Story Text Part 2 Here.&lt;br/&gt;term 1: 4-6 sentences&lt;br/&gt;term 2: 6-8 sentences&lt;br/&gt;term 3: 8-10 sentences">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse a nisi orci, non lacinia neque. Donec posuere, dolor sit amet vulputate luctus, nibh orci
+					porta risus, in fringilla quam sem ac leo. Suspendisse ultrices rhoncus tortor, non auctor tellus adipiscing ultricies. Suspendisse laoreet congue sodales.
+					Aenean vitae lorem odio, a dapibus orci. Donec fermentum nunc in eros ultricies in blandit lorem consequat. Phasellus viverra libero sit amet arcu tristique
+					vel auctor lectus lacinia.
+				</div>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					3
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day4 bloom-page bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="49D0F38D-7DEC-4995-AC5D-3CC0C2F1833E">
+		<div class="pageLabel" lang="en">
+			Day 4
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-5" class="bloom-editable bloom-content1" data-hint="Sub-Theme" contenteditable="true" lang="en">
+					Lorem ipsum The Sub-Theme
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup VocabularyHeader">
+				<div data-hint="Our Vocabulary Words" data-collection="Heading.OurVocabularyWords" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum Our Vocabulary Words
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-7" class="bloom-translationGroup VocabularyWordsStyle" data-hint="List vocabulary words here, to model the spelling">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup MakingAndBreakingHeader" data-hint="Our Language Structure" data-collection="Heading.OurLanguageStructure">
+				<div aria-describedby="ui-tooltip-3" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum Our Language Structure
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-9" class="bloom-translationGroup MakingAndBreakingStyle" data-hint="DESCRIPTION NEEDED">
+				<div aria-describedby="ui-tooltip-4" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet
+				</div>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					4
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day5a bloom-page bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="526AE10C-64A6-48CF-8967-9F963FD6FD60">
+		<div class="pageLabel" lang="en">
+			Day 5a
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-5" class="bloom-editable bloom-content1" data-hint="Theme" contenteditable="true" lang="en">
+					Lorem ipsum The Theme
+				</div>
+			</div>
+
+			<div class="centeringContainer">
+				<div class="blockInlineContainer">
+					<div class="bloom-translationGroup TraditionalStoryTitleHeader">
+						<div class="bloom-editable bloom-content1" data-hint="Title of a story from traditional oral literature" contenteditable="true" lang="en">
+							Lorem ipsum Our traditional story title
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-7" class="bloom-translationGroup ShortOralLiteratureBitTextStyle" data-hint=
+			"One verse of a song or poem, a tongue-twister, riddle or proverb, from oral literature.">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum In eget mollis felis. Suspendisse potenti. Nulla eros mi, gravida non feugiat vel, fringilla a mi. Aenean congue facilisis nisi, ut dapibus metus
+					euismod a. Fusce ultricies sodales egestas.
+				</div>
+			</div>
+
+			<div class="centeringContainer">
+				<div class="blockInlineContainer">
+					<div class="bloom-translationGroup StoryTitleHeader">
+						<div class="bloom-editable bloom-content1" data-hint="Whole story title" contenteditable="true" lang="en">
+							Lorem ipsum Whole story title
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup StoryTextStyle" data-hint=
+			"This is a repetition of the story part 1 from day 1 and story part 2 from day 3 of the same week. Here, the learners are assessed on their reading of the whole story in the Friday review lesson, but are also exposed to the idea of larger text, higher-level language structure, larger text corpus, etc.">
+			<div aria-describedby="ui-tooltip-4" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse a nisi orci, non lacinia neque. Donec posuere, dolor sit amet vulputate luctus, nibh orci
+					porta risus, in fringilla quam sem ac leo. Suspendisse ultrices rhoncus tortor, non auctor tellus adipiscing ultricies. Suspendisse laoreet congue sodales.
+					Aenean vitae lorem odio, a dapibus orci. Donec fermentum nunc in eros ultricies in blandit lorem consequat. Phasellus viverra libero sit amet arcu tristique
+					vel auctor lectus lacinia. In eget mollis felis. Suspendisse potenti. Nulla eros mi, gravida non feugiat vel, fringilla a mi. Aenean congue facilisis nisi, ut
+					dapibus metus euismod a. Fusce ultricies sodales egestas.
+				</div>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					5a
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="_day5b bloom-page bloom-combinedPage B5Portrait bloom-monolingual" data-page="required singleton" title="foo" id="AAD0F38D-7DEC-4995-AC5D-3CC0C2F183AA">
+		<div class="pageLabel" lang="en">
+			Day 5b
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-translationGroup ThemeStyle">
+				<div aria-describedby="ui-tooltip-5" class="bloom-editable bloom-content1" data-hint="Sub-Theme" contenteditable="true" lang="en">
+					Lorem ipsum The Sub-Theme
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup VocabularyHeader">
+				<div data-hint="Our Vocabulary Words" data-collection="Heading.OurVocabularyWords" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum Our Vocabulary Words
+				</div>
+			</div>
+
+			<div aria-describedby="ui-tooltip-7" class="bloom-translationGroup VocabularyWordsStyle" data-hint="List vocabulary words here, to model the spelling">
+				<div aria-describedby="ui-tooltip-2" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup ReviewHeader" data-hint="Review" data-collection="Heading.Header.Review">
+				<div aria-describedby="ui-tooltip-3" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum Review
+				</div>
+			</div>
+
+			<div class="bloom-translationGroup ReviewStyle" data-hint="DESCRIPTION NEEDED">
+				<div aria-describedby="ui-tooltip-4" class="bloom-editable bloom-content1" contenteditable="true" lang="en">
+					Lorem ipsum dolor sit amet
+				</div>
+			</div>
+		</div>
+
+		<div class="centeringContainer TermWeekDayGroup">
+			<div class="blockInlineContainer">
+				<div class="bloom-translationGroup TermStyle" data-book="book.footer.term">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="bloom-translationGroup WeekStyle" data-book="book.footer.week">
+					<div class="bloom-editable bloom-content1" contenteditable="true" lang="en"></div>
+				</div>
+
+				<div class="DayStyle">
+					5b
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="bloom-page cover coverColor insideBackCover bloom-backMatter B5Portrait" data-page="required singleton" id="35ad57ac-6f8f-4f36-9b6b-09b0dcf4310b">
+		<div class="pageLabel" lang="en">
+			Inside Back Cover
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-editable" data-book="insideBackCover" data-hint=
+			"If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover." contenteditable="true" lang="en"></div>
+		</div>
+	</div>
+
+	<div class="bloom-page cover coverColor outsideBackCover bloom-backMatter B5Portrait" data-page="required singleton" id="105548fa-c425-4df1-9617-3b82c946b22f">
+		<div class="pageLabel" lang="en">
+			Outside Back Cover
+		</div>
+
+		<div class="marginBox">
+			<div class="bloom-editable" data-book="outsideBackCover" data-hint=
+			"If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." contenteditable="true" lang="en"></div>
+		</div>
+	</div>
+</body>
+</html>
