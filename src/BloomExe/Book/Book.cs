@@ -922,7 +922,6 @@ namespace Bloom.Book
 
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
-			ClearEditableValues(newPageDiv);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 
@@ -942,16 +941,7 @@ namespace Bloom.Book
 			InvokeContentsChanged(null);
 		}
 
-		private void ClearEditableValues(XmlElement newPageElement)
-		{
-			foreach (XmlElement editNode in newPageElement.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
-			{
-				if (editNode.InnerText.ToLower().StartsWith("lorem ipsum"))
-				{
-					editNode.InnerText = String.Empty;
-				}
-			}
-		}
+
 
 		public void DeletePage(IPage page)
 		{

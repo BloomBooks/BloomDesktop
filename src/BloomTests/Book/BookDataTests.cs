@@ -84,8 +84,8 @@ namespace BloomTests.Book
 				<div class='bloom-page' id='guid3'>
 					<p>
 						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
-						<textarea lang='xyz' id='1' data-library='testLibraryVariable'>aa</textarea>
-					   <textarea lang='xyz' id='2'  data-library='testLibraryVariable'>bb</textarea>
+						<textarea lang='xyz' id='1' data-collection='testLibraryVariable'>aa</textarea>
+					   <textarea lang='xyz' id='2'  data-collection='testLibraryVariable'>bb</textarea>
 					</p>
 				</div>
 				</body></html>");
@@ -252,11 +252,11 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateVariablesAndDataDivThroughDOM_HasDataLibraryValues_LibraryValuesNotPutInDataDiv()
 		{
-			var dom = new HtmlDom(@"<html><head></head><body><div data-book='someVariable' lang='en'>hi</div><div data-library='user' lang='en'>john</div></body></html>");
+			var dom = new HtmlDom(@"<html><head></head><body><div data-book='someVariable' lang='en'>hi</div><div data-collection='user' lang='en'>john</div></body></html>");
 			var data = new BookData(dom,   new CollectionSettings(), null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='user']");
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-library]");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-collection]");
 		}
 
 		[Test]

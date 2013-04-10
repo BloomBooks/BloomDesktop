@@ -84,7 +84,7 @@ namespace BloomTests.Book
 			var frontMatterDom = new XmlDocument();
 			frontMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
-						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div></body></html>");
 			var helper = CreateHelper();
 			helper.XMatterDom = frontMatterDom;
@@ -100,13 +100,13 @@ namespace BloomTests.Book
 			var xMatterDom = new XmlDocument();
 			xMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
-						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div>
 						<div class='bloom-page cover coverColor bloom-backMatter insideBackCover' data-page='required'>
-						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div>
 						<div class='bloom-page cover coverColor bloom-backMatter outsideBackCover' data-page='required'>
-						 <span data-library='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div>
 						</body></html>");
 			var helper = CreateHelper();

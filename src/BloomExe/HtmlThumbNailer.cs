@@ -187,26 +187,37 @@ namespace Bloom
 
 						try
 						{
-							//trying to get more information on http://jira.palaso.org/issues/browse/BL-134, which had an exception that somehow
-							//was not caught, even though try/catch was in place
-							Logger.WriteMinorEvent("HtmlThumNailer: browser.GetBitmap({0},{1})", browser.Width, (uint)browser.Height);
+							Logger.WriteMinorEvent("HtmlThumNailer: browser.GetBitmap({0},{1})", browser.Width,
+												   (uint) browser.Height);
+
+
+							//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
+							//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
+							//the placeholder thumbnail.
+							if (browser.Width == 0 || browser.Height == 0)
+							{
+								var paperSizeName = GetPaperSizeName(order.Document);
+								throw new ApplicationException(
+									"Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
+							}
 							var docImage = browser.GetBitmap((uint) browser.Width, (uint) browser.Height);
 
 							Logger.WriteMinorEvent("	HtmlThumNailer: finished GetBitmap(");
 #if DEBUG
-//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
+							//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
 #endif
 							if (_disposed)
 								return;
-							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels, Color.Transparent,
+							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels,
+															 Color.Transparent,
 															 order.DrawBorderDashed);
 						}
-						catch(Exception error)
+						catch (Exception error)
 						{
 #if DEBUG
 							Debug.Fail(error.Message);
 #endif
-							Logger.WriteEvent("HtmlThumNailer got "+error.Message);
+							Logger.WriteEvent("HtmlThumNailer got " + error.Message);
 							Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
 							foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
 							{
@@ -217,7 +228,7 @@ namespace Bloom
 								}
 								catch (Exception e2)
 								{
-									Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: "+e2.Message);
+									Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
 								}
 							}
 							_browserCacheForDifferentPaperSizes.Clear();
@@ -277,7 +288,7 @@ namespace Bloom
 
 		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
 		{
-		   string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document, "A5Portrait").ToString();
+		   var paperSizeName = GetPaperSizeName(document);
 
 			GeckoWebBrowser b;
 			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
@@ -287,6 +298,12 @@ namespace Bloom
 					_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
 				}
 				return b;
+		}
+
+		private static string GetPaperSizeName(XmlDocument document)
+		{
+			string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document, "A5Portrait").ToString();
+			return paperSizeName;
 		}
 
 

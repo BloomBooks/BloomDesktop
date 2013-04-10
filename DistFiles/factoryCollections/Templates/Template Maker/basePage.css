@@ -207,6 +207,13 @@ DIV.bloom-page.A5Landscape
 	min-height: 14.8cm;
 	max-height: 14.8cm;
 }
+DIV.bloom-page.B5Portrait
+{
+	min-width: 176mm;
+	max-width: 177mm;
+	min-height: 250mm;
+	max-height: 250mm;
+}
 DIV.bloom-page.A4Landscape
 {
 	min-width: 297mm;
@@ -246,6 +253,15 @@ DIV.bloom-page.A4Portrait
 	position: absolute;
 	left: -2.6mm;
 	top: 15.2mm;
+}
+.B5Portrait DIV.marginBox
+{
+	width: 146mm;
+	height: 220mm;
+	/*+placement:anchor-top-left 0 15mm;*/
+	position: absolute;
+	left: 0;
+	top: 15mm;
 }
 DIV.bloom-page:nth-of-type(odd) DIV.marginBox
 {

@@ -176,6 +176,11 @@ namespace Bloom
 
 		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
 		{
+#if DEBUG
+			var initialOutputPath = Path.GetTempFileName();
+#else
+			var initialOutputPath = tempPath;
+#endif
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
@@ -183,13 +188,40 @@ namespace Bloom
 			//I know... bizarre
 			typeof(XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(settings, XmlOutputMethod.Html);
 
-			using (var writer = XmlWriter.Create(tempPath, settings))
+			using (var writer = XmlWriter.Create(initialOutputPath, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
 			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
+
+#if DEBUG   //TODO when we trust this, give it to everybody
+
+			//now re-write, indented nicely
+			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
+			{
+				tidy.ShowWarnings = false;
+				tidy.Quiet = true;
+				tidy.AddTidyMetaElement = false;
+				tidy.OutputXml = false;
+				tidy.OutputHtml = true;
+				tidy.DocType = DocTypeMode.Omit;//when it supports html5, then we will let it out it
+				tidy.MergeDivs = AutoBool.No;
+				tidy.MergeSpans=AutoBool.No;
+				tidy.PreserveEntities = true;
+				tidy.JoinStyles = false;
+				tidy.IndentBlockElements = AutoBool.Auto;//instructions say avoid 'yes'
+				tidy.WrapAt = 180;
+				tidy.IndentSpaces = 4;
+				tidy.CharacterEncoding = EncodingType.Utf8;
+				tidy.CleanAndRepair();
+				tidy.Save(tempPath);
+			}
+			File.Delete(initialOutputPath);
+
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
+#endif
 			return tempPath;
 		}
 	}
