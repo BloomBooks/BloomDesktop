@@ -210,7 +210,7 @@ BUTTON.moveButton
 	z-index: 1000;
 	background-size: contain;
 }
-TEXTAREA, DIV.bloom-editable, TD
+TEXTAREA, DIV.bloom-editable, TD, LI
 {
 	border: thin dotted #D7D2D2;
 	/*[disabled]min-height:34px;*/
