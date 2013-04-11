@@ -11,7 +11,7 @@ namespace Bloom.Book
 		public DataSet()
 		{
 			WritingSystemCodes = new Dictionary<string, string>();
-			TextVariables = new Dictionary<string, NamedMutliLingualValue>();
+			TextVariables = new Dictionary<string, MultiLingualValue>();
 		}
 
 		/// <summary>
@@ -22,7 +22,7 @@ namespace Bloom.Book
 		/// </summary>
 		public Dictionary<string, string> WritingSystemCodes { get; private set; }
 
-		public Dictionary<string, NamedMutliLingualValue> TextVariables { get; private set; }
+		public Dictionary<string, MultiLingualValue> TextVariables { get; private set; }
 
 
 		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
@@ -33,15 +33,15 @@ namespace Bloom.Book
 			{
 				TextVariables.Remove(key);
 			}
-			TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+			TextVariables.Add(key, new MultiLingualValue(text, isCollectionValue));
 		}
 
 		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
 		{
-			NamedMutliLingualValue namedMutliLingualValue;
+			MultiLingualValue multiLingualValue;
 			MultiTextBase text;
-			if(TextVariables.TryGetValue(key,out namedMutliLingualValue))
-				text = namedMutliLingualValue.TextAlternatives;
+			if(TextVariables.TryGetValue(key,out multiLingualValue))
+				text = multiLingualValue.TextAlternatives;
 			else
 			{
 				text = new MultiTextBase();
@@ -49,7 +49,7 @@ namespace Bloom.Book
 			text.SetAlternative(writingSystemId, value);
 			TextVariables.Remove(key);
 			if(text.Count>0)
-				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+				TextVariables.Add(key, new MultiLingualValue(text, isCollectionValue));
 		}
 
 		public void AddLanguageString(string key, string value, string writingSystemId, bool isCollectionValue)
@@ -57,15 +57,15 @@ namespace Bloom.Book
 			if(!TextVariables.ContainsKey(key))
 			{
 				var text = new MultiTextBase();
-				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+				TextVariables.Add(key, new MultiLingualValue(text, isCollectionValue));
 			}
 			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
 		}
 	}
 
-	public class NamedMutliLingualValue
+	public class MultiLingualValue
 	{
-		public NamedMutliLingualValue(MultiTextBase text, bool isCollectionValue)
+		public MultiLingualValue(MultiTextBase text, bool isCollectionValue)
 		{
 			TextAlternatives = text;
 			IsCollectionValue = isCollectionValue;

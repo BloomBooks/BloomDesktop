@@ -372,7 +372,7 @@ namespace Bloom.Book
 						{
 							var t = new MultiTextBase();
 							t.SetAlternative(lang, value);
-							data.TextVariables.Add(key, new NamedMutliLingualValue(t, isCollectionValue));
+							data.TextVariables.Add(key, new MultiLingualValue(t, isCollectionValue));
 						}
 						else if (!data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
 						{
@@ -541,7 +541,7 @@ namespace Bloom.Book
 			var data = new DataSet();
 			GatherDataItemsFromXElement(data, _dom.RawDom);
 			var metadata = new Metadata();
-			NamedMutliLingualValue d;
+			MultiLingualValue d;
 			if (data.TextVariables.TryGetValue("copyright", out d))
 			{
 				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
@@ -623,7 +623,7 @@ namespace Bloom.Book
 
 		private void UpdateTitle(DataSet data)
 		{
-			NamedMutliLingualValue title;
+			MultiLingualValue title;
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{

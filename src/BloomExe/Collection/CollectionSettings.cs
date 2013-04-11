@@ -8,7 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Bloom.Book;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
 using Palaso.Extensions;
@@ -30,7 +32,7 @@ namespace Bloom.Collection
 		private string _language1Iso639Code;
 		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
-
+		public readonly Dictionary<string, MultiTextBase> CustomCollectionVariables = new Dictionary<string, MultiTextBase>();
 
 		/// <summary>
 		/// for moq in unit tests only
@@ -177,10 +179,81 @@ namespace Bloom.Collection
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
-
+			AddCustomValuesToXml(library);
 			library.Save(SettingsFilePath);
 
 			SavesettingsCollectionStylesCss();
+		}
+
+		private void AddCustomValuesToXml(XElement library)
+		{
+			foreach (var variable in CustomCollectionVariables)
+			{
+				foreach (var form in variable.Value.Forms)
+				{
+					var v = new XElement("custom", form.Form);
+					v.SetAttributeValue("key", variable.Key);
+					v.SetAttributeValue("lang", form.WritingSystemId);
+					library.Add(v);
+				}
+			}
+		}
+
+
+		public void Load()
+		{
+			try
+			{
+				XElement library = XElement.Load(SettingsFilePath);
+
+				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
+				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
+				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
+				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
+				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
+				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
+
+				Country = GetValue(library, "Country", "");
+				Province = GetValue(library, "Province", "");
+				District = GetValue(library, "District", "");
+				IsSourceCollection = GetBoolValue(library, "IsSourceCollection", GetBoolValue(library, "IsShellLibrary" /*the old name*/, GetBoolValue(library, "IsShellMakingProject" /*an even older name*/, false)));
+
+				foreach (var custom in library.Descendants("custom"))
+				{
+					string key = custom.Attribute("key").Value;
+					var lang = custom.Attribute("lang").Value;
+					var form = custom.Value;
+					MultiTextBase multitext;
+					if(!CustomCollectionVariables.TryGetValue(key,out multitext))
+					{
+						multitext = new MultiTextBase();
+						CustomCollectionVariables.Add(key,multitext);
+					}
+					multitext.SetAlternative(lang, form);
+				}
+			}
+			catch (Exception e)
+			{
+				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
+				throw;
+			}
+
+			try
+			{
+				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
+				if (File.Exists(oldcustomCollectionStylesPath))
+				{
+					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
+
+					File.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
+				}
+			}
+			catch (Exception)
+			{
+				//ah well, we tried, no big deal, only a couple of beta testers used this old name
+			}
 		}
 
 		private void SavesettingsCollectionStylesCss()
@@ -205,47 +278,6 @@ namespace Bloom.Collection
 			}
 		}
 
-		/// ------------------------------------------------------------------------------------
-		public void Load()
-		{
-			try
-			{
-				XElement library = XElement.Load(SettingsFilePath);
-				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
-				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
-				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
-				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
-				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
-				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
-
-				Country = GetValue(library, "Country", "");
-				Province = GetValue(library, "Province", "");
-				District = GetValue(library, "District", "");
-				IsSourceCollection = GetBoolValue(library, "IsSourceCollection", GetBoolValue(library, "IsShellLibrary" /*the old name*/, GetBoolValue(library, "IsShellMakingProject" /*an even older name*/, false)));
-			}
-			catch (Exception e)
-			{
-				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
-				throw;
-			}
-
-			try
-			{
-				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
-				if(File.Exists(oldcustomCollectionStylesPath))
-				{
-					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
-
-					File.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
-				}
-			}
-			catch (Exception)
-			{
-				//ah well, we tried, no big deal, only a couple of beta testers used this old name
-			}
-		}
 
 		private bool GetBoolValue(XElement library, string id, bool defaultValue)
 		{
@@ -269,13 +301,13 @@ namespace Bloom.Collection
 
 		public virtual string CollectionName { get; protected set; }
 
-		[XmlIgnore]
+
 		public string FolderPath
 		{
 			get { return Path.GetDirectoryName(SettingsFilePath); }
 		}
 
-		[XmlIgnore]
+
 		public string SettingsFilePath { get; set; }
 
 		/// <summary>
@@ -373,5 +405,18 @@ namespace Bloom.Collection
 				throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
 			}
 		}
+
+//        public void UpdateCustomValuesAndSave(IEnumerable<KeyValuePair<string, MultiTextBase>> variables)
+//	    {
+//            foreach (var pair in variables)//.Where(p=>p.Value.IsCollectionValue))
+//	        {
+//                if(CustomCollectionVariables.ContainsKey(pair.Key))
+//                {
+//                    CustomCollectionVariables.Remove(pair.Key);
+//                }
+//                CustomCollectionVariables.Add(pair.Key, pair.Value); //add it
+//            }
+//            Save();
+//	    }
 	}
 }
