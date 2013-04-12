@@ -37,6 +37,7 @@ namespace Bloom.Book
 		void Save();
 		bool TryGetPremadeThumbnail(out Image image);
 		HtmlDom GetRelocatableCopyOfDom(IProgress log);
+		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log);
 		bool DeleteBook();
 		//void HideAllTextAreasThatShouldNotShow(string vernacularIso639Code, string optionalPageSelector);
 		string SaveHtml(HtmlDom bookDom);
@@ -208,7 +209,7 @@ namespace Bloom.Book
 				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private void EnsureHasStyleSheet(HtmlDom dom, string path)
+		private static void EnsureHasStyleSheet(HtmlDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -486,6 +487,16 @@ namespace Bloom.Book
 			return relocatableDom;
 		}
 
+		public  HtmlDom MakeDomRelocatable(HtmlDom dom,  IProgress log)
+		{
+			var relocatableDom = dom.Clone();
+
+			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
+
+			return relocatableDom;
+		}
 
 
 		public bool DeleteBook()
