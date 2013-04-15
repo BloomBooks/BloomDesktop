@@ -39,3 +39,5 @@ Acorns*
 _NCrunch*
 *.vsp
 build/xulrunner*
+build/Palaso.BuildTasks.dll
+packages/*.*
