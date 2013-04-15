@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomChorusPlugin", "src\Bloom-ChorusPlugin\BloomChorusPlugin.csproj", "{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomBrowserUI", "src\BloomBrowserUI\BloomBrowserUI.csproj", "{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,15 @@ Global
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|x86.ActiveCfg = Release|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

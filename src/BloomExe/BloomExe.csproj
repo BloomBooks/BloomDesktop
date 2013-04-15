@@ -66,6 +66,10 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AeroWizard, Version=1.2.1.30395, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
+    </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\..\chorus\output\DebugMono\Chorus.exe</HintPath>
     </Reference>
@@ -95,6 +99,10 @@
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.31.1789.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -126,12 +134,6 @@
     </Reference>
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="LocalizationManager">
-      <HintPath>..\..\..\localizationmanager\Output\Debug\LocalizationManager.dll</HintPath>
     </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\..\palaso\output\DebugMono\Palaso.dll</HintPath>
@@ -183,7 +185,6 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Platform\Platform.cs" />
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
@@ -279,15 +280,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ImageProcessing\ImageServer.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Wizard\WinForms\WizardControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Wizard\WinForms\WizardPage.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Wizard\WizardAdapterControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
@@ -840,9 +832,6 @@
     <None Include="Resources\cloneFromChorusHub.png" />
     <None Include="Resources\cloneFromInternet.png" />
     <None Include="Resources\cloneFromUsb.png" />
-    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.7.2.js" />
-    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

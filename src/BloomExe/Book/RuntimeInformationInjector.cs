@@ -102,7 +102,7 @@ namespace Bloom.Book
 
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 
-			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
+			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("browserui")).FullName);
 
 			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition" };
 			var builder = new StringBuilder();

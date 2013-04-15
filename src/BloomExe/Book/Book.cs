@@ -183,15 +183,15 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
 			}
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
@@ -204,7 +204,7 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("script/bloomBootstrap.js"));
 		}
 
 
@@ -245,8 +245,8 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 
 			pageDom.SortStyleSheetLinks();
 
@@ -305,7 +305,7 @@ namespace Bloom.Book
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFile(cssFileName));
+				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
 			}
 			dom.SortStyleSheetLinks();
 			return dom;
@@ -794,8 +794,8 @@ namespace Bloom.Book
 		private void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.myimgscale.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.myimgscale.js"));
 //
 //			XmlElement script = dom.CreateElement("script");
 //			script.SetAttribute("type", "text/javascript");
@@ -807,7 +807,12 @@ namespace Bloom.Book
 //			})";
 //			header.AppendChild(script);
 
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
+			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("script/bloomPreviewBootstrap.js");
+			if(string.IsNullOrEmpty(pathToJavascript))
+			{
+				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");
+			}
+			dom.AddJavascriptFile(pathToJavascript);
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1193,7 +1198,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFile("languageDisplayTemplate.css"));
+			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);

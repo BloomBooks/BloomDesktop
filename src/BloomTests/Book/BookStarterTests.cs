@@ -36,7 +36,7 @@ namespace BloomTests.Book
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												FileLocator.GetDirectoryDistributedWithApplication("root"),
+												FileLocator.GetDirectoryDistributedWithApplication("browserui"),
 												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),

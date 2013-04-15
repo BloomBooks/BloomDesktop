@@ -194,8 +194,8 @@ namespace Bloom
 		}
 		private static IEnumerable<string> GetFileLocations()
 		{
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("root"));//hack to get the distfiles folder itself
-			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("browserui"));//hack to get the distfiles folder itself
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");

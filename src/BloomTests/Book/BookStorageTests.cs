@@ -43,7 +43,7 @@ namespace BloomTests.Book
 		public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
 		{
 			File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent());
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
@@ -52,7 +52,7 @@ namespace BloomTests.Book
 		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
 		{
 			File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent());
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent());
 			storage.Save();
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
