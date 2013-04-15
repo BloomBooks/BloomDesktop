@@ -31,7 +31,7 @@ namespace BloomTests.web
 		{
 			_folder = new TemporaryFolder("BookCollectionTests");
 			//			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("browserui"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 //			_vernacularLibraryCollection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
 //				BookStorageFactory, null, null, new CreateFromSourceBookCommand(), new EditBookCommand());
