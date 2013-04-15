@@ -5,4 +5,8 @@
   <File Id="placeHolder.png3" Guid="23283dd3-5f00-4697-8539-1eb3577b092c" />
   <File Id="placeHolder.png1" Guid="f5a82beb-16dd-4531-a27c-5883a0941cf8" />
   <File Id="Templates.BloomCollection" Guid="6da0e49c-35b2-46ad-abda-818238bf0134" />
+  <File Id="ProgramDir.factoryCollections.Templates.placeHolder.png" Guid="6d9306a8-8205-430b-bab7-d6132d7f016e" />
+  <File Id="ProgramDir.factoryCollections.Templates.Templates.BloomCollection" Guid="b271dea1-4d1c-4813-9136-c6c0ba26b392" />
+  <File Id="amDir.factoryCollections.Templates.placeHolder.png" Guid="b318d714-a767-4dbf-976e-77106a1d2b62" />
+  <File Id="oryCollections.Templates.Templates.BloomCollection" Guid="22fb446c-67d0-48a5-8b1d-c15ca41ec939" />
 </InstallerMetadata>

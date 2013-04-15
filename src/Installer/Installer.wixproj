@@ -64,6 +64,7 @@
 	<Compile Include="Installer.wxs" />
 	<Compile Include="wkhtmltopdf.wxs" />
 	<Compile Include="..\..\output\installer\GeneratedDistFiles.wxs" />
+	<Compile Include="..\..\output\installer\GeneratedBrowserUIFiles.wxs" />
 	<Compile Include="..\..\output\installer\GeneratedXulRunner.wxs" />
   </ItemGroup>
   <ItemGroup>

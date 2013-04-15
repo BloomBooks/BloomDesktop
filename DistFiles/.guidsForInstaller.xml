@@ -14,4 +14,14 @@
   <File Id="Bloom.chw" Guid="64a937aa-553e-44c7-b8b6-db99b3f2b7f8" />
   <File Id="Bloom.chm" Guid="eb15415f-7651-456a-81ff-41427eb7cda4" />
   <File Id="license.rtf" Guid="a29dfa51-8a32-41f5-8a24-65cb2bde5fe5" />
+  <File Id="optipng.exe" Guid="bc408722-647f-4974-84a5-7c048970917b" />
+  <File Id="ReleaseNotes.md" Guid="6e3c9684-1425-4410-985c-fe14648fb4c7" />
+  <File Id="ProgramDir.ArtOfReadingIndexV3_en.txt" Guid="a7858e85-7dd9-4f31-9f08-524710995f13" />
+  <File Id="ProgramDir.Bloom.chm" Guid="f03da93c-4b79-476d-9183-45cb75eb747e" />
+  <File Id="ProgramDir.Bloom.chw" Guid="6879ecfa-72a4-482e-9c1e-a4aa83e4e768" />
+  <File Id="ProgramDir.exiftool.exe" Guid="0c351d5d-2316-4081-8e06-9e56d32e2a15" />
+  <File Id="ProgramDir.license.rtf" Guid="32485ea1-be2b-4682-9606-de9c846b298e" />
+  <File Id="ProgramDir.optipng.exe" Guid="48263edf-1984-4985-bed0-90d0fe232c2e" />
+  <File Id="ProgramDir.ReleaseNotes.md" Guid="74ca4d8b-0308-4cd7-83b7-f0dd4f125295" />
+  <File Id="ProgramDir.spinner.gif" Guid="71b66963-4e27-4c2f-8385-b8b38e918460" />
 </InstallerMetadata>

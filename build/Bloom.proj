@@ -138,6 +138,18 @@
 	  <!--what does this do?-->
 	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
 	</MakeWixForDirTree>
+
+	<!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
+	<MakeWixForDirTree
+			   DirectoryReferenceId="BrowserUIDir"
+			   ComponentGroupId="BrowserUIFiles"
+			   RootDirectory="$(RootDir)\src\BloomBrowserUI"
+			   OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
+			   IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
+			   MatchRegExPattern=".*"
+				>
+	</MakeWixForDirTree>
+
   </Target>
 
   <Target Name="DownloadDistFiles">

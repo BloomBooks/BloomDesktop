@@ -22,4 +22,22 @@
   <File Id="edit32x32.png" Guid="d28cc2c3-a582-40c3-afc4-7cc10b2e731c" />
   <File Id="publish32x32.png" Guid="67aca047-5ec9-49b8-b4ca-d99c9278e066" />
   <File Id="newLibrary32x32.png" Guid="b36e9c2e-f7ea-4fed-b371-60e056537fd9" />
+  <File Id="experiment.png" Guid="a208ed2d-5462-4c8d-90e7-b2e7e56c818d" />
+  <File Id="ProgramDir.images.a5LandscapeBookletBlue.png" Guid="0c5b7b75-896c-4900-8292-6384546bb5ee" />
+  <File Id="ProgramDir.images.a5LandscapeBookletPurple.png" Guid="ddef0ec4-1075-4577-822e-b0b1afcb0b75" />
+  <File Id="ProgramDir.images.a5LandscapeBookletYellow.png" Guid="e72f2857-2a9d-49d7-8880-405eafb7ed30" />
+  <File Id="ProgramDir.images.a5Portrait.svg" Guid="8cb9b672-cb4c-4f15-b162-9477bfd1b322" />
+  <File Id="ProgramDir.images.a5portraitBooklet.png" Guid="7b846dd7-3516-4c84-a3e3-9c8d067ef8ae" />
+  <File Id="ProgramDir.images.a5PortraitBookletBlue.png" Guid="a1656fef-6860-471e-8ed9-6c29a39e2a28" />
+  <File Id="ProgramDir.images.a5PortraitBookletGreen.png" Guid="92b2424f-ddb8-44d9-95ca-f82c36442875" />
+  <File Id="ProgramDir.images.a5portraitBookletPink.png" Guid="25ee2ad0-30ba-4922-82b1-22d32b2c75d4" />
+  <File Id="ProgramDir.images.a5PortraitBookletPurple.png" Guid="3f4c125f-b335-49fe-9e61-68759b52451b" />
+  <File Id="ProgramDir.images.a5portraitBookletYellow.png" Guid="2c4fade9-a81d-4acb-8387-1bb7ad326452" />
+  <File Id="ProgramDir.images.edit32x32.png" Guid="984ac3bc-905e-471a-9d26-1cbfb22a6fb4" />
+  <File Id="ProgramDir.images.experiment.png" Guid="34a9f164-924a-4df3-a2dc-fac932795e27" />
+  <File Id="ProgramDir.images.info.png" Guid="1d4bb475-2319-4c89-af07-c8e81e44cdad" />
+  <File Id="ProgramDir.images.newLibrary32x32.png" Guid="c9fce49a-380c-4374-882a-80c657ff6c70" />
+  <File Id="ProgramDir.images.open.png" Guid="b718950a-970a-4e61-a9ad-6953cd232d1f" />
+  <File Id="ProgramDir.images.publish32x32.png" Guid="b9b87be1-a3ec-493b-a76f-54195a302ddf" />
+  <File Id="ProgramDir.images.wait30transparent.gif" Guid="8a4e5ec3-167e-4acb-88a0-03229bceabfd" />
 </InstallerMetadata>
