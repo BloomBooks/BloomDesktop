@@ -41,3 +41,5 @@ _NCrunch*
 build/xulrunner*
 build/Palaso.BuildTasks.dll
 packages/*.*
+copy*.*
+Copy*.bat

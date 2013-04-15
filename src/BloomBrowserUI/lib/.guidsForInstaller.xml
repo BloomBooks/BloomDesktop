@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jquery_1.9.0.min.js" Guid="a8ee4d25-95d9-438e-881d-e4f491c82e11" />
+  <File Id="jquery_ui.css" Guid="2925a090-1c51-4e63-8041-d979203d704d" />
+  <File Id="jquery_ui.js" Guid="290c0439-01ce-476a-bb4a-f651aafb253e" />
+  <File Id="jquery.d.ts" Guid="05590f89-bbd0-4c44-8119-53ed58ae8846" />
+  <File Id="jquery.easytabs___b4_refactor.js" Guid="dbac840d-9408-4261-94d8-2be74ca7f026" />
+  <File Id="jquery.easytabs___Copy.js" Guid="6cf730ac-e8c4-45b1-9c42-18ec3f45708e" />
+  <File Id="jquery.easytabs.js" Guid="0634c2d2-43fb-4a0a-b127-9a8a252d04fd" />
+  <File Id="jquery.hashchange.min.js" Guid="74f5b0dc-1e30-40db-a582-c7d1392897c9" />
+  <File Id="jquery.js" Guid="6fe9dbf6-e4b8-460a-a3be-319c42a65aef" />
+  <File Id="jquery.myimgscale.js" Guid="b90d6f3b-72f9-4a61-b640-b3983465367c" />
+  <File Id="jquery.qtip.css" Guid="b48cade6-9236-4db9-bf32-c20ea4b2a613" />
+  <File Id="jquery.qtip.css.orig" Guid="5e38df80-e70b-4090-b527-45c9c55bf3d4" />
+  <File Id="jquery.qtip.js" Guid="067f69b0-5b0e-484d-b90b-978109859ab1" />
+  <File Id="jquery.qtipSecondary.js" Guid="d9ef703c-fd95-45a5-aec9-58c3586f10f3" />
+  <File Id="jquery.resize.js" Guid="fe4eccbe-7a54-44b5-8442-7a80cef2928f" />
+  <File Id="jquery.resizeX.js" Guid="b10efdce-d30c-4bdc-93c1-35c05e190379" />
+  <File Id="jquery.sizes.js" Guid="8bc06c40-497c-42e3-a6f7-aff0e1ed528e" />
+  <File Id="jquery.watermark.js" Guid="b49372ec-8907-4de7-b3e4-c912465040ec" />
+  <File Id="json.js" Guid="6d0bac63-0150-4aa6-aa14-c06a7fe9dbe1" />
+  <File Id="BrowserUIDir.lib.jquery_1.9.0.min.js" Guid="7c167296-ea05-442e-8cee-8ed829640353" />
+  <File Id="BrowserUIDir.lib.jquery_ui.css" Guid="4a11a1cd-430f-4a9d-87a9-f5d3ded20083" />
+  <File Id="BrowserUIDir.lib.jquery_ui.js" Guid="10900dae-c5c3-420e-a9d5-d615ff07288d" />
+  <File Id="BrowserUIDir.lib.jquery.d.ts" Guid="c9157618-264d-4ada-b932-a341da27b88a" />
+  <File Id="BrowserUIDir.lib.jquery.easytabs___b4_refactor.js" Guid="1a0da85e-2e85-44c2-baa2-793bcd6e363a" />
+  <File Id="BrowserUIDir.lib.jquery.easytabs___Copy.js" Guid="64085c80-6810-442b-be70-550216a88ff2" />
+  <File Id="BrowserUIDir.lib.jquery.easytabs.js" Guid="3b24b48a-3e82-44dd-80e5-14adf4a7ecd9" />
+  <File Id="BrowserUIDir.lib.jquery.hashchange.min.js" Guid="bfdce732-0937-453a-b660-2bd0dbc6e442" />
+  <File Id="BrowserUIDir.lib.jquery.js" Guid="a82c4028-93db-4b1c-bdc4-43e0f7d297b9" />
+  <File Id="BrowserUIDir.lib.jquery.myimgscale.js" Guid="023d797a-2c12-466d-a64c-d2f698adcc70" />
+  <File Id="BrowserUIDir.lib.jquery.qtip.css" Guid="b94dddc7-a1ca-47c9-989d-3ec47394b9d2" />
+  <File Id="BrowserUIDir.lib.jquery.qtip.css.orig" Guid="0419ac07-c6c3-478e-be7e-f73912532d3b" />
+  <File Id="BrowserUIDir.lib.jquery.qtip.js" Guid="0c01ac3f-b688-4b59-8011-4a33ba286bba" />
+  <File Id="BrowserUIDir.lib.jquery.qtipSecondary.js" Guid="7af2b9da-2529-404a-a6ce-790b823d27a7" />
+  <File Id="BrowserUIDir.lib.jquery.resize.js" Guid="3f411c5c-8e49-46ce-84d6-5be56acbc364" />
+  <File Id="BrowserUIDir.lib.jquery.resizeX.js" Guid="514f9cbf-9b51-4713-9ab5-af47c111c513" />
+  <File Id="BrowserUIDir.lib.jquery.sizes.js" Guid="102c025a-eb0a-4302-90f8-206b780d6dce" />
+  <File Id="BrowserUIDir.lib.jquery.watermark.js" Guid="523d2e2a-d2f7-4e22-ac3e-f9415da97620" />
+  <File Id="BrowserUIDir.lib.json.js" Guid="17c6b937-f8f4-4b5f-88a6-42bbdf5de13f" />
+</InstallerMetadata>

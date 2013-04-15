@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jquery_1.6.2.min.js1" Guid="2831655b-8116-4692-9a88-386f323591b9" />
+  <File Id="jquery_ui_1.8.16.custom.min.js1" Guid="9ddd0339-14ff-4846-924f-e6545be260e9" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.pageThumbnailList.js.jquery_1.6.2.min.js" Guid="0aef0f1c-51f8-48ac-a12d-cb5d0aa0b0bd" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.pageThumbnailList.js.jquery_ui_1.8.16.custom.min.js" Guid="6b774cbb-fc7d-4f06-9dce-eac62f8d1820" />
+  <File Id="f.widgets.pageThumbnailList.js.jquery_1.6.2.min.js" Guid="8d0d671b-2dfe-49dd-bc18-9b2559a57ddf" />
+  <File Id="ageThumbnailList.js.jquery_ui_1.8.16.custom.min.js" Guid="5845674a-07dc-4131-bb00-4df1f4e6c30a" />
+</InstallerMetadata>

@@ -23,4 +23,22 @@
   <File Id="languageDisplay.css1" Guid="cd2332ba-049d-49dc-919c-c28606c8eb9a" />
   <File Id="previewMode.css1" Guid="d859aafc-4d31-4216-a01f-90a73d505afd" />
   <File Id="Basic_Book.css" Guid="a9c96452-1b11-4c31-880a-7ce43ab1dc44" />
+  <File Id="Basic_Book.css2" Guid="5899c168-d966-4a32-8edf-8ec081de8945" />
+  <File Id="Basic_Book.css.orig1" Guid="5c05f6a9-1fbb-46b0-a674-9eb2d304a546" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.basePage.css" Guid="97fa5e3f-92f7-4b80-b566-f28d8a66ed9f" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.Basic_Book.css" Guid="26f54c24-4adc-44b1-819d-ee0c24a87771" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.Basic_Book.css.orig" Guid="114b3f70-013f-4cd3-81fd-21aaf8010bf2" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.languageDisplay.css" Guid="04b2c15d-b26a-4c24-bf8c-c68c9fc4c8e4" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.placeHolder.png" Guid="c1264528-4d12-492d-9fe9-a3ef1038743b" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.previewMode.css" Guid="f4eab0fc-06e5-4116-9021-458e97c4c194" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.templatePages.htm" Guid="efb1fbb4-fa37-4e9d-a51b-6957fb4f9159" />
+  <File Id="ProgramDir.factoryCollections.Templates.Basic_Book.thumbnail.png" Guid="c4b43c7a-c8b7-4551-bc30-549030737cdb" />
+  <File Id="ctoryCollections.Templates.Basic_Book.basePage.css" Guid="4e15ff90-c7dc-46ba-8a64-ea73f5ae4150" />
+  <File Id="oryCollections.Templates.Basic_Book.Basic_Book.css" Guid="4303850e-d8f6-42f3-8659-ea433fbee9f9" />
+  <File Id="llections.Templates.Basic_Book.Basic_Book.css.orig" Guid="7caa10d8-2661-496b-a4ac-027258ae3785" />
+  <File Id="llections.Templates.Basic_Book.languageDisplay.css" Guid="90cdebcd-dba1-4490-a156-23a2bc7b4e35" />
+  <File Id="ryCollections.Templates.Basic_Book.placeHolder.png" Guid="ab23765d-9911-41d9-b87d-ca5c1f4397da" />
+  <File Id="ryCollections.Templates.Basic_Book.previewMode.css" Guid="bc9f96a4-2954-4df7-8857-591493b6b29f" />
+  <File Id="Collections.Templates.Basic_Book.templatePages.htm" Guid="97e27ecd-50f8-48f2-a4f9-c14c228338d6" />
+  <File Id="toryCollections.Templates.Basic_Book.thumbnail.png" Guid="33827d77-1424-46c3-8265-3d70c8ca70f0" />
 </InstallerMetadata>

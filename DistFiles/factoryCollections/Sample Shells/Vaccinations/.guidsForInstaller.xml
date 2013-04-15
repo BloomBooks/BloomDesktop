@@ -33,4 +33,44 @@
   <File Id="placeHolder.png" Guid="2f87d478-5e71-421e-b5cc-f7b907d83dc2" />
   <File Id="previewMode.css" Guid="ed1200dd-4b16-40ba-88ca-010cba3f23b7" />
   <File Id="thumbnail.png" Guid="6d03c5d0-641c-410e-9f2b-f57d15d51022" />
+  <File Id="Basic_Book.css" Guid="cab135ac-bdf7-4826-a65f-dfa75aa2ca8e" />
+  <File Id="Vaccinations.htm.orig" Guid="7e0eb4aa-49fb-47b2-b764-fb6ff95c0208" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.BasePage.css" Guid="735bbf6a-4691-4390-bf99-bb8ff4312017" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.Basic_Book.css" Guid="8a7d2a87-0552-440c-bb6e-3f31fcb3d493" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.by_nc.svg" Guid="6d16b8fd-1c77-4264-9ecd-c84b4ab89437" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.CC_BY_NC.png" Guid="0f8cab8d-a037-435c-92d4-a05c42dcd09f" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_1.png" Guid="4d05960b-d2bd-459f-a9d8-da975e7513d5" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_2.png" Guid="35efc61b-37b7-4acc-a0ee-d14b8e57c5dd" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_3.png" Guid="8b5235b2-47e2-431b-a91e-b3f146cfdf7e" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_4.png" Guid="f375b6fd-650b-4ebb-a492-565739d5a83f" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_5.png" Guid="99316244-b27d-4691-b324-c243d429c254" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_6.png" Guid="f68df310-aabf-4239-abab-9b223dd5eb8c" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_7.png" Guid="3afd7b94-c2c7-4f53-8b50-03efc490b3ce" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.HL0014_8.png" Guid="f5a7b481-5dc7-4323-8831-aaeb28160340" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.languageDisplay.css" Guid="468160c1-33e7-46e9-b770-c6991a575e00" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.placeHolder.png" Guid="2f516e47-fac6-4371-9f3f-d26ccbeb754b" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.previewMode.css" Guid="c8b53769-d21b-4565-bf1d-efce8e8b5565" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.thumbnail.png" Guid="426b9414-a198-4fd3-96e9-6db376a72ef6" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.Vaccinations.htm" Guid="7e061f49-3d6f-4230-944b-e4eaf13dc55e" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.Vaccinations.htm.bak" Guid="0506146b-1919-4577-a6cf-c483739174e9" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.Vaccinations.Vaccinations.htm.orig" Guid="99211ce1-15ec-4176-ade6-c70603f7adb6" />
+  <File Id="ollections.Sample_Shells.Vaccinations.BasePage.css" Guid="d6ef10b9-d95a-49fa-be9e-f97fc59bff20" />
+  <File Id="lections.Sample_Shells.Vaccinations.Basic_Book.css" Guid="040744e6-81c8-422d-9a31-370427bcb55a" />
+  <File Id="ryCollections.Sample_Shells.Vaccinations.by_nc.svg" Guid="94c74ff1-ceaa-4ae3-a369-038d4a29965b" />
+  <File Id="ollections.Sample_Shells.Vaccinations.CC_BY_NC.png" Guid="1d772680-7cb2-4925-a531-8d7bc26ba8d6" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_1.png" Guid="dfe92c58-536e-49ae-aef6-7372102bfe70" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_2.png" Guid="72872b32-4855-47a9-a127-2f3baee9df41" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_3.png" Guid="80a49cb6-9a2f-4fe2-8252-281d224308e9" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_4.png" Guid="d7da9de6-8b7b-497c-9769-860539b745ba" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_5.png" Guid="1616720e-2d2c-4b04-9cca-998c68da37ba" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_6.png" Guid="247370c3-d07b-4327-a1a1-6a05d405cdc9" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_7.png" Guid="b7f26edb-c331-449d-94ed-6ee11c0879ef" />
+  <File Id="ollections.Sample_Shells.Vaccinations.HL0014_8.png" Guid="e4285969-76ab-4647-b0bb-21d2f50b144e" />
+  <File Id="ons.Sample_Shells.Vaccinations.languageDisplay.css" Guid="c0b6bb8e-c923-47bb-bf40-e16bda71d514" />
+  <File Id="ections.Sample_Shells.Vaccinations.placeHolder.png" Guid="7d679576-acd0-450a-838d-24e477304bc5" />
+  <File Id="ections.Sample_Shells.Vaccinations.previewMode.css" Guid="1f7e428e-51ff-4546-8c82-f99c19a2342a" />
+  <File Id="llections.Sample_Shells.Vaccinations.thumbnail.png" Guid="1a8345e2-4a5f-4942-8e1a-533f73adab34" />
+  <File Id="ctions.Sample_Shells.Vaccinations.Vaccinations.htm" Guid="4b12d33e-c136-4d65-bb20-080bb544981a" />
+  <File Id="ns.Sample_Shells.Vaccinations.Vaccinations.htm.bak" Guid="e81862dd-1e7d-42b2-abb8-c32998b51c70" />
+  <File Id="s.Sample_Shells.Vaccinations.Vaccinations.htm.orig" Guid="5e341fa1-ec32-417b-93d4-c80f466cefc7" />
 </InstallerMetadata>
