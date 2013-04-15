@@ -94,7 +94,7 @@ namespace Bloom.Book
 			element.SetAttribute("id", "ui-settings");
 			var d = new Dictionary<string, string>();
 
-			d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
+			//d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
 			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);

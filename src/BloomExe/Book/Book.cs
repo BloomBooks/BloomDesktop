@@ -204,7 +204,7 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("script/bloomBootstrap.js"));
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
 		}
 
 
@@ -807,7 +807,7 @@ namespace Bloom.Book
 //			})";
 //			header.AppendChild(script);
 
-			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("script/bloomPreviewBootstrap.js");
+			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("bloomPreviewBootstrap.js");
 			if(string.IsNullOrEmpty(pathToJavascript))
 			{
 				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");

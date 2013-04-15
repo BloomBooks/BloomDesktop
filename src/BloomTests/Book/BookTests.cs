@@ -63,14 +63,14 @@ namespace BloomTests.Book
 			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("languageDisplayTemplate.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("script/bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("script/bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));

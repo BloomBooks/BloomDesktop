@@ -43,6 +43,7 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
 												FileLocator.GetDirectoryDistributedWithApplication( "browserui"),
+												FileLocator.GetDirectoryDistributedWithApplication("browserui/bookLayout"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), library.Object);

@@ -192,12 +192,27 @@ namespace Bloom
 			});
 
 		}
-		private static IEnumerable<string> GetFileLocations()
+		public static IEnumerable<string> GetFileLocations()
 		{
 			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("browserui"));//hack to get the distfiles folder itself
 			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookEdit/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookEdit/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookEdit/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookEdit/img");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookPreview/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookPreview/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookPreview/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookPreview/img");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("browserui/collection");
+
+			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 
