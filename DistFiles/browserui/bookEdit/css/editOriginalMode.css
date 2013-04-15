@@ -1,0 +1,57 @@
+/*This styesheet is applied when an book is being edited. It does things like allow you to set the type of book, the copyright, license, etc.*/
+OL#topics
+{
+	list-style: none;
+}
+DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
+{
+	background-color: transparent;
+	border: none;
+	height: 236px;
+	overflow: auto;
+}
+/*this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in*/
+.bloom-readOnlyInEditMode
+{
+/*we have javascript function which notices this setting and makes it read-only
+(which isn't a style, so we can't set it ourselves*/
+	/*[disabled]border:1px solid transparent;*/
+	cursor: not-allowed;
+}
+DIV.bloom-metaData
+{
+	cursor: pointer;
+/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+DIV.bloom-metaData TEXTAREA
+{
+/*border: transparent; /* jscript will translate to read only*/
+	cursor: pointer;
+/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+/*This is here instead of Factor-XMatter.css so that it only shows when it is editable*/
+DIV.coverBottomBookTopic
+{
+	/*[disabled]overflow:hidden;*/
+	/*[disabled]text-align:right;*/
+	/*[disabled]width:274px;*/
+	/*[disabled]height:84px;*/
+	/*[disabled]+placement:anchor-bottom-right 29px 17px;*/
+	/*[disabled]min-height:20px;*/
+	/*[disabled]display:table;*/
+	/*[disabled]border:1px solid #C0B9B9;*/
+}
+DIV.marginBox
+{
+	/*[disabled]width:108mm;*/
+	/*[disabled]+placement:anchor-top-left 20mm 14mm;*/
+	/*[disabled]height:175mm;*/
+}
+.enablePageCustomization DIV.marginBox
+{
+	border: thin dotted rgba(133, 133, 193, 0.9) !important;
+}
+DIV.marginBox
+{
+	/*[disabled]border:thin dotted rgba(133, 133, 193, 0.9);*/
+}
