@@ -42,7 +42,7 @@ namespace BloomTests.Book
 
 //			new FileLocator(new string[]
 //			                               	{
-//			                               		FileLocator.GetDirectoryDistributedWithApplication("browserui"),
+//			                               		FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"),
 //												FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCSS"),
 //												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
 //												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),

@@ -20,4 +20,4 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.waterma
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
-//<document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditing.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
