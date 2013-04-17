@@ -20,7 +20,7 @@
 				<img data-book='coverImage' src="placeholder.png" />
 			</div>
 
-			<div class="bloom-editable smallCoverCredits" data-book='smallCoverCredits' lang="V" data-hint="*You may use this space for author/illustrator, or anything else."></div>
+			<div class="bloom-editable smallCoverCredits cover-credits-style" data-book='smallCoverCredits' lang="V" data-hint="*You may use this space for author/illustrator, or anything else."></div>
 
 			<div class="coverBottomLangName">
 				<div data-library="nameOfLanguage" lang="N1">
@@ -43,7 +43,7 @@
 		<div class="marginBox">
 			<div class="bloom-translationGroup originalAcknowledgments">
 				<div contenteditable="true" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments"
-					class="bloom-editable bloom-readOnlyInTranslationMode">
+					class="bloom-editable bloom-readOnlyInTranslationMode inside-cover-original-acknowledments">
 					{Original Acknowledgments}</div>
 			</div>
 			<div class="bloom-metaData" id="versoLicenseAndCopyright" data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright & License">
@@ -64,7 +64,7 @@
 				</div>
 			</div>
 			<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it. -->
-			<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode" lang="N1"
+			<div class="versionAcknowledgments bloom-editable bloom-readOnlyInEditMode inside-cover-version-aknowledgments" lang="N1"
 				data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
 			</div>
 		</div>
@@ -80,11 +80,11 @@
 				</div>
 			</div>
 			<div id="originalContributions" class="bloom-translationGroup">
-				<div data-book="originalContributions" class="credits bloom-editable bloom-readOnlyInTranslationMode"
+				<div data-book="originalContributions" class="credits bloom-editable bloom-readOnlyInTranslationMode title-page-original-contributors-style"
 					data-hint="The contributions made by writers, illustrators, editors, etc., in {lang}">
 				</div>
 			</div>
-			<div id="funding" class="bloom-translationGroup">
+			<div id="funding" class="bloom-translationGroup title-page-funding-style">
 				<div data-book="funding" class="funding bloom-editable"
 					data-hint="Use this to acknowledge any funding agencies.">
 				</div>
@@ -109,14 +109,14 @@
 	<div class="bloom-page  cover coverColor insideBackCover bloom-backMatter A5Portrait" data-page="required singleton" id="502BE62F-A4D0-4225-A598-1A203FA73239">
 		<div class="pageLabel" lang="en">Inside Back Cover</div>
 		<div class="marginBox">
-			<div class="bloom-editable" data-book='insideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+			<div class="bloom-editable inside-back-cover-style" data-book='insideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
 			</div>
 		</div>
 	</div>
-	<div class="bloom-page  cover coverColor outsideBackCover bloom-backMatter A5Portrait" data-page="required singleton" id="Div1">
+	<div class="bloom-page  cover coverColor outsideBackCover bloom-backMatter A5Portrait" data-page="required singleton" id="E624F355-DF77-4B62-AF6C-16F5977F42CB">
 		<div class="pageLabel" lang="en">Outside Back Cover</div>
 		<div class="marginBox">
-			<div class="bloom-editable" data-book='outsideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+			<div class="bloom-editable outside-back-cover-style" data-book='outsideBackCover' lang="N1" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
 			</div>
 		</div>
 	</div>

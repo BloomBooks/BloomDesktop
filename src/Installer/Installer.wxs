@@ -83,7 +83,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		<Directory Id="ProgramDir" Name="Bloom">
 		  <Merge  Id="ChorusMergeModule" Language="1033" SourceFile="..\..\lib\ChorusMergeModule.msm" DiskId="1" />
 		  <Directory Id="XulRunnerDir" Name="XulRunner"/>
-		  <Directory Id="BrowserUIDir" Name="BrowserUI"/>
+		  <Directory Id="BrowserUIDir" Name="BloomBrowserUI"/>
 		  <Component Id="Bloom.exe" Guid="{A3493982-C68A-4f01-93BC-5F92B380CF89}">
 			<Registry Root="HKCU" Key="SOFTWARE\Bloom\Components\Bloom.exe" KeyPath="yes" />
 			<File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />

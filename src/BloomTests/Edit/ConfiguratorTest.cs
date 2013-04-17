@@ -42,7 +42,7 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "browserui"),
+												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
 												FileLocator.GetDirectoryDistributedWithApplication("browserui/bookLayout"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});

@@ -145,6 +145,7 @@ function AddToolbox(){
 //onto the page
 function AddStyleEditBox() {
     $("div.bloom-editable:visible").each(function () {
+        var targetBox = this;
         $(this).qtipSecondary({
             content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
 
@@ -153,15 +154,20 @@ function AddStyleEditBox() {
                 at: 'bottom left'
             },
             show: { ready: true },
-            //              hide: {
-            //  event: hideEvents
-            //},
+                          hide: {
+              event: false
+            },
                events: {
-                render: function (event, api) {
-                         $(this).find('#smallerFontButton').click(function() {
-                             MakeBoxTextSmaller($(this));
-                         });
-                     }
+                    render: function (event, api) {
+                        $(this).find('#smallerFontButton').click(function() {
+                            var editor = new StyleEditor();
+                            editor.MakeSmaller(targetBox);
+                        });
+                        $(this).find('#largerFontButton').click(function () {
+                            var editor = new StyleEditor();
+                            editor.MakeBigger(targetBox);
+                        });
+                    }
                },
                 style: {
                 classes: 'ui-tooltip-red'
@@ -551,7 +557,7 @@ function ResizeUsingPercentages(e,ui){
      });
 
      AddToolbox();
-     //AddStyleEditBox();
+     AddStyleEditBox();
 
      //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
      jQuery("textarea").blur(function () {

@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BloomBrowserUI</RootNamespace>
+    <AssemblyName>BloomBrowserUI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\output\web\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\css\editMode.css" />
+    <Content Include="bookEdit\css\editOriginalMode.css" />
+    <Content Include="bookEdit\css\editTranslationMode.css" />
+    <Content Include="bookEdit\html\topicDialog.htm" />
+    <Content Include="bookEdit\img\changeImageButtonLarge.png" />
+    <Content Include="bookEdit\img\changeImageButtonSmall.png" />
+    <Content Include="bookEdit\img\deleteButtonSmall.png" />
+    <Content Include="bookEdit\img\imageProblem.png" />
+    <Content Include="bookEdit\img\moveDivButton.png" />
+    <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
+    <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
+    <Content Include="bookEdit\js\bloomBootstrap.js" />
+    <Content Include="bookEdit\js\bloomEditing.js" />
+    <Content Include="bookEdit\js\EditPageStyleElement.js" />
+    <Content Include="bookEdit\js\StyleEditor.js">
+      <DependentUpon>StyleEditor.ts</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\js\StyleEditor.ts" />
+    <Content Include="bookEdit\test\karma.conf.js" />
+    <Content Include="bookEdit\test\StyleEditorSpec.js">
+      <DependentUpon>StyleEditorSpec.ts</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\test\StyleEditorSpec.ts" />
+    <Content Include="bookLayout\.guidsForInstaller.xml" />
+    <Content Include="bookLayout\BasePage.css" />
+    <Content Include="bookLayout\collection styles override template.css" />
+    <Content Include="bookLayout\languageDisplayTemplate.css" />
+    <Content Include="bookPreview\css\.guidsForInstaller.xml" />
+    <Content Include="bookPreview\css\previewMode.css" />
+    <Content Include="bookPreview\js\.guidsForInstaller.xml" />
+    <Content Include="bookPreview\js\bloomPreview.js" />
+    <Content Include="bookPreview\js\bloomPreviewBootstrap.js" />
+    <Content Include="browserBasedCollectionView\.guidsForInstaller.xml" />
+    <Content Include="browserBasedCollectionView\library.css" />
+    <Content Include="browserBasedCollectionView\library.htm" />
+    <Content Include="browserBasedCollectionView\library.js" />
+    <Content Include="collection\.guidsForInstaller.xml" />
+    <Content Include="collection\thumbnail.css" />
+    <Content Include="lib\.guidsForInstaller.xml" />
+    <Content Include="lib\jasmine\.guidsForInstaller.xml" />
+    <Content Include="lib\jasmine\jasmine-1.1.0.js" />
+    <Content Include="lib\jasmine\jasmine.d.ts" />
+    <Content Include="lib\jasmine\JasmineAdapter-1.1.2.js" />
+    <Content Include="lib\jquery-1.9.1.js" />
+    <Content Include="lib\jquery-ui.css" />
+    <Content Include="lib\jquery-ui.js" />
+    <Content Include="lib\jquery.d.ts" />
+    <Content Include="lib\jquery.easytabs - b4 refactor.js" />
+    <Content Include="lib\jquery.easytabs - Copy.js" />
+    <Content Include="lib\jquery.easytabs.js" />
+    <Content Include="lib\jquery.hashchange.min.js" />
+    <Content Include="lib\jquery.js" />
+    <Content Include="lib\jquery.myimgscale.js" />
+    <Content Include="lib\jquery.qtip.css" />
+    <Content Include="lib\jquery.qtip.js" />
+    <Content Include="lib\jquery.qtipSecondary.js" />
+    <Content Include="lib\jquery.resize.js" />
+    <Content Include="lib\jquery.sizes.js" />
+    <Content Include="lib\jquery.watermark.js" />
+    <Content Include="lib\json.js" />
+    <Content Include="nonProductionStuff\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\alignmentTest.css" />
+    <Content Include="nonProductionStuff\alignmentTest.html" />
+    <Content Include="nonProductionStuff\book.png" />
+    <Content Include="nonProductionStuff\library - Demo.htm" />
+    <Content Include="nonProductionStuff\library.htm" />
+    <Content Include="nonProductionStuff\pdfPrintingTests.js" />
+    <Content Include="nonProductionStuff\preview.html" />
+    <Content Include="nonProductionStuff\widgets\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_flat_30_cccccc_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_flat_40_f08080_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_flat_50_5c5c5c_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_glass_20_555555_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_glass_40_ffc73d_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_gloss-wave_10_333333_500x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_highlight-soft_80_eeeeee_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_inset-soft_30_59b4d4_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-bg_inset-soft_5_333333_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-icons_222222_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-icons_4b8e0b_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-icons_a83300_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-icons_cccccc_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\bloom-theme\jquery-ui-1.8.16.custom.css" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-icons_222222_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-icons_454545_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-icons_888888_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\smoothness\jquery-ui-1.8.16.custom.css" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_flat_30_cccccc_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_flat_50_5c5c5c_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_glass_20_555555_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_glass_40_0078a3_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_glass_40_ffc73d_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_gloss-wave_25_333333_500x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_highlight-soft_80_eeeeee_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_inset-soft_25_000000_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-bg_inset-soft_30_f58400_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-icons_222222_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-icons_4b8e0b_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-icons_a83300_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-icons_cccccc_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\css\ui-darkness\jquery-ui-1.8.16.custom.css" />
+    <Content Include="nonProductionStuff\widgets\js\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\js\jquery-1.6.2.min.js" />
+    <Content Include="nonProductionStuff\widgets\js\jquery-ui-1.8.16.custom.min.js" />
+    <Content Include="nonProductionStuff\widgets\js\jquery.dform-0.1.4.min.js" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList.css" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList.html" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList.js" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-icons_222222_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-icons_454545_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-icons_888888_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\css\smoothness\jquery-ui-1.8.16.custom.css" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\js\.guidsForInstaller.xml" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\js\jquery-1.6.2.min.js" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\js\jquery-ui-1.8.16.custom.min.js" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\pageThumbnailList.css" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\pageThumbnailList.html" />
+    <Content Include="nonProductionStuff\widgets\pageThumbnailList\pageThumbnailList.js" />
+    <Content Include="nonProductionStuff\widgets\settings.css" />
+    <Content Include="nonProductionStuff\widgets\settings.htm" />
+    <Content Include="themes\bloom-jqueryui-theme\.guidsForInstaller.xml" />
+    <Content Include="themes\bloom-jqueryui-theme\images\.guidsForInstaller.xml" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_flat_30_cccccc_40x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_flat_40_f08080_40x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_flat_50_5c5c5c_40x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_glass_20_555555_1x400.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_glass_40_ffc73d_1x400.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_gloss-wave_10_333333_500x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_highlight-soft_80_eeeeee_1x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_inset-soft_30_59b4d4_1x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_inset-soft_5_333333_1x100.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_222222_256x240.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_4b8e0b_256x240.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_a83300_256x240.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
+    <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\img\imageMetaDataButton.svg" />
+    <Content Include="bookEdit\img\imageMissingMetaData.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\jquery.qtip.css.orig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bookPreview\html\" />
+    <Folder Include="bookPreview\img\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\test\StyleEditorSpec.js.map">
+      <DependentUpon>StyleEditorSpec.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\js\StyleEditor.js.map">
+      <DependentUpon>StyleEditor.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>10378</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:1660/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

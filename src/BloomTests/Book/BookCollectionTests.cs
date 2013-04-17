@@ -22,7 +22,7 @@ namespace BloomTests.Book
 			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
 			_folder  =new TemporaryFolder("BookCollectionTests");
 //			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("browserui"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCss"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCss"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
 				BookStorageFactory, null,null, new CreateFromSourceBookCommand(), new EditBookCommand());

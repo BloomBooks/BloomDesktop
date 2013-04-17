@@ -3,16 +3,15 @@
 
 
 // base path, that will be used to resolve files and exclude
-basePath = 'c:/dev/bloom/distfiles/root/script/test';
-
+basePath = 'c:/dev/bloom/src/BloomBrowserUI/bookEdit/test';
 
 // list of files / patterns to load in the browser
 files = [
   JASMINE,
   JASMINE_ADAPTER,
     'StyleEditorSpec.js',
-    '../StyleEditing.js',
-    '../lib/*.js'
+    '../js/StyleEditor.js',
+    '../../lib/*.js'
     //  REQUIRE,
 //  REQUIRE_ADAPTER,
 //  'boostraptests.js',

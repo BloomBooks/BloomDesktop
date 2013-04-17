@@ -59,7 +59,7 @@ namespace BloomTests.Book
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
-			string root = FileLocator.GetDirectoryDistributedWithApplication("browserui");
+			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates");
