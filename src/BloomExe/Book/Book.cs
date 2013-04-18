@@ -218,7 +218,6 @@ namespace Bloom.Book
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
 		{
-
 			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom(_log);
 			var head = relocatableCopyOfDom.RawDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>"+head+"<body></body></html>");
@@ -1009,6 +1008,14 @@ namespace Bloom.Book
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);
 
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
+				var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
+				if (customStyles != null)
+				{
+					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
+					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+				}
+				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
 				try
 				{
 					_storage.Save();
@@ -1032,7 +1039,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 //        /// <summary>
 //        /// Gets the first element with the given tag & id, within the page-div with the given id.
 //        /// </summary>
@@ -1047,7 +1053,21 @@ namespace Bloom.Book
 //            return (XmlElement)matches[0];
 //        }
 
-
+		/// <summary>
+		/// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+		/// </summary>
+		private XmlElement GetOrCreateCustomStyleElementFromStorage()
+		{
+			var matches = _dom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+			if (matches.Count == 0)
+			{
+				var emptyCustomStylesElement = _dom.RawDom.CreateElement("style");
+				emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+				emptyCustomStylesElement.SetAttribute("type", "text/css");
+				_dom.Head.AppendChild(emptyCustomStylesElement);
+			}
+			return (XmlElement)matches[0];
+		}
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
 		/// </summary>

@@ -12,7 +12,7 @@ class StyleEditor {
 		var sheet = this.GetOrCreateCustomStyleSheet();
 	}
 
-	GetStyleClassFromElement(target: HTMLElement) {
+	static GetStyleClassFromElement(target: HTMLElement) {
 		var c = $(target).attr("class");
 		if (!c)
 			c = "";
@@ -32,7 +32,8 @@ class StyleEditor {
 	MakeSmaller(target: HTMLElement) {
 		this.ChangeSize(target, -2);
 	}
-	ChangeSize(target: HTMLElement, change:number) {
+
+	static GetStyleNameForElement(target: HTMLElement): string {
 		var styleName = this.GetStyleClassFromElement(target);
 		if (!styleName) {
 			var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
@@ -43,9 +44,16 @@ class StyleEditor {
 				$(target).addClass(styleName);
 			}
 			else {
-				return;
+				return null;
 			}
 		}
+		return styleName;
+	}
+
+	ChangeSize(target: HTMLElement, change: number) {
+		var styleName = StyleEditor.GetStyleNameForElement(target);
+		if (!styleName)
+			return;
 		var rule = this.GetOrCreateRuleForStyle(styleName);
 		var sizeString: string = (<any>rule).style.fontSize;
 		if (!sizeString)
@@ -57,13 +65,16 @@ class StyleEditor {
 
 	GetOrCreateCustomStyleSheet(): StyleSheet {
 		for (var i = 0; i < document.styleSheets.length; i++) {
-			if (document.styleSheets[i].title == "customBookStyles")
+			if ((<any>document.styleSheets[i]).ownerNode.id == "customBookStyles")
 				return document.styleSheets[i];
 		}
+		//alert("Will make customBookStyles Sheet:" + document.head.outerHTML);
+
 		var newSheet = document.createElement('style');
 		newSheet.id = "customBookStyles";
 		document.getElementsByTagName('head')[0].appendChild(newSheet);
 		newSheet.title = "customBookStyles";
+
 		return <StyleSheet><any>newSheet;
 	}
 
@@ -78,7 +89,46 @@ class StyleEditor {
 		}
 		(<any>styleSheet).insertRule('.'+styleName+' {}', 0)
 
-		return x[i];
+		return x[0];      //new guy is first
 	}
 
+	//Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
+//onto the page
+	AddStyleEditBoxes() {
+		$("div.bloom-editable:visible").each(function () {
+			var targetBox = this;
+			var styleName = StyleEditor.GetStyleNameForElement(targetBox);
+			if (!styleName)
+				return;
+
+			(<any>$(this)).qtipSecondary({
+				content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
+
+				position: {
+					my: 'bottom right',
+					at: 'bottom left'
+				},
+				show: { ready: true },
+				hide: {
+					event: false
+				},
+				events: {
+					render: function (event, api) {
+						$(this).find('#smallerFontButton').click(function () {
+							var editor = new StyleEditor();
+							editor.MakeSmaller(targetBox);
+						});
+						$(this).find('#largerFontButton').click(function () {
+							var editor = new StyleEditor();
+							editor.MakeBigger(targetBox);
+						});
+					}
+				},
+				style: {
+					classes: 'ui-tooltip-red'
+				}
+			})
+
+		})
+	}
 }

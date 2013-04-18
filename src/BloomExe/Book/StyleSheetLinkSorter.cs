@@ -45,7 +45,7 @@ namespace Bloom.Book
 			int xValue = GetValue(x);
 			int yValue = GetValue(y);
 
-			Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
+   //         Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
 			if (xValue == yValue)
 				return String.Compare(x, y);
 
