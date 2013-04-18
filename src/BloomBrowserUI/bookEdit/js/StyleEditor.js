@@ -9,7 +9,7 @@ var StyleEditor = (function () {
         //        }
         var sheet = this.GetOrCreateCustomStyleSheet();
     }
-    StyleEditor.prototype.GetStyleClassFromElement = function (target) {
+    StyleEditor.GetStyleClassFromElement = function GetStyleClassFromElement(target) {
         var c = $(target).attr("class");
         if(!c) {
             c = "";
@@ -28,7 +28,7 @@ var StyleEditor = (function () {
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
     };
-    StyleEditor.prototype.ChangeSize = function (target, change) {
+    StyleEditor.GetStyleNameForElement = function GetStyleNameForElement(target) {
         var styleName = this.GetStyleClassFromElement(target);
         if(!styleName) {
             var parentPage = ($(target).closest(".bloom-page")[0]);
@@ -38,8 +38,15 @@ var StyleEditor = (function () {
                 styleName = "default-style";
                 $(target).addClass(styleName);
             } else {
-                return;
+                return null;
             }
+        }
+        return styleName;
+    };
+    StyleEditor.prototype.ChangeSize = function (target, change) {
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if(!styleName) {
+            return;
         }
         var rule = this.GetOrCreateRuleForStyle(styleName);
         var sizeString = (rule).style.fontSize;
@@ -53,10 +60,11 @@ var StyleEditor = (function () {
     };
     StyleEditor.prototype.GetOrCreateCustomStyleSheet = function () {
         for(var i = 0; i < document.styleSheets.length; i++) {
-            if(document.styleSheets[i].title == "customBookStyles") {
+            if((document.styleSheets[i]).ownerNode.id == "customBookStyles") {
                 return document.styleSheets[i];
             }
         }
+        //alert("Will make customBookStyles Sheet:" + document.head.outerHTML);
         var newSheet = document.createElement('style');
         newSheet.id = "customBookStyles";
         document.getElementsByTagName('head')[0].appendChild(newSheet);
@@ -72,7 +80,47 @@ var StyleEditor = (function () {
             }
         }
         (styleSheet).insertRule('.' + styleName + ' {}', 0);
-        return x[i];
+        return x[0];//new guy is first
+        
+    };
+    StyleEditor.prototype.AddStyleEditBoxes = //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
+    //onto the page
+    function () {
+        $("div.bloom-editable:visible").each(function () {
+            var targetBox = this;
+            var styleName = StyleEditor.GetStyleNameForElement(targetBox);
+            if(!styleName) {
+                return;
+            }
+            ($(this)).qtipSecondary({
+                content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
+                position: {
+                    my: 'bottom right',
+                    at: 'bottom left'
+                },
+                show: {
+                    ready: true
+                },
+                hide: {
+                    event: false
+                },
+                events: {
+                    render: function (event, api) {
+                        $(this).find('#smallerFontButton').click(function () {
+                            var editor = new StyleEditor();
+                            editor.MakeSmaller(targetBox);
+                        });
+                        $(this).find('#largerFontButton').click(function () {
+                            var editor = new StyleEditor();
+                            editor.MakeBigger(targetBox);
+                        });
+                    }
+                },
+                style: {
+                    classes: 'ui-tooltip-red'
+                }
+            });
+        });
     };
     return StyleEditor;
 })();

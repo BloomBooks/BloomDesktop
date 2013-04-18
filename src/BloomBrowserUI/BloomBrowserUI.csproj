@@ -58,7 +58,6 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
-    <Content Include="bookEdit\js\EditPageStyleElement.js" />
     <Content Include="bookEdit\js\StyleEditor.js">
       <DependentUpon>StyleEditor.ts</DependentUpon>
     </Content>

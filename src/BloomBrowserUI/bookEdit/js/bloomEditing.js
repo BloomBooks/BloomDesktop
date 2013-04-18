@@ -141,41 +141,7 @@ function AddToolbox(){
     })
 }
 
-//Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
-//onto the page
-function AddStyleEditBox() {
-    $("div.bloom-editable:visible").each(function () {
-        var targetBox = this;       
-        $(this).qtipSecondary({
-            content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
 
-            position: {
-                my: 'bottom right',
-                at: 'bottom left'
-            },
-            show: { ready: true },
-                          hide: {
-              event: false
-            },
-               events: {
-                    render: function (event, api) {
-                        $(this).find('#smallerFontButton').click(function() {
-                            var editor = new StyleEditor();
-                            editor.MakeSmaller(targetBox);
-                        });
-                        $(this).find('#largerFontButton').click(function () {
-                            var editor = new StyleEditor();
-                            editor.MakeBigger(targetBox);
-                        });
-                    }
-               },
-                style: {
-                classes: 'ui-tooltip-red'
-            }
-        })
-
-    })
-}
 
 
 function AddExperimentalNotice(element) {
@@ -557,7 +523,8 @@ function ResizeUsingPercentages(e,ui){
      });
 
      AddToolbox();
-     AddStyleEditBox();
+     var editor = new StyleEditor();
+     editor.AddStyleEditBoxes();
 
      //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
      jQuery("textarea").blur(function () {
