@@ -88,6 +88,60 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	vertical-align: bottom;
 	display: table-cell;
 }
+/*------A4L Side-by-side common*/
+.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
+{
+	width: 48%;
+	/*+placement:anchor-top-left 0 0;*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100% !important;
+	/*[disabled]border:1px solid #000000;*/
+}
+.imageOnBottom.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
+{
+	width: 48%;
+	height: 100%;
+	/*+placement:float-right 0px 0px;*/
+	float: right !important;
+	position: relative !important;
+	left: 0px !important;
+	top: 0px !important;
+}
+.imageOnBottom.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
+{
+	height: 17.8cm !important;
+	width: 45%;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.imageOnTop.A4Landscape.layout-style-SideBySide.bloom-monolingual .bloom-editable
+{
+	height: 17.7cm !important;
+}
+.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
+{
+	height: 100% !important;
+	width: 45%;
+	/*+placement:anchor-top-left 549px 2px;*/
+	position: absolute !important;
+	left: 549px !important;
+	top: 2px !important;
+}
+.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable
+{
+	/*[disabled]height:33%;*/
+	/*[disabled]width:45%;*/
+	/*[disabled]+placement:anchor-top-left 549px 2px;*/
+	display: block;
+}
+.imageOnTop.A4Landscape.layout-style-SideBySide.bloom-bilingual .bloom-editable
+{
+	height: 8cm !important;
+}
 /*.......A4L Stacked*/
 .imageOnTop.A4Landscape DIV.bloom-imageContainer
 {
@@ -131,12 +185,14 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	width: 100%;
 	display: table;
 }
-DIV.imageOnTop.A4Landscape DIV.bloom-editable
+.imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable.bloom-content1
 {
-	height: 49% !important;
-	/*[disabled]+placement:anchor-top-left 549px 2px;*/
-	display: table-row;
-	width: 100%;
+	height: 100%;
+}
+.imageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable.bloom-content2
+{
+	height: 4.5cm;
+	/*[disabled]+placement:anchor-bottom-left 0px 0px;*/
 }
 .imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer
 {
@@ -160,38 +216,9 @@ DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
 }
 DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
 {
-	height: 31% !important;
 	/*[disabled]+placement:anchor-top-left 549px 2px;*/
-	display: table-row;
 	width: 100%;
-}
-/*------A4L Side-by-side common*/
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
-{
-	width: 48%;
-	/*+placement:anchor-top-left 0 0;*/
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100% !important;
-	/*[disabled]border:1px solid #000000;*/
-}
-DIV.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
-{
-	height: 100% !important;
-	width: 45%;
-	/*+placement:anchor-top-left 549px 2px;*/
-	position: absolute !important;
-	left: 549px !important;
-	top: 2px !important;
-	display: table;
-}
-DIV.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable
-{
-	height: 33% !important;
-	/*[disabled]width:45%;*/
-	/*[disabled]+placement:anchor-top-left 549px 2px;*/
-	display: table-row;
+	height: 30%;
 }
 /*...... A5P mono*/
 .imageOnTop.bloom-monolingual DIV.bloom-editable
