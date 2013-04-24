@@ -294,7 +294,8 @@ function MakeSourceTextDivForGroup(group) {
 }
 
 
- function GetLocalizedHint(element) {
+function GetLocalizedHint(element) {
+    
      var whatToSay = $(element).data("hint");
      if(whatToSay.startsWith("*")){
          whatToSay = whatToSay.substring(1,1000);
@@ -311,7 +312,7 @@ function MakeSourceTextDivForGroup(group) {
          if (key.startsWith("{"))
              whatToSay = whatToSay.replace(key, dictionary[key]);
 
-         whatToSay = whatToSay.replace("{lang}", dictionary[$(element).attr('lang')]);
+         whatToSay = whatToSay.replace("$lang", dictionary[$(element).attr('lang')]);
      }
      return whatToSay;
  }
@@ -693,8 +694,12 @@ function ResizeUsingPercentages(e,ui){
              }
          }
 
+
+
          var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
          var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+
+         var x = $(this).data("hint");
 
          //make hints that start with a * only show when the field has focus
          if ($(this).data("hint").startsWith("*")) {
@@ -710,6 +715,9 @@ function ResizeUsingPercentages(e,ui){
              whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
              hideEvents = false;
          }
+
+
+
 
          $(this).qtip({
              content: whatToSay,
@@ -816,6 +824,7 @@ function ResizeUsingPercentages(e,ui){
 
      // If the user moves over something they can't edit, show a tooltip explaining why not
      $('*[data-hint]').each(function () {
+
          if ($(this).css('cursor') == 'not-allowed') {
              var whyDisabled = "You cannot change these because this is not the original copy.";
              if ($(this).hasClass('bloom-readOnlyInEditMode')) {
@@ -972,6 +981,7 @@ function FindOrCreateTopicDialogDiv() {
     if (!dialogContents.length) {
         //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
         dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
+
         var topics = JSON.parse(GetSettings().topics);
         // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
         

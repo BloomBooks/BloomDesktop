@@ -56,12 +56,18 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
-    <Content Include="bookEdit\js\bloomBootstrap.js" />
-    <Content Include="bookEdit\js\bloomEditing.js" />
     <Content Include="bookEdit\js\StyleEditor.js">
       <DependentUpon>StyleEditor.ts</DependentUpon>
     </Content>
+    <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
+    <Content Include="bookEdit\js\bloomBootstrap.js" />
+    <Content Include="bookEdit\js\bloomEditing.js" />
     <Content Include="bookEdit\js\StyleEditor.ts" />
+    <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
+    <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
+    <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
+    <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
+    <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
     <Content Include="bookEdit\test\karma.conf.js" />
     <Content Include="bookEdit\test\StyleEditorSpec.js">
       <DependentUpon>StyleEditorSpec.ts</DependentUpon>

@@ -444,7 +444,7 @@ function QTip(target, options, id, attr)
 				show: $.trim('' + options.show.event).split(' '),
 				hide: $.trim('' + options.hide.event).split(' ')
 			},
-			IE6 = $.browser.msie && parseInt($.browser.version, 10) === 6;
+			IE6 = false && parseInt($.browser.version, 10) === 6;
 
 		// Define show event method
 		function showMethod(event)
@@ -1015,7 +1015,7 @@ function QTip(target, options, id, attr)
 			function after() {
 				if(state) {
 					// Prevent antialias from disappearing in IE by removing filter
-					if($.browser.msie) { tooltip[0].style.removeAttribute('filter'); }
+					if(false) { tooltip[0].style.removeAttribute('filter'); }
 
 					// Remove overflow setting to prevent tip bugs
 					tooltip.css('overflow', '');
@@ -1399,7 +1399,7 @@ function QTip(target, options, id, attr)
 				tooltip.queue(function(next) {
 					// Reset attributes to avoid cross-browser rendering bugs
 					$(this).css({ opacity: '', height: '' });
-					if($.browser.msie) { this.style.removeAttribute('filter'); }
+					if(false) { this.style.removeAttribute('filter'); }
 
 					next();
 				});
@@ -2160,8 +2160,8 @@ function Tip(qTip, command)
 	function borderRadius(corner) {
 		var isTitleTop = elems.titlebar && corner.y === 'top',
 			elem = isTitleTop ? elems.titlebar : elems.content,
-			moz = $.browser.mozilla,
-			prefix = moz ? '-moz-' : $.browser.webkit ? '-webkit-' : '',
+			moz = true,
+			prefix = moz ? '-moz-' : false ? '-webkit-' : '',
 			side = corner.y + (moz ? '' : '-') + corner.x,
 			css = prefix + (moz ? 'border-radius-' + side : 'border-' + side + '-radius');
 
@@ -2196,7 +2196,7 @@ function Tip(qTip, command)
 	$.extend(self, {
 		init: function()
 		{
-			var enabled = self.detectCorner() && (hasCanvas || $.browser.msie);
+			var enabled = self.detectCorner() && (hasCanvas || false);
 
 			// Determine tip corner and type
 			if(enabled) {
