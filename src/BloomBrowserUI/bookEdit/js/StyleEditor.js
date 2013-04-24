@@ -1,4 +1,5 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="toolbar/toolbar.d.ts"/>
 var StyleEditor = (function () {
     function StyleEditor() {
         //        this.styleElement = <HTMLElement><any>($(doc).find(".styleEditorStuff").first()); //the <any> here is to turn off the typscript process erro
@@ -86,41 +87,48 @@ var StyleEditor = (function () {
     StyleEditor.prototype.AddStyleEditBoxes = //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
     //onto the page
     function () {
+        var self = this;
         $("div.bloom-editable:visible").each(function () {
             var targetBox = this;
             var styleName = StyleEditor.GetStyleNameForElement(targetBox);
             if(!styleName) {
                 return;
             }
-            ($(this)).qtipSecondary({
-                content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
-                position: {
-                    my: 'bottom right',
-                    at: 'bottom left'
-                },
-                show: {
-                    ready: true
-                },
-                hide: {
-                    event: false
-                },
-                events: {
-                    render: function (event, api) {
-                        $(this).find('#smallerFontButton').click(function () {
-                            var editor = new StyleEditor();
-                            editor.MakeSmaller(targetBox);
-                        });
-                        $(this).find('#largerFontButton').click(function () {
-                            var editor = new StyleEditor();
-                            editor.MakeBigger(targetBox);
-                        });
-                    }
-                },
-                style: {
-                    classes: 'ui-tooltip-red'
-                }
+            $(this).toolbar({
+                content: self.GetFormatToolbarContents(),
+                position: 'left',
+                hideOnClick: false
             });
-        });
+            //(<any>$(this)).qtipSecondary({
+            //    content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
+            //    position: {
+            //        my: 'bottom right',
+            //        at: 'bottom left'
+            //    },
+            //    show: { ready: true },
+            //    hide: {
+            //        event: false
+            //    },
+            //    events: {
+            //        render: function (event, api) {
+            //            $(this).find('#smallerFontButton').click(function () {
+            //                var editor = new StyleEditor();
+            //                editor.MakeSmaller(targetBox);
+            //            });
+            //            $(this).find('#largerFontButton').click(function () {
+            //                var editor = new StyleEditor();
+            //                editor.MakeBigger(targetBox);
+            //            });
+            //        }
+            //    },
+            //    style: {
+            //        classes: 'ui-tooltip-red'
+            //    }
+            //})
+                    });
+    };
+    StyleEditor.prototype.GetFormatToolbarContents = function () {
+        return '<div id="format-toolbar-options"><a href="#">one<i class ="icon-align-left"></i></a><a href="#">two<i class ="icon-align-center"></i></a><a href="#"><i class ="icon-align-right"></i></a></div>	';
     };
     return StyleEditor;
 })();

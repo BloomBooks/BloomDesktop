@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
 using L10NSharp;
@@ -138,8 +139,9 @@ namespace Bloom.Edit
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
+			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
 
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page).RawDom,
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom,
 													  Palette.TextAgainstDarkBackground,
 													  false, image => RefreshOneThumbnailCallback(page, image),
 													  error=> HandleThumbnailerError(page, error));
@@ -148,6 +150,13 @@ namespace Bloom.Edit
 		private void HandleThumbnailerError(IPage page, Exception error)
 		{
 #if DEBUG
+
+			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//Javascript errors in the *editable* page (the one on screen) can show up here. Bizarre... haven't figured out how/why. Maybe due to calling application.doevents()
+			//in the thumbnail generator. Symptom is that even passing a blank html file to the thumbnailer still gives javascript errors here, but taking the javascript out of
+			//the editable page (in Book.GetEditableHtmlDomForPage() ) fixes it.
+			//Note, even though you'll get the error once for everythumbnail, don't let that fool you.
+
 			Debug.Fail("Debug only" + error.Message);
 #endif
 			RefreshOneThumbnailCallback(page, Resources.Error70x70);
