@@ -1,3 +1,8 @@
+## 0.9.54 15 May 2013
+ * New "Picture & Word" page in Basic Book for simple one-word-per-page books.
+ * A couple localization fixes.
+ * Better message if user's machine doesn't know how to follow hyperlinks.
+
 ## 0.9.58 10 April 2013
  * New experimental B5 Primer template
 
