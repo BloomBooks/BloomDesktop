@@ -1,3 +1,6 @@
+## 0.9.55 16 May 2013
+* Fixed problem with error on machines lacking Adobe Reader
+
 ## 0.9.54 15 May 2013
  * New "Picture & Word" page in Basic Book for simple one-word-per-page books.
  * A couple localization fixes.
