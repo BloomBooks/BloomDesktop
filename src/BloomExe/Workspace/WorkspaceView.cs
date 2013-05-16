@@ -253,6 +253,8 @@ namespace Bloom.Workspace
 			CurrentTabView = view as IBloomTabArea;
 			//SetTabVisibility(_infoTab, false); //we always hide this after it is used
 
+
+
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
 
@@ -288,6 +290,7 @@ namespace Bloom.Workspace
 			TabStripButton btn = (TabStripButton)e.SelectedTab;
 			_tabStrip.BackColor = btn.BarColor;
 			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
+			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
 		}
 
