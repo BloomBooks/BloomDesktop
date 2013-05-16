@@ -39,3 +39,4 @@ Acorns*
 _NCrunch*
 *.vsp
 build/xulrunner*
+*.orig
