@@ -498,7 +498,42 @@ DIV.textWholePage DIV.bloom-translationGroup DIV
 	/*[disabled]height:30%;*/
 }
 /*Picture and Word Page*/
+.pictureAndWordPage DIV.bloom-translationGroup
+{
+	width: 100%;
+	text-align: center;
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	height: 7.1cm;
+}
 .pictureAndWordPage .bloom-content1
 {
-	text-align: center;
+	font-size: 400%;
+	vertical-align: middle;
+	margin-top: 17px;
+}
+.pictureAndWordPage.bloom-monolingual .bloom-content1
+{
+	font-size: 400%;
+	height: 100%;
+}
+.pictureAndWordPage.bloom-bilingual .bloom-content2
+{
+	font-size: 200%;
+	height: 2cm;
+	margin-top: 23px;
+}
+.pictureAndWordPage .bloom-content1
+{
+	height: 3cm !important;
+}
+.pictureAndWordPage.bloom-trilingual .bloom-content2
+{
+	height: 1.5cm;
+}
+.pictureAndWordPage.bloom-trilingual .bloom-content3
+{
+	height: 1.5cm;
 }
