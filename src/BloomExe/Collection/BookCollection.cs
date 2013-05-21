@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Edit;
+using DesktopAnalytics;
 using Palaso.Reporting;
 
 namespace Bloom.Collection
@@ -110,9 +111,9 @@ namespace Bloom.Collection
 				//enhance: would be nice to know if this is a new shell
 				if (sourceBook.IsShellOrTemplate)
 				{
-					UsageReporter.SendNavigationNotice("Create/" + sourceBook.CategoryForUsageReporting + "/" + sourceBook.Title);
+					Analytics.Track("Create Book", new Dictionary<string, string>()
+						{{"Category", sourceBook.CategoryForUsageReporting}});
 				}
-
 				_editBookCommand.Raise(newBook);
 			}
 			catch (Exception)
