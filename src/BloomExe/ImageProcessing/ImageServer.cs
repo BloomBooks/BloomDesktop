@@ -237,13 +237,14 @@ namespace Bloom.ImageProcessing
                 _listener = null;
             }
             catch (Exception e)
-            {   //prompted by the mysterious BL 273, Crash while closing down the imageserver
+            {  
+				//prompted by the mysterious BL 273, Crash while closing down the imageserver
 #if DEBUG
                 throw;
 #else       //just quitely report this
-                Palaso.Reporting.UsageReporter.SendEvent("ImageServer","Error", e.Message+" "+e.StackTrace, ErrorReport.GetVersionForErrorReporting(),0);
+                DeskAnalyticsSharp.DeskAnalytics.ReportError(e);
 #endif
-            }
+			}
         }
 
 

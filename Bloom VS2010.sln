@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomChorusPlugin", "src\Bloom-ChorusPlugin\BloomChorusPlugin.csproj", "{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B012FF12-9183-4CE2-88D4-6824201C6D5E}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
