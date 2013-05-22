@@ -90,7 +90,7 @@ namespace BloomTests.Book
 		private Bloom.Book.Book CreateBook()
 		{
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-			return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath), _storage.Object, true, _templateFinder.Object,
+			return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath,true), _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}

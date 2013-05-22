@@ -131,7 +131,7 @@ namespace Bloom.Collection
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
 				if (Directory.GetFiles(path, "*.htm").Length == 0)
 					return;
-				var bookInfo = new BookInfo(path)
+				var bookInfo = new BookInfo(path, Type == CollectionType.TheOneEditableCollection)
 					{
 						CoverColor = NextBookColor()
 					};

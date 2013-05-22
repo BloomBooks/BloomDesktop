@@ -47,8 +47,10 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
+#if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
 				if (!GrabMutexForBloom())
 					return;
+#endif
 
 				OldVersionCheck();
 
@@ -217,7 +219,6 @@ namespace Bloom
 			//If that fails, we put up a dialog and wait a number of seconds,
 			//while we wait for the mutex to come free.
 
-
 			string mutexId = "bloom";
 			bool mutexAcquired = false;
 			try
@@ -234,6 +235,7 @@ namespace Bloom
 			{
 				//that's ok, we'll get it below
 			}
+
 
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{

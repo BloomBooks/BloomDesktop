@@ -24,7 +24,7 @@ namespace Bloom.Book
 {
 	public class Book
 	{
-		public delegate Book Factory(BookInfo info, IBookStorage storage, bool bookIsEditable);//autofac uses this
+		public delegate Book Factory(BookInfo info, IBookStorage storage);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
@@ -45,17 +45,16 @@ namespace Bloom.Book
 		//for moq'ing only
 		public Book(){}
 
-		public Book(BookInfo info, IBookStorage storage, bool bookIsEditable, ITemplateFinder templateFinder,
+		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,
 		   CollectionSettings collectionSettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent)
 		{
-			IsEditable = bookIsEditable;
-			Id = Guid.NewGuid().ToString();
+			BookInfo = info;
 
 			Guard.AgainstNull(storage,"storage");
-			BookInfo = info;
+
 			_storage = storage;
 			_templateFinder = templateFinder;
 
@@ -355,7 +354,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
 		/// </summary>
-		public bool IsEditable  { get; private set;}
+		public bool IsEditable { get { return BookInfo.IsEditable; } }
 
 		public IPage FirstPage
 		{
@@ -418,8 +417,6 @@ namespace Bloom.Book
 		{
 			get { return _storage.FolderPath; }
 		}
-
-		public virtual string Id { get; set; }
 
 		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
 		{
@@ -728,14 +725,16 @@ namespace Bloom.Book
 		}
 
 
-		public bool IsExperimental
-		{
-			get
-			{
-				string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
-				return metaValue == "true" || metaValue == "yes";
-			}
-		}
+		//discontinuing this for now becuase we need to know whether to show the book when all we have is a bookinfo, not access to the
+		//dom like this requires. We'll just hard code the names of the experimental things.
+//        public bool IsExperimental
+//        {
+//            get
+//            {
+//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
+//                return metaValue == "true" || metaValue == "yes";
+//            }
+//        }
 
 		/// <summary>
 		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells

@@ -261,7 +261,7 @@ namespace Bloom.CollectionTab
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
-			button.Font = bookInfo.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
+			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
 
 
 			button.Tag=bookInfo;
@@ -315,29 +315,33 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				Book.BookInfo bookInfo = ((Button)sender).Tag as Book.BookInfo;
+				BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
 				if (bookInfo == null)
 					return;
 
-				Book.Book book = _model.GetBookFromBookInfo(bookInfo);
-
-				//I couldn't get the DoubleClick event to work, so I rolled my own
-				if(Control.MouseButtons == MouseButtons.Left && book==SelectedBook && DateTime.Now.Subtract(_lastClickTime).Milliseconds<500)
+				if (SelectedBook!=null && bookInfo == SelectedBook.BookInfo)
 				{
-					_model.DoubleClickedBook();
-					return;
+					//I couldn't get the DoubleClick event to work, so I rolled my own
+					if (Control.MouseButtons == MouseButtons.Left  && DateTime.Now.Subtract(_lastClickTime).Milliseconds < 500)
+					{
+						_model.DoubleClickedBook();
+						return;
+					}
 				}
+				else
+				{
+					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
+				}
+
 				_lastClickTime = DateTime.Now;
 
-
-				SelectedBook = book;
 				_bookContextMenu.Enabled = true;
-				Debug.WriteLine("before selecting " + book.Title);
-				_model.SelectBook(book);
-				Debug.WriteLine("after selecting " + book.Title);
+				Debug.WriteLine("before selecting " + SelectedBook.Title);
+				_model.SelectBook(SelectedBook);
+				Debug.WriteLine("after selecting " + SelectedBook.Title);
 				//didn't help: _listView.Focus();//hack we were losing clicks
-				book.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
-				book.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
+				SelectedBook.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
+				SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;

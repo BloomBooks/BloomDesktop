@@ -21,7 +21,6 @@ namespace Bloom.Book
 		{
 			Exception = exception;
 			_folderPath = folderPath;
-			Id = folderPath;
 			_canDelete = canDelete;
 			Logger.WriteEvent("Created ErrorBook with exception message: " + Exception.Message);
 		}
