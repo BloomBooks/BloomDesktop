@@ -64,13 +64,13 @@ namespace Bloom.Book
 			get { return true; }
 		}
 
-		public override bool Delete()
-		{
-			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
-			if(didDelete)
-				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
-			return didDelete;
-		}
+//        public override bool Delete()
+//        {
+//            var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+//            if(didDelete)
+//                Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
+//            return didDelete;
+//        }
 
 		private HtmlDom GetErrorDOM()
 		{

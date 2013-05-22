@@ -46,7 +46,7 @@ namespace Bloom
 					foreach (var templateDir in Directory.GetDirectories(collectionDir))
 					{
 						if (Path.GetFileName(templateDir) == key)
-							return _bookFactory(_storageFactory(templateDir), false);
+							return _bookFactory(new BookInfo(templateDir), _storageFactory(templateDir), false);
 								//review: this is loading the book both in the librarymodel, and here
 					}
 				}
@@ -61,7 +61,7 @@ namespace Bloom
 						foreach (var templateDir in Directory.GetDirectories(collectionDir))
 						{
 							if (Path.GetFileName(templateDir) == key)
-								return _bookFactory(_storageFactory(templateDir), false);
+								return _bookFactory(new BookInfo(templateDir),_storageFactory(templateDir), false);
 							//review: this is loading the book both in the librarymodel, and here
 						}
 					}

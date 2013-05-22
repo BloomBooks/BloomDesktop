@@ -197,34 +197,34 @@ namespace Bloom.CollectionTab
 		{
 			collection.CollectionChanged += OnCollectionChanged;
 			bool loadedAtLeastOneBook = false;
-			foreach (Book.Book book in collection.GetBooks())
+			foreach (Book.BookInfo bookInfo in collection.GetBookInfos())
 			{
 				try
 				{
-					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && book.IsSuitableForMakingShells) ||
-							  (!_model.IsShellProject && book.IsSuitableForVernacularLibrary);
+					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
+							  (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
 
 					if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
 					{
-						if (!book.IsExperimental || Settings.Default.ShowExperimentalBooks)
+						if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 						{
 							loadedAtLeastOneBook = true;
-							AddOneBook(book, flowLayoutPanel);
+							AddOneBook(bookInfo, flowLayoutPanel);
 						}
 					}
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+book.FolderPath);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+bookInfo.FolderPath);
 				}
 			}
 			return loadedAtLeastOneBook;
 		}
 
-		private void AddOneBook(Book.Book book, FlowLayoutPanel flowLayoutPanel)
+		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
 		{
 			var item = new Button(){Size=new Size(90,110)};
-			item.Text = GetTitleToDisplay(book);
+			item.Text = GetTitleToDisplay(bookInfo);
 			item.TextImageRelation = TextImageRelation.ImageAboveText;
 			item.ImageAlign = ContentAlignment.TopCenter;
 			item.TextAlign = ContentAlignment.BottomCenter;
@@ -235,27 +235,31 @@ namespace Bloom.CollectionTab
 			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
-			item.Font = book.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
+			item.Font = bookInfo.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
 
 
-			item.Tag=book;
+			item.Tag=bookInfo;
 
 
 			Image thumbnail = Resources.PagePlaceHolder;;
-			_bookThumbnails.Images.Add(book.Id, thumbnail);
+			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			item.ImageIndex = _bookThumbnails.Images.Count - 1;
 			flowLayoutPanel.Controls.Add(item);
 
-			book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,
-												  image => RefreshOneThumbnail(book, image),
-												  error=> RefreshOneThumbnail(book, Resources.Error70x70));
+			Image img;
+			if(bookInfo.TryGetPremadeThumbnail(out img))
+				RefreshOneThumbnail(bookInfo, img);
+
+//			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
+//				                                  image => RefreshOneThumbnail(bookInfo, image),
+//												  error=> RefreshOneThumbnail(bookInfo, Resources.Error70x70));
 
 		}
 
-		private string GetTitleToDisplay(Book.Book book)
+		private string GetTitleToDisplay(Book.BookInfo bookInfo)
 		{
 			int kMaxCaptionLetters = 17;
-			var title = book.TitleBestForUserDisplay;
+			var title = bookInfo.QuickTitleUserDisplay;
 			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
 		}
 
@@ -356,7 +360,7 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = GetTitleToDisplay(book);
+					SelectedButton.Text = GetTitleToDisplay(book.BookInfo);
 
 					if (_reshowPending)
 					{
@@ -372,17 +376,17 @@ namespace Bloom.CollectionTab
 		}
 
 
-		private void RefreshOneThumbnail(Book.Book book, Image image)
+		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
 		{
 			if (IsDisposed)
 				return;
 			try
 			{
-				var imageIndex = _bookThumbnails.Images.IndexOfKey(book.Id);
+				var imageIndex = _bookThumbnails.Images.IndexOfKey(bookInfo.Id);
 				if (imageIndex > -1)
 				{
 					_bookThumbnails.Images[imageIndex] = image;
-					var button = FindBookButton(book);
+					var button = FindBookButton(bookInfo);
 					button.Image = image;
 				}
 			}
@@ -396,9 +400,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private Button FindBookButton(Book.Book book)
+		private Button FindBookButton(Book.BookInfo bookInfo)
 		{
-			return AllBookButtons().FirstOrDefault(b => b.Tag == book);
+			return AllBookButtons().FirstOrDefault(b => b.Tag == bookInfo);
 		}
 
 		private IEnumerable<Button> AllBookButtons()
@@ -416,12 +420,12 @@ namespace Bloom.CollectionTab
 
 		private void RecreateOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(RefreshOneThumbnail, HandleThumbnailerErrror);
+			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror);
 		}
 
-		private void HandleThumbnailerErrror(Book.Book book, Exception error)
+		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)
 		{
-			RefreshOneThumbnail(book, Resources.Error70x70);
+			RefreshOneThumbnail(bookInfo, Resources.Error70x70);
 		}
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)
@@ -432,7 +436,7 @@ namespace Bloom.CollectionTab
 
 		private void _updateThumbnailMenu_Click(object sender, EventArgs e)
 		{
-		RecreateOneThumbnail(SelectedBook);
+			RecreateOneThumbnail(SelectedBook);
 		}
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)

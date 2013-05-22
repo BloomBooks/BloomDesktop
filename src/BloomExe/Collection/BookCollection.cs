@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Edit;
 using DesktopAnalytics;
+using Palaso.Progress;
 using Palaso.Reporting;
 
 namespace Bloom.Collection
@@ -23,6 +24,7 @@ namespace Bloom.Collection
 		public EventHandler CollectionChanged;
 
 		private readonly string _path;
+		private List<Book.BookInfo> _bookInfos;
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookStarter.Factory _bookStarterFactory;
@@ -73,35 +75,37 @@ namespace Bloom.Collection
 
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
-			string newBookFolder = null;
+			string pathToFolderOfNewBook = null;
 
 			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBook.FolderPath);
 			try
 			{
 				var starter = _bookStarterFactory();
-				newBookFolder = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, _path);
-				if (Configurator.IsConfigurable(newBookFolder))
+				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, _path);
+				if (Configurator.IsConfigurable(pathToFolderOfNewBook))
 				{
 					var c = new Configurator(_path);
-					if (DialogResult.Cancel == c.ShowConfigurationDialog(newBookFolder))
+					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
 					{
 						return; // the template had a configuration page and they clicked "cancel"
 					}
-					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(newBookFolder));
+					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
 				}
 
-				AddBook(newBookFolder);
+				AddBookInfo(pathToFolderOfNewBook);
 				NotifyCollectionChanged();
 
-				var newBook = _books.Find(b => b.FolderPath == newBookFolder);
+				var newBookInfo = _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
 
-				if(newBook is ErrorBook)
+				if (newBookInfo is ErrorBookInfo)
 				{
-					throw ((ErrorBook)newBook).Exception;
+					throw ((ErrorBookInfo)newBookInfo).Exception;
 				}
 
 				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
-				var name = Path.GetFileName(newBook.FolderPath); // this way, we get "my book 1", "my book 2", etc.
+				var name = Path.GetFileName(newBookInfo.FolderPath); // this way, we get "my book 1", "my book 2", etc.
+
+				Book.Book newBook = CreateBookFromBookInfo(newBookInfo);
 				newBook.SetTitle(name);
 
 				if (_bookSelection != null)
@@ -120,12 +124,19 @@ namespace Bloom.Collection
 			{
 				Logger.WriteEvent("Cleaning up after error CreateFromSourceBook({0})", sourceBook.FolderPath);
 				//clean up this ill-fated book folder up
-				if (!string.IsNullOrEmpty(newBookFolder) && Directory.Exists(newBookFolder))
-					Directory.Delete(newBookFolder, true);
+				if (!string.IsNullOrEmpty(pathToFolderOfNewBook) && Directory.Exists(pathToFolderOfNewBook))
+					Directory.Delete(pathToFolderOfNewBook, true);
 				throw;
 			}
 			Logger.WriteMinorEvent("Finished CreateFromSourceBook({0})", sourceBook.FolderPath);
 			Logger.WriteEvent("CreateFromSourceBook({0})", sourceBook.FolderPath);
+		}
+
+		private Book.Book CreateBookFromBookInfo(BookInfo bookInfo)
+		{
+			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath), Type == CollectionType.TheOneEditableCollection);
+			book.CoverColor = bookInfo.CoverColor;
+			return book;
 		}
 
 		private void NotifyCollectionChanged()
@@ -134,10 +145,13 @@ namespace Bloom.Collection
 				CollectionChanged.Invoke(this, null);
 		}
 
-		public void DeleteBook(Book.Book book)
+		public void DeleteBook(Book.BookInfo book)
 		{
-			if(!book.Delete())
+			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(book.FolderPath);
+			if (!didDelete)
 				return;
+
+			Logger.WriteEvent("After BookStorage.DeleteBook({0})", book.FolderPath);
 			ListOfBooksIsOutOfDate();
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
@@ -158,45 +172,49 @@ namespace Bloom.Collection
 
 		}
 
-		private List<Book.Book> _books;
+
 		private void ListOfBooksIsOutOfDate()
 		{
-			_books = null;
+			_bookInfos = null;
 		}
 
-		public virtual IEnumerable<Book.Book> GetBooks()
+		public virtual IEnumerable<Book.BookInfo> GetBookInfos()
 		{
-			if (_books == null)
+			if (_bookInfos == null)
 			{
 				LoadBooks();
 			}
 
-			return _books;
+			return _bookInfos;
 		}
 
 		private void LoadBooks()
 		{
-			_books = new List<Book.Book>();
+			_bookInfos = new List<Book.BookInfo>();
 			foreach(string path in Directory.GetDirectories(_path))
 			{
 				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
 					continue;
-				AddBook(path);
+				AddBookInfo(path);
 			}
 		}
 
-		private void AddBook(string path)
+		private void AddBookInfo(string path)
 		{
 			try
 			{
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
 				if (Directory.GetFiles(path, "*.htm").Length == 0)
 					return;
-
-				var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
-				book.CoverColor = NextBookColor();
-				Debug.WriteLine(book.Title);
-				_books.Add(book);
+				var bookInfo = new BookInfo(path)
+					{
+						CoverColor = NextBookColor()
+					};
+				_bookInfos.Add(bookInfo);
+//    			var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
+//    			book.CoverColor = NextBookColor();
+//    			Debug.WriteLine(book.Title);
+//    			_books.Add(book);
 			}
 			catch (Exception e)
 			{
@@ -204,13 +222,33 @@ namespace Bloom.Collection
 				{
 					e = e.InnerException;
 				}
-				_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
+				//_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
+				_bookInfos.Add(new ErrorBookInfo(path, e){});
 			}
+		}
+
+		protected Color CoverColor
+		{
+			get { throw new NotImplementedException(); }
+			set { throw new NotImplementedException(); }
 		}
 
 		public Color NextBookColor()
 		{
 			return kCoverColors[_coverColorIndex++ % kCoverColors.Length];
+		}
+
+		public void DoChecksAndUpdatesOfAllBooks(IProgress progress)
+		{
+			int i = 0;
+			foreach (var bookInfo in _bookInfos)
+			{
+				i++;
+				var book = CreateBookFromBookInfo(bookInfo);
+				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
+				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + _bookInfos.Count);
+				book.BringBookUpToDate(progress);
+			}
 		}
 	}
 }

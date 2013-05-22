@@ -113,7 +113,7 @@ namespace Bloom.CollectionTab
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (Bloom.ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
 				{
-					TheOneEditableCollection.DeleteBook(book);
+					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
 				}
@@ -144,9 +144,9 @@ namespace Bloom.CollectionTab
 			_bookSelection.SelectBook(b);
 		}
 
-		public void UpdateThumbnailAsync(Action<Book.Book, Image> callback, Action<Book.Book, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			_bookSelection.CurrentSelection.RebuildThumbNailAsync(callback,errorCallback);
+			book.RebuildThumbNailAsync(callback,errorCallback);
 		}
 
 		public void MakeBloomPack(string path)
@@ -202,18 +202,9 @@ namespace Bloom.CollectionTab
 			using (var dlg = new ProgressDialogBackground())
 			{
 				dlg.ShowAndDoWork((progress, args) =>
-									  {
-										  var books = TheOneEditableCollection.GetBooks();
-										  int i = 0;
-										  foreach (var book in books)
-										  {
-											  i++;
-											  //gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-											  progress.WriteMessage("Processing "+book.TitleBestForUserDisplay +" "+i+"/"+books.Count());
-											  book.BringBookUpToDate(progress);
-										  }
-									  }
-					);
+					{
+						TheOneEditableCollection.DoChecksAndUpdatesOfAllBooks(progress);
+				   });
 			}
 		}
 	}
