@@ -24,8 +24,7 @@ namespace BloomTests.Book
 //			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
-			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-				BookStorageFactory, null,null, new CreateFromSourceBookCommand(), new EditBookCommand());
+			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
 		}
 
 		 Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)

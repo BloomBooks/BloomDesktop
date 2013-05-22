@@ -24,7 +24,7 @@ namespace Bloom.Book
 {
 	public class Book
 	{
-		public delegate Book Factory(BookInfo info, IBookStorage storage, bool projectIsEditable);//autofac uses this
+		public delegate Book Factory(BookInfo info, IBookStorage storage, bool bookIsEditable);//autofac uses this
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
@@ -33,7 +33,6 @@ namespace Bloom.Book
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private readonly BookRefreshEvent _bookRefreshEvent;
-		private readonly BookInfo _info;
 		private readonly IBookStorage _storage;
 		private List<IPage> _pagesCache;
 
@@ -46,17 +45,17 @@ namespace Bloom.Book
 		//for moq'ing only
 		public Book(){}
 
-		public Book(BookInfo info, IBookStorage storage, bool projectIsEditable, ITemplateFinder templateFinder,
+		public Book(BookInfo info, IBookStorage storage, bool bookIsEditable, ITemplateFinder templateFinder,
 		   CollectionSettings collectionSettings, HtmlThumbNailer thumbnailProvider,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent)
 		{
-			IsInEditableLibrary = projectIsEditable;
+			IsEditable = bookIsEditable;
 			Id = Guid.NewGuid().ToString();
 
 			Guard.AgainstNull(storage,"storage");
-			_info = info;
+			BookInfo = info;
 			_storage = storage;
 			_templateFinder = templateFinder;
 
@@ -69,7 +68,7 @@ namespace Bloom.Book
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
-			if (IsInEditableLibrary && !HasFatalError)
+			if (IsEditable && !HasFatalError)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 
@@ -345,18 +344,18 @@ namespace Bloom.Book
 
 		public virtual bool CanDelete
 		{
-			get { return IsInEditableLibrary; }
+			get { return IsEditable; }
 		}
 
 		public bool CanPublish
 		{
-			get { return IsInEditableLibrary && !HasFatalError; }
+			get { return IsEditable && !HasFatalError; }
 		}
 
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
 		/// </summary>
-		public bool IsInEditableLibrary  { get; private set;}
+		public bool IsEditable  { get; private set;}
 
 		public IPage FirstPage
 		{
@@ -400,7 +399,7 @@ namespace Bloom.Book
 				if(TypeOverrideForUnitTests != BookType.Unknown)
 					return TypeOverrideForUnitTests;
 
-				return IsInEditableLibrary ? BookType.Publication : BookType.Template; //TODO
+				return IsEditable ? BookType.Publication : BookType.Template; //TODO
 				//return _storage.BookType;
 			}
 		}
@@ -559,7 +558,7 @@ namespace Bloom.Book
 			get
 			{
 				//hack. Eventually we might be able to lock books so that you can't edit them.
-				return !IsInEditableLibrary;
+				return !IsEditable;
 			}
 		}
 
@@ -714,7 +713,7 @@ namespace Bloom.Book
 
 		public virtual bool CanUpdate
 		{
-			get { return IsInEditableLibrary && !HasFatalError; }
+			get { return IsEditable && !HasFatalError; }
 		}
 
 
@@ -766,7 +765,7 @@ namespace Bloom.Book
 			get { return _bookData.MultilingualContentLanguage3; }
 		}
 
-		public BookInfo BookInfo { get; set; }
+		public BookInfo BookInfo { get; private set; }
 
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
@@ -989,7 +988,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void SavePage(HtmlDom editedPageDom)
 		{
-			Debug.Assert(IsInEditableLibrary);
+			Debug.Assert(IsEditable);
 			try
 			{
 				//replace the corresponding page contents in our DOM with what is in this PageDom

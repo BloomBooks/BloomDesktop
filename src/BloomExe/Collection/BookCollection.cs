@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.Edit;
-using DesktopAnalytics;
-using Palaso.Progress;
 using Palaso.Reporting;
 
 namespace Bloom.Collection
@@ -24,14 +19,11 @@ namespace Bloom.Collection
 		public EventHandler CollectionChanged;
 
 		private readonly string _path;
-		private List<Book.BookInfo> _bookInfos;
-		private readonly Book.Book.Factory _bookFactory;
-		private readonly BookStorage.Factory _storageFactory;
-		private readonly BookStarter.Factory _bookStarterFactory;
-		private readonly BookSelection _bookSelection;
-		private readonly EditBookCommand _editBookCommand;
+		private List<BookInfo> _bookInfos;
 
-		//private Color[] kCoverColors = new Color[] { Color.FromArgb(225, 0, 0), Color.FromArgb(0, 225, 0), Color.FromArgb(0, 0, 225), Color.FromArgb(180, 180, 180) };
+		private readonly BookSelection _bookSelection;
+
+
 		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176,222,228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
 		private int _coverColorIndex = 0;
 
@@ -42,23 +34,15 @@ namespace Bloom.Collection
 		}
 
 		public BookCollection(string path, CollectionType collectionType,
-			Book.Book.Factory bookFactory, BookStorage.Factory storageFactory,
-			BookStarter.Factory bookStarterFactory, BookSelection bookSelection,
-			CreateFromSourceBookCommand createFromSourceBookCommand,
-			  EditBookCommand editBookCommand)
+			BookSelection bookSelection)
 		{
 			_path = path;
-			_bookFactory = bookFactory;
-			_storageFactory = storageFactory;
-			_bookStarterFactory = bookStarterFactory;
 			_bookSelection = bookSelection;
-			_editBookCommand = editBookCommand;
+
 			Type = collectionType;
 
-			//we only pay attention if we are the editable collection 'round here.
 			if (collectionType == CollectionType.TheOneEditableCollection)
 			{
-				createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 				MakeCollectionCSSIfMissing();
 			}
 		}
@@ -73,71 +57,6 @@ namespace Bloom.Collection
 
 		public CollectionType Type { get; private set; }
 
-		private void CreateFromSourceBook(Book.Book sourceBook)
-		{
-			string pathToFolderOfNewBook = null;
-
-			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBook.FolderPath);
-			try
-			{
-				var starter = _bookStarterFactory();
-				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, _path);
-				if (Configurator.IsConfigurable(pathToFolderOfNewBook))
-				{
-					var c = new Configurator(_path);
-					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
-					{
-						return; // the template had a configuration page and they clicked "cancel"
-					}
-					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
-				}
-
-				AddBookInfo(pathToFolderOfNewBook);
-				NotifyCollectionChanged();
-
-				var newBookInfo = _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
-
-				if (newBookInfo is ErrorBookInfo)
-				{
-					throw ((ErrorBookInfo)newBookInfo).Exception;
-				}
-
-				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
-				var name = Path.GetFileName(newBookInfo.FolderPath); // this way, we get "my book 1", "my book 2", etc.
-
-				Book.Book newBook = CreateBookFromBookInfo(newBookInfo);
-				newBook.SetTitle(name);
-
-				if (_bookSelection != null)
-				{
-					_bookSelection.SelectBook(newBook);
-				}
-				//enhance: would be nice to know if this is a new shell
-				if (sourceBook.IsShellOrTemplate)
-				{
-					Analytics.Track("Create Book", new Dictionary<string, string>()
-						{{"Category", sourceBook.CategoryForUsageReporting}});
-				}
-				_editBookCommand.Raise(newBook);
-			}
-			catch (Exception)
-			{
-				Logger.WriteEvent("Cleaning up after error CreateFromSourceBook({0})", sourceBook.FolderPath);
-				//clean up this ill-fated book folder up
-				if (!string.IsNullOrEmpty(pathToFolderOfNewBook) && Directory.Exists(pathToFolderOfNewBook))
-					Directory.Delete(pathToFolderOfNewBook, true);
-				throw;
-			}
-			Logger.WriteMinorEvent("Finished CreateFromSourceBook({0})", sourceBook.FolderPath);
-			Logger.WriteEvent("CreateFromSourceBook({0})", sourceBook.FolderPath);
-		}
-
-		private Book.Book CreateBookFromBookInfo(BookInfo bookInfo)
-		{
-			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath), Type == CollectionType.TheOneEditableCollection);
-			book.CoverColor = bookInfo.CoverColor;
-			return book;
-		}
 
 		private void NotifyCollectionChanged()
 		{
@@ -199,6 +118,12 @@ namespace Bloom.Collection
 			}
 		}
 
+		public void AddBookInfo(BookInfo bookInfo)
+		{
+			_bookInfos.Add(bookInfo);
+			NotifyCollectionChanged();
+		}
+
 		private void AddBookInfo(string path)
 		{
 			try
@@ -211,10 +136,6 @@ namespace Bloom.Collection
 						CoverColor = NextBookColor()
 					};
 				_bookInfos.Add(bookInfo);
-//    			var book = _bookFactory(_storageFactory(path), Type == CollectionType.TheOneEditableCollection);
-//    			book.CoverColor = NextBookColor();
-//    			Debug.WriteLine(book.Title);
-//    			_books.Add(book);
 			}
 			catch (Exception e)
 			{
@@ -238,17 +159,6 @@ namespace Bloom.Collection
 			return kCoverColors[_coverColorIndex++ % kCoverColors.Length];
 		}
 
-		public void DoChecksAndUpdatesOfAllBooks(IProgress progress)
-		{
-			int i = 0;
-			foreach (var bookInfo in _bookInfos)
-			{
-				i++;
-				var book = CreateBookFromBookInfo(bookInfo);
-				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + _bookInfos.Count);
-				book.BringBookUpToDate(progress);
-			}
-		}
+
 	}
 }

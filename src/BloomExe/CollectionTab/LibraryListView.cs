@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -28,12 +29,18 @@ namespace Bloom.CollectionTab
 		private LinkLabel _missingBooksLink;
 		private bool _disposed;
 
+		/// <summary>
+		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in prefered language
+		/// </summary>
+		private ConcurrentStack<Button> _buttonsNeedingSlowUpdate;
+
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
+			_buttonsNeedingSlowUpdate = new ConcurrentStack<Button>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_libraryFlow.HorizontalScroll.Visible = false;
@@ -92,6 +99,25 @@ namespace Bloom.CollectionTab
 			if (!_collectionLoadPending)
 				return;
 			ReloadCollectionButtons();
+
+			Application.Idle += new EventHandler(ImproveBookButtonsAtIdleTime);
+		}
+
+		private void ImproveBookButtonsAtIdleTime(object sender, EventArgs e)
+		{
+			Button button;
+			if(!_buttonsNeedingSlowUpdate.TryPop(out button))
+				return;
+
+			BookInfo bookInfo = button.Tag as BookInfo;
+			var book = _model.GetBookFromBookInfo(bookInfo);
+			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
+			if (titleBestForUserDisplay != button.Text)
+			{
+				Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);
+				button.Text = titleBestForUserDisplay;
+			}
+
 		}
 
 		private void ReloadCollectionButtons()
@@ -223,32 +249,36 @@ namespace Bloom.CollectionTab
 
 		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
 		{
-			var item = new Button(){Size=new Size(90,110)};
-			item.Text = GetTitleToDisplay(bookInfo);
-			item.TextImageRelation = TextImageRelation.ImageAboveText;
-			item.ImageAlign = ContentAlignment.TopCenter;
-			item.TextAlign = ContentAlignment.BottomCenter;
-			item.FlatStyle = FlatStyle.Flat;
-			item.ForeColor = Palette.TextAgainstDarkBackground ;
-			item.FlatAppearance.BorderSize = 0;
-			item.ContextMenuStrip = _bookContextMenu;
-			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
+			var button = new Button(){Size=new Size(90,110)};
+			button.Text = ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay);
+			button.TextImageRelation = TextImageRelation.ImageAboveText;
+			button.ImageAlign = ContentAlignment.TopCenter;
+			button.TextAlign = ContentAlignment.BottomCenter;
+			button.FlatStyle = FlatStyle.Flat;
+			button.ForeColor = Palette.TextAgainstDarkBackground ;
+			button.FlatAppearance.BorderSize = 0;
+			button.ContextMenuStrip = _bookContextMenu;
+			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
-			item.Font = bookInfo.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
+			button.Font = bookInfo.IsInEditableLibrary ? _editableBookFont : _collectionBookFont;
 
 
-			item.Tag=bookInfo;
+			button.Tag=bookInfo;
 
 
 			Image thumbnail = Resources.PagePlaceHolder;;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
-			item.ImageIndex = _bookThumbnails.Images.Count - 1;
-			flowLayoutPanel.Controls.Add(item);
+			button.ImageIndex = _bookThumbnails.Images.Count - 1;
+			flowLayoutPanel.Controls.Add(button);
 
 			Image img;
+
+			//review: we could do this at idle time, too:
 			if(bookInfo.TryGetPremadeThumbnail(out img))
 				RefreshOneThumbnail(bookInfo, img);
+
+			_buttonsNeedingSlowUpdate.Push(button);
 
 //			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
 //				                                  image => RefreshOneThumbnail(bookInfo, image),
@@ -256,10 +286,9 @@ namespace Bloom.CollectionTab
 
 		}
 
-		private string GetTitleToDisplay(Book.BookInfo bookInfo)
+		private string ShortenTitleIfNeeded(string title)
 		{
 			int kMaxCaptionLetters = 17;
-			var title = bookInfo.QuickTitleUserDisplay;
 			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
 		}
 
@@ -286,9 +315,11 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				Book.Book book = ((Button)sender).Tag as Book.Book;
-				if (book == null)
+				Book.BookInfo bookInfo = ((Button)sender).Tag as Book.BookInfo;
+				if (bookInfo == null)
 					return;
+
+				Book.Book book = _model.GetBookFromBookInfo(bookInfo);
 
 				//I couldn't get the DoubleClick event to work, so I rolled my own
 				if(Control.MouseButtons == MouseButtons.Left && book==SelectedBook && DateTime.Now.Subtract(_lastClickTime).Milliseconds<500)
@@ -297,6 +328,7 @@ namespace Bloom.CollectionTab
 					return;
 				}
 				_lastClickTime = DateTime.Now;
+
 
 				SelectedBook = book;
 				_bookContextMenu.Enabled = true;
@@ -310,8 +342,6 @@ namespace Bloom.CollectionTab
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
-
-
 			}
 			catch (Exception err)
 			{
@@ -352,7 +382,6 @@ namespace Bloom.CollectionTab
 			_libraryFlow.BackColor = BackColor;
 		}
 
-
 		private void OnSelectedTabChanged(TabChangedDetails obj)
 		{
 			if(obj.To is LibraryView)
@@ -360,7 +389,7 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = GetTitleToDisplay(book.BookInfo);
+					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 
 					if (_reshowPending)
 					{
