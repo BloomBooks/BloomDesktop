@@ -8,10 +8,13 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using DesktopAnalytics;
 using Ionic.Zip;
+using Palaso.Progress;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionTab
@@ -25,14 +28,19 @@ namespace Bloom.CollectionTab
     	private readonly SourceCollectionsList _sourceCollectionsList;
         private readonly BookCollection.Factory _bookCollectionFactory;
     	private readonly EditBookCommand _editBookCommand;
-    	private List<BookCollection> _bookCollections;
+	    private readonly BookServer _bookServer;
+	    private readonly Book.Book.Factory _bookFactory;
+	    private readonly BookStorage.Factory _storageFactory;
+	    private List<BookCollection> _bookCollections;
 
     	public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
 			BookSelection bookSelection,  
 			SourceCollectionsList sourceCollectionsList, 
             BookCollection.Factory bookCollectionFactory,
-			EditBookCommand editBookCommand)
+			EditBookCommand editBookCommand,
+			CreateFromSourceBookCommand createFromSourceBookCommand, 
+			BookServer bookServer)
         {
             _bookSelection = bookSelection;
             _pathToLibrary = pathToLibrary;
@@ -41,9 +49,13 @@ namespace Bloom.CollectionTab
     		_sourceCollectionsList = sourceCollectionsList;
             _bookCollectionFactory = bookCollectionFactory;
         	_editBookCommand = editBookCommand;
+    		_bookServer = bookServer;
+
+			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
         }
 
-        public bool CanDeleteSelection  
+
+	    public bool CanDeleteSelection  
         {
             get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete; }
        
@@ -109,9 +121,10 @@ namespace Bloom.CollectionTab
             if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
             {
             	var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
-            	if(Bloom.ConfirmRecycleDialog.JustConfirm(string.Format("The book '{0}'",title )))
+				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
+				if (Bloom.ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
                 {
-					TheOneEditableCollection.DeleteBook(book);
+					TheOneEditableCollection.DeleteBook(book.BookInfo);
                     _bookSelection.SelectBook(null);
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
                 }
@@ -120,7 +133,7 @@ namespace Bloom.CollectionTab
 
     	public void DoubleClickedBook()
     	{
-			if(_bookSelection.CurrentSelection.IsInEditableLibrary && ! _bookSelection.CurrentSelection.HasFatalError)
+			if(_bookSelection.CurrentSelection.IsEditable && ! _bookSelection.CurrentSelection.HasFatalError)
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
     	}
 
@@ -142,9 +155,9 @@ namespace Bloom.CollectionTab
 			_bookSelection.SelectBook(b);
     	}
 
-		public void UpdateThumbnailAsync(Action<Book.Book, Image> callback, Action<Book.Book, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
     	{
-    		_bookSelection.CurrentSelection.RebuildThumbNailAsync(callback,errorCallback);
+    		book.RebuildThumbNailAsync(callback,errorCallback);
     	}
 
     	public void MakeBloomPack(string path)
@@ -175,7 +188,7 @@ namespace Bloom.CollectionTab
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
 						Process.Start(Path.GetDirectoryName(path));
-						UsageReporter.SendNavigationNotice("Made BloomPack");
+						Analytics.Track("Create BloomPack");
 					}
 					finally
 					{
@@ -199,20 +212,44 @@ namespace Bloom.CollectionTab
         {
             using (var dlg = new ProgressDialogBackground())
             {
-                dlg.ShowAndDoWork((progress, args) =>
-                                      {
-                                          var books = TheOneEditableCollection.GetBooks();
-                                          int i = 0;
-                                          foreach (var book in books)
-                                          {
-                                              i++;
-                                              //gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-                                              progress.WriteMessage("Processing "+book.TitleBestForUserDisplay +" "+i+"/"+books.Count());
-                                              book.BringBookUpToDate(progress);
-                                          }
-                                      }
-                    );
+                dlg.ShowAndDoWork((progress, args) => DoChecksAndUpdatesOfAllBooks(progress));
             }
         }
+		
+		public void DoChecksAndUpdatesOfAllBooks(IProgress progress)
+		{
+			int i = 0;
+			foreach (var bookInfo in TheOneEditableCollection.GetBookInfos())
+			{
+				i++;
+				var book = _bookServer.GetBookFromBookInfo(bookInfo);
+				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
+				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				book.BringBookUpToDate(progress);
+			}
+		}
+
+		private void CreateFromSourceBook(Book.Book sourceBook)
+		{
+			var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
+
+			TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+			
+			if (_bookSelection != null)
+			{
+				_bookSelection.SelectBook(newBook);
+			}
+			//enhance: would be nice to know if this is a new shell
+			if (sourceBook.IsShellOrTemplate)
+			{
+				Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
+			}
+			_editBookCommand.Raise(newBook);
+		}
+
+	    public Book.Book GetBookFromBookInfo(BookInfo bookInfo)
+	    {
+		    return _bookServer.GetBookFromBookInfo(bookInfo);
+	    }
     }
 }
