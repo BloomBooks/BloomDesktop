@@ -23,11 +23,17 @@ namespace Bloom.CollectionTab
 		private Font _headerFont;
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
-		private bool _reshowPending;
+		private bool _thumbnailRefreshPending;
 		private DateTime _lastClickTime;
-		private bool _vernacularCollectionReloadPending;
+		private bool _primaryCollectionReloadPending;
 		private LinkLabel _missingBooksLink;
 		private bool _disposed;
+		enum ButtonManagementStage
+		{
+			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
+		}
+
+		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in prefered language
@@ -45,10 +51,10 @@ namespace Bloom.CollectionTab
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
-			_vernacularBooksFlow.HorizontalScroll.Visible = false;
+			_primaryCollectionFlow.HorizontalScroll.Visible = false;
 
-			_vernacularBooksFlow.Controls.Clear();
-			_vernacularBooksFlow.HorizontalScroll.Visible = false;
+			_primaryCollectionFlow.Controls.Clear();
+			_primaryCollectionFlow.HorizontalScroll.Visible = false;
 			_sourceBooksFlow.Controls.Clear();
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
 
@@ -87,25 +93,144 @@ namespace Bloom.CollectionTab
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-
-			_vernacularCollectionReloadPending = true;
-			Application.Idle += new EventHandler(LoadCollectionsOnFirstIdleTime);
+			Application.Idle += ManageButtonsAtIdleTime;
 		}
 
-		void LoadCollectionsOnFirstIdleTime(object sender, EventArgs e)
+
+		private void ManageButtonsAtIdleTime(object sender, EventArgs e)
 		{
-			if(_disposed) //could happen if a version update was detected on app launch
+			if (_disposed) //could happen if a version update was detected on app launch
 				return;
 
-			Application.Idle -= new EventHandler(LoadCollectionsOnFirstIdleTime);
-			if (!_vernacularCollectionReloadPending)
-				return;
-			ReloadCollectionButtons();
+			switch (_buttonManagementStage)
+			{
+				case ButtonManagementStage.LoadPrimary:
+					LoadPrimaryCollectionButtons();
+					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
+					_primaryCollectionFlow.Refresh();
+					break;
 
-			Application.Idle += new EventHandler(ImproveBookButtonsAtIdleTime);
+				//here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
+				case ButtonManagementStage.ImprovePrimary:
+					if (_buttonsNeedingSlowUpdate.IsEmpty)
+					{
+						_buttonManagementStage = ButtonManagementStage.LoadSourceCollections;
+					}
+					else
+					{
+						ImproveAndRefreshBookButtons();
+					}
+					break;
+				case ButtonManagementStage.LoadSourceCollections:
+					LoadSourceCollectionButtons();
+					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
+					break;
+				case ButtonManagementStage.ImproveAndRefresh:
+					ImproveAndRefreshBookButtons();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
-		private void ImproveBookButtonsAtIdleTime(object sender, EventArgs e)
+		/// <summary>
+		/// the primary could as well be called "the one editable collection"... the one at the top
+		/// </summary>
+		private void LoadPrimaryCollectionButtons()
+		{
+			_primaryCollectionReloadPending = false;
+			_primaryCollectionFlow.SuspendLayout();
+			_primaryCollectionFlow.Controls.Clear();
+			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+			var invisibleHackPartner = new Label() {Text = "", Width = 0};
+			_primaryCollectionFlow.Controls.Add(invisibleHackPartner);
+			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
+			primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
+			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
+			_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
+			_primaryCollectionFlow.ResumeLayout();
+		}
+
+		private void LoadSourceCollectionButtons()
+		{
+			var collections = _model.GetBookCollections();
+			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+			var invisibleHackPartner = new Label() {Text = "", Width = 0};
+
+			_sourceBooksFlow.SuspendLayout();
+			_sourceBooksFlow.Controls.Clear();
+			var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
+
+			string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
+																				"Sources For New Shells");
+			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
+																			   "Sources For New Books");
+			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			invisibleHackPartner = new Label() {Text = "", Width = 0};
+			_sourceBooksFlow.Controls.Add(invisibleHackPartner);
+			_sourceBooksFlow.Controls.Add(bookSourcesHeader);
+			_sourceBooksFlow.SetFlowBreak(bookSourcesHeader, true);
+
+			foreach (BookCollection collection in collections.Skip(1))
+			{
+				if (_sourceBooksFlow.Controls.Count > 0)
+					_sourceBooksFlow.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
+
+				int indexForHeader = _sourceBooksFlow.Controls.Count;
+				if (LoadOneCollection(collection, _sourceBooksFlow))
+				{
+					//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
+					invisibleHackPartner = new Label() {Text = "", Width = 0};
+					_sourceBooksFlow.Controls.Add(invisibleHackPartner);
+					_sourceBooksFlow.Controls.SetChildIndex(invisibleHackPartner, indexForHeader);
+
+					//We showed at least one book, so now go back and insert the header
+					var collectionHeader = new Label()
+						{
+							Text = collection.Name,
+							Size = new Size(_sourceBooksFlow.Width - 20, 15),
+							ForeColor = Palette.TextAgainstDarkBackground,
+							Padding = new Padding(10, 0, 0, 0)
+						};
+					collectionHeader.Margin = new Padding(0, 10, 0, 0);
+					collectionHeader.Font = _headerFont;
+					_sourceBooksFlow.Controls.Add(collectionHeader);
+					_sourceBooksFlow.Controls.SetChildIndex(collectionHeader, indexForHeader + 1);
+					_sourceBooksFlow.SetFlowBreak(collectionHeader, true);
+				}
+			}
+
+			AddWhereIsTheRestLink();
+			_sourceBooksFlow.ResumeLayout();
+		}
+
+		private void AddWhereIsTheRestLink()
+		{
+			if (_model.IsShellProject)
+			{
+				_missingBooksLink = new LinkLabel()
+					{
+						Text =
+							L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
+																	"Where's the rest?",
+																	"Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
+						Width = 200,
+						Margin = new Padding(0, 30, 0, 0),
+						TextAlign = ContentAlignment.TopCenter,
+						LinkColor = Palette.TextAgainstDarkBackground
+					};
+
+				_missingBooksLink.Click += new EventHandler(OnMissingBooksLink_Click);
+				_sourceBooksFlow.Controls.Add(_missingBooksLink);
+				_sourceBooksFlow.SetFlowBreak(_missingBooksLink, true);
+			}
+		}
+
+				/// <summary>
+		/// Called at idle time after everything else is set up, and only when this tab is visible
+		/// </summary>
+		private void ImproveAndRefreshBookButtons()
 		{
 			Button button;
 			if(!_buttonsNeedingSlowUpdate.TryDequeue(out button))
@@ -121,100 +246,10 @@ namespace Bloom.CollectionTab
 			}
 			if (button.ImageIndex==999)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 			{
-				RecreateOneThumbnail(book);
+				ScheduleRefreshOfOneThumbnail(book);
 			}
 		}
 
-		private void ReloadCollectionButtons()
-		{
-			_vernacularCollectionReloadPending = false;
-			Cursor = Cursors.WaitCursor;
-			Application.DoEvents(); //needed to get the wait cursor to show
-
-			_vernacularBooksFlow.SuspendLayout();
-
-			_vernacularBooksFlow.Controls.Clear();
-
-			var collections = _model.GetBookCollections();
-
-			var library = collections.First();
-			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-			var invisibleHackPartner = new Label() {Text = "", Width = 0};
-			_vernacularBooksFlow.Controls.Add(invisibleHackPartner);
-			var vernacularBooksHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
-			vernacularBooksHeader.Label.Text = _model.VernacularLibraryNamePhrase;
-			_vernacularBooksFlow.Controls.Add(vernacularBooksHeader);
-			_vernacularBooksFlow.SetFlowBreak(vernacularBooksHeader, true);
-			LoadOneCollection(library, _vernacularBooksFlow);
-			_vernacularBooksFlow.ResumeLayout();
-
-			//NB: at this point we don't support refreshing the source collections (it's slow and we don't currently have a *reason* to ever do it)
-			if (_sourceBooksFlow.Controls.Count < 2)
-			{
-				_sourceBooksFlow.Controls.Clear();
-				var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
-
-				string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
-																					   "Sources For New Shells");
-				string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
-																					  "Sources For New Books");
-				bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
-				invisibleHackPartner = new Label() {Text = "", Width = 0};
-				_sourceBooksFlow.Controls.Add(invisibleHackPartner);
-				_sourceBooksFlow.Controls.Add(bookSourcesHeader);
-				_sourceBooksFlow.SetFlowBreak(bookSourcesHeader, true);
-
-				foreach (BookCollection collection in collections.Skip(1))
-				{
-					if (_sourceBooksFlow.Controls.Count > 0)
-						_sourceBooksFlow.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
-
-					int indexForHeader = _sourceBooksFlow.Controls.Count;
-					if (LoadOneCollection(collection, _sourceBooksFlow))
-					{
-						//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-						invisibleHackPartner = new Label() {Text = "", Width = 0};
-						_sourceBooksFlow.Controls.Add(invisibleHackPartner);
-						_sourceBooksFlow.Controls.SetChildIndex(invisibleHackPartner, indexForHeader);
-
-						//We showed at least one book, so now go back and insert the header
-						var collectionHeader = new Label()
-							{
-								Text = collection.Name,
-								Size = new Size(_sourceBooksFlow.Width - 20, 15),
-								ForeColor = Palette.TextAgainstDarkBackground,
-								Padding = new Padding(10, 0, 0, 0)
-							};
-						collectionHeader.Margin = new Padding(0, 10, 0, 0);
-						collectionHeader.Font = _headerFont;
-						_sourceBooksFlow.Controls.Add(collectionHeader);
-						_sourceBooksFlow.Controls.SetChildIndex(collectionHeader, indexForHeader + 1);
-						_sourceBooksFlow.SetFlowBreak(collectionHeader, true);
-					}
-				}
-
-				if (_model.IsShellProject)
-				{
-					_missingBooksLink = new LinkLabel()
-						{
-							Text =
-								L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
-																		"Where's the rest?",
-																		"Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
-							Width = 200,
-							Margin = new Padding(0, 30, 0, 0),
-							TextAlign = ContentAlignment.TopCenter,
-							LinkColor = Palette.TextAgainstDarkBackground
-						};
-
-					_missingBooksLink.Click += new EventHandler(OnMissingBooksLink_Click);
-					_sourceBooksFlow.Controls.Add(_missingBooksLink);
-					_sourceBooksFlow.SetFlowBreak(_missingBooksLink, true);
-				}
-			}
-
-			Cursor = Cursors.Default;
-		}
 
 		void OnMissingBooksLink_Click(object sender, EventArgs e)
 		{
@@ -325,7 +360,7 @@ namespace Bloom.CollectionTab
 
 		private void OnCollectionChanged(object sender, EventArgs e)
 		{
-			_vernacularCollectionReloadPending = true;
+			_primaryCollectionReloadPending = true;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)
@@ -339,7 +374,7 @@ namespace Bloom.CollectionTab
 				if (SelectedBook!=null && bookInfo == SelectedBook.BookInfo)
 				{
 					//I couldn't get the DoubleClick event to work, so I rolled my own
-					if (Control.MouseButtons == MouseButtons.Left  && DateTime.Now.Subtract(_lastClickTime).Milliseconds < 500)
+					if (Control.MouseButtons == MouseButtons.Left  && DateTime.Now.Subtract(_lastClickTime).TotalMilliseconds <SystemInformation.DoubleClickTime)
 					{
 						_model.DoubleClickedBook();
 						return;
@@ -376,7 +411,7 @@ namespace Bloom.CollectionTab
 			{
 				foreach (var btn in AllBookButtons())
 				{
-					btn.BackColor = btn.Tag==value ? Color.DarkGray : _vernacularBooksFlow.BackColor;
+					btn.BackColor = btn.Tag==value ? Color.DarkGray : _primaryCollectionFlow.BackColor;
 				}
 			}
 			get { return _bookSelection.CurrentSelection; }
@@ -386,7 +421,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook);
+				return AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook.BookInfo);
 			}
 		}
 
@@ -395,33 +430,39 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private void OnContentsOfSelectedBookChanged(object sender, EventArgs e)
 		{
-			_reshowPending = true;
+			_thumbnailRefreshPending = true;
 		}
 
 		private void OnBackColorChanged(object sender, EventArgs e)
 		{
-			_vernacularBooksFlow.BackColor = BackColor;
+			_primaryCollectionFlow.BackColor = BackColor;
 		}
 
 		private void OnSelectedTabChanged(TabChangedDetails obj)
 		{
 			if(obj.To is LibraryView)
 			{
+				Application.Idle -= ManageButtonsAtIdleTime;
+				Application.Idle += ManageButtonsAtIdleTime;
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
 					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 
-					if (_reshowPending)
+					if (_thumbnailRefreshPending)
 					{
-						_reshowPending = false;
-						RecreateOneThumbnail(book);
+						_thumbnailRefreshPending = false;
+						ScheduleRefreshOfOneThumbnail(book);
 					}
 				}
-				if (_vernacularCollectionReloadPending)
+				if (_primaryCollectionReloadPending)
 				{
-					ReloadCollectionButtons();
+					LoadPrimaryCollectionButtons();
 				}
+			}
+			else
+			{
+				Application.Idle -= ManageButtonsAtIdleTime;
 			}
 		}
 
@@ -457,7 +498,7 @@ namespace Bloom.CollectionTab
 
 		private IEnumerable<Button> AllBookButtons()
 		{
-			foreach(var btn in _vernacularBooksFlow.Controls.OfType<Button>())
+			foreach(var btn in _primaryCollectionFlow.Controls.OfType<Button>())
 			{
 				yield return btn;
 			}
@@ -468,7 +509,7 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void RecreateOneThumbnail(Book.Book book)
+		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
 			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror);
 		}
@@ -483,16 +524,16 @@ namespace Bloom.CollectionTab
 			var button = AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook.BookInfo);
 			_model.DeleteBook(SelectedBook);
 			//ReloadCollectionButtons();
-			Debug.Assert(button != null && _vernacularBooksFlow.Controls.Contains(button));
-			if (button != null && _vernacularBooksFlow.Controls.Contains(button))
+			Debug.Assert(button != null && _primaryCollectionFlow.Controls.Contains(button));
+			if (button != null && _primaryCollectionFlow.Controls.Contains(button))
 			{
-				_vernacularBooksFlow.Controls.Remove(button);
+				_primaryCollectionFlow.Controls.Remove(button);
 			}
 		}
 
 		private void _updateThumbnailMenu_Click(object sender, EventArgs e)
 		{
-			RecreateOneThumbnail(SelectedBook);
+			ScheduleRefreshOfOneThumbnail(SelectedBook);
 		}
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)

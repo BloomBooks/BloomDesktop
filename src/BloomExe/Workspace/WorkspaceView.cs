@@ -225,6 +225,20 @@ namespace Bloom.Workspace
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
+
+				_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
+				{
+					From = _previouslySelectedControl,
+					To = null
+				});
+
+				_selectedTabChangedEvent.Raise(new TabChangedDetails()
+				{
+					From = _previouslySelectedControl,
+					To = null
+				});
+
+				_previouslySelectedControl = null;
 				if (_model.CloseRequested())
 				{
 					Invoke(CloseCurrentProject);
