@@ -237,7 +237,11 @@ namespace Bloom.Book
 		}
 
 
-
+		/// <summary>
+		/// creates a relocatable copy of our main HtmlDom
+		/// </summary>
+		/// <param name="log"></param>
+		/// <returns></returns>
 		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
 		{
 
@@ -249,6 +253,24 @@ namespace Bloom.Book
 
 			return relocatableDom;
 		}
+
+		/// <summary>
+		/// this one works on the dom passed to it
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="log"></param>
+		/// <returns></returns>
+		public HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log)
+		{
+			var relocatableDom = dom.Clone();
+
+			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
+
+			return relocatableDom;
+		}
+
 
 		public void SetBookName(string name)
 		{
@@ -599,16 +621,6 @@ namespace Bloom.Book
 		}
 
 
-		public  HtmlDom MakeDomRelocatable(HtmlDom dom,  IProgress log)
-		{
-			var relocatableDom = dom.Clone();
-
-			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
-			EnsureHasCollectionAndBookStylesheets(relocatableDom);
-			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
-
-			return relocatableDom;
-		}
 
 		private string SanitizeNameForFileSystem(string name)
 		{

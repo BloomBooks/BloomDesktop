@@ -49,6 +49,9 @@ namespace BloomTests.Book
 																								  return
 																									  _bookDom.Clone();
 																							  });// review: the real thing does more than just clone
+			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>(),It.IsAny<IProgress>())).Returns(
+				(HtmlDom x, IProgress y) => {return x.Clone();});// review: the real thing does more than just clone
+
 			_storage.Setup(x => x.GetFileLocator()).Returns(()=>_fileLocator.Object);
 
 			_testFolder = new TemporaryFolder("BookTests");
