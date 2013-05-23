@@ -56,6 +56,10 @@ namespace Bloom.Book
 			Guard.AgainstNull(storage,"storage");
 
 			_storage = storage;
+
+			//this is a hack to keep these two in sync (in one direction)
+			_storage.FolderPathChanged +=(x,y)=>BookInfo.FolderPath = _storage.FolderPath;
+
 			_templateFinder = templateFinder;
 
 			_collectionSettings = collectionSettings;
@@ -121,6 +125,8 @@ namespace Bloom.Book
 		{
 			get
 			{
+				Debug.Assert(BookInfo.FolderPath == _storage.FolderPath);
+
 				if (Type == BookType.Publication)
 				{
 					//REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.

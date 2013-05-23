@@ -46,6 +46,7 @@ namespace Bloom.Book
 		string GetValidateErrors();
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		IFileLocator GetFileLocator();
+		event EventHandler FolderPathChanged;
 	}
 
 	public class BookStorage : IBookStorage
@@ -64,9 +65,8 @@ namespace Bloom.Book
 		private string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
+		public event EventHandler FolderPathChanged;
 
-
-		#region Inexpensive Public Methods that don't require loading the dom
 
 		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent)
@@ -74,6 +74,8 @@ namespace Bloom.Book
 			_folderPath = folderPath;
 			_fileLocator = baseFileLocator;
 			_bookRenamedEvent = bookRenamedEvent;
+
+			ExpensiveInitialization();
 		}
 
 		public Book.BookType BookType
@@ -162,29 +164,26 @@ namespace Bloom.Book
 			return false;
 		}
 
-		#endregion
-
-		#region Public methods that require that we have a loaded-up dom (expensive)
 
 
 		public HtmlDom Dom
 		{
 			get
 			{
-				DoExpensiveInitializationIfNeeded();
+
 				return _dom;
 			}
 		}
 
 		public bool GetLooksOk()
 		{
-			DoExpensiveInitializationIfNeeded();
+
 			return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessages);
 		}
 
 		public void Save()
 		{
-			DoExpensiveInitializationIfNeeded();
+
 
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
@@ -240,7 +239,7 @@ namespace Bloom.Book
 
 		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
 		{
-			DoExpensiveInitializationIfNeeded();
+
 			HtmlDom relocatableDom = Dom.Clone();
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
@@ -252,7 +251,7 @@ namespace Bloom.Book
 
 		public void SetBookName(string name)
 		{
-			DoExpensiveInitializationIfNeeded();
+
 			if (!Directory.Exists(_folderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom has a pesky bug we've been searching for, and you've found it. Most likely, you won't lose any work, but we do need to report the problem and then have you restart. Bloom will now show an error box where you can tell us anything that might help us understand how to reproduce the problem, and let you email it to us.\r\nThanks for your help!");
@@ -295,7 +294,16 @@ namespace Bloom.Book
 			}
 
 			_bookRenamedEvent.Raise(fromToPair);
+
+			OnFolderPathChanged();
 		}
+
+		protected virtual void OnFolderPathChanged()
+		{
+			var handler = FolderPathChanged;
+			if (handler != null) handler(this, EventArgs.Empty);
+		}
+
 
 		public string GetValidateErrors()
 		{
@@ -318,7 +326,7 @@ namespace Bloom.Book
 				SetBookName(title);
 			}
 		}
-		#endregion
+
 
 		#region Static Helper Methods
 		public static string FindBookHtmlInFolder(string folderPath)
@@ -385,12 +393,6 @@ namespace Bloom.Book
 
 		#endregion
 
-		private void DoExpensiveInitializationIfNeeded()
-		{
-			if (_dom != null)
-				return;
-			ExpensiveInitialization();
-		}
 
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
