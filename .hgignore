@@ -49,3 +49,4 @@ screenshots/
 MercurialExtensions/
 WebSite/
 *.suo
+*.psess
