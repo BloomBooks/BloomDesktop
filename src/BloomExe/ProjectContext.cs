@@ -131,7 +131,7 @@ namespace Bloom
 				}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>())).InstancePerLifetimeScope();
+				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>())).InstancePerLifetimeScope();
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
 

@@ -92,7 +92,7 @@ namespace Bloom.CollectionTab
 				_browser.Visible = true;
 				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
-				_editBookButton.Visible = _bookSelection.CurrentSelection.IsInEditableLibrary && !_bookSelection.CurrentSelection.HasFatalError;
+				_editBookButton.Visible = _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError;
 				_reshowPending = false;
 			}
 		}

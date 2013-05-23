@@ -58,16 +58,16 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
-
-		[Test]
-		public void Delete_IsDeleted()
-		{
-			BookStorage storage = GetInitialStorage();
-			Assert.IsTrue(Directory.Exists(_folder.Path));
-			Assert.IsTrue(storage.DeleteBook());
-			Thread.Sleep(2000);
-			Assert.IsFalse(Directory.Exists(_folder.Path));
-		}
+//
+//        [Test]
+//        public void Delete_IsDeleted()
+//        {
+//            BookStorage storage = GetInitialStorage();
+//            Assert.IsTrue(Directory.Exists(_folder.Path));
+//            Assert.IsTrue(storage.DeleteBook());
+//            Thread.Sleep(2000);
+//            Assert.IsFalse(Directory.Exists(_folder.Path));
+//        }
 
 		private BookStorage GetInitialStorage()
 		{
