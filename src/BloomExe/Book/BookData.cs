@@ -258,7 +258,7 @@ namespace Bloom.Book
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom);
-			SendDataToDebugConsole(data);
+//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
 			UpdateTitle(data);

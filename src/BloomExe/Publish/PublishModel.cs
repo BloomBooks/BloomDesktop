@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -207,6 +209,11 @@ namespace Bloom.Publish
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 						File.Copy(PdfFilePath, dlg.FileName, true);
+						Analytics.Track("Save PDF", new Dictionary<string, string>()
+							{
+								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
+								{"Layout", PageLayout.ToString()}
+							});
 					}
 				}
 			}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
+using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.Reporting;
 
@@ -81,8 +82,7 @@ namespace Bloom.Collection.BloomPack
 					}
 					zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
 					_message.Text = string.Format("The {0} Collection is now ready to use on this computer.", folderName);
-					UsageReporter.SendNavigationNotice("Installed BloomPack");
-					UsageReporter.SendEvent("BloomPack", "BloomPack", "Install", folderName,0);
+					Analytics.Track("Install BloomPack");
 				}
 			}
 			catch (Exception error)
