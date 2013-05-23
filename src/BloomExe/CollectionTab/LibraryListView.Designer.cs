@@ -38,7 +38,7 @@ namespace Bloom.CollectionTab
             this._showNotesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this._doChecksAndUpdatesOfAllBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-            this._vernacularBooksFlow = new System.Windows.Forms.FlowLayoutPanel();
+            this._primaryCollectionFlow = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -62,7 +62,7 @@ namespace Bloom.CollectionTab
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this._vernacularBooksFlow.SuspendLayout();
+            this._primaryCollectionFlow.SuspendLayout();
             this._sourceBooksFlow.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -233,7 +233,7 @@ namespace Bloom.CollectionTab
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this._vernacularBooksFlow);
+            this.splitContainer1.Panel1.Controls.Add(this._primaryCollectionFlow);
             // 
             // splitContainer1.Panel2
             // 
@@ -247,29 +247,29 @@ namespace Bloom.CollectionTab
             // 
             // _libraryFlow
             // 
-            this._vernacularBooksFlow.AutoScroll = true;
-            this._vernacularBooksFlow.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this._vernacularBooksFlow.ContextMenuStrip = this._vernacularCollectionMenuStrip;
-            this._vernacularBooksFlow.Controls.Add(this.label1);
-            this._vernacularBooksFlow.Controls.Add(this.label2);
-            this._vernacularBooksFlow.Controls.Add(this.label3);
-            this._vernacularBooksFlow.Controls.Add(this.button1);
-            this._vernacularBooksFlow.Controls.Add(this.button4);
-            this._vernacularBooksFlow.Controls.Add(this.button5);
-            this._vernacularBooksFlow.Controls.Add(this.label4);
-            this._vernacularBooksFlow.Controls.Add(this.label5);
-            this._vernacularBooksFlow.Controls.Add(this.button6);
-            this._vernacularBooksFlow.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._vernacularBooksFlow.Location = new System.Drawing.Point(0, 0);
-            this._vernacularBooksFlow.Name = "_vernacularBooksFlow";
-            this._vernacularBooksFlow.Size = new System.Drawing.Size(350, 303);
-            this._vernacularBooksFlow.TabIndex = 0;
+            this._primaryCollectionFlow.AutoScroll = true;
+            this._primaryCollectionFlow.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this._primaryCollectionFlow.ContextMenuStrip = this._vernacularCollectionMenuStrip;
+            this._primaryCollectionFlow.Controls.Add(this.label1);
+            this._primaryCollectionFlow.Controls.Add(this.label2);
+            this._primaryCollectionFlow.Controls.Add(this.label3);
+            this._primaryCollectionFlow.Controls.Add(this.button1);
+            this._primaryCollectionFlow.Controls.Add(this.button4);
+            this._primaryCollectionFlow.Controls.Add(this.button5);
+            this._primaryCollectionFlow.Controls.Add(this.label4);
+            this._primaryCollectionFlow.Controls.Add(this.label5);
+            this._primaryCollectionFlow.Controls.Add(this.button6);
+            this._primaryCollectionFlow.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._primaryCollectionFlow.Location = new System.Drawing.Point(0, 0);
+            this._primaryCollectionFlow.Name = "_primaryCollectionFlow";
+            this._primaryCollectionFlow.Size = new System.Drawing.Size(350, 303);
+            this._primaryCollectionFlow.TabIndex = 0;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this._vernacularBooksFlow.SetFlowBreak(this.label1, true);
+            this._primaryCollectionFlow.SetFlowBreak(this.label1, true);
             this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
             this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
             this._L10NSharpExtender.SetLocalizingId(this.label1, "LibraryListView.label1");
@@ -294,7 +294,7 @@ namespace Bloom.CollectionTab
             // label3
             // 
             this.label3.AutoSize = true;
-            this._vernacularBooksFlow.SetFlowBreak(this.label3, true);
+            this._primaryCollectionFlow.SetFlowBreak(this.label3, true);
             this.label3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
             this._L10NSharpExtender.SetLocalizableToolTip(this.label3, null);
@@ -355,7 +355,7 @@ namespace Bloom.CollectionTab
             this.button5.Dock = System.Windows.Forms.DockStyle.Top;
             this.button5.FlatAppearance.BorderSize = 0;
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._vernacularBooksFlow.SetFlowBreak(this.button5, true);
+            this._primaryCollectionFlow.SetFlowBreak(this.button5, true);
             this.button5.Image = global::Bloom.Properties.Resources.edit;
             this._L10NSharpExtender.SetLocalizableToolTip(this.button5, null);
             this._L10NSharpExtender.SetLocalizationComment(this.button5, null);
@@ -385,7 +385,7 @@ namespace Bloom.CollectionTab
             // label5
             // 
             this.label5.AutoSize = true;
-            this._vernacularBooksFlow.SetFlowBreak(this.label5, true);
+            this._primaryCollectionFlow.SetFlowBreak(this.label5, true);
             this.label5.ForeColor = System.Drawing.Color.White;
             this._L10NSharpExtender.SetLocalizableToolTip(this.label5, null);
             this._L10NSharpExtender.SetLocalizationComment(this.label5, null);
@@ -405,7 +405,7 @@ namespace Bloom.CollectionTab
             this.button6.Dock = System.Windows.Forms.DockStyle.Top;
             this.button6.FlatAppearance.BorderSize = 0;
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._vernacularBooksFlow.SetFlowBreak(this.button6, true);
+            this._primaryCollectionFlow.SetFlowBreak(this.button6, true);
             this.button6.Image = global::Bloom.Properties.Resources.edit;
             this._L10NSharpExtender.SetLocalizableToolTip(this.button6, null);
             this._L10NSharpExtender.SetLocalizationComment(this.button6, null);
@@ -507,8 +507,8 @@ namespace Bloom.CollectionTab
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this._vernacularBooksFlow.ResumeLayout(false);
-            this._vernacularBooksFlow.PerformLayout();
+            this._primaryCollectionFlow.ResumeLayout(false);
+            this._primaryCollectionFlow.PerformLayout();
             this._sourceBooksFlow.ResumeLayout(false);
             this._sourceBooksFlow.PerformLayout();
             this.ResumeLayout(false);
@@ -526,7 +526,7 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.ToolStripMenuItem _openFolderOnDisk;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
 		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
-		private System.Windows.Forms.FlowLayoutPanel _vernacularBooksFlow;
+		private System.Windows.Forms.FlowLayoutPanel _primaryCollectionFlow;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
