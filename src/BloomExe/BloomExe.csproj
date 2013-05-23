@@ -158,6 +158,8 @@
     </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="Book\BookInfo.cs" />
+    <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
     <Compile Include="Book\BookData.cs" />
@@ -840,6 +842,7 @@
     <None Include="Resources\cloneFromChorusHub.png" />
     <None Include="Resources\cloneFromInternet.png" />
     <None Include="Resources\cloneFromUsb.png" />
+    <None Include="Resources\placeHolderBookThumbnail.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
