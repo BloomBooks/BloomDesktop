@@ -41,6 +41,7 @@ namespace Bloom.Book
 		HtmlDom Dom { get; }
 		void Save();
 		HtmlDom GetRelocatableCopyOfDom(IProgress log);
+		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
@@ -538,7 +539,7 @@ namespace Bloom.Book
 				EnsureHasStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private void EnsureHasStyleSheet(HtmlDom dom, string path)
+		private static void EnsureHasStyleSheet(HtmlDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -598,6 +599,16 @@ namespace Bloom.Book
 		}
 
 
+		public  HtmlDom MakeDomRelocatable(HtmlDom dom,  IProgress log)
+		{
+			var relocatableDom = dom.Clone();
+
+			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
+
+			return relocatableDom;
+		}
 
 		private string SanitizeNameForFileSystem(string name)
 		{

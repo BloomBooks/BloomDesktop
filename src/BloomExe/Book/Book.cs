@@ -221,10 +221,10 @@ namespace Bloom.Book
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
 		{
+			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
+			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
+			dom = _storage.MakeDomRelocatable(dom, _log);
 
-			var relocatableCopyOfDom = _storage.GetRelocatableCopyOfDom(_log);
-			var head = relocatableCopyOfDom.RawDom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
-			var dom = new HtmlDom(@"<html>"+head+"<body></body></html>");
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
@@ -1211,10 +1211,15 @@ namespace Bloom.Book
 		{
 			// I may re-enable this later....			RebuildXMatter(RawDom);
 
-			foreach (XmlElement div in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
+			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
+			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
+			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
+			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
+		   foreach (XmlElement div in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
-				TranslationGroupManager.UpdateContentLanguageClasses(div, _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, language1Iso639Code, language2Iso639Code, language3Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
 			}
 		}
 
