@@ -125,8 +125,11 @@ namespace Bloom.Book
 		public bool RemoveBookThumbnail()
 		{
 			string path = Path.Combine(_folderPath, "thumbnail.png");
-			if (new System.IO.FileInfo(path).IsReadOnly) //readonly is good when you've put in a custom thumbnail
+			if(File.Exists(path) &&
+			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
+			{
 				return false;
+			}
 			if (File.Exists(path))
 			{
 				File.Delete(path);

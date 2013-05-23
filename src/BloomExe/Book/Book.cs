@@ -548,7 +548,7 @@ namespace Bloom.Book
 			targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
 		}
 
-		public Color CoverColor { get; set; }
+		public Color CoverColor { get { return BookInfo.CoverColor; } }
 
 		public bool IsShellOrTemplate
 		{

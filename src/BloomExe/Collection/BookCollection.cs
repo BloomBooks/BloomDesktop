@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using Bloom.Book;
@@ -22,11 +23,6 @@ namespace Bloom.Collection
 		private List<BookInfo> _bookInfos;
 
 		private readonly BookSelection _bookSelection;
-
-
-		private Color[] kCoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176,222,228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
-		private int _coverColorIndex = 0;
-
 
 		//for moq only
 		public BookCollection()
@@ -64,14 +60,17 @@ namespace Bloom.Collection
 				CollectionChanged.Invoke(this, null);
 		}
 
-		public void DeleteBook(Book.BookInfo book)
+		public void DeleteBook(Book.BookInfo bookInfo)
 		{
-			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(book.FolderPath);
+			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
 			if (!didDelete)
 				return;
 
-			Logger.WriteEvent("After BookStorage.DeleteBook({0})", book.FolderPath);
-			ListOfBooksIsOutOfDate();
+			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
+			//ListOfBooksIsOutOfDate();
+			Debug.Assert(_bookInfos.Contains(bookInfo));
+			_bookInfos.Remove(bookInfo);
+
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
 			if (_bookSelection != null)
@@ -131,10 +130,8 @@ namespace Bloom.Collection
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
 				if (Directory.GetFiles(path, "*.htm").Length == 0)
 					return;
-				var bookInfo = new BookInfo(path, Type == CollectionType.TheOneEditableCollection)
-					{
-						CoverColor = NextBookColor()
-					};
+				var bookInfo = new BookInfo(path, Type == CollectionType.TheOneEditableCollection);
+
 				_bookInfos.Add(bookInfo);
 			}
 			catch (Exception e)
@@ -153,12 +150,5 @@ namespace Bloom.Collection
 			get { throw new NotImplementedException(); }
 			set { throw new NotImplementedException(); }
 		}
-
-		public Color NextBookColor()
-		{
-			return kCoverColors[_coverColorIndex++ % kCoverColors.Length];
-		}
-
-
 	}
 }
