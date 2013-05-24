@@ -242,7 +242,7 @@ namespace Bloom.ImageProcessing
 #if DEBUG
 				throw;
 #else       //just quitely report this
-				DeskAnalyticsSharp.DeskAnalytics.ReportError(e);
+				DesktopAnalytics.Analytics.ReportException(e);
 #endif
 			}
 		}
