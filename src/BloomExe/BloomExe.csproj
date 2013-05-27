@@ -121,9 +121,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet, Version=2.1.6.1, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="PdfDroplet, Version=2.2.7.1, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\PdfDroplet.2.1.6.1\lib\net35\PdfDroplet.exe</HintPath>
+      <HintPath>..\..\packages\PdfDroplet.2.2.7.1\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
