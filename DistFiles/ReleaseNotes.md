@@ -1,5 +1,8 @@
 ## 0.9.71 24 May 2013
 * Improved PDF layout when OS is at 120dpi or 144dpi
+* Allow BloomPack install even if Bloom is already running
+* In the Language chooser, auto-select "Unlisted Language" if user clicks on the related link.
+* Pretty-print html in the books
 
 ## 0.9.67 24 May 2013
 * Updated French Localizations
