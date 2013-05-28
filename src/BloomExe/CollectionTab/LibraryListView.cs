@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using DesktopAnalytics;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionTab
@@ -69,6 +71,34 @@ namespace Bloom.CollectionTab
 
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
+#if DEBUG
+			_bookContextMenu.Items.Add(new ToolStripSeparator());
+			ToolStripMenuItem item = new ToolStripMenuItem("Export to XHTML...");
+			_bookContextMenu.Items.Add(item);
+			item.Click += OnExportToXHTML;
+#endif
+		}
+
+		private void OnExportToXHTML(object sender, EventArgs e)
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile())+".xhtml";
+				dlg.InitialDirectory = SelectedBook.FolderPath;
+				if(DialogResult.OK == dlg.ShowDialog())
+				{
+					try
+					{
+						_model.ExportXHtml(dlg.FileName);
+						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
+						Analytics.Track("Exported XHtml");
+					}
+					catch (Exception error)
+					{
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not convert the book to XHTML");
+					}
+				}
+			}
 		}
 
 

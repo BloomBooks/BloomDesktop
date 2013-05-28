@@ -155,6 +155,12 @@ namespace Bloom.CollectionTab
 			_bookSelection.SelectBook(b);
 		}
 
+
+		public void ExportXHtml(string path)
+		{
+			_bookSelection.CurrentSelection.ExportXHtml(path);
+		}
+
 		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
 			book.RebuildThumbNailAsync(callback,errorCallback);
