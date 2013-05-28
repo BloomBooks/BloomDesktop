@@ -1,3 +1,6 @@
+## 0.9.71 24 May 2013
+* Improved PDF layout when OS is at 120dpi or 144dpi
+
 ## 0.9.67 24 May 2013
 * Updated French Localizations
 

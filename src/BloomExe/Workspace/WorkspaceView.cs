@@ -36,6 +36,7 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private Sparkle _sparkleApplicationUpdater;
 		private readonly LocalizationManager _localizationManager;
+		public static float DPIOfThisAccount;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -386,12 +387,14 @@ namespace Bloom.Workspace
 			Graphics g = this.CreateGraphics();
 			try
 			{
+
 				var dx = g.DpiX;
+				DPIOfThisAccount = dx;
 				var dy = g.DpiY;
 				if(dx!=96 || dy!=96)
 				{
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-						"The \"Custom text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Please change the DPI back to the default setting, using the 'Display' Control Panel.", dx);
+						"The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.", dx);
 				}
 			}
 			finally
