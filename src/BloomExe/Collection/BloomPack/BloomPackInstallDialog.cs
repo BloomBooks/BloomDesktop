@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using System.Linq;
 using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.Reporting;
@@ -81,7 +83,16 @@ namespace Bloom.Collection.BloomPack
 						}
 					}
 					zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
-					_message.Text = string.Format("The {0} Collection is now ready to use on this computer.", folderName);
+
+					var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
+																	  "The {0} Collection is now ready to use on this computer.");
+					_message.Text = string.Format(allDone, folderName);
+					if (Process.GetProcesses().Count(p => p.ProcessName.Contains("Bloom")) > 1)
+					{
+						_message.Text += System.Environment.NewLine + System.Environment.NewLine
+							+ L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
+																				 "Bloom is already running, but the contents will not show up until the next time you run Bloom");
+					}
 					Analytics.Track("Install BloomPack");
 				}
 			}
