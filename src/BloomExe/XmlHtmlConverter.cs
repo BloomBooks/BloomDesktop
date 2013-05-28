@@ -217,7 +217,6 @@ namespace Bloom
 				tidy.IndentSpaces = 4;
 				tidy.CharacterEncoding = EncodingType.Utf8;
 				tidy.CleanAndRepair();
-				tidy.Save(tempPath);
 			}
 			File.Delete(initialOutputPath);
 
