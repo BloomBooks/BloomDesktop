@@ -510,7 +510,7 @@ namespace Bloom.Book
 
 			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
 
-			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("templatePages.htm"));
+			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("templatePages.htm"), false);
 
 			progress.WriteStatus("Updating pages that were based on Basic Book...");
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
@@ -1299,5 +1299,10 @@ namespace Bloom.Book
         {
             OurHtmlDom.Title = name;
         }
+
+	    public void ExportXHtml(string path)
+	    {
+			XmlHtmlConverter.GetXmlDomFromHtmlFile(_storage.PathToExistingHtml,true).Save(path);
+	    }
     }
 }
