@@ -22,18 +22,19 @@ namespace Bloom
 		/// <param name="content"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtmlFile(string path)
+		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration)
 		{
-			return GetXmlDomFromHtml(File.ReadAllText(path));
+			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary>
 		///
 		/// </summary>
 		/// <param name="content"></param>
+		/// <param name="includeXmlDeclaration"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtml(string content)
+		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration)
 		{
 			var dom = new XmlDocument();
 			//hack. tidy deletes <span data-libray='somethingImportant'></span>
@@ -57,6 +58,8 @@ namespace Bloom
 					tidy.OutputCharacterEncoding = EncodingType.Utf8;
 					tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
 					//maybe try this? tidy.Markup = true;
+
+					tidy.AddXmlDeclaration = includeXmlDeclaration;
 
 					//NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
 					tidy.MergeSpans = AutoBool.No;
@@ -196,8 +199,6 @@ namespace Bloom
 			//now insert the non-xml-ish <!doctype html>
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
 
-#if DEBUG   //TODO when we trust this, give it to everybody
-
 			//now re-write, indented nicely
 			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
 			{
@@ -221,7 +222,7 @@ namespace Bloom
 			File.Delete(initialOutputPath);
 
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
-#endif
+
 			return tempPath;
 		}
 	}
