@@ -73,7 +73,9 @@ namespace Bloom.Book
 						   BookRenamedEvent bookRenamedEvent)
 		{
 			_folderPath = folderPath;
-			_fileLocator = baseFileLocator;
+
+			//we clone becuase we'll be customizing this for use by just this book
+			_fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 			_bookRenamedEvent = bookRenamedEvent;
 
 			ExpensiveInitialization();
