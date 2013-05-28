@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Net;
 using System.Net.Mime;
 using System.Reflection;
@@ -42,10 +43,35 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions] 
         static void Main(string[] args)
         {
-			try
-			{
-				Application.EnableVisualStyles();
-				Application.SetCompatibleTextRenderingDefault(false);
+	        try
+	        {
+		        Application.EnableVisualStyles();
+		        Application.SetCompatibleTextRenderingDefault(false);
+
+		        //bring in settings from any previous version
+		        if (Settings.Default.NeedUpgrade)
+		        {
+			        //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+			        Settings.Default.Upgrade();
+			        Settings.Default.NeedUpgrade = false;
+			        Settings.Default.Save();
+			        StartUpWithFirstOrNewVersionBehavior = true;
+		        }
+
+		        if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+		        {
+#if DEBUG
+			        using (new Analytics("sje2fq26wnnk8c2kzflf"))
+#else
+					using (new Analytics("c8ndqrrl7f0twbf2s6cv"))
+#endif
+			        using (var dlg = new BloomPackInstallDialog(args[0]))
+			        {
+				        dlg.ShowDialog();
+			        }
+			        return;
+		        }
+	        
 
 #if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
 				if (!GrabMutexForBloom())
@@ -54,15 +80,7 @@ namespace Bloom
 
 				OldVersionCheck();
 
-				//bring in settings from any previous version
-				if (Settings.Default.NeedUpgrade)
-				{
-					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-					Settings.Default.Upgrade();
-					Settings.Default.NeedUpgrade = false;
-					Settings.Default.Save();
-					StartUpWithFirstOrNewVersionBehavior = true;
-				}
+
 
 				SetUpErrorHandling();
 
@@ -72,14 +90,7 @@ namespace Bloom
 				Logger.Init();
 
 
-				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
-				{
-					using (var dlg = new BloomPackInstallDialog(args[0]))
-					{
-						dlg.ShowDialog();
-					}
-					return;
-				}
+			
                 if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
                 {
                     Settings.Default.MruProjects.AddNewPath(args[0]);
