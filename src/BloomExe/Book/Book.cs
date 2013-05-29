@@ -81,8 +81,10 @@ namespace Bloom.Book
 			}
 
 			FixBookIdAndLineageIfNeeded(_storage.Dom);
+			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 		}
+
 
 
 		public void InvokeContentsChanged(EventArgs e)
