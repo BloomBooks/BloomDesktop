@@ -39,15 +39,16 @@ namespace Bloom.Book
 
 		public XmlElement Head
 		{
-			get
-			{
-				return XmlUtils.GetOrCreateElement(_dom, "html", "head");
-			}
+			get { return XmlUtils.GetOrCreateElement(_dom, "html", "head"); }
 		}
 
 		public string Title
 		{
-			get { return XmlUtils.GetTitleOfHtml(_dom, null); ; }
+			get
+			{
+				return XmlUtils.GetTitleOfHtml(_dom, null);
+				;
+			}
 			set
 			{
 				var t = value.Trim();
@@ -99,26 +100,13 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// creates if necessary, then updates the named <meta></meta> in the head of the html
-		/// </summary>
-		public void UpdateMetaElement(string name, string value)
-		{
-			XmlElement n = _dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
-			if (n == null)
-			{
-				n = _dom.CreateElement("meta");
-				n.SetAttribute("name", name);
-				_dom.SelectSingleNode("//head").AppendChild(n);
-			}
-			n.SetAttribute("content", value);
-		}
+
 
 
 		public void SetBaseForRelativePaths(string path)
 		{
 			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
-			Guard.AgainstNull(head,"Expected the DOM to already have a head element");
+			Guard.AgainstNull(head, "Expected the DOM to already have a head element");
 
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
@@ -138,6 +126,7 @@ namespace Bloom.Book
 		{
 			return RawDom.SafeSelectNodes(xpath);
 		}
+
 		public XmlElement SelectSingleNode(string xpath)
 		{
 			return RawDom.SelectSingleNode(xpath) as XmlElement;
@@ -157,7 +146,7 @@ namespace Bloom.Book
 		}
 
 
-		public  void RemoveModeStyleSheets()
+		public void RemoveModeStyleSheets()
 		{
 			foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
@@ -180,7 +169,8 @@ namespace Bloom.Book
 			var ids = new List<string>();
 			var builder = new StringBuilder();
 
-			Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page", builder);
+			Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
+				   builder);
 			EnsureIdsAreUnique(this, "textarea", ids, builder);
 			EnsureIdsAreUnique(this, "p", ids, builder);
 			EnsureIdsAreUnique(this, "img", ids, builder);
@@ -241,42 +231,26 @@ namespace Bloom.Book
 			{
 				headNode.AppendChild(xmlElement);
 			}
-		 }
-
-//        /// <summary>
-//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-//        /// </summary>
-//        /// <param name="dom"></param>
-//        private void StripStyleSheetLinkPaths(HtmlDom dom)
-//        {
-//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-//            {
-//                var href = linkNode.GetAttribute("href");
-//                if (href == null)
-//                {
-//                    continue;
-//                }
-//                linkNode.SetAttribute("href", Path.GetFileName(href));
-//            }
-//        }
-
-		public string GetMetaValue(string name, string defaultValue)
-		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
-			if (node.Count > 0)
-			{
-				return ((XmlElement)node[0]).GetAttribute("content");
-			}
-			return defaultValue;
 		}
 
-		public void RemoveMetaValue(string name)
-		{
-			foreach (XmlElement n in _dom.SafeSelectNodes("//head/meta[@name='" + name + "']"))
-			{
-				n.ParentNode.RemoveChild(n);
-			}
-		}
+		//        /// <summary>
+		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
+		//        /// </summary>
+		//        /// <param name="dom"></param>
+		//        private void StripStyleSheetLinkPaths(HtmlDom dom)
+		//        {
+		//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
+		//            {
+		//                var href = linkNode.GetAttribute("href");
+		//                if (href == null)
+		//                {
+		//                    continue;
+		//                }
+		//                linkNode.SetAttribute("href", Path.GetFileName(href));
+		//            }
+		//        }
+
+
 
 		public static void AddClass(XmlElement e, string className)
 		{
@@ -329,6 +303,72 @@ namespace Bloom.Book
 				result.LoadXml(stringWriter.ToString());
 				return result;
 			}
+		}
+
+		public string GetMetaValue(string name, string defaultValue)
+		{
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			if (node.Count > 0)
+			{
+				return ((XmlElement) node[0]).GetAttribute("content");
+			}
+			return defaultValue;
+		}
+
+		public void RemoveMetaElement(string name)
+		{
+			foreach (XmlElement n in _dom.SafeSelectNodes("//head/meta[@name='" + name + "']"))
+			{
+				n.ParentNode.RemoveChild(n);
+			}
+		}
+
+		/// <summary>
+		/// creates if necessary, then updates the named <meta></meta> in the head of the html
+		/// </summary>
+		public void UpdateMetaElement(string name, string value)
+		{
+			XmlElement n = _dom.SelectSingleNode("//meta[@name='" + name + "']") as XmlElement;
+			if (n == null)
+			{
+				n = _dom.CreateElement("meta");
+				n.SetAttribute("name", name);
+				_dom.SelectSingleNode("//head").AppendChild(n);
+			}
+			n.SetAttribute("content", value);
+		}
+
+		/// <summary>
+		/// Can be called without knowing that the old or new exists.
+		/// If it already has the new, the old is just removed.
+		/// This is just for migration.
+		/// </summary>
+		public void RenameMetaElement(string oldName, string newName)
+		{
+			if (!HasMetaElement(oldName))
+				return;
+
+			if (HasMetaElement(newName))
+			{
+				RemoveMetaElement(oldName);
+				return;
+			}
+
+			//ok, so we do have to transfer the value over
+
+			UpdateMetaElement(newName,GetMetaValue(oldName,""));
+
+			//and remove any of the old name
+			foreach(XmlElement node in _dom.SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
+			{
+				node.ParentNode.RemoveChild(node);
+			}
+
+		}
+
+		public bool HasMetaElement(string name)
+		{
+			return _dom.SafeSelectNodes("//head/meta[@name='" + name + "']").Count > 0;
 		}
 	}
 }

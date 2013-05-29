@@ -35,6 +35,7 @@ namespace Bloom.Book
 		private readonly BookRefreshEvent _bookRefreshEvent;
 		private readonly IBookStorage _storage;
 		private List<IPage> _pagesCache;
+		private const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
 
@@ -79,6 +80,7 @@ namespace Bloom.Book
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
+			FixBookIdAndLineageIfNeeded(_storage.Dom);
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 		}
 
@@ -496,6 +498,28 @@ namespace Bloom.Book
 			{
 				var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
 				bd.SynchronizeDataItemsThroughoutDOM();
+			}
+
+			bookDOM.RenameMetaElement("bookLineage", "bloomBookLineage");
+		}
+
+		private static void FixBookIdAndLineageIfNeeded(HtmlDom bookDOM)
+		{
+//at version 0.9.71, we introduced this book lineage for real. At that point almost all books were from Basic book,
+			//so let's get further evidence by looking at the page source and then fix the lineage
+			if (bookDOM.GetMetaValue("bloomBookLineage", "") == "")
+				if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
+				{
+					bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
+				}
+
+			//there were a number of books in version 0.9 that just copied the id of the basic book from which they were created
+			if (bookDOM.GetMetaValue("bloomBookId", "") == kIdOfBasicBook)
+			{
+				if (bookDOM.GetMetaValue("title", "") != "Basic Book")
+				{
+					bookDOM.UpdateMetaElement("bloomBookId", Guid.NewGuid().ToString());
+				}
 			}
 		}
 
