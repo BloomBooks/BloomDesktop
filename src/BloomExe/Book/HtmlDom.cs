@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
+using System.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.Reporting;
@@ -369,6 +370,21 @@ namespace Bloom.Book
 		public bool HasMetaElement(string name)
 		{
 			return _dom.SafeSelectNodes("//head/meta[@name='" + name + "']").Count > 0;
+		}
+
+		public void RemoveExtraContentTypesMetas()
+		{
+			bool first=true;
+			foreach (XmlElement n in _dom.SafeSelectNodes("//head/meta[@http-equiv='Content-Type']"))
+			{
+				if (first)//leave one
+				{
+					first = false;
+					continue;
+				}
+
+				n.ParentNode.RemoveChild(n);
+			}
 		}
 	}
 }
