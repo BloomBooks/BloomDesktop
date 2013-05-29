@@ -175,6 +175,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="CollectionTab\InDesignXmlInformationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
+      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConfirmRecycleDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +198,18 @@
     </Compile>
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiscUI\DontShowThisAgainButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
+      <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiscUI\TipDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\TipDialog.designer.cs">
+      <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
@@ -435,6 +453,9 @@
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
+      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConfirmRecycleDialog.resx">
       <DependentUpon>ConfirmRecycleDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -446,6 +467,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\TipDialog.resx">
+      <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>

@@ -220,21 +220,6 @@ namespace Bloom
 			File.Delete(initialOutputPath);
 			return tempPath;
 		}
-		public static XmlDocument GetXmlDomFromHtmlAfterXSLT(string htmlContent, string pathToXSLT)
-		{
-			var inputDocument = GetXmlDomFromHtml(htmlContent, true);
-			var transform = new XslCompiledTransform();
-			transform.Load(pathToXSLT);
-			using (var stringWriter = new StringWriter())
-			using (var writer = XmlWriter.Create(stringWriter))
-			{
-				transform.Transform(inputDocument.CreateNavigator(), writer);
-				var result = new XmlDocument();
-				result.LoadXml(stringWriter.ToString());
-				return result;
-			}
-		}
 
 	}
-
 }

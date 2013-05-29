@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Xml.Xsl;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.Reporting;
@@ -310,6 +311,24 @@ namespace Bloom.Book
 			if (classes.Contains(className))
 				return;
 			element.SetAttribute("class", (classes + " " + className).Trim());
+		}
+
+
+		/// <summary>
+		/// Applies the XSLT, and returns an XML dom
+		/// </summary>
+		public XmlDocument ApplyXSLT(string pathToXSLT)
+		{
+			var transform = new XslCompiledTransform();
+			transform.Load(pathToXSLT);
+			using (var stringWriter = new StringWriter())
+			using (var writer = XmlWriter.Create(stringWriter))
+			{
+				transform.Transform(RawDom.CreateNavigator(), writer);
+				var result = new XmlDocument();
+				result.LoadXml(stringWriter.ToString());
+				return result;
+			}
 		}
 	}
 }

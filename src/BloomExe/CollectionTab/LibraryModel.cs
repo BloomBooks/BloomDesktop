@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -14,8 +15,10 @@ using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
 using Ionic.Zip;
+using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.Xml;
 
 namespace Bloom.CollectionTab
 {
@@ -156,9 +159,15 @@ namespace Bloom.CollectionTab
 		}
 
 
-		public void ExportXHtml(string path)
+		public void ExportInDesignXml(string path)
 		{
-			_bookSelection.CurrentSelection.ExportXHtml(path);
+			var pathToXnDesignXslt = FileLocator.GetFileDistributedWithApplication("xslts", "BloomXhtmlToDataForMergingIntoInDesign.xsl");
+			var dom = _bookSelection.CurrentSelection.OurHtmlDom.ApplyXSLT(pathToXnDesignXslt);
+
+			using (var writer = XmlWriter.Create(path, CanonicalXmlSettings.CreateXmlWriterSettings()))
+			{
+				dom.Save(writer);
+			}
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)

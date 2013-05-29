@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using DesktopAnalytics;
 using Palaso.Reporting;
@@ -72,30 +73,39 @@ namespace Bloom.CollectionTab
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
 #if DEBUG
-			_bookContextMenu.Items.Add(new ToolStripSeparator());
-			ToolStripMenuItem item = new ToolStripMenuItem("Export to XHTML...");
-			_bookContextMenu.Items.Add(item);
-			item.Click += OnExportToXHTML;
+			_exportToXMLForInDesignToolStripMenuItem.Text += "   DEBUG ONLY";
+#endif
+
+#if !DEBUG
+			_exportToXMLForInDesignToolStripMenuItem.Visible = false;
 #endif
 		}
 
-		private void OnExportToXHTML(object sender, EventArgs e)
+		private void OnExportToXmlForInDesign(object sender, EventArgs e)
 		{
+
+			using(var d = new InDesignXmlInformationDialog())
+			{
+				d.ShowDialog();
+			}
 			using (var dlg = new SaveFileDialog())
 			{
-				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile())+".xhtml";
+				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile())+".xml";
 				dlg.InitialDirectory = SelectedBook.FolderPath;
 				if(DialogResult.OK == dlg.ShowDialog())
 				{
 					try
 					{
-						_model.ExportXHtml(dlg.FileName);
+						_model.ExportInDesignXml(dlg.FileName);
+#if !MONO
 						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
-						Analytics.Track("Exported XHtml");
+#endif
+						Analytics.Track("Exported XML For InDesign");
 					}
 					catch (Exception error)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not convert the book to XHTML");
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
+						Analytics.ReportException(error);
 					}
 				}
 			}
