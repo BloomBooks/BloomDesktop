@@ -50,3 +50,10 @@ MercurialExtensions/
 WebSite/
 *.suo
 *.psess
+lib/dotnet/Palaso*.*
+lib/dotnet/Chorus*.*
+DistFiles/exiftool.exe
+Copy*.bat
+lib/wkhtmltopdf/*
+.nuget/NuGet.exe
+LibChorus.*
