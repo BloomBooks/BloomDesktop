@@ -1,3 +1,9 @@
+## 0.9.78 31 May 2013
+* Language Look Up now searches alternative names from Ethnologue
+* Language Look Up now lists countries
+* Books now know the ids of their ancestor templates.
+* Experimental InDesign XML Export (write to john if you're interested in helping experiment with this).
+
 ## 0.9.71 24 May 2013
 * Improved PDF layout when OS is at 120dpi or 144dpi
 * Allow BloomPack install even if Bloom is already running

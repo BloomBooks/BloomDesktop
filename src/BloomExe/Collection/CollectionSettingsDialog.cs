@@ -129,7 +129,7 @@ namespace Bloom.Collection
 				{
 					return currentIso639Code;
 				}
-				return dlg.ISOCodeAndName.Code;
+				return dlg.SelectedLanguage.Code;
 			}
 		}
 
