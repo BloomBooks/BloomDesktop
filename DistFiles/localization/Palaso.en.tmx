@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4836.18951" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.999.0</prop>
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.1.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">0.9.78.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -33,11 +33,6 @@
 	<tu tuid="ImageToolbox.Camera">
 	  <tuv xml:lang="en">
 		<seg>Camera</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ImageToolbox.CopyExemplar">
-	  <tuv xml:lang="en">
-		<seg>Copy Exemplar that is really long</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.Crop">
@@ -111,11 +106,6 @@
 		<seg>Set up metadata...</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LanguageLookup.CannotFindLanguageLink">
-	  <tuv xml:lang="en">
-		<seg>Can't find your language?</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
 	  <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
 	  <tuv xml:lang="en">
@@ -132,19 +122,14 @@
 		<seg>About The ISO Language Registry</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LanguageLookup.CodeColumnHeader">
-	  <tuv xml:lang="en">
-		<seg>Code</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="LanguageLookup.LanguageLookupDialogWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Lookup Language Code...</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="LanguageLookup.NameColumnHeader">
+	<tu tuid="LanguageLookup.UnlistedLanguage">
 	  <tuv xml:lang="en">
-		<seg>Name</seg>
+		<seg>Unlisted Language</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="MetadataDisplay.Creator">
@@ -276,6 +261,12 @@
 	<tu tuid="SettingsProtection.SettingProtectionDialogTitle">
 	  <tuv xml:lang="en">
 		<seg>Settings Protection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Use {0}">
+	  <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
+	  <tuv xml:lang="en">
+		<seg>ImageToolbox.CopyExemplarMetadata</seg>
 	  </tuv>
 	</tu>
   </body>
