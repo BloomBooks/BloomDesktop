@@ -21,7 +21,7 @@ namespace Bloom.CollectionCreating
 				return;
 
 			_collectionInfo.Language1Iso639Code = _lookupISOControl.ISOCode;
-			_collectionInfo.Language1Name = _lookupISOControl.LanguageInfo == null ? string.Empty : _lookupISOControl.LanguageInfo.Names[0];
+			_collectionInfo.Language1Name = _lookupISOControl.LanguageInfo == null ? string.Empty : _lookupISOControl.LanguageInfo.DesiredName;
 
 			_setNextButtonState(this, _lookupISOControl.LanguageInfo != null);
 

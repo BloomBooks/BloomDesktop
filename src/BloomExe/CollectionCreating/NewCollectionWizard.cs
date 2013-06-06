@@ -12,6 +12,18 @@ using Palaso.Reporting;
 
 namespace Bloom.CollectionCreating
 {
+	/* !!!!!!!!!!!!!!!!!!!!!! ABOUT DESIGN-TIME USE OF THE WIZARD !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 *
+	 * The AeroWizard requires the full profile (not just client). So this is what I did:
+	 * 1) switched bloom to the Full Profile
+	 * 2) Used the stock AeroWizard to get things designed
+	 * 3) Switch Bloom to Client Profile
+	 * 4) Stripped AeroWizard of all system.design dependencies (deleting two classes, removing an attribute linking the wizard to those classes)
+	 * 5) Referenced that stripped down version.
+	 *
+	 * However, when I tried with the latest AeroWizard, I got an error of a "stack imbalance" on a native method call. So
+	 * I went back to the version I had before. Looking forward to ditching this for the pure .net version we've got coming for the Linux port.
+	 */
 	public partial class NewCollectionWizard : Form
 	{
 		private NewCollectionSettings _collectionInfo;

@@ -207,7 +207,7 @@ namespace Bloom.Edit
 				if (_contentLanguages.Count() == 0)
 				{
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
-															  _collectionSettings.GetVernacularName("en"))
+															  _collectionSettings.GetLanguage1Name("en"))
 											{Locked = true, Selected = true});
 
 					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity

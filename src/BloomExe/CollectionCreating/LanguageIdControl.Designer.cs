@@ -36,14 +36,17 @@
 			// 
 			// _lookupISOControl
 			// 
+			this._lookupISOControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
 			this._lookupISOControl.ISOCode = "";
+			this._lookupISOControl.LanguageInfo = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lookupISOControl, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._lookupISOControl, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
 			this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
 			this._lookupISOControl.Name = "_lookupISOControl";
-			this._lookupISOControl.Size = new System.Drawing.Size(500, 252);
+			this._lookupISOControl.Size = new System.Drawing.Size(551, 231);
 			this._lookupISOControl.TabIndex = 11;
 			this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
 			// 
@@ -61,7 +64,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "NewCollectionWizard.LanguageIdControl.LanguageIdControl");
 			this.Name = "LanguageIdControl";
-			this.Size = new System.Drawing.Size(509, 260);
+			this.Size = new System.Drawing.Size(615, 260);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 

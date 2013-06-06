@@ -202,7 +202,7 @@ namespace Bloom.Publish
 							throw new ArgumentOutOfRangeException();
 					}
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
-														 _collectionSettings.GetVernacularName("en"), portion);
+														 _collectionSettings.GetLanguage1Name("en"), portion);
 					dlg.FileName = suggestedName;
 					dlg.Filter = "PDF|*.pdf";
 					if (DialogResult.OK == dlg.ShowDialog())

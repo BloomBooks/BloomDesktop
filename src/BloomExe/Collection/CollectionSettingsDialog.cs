@@ -9,6 +9,7 @@ using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.Extensions;
+using Palaso.WritingSystems;
 
 namespace Bloom.Collection
 {
@@ -70,7 +71,7 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetVernacularName("en"), _collectionSettings.Language1Iso639Code);
+			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage1Name("en"), _collectionSettings.Language1Iso639Code);
 			_language2Name.Text = string.Format("{0} ({1})",  _collectionSettings.GetLanguage2Name("en"), _collectionSettings.Language2Iso639Code);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
@@ -94,25 +95,42 @@ namespace Bloom.Collection
 				_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FactoryDefault;
 		}
 
-		private void _vernacularChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language1Iso639Code = ChangeLanguage(_collectionSettings.Language1Iso639Code);
+			//at this point, we don't let them customize the national languages
 
-			_restartRequired = true;
-			UpdateDisplay();
+			var potentiallyCustomName = _collectionSettings.IsSourceCollection ? null: _collectionSettings.Language1Name;
+
+			var l = ChangeLanguage(_collectionSettings.Language1Iso639Code, potentiallyCustomName);
+
+			if (l != null)
+			{
+				_collectionSettings.Language1Iso639Code = l.Code;
+				_collectionSettings.Language1Name = l.DesiredName;
+				_restartRequired = true;
+				UpdateDisplay();
+			}
 		}
-		private void _national1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language2Iso639Code = ChangeLanguage( _collectionSettings.Language2Iso639Code);
-			_restartRequired = true;
-			UpdateDisplay();
+			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code);
+			if (l != null)
+			{
+				_collectionSettings.Language2Iso639Code = l.Code;
+				_restartRequired = true;
+				UpdateDisplay();
+			}
 		}
 
-		private void _national2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Iso639Code = ChangeLanguage(_collectionSettings.Language3Iso639Code);
-			_restartRequired = true;
-			UpdateDisplay();
+			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code);
+			if (l != null)
+			{
+				_collectionSettings.Language3Iso639Code = l.Code;
+				_restartRequired = true;
+				UpdateDisplay();
+			}
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
@@ -121,15 +139,24 @@ namespace Bloom.Collection
 			UpdateDisplay();
 		}
 
-		private string ChangeLanguage( string currentIso639Code)
+		private LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
 		{
 			using (var dlg = new LookupISOCodeDialog())
 			{
+				//at this point, we don't let them customize the national languages
+				dlg.ShowDesiredLanguageNameField = potentiallyCustomName != null;
+
+				dlg.SelectedLanguage = new LanguageInfo() { Code = iso639Code};
+				if(!string.IsNullOrEmpty(potentiallyCustomName))
+				{
+					dlg.SelectedLanguage.DesiredName = potentiallyCustomName;
+				}
+
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
-					return currentIso639Code;
+					return null;
 				}
-				return dlg.SelectedLanguage.Code;
+				return  dlg.SelectedLanguage;
 			}
 		}
 
