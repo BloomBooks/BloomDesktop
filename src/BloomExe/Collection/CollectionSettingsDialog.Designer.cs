@@ -162,7 +162,7 @@
 			this._changeLanguage3Link.TabIndex = 17;
 			this._changeLanguage3Link.TabStop = true;
 			this._changeLanguage3Link.Text = "Change...";
-			this._changeLanguage3Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._national2ChangeLink_LinkClicked);
+			this._changeLanguage3Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._language3ChangeLink_LinkClicked);
 			// 
 			// _changeLanguage2Link
 			// 
@@ -176,7 +176,7 @@
 			this._changeLanguage2Link.TabIndex = 16;
 			this._changeLanguage2Link.TabStop = true;
 			this._changeLanguage2Link.Text = "Change...";
-			this._changeLanguage2Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._national1ChangeLink_LinkClicked);
+			this._changeLanguage2Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._language2ChangeLink_LinkClicked);
 			// 
 			// _changeLanguage1Link
 			// 
@@ -190,7 +190,7 @@
 			this._changeLanguage1Link.TabIndex = 15;
 			this._changeLanguage1Link.TabStop = true;
 			this._changeLanguage1Link.Text = "Change...";
-			this._changeLanguage1Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._vernacularChangeLink_LinkClicked);
+			this._changeLanguage1Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._language1ChangeLink_LinkClicked);
 			// 
 			// _language3Name
 			// 
