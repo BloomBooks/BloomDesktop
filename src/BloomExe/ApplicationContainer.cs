@@ -34,6 +34,8 @@ namespace Bloom
 				builder.Register<Sparkle>(c =>
 											  {
 												  var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
+												  s.CustomInstallerArguments = "/qb";
+												  s.DoLaunchAfterUpdate = false;
 												  return s;
 											  }).InstancePerLifetimeScope();
 
