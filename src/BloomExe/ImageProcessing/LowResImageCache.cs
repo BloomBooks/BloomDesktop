@@ -74,18 +74,25 @@ namespace Bloom.ImageProcessing
 			_paths = null;
 		}
 
+		private DateTime GetModifiedDateTime(string path)
+		{
+			FileInfo f = new FileInfo(path);
+			return f.LastWriteTimeUtc;
+		}
+
 		public string GetPathToResizedImage(string originalPath)
 		{
 			string resizedPath;
 			if(_paths.TryGetValue(originalPath, out resizedPath))
 			{
-				if(File.Exists(resizedPath))
-					return resizedPath;
+				if (File.Exists(resizedPath) && new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(resizedPath).LastWriteTimeUtc)
+				{
+						return resizedPath;
+				}
 				else
 				{
 					_paths.Remove(originalPath);
 				}
-
 			}
 
 			var original = Image.FromFile(originalPath);
