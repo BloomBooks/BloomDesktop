@@ -63,6 +63,7 @@ namespace Bloom.Book
 		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
+		private readonly CollectionSettings _collectionSettings;
 		private string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
@@ -70,13 +71,14 @@ namespace Bloom.Book
 
 
 		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
-						   BookRenamedEvent bookRenamedEvent)
+						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
 			_folderPath = folderPath;
 
 			//we clone becuase we'll be customizing this for use by just this book
 			_fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 			_bookRenamedEvent = bookRenamedEvent;
+			_collectionSettings = collectionSettings;
 
 			ExpensiveInitialization();
 		}
@@ -186,8 +188,6 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-
-
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
 			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
@@ -234,7 +234,7 @@ namespace Bloom.Book
 			string tempPath = Path.GetTempFileName();
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
-
+			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
@@ -250,7 +250,7 @@ namespace Bloom.Book
 			HtmlDom relocatableDom = Dom.Clone();
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
-			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			EnsureHasLinksToStylesheets(relocatableDom);
 			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
@@ -267,7 +267,7 @@ namespace Bloom.Book
 			var relocatableDom = dom.Clone();
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
-			EnsureHasCollectionAndBookStylesheets(relocatableDom);
+			EnsureHasLinksToStylesheets(relocatableDom);
 			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
@@ -498,14 +498,19 @@ namespace Bloom.Book
 					UpdateIfNewer(file);
 			}
 
+			var helper = new XMatterHelper(_dom, _collectionSettings.XMatterPackName, _fileLocator);
+			UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+
 		}
-		private void UpdateIfNewer(string fileName)
+		private void UpdateIfNewer(string fileName, string factoryPath = "")
 		{
-			string factoryPath="notSet";
 			string documentPath="notSet";
 			try
 			{
-				factoryPath = _fileLocator.LocateFile(fileName);
+				if(string.IsNullOrEmpty(factoryPath))
+				{
+					factoryPath = _fileLocator.LocateFile(fileName);
+				}
 				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
@@ -548,21 +553,25 @@ namespace Bloom.Book
 			}
 		}
 
-		private void EnsureHasCollectionAndBookStylesheets(HtmlDom dom)
+		// NB: this knows nothing of book-specific css's... even "basic book.css"
+		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
-			string autocssFilePath = _fileLocator.LocateFile(@"settingsCollectionStyles.css");
-			if (!string.IsNullOrEmpty(autocssFilePath))
-				EnsureHasStyleSheet(dom, autocssFilePath);
+			var helper = new XMatterHelper(_dom, _collectionSettings.XMatterPackName, _fileLocator);
+			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
 
-			string customCssFilePath = _fileLocator.LocateFile(@"customCollectionStyles.css");
-			if (!string.IsNullOrEmpty(customCssFilePath))
-				EnsureHasStyleSheet(dom, customCssFilePath);
+			string autocssFilePath = ".."+Path.DirectorySeparatorChar+"settingsCollectionStyles.css";
+			if (File.Exists(Path.Combine(_folderPath,autocssFilePath)))
+				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
+
+			var customCssFilePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+			if (File.Exists(Path.Combine(_folderPath, customCssFilePath)))
+				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
 			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
-				EnsureHasStyleSheet(dom,"customBookStyles.css");
+				EnsureHasLinkToStyleSheet(dom,"customBookStyles.css");
 		}
 
-		private static void EnsureHasStyleSheet(HtmlDom dom, string path)
+		private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
 		{
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -572,6 +581,37 @@ namespace Bloom.Book
 			}
 			dom.AddStyleSheet(path);
 		}
+
+//		/// <summary>
+//		/// Creates a relative path from one file or folder to another.
+//		/// </summary>
+//		/// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
+//		/// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
+//		/// <param name="dontEscape">Boolean indicating whether to add uri safe escapes to the relative path</param>
+//		/// <returns>The relative path from the start directory to the end path.</returns>
+//		/// <exception cref="ArgumentNullException"></exception>
+//		public static String MakeRelativePath(String fromPath, String toPath)
+//		{
+//			if (String.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+//			if (String.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+//
+//			//the stuff later on needs to see directory names trailed by a "/" or "\".
+//			fromPath = fromPath.Trim();
+//			if (!fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+//			{
+//				if (Directory.Exists(fromPath))
+//				{
+//					fromPath = fromPath + Path.DirectorySeparatorChar;
+//				}
+//			}
+//			Uri fromUri = new Uri(fromPath);
+//			Uri toUri = new Uri(toPath);
+//
+//			Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+//			String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+//
+//			return relativePath.Replace('/', Path.DirectorySeparatorChar);
+//		}
 
 		private void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
 		{
@@ -614,11 +654,13 @@ namespace Bloom.Book
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
-		private static void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
+		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets();
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
+			EnsureHasLinksToStylesheets(dom);
+			dom.SortStyleSheetLinks();
 		}
 
 

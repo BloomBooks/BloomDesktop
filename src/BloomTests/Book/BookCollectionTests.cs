@@ -36,7 +36,7 @@ namespace BloomTests.Book
 
 		 BookStorage BookStorageFactory(string folderPath)
 		 {
-			 return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent());
+			 return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
 		 }
 
 		[Test, Ignore("fix me")]
