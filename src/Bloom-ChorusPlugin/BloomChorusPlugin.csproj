@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Bloom_ChorusPlugin</RootNamespace>
-    <AssemblyName>Bloom-ChorusPlugin</AssemblyName>
+    <AssemblyName>BloomChorusPlugin</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
