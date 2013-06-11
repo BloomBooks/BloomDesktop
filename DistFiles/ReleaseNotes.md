@@ -1,3 +1,6 @@
+## 0.9.86 10 June 2013
+* Environment variable FEEDBACK set to "off" now disables analytics
+
 ## 0.9.83 10 June 2013
 * Fix: Stylesheets references are now ordered when saved to disk (were previously ordered within bloom)
 * Fix: Front/Back Mater (XMatter) css now saved with the book on disk (for a post-bloom future)

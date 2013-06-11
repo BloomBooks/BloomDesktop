@@ -57,78 +57,82 @@ namespace Bloom
 			        StartUpWithFirstOrNewVersionBehavior = true;
 		        }
 
-		        if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
-		        {
-#if DEBUG
-			        using (new Analytics("sje2fq26wnnk8c2kzflf"))
+#if xDEBUG
+			    using (new Analytics("sje2fq26wnnk8c2kzflf",true))
+				
 #else
-					using (new Analytics("c8ndqrrl7f0twbf2s6cv"))
-#endif
-			        using (var dlg = new BloomPackInstallDialog(args[0]))
-			        {
-				        dlg.ShowDialog();
-			        }
-			        return;
-		        }
-	        
+				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
-#if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
+				//default is to allow tracking
+				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
+
+		        using (new Analytics("c8ndqrrl7f0twbf2s6cv", allowTracking))
+		        
+#endif
+			     {
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+			        {
+				        using (var dlg = new BloomPackInstallDialog(args[0]))
+				        {
+					        dlg.ShowDialog();
+				        }
+				        return;
+			        }
+
+
+#if !DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
 				if (!GrabMutexForBloom())
 					return;
 #endif
 
-				OldVersionCheck();
+			        OldVersionCheck();
 
 
 
-				SetUpErrorHandling();
+			        SetUpErrorHandling();
 
-                _applicationContainer = new ApplicationContainer(); 
-                
-                SetUpLocalization();
-				Logger.Init();
+			        _applicationContainer = new ApplicationContainer();
+
+			        SetUpLocalization();
+			        Logger.Init();
 
 
-			
-                if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
-                {
-                    Settings.Default.MruProjects.AddNewPath(args[0]);
-                }
-                _earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-				Settings.Default.Save();
+			        if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+			        {
+				        Settings.Default.MruProjects.AddNewPath(args[0]);
+			        }
+			        _earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-				Browser.SetUpXulRunner();
+			        Settings.Default.Save();
 
-				Application.Idle +=Startup;
-				
-				
+			        Browser.SetUpXulRunner();
 
-				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
-#if DEBUG
-				using (new Analytics( "sje2fq26wnnk8c2kzflf"))
-#else
-				using (new Analytics("c8ndqrrl7f0twbf2s6cv"))
-#endif
-				{
-					try
-					{
-						Application.Run();
-					}
-					catch (System.AccessViolationException nasty)
-					{
-						Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-						System.Environment.FailFast("AccessViolationException");
-					}
+			        Application.Idle += Startup;
 
-					Settings.Default.Save();
 
-					Logger.ShutDown();
-				}
 
-				if (_projectContext != null)
-					_projectContext.Dispose();
-			}
+			        L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+
+			        try
+			        {
+				        Application.Run();
+			        }
+			        catch (System.AccessViolationException nasty)
+			        {
+				        Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+				        System.Environment.FailFast("AccessViolationException");
+			        }
+
+			        Settings.Default.Save();
+
+			        Logger.ShutDown();
+
+
+			        if (_projectContext != null)
+				        _projectContext.Dispose();
+		        }
+	        }
 			finally
 			{
 				ReleaseMutexForBloom();
