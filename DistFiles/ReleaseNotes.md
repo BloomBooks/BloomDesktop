@@ -1,6 +1,7 @@
 ## 0.9.83 10 June 2013
 * Fix: Stylesheets references are now ordered when saved to disk (were previously ordered within bloom)
 * Fix: Front/Back Mater (XMatter) css now saved with the book on disk (for a post-bloom future)
+* Improve BloomPack Install responsiveness.
 
 ## 0.9.82 7 June 2013
 * Fix: If you add an large image and then later crop it, you didn't see the crop on the page until you restarted Bloom.
