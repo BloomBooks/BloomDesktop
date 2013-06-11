@@ -33,8 +33,9 @@
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._message = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._startupTimer = new System.Windows.Forms.Timer(this.components);
 			this._errorImage = new System.Windows.Forms.PictureBox();
+			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
+			this._startupTimer = new System.Windows.Forms.Timer(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._errorImage)).BeginInit();
 			this.SuspendLayout();
@@ -64,19 +65,15 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._message.Enabled = false;
 			this._message.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this._message.Location = new System.Drawing.Point(96, 12);
 			this._message.Multiline = true;
 			this._message.Name = "_message";
 			this._message.ReadOnly = true;
-			this._message.Size = new System.Drawing.Size(267, 83);
+			this._message.Size = new System.Drawing.Size(267, 0);
 			this._message.TabIndex = 2;
 			this._message.TabStop = false;
-			// 
-			// _startupTimer
-			// 
-			this._startupTimer.Enabled = true;
-			this._startupTimer.Tick += new System.EventHandler(this._startupTimer_Tick);
 			// 
 			// _errorImage
 			// 
@@ -88,6 +85,18 @@
 			this._errorImage.TabIndex = 3;
 			this._errorImage.TabStop = false;
 			this._errorImage.Visible = false;
+			// 
+			// _backgroundWorker
+			// 
+			this._backgroundWorker.WorkerReportsProgress = true;
+			this._backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._backgroundWorker_DoWork);
+			this._backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this._backgroundWorker_ProgressChanged);
+			this._backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this._backgroundWorker_RunWorkerCompleted);
+			// 
+			// _startupTimer
+			// 
+			this._startupTimer.Enabled = true;
+			this._startupTimer.Tick += new System.EventHandler(this._startupTimer_Tick);
 			// 
 			// BloomPackInstallDialog
 			// 
@@ -116,7 +125,8 @@
 		private System.Windows.Forms.PictureBox pictureBox1;
 		private System.Windows.Forms.Button _okButton;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _message;
-		private System.Windows.Forms.Timer _startupTimer;
 		private System.Windows.Forms.PictureBox _errorImage;
+		private System.ComponentModel.BackgroundWorker _backgroundWorker;
+		private System.Windows.Forms.Timer _startupTimer;
 	}
 }
