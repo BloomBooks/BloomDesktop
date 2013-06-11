@@ -32,6 +32,7 @@ namespace Bloom
 		{
 			InitializeComponent();
 			_versionInfo.Text = Shell.GetVersionInfo();
+			_feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
 		}
 
 		private void _fadeOutTimer_Tick(object sender, EventArgs e)
