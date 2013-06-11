@@ -79,6 +79,10 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
+    <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\DesktopAnalytics.0.2.9\lib\DesktopAnalytics.dll</HintPath>
+    </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
     </Reference>
