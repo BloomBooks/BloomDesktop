@@ -140,7 +140,7 @@ namespace Bloom.web
 			foreach (BookCollection collection in list)
 			{
 				reply.AppendFormat("<li class='collectionGroup'><h2>{0}</h2><ul class='collection'>", collection.Name);
-				reply.Append(GetBookListItems(collection.GetBooks()));
+				reply.Append(GetBookListItems(collection.GetBookInfos()));
 				reply.AppendFormat(@"</ul></li>");
 			}
 			info.WriteCompleteOutput(reply.ToString());
@@ -148,27 +148,27 @@ namespace Bloom.web
 
 		private void GetLibraryBooks(IRequestInfo info)
 		{
-			var books = _booksInProjectLibrary.GetBooks();
+			var books = _booksInProjectLibrary.GetBookInfos();
 			info.WriteCompleteOutput(GetBookListItems(books));
 		}
 
-		private static string GetBookListItems(IEnumerable<Book.Book> books)
+		private static string GetBookListItems(IEnumerable<Book.BookInfo> bookInfos)
 		{
 			var reply = new StringBuilder();
-			if (books.Count() == 0)
+			if (bookInfos.Count() == 0)
 			{
 				reply.Append("<!--No Books -->");
 			}
-			foreach (var book in books)
+			foreach (var bookInfo in bookInfos)
 			{
 				//var pathRoot = Path.GetPathRoot(book.ThumbnailPath);
 				//var thumbnailPath = book.ThumbnailPath.Replace(pathRoot, pathRoot.Replace(":",""));
-				var thumbnailPath = "thumbnails/"+book.ThumbnailPath;
+				var thumbnailPath = "";//TODO "thumbnails/" + bookInfo.ThumbnailPath;
 
 				reply.AppendFormat(
 					@"<li class='bookLI'> <img class='book' src='{0}'></img><div class='bookTitle'>{1}</div>
 						</li>",
-					thumbnailPath, book.Title);
+					thumbnailPath, bookInfo.QuickTitleUserDisplay);
 			}
 			return reply.ToString();
 		}

@@ -43,3 +43,23 @@ build/Palaso.BuildTasks.dll
 packages/*.*
 copy*.*
 Copy*.bat
+*.orig
+*.ncrunchsolution
+Mercurial/
+Presentations/
+packages/
+videos
+screenshots/
+MercurialExtensions/
+WebSite/
+*.suo
+*.psess
+lib/dotnet/Palaso*.*
+lib/dotnet/Chorus*.*
+DistFiles/exiftool.exe
+Copy*.bat
+lib/wkhtmltopdf/*
+.nuget/NuGet.exe
+LibChorus.*
+build/Palaso.BuildTasks.dll
+lib/failed update of AeroWizard Modified for dotnet 4 client/*

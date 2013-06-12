@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Xml;
 using Bloom.Collection;
@@ -252,11 +254,11 @@ namespace Bloom.Book
 		{
 			DataSet data = GartherDataItemsFromCollectionSettings(_collectionSettings);
 
-			// The first encountered value for data-book/data-library wins... so the rest better be read-only to the user, or they're in for some frustration!
+			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom);
-			SendDataToDebugConsole(data);
+//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
 			UpdateTitle(data);
@@ -315,7 +317,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// walk throught the sourceDom, collecting up values from elements that have data-book or data-library attributes.
+		/// walk throught the sourceDom, collecting up values from elements that have data-book or data-collection attributes.
 		/// </summary>
 		private void GatherDataItemsFromXElement(DataSet data, XmlNode sourceElement
 			/* can be the whole sourceDom or just a page */)
@@ -323,19 +325,23 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library)]", elementName);
+				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection)]", elementName);
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
-					bool isLibrary = false;
+					bool isCollectionValue = false;
 
 					string key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
 					{
-						key = node.GetAttribute("data-library").Trim();
-						isLibrary = true;
+						key = node.GetAttribute("data-collection").Trim();
+						if (key == String.Empty)
+						{
+							key = node.GetAttribute("data-library").Trim(); //the old (pre-version 1) name of collections was 'library'
+						}
+						isCollectionValue = true;
 					}
 
 					string value = node.InnerXml.Trim(); //may contain formatting
@@ -366,7 +372,7 @@ namespace Bloom.Book
 						{
 							var t = new MultiTextBase();
 							t.SetAlternative(lang, value);
-							data.TextVariables.Add(key, new DataItem(t, isLibrary));
+							data.TextVariables.Add(key, new NamedMutliLingualValue(t, isCollectionValue));
 						}
 						else if (!data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
 						{
@@ -393,15 +399,22 @@ namespace Bloom.Book
 		{
 			try
 			{
-				string query = String.Format("//{0}[(@data-book or @data-library)]", elementName);
+				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
 				XmlNodeList nodesOfInterest = targetDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					string key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
-						key = node.GetAttribute("data-library").Trim();
-							//"library" is the old name for what is now "collection"
+					{
+						key = node.GetAttribute("data-collection").Trim();
+						if(key==string.Empty)
+						{
+							key = node.GetAttribute("data-library").Trim();
+								//"library" is the old name for what is now "collection"
+						}
+					}
+
 					if (!String.IsNullOrEmpty(key) && data.TextVariables.ContainsKey(key))
 					{
 						if (node.Name.ToLower() == "img")
@@ -528,7 +541,7 @@ namespace Bloom.Book
 			var data = new DataSet();
 			GatherDataItemsFromXElement(data, _dom.RawDom);
 			var metadata = new Metadata();
-			DataItem d;
+			NamedMutliLingualValue d;
 			if (data.TextVariables.TryGetValue("copyright", out d))
 			{
 				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
@@ -610,7 +623,7 @@ namespace Bloom.Book
 
 		private void UpdateTitle(DataSet data)
 		{
-			DataItem title;
+			NamedMutliLingualValue title;
 
 			if (data.TextVariables.TryGetValue("bookTitle", out title))
 			{
@@ -645,5 +658,10 @@ namespace Bloom.Book
 			Set("contentLanguage2", language2Code,false);
 			Set("contentLanguage3", language3Code, false);
 		}
+
+//        public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
+//        {
+//            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
+//        }
 	}
 }

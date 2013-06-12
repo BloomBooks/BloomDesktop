@@ -49,6 +49,10 @@ namespace Bloom.Publish
 					_problemLabel.Text = LocalizationManager.GetString("PublishTab.AdobeReaderControl.UnknownError", "Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\r\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\r\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.");
 				}
 				_problemLabel.Visible = _problemPicture.Visible = true;
+				if (this.Controls.Contains(this._adobeReader))//this actually gets in before the error
+				{
+					this.Controls.Remove(this._adobeReader);
+				}
 				_adobeReader = null;
 				Enabled = false;
 				return false;

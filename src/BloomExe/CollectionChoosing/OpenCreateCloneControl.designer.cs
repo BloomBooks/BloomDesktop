@@ -222,7 +222,7 @@ namespace Bloom.CollectionChoosing
 			this.label1.TabIndex = 24;
 			this.label1.Tag = "sendreceive";
 			this.label1.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
-	"ese red buttons to copy their collection to you computer.\r\nLater, use Send/Recei" +
+	"ese red buttons to copy their collection to your computer.\r\nLater, use Send/Recei" +
 	"ve to share your work back with them.";
 			//
 			// _lookingForSourceCollectionsHtml
@@ -248,7 +248,7 @@ namespace Bloom.CollectionChoosing
 			this._readMoreLink.AutoSize = true;
 			this._readMoreLink.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._readMoreLink, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._readMoreLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._readMoreLink, "This opens the Chorus Help to learn more about send/receive.");
 			this._L10NSharpExtender.SetLocalizingId(this._readMoreLink, "OpenCreateNewCollectionsDialog.ReadMoreLink");
 			this._readMoreLink.Location = new System.Drawing.Point(363, 210);
 			this._readMoreLink.Margin = new System.Windows.Forms.Padding(3, 15, 3, 0);

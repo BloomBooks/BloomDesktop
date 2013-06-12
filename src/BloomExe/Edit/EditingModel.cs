@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
+using DesktopAnalytics;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -116,8 +117,8 @@ namespace Bloom.Edit
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
 				_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
 				_view.UpdatePageList(false);
-				Logger.WriteEvent("DeletePage");
-				UsageReporter.SendNavigationNotice("DeletePage");
+				Logger.WriteEvent("Delete Page");
+				Analytics.Track("Delete Page");
 			}
 			catch (Exception error)
 			{
@@ -135,8 +136,8 @@ namespace Bloom.Edit
 			info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
 			{
-				UsageReporter.SendNavigationNotice("RelocatePage");
-				Logger.WriteEvent("RelocatePage");
+				Analytics.Track("Relocate Page");
+				Logger.WriteEvent("Relocate Page");
 			}
 		}
 
@@ -145,7 +146,7 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
-			UsageReporter.SendNavigationNotice("InsertTemplatePage");
+			Analytics.Track("Insert Template Page");
 			Logger.WriteEvent("InsertTemplatePage");
 		}
 
@@ -206,7 +207,7 @@ namespace Bloom.Edit
 				if (_contentLanguages.Count() == 0)
 				{
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
-															  _collectionSettings.GetVernacularName("en"))
+															  _collectionSettings.GetLanguage1Name("en"))
 											{Locked = true, Selected = true});
 
 					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
@@ -297,7 +298,7 @@ namespace Bloom.Edit
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 
 			Logger.WriteEvent("ChangingContentLanguages");
-			UsageReporter.SendNavigationNotice("ChangingContentLanguages");
+			Analytics.Track("Change Content Languages");
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -412,7 +413,7 @@ namespace Bloom.Edit
 
 				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
-				UsageReporter.SendNavigationNotice("ChangePicture");
+				Analytics.Track("Change Picture");
 				Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
 
 			}

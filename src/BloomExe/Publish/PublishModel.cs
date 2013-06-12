@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -200,13 +202,18 @@ namespace Bloom.Publish
 							throw new ArgumentOutOfRangeException();
 					}
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
-														 _collectionSettings.GetVernacularName("en"), portion);
+														 _collectionSettings.GetLanguage1Name("en"), portion);
 					dlg.FileName = suggestedName;
 					dlg.Filter = "PDF|*.pdf";
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 						File.Copy(PdfFilePath, dlg.FileName, true);
+						Analytics.Track("Save PDF", new Dictionary<string, string>()
+							{
+								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
+								{"Layout", PageLayout.ToString()}
+							});
 					}
 				}
 			}

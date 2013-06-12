@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -277,7 +278,6 @@ namespace Bloom.Edit
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
 				Logger.WriteEvent("Entered Edit Tab");
-				UsageReporter.SendNavigationNotice("Entered Edit Tab");
 			}
 			else
 			{
@@ -660,7 +660,7 @@ namespace Bloom.Edit
 					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","LayoutOnlyInPublish","This option is only available in the Publish tab.");
+						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
 					}
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);

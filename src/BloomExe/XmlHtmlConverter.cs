@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Xsl;
+using Bloom.Book;
 using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
@@ -15,25 +17,25 @@ namespace Bloom
 {
 	public class XmlHtmlConverter
 	{
-
 		/// <summary>
 		///
 		/// </summary>
 		/// <param name="content"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtmlFile(string path)
+		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration)
 		{
-			return GetXmlDomFromHtml(File.ReadAllText(path));
+			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary>
 		///
 		/// </summary>
 		/// <param name="content"></param>
+		/// <param name="includeXmlDeclaration"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtml(string content)
+		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration)
 		{
 			var dom = new XmlDocument();
 			//hack. tidy deletes <span data-libray='somethingImportant'></span>
@@ -49,7 +51,7 @@ namespace Bloom
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;
-					tidy.WrapAt = 0;// prevents textarea wrapping.
+					tidy.WrapAt = 0; // prevents textarea wrapping.
 					tidy.AddTidyMetaElement = false;
 					tidy.OutputXml = true;
 					tidy.CharacterEncoding = EncodingType.Utf8;
@@ -57,6 +59,8 @@ namespace Bloom
 					tidy.OutputCharacterEncoding = EncodingType.Utf8;
 					tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
 					//maybe try this? tidy.Markup = true;
+
+					tidy.AddXmlDeclaration = includeXmlDeclaration;
 
 					//NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
 					tidy.MergeSpans = AutoBool.No;
@@ -72,7 +76,8 @@ namespace Bloom
 					var newContents = tidy.Save();
 					try
 					{
-						newContents = newContents.Replace("&nbsp;", "&#160;"); //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
+						newContents = newContents.Replace("&nbsp;", "&#160;");
+							//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
 						newContents = newContents.Replace("REMOVEME", "");
 						dom.LoadXml(newContents);
 					}
@@ -88,13 +93,19 @@ namespace Bloom
 				//It's a mystery but http://jira.palaso.org/issues/browse/BL-46 was reported by several people on Win XP, even though a look at html tidy dispose indicates that it does dispose (and thus close) the stream.
 				// Therefore, I'm moving the dispose to an explict call so that I can catch the error and ignore it, leaving an extra file in Temp.
 
-				temp.Dispose(); //enhance... could make a version of this which collects up any failed deletes and re-attempts them with each call to this
+				temp.Dispose();
+					//enhance... could make a version of this which collects up any failed deletes and re-attempts them with each call to this
 			}
 			catch (Exception error)
 			{
 				//swallow
 				Debug.Fail("Repro of http://jira.palaso.org/issues/browse/BL-46 ");
 			}
+
+
+			//this is a hack... each time we write the content, we add a new <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			//so for now, we remove it when we read it in. It'll get added again when we write it out
+			RemoveAllContentTypesMetas(dom);
 
 			return dom;
 		}
@@ -112,7 +123,7 @@ namespace Bloom
 				tidy.Quiet = true;
 				tidy.AddTidyMetaElement = false;
 				tidy.OutputXml = true;
-				tidy.DocType = DocTypeMode.Omit;//when it supports html5, then we will let it out it
+				tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
 
 				using (var log = new MemoryStream())
 				{
@@ -149,7 +160,8 @@ namespace Bloom
 				}
 			}
 
-			foreach (XmlElement node in dom.SafeSelectNodes("//p")) //without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
+			foreach (XmlElement node in dom.SafeSelectNodes("//p"))
+				//without  this, an empty paragraph suddenly takes over the subsequent elements. Browser sees <p></p> and thinks... let's just make it <p>, shall we? Stupid optional-closing language, html is....
 			{
 				if (!node.HasChildNodes)
 				{
@@ -184,21 +196,58 @@ namespace Bloom
 
 		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
 		{
+
+			var initialOutputPath = Path.GetTempFileName();
+
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
 			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
 			//I know... bizarre
-			typeof(XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(settings, XmlOutputMethod.Html);
+			typeof (XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance)
+									  .SetValue(settings, XmlOutputMethod.Html);
 
-			using (var writer = XmlWriter.Create(tempPath, settings))
+
+			using (var writer = XmlWriter.Create(initialOutputPath, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
+
 			//now insert the non-xml-ish <!doctype html>
+			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
+
+			//now re-write, indented nicely
+			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
+			{
+				tidy.ShowWarnings = false;
+				tidy.Quiet = true;
+				tidy.AddTidyMetaElement = false;
+				tidy.OutputXml = false;
+				tidy.OutputHtml = true;
+				tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+				tidy.MergeDivs = AutoBool.No;
+				tidy.MergeSpans = AutoBool.No;
+				tidy.PreserveEntities = true;
+				tidy.JoinStyles = false;
+				tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
+				tidy.WrapAt = 9999;
+				tidy.IndentSpaces = 4;
+				tidy.CharacterEncoding = EncodingType.Utf8;
+				tidy.CleanAndRepair();
+				tidy.Save(tempPath);
+			}
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
+			File.Delete(initialOutputPath);
 			return tempPath;
+		}
+
+		public static void RemoveAllContentTypesMetas(XmlDocument dom)
+		{
+			foreach (XmlElement n in dom.SafeSelectNodes("//head/meta[@http-equiv='Content-Type']"))
+			{
+				n.ParentNode.RemoveChild(n);
+			}
 		}
 	}
 }

@@ -13,7 +13,6 @@ namespace Bloom.CollectionCreating
 		{
 			InitializeComponent();
 			_lookupISOControl.ISOCode = string.Empty;
-			_selectedLanguage.Text = string.Empty;
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
@@ -22,10 +21,9 @@ namespace Bloom.CollectionCreating
 				return;
 
 			_collectionInfo.Language1Iso639Code = _lookupISOControl.ISOCode;
-			_collectionInfo.Language1Name = _lookupISOControl.ISOCodeAndName==null? string.Empty :_lookupISOControl.ISOCodeAndName.Name;
+			_collectionInfo.Language1Name = _lookupISOControl.LanguageInfo == null ? string.Empty : _lookupISOControl.LanguageInfo.DesiredName;
 
-			_setNextButtonState(this, _lookupISOControl.ISOCodeAndName != null);
-			_selectedLanguage.Text = _collectionInfo.Language1Name;
+			_setNextButtonState(this, _lookupISOControl.LanguageInfo != null);
 
 		}
 
@@ -37,12 +35,12 @@ namespace Bloom.CollectionCreating
 		}
 		public void NowVisible()
 		{
-			_setNextButtonState(this, _lookupISOControl.ISOCodeAndName!=null);
+			_setNextButtonState(this, _lookupISOControl.LanguageInfo != null);
 		}
 
 		private void _lookupISOControl_Leave(object sender, EventArgs e)
 		{
-			_setNextButtonState(this, _lookupISOControl.ISOCodeAndName != null);
+			_setNextButtonState(this, _lookupISOControl.LanguageInfo != null);
 		}
 	}
 }

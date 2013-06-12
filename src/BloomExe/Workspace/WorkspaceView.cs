@@ -36,6 +36,7 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private Sparkle _sparkleApplicationUpdater;
 		private readonly LocalizationManager _localizationManager;
+		public static float DPIOfThisAccount;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -225,6 +226,20 @@ namespace Bloom.Workspace
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
+
+				_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
+				{
+					From = _previouslySelectedControl,
+					To = null
+				});
+
+				_selectedTabChangedEvent.Raise(new TabChangedDetails()
+				{
+					From = _previouslySelectedControl,
+					To = null
+				});
+
+				_previouslySelectedControl = null;
 				if (_model.CloseRequested())
 				{
 					Invoke(CloseCurrentProject);
@@ -252,6 +267,8 @@ namespace Bloom.Workspace
 		{
 			CurrentTabView = view as IBloomTabArea;
 			//SetTabVisibility(_infoTab, false); //we always hide this after it is used
+
+
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -288,6 +305,7 @@ namespace Bloom.Workspace
 			TabStripButton btn = (TabStripButton)e.SelectedTab;
 			_tabStrip.BackColor = btn.BarColor;
 			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
+			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
 		}
 
@@ -369,12 +387,14 @@ namespace Bloom.Workspace
 			Graphics g = this.CreateGraphics();
 			try
 			{
+
 				var dx = g.DpiX;
+				DPIOfThisAccount = dx;
 				var dy = g.DpiY;
 				if(dx!=96 || dy!=96)
 				{
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-						"The \"Custom text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Please change the DPI back to the default setting, using the 'Display' Control Panel.", dx);
+						"The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.", dx);
 				}
 			}
 			finally

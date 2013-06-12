@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.1.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">0.9.78.0</prop>
+	<prop type="x-hardlinebreakreplacement">\n</prop>
+  </header>
+  <body>
+	<tu tuid="._creditsMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>About Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="._documentationMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Documentation</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="._releaseNotesMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Release Notes</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="._updateFrontMatterToolStripMenu">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Update Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="._updateThumbnailMenu">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Update Thumbnail</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".deleteMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Delete</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".doChecksAndUpdatesOfAllBooksToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Do Checks and Updates of All Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".openHtmlInBrowserToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Open the Html used to make this PDF, in Browser</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".showEventLogToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Show Event Log</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".showHistoryToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Collection History...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".showNotesToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Collection Notes...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid=".toolStripMenuItem1">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Open Additional Collections Folder</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog.AboutDialogWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>About Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
+	  <tuv xml:lang="en">
+		<seg>The {0} Collection is now ready to use on this computer.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.MustRestartToSee">
+	  <tuv xml:lang="en">
+		<seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Advanced Program Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+	  <tuv xml:lang="en">
+		<seg>Show Experimental Templates (e.g. Picture Dictionary, Calendar)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>(Experimental) Show User Interface Localization Controls</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+	  <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+	  <tuv xml:lang="en">
+		<seg>Use Image Server to reduce memory usage with large images.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+	  <tuv xml:lang="en">
+		<seg>(Experimental) Show Send/Receive Controls</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Book Making</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+	  <tuv xml:lang="en">
+		<seg>Font</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+	  <tuv xml:lang="en">
+		<seg>Front/Back Matter Pack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+	  <tuv xml:lang="en">
+		<seg>About These Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ChangeLink">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+	  <tuv xml:lang="en">
+		<seg>Change...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+	  <note>In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 1</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+	  <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 2</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+	  <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <tuv xml:lang="en">
+		<seg>Language 3</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+	  <tuv xml:lang="en">
+		<seg>About These Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+	  <tuv xml:lang="en">
+		<seg>Vernacular Language</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
+	  <tuv xml:lang="en">
+		<seg>Language 2 (e.g. National Language)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
+	  <tuv xml:lang="en">
+		<seg>Language 3 (e.g. Regional Language)   (Optional)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+	  <tuv xml:lang="en">
+		<seg>Remove</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+	  <tuv xml:lang="en">
+		<seg>Bloom Collection Name</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+	  <tuv xml:lang="en">
+		<seg>Country</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+	  <tuv xml:lang="en">
+		<seg>District</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Project Information</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+	  <tuv xml:lang="en">
+		<seg>Province</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+	  <tuv xml:lang="en">
+		<seg>About These Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.Restart">
+	  <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+	  <tuv xml:lang="en">
+		<seg>Restart</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog._restartMessage">
+	  <tuv xml:lang="en">
+		<seg>Bloom will close and re-open this project with the new settings.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.label1">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Front/Back Matter Pack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.label3">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Province</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.label5">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>District</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.label7">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Country</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.tabPage1">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.tabPage2">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book Making</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.tabPage3">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Project Information</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+	  <tuv xml:lang="en">
+		<seg>Update Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu._updateThumbnail">
+	  <tuv xml:lang="en">
+		<seg>Update Thumbnail</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu.deleteBook">
+	  <tuv xml:lang="en">
+		<seg>Delete Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+	  <tuv xml:lang="en">
+		<seg>Export To XML For InDesign...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+	  <tuv xml:lang="en">
+		<seg>Do Checks and Updates of All Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.showHistory">
+	  <tuv xml:lang="en">
+		<seg>Collection History...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.showNotes">
+	  <tuv xml:lang="en">
+		<seg>Collection Notes...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionTabLabel">
+	  <tuv xml:lang="en">
+		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Collections">
+	  <tuv xml:lang="en">
+		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.ConfirmRecycleDescription">
+	  <tuv xml:lang="en">
+		<seg>The book '{0}'</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+	  <tuv xml:lang="en">
+		<seg>Open Folder on Disk</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.MakeBookUsingThisTemplate">
+	  <tuv xml:lang="en">
+		<seg>Make a book using this template</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Open/CreateCollectionButton">
+	  <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+	  <tuv xml:lang="en">
+		<seg>Other Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SendReceive">
+	  <tuv xml:lang="en">
+		<seg>Send/Receive</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SettingsButton">
+	  <tuv xml:lang="en">
+		<seg>Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+	  <tuv xml:lang="en">
+		<seg>Open Additional Collections Folder</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Vernacular Collection Heading">
+	  <note>The {0} is where we fill in the name of the Vernacular</note>
+	  <tuv xml:lang="en">
+		<seg>{0} Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._addToLibraryButton">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Make a book using this template</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._editBookButton">
+	  <tuv xml:lang="en">
+		<seg>Edit this book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab._makeBloomPackButton">
+	  <tuv xml:lang="en">
+		<seg>Make Bloom Pack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.bookSourceHeading">
+	  <tuv xml:lang="en">
+		<seg>Sources For New Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+	  <tuv xml:lang="en">
+		<seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.hiddenBooksNotice">
+	  <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+	  <tuv xml:lang="en">
+		<seg>Where's the rest?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+	  <tuv xml:lang="en">
+		<seg>More...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.sourcesForNewShellsHeading">
+	  <tuv xml:lang="en">
+		<seg>Sources For New Shells</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.CancelButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;Cancel</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.Finish">
+	  <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+	  <tuv xml:lang="en">
+		<seg>&amp;Finish</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.Next">
+	  <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+	  <tuv xml:lang="en">
+		<seg>&amp;Next</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.OKButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;OK</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Confirm Delete</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ConfirmRecycleDialog._messageLabel">
+	  <note>In your translation, put the {0} placeholder where you want the name of the thing to be deleted to appear.</note>
+	  <tuv xml:lang="en">
+		<seg>{0} will be moved to the Recycle Bin.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ConfirmRecycleDialog.cancelBtn">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>&amp;Cancel</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ConfirmRecycleDialog.deleteBtn">
+	  <tuv xml:lang="en">
+		<seg>&amp;Delete</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
+	  <tuv xml:lang="en">
+		<seg>Open the Html used to make this PDF, in Browser</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.CannotChangeCopyright">
+	  <tuv xml:lang="en">
+		<seg>Sorry, the copyright and license for this book cannot be changed.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.CantPasteImageLocked">
+	  <tuv xml:lang="en">
+		<seg>Sorry, this book is locked down so that images cannot be changed.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ChangeImage">
+	  <tuv xml:lang="en">
+		<seg>Change Image</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Really Delete Page?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;Delete</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
+	  <tuv xml:lang="en">
+		<seg>This page will be permanently removed.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.Edit">
+	  <tuv xml:lang="en">
+		<seg>Edit</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.EditTabLabel">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.FontMissing">
+	  <tuv xml:lang="en">
+		<seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ImageChangeWarning">
+	  <tuv xml:lang="en">
+		<seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.NoImageFoundOnClipboard">
+	  <tuv xml:lang="en">
+		<seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.PageList.Heading">
+	  <tuv xml:lang="en">
+		<seg>Pages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.TemplatePagesList.Heading">
+	  <tuv xml:lang="en">
+		<seg>Template Pages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.2">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>2</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Basic Text &amp; Image</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Credits Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Front Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Image On Bottom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Image in Middle</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Inside Back Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Just Text">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Just Text</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Just an Image</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Outside Back Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Picture &amp; Word</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Title Page">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Title Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._contentLanguagesDropdown">
+	  <tuv xml:lang="en">
+		<seg>Multilingual Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._copyButton">
+	  <tuv xml:lang="en">
+		<seg>Copy</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._cutButton">
+	  <tuv xml:lang="en">
+		<seg>Cut</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._deletePageButton">
+	  <tuv xml:lang="en">
+		<seg>Remove Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._pasteButton">
+	  <tuv xml:lang="en">
+		<seg>Paste</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._undoButton">
+	  <tuv xml:lang="en">
+		<seg>Undo</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.bilingual">
+	  <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+	  <tuv xml:lang="en">
+		<seg>Two Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.copyImageIPMetdataQuestion">
+	  <note>get this after you edit the metadata of an image</note>
+	  <tuv xml:lang="en">
+		<seg>Copy this information to all other pictures in this book?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+	  <tuv xml:lang="en">
+		<seg>This option is only available in the Publish tab.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.monolingual">
+	  <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+	  <tuv xml:lang="en">
+		<seg>One Language</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.noOtherLayouts">
+	  <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+	  <tuv xml:lang="en">
+		<seg>There are no other layout options for this template.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+	  <tuv xml:lang="en">
+		<seg>Picture Intellectual Property Information</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.trilingual">
+	  <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+	  <tuv xml:lang="en">
+		<seg>Three Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>*You may use this space for author/illustrator, or anything else.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Acknowledgments for translated version, in {lang}">
+	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Acknowledgments for translated version, in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
+	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Acknowledgments in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Book title in {lang}">
+	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book title in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Click to Edit Copyright &amp; License">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to Edit Copyright &amp; License</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Click to choose topic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to choose topic</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.The contributions made by writers, illustrators, editors, etc., in {lang}">
+	  <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="FrontMatter.Factory.Use this to acknowledge any funding agencies.">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Use this to acknowledge any funding agencies.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.Help Menu">
+	  <tuv xml:lang="en">
+		<seg>Help</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu._makeASuggestionMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Make a Suggestion</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu._webSiteMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Web Site</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Check For New Version</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.creditsMenuItem">
+	  <tuv xml:lang="en">
+		<seg>About Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Deep Bloom Paper</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.documentationMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Documentation</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.releaseNotesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Release Notes...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.showEventLogMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Show Event Log</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
+	  <tuv xml:lang="en">
+		<seg>InDesign XML Information</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+	  <tuv xml:lang="en">
+		<seg>Don't Show This Again</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A4Landscape">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A4Landscape</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A4Landscape SideBySide">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A4Landscape SideBySide</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A4Landscape SplitAcrossPages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A4Portrait">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A4Portrait</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A5Portrait">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A5Portrait</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A5Portrait BottomAlign">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A5Portrait BottomAlign</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
+	  <tuv xml:lang="en">
+		<seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.ChooseLanguagePage">
+	  <tuv xml:lang="en">
+		<seg>Choose the Main Language For This Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
+	  <tuv xml:lang="en">
+		<seg>Examples: "Health Books", "PNG Animal Stories"</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+	  <tuv xml:lang="en">
+		<seg>What would you like to call this collection?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
+	  <tuv xml:lang="en">
+		<seg>Collection will be created at: {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.FinishPage">
+	  <tuv xml:lang="en">
+		<seg>Ready To Create New Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage">
+	  <tuv xml:lang="en">
+		<seg>Choose the Collection Type</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+	  <tuv xml:lang="en">
+		<seg>Source Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+	  <tuv xml:lang="en">
+		<seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+	  <tuv xml:lang="en">
+		<seg>Vernacular Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+	  <tuv xml:lang="en">
+		<seg>A collection of books in a local language.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.LocationPage">
+	  <tuv xml:lang="en">
+		<seg>Give Language Location</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.LocationPage.Country">
+	  <tuv xml:lang="en">
+		<seg>Country</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.LocationPage.District">
+	  <tuv xml:lang="en">
+		<seg>District</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+	  <tuv xml:lang="en">
+		<seg>These are optional. Bloom will place them in the right places on title page of books you create.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.LocationPage.Province">
+	  <tuv xml:lang="en">
+		<seg>Province</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.NewBookPattern">
+	  <note>The {0} is replaced by the name of the language.</note>
+	  <tuv xml:lang="en">
+		<seg>{0} Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.NewCollectionWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Create New Bloom Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+	  <tuv xml:lang="en">
+		<seg>Unable to create a new collection using that name.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.WelcomePage">
+	  <tuv xml:lang="en">
+		<seg>Welcome To Bloom!</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
+	  <tuv xml:lang="en">
+		<seg>You are almost ready to start making books.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
+	  <tuv xml:lang="en">
+		<seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
+	  <tuv xml:lang="en">
+		<seg>Click 'Next' to get started.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
+	  <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+	  <tuv xml:lang="en">
+		<seg>Bloom Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+	  <tuv xml:lang="en">
+		<seg>Browse for another collection on this computer</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+	  <tuv xml:lang="en">
+		<seg>Copy From Chorus Hub on Local Network</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
+	  <tuv xml:lang="en">
+		<seg>Copy from Internet</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+	  <tuv xml:lang="en">
+		<seg>Copy from USB Drive</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
+	  <tuv xml:lang="en">
+		<seg>Create New Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Open/Create Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
+	  <note>This opens the Chorus Help to learn more about send/receive.</note>
+	  <tuv xml:lang="en">
+		<seg>Read More</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+	  <tuv xml:lang="en">
+		<seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
+	  <tuv xml:lang="en">
+		<seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+	  <tuv xml:lang="en">
+		<seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.AdobeReaderControl.UnknownError">
+	  <tuv xml:lang="en">
+		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.BodyOnlyRadio">
+	  <tuv xml:lang="en">
+		<seg>Booklet Inside Pages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.CoverOnlyRadio">
+	  <tuv xml:lang="en">
+		<seg>Cover Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.OnPagePerPaperRadio">
+	  <note>Instead of making a booklet, just make normal pages</note>
+	  <tuv xml:lang="en">
+		<seg>One page per piece of paper</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.PrintButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;Print...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Publish">
+	  <tuv xml:lang="en">
+		<seg>Publish</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.SaveButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;Save PDF...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Agriculture">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Agriculture</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Animal Stories">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Animal Stories</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Business">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Business</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Community Living">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Community Living</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Culture">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Culture</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Dictionary">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Dictionary</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Environment">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Environment</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Fiction">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Fiction</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Health">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Health</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.How To">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>How To</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Math">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Math</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Non Fiction">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Non Fiction</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Personal Development">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Personal Development</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Primer">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Primer</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Science">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Science</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Spiritual">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Spiritual</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Topics.Tradition">
+	  <note>shows in the topics chooser in the edit tab</note>
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Tradition</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WallCalendar.TitleOfSetupDialog">
+	  <note>This is the dialog used to set up the wall calendar</note>
+	  <tuv xml:lang="en">
+		<seg>Setup</seg>
+	  </tuv>
+	</tu>
+  </body>
+</tmx>

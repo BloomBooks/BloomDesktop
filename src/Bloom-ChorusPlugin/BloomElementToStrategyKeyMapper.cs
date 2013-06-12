@@ -27,7 +27,10 @@ namespace Bloom_ChorusPlugin
 			if (Matches(element, "self::div[contains(@class,'bloom-page')]"))
 				return "PageDiv";
 
-			if (Matches(element, "self::div[@data-library and @lang]"))
+			if (Matches(element, "self::div[@data-collection and @lang]"))
+				return "LibraryDataItem";
+
+			if (Matches(element, "self::div[@data-library and @lang]")) //"library" was the pre-version 1 name for what is now "collection"
 				return "LibraryDataItem";
 
 			if (Matches(element, "self::div[@data-book and @lang]"))

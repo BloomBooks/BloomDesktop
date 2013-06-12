@@ -158,5 +158,17 @@ namespace Bloom
 			Size = new Size(1024, 586);
 		}
 
+		/// <summary>
+		/// we let the Program call this after it closes the splash screen
+		/// </summary>
+		public void ReallyComeToFront()
+		{
+			//try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
+			TopMost = true;
+			Focus();
+			BringToFront();
+			TopMost = false;
+		}
+
 	}
 }

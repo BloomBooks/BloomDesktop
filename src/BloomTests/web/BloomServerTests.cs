@@ -22,7 +22,7 @@ namespace BloomTests.web
 		private TemporaryFolder _folder;
 		private FileLocator _fileLocator;
 		private Mock<BookCollection> _vernacularLibraryCollection;
-		private List<Bloom.Book.Book> _bookList;
+		private List<Bloom.Book.BookInfo> _bookInfoList;
 		private Mock<SourceCollectionsList> _storeCollectionList;
 		private Mock<CollectionSettings> _librarySettings;
 
@@ -37,8 +37,8 @@ namespace BloomTests.web
 //				BookStorageFactory, null, null, new CreateFromSourceBookCommand(), new EditBookCommand());
 
 			_vernacularLibraryCollection = new Moq.Mock<BookCollection>();
-			_bookList = new List<Bloom.Book.Book>();
-			_vernacularLibraryCollection.Setup(x => x.GetBooks()).Returns(_bookList);
+			_bookInfoList = new List<Bloom.Book.BookInfo>();
+			_vernacularLibraryCollection.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
 			_storeCollectionList = new Mock<SourceCollectionsList>();
 			_storeCollectionList.Setup(x => x.GetSourceCollections()).Returns(() => GetStoreCollections());
 			_librarySettings = new Mock<CollectionSettings>();
@@ -50,24 +50,24 @@ namespace BloomTests.web
 		{
 			Mock<BookCollection> c = new Mock<BookCollection>();
 			c.Setup(x => x.Name).Returns("alpha");
-			c.Setup(x => x.GetBooks()).Returns(_bookList);
+			c.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
 			yield return c.Object;
 			Mock<BookCollection> b = new Mock<BookCollection>();
 			b.Setup(x => x.Name).Returns("beta");
-			b.Setup(x => x.GetBooks()).Returns(_bookList);
+			b.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
 			yield return b.Object;
 		}
 
 		Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
 		{
-			return new Bloom.Book.Book(storage, true, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"), Language1Iso639Code = "xyz" }), null,
+			return new Bloom.Book.Book(new BookInfo(storage.FolderPath, true),  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"), Language1Iso639Code = "xyz" }), null,
 													 new PageSelection(),
 													 new PageListChangedEvent(), new BookRefreshEvent());
 		}
 
 		BookStorage BookStorageFactory(string folderPath)
 		{
-			return new BookStorage(folderPath, _fileLocator, new BookRenamedEvent());
+			return new BookStorage(folderPath, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
 		}
 
 		[Test]
@@ -89,7 +89,7 @@ namespace BloomTests.web
 		{
 			var b = CreateBloomServer();
 			var transaction = new PretendRequestInfo("http://localhost:8089/bloom/libraryContents");
-			_bookList.Clear();
+			_bookInfoList.Clear();
 			b.MakeReply(transaction);
 			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasNoMatchForXpath("//li");
 		}
@@ -117,11 +117,11 @@ namespace BloomTests.web
 		 */
 		private void AddBook(string id, string title)
 		{
-			var b = new Moq.Mock<Bloom.Book.Book>();
+			var b = new Moq.Mock<Bloom.Book.BookInfo>();
 			b.SetupGet(x => x.Id).Returns(id);
-			b.SetupGet(x => x.Title).Returns(title);
+			b.SetupGet(x => x.QuickTitleUserDisplay).Returns(title);
 			b.SetupGet(x => x.FolderPath).Returns(Path.GetTempPath);//TODO. this works at the moment, cause we just need some folder which exists
-			_bookList.Add(b.Object);
+			_bookInfoList.Add(b.Object);
 		}
 	}
 

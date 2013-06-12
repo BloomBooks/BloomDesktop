@@ -83,6 +83,7 @@ namespace Bloom.Edit
 		}
 		public void SetItems(IEnumerable<IPage> items)
 		{
+			_listView.ListViewItemSorter = null;
 			SuspendLayout();
 			_listView.BeginUpdate();
 			_listView.Items.Clear();
@@ -100,6 +101,7 @@ namespace Bloom.Edit
 
 				AddOnePage(page, ref pageNumber);
 			}
+			_listView.ListViewItemSorter = new SortListViewItemByIndex();
 			_listView.EndUpdate();
 			ResumeLayout();
 		}

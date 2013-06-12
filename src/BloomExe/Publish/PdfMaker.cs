@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.ToPalaso;
+using Bloom.Workspace;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
@@ -86,23 +88,19 @@ namespace Bloom.Publish
 				 */
 				string exePath = FindWkhtmlToPdf();
 
-				//About the --zoom parameter. It's a hack to get the pages chopped properly.
-				//Notes: Remember, a page border *will make the page that much larger!*
-				//		One way to see what's happening without a page border is to make the marginBox visible,
-				//		then scroll through and you can see it moving up (if the page (zoom factor) is too small) or down (if page (zoom factor) is too large)
-				//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw
-				//		that the page was too big, leading to an extra page at the end.
-				//		Experimentation showed that 1.041 kept the marge box steady.
 				var arguments = string.Format(
-					"--no-background "+ //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+					"--no-background " +
+					//without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
 					" --print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
 #if DEBUG
-					" --debug-javascript "+
+					" --debug-javascript " +
 #endif
+
 					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
-					"--disable-smart-shrinking --zoom 1.041 \"{0}\" \"{1}\"",
+					"--disable-smart-shrinking --zoom {0} \"{1}\" \"{2}\"",
+					GetZoomBasedOnScreenDPISettings().ToString(),
 					Path.GetFileName(tempInput.Path), tempOutput.Path);
 
 				ExecutionResult result = null;
@@ -179,6 +177,31 @@ namespace Bloom.Publish
 
 		}
 
+		//About the --zoom parameter. It's a hack to get the pages chopped properly.
+		//Notes: Remember, a page border *will make the page that much larger!*
+		//		One way to see what's happening without a page border is to make the marginBox visible,
+		//		then scroll through and you can see it moving up (if the page (zoom factor) is too small) or down (if page (zoom factor) is too large)
+		//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw
+		//		that the page was too big, leading to an extra page at the end.
+		//		Experimentation showed that 1.041 kept the marge box steady.
+
+		private double GetZoomBasedOnScreenDPISettings()
+		{
+			if (WorkspaceView.DPIOfThisAccount == 96)
+			{
+				return 1.041;
+			}
+			if (WorkspaceView.DPIOfThisAccount == 120)
+			{
+				return 1.249;
+			}
+			if (WorkspaceView.DPIOfThisAccount == 144)
+			{
+				return 1.562;
+			}
+			return 1.04;
+		}
+
 		private string FindWkhtmlToPdf()
 		{
 			var exePath = Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, "wkhtmltopdf");
@@ -221,6 +244,9 @@ namespace Bloom.Publish
 					break;
 				case "A6":
 					pageSize = PageSize.A5;
+					break;
+				case "B5":
+					pageSize = PageSize.B5;
 					break;
 				case "Letter":
 					pageSize = PageSize.Letter;//TODO... what's reasonable?

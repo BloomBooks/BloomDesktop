@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using Chorus;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -34,6 +34,8 @@ namespace Bloom
 #else
 		private static Mutex _onlyOneBloomMutex;
 		private static DateTime _earliestWeShouldCloseTheSplashScreen;
+		private static SplashScreen _splashForm;
+		private static bool _alreadyHadSplashOnce;
 #endif
 
 		[STAThread]
@@ -45,11 +47,6 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
-				if (!GrabMutexForBloom())
-					return;
-
-				OldVersionCheck();
-
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
 				{
@@ -60,54 +57,81 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
-				SetUpErrorHandling();
+#if xDEBUG
+				using (new Analytics("sje2fq26wnnk8c2kzflf",true))
 
-				_applicationContainer = new ApplicationContainer();
+#else
+				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
-				SetUpLocalization();
-				Logger.Init();
+				//default is to allow tracking
+				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
 
+				using (new Analytics("c8ndqrrl7f0twbf2s6cv", allowTracking))
 
-				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
-				{
-					using (var dlg = new BloomPackInstallDialog(args[0]))
+#endif
+				 {
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 					{
-						dlg.ShowDialog();
+						using (var dlg = new BloomPackInstallDialog(args[0]))
+						{
+							dlg.ShowDialog();
+						}
+						return;
 					}
+
+
+#if !DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
+				if (!GrabMutexForBloom())
 					return;
+#endif
+
+					OldVersionCheck();
+
+
+
+					SetUpErrorHandling();
+
+					_applicationContainer = new ApplicationContainer();
+
+					SetUpLocalization();
+					Logger.Init();
+
+
+
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+					{
+						Settings.Default.MruProjects.AddNewPath(args[0]);
+					}
+					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
+
+					Settings.Default.Save();
+
+					Browser.SetUpXulRunner();
+
+					Application.Idle += Startup;
+
+
+
+					L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+
+					try
+					{
+						Application.Run();
+					}
+					catch (System.AccessViolationException nasty)
+					{
+						Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+						System.Environment.FailFast("AccessViolationException");
+					}
+
+					Settings.Default.Save();
+
+					Logger.ShutDown();
+
+
+					if (_projectContext != null)
+						_projectContext.Dispose();
 				}
-				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
-				{
-					Settings.Default.MruProjects.AddNewPath(args[0]);
-				}
-				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(7);
-				Splasher.Show();
-
-				SetUpReporting();
-				Settings.Default.Save();
-
-				Browser.SetUpXulRunner();
-
-				StartUpShellBasedOnMostRecentUsedIfPossible();
-				Application.Idle += new EventHandler(Application_Idle);
-
-				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
-				try
-				{
-					Application.Run();
-				}
-				catch (System.AccessViolationException nasty)
-				{
-					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					System.Environment.FailFast("AccessViolationException");
-				}
-
-				Settings.Default.Save();
-
-				Logger.ShutDown();
-
-				if (_projectContext != null)
-					_projectContext.Dispose();
 			}
 			finally
 			{
@@ -115,14 +139,50 @@ namespace Bloom
 			}
 		}
 
-
-
-		private static void Application_Idle(object sender, EventArgs e)
+		private static void Startup(object sender, EventArgs e)
 		{
-			if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
+			Application.Idle -= Startup;
+			CareForSplashScreenAtIdleTime(null, null);
+			Application.Idle += new EventHandler(CareForSplashScreenAtIdleTime);
+			StartUpShellBasedOnMostRecentUsedIfPossible();
+		}
+
+
+		private static void CareForSplashScreenAtIdleTime(object sender, EventArgs e)
+		{
+			//this is a hack... somehow this is getting called again, haven't been able to track down how
+			//to reproduce, remove the user settings so that we get first-run behavior. Instead of going through the
+			//wizard, cancel it and open an existing project. After the new collectino window is created, this
+			//fires *again* and would try to open a new splashform
+			if (_alreadyHadSplashOnce)
 			{
-				Application.Idle -= new EventHandler(Application_Idle);
-				Splasher.Close();
+				Application.Idle -= CareForSplashScreenAtIdleTime;
+				return;
+			}
+			if(_splashForm==null)
+				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
+			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
+			{
+				_alreadyHadSplashOnce = true;
+				Application.Idle -= CareForSplashScreenAtIdleTime;
+				CloseSplashScreen();
+				if (_projectContext!=null && _projectContext.ProjectWindow != null)
+				{
+					var shell = _projectContext.ProjectWindow as Shell;
+					if (shell != null)
+					{
+						shell.ReallyComeToFront();
+					}
+				}
+			}
+		}
+
+		private static void CloseSplashScreen()
+		{
+			if (_splashForm != null)
+			{
+				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
+				_splashForm = null; //but we are done with it
 			}
 		}
 
@@ -209,7 +269,6 @@ namespace Bloom
 			//If that fails, we put up a dialog and wait a number of seconds,
 			//while we wait for the mutex to come free.
 
-
 			string mutexId = "bloom";
 			bool mutexAcquired = false;
 			try
@@ -226,6 +285,7 @@ namespace Bloom
 			{
 				//that's ok, we'll get it below
 			}
+
 
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{
@@ -272,7 +332,7 @@ namespace Bloom
 			if (Settings.Default.MruProjects.Latest == null  ||
 				!OpenProjectWindow(Settings.Default.MruProjects.Latest))
 			{
-				//since the message pump hasn't started yet, show the UI for choosing when it is
+				//since the message pump hasn't started yet, show the UI for choosing when it is //review june 2013... is it still not going, with the current splash screen?
 				Application.Idle += ChooseAnotherProject;
 			}
 		}
@@ -298,6 +358,9 @@ namespace Bloom
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 
 				_projectContext.ProjectWindow.Show();
+
+				if(_splashForm!=null)
+					_splashForm.StayAboveThisWindow(_projectContext.ProjectWindow);
 
 				return true;
 			}
@@ -481,27 +544,18 @@ namespace Bloom
 			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloom.palaso.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
+
+			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 		}
 
-
-		private static void SetUpReporting()
-		{
-			if (Settings.Default.Reporting == null)
-			{
-				Settings.Default.Reporting = new ReportingSettings();
-				Settings.Default.Save();
-			}
-			UsageReporter.Init(Settings.Default.Reporting, "bloom.palaso.org", "UA-22170471-2",
-#if DEBUG
-				true
-#else
-				false
-#endif
-				);
-		}
 
 		public static void OldVersionCheck()
 		{
+			return;
+
+
+
+
 			var asm = Assembly.GetExecutingAssembly();
 			var file = asm.CodeBase.Replace("file:", string.Empty);
 			file = file.TrimStart('/');
@@ -510,7 +564,7 @@ namespace Bloom
 				{
 					try
 					{
-						if (Dns.GetHostAddresses("ftpx.sil.org.pg").Length > 0)
+						if (Dns.GetHostAddresses("ftp.sil.org.pg").Length > 0)
 						{
 							if(DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the folder on the Ukarumpa FTP site where you can get a new one.","OLD BETA",MessageBoxButtons.YesNo))
 							{

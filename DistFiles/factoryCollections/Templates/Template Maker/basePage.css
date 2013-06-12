@@ -46,7 +46,7 @@ BODY
 /*+}*/
 BODY
 {
-	font-family: "Andika", "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+	font-family: Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
 /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
@@ -126,7 +126,7 @@ UL.toolbox LI
 	min-height: 50px;
 	z-index: 100;
 }
-TEXTAREA, DIV.bloom-editable
+TEXTAREA, DIV.bloom-editable, TD
 {
 	resize: none;
 /*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -207,6 +207,13 @@ DIV.bloom-page.A5Landscape
 	min-height: 14.8cm;
 	max-height: 14.8cm;
 }
+DIV.bloom-page.B5Portrait
+{
+	min-width: 176mm;
+	max-width: 177mm;
+	min-height: 250mm;
+	max-height: 250mm;
+}
 DIV.bloom-page.A4Landscape
 {
 	min-width: 297mm;
@@ -246,6 +253,15 @@ DIV.bloom-page.A4Portrait
 	position: absolute;
 	left: -2.6mm;
 	top: 15.2mm;
+}
+.B5Portrait DIV.marginBox
+{
+	width: 146mm;
+	height: 220mm;
+	/*+placement:anchor-top-left 0 15mm;*/
+	position: absolute;
+	left: 0;
+	top: 15mm;
 }
 DIV.bloom-page:nth-of-type(odd) DIV.marginBox
 {

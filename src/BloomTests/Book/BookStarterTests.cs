@@ -50,8 +50,8 @@ namespace BloomTests.Book
 //			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
 //												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
 //			                               	});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), _librarySettings.Object);
 
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), _librarySettings.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 		}
@@ -298,7 +298,9 @@ namespace BloomTests.Book
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='en']", 1);
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz']", 1);
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz' and text()='original']", 1);
+// this, the original version started failing when the xml started putting the closing tag on the next line, so I changed it to 'starts-with'
+			//AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz' and text()='original']", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageAlreadyHasVernacular']/p/textarea[@lang='xyz' and starts-with(text(),'original')]", 1);
 		}
 		[Test]
 		public void CreateBookOnDiskFromTemplate_Has2SourceLanguagesTextArea_OneVernacularTextAreaAdded()
@@ -426,6 +428,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			var kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 1);
+			//we should get our own id, now reuse our parent's
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 0);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook()
+		{
+			var shellFolderPath = GetShellBookFolder(
+				@" ", null);
+			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
+
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='first,second,thisNewGuy']", 1);
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_ShellHasNoDefaultNameDirective_bookTitleAttibutesSameAsShell()
 		{
 			var shellFolderPath = GetShellBookFolder(
@@ -518,6 +542,8 @@ namespace BloomTests.Book
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bloomBookLineage' content='first,second' />
+					<meta name='bloomBookId' content='thisNewGuy' />
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />";

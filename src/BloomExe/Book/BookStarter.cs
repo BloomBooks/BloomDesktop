@@ -125,13 +125,17 @@ namespace Bloom.Book
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
+			SetLineageAndId(storage);
+
 			SetBookTitle(storage, bookData);
+
+
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
 			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel, _collectionSettings);
 
-			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))));
+			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))), false);
 
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
@@ -141,11 +145,54 @@ namespace Bloom.Book
 				SetupPage(div, _collectionSettings, null, null);
 			}
 
+			ClearAwayLoremIpsum(storage.Dom.RawDom);
+
 			storage.Save();
 
 			//REVIEW this actually undoes the setting of the intial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		private void SetLineageAndId(BookStorage storage)
+		{
+			var parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
+
+			var lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
+			if (string.IsNullOrEmpty(lineage))
+			{
+				lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
+			}
+			if (!string.IsNullOrEmpty(lineage))
+				lineage += ",";
+			if (!string.IsNullOrEmpty(parentId))
+			{
+				storage.Dom.UpdateMetaElement("bloomBookLineage", lineage + parentId);
+			}
+			storage.Dom.UpdateMetaElement("bloomBookId",Guid.NewGuid().ToString());
+			storage.Dom.RemoveMetaElement("bookLineage");//old name
+		}
+
+		/// <summary>
+		/// Lorum Ipsum are handy when working on stylesheets, but don't let them bleed through to what the user sees
+		/// </summary>
+		/// <param name="element"></param>
+		private static void ClearAwayLoremIpsum(XmlNode element)
+		{
+			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
+			{
+				if (node.NodeType == XmlNodeType.Text)
+				{
+					if (node.InnerText.ToLower().StartsWith("lorem ipsum"))
+					{
+						node.InnerText = String.Empty;
+					}
+				}
+				else
+				{
+					ClearAwayLoremIpsum(node);
+				}
+			}
 		}
 
 		private static void SetBookTitle(BookStorage storage, BookData bookData)
@@ -161,7 +208,7 @@ namespace Bloom.Book
 
 			if(nameSuggestion!=null)
 				bookData.Set("bookTitle",nameSuggestion,"en");
-			storage.Dom.RemoveMetaValue("defaultNameForDerivedBooks");
+			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
 //	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
 //	        if (nameSuggestion.Count > 0)
@@ -249,6 +296,7 @@ namespace Bloom.Book
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
+			ClearAwayLoremIpsum(pageDiv);
 	   }
 
 

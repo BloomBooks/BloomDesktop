@@ -1,3 +1,56 @@
+## 0.9.86 10 June 2013
+* Environment variable FEEDBACK set to "off" now disables analytics
+
+## 0.9.83 10 June 2013
+* Fix: Stylesheets references are now ordered when saved to disk (were previously ordered within bloom)
+* Fix: Front/Back Mater (XMatter) css now saved with the book on disk (for a post-bloom future)
+* Improve BloomPack Install responsiveness.
+
+## 0.9.82 7 June 2013
+* Fix: If you add an large image and then later crop it, you didn't see the crop on the page until you restarted Bloom.
+* Fix: When using the auto-update, 2 copies of the new Bloom would be run.
+
+## 0.9.80 5 June 2013
+* When choosing a language, you can now customize how the name is actually displayed. You can also change it later, using the Configuration dialog.
+
+## 0.9.79 4 June 2013
+* Localization improvements:
+ * Can now localize the column headers of the language chooser.
+ * Many more "dynamic" strings available before you chance upon them.
+
+## 0.9.78 4 June 2013
+* Language Look Up now searches alternative names from Ethnologue.
+* Language Look Up now lists countries
+* Books now know the ids of their ancestor templates.
+* Experimental InDesign XML Export (write to john if you're interested in helping experiment with this).
+* Fixed bug that could cause lost localization strings during upgrade.
+
+## 0.9.71 24 May 2013
+* Improved PDF layout when OS is at 120dpi or 144dpi
+* Allow BloomPack install even if Bloom is already running
+* In the Language chooser, auto-select "Unlisted Language" if user clicks on the related link.
+* Pretty-print html in the books
+
+## 0.9.67 24 May 2013
+* Updated French Localizations
+
+## 0.9.66 23 May 2013
+* Much faster startup time if you have lots of books
+* Much better performance when editing book with many pages
+* More accurate analytics
+
+## 0.9.55 16 May 2013
+* Fixed problem with error on machines lacking Adobe Reader
+* Update French Localizations (Thx David Rowe)
+
+## 0.9.54 15 May 2013
+ * New "Picture & Word" page in Basic Book for simple one-word-per-page books.
+ * A couple localization fixes.
+ * Better message if user's machine doesn't know how to follow hyperlinks.
+
+## 0.9.58 10 April 2013
+ * New experimental B5 Primer template
+
 ## 0.9.53 2 April 2013
 * Now Localizable
  * Settings Protection Dialog
