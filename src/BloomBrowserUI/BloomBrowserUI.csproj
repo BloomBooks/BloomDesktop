@@ -93,6 +93,7 @@
     <Content Include="lib\jasmine\jasmine-1.1.0.js" />
     <Content Include="lib\jasmine\jasmine.d.ts" />
     <Content Include="lib\jasmine\JasmineAdapter-1.1.2.js" />
+    <Content Include="lib\jquery-1.10.1.js" />
     <Content Include="lib\jquery-1.9.1.js" />
     <Content Include="lib\jquery-ui.css" />
     <Content Include="lib\jquery-ui.js" />

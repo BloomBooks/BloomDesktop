@@ -191,7 +191,7 @@ function MakeSourceTextDivForGroup(group) {
     if ($(divForBubble).find("textarea, div").length == 0)
         return;
 
-    $(this).after(divForBubble);
+/* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument    $(this).after(divForBubble);*/
 
     var selectorOfDefaultTab="li:first-child";
 
@@ -296,7 +296,7 @@ function MakeSourceTextDivForGroup(group) {
 
 function GetLocalizedHint(element) {
 
-     var whatToSay = $(element).data("hint");
+    var whatToSay = $(element).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
      if(whatToSay.startsWith("*")){
          whatToSay = whatToSay.substring(1,1000);
      }
@@ -699,10 +699,11 @@ function ResizeUsingPercentages(e,ui){
          var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
          var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
 
-         var x = $(this).data("hint");
+         var x = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
 
          //make hints that start with a * only show when the field has focus
-         if ($(this).data("hint").startsWith("*")) {
+         //if ($(this).attr("data-hint").startsWith("*")) { //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+         if (x && x.startsWith("*")) { //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
              shouldShowAlways = false;
              hideEvents = 'unfocus mouseleave';
          }

@@ -4,7 +4,7 @@ var thisDir = path.split('/').slice(0, -1).join('/') + '/';  // remove last file
 var libDir = thisDir + "../../lib/";
 var themeDir = thisDir + "../../themes/";
 
-document.write('<script type="text/javascript" src="' + libDir + 'jquery-1.9.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
+document.write('<script type="text/javascript" src="' + libDir + 'jquery-1.10.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
 document.write('<script type="text/javascript" src="' + libDir + 'jquery-ui.js"></script>');//nb: we just rename whatever version of jqueryui we have to this.
 document.write('<link rel="stylesheet" type="text/css" href="' + themeDir + 'bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"></script>');
 
