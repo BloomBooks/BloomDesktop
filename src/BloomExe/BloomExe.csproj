@@ -5,8 +5,8 @@
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -66,12 +66,18 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AeroWizard, Version=1.2.1.30395, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="AeroWizard, Version=1.2.6.19328, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">    
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\DesktopAnalytics.0.2.9\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
@@ -80,12 +86,13 @@
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Ionic.Zip.Reduced">
+    <Reference Include="Ionic.Zip.Reduced, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
-    <Reference Include="L10NSharp, Version=1.1.4835.17235, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="L10NSharp, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
+      <HintPath>..\..\packages\L10NSharp.1.1.3\lib\net40-Client\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
@@ -94,8 +101,9 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
@@ -103,8 +111,9 @@
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet">
-      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>
+    <Reference Include="PdfDroplet, Version=2.2.7.1, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\PdfDroplet.2.2.7.1\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp, Version=1.31.1789.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -152,6 +161,8 @@
     </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="Book\BookInfo.cs" />
+    <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
     <Compile Include="Book\BookData.cs" />
@@ -167,6 +178,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="CollectionTab\InDesignXmlInformationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
+      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConfirmRecycleDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -184,6 +201,18 @@
     </Compile>
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiscUI\DontShowThisAgainButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
+      <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiscUI\TipDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\TipDialog.designer.cs">
+      <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
@@ -427,6 +456,9 @@
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
+      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConfirmRecycleDialog.resx">
       <DependentUpon>ConfirmRecycleDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -435,9 +467,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\TipDialog.resx">
+      <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
@@ -553,7 +589,9 @@
     </None>
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -585,6 +623,7 @@
     <Compile Include="XmlHtmlConverter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ReadMe.md" />
     <None Include="Resources\Bloom.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -825,13 +864,13 @@
     <None Include="Resources\thumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="README.jQuery.vsdoc.txt" />
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\sendreceiveToolbarButton.png" />
     <None Include="Resources\PackageFlat.png" />
     <None Include="Resources\cloneFromChorusHub.png" />
     <None Include="Resources\cloneFromInternet.png" />
     <None Include="Resources\cloneFromUsb.png" />
+    <None Include="Resources\placeHolderBookThumbnail.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -842,6 +881,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

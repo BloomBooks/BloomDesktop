@@ -467,7 +467,7 @@ namespace Bloom
 			//todo: deal with exception that can come out of this
 			try
 			{
-				dom = XmlHtmlConverter.GetXmlDomFromHtml(content);
+				dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
 				var bodyDom = dom.SelectSingleNode("//body");
 
 				if (_pageDom == null)

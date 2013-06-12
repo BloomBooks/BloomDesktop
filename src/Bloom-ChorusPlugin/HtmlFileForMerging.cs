@@ -22,7 +22,7 @@ namespace Bloom_ChorusPlugin
 
 		public string GetPathToXHtml()
 		{
-			XmlHtmlConverter.GetXmlDomFromHtmlFile(_pathToHtml).Save(xmlFile.Path);
+			XmlHtmlConverter.GetXmlDomFromHtmlFile(_pathToHtml,false).Save(xmlFile.Path);
 			return xmlFile.Path;
 		}
 
