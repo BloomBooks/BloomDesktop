@@ -32,6 +32,11 @@ function TrimTrailingLineBreaksInDivs(node) {
 
 function Cleanup() {
 
+        //for stuff bloom introduces, just use this "bloom-ui" class to have it removed
+    $(".bloom-ui").each(function() {
+        $(this).remove();
+    });
+
     // remove the div's which qtip makes for the tips themselves
     $("div.qtip").each(function() {
         $(this).remove();
@@ -44,7 +49,6 @@ function Cleanup() {
     $("*[ariasecondary-describedby]").each(function() {
         $(this).removeAttr("ariasecondary-describedby");
     });
-    $("*.editTimeOnly").remove();
     $("*").removeAttr("data-easytabs");
 
     $("div.ui-resizable-handle").remove();
@@ -66,8 +70,6 @@ function Cleanup() {
     //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
     $('#element').css('opacity', '');
     $('#element').css('overflow', '');
-
-    StyleEditor.Cleanup();
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
@@ -200,8 +202,9 @@ function MakeSourceTextDivForGroup(group) {
     var selectorOfDefaultTab="li:first-child";
 
     //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
-    $(divForBubble).each(function() {
-        $(this).prepend('<ul class="editTimeOnly z"></ul>');
+    $(divForBubble).each(function () {
+        //review is that 'z' class a typo?
+        $(this).prepend('<ul class="bloom-ui z"></ul>');
         var list = $(this).find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
@@ -792,7 +795,6 @@ function ResizeUsingPercentages(e,ui){
          SetupImageContainer(this);
      });
 
-
      jQuery(".bloom-draggable").mouseenter(function () {
          $(this).prepend("<button class='moveButton' title='Move'></button>");
          $(this).find(".moveButton").mousedown(function (e) {
@@ -925,9 +927,6 @@ function ResizeUsingPercentages(e,ui){
 
      SetOverlayForImagesWithoutMetadata();
 
-     //focus on the first editable field
-     //$(':input:enabled:visible:first').focus();
-     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
      SetupShowingTopicChooserWhenTopicIsClicked();
 
@@ -956,8 +955,24 @@ function ResizeUsingPercentages(e,ui){
          });
      });
 
-     var editor = new StyleEditor();
-     editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
+     var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+
+     $("div.bloom-editable:visible").each(function () {
+
+         $(this).focus(function() {
+            editor.AttachToBox(this);
+         });
+         //no: this removes the button just when we're clickin on one of the toolbar items
+         //$(this).focusout(function () {
+         //    editor.DetachFromBox(this);
+         //});
+     });
+
+     //focus on the first editable field
+     //$(':input:enabled:visible:first').focus();
+     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+
+     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
  });
 
 //function SetCopyrightAndLicense(data) {
@@ -1020,8 +1035,7 @@ function FindOrCreateTopicDialogDiv() {
         },
         function() {
             $(this).removeClass('ui-state-hover');
-        }
-        );
+        });
     }
     return dialogContents;
 }

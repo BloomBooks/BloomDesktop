@@ -3,7 +3,12 @@
 
 class StyleEditor {
 
-	constructor() {
+	private _previousBox: Element;
+	private _supportFilesRoot: string;
+
+	constructor(supportFilesRoot: string) {
+		this._supportFilesRoot = supportFilesRoot;
+
 //        this.styleElement = <HTMLElement><any>($(doc).find(".styleEditorStuff").first()); //the <any> here is to turn off the typscript process erro
 //        if (!this.styleElement) {
 //            var s = $('<style id="documentStyles" class="styleEditorStuff" type="text/css"></style>');
@@ -95,53 +100,58 @@ class StyleEditor {
 
 	//Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
 //onto the page
-	AddStyleEditBoxes(bookEditRoot : string) {
-		var self = this;
-		$("div.bloom-editable:visible").each(function () {
-			var targetBox = this;
-			var styleName = StyleEditor.GetStyleNameForElement(targetBox);
-			if (!styleName)
-				return;
+	AttachToBox(targetBox: HTMLElement) {
+		if (!StyleEditor.GetStyleNameForElement(targetBox))
+			return;
 
-			//  i couldn't get the nice icomoon icon font/style.css system to work in Bloom or stylizer
-//            $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
-  //          $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a></div>');
-			$(this).after('<div id="format-toolbar" class="ui" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">x</a><a id="bigger" class="largerFontButton" >y</a></div>');
+		if (this._previousBox!=null)
+		{
+			StyleEditor.CleanupElement(this._previousBox);
+		}
+		this._previousBox = targetBox;
 
+		//REVIEW: we're putting it in the target div, but at the moment we are using exactly the same bar for each editable box, could just have
+		//one for the whole document
 
-			//add a button to bring up the formatting toolbar
-//            $(this).after('<div id="formatButton" title="Change text size. Affects all similar boxes in this document"><i class="bloom-icon-cog"></i></div>');
-			$(this).after('<div id="formatButton"  class="ui" title="Change text size. Affects all similar boxes in this document"><img src="' + bookEditRoot + '/img/cogGrey.svg"></div>');
-			$('#formatButton').toolbar({
-				content: '#format-toolbar',
-				//position: 'left',//nb: toolbar's June 2013 code, for some reason, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
-				position: 'bottom',
-				hideOnClick: true
-			});
+		//NB: we're placing these *after* the target, don't want to mess with having a div inside our text (if that would work anyhow)
 
-			$('#formatButton').on("toolbarItemClick", function(event, whichButton) {
-				if (whichButton.id == "smaller")
-				{
-					var editor = new StyleEditor();
-					editor.MakeSmaller(targetBox);
-				}
-				if (whichButton.id == "bigger") {
-					var editor = new StyleEditor();
-					editor.MakeBigger(targetBox);
-				}
-			});
+		//  i couldn't get the nice icomoon icon font/style.css system to work in Bloom or stylizer
+		//            $(targetBox).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
+		$(targetBox).after('<div id="format-toolbar" class="bloom-ui" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a></div>');
 
 
-		})
+		var bottom = $(targetBox).position().top + $(targetBox).height();
+		var t = bottom + "px";
+		$(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui" title="Change text size. Affects all similar boxes in this document"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
+
+		$('#formatButton').toolbar({
+			content: '#format-toolbar',
+			//position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
+			position: 'left',
+			hideOnClick: false
+		});
+
+		var editor = this;
+		$('#formatButton').on("toolbarItemClick", function (event, whichButton) {
+			if (whichButton.id == "smaller") {
+				editor.MakeSmaller(targetBox);
+			}
+			if (whichButton.id == "bigger") {
+				editor.MakeBigger(targetBox);
+			}
+		});
+	  }
+
+	DetachFromBox(element) {
+	  //  StyleEditor.CleanupElement(element);
 	}
 
-	static Cleanup() {
-		$(".ui").each(function () {
-			$(this).remove();
-		})
-	}
 	static CleanupElement(element) {
-		$(element).find(".ui").each(function () {
+		//NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent
+		$(element).parent().find(".bloom-ui").each(function () {
+			$(this).remove();
+		});
+		$(".tool-container").each(function () {
 			$(this).remove();
 		});
 	}

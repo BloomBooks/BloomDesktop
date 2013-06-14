@@ -1,11 +1,33 @@
 /*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*+clearfix {*/
+.tool-items:after
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+	font-size: 0;
+}
+.tool-items
+{
+	display: inline-block;
+}
+.tool-items
+{
+	/*\*/
+	display: block;
+	/**/
+	-height: 1px;
+}
+/*+}*/
 DIV.bloom-imageContainer
 {
 	border: 1px solid #C0B9B9;
 }
 .coverColor DIV.bloom-imageContainer
 {
-	border: thin solid #908B8B;
+	border: thin solid rgba(1, 1, 1, 0.2);
 }
 /*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
@@ -45,7 +67,8 @@ To handling the mis-match.*/
 DIV.pageLabel
 {
 	text-align: left;
-	color: #96A9B3;
+	/*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
+	color: rgba(0, 0, 0, 0.2);
 	margin-left: 5px;
 	/*+placement:anchor-top-left 71px 19px;*/
 	position: absolute;
@@ -219,7 +242,7 @@ TEXTAREA, DIV.bloom-editable
 /*need a darker border when we have a background color*/
 .coverColor TEXTAREA, DIV.bloom-editable
 {
-	border: thin solid #908B8B;
+	border: thin solid rgba(0, 0, 0, 0.2);
 }
 IMG.hoverUp
 {
@@ -354,10 +377,13 @@ DIV.marginBox
 	width: 18px;
 	height: 21px !important;
 	overflow: hidden;
-	/*+placement:shift -20px -23px;*/
-	position: relative;
-	left: -20px;
-	top: -23px;
+	/*+placement:displace 3px -6.1;*/
+	position: absolute;
+	margin-left: 3px;
+	margin-top: -6.1;
+	margin-top: -18px;
+	/*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
+	font-size: 10pt;
 }
 #formatButton IMG
 {
@@ -378,21 +404,20 @@ DIV.marginBox
 {
 	color: #000000;
 }
-.smallerFontButton.tool-item
+.smallerFontButton.tool-item IMG
 {
+	width: 11px;
 	/*+placement:shift 0px -7px;*/
 	position: relative;
 	left: 0px;
 	top: -7px;
-	border: none !important;
-	font-size: 15.4pt;
 }
 .largerFontButton.tool-item
 {
 	font-size: 17.7pt;
 	/*[disabled]line-height:0.6;*/
 }
-.tool-items
+/*[clearfix]*/.tool-items
 {
 	border: 1px solid #DFDFDF;
 	/*+border-radius:3pt;*/
@@ -400,4 +425,9 @@ DIV.marginBox
 	-webkit-border-radius: 3pt;
 	-khtml-border-radius: 3pt;
 	border-radius: 3pt;
+}
+/*QTIP*/
+.qtip-content
+{
+	font-family: Arial;
 }

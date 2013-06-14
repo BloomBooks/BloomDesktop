@@ -257,6 +257,9 @@
   <ItemGroup>
     <Content Include="bookEdit\img\cog.svg" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\img\cogGrey.svg" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
