@@ -97,15 +97,15 @@ var StyleEditor = (function () {
             //  i couldn't get the nice icomoon icon font/style.css system to work in Bloom or stylizer
             //            $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
             //          $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a></div>');
-                     $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">x</a><a id="bigger" class="largerFontButton" >y</a></div>');
+            $(this).after('<div id="format-toolbar" class="ui" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">x</a><a id="bigger" class="largerFontButton" >y</a></div>');
             //add a button to bring up the formatting toolbar
             //            $(this).after('<div id="formatButton" title="Change text size. Affects all similar boxes in this document"><i class="bloom-icon-cog"></i></div>');
-                  $(this).after('<div id="formatButton" title="Change text size. Affects all similar boxes in this document"><img src="' + bookEditRoot + '/img/cogGrey.svg"></div>');
+            $(this).after('<div id="formatButton"  class="ui" title="Change text size. Affects all similar boxes in this document"><img src="' + bookEditRoot + '/img/cogGrey.svg"></div>');
             $('#formatButton').toolbar({
                 content: '#format-toolbar',
-                position: 'left',
-                hideOnClick: //something about our layout and toolbar's positioning logic make 'left' push it way into negative territory
-                true
+                position: //position: 'left',//nb: toolbar's June 2013 code, for some reason, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
+                'bottom',
+                hideOnClick: true
             });
             $('#formatButton').on("toolbarItemClick", function (event, whichButton) {
                 if(whichButton.id == "smaller") {
@@ -117,6 +117,16 @@ var StyleEditor = (function () {
                     editor.MakeBigger(targetBox);
                 }
             });
+        });
+    };
+    StyleEditor.Cleanup = function Cleanup() {
+        $(".ui").each(function () {
+            $(this).remove();
+        });
+    };
+    StyleEditor.CleanupElement = function CleanupElement(element) {
+        $(element).find(".ui").each(function () {
+            $(this).remove();
         });
     };
     return StyleEditor;

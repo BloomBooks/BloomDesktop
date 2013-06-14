@@ -351,14 +351,13 @@ DIV.marginBox
 /*-------format toolbar*/
 #formatButton
 {
-	/*+placement:float-left 2px -59px;*/
-	float: left !important;
-	position: relative !important;
-	left: 2px !important;
-	top: -59px !important;
-	width: 37px;
-	height: 30px;
-	border: 1px solid #000000;
+	width: 18px;
+	height: 21px !important;
+	overflow: hidden;
+	/*+placement:shift -20px -23px;*/
+	position: relative;
+	left: -20px;
+	top: -23px;
 }
 #formatButton IMG
 {
