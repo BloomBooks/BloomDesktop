@@ -1080,22 +1080,23 @@ namespace Bloom.Book
 //            return (XmlElement)matches[0];
 //        }
 
-		/// <summary>
-		/// The <style id='customStyles'/> element is where we keep our user-modifiable style information
-		/// </summary>
-		private XmlElement GetOrCreateCustomStyleElementFromStorage()
-		{
-			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
-			if (matches.Count == 0)
-			{
-				var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-				emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
-				emptyCustomStylesElement.SetAttribute("type", "text/css");
-				OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
-			}
-			return (XmlElement)matches[0];
-		}
-		/// <summary>
+	    /// <summary>
+	    /// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+	    /// </summary>
+	    private XmlElement GetOrCreateCustomStyleElementFromStorage()
+	    {
+		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+		    if (matches.Count > 0)
+			    return (XmlElement) matches[0];
+
+		    var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+		    emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+		    emptyCustomStylesElement.SetAttribute("type", "text/css");
+		    OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
+		    return emptyCustomStylesElement;
+	    }
+
+	    /// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
 		/// </summary>
 		private XmlElement GetPageFromStorage(string pageDivId)

@@ -205,7 +205,7 @@
 .qtip-green{
 	background-color: #CAED9E;
 	border-color: #90D93F;
-	color: #3F6219;
+	color: #000000; /*was 3F6219;*/
 }
 
 	.qtip-green .qtip-titlebar{

@@ -48,7 +48,13 @@
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editTranslationMode.css" />
+    <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
+    <Content Include="bookEdit\iconfont\index.html" />
+    <Content Include="bookEdit\iconfont\license.txt" />
+    <Content Include="bookEdit\iconfont\lte-ie7.js" />
+    <Content Include="bookEdit\iconfont\Read Me.txt" />
+    <Content Include="bookEdit\iconfont\style.css" />
     <Content Include="bookEdit\img\changeImageButtonLarge.png" />
     <Content Include="bookEdit\img\changeImageButtonSmall.png" />
     <Content Include="bookEdit\img\deleteButtonSmall.png" />
@@ -240,6 +246,16 @@
     <Content Include="bookEdit\js\StyleEditor.js.map">
       <DependentUpon>StyleEditor.ts</DependentUpon>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\iconfont\fonts\BloomIcons.dev.svg" />
+    <Content Include="bookEdit\iconfont\fonts\BloomIcons.eot" />
+    <Content Include="bookEdit\iconfont\fonts\BloomIcons.svg" />
+    <Content Include="bookEdit\iconfont\fonts\BloomIcons.ttf" />
+    <Content Include="bookEdit\iconfont\fonts\BloomIcons.woff" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bookEdit\img\cog.svg" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

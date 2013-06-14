@@ -1,0 +1,109 @@
+@font-face
+{
+	font-family: BloomIcons;
+	/*src:url('fonts/BloomIcons.eot');
+src:url('fonts/BloomIcons.eot?#iefix') format('embedded-opentype'),
+url('fonts/BloomIcons.woff') format('woff'),
+url('fonts/BloomIcons.ttf') format('truetype'),
+url('fonts/BloomIcons.svg#BloomIcons') format('svg');*/
+	src: url('./fonts/BloomIcons.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+/*Use the following CSS code if you want to use data attributes for inserting your icons*/
+[data-icon]:before
+{
+	font-family: BloomIcons;
+	content: attr(data-icon);
+	speak: none;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+/*Use the following CSS code if you want to have a class per icon
+
+Instead of a list of all class selectors,
+you can use the generic selector below, but it's slower:
+[class*="bloom-icon-"] {
+*/
+.bloom-icon-pushpin, .bloom-icon-unlocked, .bloom-icon-lock, .bloom-icon-cog, .bloom-icon-cogs, .bloom-icon-cog-2, .bloom-icon-equalizer, .bloom-icon-lab, .bloom-icon-remove, .bloom-icon-remove-2, .bloom-icon-list, .bloom-icon-flag, .bloom-icon-paragraph-left, .bloom-icon-paragraph-center, .bloom-icon-paragraph-right, .bloom-icon-paragraph-justify, .bloom-icon-FontSize
+{
+	font-family: BloomIcons;
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.bloom-icon-pushpin:before
+{
+	content: "\e000";
+}
+.bloom-icon-unlocked:before
+{
+	content: "\e001";
+}
+.bloom-icon-lock:before
+{
+	content: "\e002";
+}
+.bloom-icon-cog:before
+{
+	content: "\e003";
+}
+.bloom-icon-cogs:before
+{
+	content: "\e004";
+}
+.bloom-icon-cog-2:before
+{
+	content: "\e005";
+}
+.bloom-icon-equalizer:before
+{
+	content: "\e006";
+}
+.bloom-icon-lab:before
+{
+	content: "\e007";
+}
+.bloom-icon-remove:before
+{
+	content: "\e008";
+}
+.bloom-icon-remove-2:before
+{
+	content: "\e009";
+}
+.bloom-icon-list:before
+{
+	content: "\e00a";
+}
+.bloom-icon-flag:before
+{
+	content: "\e00b";
+}
+.bloom-icon-paragraph-left:before
+{
+	content: "\e00c";
+}
+.bloom-icon-paragraph-center:before
+{
+	content: "\e00d";
+}
+.bloom-icon-paragraph-right:before
+{
+	content: "\e00e";
+}
+.bloom-icon-paragraph-justify:before
+{
+	content: "\e00f";
+}
+.bloom-icon-FontSize:before
+{
+	content: "\e010";
+}

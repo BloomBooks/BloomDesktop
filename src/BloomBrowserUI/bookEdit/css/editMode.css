@@ -14,7 +14,7 @@ BODY
 }
 BODY
 {
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2-5% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the basePage.css, we have 10pt, but here, 11pt.
@@ -32,6 +32,7 @@ To handling the mis-match.*/
 {
 	background-color: transparent !important;
 	color: #DFDFDF !important;
+	border-color: transparent !important;
 }
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox DIV.pageLabel
@@ -344,6 +345,60 @@ DIV.marginBox
 }
 .bloom-frontMatter DIV.marginBox
 {
-/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+	/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
 	border: none;
+}
+/*-------format toolbar*/
+#formatButton
+{
+	/*+placement:float-left 2px -59px;*/
+	float: left !important;
+	position: relative !important;
+	left: 2px !important;
+	top: -59px !important;
+	width: 37px;
+	height: 30px;
+	border: 1px solid #000000;
+}
+#formatButton IMG
+{
+	width: 14px;
+	height: 14px;
+}
+#formatButton:Hover
+{
+	color: #000000;
+}
+.tool-item
+{
+	font: 17.9pt Andika;
+	text-decoration: none;
+	color: #716666;
+}
+.tool-item:Hover
+{
+	color: #000000;
+}
+.smallerFontButton.tool-item
+{
+	/*+placement:shift 0px -7px;*/
+	position: relative;
+	left: 0px;
+	top: -7px;
+	border: none !important;
+	font-size: 15.4pt;
+}
+.largerFontButton.tool-item
+{
+	font-size: 17.7pt;
+	/*[disabled]line-height:0.6;*/
+}
+.tool-items
+{
+	border: 1px solid #DFDFDF;
+	/*+border-radius:3pt;*/
+	-moz-border-radius: 3pt;
+	-webkit-border-radius: 3pt;
+	-khtml-border-radius: 3pt;
+	border-radius: 3pt;
 }
