@@ -1086,15 +1086,16 @@ namespace Bloom.Book
 		private XmlElement GetOrCreateCustomStyleElementFromStorage()
 		{
 			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
-			if (matches.Count == 0)
-			{
-				var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-				emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
-				emptyCustomStylesElement.SetAttribute("type", "text/css");
-				OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
-			}
-			return (XmlElement)matches[0];
+			if (matches.Count > 0)
+				return (XmlElement) matches[0];
+
+			var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+			emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+			emptyCustomStylesElement.SetAttribute("type", "text/css");
+			OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
+			return emptyCustomStylesElement;
 		}
+
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
 		/// </summary>

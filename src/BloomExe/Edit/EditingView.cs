@@ -335,7 +335,7 @@ namespace Bloom.Edit
 				OnEditImageMetdata(ge);
 
 			var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
-			if(anchor!=null)
+			if(anchor!=null && anchor.Href!="" && anchor.Href!="#")
 			{
 				if(anchor.Href.Contains("bookMetadataEditor"))
 				{

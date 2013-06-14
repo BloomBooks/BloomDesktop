@@ -52,14 +52,19 @@ if ( typeof Object.create !== 'function' ) {
         setTrigger: function() {
             var self = this;
 
-            self.$elem.on('click', function(event) {
+            //            self.$elem.on('click', function(event) {
+            self.$elem.on('mouseenter', function (event) {
                 event.preventDefault();
-                if(self.$elem.hasClass('pressed')) {
-                    self.hide();
-                } else {
+                if(!self.$elem.hasClass('pressed')) {
                     self.show();
                 }
             });
+
+//            self.$elem.on('mouseleave', function (event) {
+//                event.preventDefault();
+//                self.hide();
+//            });
+
 
             if (self.options.hideOnClick) {
                 $('html').on("click.toolbar", function ( event ) {

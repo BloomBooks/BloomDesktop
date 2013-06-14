@@ -128,7 +128,7 @@ function AddToolbox(){
         })
 
         $(this).qtipSecondary({
-            content: "<div id='experimentNotice'><img src='file://"+GetSettings().bloomProgramFolder+"/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>"
+            content: "<div id='experimentNotice'><img src='file://"+GetSettings().bloomBrowserUIFolder+"/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>"
                          , show: { ready: true }
                          , hide: false
                          , position: { at: 'right top',
@@ -146,7 +146,7 @@ function AddToolbox(){
 
 function AddExperimentalNotice(element) {
     $(element).qtipSecondary({
-        content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomProgramFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
+        content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
                          , show: { ready: true }
                          , hide: false
                          , position: { at: 'right top',
@@ -225,7 +225,7 @@ function MakeSourceTextDivForGroup(group) {
             var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
             if(iso=== GetSettings().defaultSourceLanguage) {
-                selectorOfDefaultTab="li:#"+iso;
+                selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (shellEditingMode || !shouldShowOnPage) {
@@ -312,7 +312,7 @@ function GetLocalizedHint(element) {
          if (key.startsWith("{"))
              whatToSay = whatToSay.replace(key, dictionary[key]);
 
-         whatToSay = whatToSay.replace("$lang", dictionary[$(element).attr('lang')]);
+         whatToSay = whatToSay.replace("{lang}", dictionary[$(element).attr('lang')]);
      }
      return whatToSay;
  }
@@ -524,8 +524,6 @@ function ResizeUsingPercentages(e,ui){
      });
 
      AddToolbox();
-     var editor = new StyleEditor();
-     editor.AddStyleEditBoxes();
 
      //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
      jQuery("textarea").blur(function () {
@@ -643,17 +641,20 @@ function ResizeUsingPercentages(e,ui){
 
              position: {
                  my: 'top right',
-                 at: 'bottom right'
-                 , adjust: { y: -25 }
+                 at: 'bottom right',
+                 adjust: { y: -25 }
              },
              show: { ready: shouldShowAlways },
              hide: {
                  event: hideEvents
              },
              style: {
-                 classes: 'ui-languageToolTip'
+                 classes: 'ui-languageToolTip',
+                 tip: {
+                   border :0
+                }
              }
-         })
+         });
          // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
      });
 
@@ -950,6 +951,9 @@ function ResizeUsingPercentages(e,ui){
              ResetRememberedSize(this);
          });
      });
+
+     var editor = new StyleEditor();
+     editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
  });
 
 //function SetCopyrightAndLicense(data) {

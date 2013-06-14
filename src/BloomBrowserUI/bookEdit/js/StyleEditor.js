@@ -86,7 +86,7 @@ var StyleEditor = (function () {
     };
     StyleEditor.prototype.AddStyleEditBoxes = //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
     //onto the page
-    function () {
+    function (bookEditRoot) {
         var self = this;
         $("div.bloom-editable:visible").each(function () {
             var targetBox = this;
@@ -94,41 +94,30 @@ var StyleEditor = (function () {
             if(!styleName) {
                 return;
             }
-            $(this).toolbar({
-                content: self.GetFormatToolbarContents(),
+            //  i couldn't get the nice icomoon icon font/style.css system to work in Bloom or stylizer
+            //            $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
+            //          $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + bookEditRoot + '/img/FontSizeLetter.svg"></a></div>');
+                     $(this).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">x</a><a id="bigger" class="largerFontButton" >y</a></div>');
+            //add a button to bring up the formatting toolbar
+            //            $(this).after('<div id="formatButton" title="Change text size. Affects all similar boxes in this document"><i class="bloom-icon-cog"></i></div>');
+                  $(this).after('<div id="formatButton" title="Change text size. Affects all similar boxes in this document"><img src="' + bookEditRoot + '/img/cogGrey.svg"></div>');
+            $('#formatButton').toolbar({
+                content: '#format-toolbar',
                 position: 'left',
-                hideOnClick: false
+                hideOnClick: //something about our layout and toolbar's positioning logic make 'left' push it way into negative territory
+                true
             });
-            //(<any>$(this)).qtipSecondary({
-            //    content: "<button id='smallerFontButton' class='editStyleButton' title='EditStyle'>-</button><button id='largerFontButton' class='editStyleButton' title='EditStyle'>+</button>",
-            //    position: {
-            //        my: 'bottom right',
-            //        at: 'bottom left'
-            //    },
-            //    show: { ready: true },
-            //    hide: {
-            //        event: false
-            //    },
-            //    events: {
-            //        render: function (event, api) {
-            //            $(this).find('#smallerFontButton').click(function () {
-            //                var editor = new StyleEditor();
-            //                editor.MakeSmaller(targetBox);
-            //            });
-            //            $(this).find('#largerFontButton').click(function () {
-            //                var editor = new StyleEditor();
-            //                editor.MakeBigger(targetBox);
-            //            });
-            //        }
-            //    },
-            //    style: {
-            //        classes: 'ui-tooltip-red'
-            //    }
-            //})
-                    });
-    };
-    StyleEditor.prototype.GetFormatToolbarContents = function () {
-        return '<div id="format-toolbar-options"><a href="#">one<i class ="icon-align-left"></i></a><a href="#">two<i class ="icon-align-center"></i></a><a href="#"><i class ="icon-align-right"></i></a></div>	';
+            $('#formatButton').on("toolbarItemClick", function (event, whichButton) {
+                if(whichButton.id == "smaller") {
+                    var editor = new StyleEditor();
+                    editor.MakeSmaller(targetBox);
+                }
+                if(whichButton.id == "bigger") {
+                    var editor = new StyleEditor();
+                    editor.MakeBigger(targetBox);
+                }
+            });
+        });
     };
     return StyleEditor;
 })();
