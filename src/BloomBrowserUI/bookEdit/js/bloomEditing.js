@@ -61,12 +61,13 @@ function Cleanup() {
 
 	$('div.bloom-editable').each( function() {
 		TrimTrailingLineBreaksInDivs(this);
-});
+    });
 
     //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
     $('#element').css('opacity', '');
     $('#element').css('overflow', '');
 
+    StyleEditor.Cleanup();
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
@@ -186,6 +187,9 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function() {
         $(this).remove();
     });
+    
+    //in case some formatting didn't get cleaned up
+    StyleEditor.CleanupElement(divForBubble);
 
     //if there are no languages to show in the bubble, bail out now
     if ($(divForBubble).find("textarea, div").length == 0)
