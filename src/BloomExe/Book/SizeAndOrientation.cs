@@ -130,7 +130,7 @@ namespace Bloom.Book
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLower().Contains("mode") || fileName.ToLower().Contains("page") ||
-					fileName.ToLower().Contains("matter"))
+					fileName.ToLower().Contains("matter") || fileName.ToLower().Contains("languagedisplay"))
 					continue;
 
 
@@ -142,7 +142,7 @@ namespace Bloom.Book
 				var contents = File.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");
 				if (start < 0)
-					yield break; // continue;//move on to the next stylesheet
+					 continue; //yield break; // continue;//move on to the next stylesheet
 				start += "STARTLAYOUTS".Length;
 				var end = contents.IndexOf("ENDLAYOUTS",start);
 				var s = contents.Substring(start, end - start);
