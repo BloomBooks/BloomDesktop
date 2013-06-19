@@ -24,6 +24,59 @@ namespace BloomTests.Book
 				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
+
+	   [Test]
+		public void SuckInDataFromEditedDom_NoDataDIvTitleChanged_NewTitleInCache()
+	   {
+		   HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page' id='guid2'>
+					<textarea lang='xyz' data-book='bookTitle'>original</textarea>
+				</div>
+			 </body></html>");
+		   var data = new BookData(bookDom, _collectionSettings, null);
+		   Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+
+
+		   HtmlDom editedPageDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page' id='guid2'>
+					<textarea lang='xyz' data-book='bookTitle'>changed</textarea>
+				</div>
+			 </body></html>");
+
+		   data.SuckInDataFromEditedDom(editedPageDom);
+
+		   Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+	   }
+
+		/// <summary>
+		/// Regression test: the difference between this situation (had a value before) and the one where this is newly discovered was the source of a bug
+		/// </summary>
+	   [Test]
+	   public void SuckInDataFromEditedDom_HasDataDivWithOldTitleThenTitleChanged_NewTitleInCache()
+	   {
+		   HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<textarea lang='xyz' data-book='bookTitle'>original</textarea>
+				</div>
+			 </body></html>");
+
+		   var data = new BookData(bookDom, _collectionSettings, null);
+		   Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+
+		   HtmlDom editedPageDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page' id='guid2'>
+					<textarea lang='xyz' data-book='bookTitle'>changed</textarea>
+				</div>
+			 </body></html>");
+
+		   data.SuckInDataFromEditedDom(editedPageDom);
+
+		   Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+	   }
+
 		[Test]
 		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
 		{
@@ -56,9 +109,9 @@ namespace BloomTests.Book
 						<p class='centered' lang='xyz' data-book='bookTitle' id='P1'>originalButNoExactlyCauseItShouldn'tMatter</p>
 				</div>
 			 </body></html>");
+			var data = new BookData(dom,  _collectionSettings, null);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
 			textarea1.InnerText = "peace";
-			var data = new BookData(dom,  _collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", paragraph.InnerText);

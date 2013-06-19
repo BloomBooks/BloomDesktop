@@ -69,6 +69,8 @@ namespace Bloom.SendReceive
 												{
 													if (result.ErrorEncountered != null)
 													{
+														// TODO: there is an error here somewhere... BL-284, where hg complains that .../my book.htm isn't there.
+														// Maybe it got renamed on another thread or something....?
 														_getFormWithContextForInvokingErrorDialogs().BeginInvoke(new Action(() =>
 																													   Palaso.Reporting.ErrorReport.NotifyUserOfProblem
 																														(result.ErrorEncountered,
