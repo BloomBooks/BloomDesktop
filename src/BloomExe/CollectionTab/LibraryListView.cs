@@ -26,6 +26,7 @@ namespace Bloom.CollectionTab
 		private DateTime _lastClickTime;
 		private bool _collectionLoadPending;
 		private LinkLabel _missingBooksLink;
+		private bool _disposed;
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
@@ -84,6 +85,9 @@ namespace Bloom.CollectionTab
 
 		void LoadCollectionsAtIdleTime(object sender, EventArgs e)
 		{
+			if(_disposed) //could happen if a version update was detected on app launch
+				return;
+
 			Application.Idle -= new EventHandler(LoadCollectionsAtIdleTime);
 			if (!_collectionLoadPending)
 				return;
@@ -490,6 +494,7 @@ namespace Bloom.CollectionTab
 				components.Dispose();
 			}
 			base.Dispose(disposing);
+			_disposed = true;
 		}
 
 		/// <summary>

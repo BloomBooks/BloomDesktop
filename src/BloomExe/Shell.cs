@@ -29,6 +29,8 @@ namespace Bloom
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
+
+
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
@@ -52,6 +54,7 @@ namespace Bloom
 										_workspaceView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			this.Controls.Add(this._workspaceView);
+
 
 			SetWindowText();
 		}

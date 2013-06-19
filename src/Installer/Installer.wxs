@@ -210,6 +210,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Ionic.Zip.Reduced.dll" Name="Ionic.Zip.Reduced.dll" KeyPath="yes" Source="..\..\output\release\Ionic.Zip.Reduced.dll" />
 		  </Component>
 
+		  <Component Id="NetSparkle.Net40.dll" Guid="{C57D4748-8B97-4C75-984D-B752BB858C2E}">
+			<File Id="NetSparkle.Net40.dll" Name="NetSparkle.Net40.dll" KeyPath="yes" Source="..\..\output\release\NetSparkle.Net40.dll" />
+		  </Component>
 
 		  <Component Id="PdfSharp.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC636}">
 			<File Id="PdfSharp.dll" Name="PdfSharp.dll" KeyPath="yes" Source="..\..\output\release\PdfSharp.dll" />
@@ -242,6 +245,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
 	  <ComponentRef Id="GeckoFx" />
 	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
+	  <ComponentRef Id="NetSparkle.Net40.dll"/>
 	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
 	  <ComponentRef Id="PdfSharp.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />

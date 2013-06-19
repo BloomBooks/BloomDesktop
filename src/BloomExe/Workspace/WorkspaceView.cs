@@ -372,6 +372,11 @@ namespace Bloom.Workspace
 				g.Dispose();
 			}
 		}
+
+		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
+		{
+			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

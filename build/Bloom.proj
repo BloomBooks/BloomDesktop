@@ -62,6 +62,8 @@
 	<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
 	<Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
 		   DestinationFolder ="$(RootDir)\output\installer"/>
+		<Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
+		   DestinationFolder ="$(RootDir)\output\installer"/>
 
 	<!-- replace some parts of the file with the version number & date -->
 
@@ -70,7 +72,14 @@
 				Regex='DEV_VERSION_NUMBER'
 				 ReplacementText ="$(Version)" />
 
-
+	<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml   (note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
+		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  ).
+		Enhance: Have this build script generate a path containing that url (or multiple ones, one per channel (alpha,beta,release). Do that before the installer runs so the file goes out with the app. Finally,
+		have app (which must know the url for the appcast.xml) read a file and give it to Sparkle -->
+	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
+				 DatePlaceholder='DEV_RELEASE_DATE'
+				Regex='DEV_VERSION_NUMBER'
+				 ReplacementText ="$(Version)" />
 
 	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
