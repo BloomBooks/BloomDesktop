@@ -1,3 +1,6 @@
+## 0.9.90 19 June 2013
+* Alleviate problem (Windows 7) of sylesheets from old versions sticking around even when you upgrade (VirtualStore).
+
 ## 0.9.89 16 June 2013
 * Fix page size/layout choices
 

@@ -342,6 +342,8 @@ namespace Bloom
 		{
 			Debug.Assert(_projectContext == null);
 
+			CheckAndWarnAboutVirtualStore();
+
 			try
 			{
 				//NB: initially, you could have multiple blooms, if they were different projects.
@@ -370,6 +372,35 @@ namespace Bloom
 			}
 
 			return false;
+		}
+
+		//The windows "VirtualStore" is teh source of some really hard to figure out behavior:
+		//The symptom is, getting different results in the installed version, *unless you change the name of the Bloom folder in Program Files*.
+		//Then look at C:\Users\User\AppData\Local\VirtualStore\Program Files (x86)\Bloom and you'll find some old files.
+		private static void CheckAndWarnAboutVirtualStore()
+		{
+			var programFilesName = Path.GetFileName(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles));
+			var virtualStore = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
+								 "VirtualStore");
+			var ourVirtualStore = Path.Combine(virtualStore, programFilesName);
+			ourVirtualStore = Path.Combine(ourVirtualStore, "Bloom");
+
+			if (Directory.Exists(ourVirtualStore))
+			{
+#if DEBUG
+				Debug.Fail("You have a shadow copy of some Bloom files at " + ourVirtualStore + " that has crept in via running the installed version. Find what caused it and stamp it out!");
+#endif
+				try
+				{
+					Directory.Delete(ourVirtualStore, true);
+				}
+				catch (Exception error)
+				{
+					ErrorReport.NotifyUserOfProblem("Bloom could not remove the Virtual Store shadow of Bloom at " + ourVirtualStore +
+													". This can cause some stylesheets to fall out of date.");
+					Analytics.ReportException(error);
+				}
+			}
 		}
 
 		private static void HandleProjectWindowActivated(object sender, EventArgs e)
