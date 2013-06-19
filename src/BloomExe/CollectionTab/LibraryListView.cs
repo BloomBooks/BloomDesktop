@@ -25,6 +25,7 @@ namespace Bloom.CollectionTab
 		private bool _reshowPending;
 		private DateTime _lastClickTime;
 		private bool _collectionLoadPending;
+		private LinkLabel _missingBooksLink;
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
@@ -116,7 +117,8 @@ namespace Bloom.CollectionTab
 
 			string shellSourceHeading = Localization.LocalizationManager.GetString("sourcesForNewShellsHeading",
 																				   "Sources For New Shells");
-			string bookSourceHeading = Localization.LocalizationManager.GetString("bookSourceHeading", "Sources For New Books");
+			string bookSourceHeading = Localization.LocalizationManager.GetString("bookSourceHeading",
+																				  "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_collectionFlow.Controls.Add(invisibleHackPartner);
@@ -151,8 +153,40 @@ namespace Bloom.CollectionTab
 					_collectionFlow.SetFlowBreak(collectionHeader, true);
 				}
 			}
+
+			if (_model.IsShellProject)
+			{
+				_missingBooksLink = new LinkLabel()
+										{
+											Text =
+												Localization.LocalizationManager.GetString("hiddenBooksNotice",
+																						   "Where's the rest?",
+																						   "Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
+											Width = 200,
+											Margin = new Padding(0, 30, 0, 0),
+											TextAlign = ContentAlignment.TopCenter,
+											LinkColor = Palette.TextAgainstDarkBackground
+										};
+
+				_missingBooksLink.Click += new EventHandler(OnMissingBooksLink_Click);
+				_collectionFlow.Controls.Add(_missingBooksLink);
+				_collectionFlow.SetFlowBreak(_missingBooksLink, true);
+			}
+
 			_libraryFlow.ResumeLayout();
 			Cursor = Cursors.Default;
+		}
+
+		void OnMissingBooksLink_Click(object sender, EventArgs e)
+		{
+			if (_model.IsShellProject)
+			{
+				MessageBox.Show(Localization.LocalizationManager.GetString("hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
+			}
+			else
+			{
+				//MessageBox.Show(Localization.LocalizationManager.GetString("hiddenBookExplanationForVernacularCollections", "Because this is a vernacular collection, Bloom isn't offering all the same."));
+			}
 		}
 
 		private bool LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
@@ -166,7 +200,7 @@ namespace Bloom.CollectionTab
 					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && book.IsSuitableForMakingShells) ||
 							  (!_model.IsShellProject && book.IsSuitableForVernacularLibrary);
 
-					if(isSuitableSourceForThisEditableCollection || collection.Type== BookCollection.CollectionType.TheOneEditableCollection)
+					if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
 					{
 						if (!book.IsExperimental || Settings.Default.ShowExperimentalBooks)
 						{
@@ -179,7 +213,6 @@ namespace Bloom.CollectionTab
 				{
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+book.FolderPath);
 				}
-
 			}
 			return loadedAtLeastOneBook;
 		}
@@ -192,7 +225,7 @@ namespace Bloom.CollectionTab
 			item.ImageAlign = ContentAlignment.TopCenter;
 			item.TextAlign = ContentAlignment.BottomCenter;
 			item.FlatStyle = FlatStyle.Flat;
-			item.ForeColor = Palette.TextAgainstDarkBackground;
+			item.ForeColor = Palette.TextAgainstDarkBackground ;
 			item.FlatAppearance.BorderSize = 0;
 			item.ContextMenuStrip = contextMenuStrip1;
 			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
