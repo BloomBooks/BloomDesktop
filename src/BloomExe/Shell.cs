@@ -29,6 +29,8 @@ namespace Bloom
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
 
+          
+
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
@@ -53,7 +55,8 @@ namespace Bloom
                                     
             this.Controls.Add(this._workspaceView);
 
-			SetWindowText();
+            
+		    SetWindowText();
         }
 
 		protected override void OnClosing(CancelEventArgs e)

@@ -57,6 +57,9 @@
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
   <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
     <RootNamespace>Bloom</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
