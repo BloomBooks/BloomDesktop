@@ -688,7 +688,11 @@ function ResizeUsingPercentages(e,ui){
              }
          }
 
-         var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
+         //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
+         //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
+         //at the moment, the logic is all around whoever has the data-hint
+         //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
+         var shouldShowAlways = true;
          var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
 
          //make hints that start with a * only show when the field has focus
