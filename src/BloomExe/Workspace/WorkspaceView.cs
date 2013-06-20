@@ -32,9 +32,10 @@ namespace Bloom.Workspace
 		private EditingView _editingView;
 		private PublishView _publishView;
 		private Control _previouslySelectedControl;
-
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
+
+		private readonly LocalizationManager _localizationManager;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -50,7 +51,8 @@ namespace Bloom.Workspace
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
-							ChorusSystem chorusSystem
+							ChorusSystem chorusSystem,
+							LocalizationManager localizationManager
 
 			)
 		{
@@ -60,6 +62,7 @@ namespace Bloom.Workspace
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
+			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -186,7 +189,7 @@ namespace Bloom.Workspace
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("menuToBringUpLocalizationDialog","More..."));
 			menu.Click += new EventHandler((a, b) =>
 											{
-												Localization.LocalizationManager.ShowLocalizationDialogBox();
+												_localizationManager.ShowLocalizationDialogBox(false);
 												SetupUILanguageMenu();
 											});
 		}

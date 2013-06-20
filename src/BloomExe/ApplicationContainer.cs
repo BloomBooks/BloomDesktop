@@ -5,6 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using Localization;
 
 
 namespace Bloom
@@ -29,6 +30,9 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
+
+				builder.Register(c => LocalizationManager).InstancePerLifetimeScope();
+
 				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
@@ -42,6 +46,8 @@ namespace Bloom
 			{
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
+
+			public LocalizationManager LocalizationManager;
 
 			public void Dispose()
 			{
