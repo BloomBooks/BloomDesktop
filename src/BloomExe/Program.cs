@@ -62,7 +62,10 @@ namespace Bloom
 				}
 
 				SetUpErrorHandling();
-				SetUpLocalization();
+
+                _applicationContainer = new ApplicationContainer(); 
+                
+                SetUpLocalization();
 				Logger.Init();
 
 
@@ -86,8 +89,6 @@ namespace Bloom
 
 					SetUpReporting();
 					Settings.Default.Save();
-
-					_applicationContainer = new ApplicationContainer();
 
 					Browser.SetUpXulRunner();
 
@@ -432,7 +433,7 @@ namespace Bloom
 
 			try
 			{
-				LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+                _applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 				                           "Bloom", "Bloom", Application.ProductVersion,
 				                           installedStringFileFolder,
 				                           Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
