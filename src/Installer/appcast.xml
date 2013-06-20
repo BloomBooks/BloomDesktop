@@ -8,7 +8,7 @@
          <item>
             <title>Version DEV_VERSION_NUMBER</title>
 						<sparkle:releaseNotesLink>
-							http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/ReleaseNotes.htm
+							http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/ReleaseNotes.md
 						</sparkle:releaseNotesLink>
             <enclosure url="http://bloom.palaso.org/downloads/BloomInstaller.DEV_VERSION_NUMBER.msi" sparkle:version="DEV_VERSION_NUMBER" type="application/octet-stream" />
          </item>
