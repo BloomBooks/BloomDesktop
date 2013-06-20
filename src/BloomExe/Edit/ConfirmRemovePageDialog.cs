@@ -2,7 +2,6 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Edit
 {

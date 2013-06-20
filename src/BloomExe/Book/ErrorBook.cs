@@ -66,7 +66,7 @@ namespace Bloom.Book
 
 		public override bool Delete()
 		{
-			var didDelete= Palaso.UI.WindowsForms.FileSystem.ConfirmRecycleDialog.Recycle(_folderPath);
+			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
 			if(didDelete)
 				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
 			return didDelete;

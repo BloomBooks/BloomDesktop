@@ -229,9 +229,11 @@ namespace Bloom.Book
 				{
 					continue;
 				}
+				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
+				href = href.Replace("%5C", "/");
 
-				// TODO HttpUtility.UrlDecode is from System.Web - is there a better way that doesn't need that?
-				var fileName = System.Web.HttpUtility.UrlDecode(Path.GetFileName(href));
+
+				var fileName = Path.GetFileName(href);
 				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
 					var path = fileLocator.LocateOptionalFile(fileName);
@@ -489,7 +491,7 @@ namespace Bloom.Book
 
 		public bool DeleteBook()
 		{
-			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+			var didDelete= Bloom.ConfirmRecycleDialog.Recycle(_folderPath);
 			if(didDelete)
 				Logger.WriteEvent("After BookStorage.DeleteBook({0})", _folderPath);
 			return didDelete;
