@@ -58,7 +58,7 @@
 			this.tableLayout.RowCount = 2;
 			this.tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayout.Size = new System.Drawing.Size(359, 101);
+			this.tableLayout.Size = new System.Drawing.Size(359, 61);
 			this.tableLayout.TabIndex = 1;
 			this.tableLayout.SizeChanged += new System.EventHandler(this.HandleTableLayoutSizeChanged);
 			//
@@ -71,11 +71,11 @@
 			this._messageLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._messageLabel, null);
 			this.localizationExtender1.SetLocalizationComment(this._messageLabel, null);
-			this.localizationExtender1.SetLocalizingId(this._messageLabel, "ConfirmRemovePageDialog._messageLabel");
-			this._messageLabel.Location = new System.Drawing.Point(72, 4);
+			this.localizationExtender1.SetLocalizingId(this._messageLabel, "EditTab.ConfirmRemovePageDialog._messageLabel");
+			this._messageLabel.Location = new System.Drawing.Point(44, 4);
 			this._messageLabel.Margin = new System.Windows.Forms.Padding(0, 4, 0, 10);
 			this._messageLabel.Name = "_messageLabel";
-			this._messageLabel.Size = new System.Drawing.Size(287, 19);
+			this._messageLabel.Size = new System.Drawing.Size(315, 19);
 			this._messageLabel.TabIndex = 2;
 			this._messageLabel.Text = "This page will be permanently removed.";
 			//
@@ -88,7 +88,7 @@
 			this.pictureRecycleBin.Location = new System.Drawing.Point(0, 0);
 			this.pictureRecycleBin.Margin = new System.Windows.Forms.Padding(0, 0, 20, 10);
 			this.pictureRecycleBin.Name = "pictureRecycleBin";
-			this.pictureRecycleBin.Size = new System.Drawing.Size(52, 65);
+			this.pictureRecycleBin.Size = new System.Drawing.Size(24, 25);
 			this.pictureRecycleBin.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
 			this.pictureRecycleBin.TabIndex = 1;
 			this.pictureRecycleBin.TabStop = false;
@@ -101,7 +101,7 @@
 			this.localizationExtender1.SetLocalizableToolTip(this.cancelBtn, null);
 			this.localizationExtender1.SetLocalizationComment(this.cancelBtn, null);
 			this.localizationExtender1.SetLocalizingId(this.cancelBtn, "Common.CancelButton");
-			this.cancelBtn.Location = new System.Drawing.Point(284, 75);
+			this.cancelBtn.Location = new System.Drawing.Point(284, 35);
 			this.cancelBtn.Margin = new System.Windows.Forms.Padding(4, 0, 0, 0);
 			this.cancelBtn.Name = "cancelBtn";
 			this.cancelBtn.Size = new System.Drawing.Size(75, 26);
@@ -116,8 +116,8 @@
 			this.deleteBtn.AutoSize = true;
 			this.localizationExtender1.SetLocalizableToolTip(this.deleteBtn, null);
 			this.localizationExtender1.SetLocalizationComment(this.deleteBtn, null);
-			this.localizationExtender1.SetLocalizingId(this.deleteBtn, "ConfirmRemovePageDialog.DeleteButton");
-			this.deleteBtn.Location = new System.Drawing.Point(201, 75);
+			this.localizationExtender1.SetLocalizingId(this.deleteBtn, "EditTab.ConfirmRemovePageDialog.DeleteButton");
+			this.deleteBtn.Location = new System.Drawing.Point(201, 35);
 			this.deleteBtn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.deleteBtn.Name = "deleteBtn";
 			this.deleteBtn.Size = new System.Drawing.Size(75, 26);
@@ -143,7 +143,7 @@
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.localizationExtender1.SetLocalizableToolTip(this, null);
 			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "ConfirmRemovePageDialog.WindowTitle");
+			this.localizationExtender1.SetLocalizingId(this, "EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.MinimumSize = new System.Drawing.Size(400, 28);

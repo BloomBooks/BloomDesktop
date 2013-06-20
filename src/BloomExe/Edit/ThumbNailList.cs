@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Linq;
 using Bloom.Book;
 using Bloom.Properties;
+using Localization;
 
 namespace Bloom.Edit
 {
@@ -109,7 +110,8 @@ namespace Bloom.Edit
 			foreach (ListViewItem item in _listView.Items)
 			{
 				IPage page = (IPage) item.Tag;
-				item.Text = page.GetCaptionOrPageNumber(ref pageNumber);
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
+				item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
 			}
 			_listView.EndUpdate();
 		}
@@ -117,6 +119,8 @@ namespace Bloom.Edit
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
 			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
+			label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label);
+
 			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;
 

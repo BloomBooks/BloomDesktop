@@ -88,9 +88,8 @@ namespace Bloom.Workspace
 			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
 
 
-			_uiLanguageMenu.Visible = Settings.Default.ShowLocalizationControls;
-			if (Settings.Default.ShowLocalizationControls)
-				_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+			_uiLanguageMenu.Visible = true;
+		   _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
@@ -186,7 +185,7 @@ namespace Bloom.Workspace
 
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("menuToBringUpLocalizationDialog","More..."));
+			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
 			menu.Click += new EventHandler((a, b) =>
 											{
 												_localizationManager.ShowLocalizationDialogBox(false);

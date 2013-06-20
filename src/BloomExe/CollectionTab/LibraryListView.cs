@@ -119,9 +119,9 @@ namespace Bloom.CollectionTab
 			_collectionFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 
-			string shellSourceHeading = Localization.LocalizationManager.GetString("sourcesForNewShellsHeading",
+			string shellSourceHeading = Localization.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
 																				   "Sources For New Shells");
-			string bookSourceHeading = Localization.LocalizationManager.GetString("bookSourceHeading",
+			string bookSourceHeading = Localization.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
 																				  "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
@@ -163,7 +163,7 @@ namespace Bloom.CollectionTab
 				_missingBooksLink = new LinkLabel()
 										{
 											Text =
-												Localization.LocalizationManager.GetString("hiddenBooksNotice",
+												Localization.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
 																						   "Where's the rest?",
 																						   "Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
 											Width = 200,
@@ -185,7 +185,7 @@ namespace Bloom.CollectionTab
 		{
 			if (_model.IsShellProject)
 			{
-				MessageBox.Show(Localization.LocalizationManager.GetString("hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
+				MessageBox.Show(Localization.LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
 			}
 			else
 			{
@@ -231,7 +231,7 @@ namespace Bloom.CollectionTab
 			item.FlatStyle = FlatStyle.Flat;
 			item.ForeColor = Palette.TextAgainstDarkBackground ;
 			item.FlatAppearance.BorderSize = 0;
-			item.ContextMenuStrip = contextMenuStrip1;
+			item.ContextMenuStrip = _bookContextMenu;
 			item.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
@@ -295,7 +295,7 @@ namespace Bloom.CollectionTab
 				_lastClickTime = DateTime.Now;
 
 				SelectedBook = book;
-				contextMenuStrip1.Enabled = true;
+				_bookContextMenu.Enabled = true;
 				Debug.WriteLine("before selecting " + book.Title);
 				_model.SelectBook(book);
 				Debug.WriteLine("after selecting " + book.Title);
