@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -123,6 +124,13 @@ namespace Bloom.Book
 
 			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
 
+			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
+			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
+//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
+//			{
+//				ClearAwayAllTranslations(storage.Dom.RawDom);
+//			}
+
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
 			SetLineageAndId(storage);
@@ -145,7 +153,7 @@ namespace Bloom.Book
 				SetupPage(div, _collectionSettings, null, null);
 			}
 
-			ClearAwayLoremIpsum(storage.Dom.RawDom);
+			ClearAwayDraftText(storage.Dom.RawDom);
 
 			storage.Save();
 
@@ -173,24 +181,61 @@ namespace Bloom.Book
 			storage.Dom.RemoveMetaElement("bookLineage");//old name
 		}
 
+//		private static void ClearAwayAllTranslations(XmlNode element)
+//		{
+//
+//			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
+//            {
+//                if (node.NodeType == XmlNodeType.Text)
+//                {
+//                    node.InnerText = String.Empty;
+//                }
+//                else
+//                {
+//					ClearAwayAllTranslations(node);
+//                }
+//            }
+//			//after removing text, we could still be left with the line breaks between them
+//			if (element.ChildNodes != null)
+//			{
+//				var possibleBrNodes = new List<XmlNode>();
+//				possibleBrNodes.AddRange(from XmlNode x in element.ChildNodes select x);
+//				foreach (XmlNode node in possibleBrNodes)
+//				{
+//					if (node.NodeType == XmlNodeType.Element && node.Name.ToLower() == "br")
+//					{
+//						node.ParentNode.RemoveChild(node);
+//					}
+//				}
+//			}
+//		}
+
 		/// <summary>
-		/// Lorum Ipsum are handy when working on stylesheets, but don't let them bleed through to what the user sees
+		/// When building on templates, we usually want to have some sample text, but don't let them bleed through to what the user sees
 		/// </summary>
 		/// <param name="element"></param>
-		private static void ClearAwayLoremIpsum(XmlNode element)
+		private static void ClearAwayDraftText(XmlNode element)
 		{
+			//clear away everything done in language "x"
+			var nodesInLangX = new List<XmlNode>();
+			nodesInLangX.AddRange(from XmlNode x in element.SafeSelectNodes(String.Format("//*[@lang='x']")) select x);
+			foreach (XmlNode node in nodesInLangX)
+			{
+				node.ParentNode.RemoveChild(node);
+			}
+			//now clear based on the old approach, which was based on the content itself
 			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
 			{
 				if (node.NodeType == XmlNodeType.Text)
 				{
-					if (node.InnerText.ToLower().StartsWith("lorem ipsum"))
+					if (node.InnerText.TrimStart().ToLower().StartsWith("lorem ipsum") || node.InnerText.TrimStart().StartsWith("_"))
 					{
 						node.InnerText = String.Empty;
 					}
 				}
 				else
 				{
-					ClearAwayLoremIpsum(node);
+					ClearAwayDraftText(node);
 				}
 			}
 		}
@@ -296,7 +341,7 @@ namespace Bloom.Book
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
-			ClearAwayLoremIpsum(pageDiv);
+			ClearAwayDraftText(pageDiv);
 	   }
 
 
