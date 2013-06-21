@@ -223,21 +223,6 @@ namespace Bloom.Book
 			{
 				node.ParentNode.RemoveChild(node);
 			}
-			//now clear based on the old approach, which was based on the content itself
-			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
-			{
-				if (node.NodeType == XmlNodeType.Text)
-				{
-					if (node.InnerText.TrimStart().ToLower().StartsWith("lorem ipsum") || node.InnerText.TrimStart().StartsWith("_"))
-					{
-						node.InnerText = String.Empty;
-					}
-				}
-				else
-				{
-					ClearAwayDraftText(node);
-				}
-			}
 		}
 
 		private static void SetBookTitle(BookStorage storage, BookData bookData)
