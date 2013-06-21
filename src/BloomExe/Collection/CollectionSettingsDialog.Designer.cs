@@ -66,7 +66,7 @@
             this._okButton = new System.Windows.Forms.Button();
             this._restartReminder = new System.Windows.Forms.Label();
             this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._cancelButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._tab.SuspendLayout();
@@ -198,7 +198,7 @@
             this._language3Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._language3Name, null);
             this.localizationExtender1.SetLocalizationComment(this._language3Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language3Name, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._language3Name, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._language3Name, "CollectionSettingsDialog._nationalLanguage2Label");
             this._language3Name.Location = new System.Drawing.Point(26, 218);
             this._language3Name.Name = "_language3Name";
@@ -225,7 +225,7 @@
             this._language2Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._language2Name, null);
             this.localizationExtender1.SetLocalizationComment(this._language2Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language2Name, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._language2Name, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._language2Name, "CollectionSettingsDialog._nationalLanguage1Label");
             this._language2Name.Location = new System.Drawing.Point(26, 133);
             this._language2Name.Name = "_language2Name";
@@ -253,7 +253,7 @@
             this._language1Name.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.localizationExtender1.SetLocalizableToolTip(this._language1Name, null);
             this.localizationExtender1.SetLocalizationComment(this._language1Name, null);
-            this.localizationExtender1.SetLocalizationPriority(this._language1Name, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._language1Name, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._language1Name, "CollectionSettingsDialog._vernacularLanguageName");
             this._language1Name.Location = new System.Drawing.Point(26, 44);
             this._language1Name.Name = "_language1Name";
@@ -521,7 +521,7 @@
             this._showExperimentalTemplates.AutoSize = true;
             this.localizationExtender1.SetLocalizableToolTip(this._showExperimentalTemplates, null);
             this.localizationExtender1.SetLocalizationComment(this._showExperimentalTemplates, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizationPriority(this._showExperimentalTemplates, L10NSharp.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
             this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 120);
             this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
@@ -536,7 +536,7 @@
             this._showSendReceive.AutoSize = true;
             this.localizationExtender1.SetLocalizableToolTip(this._showSendReceive, null);
             this.localizationExtender1.SetLocalizationComment(this._showSendReceive, null);
-            this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
             this._showSendReceive.Location = new System.Drawing.Point(50, 78);
             this._showSendReceive.Name = "_showSendReceive";
@@ -692,7 +692,7 @@
 		private System.Windows.Forms.Button _aboutLanguageSettingsButton;
 		private System.Windows.Forms.Button _aboutBookMakingSettingsButton;
 		private System.Windows.Forms.Button _aboutProjectInformationSetingsButton;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox _useImageServer;
 		private System.Windows.Forms.ToolTip toolTip1;

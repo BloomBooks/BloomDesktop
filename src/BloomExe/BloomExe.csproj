@@ -129,8 +129,8 @@
     <Reference Include="PdfSharp">
       <HintPath>..\..\..\pdfdroplet\output\Debug\PdfSharp.dll</HintPath>
     </Reference>
-    <Reference Include="LocalizationManager">
-      <HintPath>..\..\..\localizationmanager\Output\Debug\LocalizationManager.dll</HintPath>
+    <Reference Include="L10NSharp">
+      <HintPath>..\..\..\l10nsharp\output\DebugMono\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\..\palaso\output\DebugMono\Palaso.dll</HintPath>

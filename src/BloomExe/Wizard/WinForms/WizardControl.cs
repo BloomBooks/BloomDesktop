@@ -22,8 +22,7 @@ namespace Bloom.Wizard.WinForms
         Button _backButton;
         Button _cancelButton;
         PictureBox _wizardIconPictureBox;
-
-        int _currentPageIndex;
+		int _currentPageIndex;
         WizardPage _currentShownPage;
 
         #endregion
@@ -57,6 +56,18 @@ namespace Bloom.Wizard.WinForms
             get;
             set;
         }
+
+		public string NextButtonText 
+		{
+			get;
+			set;
+		}
+
+		public string FinishButtonText
+		{
+			get;
+			set;
+		}
 
         public Icon TitleIcon
         {
