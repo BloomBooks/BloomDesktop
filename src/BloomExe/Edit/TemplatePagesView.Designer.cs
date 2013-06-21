@@ -31,7 +31,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._thumbNailList = new Bloom.Edit.ThumbNailList();
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
@@ -96,6 +96,6 @@
 
         private System.Windows.Forms.Label label1;
 		private Bloom.Edit.ThumbNailList _thumbNailList;
-        private Localization.UI.LocalizationExtender localizationExtender1;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
     }
 }

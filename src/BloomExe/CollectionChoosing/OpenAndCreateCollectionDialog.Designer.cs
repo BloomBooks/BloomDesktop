@@ -28,9 +28,17 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenAndCreateCollectionDialog));
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._openAndCreateControl = new Bloom.CollectionChoosing.OpenCreateCloneControl();
+            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
+            // 
+            // localizationExtender1
+            // 
+            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this.localizationExtender1.PrefixForNewItems = "OpenCreateNewCollectionsDialog";
             // 
             // _openAndCreateControl
             // 
@@ -40,6 +48,10 @@
             this._openAndCreateControl.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this._openAndCreateControl.BackColor = System.Drawing.Color.White;
             this._openAndCreateControl.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.localizationExtender1.SetLocalizableToolTip(this._openAndCreateControl, null);
+            this.localizationExtender1.SetLocalizationComment(this._openAndCreateControl, null);
+            this.localizationExtender1.SetLocalizingId(this._openAndCreateControl, "OpenCreateNewCollectionsDialog.OpenAndCreateCollectionDialog.OpenCreateCloneContr" +
+        "ol");
             this._openAndCreateControl.Location = new System.Drawing.Point(12, 12);
             this._openAndCreateControl.Name = "_openAndCreateControl";
             this._openAndCreateControl.Size = new System.Drawing.Size(796, 348);
@@ -54,13 +66,17 @@
             this.Controls.Add(this._openAndCreateControl);
 #if !__MonoCS__
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-#endif
+#endif			
+            this.localizationExtender1.SetLocalizableToolTip(this, null);
+            this.localizationExtender1.SetLocalizationComment(this, null);
+            this.localizationExtender1.SetLocalizingId(this, "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle");
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "OpenAndCreateCollectionDialog";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Open/Create Collections";
+            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
             this.ResumeLayout(false);
 
 		}
@@ -68,6 +84,7 @@
 		#endregion
 
         private OpenCreateCloneControl _openAndCreateControl;
+        private L10NSharp.UI.LocalizationExtender localizationExtender1;
 
 	}
 }

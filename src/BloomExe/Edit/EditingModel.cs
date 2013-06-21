@@ -508,7 +508,7 @@ namespace Bloom.Edit
 
 			if(null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
 			{
-				var s = Localization.LocalizationManager.GetString("EditTab.FontMissing",
+				var s = L10NSharp.LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
 				return string.Format(s, _collectionSettings.DefaultLanguage1FontName);

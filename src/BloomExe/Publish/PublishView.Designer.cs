@@ -47,7 +47,7 @@
             this._bodyRadio = new System.Windows.Forms.RadioButton();
             this._coverRadio = new System.Windows.Forms.RadioButton();
             this._noBookletRadio = new System.Windows.Forms.RadioButton();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
             this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
             this._workingIndicator.SuspendLayout();
@@ -163,7 +163,7 @@
             // 
             this.localizationExtender1.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
             this.localizationExtender1.SetLocalizationComment(this._openinBrowserMenuItem, null);
-            this.localizationExtender1.SetLocalizationPriority(this._openinBrowserMenuItem, Localization.LocalizationPriority.Low);
+            this.localizationExtender1.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
             this.localizationExtender1.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
             this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
             this._openinBrowserMenuItem.Size = new System.Drawing.Size(334, 22);
@@ -196,7 +196,7 @@
             this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.localizationExtender1.SetLocalizableToolTip(this._layoutChoices, null);
             this.localizationExtender1.SetLocalizationComment(this._layoutChoices, null);
-            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, Localization.LocalizationPriority.NotLocalizable);
+            this.localizationExtender1.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
             this.localizationExtender1.SetLocalizingId(this._layoutChoices, "._layoutChoices");
             this._layoutChoices.Name = "_layoutChoices";
             this._layoutChoices.Size = new System.Drawing.Size(85, 19);
@@ -329,7 +329,7 @@
 		private System.Windows.Forms.Panel _topBarPanel;
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 		private AdobeReaderControl _adobeReaderControl;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;

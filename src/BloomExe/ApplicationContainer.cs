@@ -5,7 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
-using Localization;
+using L10NSharp;
 
 
 namespace Bloom
@@ -31,7 +31,7 @@ namespace Bloom
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 
-				builder.Register(c => LocalizationManager).InstancePerLifetimeScope();
+				builder.Register(c => LocalizationManager).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{

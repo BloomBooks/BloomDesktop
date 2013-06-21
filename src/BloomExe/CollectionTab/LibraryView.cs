@@ -3,7 +3,7 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.Workspace;
-using Localization;
+using L10NSharp;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionTab
@@ -53,7 +53,7 @@ namespace Bloom.CollectionTab
 
 		public string CollectionTabLabel
 		{
-			get { return LocalizationManager.GetString("EditTab.EditTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 

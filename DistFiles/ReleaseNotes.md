@@ -1,9 +1,21 @@
+## 0.947 22 March 2013
+* New Collection Wizard is now mostly localizable
+* On first run, now detects user's OS Display Language and tries to use that, or offers other choices if it doesn't have that UI language yet.
+* Parts of Bloom that come from outside libraries, so not yet localize-able:
+ * Language chooser (shows in New Collection Wizard & Settings dialog)
+ * Image Toolbox
+ * Send/Receive
+ * Tooltips in Publish Tab
+ * Metadata Dialogs
+ * Settings Protection Dialog
+
 ## 0.946 21 March 2013
 * Add enough space to show French labels, where previously things were cut off.
 * Make UI Language Chooser no longer experimental, so it's now on by default.
 * Newly localize-able:
  * Page Size/Orientation choices
  * Page thumbnail names (e.g. "Title Page", "Just Text")
+ * Open/Create Collection Dialog
 
 
 ## 0.945 20 March 2013
@@ -25,7 +37,7 @@
 
 ## 0.9: 13 October 2012
 * Partial Send/Receive support available as an opt-in experimental feature
-* Partial Localiziation support available as an opt-in experimental feature
+* Partial Localization support available as an opt-in experimental feature
 * Calendar, Picture Dictionary, and Template Maker are now an opt-in experimental feature
 
 

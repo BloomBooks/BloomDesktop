@@ -22,7 +22,6 @@ namespace Bloom.Wizard.WinForms
 		Button _backButton;
 		Button _cancelButton;
 		PictureBox _wizardIconPictureBox;
-
 		int _currentPageIndex;
 		WizardPage _currentShownPage;
 
@@ -53,6 +52,18 @@ namespace Bloom.Wizard.WinForms
 		}
 
 		public string Title
+		{
+			get;
+			set;
+		}
+
+		public string NextButtonText
+		{
+			get;
+			set;
+		}
+
+		public string FinishButtonText
 		{
 			get;
 			set;

@@ -29,8 +29,6 @@ namespace Bloom.CollectionChoosing
 		}
 
 		public void Init(MostRecentPathsList mruList,
-						 string createNewLibraryButtonLabel,
-						 string browseForOtherLibrarysLabel,
 						 string filterString,
 						 Func<string> createNewLibraryAndReturnPath)
 		{

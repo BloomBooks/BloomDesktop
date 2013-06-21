@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
@@ -660,7 +660,7 @@ namespace Bloom.Edit
 					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice",LocalizationManager.GetString("LayoutOnlyInPublish","This option is only available in the Publish tab."));
+						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","LayoutOnlyInPublish","This option is only available in the Publish tab.");
 					}
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);

@@ -80,6 +80,10 @@ namespace Bloom.Wizard
 
 				GetTitle = () => _aeroWizard.Title;
 				SetTitle = (value) => _aeroWizard.Title = value;
+				GetNextButtonText = () => _aeroWizard.NextButtonText;
+				SetNextButtonText = (value) => _aeroWizard.NextButtonText = value;
+				GetFinishButtonText= () => _aeroWizard.FinishButtonText;
+				SetFinishButtonText= (value) => _aeroWizard.FinishButtonText = value;
 				GetIcon = () => _aeroWizard.TitleIcon;
 				SetIcon = (icon) => _aeroWizard.TitleIcon = icon;
 
@@ -143,6 +147,10 @@ namespace Bloom.Wizard
 
 				GetTitle = () => _winformsWizard.Title;
 				SetTitle = (value) => _winformsWizard.Title = value;
+				GetNextButtonText = () => _winformsWizard.NextButtonText;
+				SetNextButtonText = (value) => _winformsWizard.NextButtonText = value;
+				GetFinishButtonText= () => _winformsWizard.FinishButtonText;
+				SetFinishButtonText= (value) => _winformsWizard.FinishButtonText = value;
 				GetIcon = () => _winformsWizard.TitleIcon;
 				SetIcon = (icon) => _winformsWizard.TitleIcon = icon;
 
@@ -168,6 +176,10 @@ namespace Bloom.Wizard
 		Func<List<WizardAdapterPage>> GetPages;
 		Func<string> GetTitle;
 		Action<string> SetTitle;
+		Func<string> GetNextButtonText;
+		Action<string> SetNextButtonText;
+		Func<string> GetFinishButtonText;
+		Action<string> SetFinishButtonText;
 		Func<Icon> GetIcon;
 		Action<Icon> SetIcon;
 		Action BeginInitLogic;
@@ -207,6 +219,29 @@ namespace Bloom.Wizard
 			set
 			{
 				SetTitle(value);
+			}
+		}
+
+		public string NextButtonText
+		{
+			get
+			{
+				return GetNextButtonText();
+			}
+			set
+			{
+				SetNextButtonText(value);
+			}
+		}
+		public string FinishButtonText
+		{
+			get
+			{
+				return GetFinishButtonText();
+			}
+			set
+			{
+				SetFinishButtonText(value);
 			}
 		}
 
@@ -276,6 +311,7 @@ namespace Bloom.Wizard
 					SetText = (value) => _aeroPage.Text = value;
 					GetSize = () => _aeroPage.Size;
 					SetSize = (value) => _aeroPage.Size = value;
+
 				};
 			}
 			else

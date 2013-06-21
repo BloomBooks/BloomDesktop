@@ -1,8 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using L10NSharp;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionCreating
@@ -36,6 +40,10 @@ namespace Bloom.CollectionCreating
 		public NewCollectionWizard(bool showWelcome)
 		{
 			InitializeComponent();
+
+			if (ReallyDesignMode)
+				return;
+
 			_collectionInfo = new NewCollectionSettings();
 			_kindOfCollectionPage.Tag = kindOfCollectionControl1;
 			kindOfCollectionControl1.Init(SetNextButtonState, _collectionInfo);
@@ -50,8 +58,60 @@ namespace Bloom.CollectionCreating
 			_vernacularLanguageIdControl.Init(SetNextButtonState, _collectionInfo);
 
 			_welcomePage.Suppress = !showWelcome;
-			if (showWelcome)
-				_welcomeHtml.HTML = File.ReadAllText(BloomFileLocator.GetFileDistributedWithApplication("welcome.htm"));
+
+			//The localizationExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
+			//so we do all of this by hand
+			var chooser = new Button();// new L10NSharp.UI.UILanguageComboBox() { ShowOnlyLanguagesHavingLocalizations = false };
+			chooser.Location = new Point(100,100);
+			chooser.Size= new Size(50,50);
+			chooser.Visible = true;
+			chooser.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			//chooser.SelectedValueChanged += new EventHandler(chooser_SelectedValueChanged);
+			wizardControl1.Controls.Add(chooser);
+
+			SetLocalizedStrings();
+	   }
+
+		void chooser_SelectedValueChanged(object sender, EventArgs e)
+		{
+			SetLocalizedStrings();
+		}
+
+		private void SetLocalizedStrings()
+		{
+			this.wizardControl1.Title = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle",
+																	  "Create New Bloom Collection");
+			this._welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage",
+																   "Welcome To Bloom!");
+			this._kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage",
+																			"Choose the Collection Type");
+			this._languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage",
+																			"Give Language Location");
+			this._vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage",
+																			  "Choose the Main Language For This Collection");
+			this._finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage",
+																  "Ready To Create New Collection");
+			wizardControl1.NextButtonText = LocalizationManager.GetString("Common.Next", "&Next",
+																		  "Used for the Next button in wizards, like that used for making a New Collection");
+			wizardControl1.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish",
+																			"Used for the Finish button in wizards, like that used for making a New Collection");
+
+			var one = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
+																 "You are almost ready to start making books.");
+			var two = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2",
+																 "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. So the first thing we need to do is make one for you.");
+			var three = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3",
+																   "Click 'Next' to get started.");
+			_welcomeHtml.HTML = one + "<br/>" + two + "<br/>" + three;
+		}
+
+		protected new bool ReallyDesignMode
+		{
+			get
+			{
+				return (base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
+					(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
+			}
 		}
 
 		public void SetNextButtonState(UserControl caller, bool enabled)
@@ -72,7 +132,7 @@ namespace Bloom.CollectionCreating
 
 			if (caller is LanguageIdControl)
 			{
-				var pattern = Localization.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
+				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, string.Format(pattern, _collectionInfo.Language1Name));
 				//_collectionInfo.CollectionName = ;
 
@@ -149,7 +209,7 @@ namespace Bloom.CollectionCreating
 
 		private void _finishPage_Initialize(object sender, EventArgs e)
 		{
-			var pattern = "OK, that's all we need to get started with\r\nyour new '{0}' collection.\r\nClick on the 'Finish' button.\r\n_";
+			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPage","OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.");
 			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
 		}
 	}

@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Localization;
+using L10NSharp;
 
 namespace Bloom.Publish
 {

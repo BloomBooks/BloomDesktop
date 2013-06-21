@@ -10,7 +10,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus;
-using Localization;
+using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
 using Skybound.Gecko;
@@ -95,7 +95,7 @@ namespace Bloom
 					StartUpShellBasedOnMostRecentUsedIfPossible();
 					Application.Idle += new EventHandler(Application_Idle);
 
-					Localization.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
+				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
 					EventHandler hideSplash = (sender2, e2) =>
 					{
 						Splasher.Hide();
@@ -429,7 +429,6 @@ namespace Bloom
 		public static void SetUpLocalization()
 		{
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
-			installedStringFileFolder = Path.GetDirectoryName(installedStringFileFolder);
 
 			try
 			{
@@ -437,7 +436,27 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+//                var unusedGoesIntoStatic = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+//                                           "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
+//                                           installedStringFileFolder,
+//                                           Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
+				//L10Net L10NDotNet LocalEasy LocalEeze
+//                var localeasy = LocalEasy.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
+//                localeasy.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
+//                localeasy.AddLocalizationPackage(NameSpace = "Palaso", ID = "Palaso", DisplayName = "Palaso", Version = Application.ProductVersion);
+				/*
+					[L10NDotNet(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
+					[L10NDotNet.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
+					[Localeese.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
+					[Localeasy.Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
+				 *
+				 * */
 
+				//                L10N.EndInit();
+				//product namespace staticclass
+				//L10N.Strings.GetString();
+				//L10NDotNet.L10N.GetString();
+				//  L10N.GetString();
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
 			catch (Exception error)
@@ -445,7 +464,7 @@ namespace Bloom
 				//handle http://jira.palaso.org/issues/browse/BL-213
 				if(Process.GetProcesses().Count(p=>p.ProcessName.ToLower().Contains("bloom"))>1)
 				{
-					ErrorReport.NotifyUserOfProblem("Whoops. There is another copy of Bloom already running while Bloom was trying to set up localization.");
+					ErrorReport.NotifyUserOfProblem("Whoops. There is another copy of Bloom already running while Bloom was trying to set up L10NSharp.");
 					Environment.FailFast("Bloom couldn't set up localization");
 				}
 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Properties;
-using Localization;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
 

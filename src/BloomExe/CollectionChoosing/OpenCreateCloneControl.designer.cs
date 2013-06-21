@@ -42,7 +42,9 @@ namespace Bloom.CollectionChoosing
 			this.label1 = new System.Windows.Forms.Label();
 			this._lookingForSourceCollectionsHtml = new Bloom.HtmlLabel();
 			this._readMoreLink = new System.Windows.Forms.LinkLabel();
+			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
 			this.tableLayoutPanel2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
 			//
 			// toolTip1
@@ -88,6 +90,9 @@ namespace Bloom.CollectionChoosing
 			this._browseButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._browseButton.Image = global::Bloom.Properties.Resources.open;
 			this._browseButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this._browseButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._browseButton, null);
+			this.localizationExtender1.SetLocalizingId(this._browseButton, "OpenCreateNewCollectionsDialog.BrowseForOtherCollections");
 			this._browseButton.Location = new System.Drawing.Point(3, 253);
 			this._browseButton.Name = "_browseButton";
 			this._browseButton.Size = new System.Drawing.Size(254, 49);
@@ -106,6 +111,9 @@ namespace Bloom.CollectionChoosing
 			this.button6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.button6.Image = global::Bloom.Properties.Resources.cloneFromUsb;
 			this.button6.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this.button6, null);
+			this.localizationExtender1.SetLocalizationComment(this.button6, null);
+			this.localizationExtender1.SetLocalizingId(this.button6, "OpenCreateNewCollectionsDialog.CopyFromUsbDrive");
 			this.button6.Location = new System.Drawing.Point(363, 63);
 			this.button6.Name = "button6";
 			this.button6.Size = new System.Drawing.Size(404, 39);
@@ -124,6 +132,9 @@ namespace Bloom.CollectionChoosing
 			this.button7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.button7.Image = ((System.Drawing.Image)(resources.GetObject("button7.Image")));
 			this.button7.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this.button7, null);
+			this.localizationExtender1.SetLocalizationComment(this.button7, null);
+			this.localizationExtender1.SetLocalizingId(this.button7, "OpenCreateNewCollectionsDialog.CopyFromInternet");
 			this.button7.Location = new System.Drawing.Point(363, 108);
 			this.button7.Name = "button7";
 			this.button7.Size = new System.Drawing.Size(405, 36);
@@ -142,6 +153,9 @@ namespace Bloom.CollectionChoosing
 			this.button8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.button8.Image = global::Bloom.Properties.Resources.cloneFromChorusHub;
 			this.button8.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this.button8, null);
+			this.localizationExtender1.SetLocalizationComment(this.button8, null);
+			this.localizationExtender1.SetLocalizingId(this.button8, "OpenCreateNewCollectionsDialog.CopyFromChorusHub");
 			this.button8.Location = new System.Drawing.Point(363, 153);
 			this.button8.Name = "button8";
 			this.button8.Size = new System.Drawing.Size(391, 36);
@@ -160,6 +174,9 @@ namespace Bloom.CollectionChoosing
 			this.button9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.button9.Image = global::Bloom.Properties.Resources.newLibrary32x32;
 			this.button9.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this.button9, null);
+			this.localizationExtender1.SetLocalizationComment(this.button9, null);
+			this.localizationExtender1.SetLocalizingId(this.button9, "OpenCreateNewCollectionsDialog.CreateNewCollection");
 			this.button9.Location = new System.Drawing.Point(3, 3);
 			this.button9.Name = "button9";
 			this.button9.Size = new System.Drawing.Size(244, 36);
@@ -178,6 +195,10 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._templateButton.Image = global::Bloom.Properties.Resources.library32x32;
 			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.localizationExtender1.SetLocalizableToolTip(this._templateButton, null);
+			this.localizationExtender1.SetLocalizationComment(this._templateButton, null);
+			this.localizationExtender1.SetLocalizationPriority(this._templateButton, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizingId(this._templateButton, "OpenCreateNewCollectionsDialog.OpenCreateCloneControl._templateButton");
 			this._templateButton.Location = new System.Drawing.Point(3, 63);
 			this._templateButton.Name = "_templateButton";
 			this._templateButton.Size = new System.Drawing.Size(254, 39);
@@ -191,6 +212,9 @@ namespace Bloom.CollectionChoosing
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F);
 			this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
+			this.localizationExtender1.SetLocalizableToolTip(this.label1, null);
+			this.localizationExtender1.SetLocalizationComment(this.label1, null);
+			this.localizationExtender1.SetLocalizingId(this.label1, "OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus");
 			this.label1.Location = new System.Drawing.Point(363, 10);
 			this.label1.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
 			this.label1.Name = "label1";
@@ -210,6 +234,9 @@ namespace Bloom.CollectionChoosing
 			this._lookingForSourceCollectionsHtml.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
 			this._lookingForSourceCollectionsHtml.HTML = "Are you are looking for shell books to translate into your language? Read about <" +
 	"a href=\"http://bloom.palaso.org/bloompacks\">how to get free Bloom Packs</a>";
+			this.localizationExtender1.SetLocalizableToolTip(this._lookingForSourceCollectionsHtml, null);
+			this.localizationExtender1.SetLocalizationComment(this._lookingForSourceCollectionsHtml, null);
+			this.localizationExtender1.SetLocalizingId(this._lookingForSourceCollectionsHtml, "OpenCreateNewCollectionsDialog.MoreBloompacksInformation");
 			this._lookingForSourceCollectionsHtml.Location = new System.Drawing.Point(0, 318);
 			this._lookingForSourceCollectionsHtml.Margin = new System.Windows.Forms.Padding(0);
 			this._lookingForSourceCollectionsHtml.Name = "_lookingForSourceCollectionsHtml";
@@ -220,6 +247,9 @@ namespace Bloom.CollectionChoosing
 			//
 			this._readMoreLink.AutoSize = true;
 			this._readMoreLink.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.localizationExtender1.SetLocalizableToolTip(this._readMoreLink, null);
+			this.localizationExtender1.SetLocalizationComment(this._readMoreLink, null);
+			this.localizationExtender1.SetLocalizingId(this._readMoreLink, "OpenCreateNewCollectionsDialog.ReadMoreLink");
 			this._readMoreLink.Location = new System.Drawing.Point(363, 210);
 			this._readMoreLink.Margin = new System.Windows.Forms.Padding(3, 15, 3, 0);
 			this._readMoreLink.Name = "_readMoreLink";
@@ -229,17 +259,26 @@ namespace Bloom.CollectionChoosing
 			this._readMoreLink.Text = "Read More";
 			this._readMoreLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._readMoreLabel_Click);
 			//
+			// localizationExtender1
+			//
+			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			this.localizationExtender1.PrefixForNewItems = "OpenCreateNewCollectionsDialog";
+			//
 			// OpenCreateCloneControl
 			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this.tableLayoutPanel2);
+			this.localizationExtender1.SetLocalizableToolTip(this, null);
+			this.localizationExtender1.SetLocalizationComment(this, null);
+			this.localizationExtender1.SetLocalizingId(this, "OpenCreateNewCollectionsDialog.OpenCreateCloneControl.OpenCreateCloneControl");
 			this.Name = "OpenCreateCloneControl";
 			this.Size = new System.Drawing.Size(889, 343);
 			this.Load += new System.EventHandler(this.OnLoad);
 			this.tableLayoutPanel2.ResumeLayout(false);
 			this.tableLayoutPanel2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -258,6 +297,7 @@ namespace Bloom.CollectionChoosing
 		private HtmlLabel _lookingForSourceCollectionsHtml;
 		private System.Windows.Forms.Button _browseButton;
 		private System.Windows.Forms.LinkLabel _readMoreLink;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 
 	}
 }

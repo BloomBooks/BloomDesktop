@@ -33,7 +33,7 @@
             this._addToCollectionButton = new System.Windows.Forms.Button();
             this._browser = new Bloom.Browser();
             this._editBookButton = new System.Windows.Forms.Button();
-            this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -120,6 +120,6 @@
         private Browser _browser;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button _editBookButton;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
     }
 }

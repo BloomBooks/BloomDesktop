@@ -293,7 +293,7 @@ namespace Bloom.Collection
 			{
 				if(IsSourceCollection)
 					return CollectionName;
-				var fmt = Localization.LocalizationManager.GetString("CollectionTab.Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
+				var fmt = L10NSharp.LocalizationManager.GetString("CollectionTab.Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
 				return string.Format(fmt, Language1Name);
 			}
 		}

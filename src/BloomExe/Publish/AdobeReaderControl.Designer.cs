@@ -31,7 +31,7 @@
 			this.components = new System.ComponentModel.Container();
 			this._problemLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			this._problemPicture = new System.Windows.Forms.PictureBox();
-			this.localizationExtender1 = new Localization.UI.LocalizationExtender(this.components);
+			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._problemPicture)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
 			this.SuspendLayout();
@@ -44,7 +44,7 @@
 			this._problemLabel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.localizationExtender1.SetLocalizableToolTip(this._problemLabel, null);
 			this.localizationExtender1.SetLocalizationComment(this._problemLabel, null);
-			this.localizationExtender1.SetLocalizationPriority(this._problemLabel, Localization.LocalizationPriority.NotLocalizable);
+			this.localizationExtender1.SetLocalizationPriority(this._problemLabel, L10NSharp.LocalizationPriority.NotLocalizable);
 			this.localizationExtender1.SetLocalizingId(this._problemLabel, "PublishTab.AdobeReaderProblemControl._adobeProblemLabel");
 			this._problemLabel.Location = new System.Drawing.Point(13, 150);
 			this._problemLabel.Multiline = true;
@@ -97,6 +97,6 @@
 
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _problemLabel;
 		private System.Windows.Forms.PictureBox _problemPicture;
-		private Localization.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.LocalizationExtender localizationExtender1;
 	}
 }
