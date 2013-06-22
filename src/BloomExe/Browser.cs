@@ -280,7 +280,7 @@ namespace Bloom
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
 		{
-			string path = Path.GetTempFileName();
+			string path = Path.GetTempFileName().Replace(".tmp",".html");
 			File.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(GetPathToStylizer(), path);
 		}
