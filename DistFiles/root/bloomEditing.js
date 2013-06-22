@@ -666,6 +666,10 @@ function ResizeUsingPercentages(e,ui){
      //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
      $("*[data-hint]").each(function () {
 
+         if($(this).css('display') == 'none'){
+             return;
+         }
+
          if ($(this).css('border-bottom-color') == 'transparent') {
              return; //don't put tips if they can't edit it. That's just confusing
          }
