@@ -60,6 +60,7 @@
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this._showExperimentCommands = new System.Windows.Forms.CheckBox();
 			this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
 			this._showSendReceive = new System.Windows.Forms.CheckBox();
 			this._useImageServer = new System.Windows.Forms.CheckBox();
@@ -287,7 +288,7 @@
 			this.tabPage2.Location = new System.Drawing.Point(4, 26);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(610, 318);
+			this.tabPage2.Size = new System.Drawing.Size(610, 311);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
@@ -378,7 +379,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
 			this.tabPage3.Location = new System.Drawing.Point(4, 26);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(610, 318);
+			this.tabPage3.Size = new System.Drawing.Size(610, 311);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -502,6 +503,7 @@
 			// 
 			// tabPage4
 			// 
+			this.tabPage4.Controls.Add(this._showExperimentCommands);
 			this.tabPage4.Controls.Add(this._showExperimentalTemplates);
 			this.tabPage4.Controls.Add(this._showSendReceive);
 			this.tabPage4.Controls.Add(this._useImageServer);
@@ -511,10 +513,25 @@
 			this.tabPage4.Location = new System.Drawing.Point(4, 26);
 			this.tabPage4.Name = "tabPage4";
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage4.Size = new System.Drawing.Size(610, 318);
+			this.tabPage4.Size = new System.Drawing.Size(610, 311);
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
+			// 
+			// _showExperimentCommands
+			// 
+			this._showExperimentCommands.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentCommands, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentCommands, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentCommands, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._showExperimentCommands, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands");
+			this._showExperimentCommands.Location = new System.Drawing.Point(50, 165);
+			this._showExperimentCommands.Name = "_showExperimentCommands";
+			this._showExperimentCommands.Size = new System.Drawing.Size(404, 23);
+			this._showExperimentCommands.TabIndex = 4;
+			this._showExperimentCommands.Text = "Show Experimental Commands (e.g. Export XML for InDesign)";
+			this._showExperimentCommands.UseVisualStyleBackColor = true;
+			this._showExperimentCommands.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
 			// 
 			// _showExperimentalTemplates
 			// 
@@ -704,5 +721,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox _fontCombo;
         private System.Windows.Forms.CheckBox _showExperimentalTemplates;
+		private System.Windows.Forms.CheckBox _showExperimentCommands;
 	}
 }

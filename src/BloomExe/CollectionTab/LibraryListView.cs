@@ -72,13 +72,10 @@ namespace Bloom.CollectionTab
 
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
-#if DEBUG
-			_exportToXMLForInDesignToolStripMenuItem.Text += "   DEBUG ONLY";
-#endif
+			if(Settings.Default.ShowExperimentalCommands)
+				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
+			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
 
-#if !DEBUG
-			_exportToXMLForInDesignToolStripMenuItem.Visible = false;
-#endif
 		}
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
