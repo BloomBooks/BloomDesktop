@@ -1,4 +1,8 @@
+## 0.9.92 22 June 2013
+ * New experimental "Export XML for InDesign" command on the right-click menu of books. Enable via the "Show experimental commands" setting in the Settings dialog.
+
 ## 0.9.91 20 June 2013
+
 These changes will only be noticed by those of us writing new templates from scratch in html:
 
 * When starting a book, now removes incoming content with lang = "x", so we can draft with "x" and know that it won't show to users.
