@@ -222,6 +222,9 @@ namespace Bloom.Publish
 				case "A6":
 					pageSize = PageSize.A5;
 					break;
+				case "B5":
+					pageSize = PageSize.B5;
+					break;
 				case "Letter":
 					pageSize = PageSize.Letter;//TODO... what's reasonable?
 					break;

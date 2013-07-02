@@ -141,11 +141,35 @@ namespace Bloom.Book
 				SetupPage(div, _collectionSettings, null, null);
 			}
 
+			ClearAwayLoremIpsum(storage.Dom.RawDom);
+
 			storage.Save();
 
 			//REVIEW this actually undoes the setting of the intial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// Lorum Ipsum are handy when working on stylesheets, but don't let them bleed through to what the user sees
+		/// </summary>
+		/// <param name="element"></param>
+		private static void ClearAwayLoremIpsum(XmlNode element)
+		{
+			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
+			{
+				if (node.NodeType == XmlNodeType.Text)
+				{
+					if (node.InnerText.ToLower().StartsWith("lorem ipsum"))
+					{
+						node.InnerText = String.Empty;
+					}
+				}
+				else
+				{
+					ClearAwayLoremIpsum(node);
+				}
+			}
 		}
 
 		private static void SetBookTitle(BookStorage storage, BookData bookData)
@@ -249,6 +273,7 @@ namespace Bloom.Book
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
+			ClearAwayLoremIpsum(pageDiv);
 	   }
 
 

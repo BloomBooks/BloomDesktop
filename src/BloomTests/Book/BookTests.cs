@@ -165,7 +165,7 @@ namespace BloomTests.Book
 		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
 		{
 			SetDom(@"<div class='bloom-page'>
-						 <span data-library='nameOfNationalLanguage2' lang='en'>{Regional}</span>
+						 <span data-collection='nameOfNationalLanguage2' lang='en'>{Regional}</span>
 					</div>
 			");
 			var book = CreateBook();
@@ -720,8 +720,8 @@ namespace BloomTests.Book
 					</p>
 					<p>
 						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
-						<textarea lang='xyz' id='aa'  data-library='testLibraryVariable'>aa</textarea>
-					   <textarea lang='xyz' id='bb'  data-library='testLibraryVariable'>bb</textarea>
+						<textarea lang='xyz' id='aa'  data-collection='testLibraryVariable'>aa</textarea>
+					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
 
 					</p>
 				</div>

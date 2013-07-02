@@ -1,3 +1,6 @@
+## 0.9.58 10 April 2013
+ * New experimental B5 Primer template
+
 ## 0.9.53 2 April 2013
 * Now Localizable
  * Settings Protection Dialog
