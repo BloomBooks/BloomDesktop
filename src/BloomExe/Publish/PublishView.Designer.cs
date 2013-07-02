@@ -216,7 +216,7 @@
             superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
             superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-            superToolTipInfo1.BodyText = "Use this for making a booklet.\r\nThe pages will be layed out and reordered so that" +
+            superToolTipInfo1.BodyText = "Use this for making a booklet.\r\nThe pages will be laid out and reordered so that" +
     " when you fold it, you\'ll have a booklet.\r\nThe cover page won\'t be included; use" +
     " the \"Cover Page\" option for that.";
             superToolTipInfo1.HeaderText = "Booklet Inside Pages";
