@@ -33,8 +33,8 @@
             this._addToCollectionButton = new System.Windows.Forms.Button();
             this._browser = new Bloom.Browser();
             this._editBookButton = new System.Windows.Forms.Button();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _addToCollectionButton
@@ -44,9 +44,9 @@
             this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook1;
             this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.localizationExtender1.SetLocalizableToolTip(this._addToCollectionButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._addToCollectionButton, null);
-            this.localizationExtender1.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._addToCollectionButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
             this._addToCollectionButton.Location = new System.Drawing.Point(12, 3);
             this._addToCollectionButton.Name = "_addToCollectionButton";
             this._addToCollectionButton.Size = new System.Drawing.Size(250, 42);
@@ -65,9 +65,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this._browser.BackColor = System.Drawing.Color.DarkGray;
-            this.localizationExtender1.SetLocalizableToolTip(this._browser, null);
-            this.localizationExtender1.SetLocalizationComment(this._browser, null);
-            this.localizationExtender1.SetLocalizingId(this._browser, "CollectionTab.Browser");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
+            this._L10NSharpExtender.SetLocalizingId(this._browser, "CollectionTab.Browser");
             this._browser.Location = new System.Drawing.Point(0, 3);
             this._browser.Name = "_browser";
             this._browser.Size = new System.Drawing.Size(897, 447);
@@ -79,9 +79,9 @@
             this._editBookButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._editBookButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
-            this.localizationExtender1.SetLocalizableToolTip(this._editBookButton, null);
-            this.localizationExtender1.SetLocalizationComment(this._editBookButton, null);
-            this.localizationExtender1.SetLocalizingId(this._editBookButton, "CollectionTab._editBookButton");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._editBookButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._editBookButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab._editBookButton");
             this._editBookButton.Location = new System.Drawing.Point(12, 3);
             this._editBookButton.Name = "_editBookButton";
             this._editBookButton.Size = new System.Drawing.Size(147, 42);
@@ -91,9 +91,9 @@
             this._editBookButton.UseVisualStyleBackColor = false;
             this._editBookButton.Click += new System.EventHandler(this._editBookButton_Click);
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // LibraryBookView
             // 
@@ -103,13 +103,13 @@
             this.Controls.Add(this._editBookButton);
             this.Controls.Add(this._addToCollectionButton);
             this.Controls.Add(this._browser);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "CollectionTab.LibraryBookView");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "CollectionTab.LibraryBookView");
             this.Name = "LibraryBookView";
             this.Size = new System.Drawing.Size(900, 450);
             this.Resize += new System.EventHandler(this.LibraryBookView_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -120,6 +120,6 @@
         private Browser _browser;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button _editBookButton;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
     }
 }

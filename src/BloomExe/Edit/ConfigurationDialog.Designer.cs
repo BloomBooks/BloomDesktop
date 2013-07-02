@@ -32,8 +32,8 @@
 			this._browser = new Bloom.Browser();
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._okButton = new System.Windows.Forms.Button();
-			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _browser
@@ -42,9 +42,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._browser.BackColor = System.Drawing.Color.DarkGray;
-			this.localizationExtender1.SetLocalizableToolTip(this._browser, null);
-			this.localizationExtender1.SetLocalizationComment(this._browser, null);
-			this.localizationExtender1.SetLocalizingId(this._browser, "ConfigurationDialog.Browser");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
+			this._L10NSharpExtender.SetLocalizingId(this._browser, "ConfigurationDialog.Browser");
 			this._browser.Location = new System.Drawing.Point(-1, 0);
 			this._browser.Name = "_browser";
 			this._browser.Size = new System.Drawing.Size(670, 438);
@@ -54,9 +54,9 @@
 			// 
 			this._cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.localizationExtender1.SetLocalizableToolTip(this._cancelButton, null);
-			this.localizationExtender1.SetLocalizationComment(this._cancelButton, null);
-			this.localizationExtender1.SetLocalizingId(this._cancelButton, "Common.CancelButton");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._cancelButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._cancelButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._cancelButton, "Common.CancelButton");
 			this._cancelButton.Location = new System.Drawing.Point(575, 447);
 			this._cancelButton.Name = "_cancelButton";
 			this._cancelButton.Size = new System.Drawing.Size(75, 23);
@@ -68,9 +68,9 @@
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.localizationExtender1.SetLocalizableToolTip(this._okButton, null);
-			this.localizationExtender1.SetLocalizationComment(this._okButton, null);
-			this.localizationExtender1.SetLocalizingId(this._okButton, "Common.OKButton");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
 			this._okButton.Location = new System.Drawing.Point(484, 447);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
@@ -79,9 +79,9 @@
 			this._okButton.UseVisualStyleBackColor = true;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
 			// 
-			// localizationExtender1
+			// _L10NSharpExtender
 			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			// 
 			// ConfigurationDialog
 			// 
@@ -93,10 +93,10 @@
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._cancelButton);
 			this.Controls.Add(this._browser);
-			this.localizationExtender1.SetLocalizableToolTip(this, null);
-			this.localizationExtender1.SetLocalizationComment(this, "This is the dialog used to set up the wall calendar");
-			this.localizationExtender1.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.Low);
-			this.localizationExtender1.SetLocalizingId(this, "WallCalendar.TitleOfSetupDialog");
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, "This is the dialog used to set up the wall calendar");
+			this._L10NSharpExtender.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this, "WallCalendar.TitleOfSetupDialog");
 			this.MinimizeBox = false;
 			this.Name = "ConfigurationDialog";
 			this.ShowIcon = false;
@@ -104,7 +104,7 @@
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Setup";
 			this.Load += new System.EventHandler(this.ConfigurationDialog_Load);
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -114,6 +114,6 @@
         private Browser _browser;
         private System.Windows.Forms.Button _cancelButton;
         private System.Windows.Forms.Button _okButton;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
     }
 }

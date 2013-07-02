@@ -31,9 +31,9 @@
 			this.components = new System.ComponentModel.Container();
 			this._problemLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			this._problemPicture = new System.Windows.Forms.PictureBox();
-			this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._problemPicture)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _problemLabel
@@ -42,10 +42,10 @@
 			this._problemLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._problemLabel.Enabled = false;
 			this._problemLabel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.localizationExtender1.SetLocalizableToolTip(this._problemLabel, null);
-			this.localizationExtender1.SetLocalizationComment(this._problemLabel, null);
-			this.localizationExtender1.SetLocalizationPriority(this._problemLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this.localizationExtender1.SetLocalizingId(this._problemLabel, "PublishTab.AdobeReaderProblemControl._adobeProblemLabel");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._problemLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._problemLabel, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._problemLabel, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._problemLabel, "PublishTab.AdobeReaderProblemControl._adobeProblemLabel");
 			this._problemLabel.Location = new System.Drawing.Point(13, 150);
 			this._problemLabel.Multiline = true;
 			this._problemLabel.Name = "_problemLabel";
@@ -59,9 +59,9 @@
 			// _problemPicture
 			// 
 			this._problemPicture.Image = global::Bloom.Properties.Resources.sad_large;
-			this.localizationExtender1.SetLocalizableToolTip(this._problemPicture, null);
-			this.localizationExtender1.SetLocalizationComment(this._problemPicture, null);
-			this.localizationExtender1.SetLocalizingId(this._problemPicture, "AdobeReaderControl._adobeProblemPicture");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._problemPicture, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._problemPicture, null);
+			this._L10NSharpExtender.SetLocalizingId(this._problemPicture, "AdobeReaderControl._adobeProblemPicture");
 			this._problemPicture.Location = new System.Drawing.Point(189, 3);
 			this._problemPicture.Name = "_problemPicture";
 			this._problemPicture.Size = new System.Drawing.Size(128, 132);
@@ -70,9 +70,9 @@
 			this._problemPicture.TabStop = false;
 			this._problemPicture.Visible = false;
 			// 
-			// localizationExtender1
+			// _L10NSharpExtender
 			// 
-			this.localizationExtender1.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			// 
 			// AdobeReaderControl
 			// 
@@ -81,13 +81,13 @@
 			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this._problemLabel);
 			this.Controls.Add(this._problemPicture);
-			this.localizationExtender1.SetLocalizableToolTip(this, null);
-			this.localizationExtender1.SetLocalizationComment(this, null);
-			this.localizationExtender1.SetLocalizingId(this, "AdobeReaderProblemControl.AdobeReaderProblemControl");
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizingId(this, "AdobeReaderProblemControl.AdobeReaderProblemControl");
 			this.Name = "AdobeReaderControl";
 			this.Size = new System.Drawing.Size(509, 264);
 			((System.ComponentModel.ISupportInitialize)(this._problemPicture)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -97,6 +97,6 @@
 
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _problemLabel;
 		private System.Windows.Forms.PictureBox _problemPicture;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
