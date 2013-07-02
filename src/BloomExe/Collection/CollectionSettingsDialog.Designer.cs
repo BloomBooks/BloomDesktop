@@ -65,9 +65,9 @@
             this._useImageServer = new System.Windows.Forms.CheckBox();
             this._okButton = new System.Windows.Forms.Button();
             this._restartReminder = new System.Windows.Forms.Label();
-            this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._cancelButton = new System.Windows.Forms.Button();
+            this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this._tab.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -592,21 +592,10 @@
             this._restartReminder.Text = "Bloom will close and re-open this project with the new settings.";
             this._restartReminder.Visible = false;
             // 
-            // settingsProtectionLauncherButton1
-            // 
-            this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
-            this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
-            this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
-            this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 350);
-            this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
-            this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
-            this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
-            this.settingsProtectionLauncherButton1.TabIndex = 20;
-            // 
             // _L10NSharpExtender
             // 
             this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.PrefixForNewItems = null;
             // 
             // _cancelButton
             // 
@@ -622,6 +611,18 @@
             this._cancelButton.Text = "&Cancel";
             this._cancelButton.UseVisualStyleBackColor = true;
             this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
+            // 
+            // settingsProtectionLauncherButton1
+            // 
+            this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
+            this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 350);
+            this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
+            this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
+            this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(419, 37);
+            this.settingsProtectionLauncherButton1.TabIndex = 20;
             // 
             // CollectionSettingsDialog
             // 

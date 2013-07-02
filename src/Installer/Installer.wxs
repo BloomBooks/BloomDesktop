@@ -21,7 +21,10 @@ http://blogs.msdn.com/robmen/archive/2003/10/04/56479.aspx -->
 	<Package  Compressed="yes" InstallerVersion="200" />
   <!--  <Icon Id="BloomPackIcon.BloomPack" SourceFile="..\..\artwork\BloomPack.ico" /> -->
 
-	<MajorUpgrade   Schedule="afterInstallInitialize"
+	<!-- changed schedule from afterInstallInitialize, to afterInstallValidate, hopes that upgrades which have some library (e.g. palaso) with a lower version won't leave us
+		with no palaso at all, as afterInstallInitialize was doing. But it's not clear whether even this will work, as it depends on when the "costing" happens:
+		http://msdn.microsoft.com/en-us/library/aa371197.aspx -->
+	<MajorUpgrade   Schedule="afterInstallValidate"
   DowngradeErrorMessage="A later version of Bloom is already installed. If you really want to downgrade, first uninstall Bloom, then do this install again."/>
 
 	<Upgrade Id ="$(var.Property_UpgradeCode)" >

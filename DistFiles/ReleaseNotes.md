@@ -1,6 +1,10 @@
-## 0.950 28 March 2013
-* Image ToolBox is now mostly localizable
-* Metadata editor is now mostly localizable
+## 0.9.53 2 April 2013
+* Now Localizable
+ * Settings Protection Dialog
+ * Language chooser (shows in New Collection Wizard & Settings dialog)
+* Now Mostly Localizable
+ * Image ToolBox
+ * Metadata editor
 
 ## 0.947 22 March 2013
 * New Collection Wizard is now mostly localizable
