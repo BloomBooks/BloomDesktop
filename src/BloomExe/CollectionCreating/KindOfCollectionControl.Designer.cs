@@ -31,20 +31,20 @@
             this.components = new System.ComponentModel.Container();
             this._radioSourceCollection = new System.Windows.Forms.RadioButton();
             this._radioNormalVernacularCollection = new System.Windows.Forms.RadioButton();
-            this.localizationExtender1 = new L10NSharp.UI.LocalizationExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
             this.betterLabel2 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _radioSourceCollection
             // 
             this._radioSourceCollection.AutoSize = true;
             this._radioSourceCollection.Font = new System.Drawing.Font("Segoe UI", 14F);
-            this.localizationExtender1.SetLocalizableToolTip(this._radioSourceCollection, null);
-            this.localizationExtender1.SetLocalizationComment(this._radioSourceCollection, null);
-            this.localizationExtender1.SetLocalizationPriority(this._radioSourceCollection, L10NSharp.LocalizationPriority.High);
-            this.localizationExtender1.SetLocalizingId(this._radioSourceCollection, "NewCollectionWizard.KindOfCollectionPage.sourceCollection");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._radioSourceCollection, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._radioSourceCollection, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._radioSourceCollection, L10NSharp.LocalizationPriority.High);
+            this._L10NSharpExtender.SetLocalizingId(this._radioSourceCollection, "NewCollectionWizard.KindOfCollectionPage.sourceCollection");
             this._radioSourceCollection.Location = new System.Drawing.Point(0, 71);
             this._radioSourceCollection.Name = "_radioSourceCollection";
             this._radioSourceCollection.Size = new System.Drawing.Size(178, 29);
@@ -58,10 +58,10 @@
             this._radioNormalVernacularCollection.AutoSize = true;
             this._radioNormalVernacularCollection.Checked = true;
             this._radioNormalVernacularCollection.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.localizationExtender1.SetLocalizableToolTip(this._radioNormalVernacularCollection, null);
-            this.localizationExtender1.SetLocalizationComment(this._radioNormalVernacularCollection, null);
-            this.localizationExtender1.SetLocalizationPriority(this._radioNormalVernacularCollection, L10NSharp.LocalizationPriority.High);
-            this.localizationExtender1.SetLocalizingId(this._radioNormalVernacularCollection, "NewCollectionWizard.KindOfCollectionPage.vernacularCollection");
+            this._L10NSharpExtender.SetLocalizableToolTip(this._radioNormalVernacularCollection, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._radioNormalVernacularCollection, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._radioNormalVernacularCollection, L10NSharp.LocalizationPriority.High);
+            this._L10NSharpExtender.SetLocalizingId(this._radioNormalVernacularCollection, "NewCollectionWizard.KindOfCollectionPage.vernacularCollection");
             this._radioNormalVernacularCollection.Location = new System.Drawing.Point(0, 3);
             this._radioNormalVernacularCollection.Name = "_radioNormalVernacularCollection";
             this._radioNormalVernacularCollection.Size = new System.Drawing.Size(212, 29);
@@ -71,10 +71,10 @@
             this._radioNormalVernacularCollection.UseVisualStyleBackColor = true;
             this._radioNormalVernacularCollection.CheckedChanged += new System.EventHandler(this._radioNormalVernacularCollection_CheckedChanged);
             // 
-            // localizationExtender1
+            // _L10NSharpExtender
             // 
-            this.localizationExtender1.LocalizationManagerId = "Bloom";
-            this.localizationExtender1.PrefixForNewItems = "NewCollectionWizard.";
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.PrefixForNewItems = "NewCollectionWizard.";
             // 
             // betterLabel1
             // 
@@ -83,10 +83,10 @@
             this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.betterLabel1.Enabled = false;
             this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.localizationExtender1.SetLocalizableToolTip(this.betterLabel1, null);
-            this.localizationExtender1.SetLocalizationComment(this.betterLabel1, null);
-            this.localizationExtender1.SetLocalizationPriority(this.betterLabel1, L10NSharp.LocalizationPriority.High);
-            this.localizationExtender1.SetLocalizingId(this.betterLabel1, "NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.betterLabel1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.betterLabel1, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this.betterLabel1, L10NSharp.LocalizationPriority.High);
+            this._L10NSharpExtender.SetLocalizingId(this.betterLabel1, "NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription");
             this.betterLabel1.Location = new System.Drawing.Point(19, 31);
             this.betterLabel1.Multiline = true;
             this.betterLabel1.Name = "betterLabel1";
@@ -101,10 +101,10 @@
             this.betterLabel2.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.betterLabel2.Enabled = false;
             this.betterLabel2.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.localizationExtender1.SetLocalizableToolTip(this.betterLabel2, null);
-            this.localizationExtender1.SetLocalizationComment(this.betterLabel2, null);
-            this.localizationExtender1.SetLocalizationPriority(this.betterLabel2, L10NSharp.LocalizationPriority.High);
-            this.localizationExtender1.SetLocalizingId(this.betterLabel2, "NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription");
+            this._L10NSharpExtender.SetLocalizableToolTip(this.betterLabel2, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.betterLabel2, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this.betterLabel2, L10NSharp.LocalizationPriority.High);
+            this._L10NSharpExtender.SetLocalizingId(this.betterLabel2, "NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription");
             this.betterLabel2.Location = new System.Drawing.Point(19, 106);
             this.betterLabel2.Multiline = true;
             this.betterLabel2.Name = "betterLabel2";
@@ -124,12 +124,12 @@
             this.Controls.Add(this.betterLabel1);
             this.Controls.Add(this._radioSourceCollection);
             this.Controls.Add(this._radioNormalVernacularCollection);
-            this.localizationExtender1.SetLocalizableToolTip(this, null);
-            this.localizationExtender1.SetLocalizationComment(this, null);
-            this.localizationExtender1.SetLocalizingId(this, "KindOfCollectionControl.KindOfCollectionControl");
+            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+            this._L10NSharpExtender.SetLocalizationComment(this, null);
+            this._L10NSharpExtender.SetLocalizingId(this, "KindOfCollectionControl.KindOfCollectionControl");
             this.Name = "KindOfCollectionControl";
             this.Size = new System.Drawing.Size(391, 213);
-            ((System.ComponentModel.ISupportInitialize)(this.localizationExtender1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -139,7 +139,7 @@
 
 		public System.Windows.Forms.RadioButton _radioSourceCollection;
         public System.Windows.Forms.RadioButton _radioNormalVernacularCollection;
-		private L10NSharp.UI.LocalizationExtender localizationExtender1;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel2;
     }

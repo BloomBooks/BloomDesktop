@@ -59,7 +59,7 @@ namespace Bloom.CollectionCreating
 
 			_welcomePage.Suppress = !showWelcome;
 
-			//The localizationExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
+			//The L10NSharpExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
 			//so we do all of this by hand
 			var chooser = new Button();// new L10NSharp.UI.UILanguageComboBox() { ShowOnlyLanguagesHavingLocalizations = false };
 			chooser.Location = new Point(100,100);
