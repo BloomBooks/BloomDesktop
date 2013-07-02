@@ -5,6 +5,12 @@
 	height: 189.4mm;
 	/*[disabled]border:1px solid #000000;*/
 }
+.B5Portrait.bloom-frontMatter DIV.marginBox
+{
+/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 220mm;
+	/*[disabled]border:1px solid #000000;*/
+}
 .bloom-frontMatter.A4Landscape DIV.marginBox
 {
 /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
@@ -23,6 +29,17 @@
 }
 /*....................National 1*/
 .A5Portrait.cover .bookTitle.bloom-contentNational1
+{
+	font-size: 120%;
+	height: 1.3cm;
+	width: 100%;
+	display: block;
+	/*+placement:anchor-top-left 0px 130px;*/
+	position: absolute;
+	left: 0px;
+	top: 130px;
+}
+.B5Portrait.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 1.3cm;
@@ -81,6 +98,18 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
 	left: 0px;
 	top: 0px;
 }
+.B5Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 3.3cm;
+	width: 100%;
+	display: block;
+	line-height: 1;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
 .A5Landscape.cover .bookTitle.bloom-content1
 {
 	font-size: 300%;
@@ -118,6 +147,15 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
 }
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer
+{
+	height: 10cm;
+	width: 100%;
+	/*+placement:anchor-top-left 0px 193px;*/
+	position: absolute;
+	left: 0px;
+	top: 193px;
+}
+.B5Portrait.cover DIV.bloom-imageContainer
 {
 	height: 10cm;
 	width: 100%;
