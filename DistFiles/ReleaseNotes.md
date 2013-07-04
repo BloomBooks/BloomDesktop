@@ -1,3 +1,6 @@
+## 0.9.67 24 May 2013
+* Updated French Localizations
+
 ## 0.9.66 23 May 2013
 * Much faster startup time if you have lots of books
 * Much better performance when editing book with many pages
