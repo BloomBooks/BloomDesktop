@@ -24,13 +24,12 @@ namespace BloomTests.Book
 //			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
-			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-				BookStorageFactory, null,null, new CreateFromSourceBookCommand(), new EditBookCommand());
+			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
 		}
 
-		 Bloom.Book.Book BookFactory(IBookStorage storage, bool editable)
+		 Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
 		 {
-			 return new Bloom.Book.Book(storage, true, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
+			 return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
 													  new PageSelection(),
 													  new PageListChangedEvent(), new BookRefreshEvent());
 		 }
@@ -44,11 +43,11 @@ namespace BloomTests.Book
 		public void DeleteBook_FirstBookInEditableCollection_RemovedFromCollection()
 		{
 			AddBook();
-			var book = _collection.GetBooks().First();
+			var book = _collection.GetBookInfos().First();
 			var bookFolder = book.FolderPath;
 			_collection.DeleteBook(book);
 
-			Assert.IsFalse(_collection.GetBooks().Contains(book));
+			Assert.IsFalse(_collection.GetBookInfos().Contains(book));
 			Assert.IsFalse(Directory.Exists(bookFolder));
 		}
 
@@ -58,7 +57,7 @@ namespace BloomTests.Book
 			AddBook();
 			bool triggered=false;
 			_collection.CollectionChanged+= (x,y)=>triggered=true;
-			_collection.DeleteBook(_collection.GetBooks().First());
+			_collection.DeleteBook(_collection.GetBookInfos().First());
 			Assert.IsTrue(triggered);
 		}
 

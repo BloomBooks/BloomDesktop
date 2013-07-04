@@ -21,7 +21,6 @@ namespace Bloom.Book
 		{
 			Exception = exception;
 			_folderPath = folderPath;
-			Id = folderPath;
 			_canDelete = canDelete;
 			Logger.WriteEvent("Created ErrorBook with exception message: " + Exception.Message);
 		}
@@ -64,13 +63,13 @@ namespace Bloom.Book
 			get { return true; }
 		}
 
-		public override bool Delete()
-		{
-			var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
-			if(didDelete)
-				Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
-			return didDelete;
-		}
+//        public override bool Delete()
+//        {
+//            var didDelete= ConfirmRecycleDialog.Recycle(_folderPath);
+//            if(didDelete)
+//                Logger.WriteEvent("After ErrorBook.Delete({0})", _folderPath);
+//            return didDelete;
+//        }
 
 		private HtmlDom GetErrorDOM()
 		{

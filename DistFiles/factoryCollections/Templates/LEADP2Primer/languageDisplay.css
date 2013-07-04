@@ -3,12 +3,12 @@ Its purpose is to hide elements that are in languages that will not be printed i
 
 
 /* Hide all textareas and other editable fields in translation groups which aren't in the current vernacular */
-/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang="en"])
+/*DIV.bloom-frontMatter *.bloom-translationGroup *.editable:not([lang="bow"])
 {
 	display: none;
 }
 
-DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="en"])
+DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="bow"])
 {
    display: none;
 }

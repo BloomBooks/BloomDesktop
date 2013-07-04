@@ -38,7 +38,7 @@ namespace BloomTests.Book
 		public void Setup()
 		{
 			_storage = new Moq.Mock<IBookStorage>();
-			_storage.SetupGet(x => x.LooksOk).Returns(true);
+			_storage.Setup(x => x.GetLooksOk()).Returns(true);
 			_bookDom = new HtmlDom(GetThreePageDom());
 			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
@@ -49,6 +49,9 @@ namespace BloomTests.Book
 																								  return
 																									  _bookDom.Clone();
 																							  });// review: the real thing does more than just clone
+			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>(),It.IsAny<IProgress>())).Returns(
+				(HtmlDom x, IProgress y) => {return x.Clone();});// review: the real thing does more than just clone
+
 			_storage.Setup(x => x.GetFileLocator()).Returns(()=>_fileLocator.Object);
 
 			_testFolder = new TemporaryFolder("BookTests");
@@ -90,7 +93,7 @@ namespace BloomTests.Book
 		private Bloom.Book.Book CreateBook()
 		{
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-			return new Bloom.Book.Book(_storage.Object, true, _templateFinder.Object,
+			return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath,true), _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}

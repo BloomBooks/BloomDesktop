@@ -53,7 +53,7 @@
 			this.button5.Dock = System.Windows.Forms.DockStyle.Top;
 			this.button5.FlatAppearance.BorderSize = 0;
 			this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button5.Image = global::Bloom.Properties.Resources.thumbnail;
+			this.button5.Image = global::Bloom.Properties.Resources.placeHolderBookThumbnail;
 			this.button5.Location = new System.Drawing.Point(0, 0);
 			this.button5.Margin = new System.Windows.Forms.Padding(0);
 			this.button5.Name = "button5";
@@ -79,7 +79,7 @@
 			this.bitmapButton1.ImageFocused = null;
 			this.bitmapButton1.ImageInactive = null;
 			this.bitmapButton1.ImageMouseOver = null;
-			this.bitmapButton1.ImageNormal = global::Bloom.Properties.Resources.thumbnail;
+			this.bitmapButton1.ImageNormal = global::Bloom.Properties.Resources.placeHolderBookThumbnail;
 			this.bitmapButton1.ImagePressed = null;
 			this.bitmapButton1.InnerBorderColor = System.Drawing.Color.LightGray;
 			this.bitmapButton1.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;

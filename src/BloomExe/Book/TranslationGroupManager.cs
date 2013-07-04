@@ -88,7 +88,7 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in elementOrDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+			foreach (XmlElement pageDiv in elementOrDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 			{
 			   HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
 			   HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
@@ -125,7 +125,7 @@ namespace Bloom.Book
 
 		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
 		{
-			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("//*[contains(@class,'bloom-translationGroup')]"))
+			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
 			{
 				MakeElementWithLanguageForOneGroup(groupElement, isoCode, "*");
 				//remove any elements in teh translationgroup which don't have a lang
@@ -140,20 +140,20 @@ namespace Bloom.Book
 			foreach (
 				XmlElement element in
 					pageDiv.SafeSelectNodes(//NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
-						"//textarea[not(@lang)] | //*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
+						"descendant-or-self::textarea[not(@lang)] | descendant-or-self::*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
 				)
 			{
 				element.SetAttribute("lang", isoCode);
 			}
 
-			foreach (XmlElement e in pageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
+			foreach (XmlElement e in pageDiv.SafeSelectNodes("descendant-or-self::*[starts-with(text(),'{')]"))
 			{
 				foreach (var node in e.ChildNodes)
 				{
 					XmlText t = node as XmlText;
 					if (t != null && t.Value.StartsWith("{"))
 						t.Value = "";
-					//otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
+					//otherwise html tidy will throw away spans (at least) that are empty, so we never get a chance to fill in the values.
 				}
 			}
 		}

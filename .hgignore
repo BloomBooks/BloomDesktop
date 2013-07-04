@@ -40,3 +40,13 @@ _NCrunch*
 *.vsp
 build/xulrunner*
 *.orig
+*.ncrunchsolution
+Mercurial/
+Presentations/
+packages/
+videos
+screenshots/
+MercurialExtensions/
+WebSite/
+*.suo
+*.psess
