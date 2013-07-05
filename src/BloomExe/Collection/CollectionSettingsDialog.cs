@@ -19,6 +19,7 @@ namespace Bloom.Collection
 		private XMatterPackFinder _xmatterPackFinder;
 		private readonly QueueRenameOfCollection _queueRenameOfCollection;
 		private bool _restartRequired;
+		private bool _loaded;
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection)
 		{
@@ -210,6 +211,9 @@ namespace Bloom.Collection
 
 		private void RestartRequired()
 		{
+			if (!_loaded)//ignore false events that come while setting upt the dialog
+				return;
+
 			_restartRequired = true;
 			UpdateDisplay();
 		}
@@ -222,6 +226,7 @@ namespace Bloom.Collection
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
 			LoadFontCombo();
 
+			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
 			UsageReporter.SendNavigationNotice("Entered Settings Dialog");
 		}
