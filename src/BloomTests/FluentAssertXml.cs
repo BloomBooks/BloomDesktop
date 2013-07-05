@@ -84,7 +84,7 @@ namespace Palaso.TestUtilities
 		{
 			get
 			{
-				return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path);
+				return XmlHtmlConverter.GetXmlDomFromHtmlFile(_path,false);
 			}
 		}
 	}
