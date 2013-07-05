@@ -411,7 +411,7 @@ namespace Bloom.Book
 		public static string ValidateBook(string path)
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
-			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));//with throw if there are errors
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
 			return dom.ValidateBook(path);
 		}
 
@@ -428,7 +428,6 @@ namespace Bloom.Book
 			Debug.WriteLine(string.Format("ExpensiveInitialization({0})", _folderPath));
 			_dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
-			//Review: are we just adding this folder to an ever-growing pot of paths? Shouldn't it be specific to this?
 			_fileLocator.AddPath(_folderPath);
 			RequireThat.Directory(_folderPath).Exists();
 			if (!File.Exists(PathToExistingHtml))
@@ -469,7 +468,7 @@ namespace Bloom.Book
 				{
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 
-					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml);
+					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
 					_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				}
 

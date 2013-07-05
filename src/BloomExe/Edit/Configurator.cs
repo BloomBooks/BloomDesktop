@@ -71,7 +71,7 @@ namespace Bloom.Edit
 			 * alert($().jquery)
 			 */
 
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath);
+			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
 
