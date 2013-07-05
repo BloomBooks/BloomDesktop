@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Xsl;
 using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
@@ -15,7 +16,6 @@ namespace Bloom
 {
 	public class XmlHtmlConverter
 	{
-
 		/// <summary>
 		///
 		/// </summary>
@@ -179,11 +179,8 @@ namespace Bloom
 
 		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
 		{
-#if DEBUG
 			var initialOutputPath = Path.GetTempFileName();
-#else
-			var initialOutputPath = tempPath;
-#endif
+
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
@@ -198,7 +195,6 @@ namespace Bloom
 			}
 			//now insert the non-xml-ish <!doctype html>
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
-#if DEBUG   //TODO when we trust this, give it to everybody
 
 			//now re-write, indented nicely
 			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
@@ -214,17 +210,16 @@ namespace Bloom
 				tidy.PreserveEntities = true;
 				tidy.JoinStyles = false;
 				tidy.IndentBlockElements = AutoBool.Auto;//instructions say avoid 'yes'
-				tidy.WrapAt = 180;
+				tidy.WrapAt = 9999;
 				tidy.IndentSpaces = 4;
 				tidy.CharacterEncoding = EncodingType.Utf8;
 				tidy.CleanAndRepair();
 				tidy.Save(tempPath);
 			}
-			File.Delete(initialOutputPath);
-
 			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
-#endif
+			File.Delete(initialOutputPath);
 			return tempPath;
 		}
+
 	}
 }
