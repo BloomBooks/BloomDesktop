@@ -1,3 +1,6 @@
+## 0.9.95 13 July 2013
+ * Fixed recent problem where custom font and styles were being ignored.
+
 ## 0.9.92 22 June 2013
  * New experimental "Export XML for InDesign" command on the right-click menu of books. Enable via the "Show experimental commands" setting in the Settings dialog.
 
