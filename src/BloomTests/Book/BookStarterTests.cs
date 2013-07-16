@@ -421,6 +421,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			var kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 1);
+			//we should get our own id, now reuse our parent's
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 0);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook()
+		{
+			var shellFolderPath = GetShellBookFolder(
+				@" ", null);
+			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
+
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='first,second,thisNewGuy']", 1);
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_ShellHasNoDefaultNameDirective_bookTitleAttibutesSameAsShell()
 		{
 			var shellFolderPath = GetShellBookFolder(
@@ -513,6 +535,8 @@ namespace BloomTests.Book
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bloomBookLineage' content='first,second' />
+					<meta name='bloomBookId' content='thisNewGuy' />
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />";

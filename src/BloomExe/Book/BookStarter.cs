@@ -125,7 +125,11 @@ namespace Bloom.Book
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
+			SetLineageAndId(storage);
+
 			SetBookTitle(storage, bookData);
+
+
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
@@ -148,6 +152,25 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the intial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		private void SetLineageAndId(BookStorage storage)
+		{
+			var parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
+
+			var lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
+			if (string.IsNullOrEmpty(lineage))
+			{
+				lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
+			}
+			if (!string.IsNullOrEmpty(lineage))
+				lineage += ",";
+			if (!string.IsNullOrEmpty(parentId))
+			{
+				storage.Dom.UpdateMetaElement("bloomBookLineage", lineage + parentId);
+			}
+			storage.Dom.UpdateMetaElement("bloomBookId",Guid.NewGuid().ToString());
+			storage.Dom.RemoveMetaElement("bookLineage");//old name
 		}
 
 		/// <summary>
@@ -185,7 +208,7 @@ namespace Bloom.Book
 
 			if(nameSuggestion!=null)
 				bookData.Set("bookTitle",nameSuggestion,"en");
-			storage.Dom.RemoveMetaValue("defaultNameForDerivedBooks");
+			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
 //	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
 //	        if (nameSuggestion.Count > 0)

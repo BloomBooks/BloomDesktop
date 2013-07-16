@@ -68,14 +68,14 @@ namespace BloomTests.Book
 						  @"<html><head>
 				<meta name='one' content='1'/>
 				</head></html>");
-			dom.RemoveMetaValue("one");
+			dom.RemoveMetaElement("one");
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='one']", 0);
 		}
 		[Test]
 		public void RemoveMetaValue_NotThere_OK()
 		{
 			var dom = new HtmlDom();
-			dom.RemoveMetaValue("notthere");
+			dom.RemoveMetaElement("notthere");
 		}
 
 		[Test]
