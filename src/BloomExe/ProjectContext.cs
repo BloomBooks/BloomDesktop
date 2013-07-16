@@ -216,14 +216,34 @@ namespace Bloom
 				yield return dir;
 			}
 
+			//TODO: This is not going to cut it. The intent is to use the versino of a css from
+			//the template directory, to aid the template developer (he/she will want to make tweaks in the
+			//original, not the copies with sample data). But this is very blunt; we're throwing in every
+			//template we can find; so the code which uses this big pot could easily link to the wrong thing
+			//if 2 templates used the same name ("styles.css") or if there were different versions of the
+			//template on the machine ("superprimer1/superprimer.css" and "superprimer2/superprimer.css").
+			//Tangentially related is the problem of a stylesheet of a template changing and messing up
+			//a users's existing just-fine document. We have to somehow address that, too.
 			if (Directory.Exists(InstalledCollectionsDirectory))
 			{
 				foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
 				{
 					yield return dir;
 				}
-			}
 
+				// add those directories from collections which are just pointed to by shortcuts
+				foreach (var shortcut in Directory.GetFiles(InstalledCollectionsDirectory, "*.lnk", SearchOption.TopDirectoryOnly))
+				{
+					var collectionDirectory = ResolveShortcut.Resolve(shortcut);
+					if (Directory.Exists(collectionDirectory))
+					{
+						foreach (var templateDirectory in Directory.GetDirectories(collectionDirectory))
+						{
+							yield return templateDirectory;
+						}
+					}
+				}
+			}
 
 //			TODO: Add, in the list of places we look, this library's "regional library" (when such a concept comes into being)
 //			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
