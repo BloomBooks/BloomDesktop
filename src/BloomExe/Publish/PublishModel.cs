@@ -47,11 +47,12 @@ namespace Bloom.Publish
 		private PdfMaker _pdfMaker;
 		private readonly CollectionSettings _collectionSettings;
 		private string _lastDirectory;
-
+		
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			BookletPortion = BookletPortions.BookletPages;
@@ -157,6 +158,12 @@ namespace Bloom.Publish
 		/// The book itself has a layout, but we can override it here during publishing
 		/// </summary>
 		public Layout PageLayout { get; set; }
+
+		public bool ShowCropMarks
+		{
+			get { return _pdfMaker.ShowCropMarks; }
+			set { _pdfMaker.ShowCropMarks = value; }
+		}
 
 		public override bool Equals(object obj)
 		{
