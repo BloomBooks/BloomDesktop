@@ -687,6 +687,7 @@ namespace BloomTests.Book
 		}
 
 
+
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
 			var templatePage = new Moq.Mock<IPage>();

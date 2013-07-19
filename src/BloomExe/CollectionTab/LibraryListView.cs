@@ -61,6 +61,11 @@ namespace Bloom.CollectionTab
 			_sourceBooksFlow.Controls.Clear();
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
 
+			if (!_model.ShowSourceCollections)
+			{
+				splitContainer1.Panel2Collapsed = true;
+			}
+
 			_headerFont = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0, FontStyle.Bold);
 			_editableBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);//, FontStyle.Bold);
 			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
@@ -191,6 +196,23 @@ namespace Bloom.CollectionTab
 
 		private void LoadSourceCollectionButtons()
 		{
+			if (!_model.ShowSourceCollections)
+			{
+				_sourceBooksFlow.Visible = false;
+				string lockNotice = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourcesLockNotice",
+																			   "This collection is locked, so new books cannot be added/removed.");
+
+				var lockNoticeLabel = new Label()
+					{
+						Text = lockNotice,
+						Size = new Size(_primaryCollectionFlow.Width - 20, 15),
+						ForeColor = Palette.TextAgainstDarkBackground,
+						Padding = new Padding(10, 0, 0, 0)
+					};
+				_primaryCollectionFlow.Controls.Add(lockNoticeLabel);
+				return;
+			}
+
 			var collections = _model.GetBookCollections();
 			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
 			var invisibleHackPartner = new Label() {Text = "", Width = 0};
@@ -203,11 +225,12 @@ namespace Bloom.CollectionTab
 																				"Sources For New Shells");
 			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
 																			   "Sources For New Books");
-			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+				bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_sourceBooksFlow.Controls.Add(invisibleHackPartner);
 			_sourceBooksFlow.Controls.Add(bookSourcesHeader);
 			_sourceBooksFlow.SetFlowBreak(bookSourcesHeader, true);
+
 
 			foreach (BookCollection collection in collections.Skip(1))
 			{

@@ -33,7 +33,8 @@ namespace Bloom.Publish
 		{
 			None,
 			BookletCover,
-			BookletPages
+			BookletPages,//include front and back matter that isn't coverstop
+			InnerContent//excludes all front and back matter
 		}
 
 		public enum BookletLayoutMethod
@@ -45,15 +46,19 @@ namespace Bloom.Publish
 
 		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
+		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly BookServer _bookServer;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
+			_bookServer = bookServer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			BookletPortion = BookletPortions.BookletPages;
 		}
@@ -78,7 +83,7 @@ namespace Bloom.Publish
 			{
 				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-				XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+				XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 				//wkhtmltopdf can't handle file://
 				dom.InnerXml = dom.InnerXml.Replace("file://", "");
@@ -232,7 +237,7 @@ namespace Bloom.Publish
 
 		public void DebugCurrentPDFLayout()
 		{
-			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
 			PageLayout.UpdatePageSplitMode(dom);

@@ -781,6 +781,18 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// A "Folio" document is one that acts as a wrapper for a number of other books
+		/// </summary>
+		public bool IsFolio
+		{
+			get
+			{
+				string metaValue = OurHtmlDom.GetMetaValue("folio",  OurHtmlDom.GetMetaValue("Folio", "no"));
+				return metaValue == "yes" || metaValue == "true";
+			}
+		}
+
+		/// <summary>
 		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
 		/// </summary>
 		public string MultilingualContentLanguage2
@@ -1150,6 +1162,7 @@ namespace Bloom.Book
 			return GetIndexOfPage(firstBackMatterPage);
 		}
 
+
 		private int GetIndexOfPage(XmlElement pageElement)
 		{
 			var elements = GetPageElements();
@@ -1161,10 +1174,15 @@ namespace Bloom.Book
 			return -1;
 		}
 
-		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion)
+		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css");
 			//dom.LoadXml(OurHtmlDom.OuterXml);
+
+			if (IsFolio)
+			{
+				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
+			}
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
@@ -1180,12 +1198,75 @@ namespace Bloom.Book
 				 case PublishModel.BookletPortions.BookletPages:
 					HidePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
-				default:
+				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(printingDom, Color.White);
 			AddPreviewJScript(printingDom);
 			return printingDom.RawDom;
+		}
+
+		/// <summary>
+		/// used when this book is a "master"/"folio" book that is used to bring together a number of other books in the collection
+		/// </summary>
+		/// <param name="printingDom"></param>
+		/// <param name="currentBookCollection"></param>
+		/// <param name="bookServer"></param>
+		private void AddChildBookContentsToFolio(HtmlDom printingDom, BookCollection currentBookCollection, BookServer bookServer)
+		{
+			XmlNode currentLastContentPage = GetLastPageForInsertingNewContent(printingDom);
+
+			//currently we have no way of filtering them, we just take them all
+			foreach (var bookInfo in currentBookCollection.GetBookInfos())
+			{
+				if (bookInfo.IsFolio)
+					continue;
+				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
+
+				//add links to the template css needed by the children.
+				//NB: at this point this code can't hand the "customBookStyles" from children, it'll ignore them (they woul conflict with each other)
+				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
+				var customStyleSheets = new List<string>();
+				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
+				{
+					if (!customStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
+					{
+						customStyleSheets.Add(sheetName);
+						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
+					}
+				}
+				printingDom.SortStyleSheetLinks();
+
+				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+				{
+					XmlElement importedPage = (XmlElement) printingDom.RawDom.ImportNode(pageDiv, true);
+					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
+					currentLastContentPage = importedPage;
+
+					ImageUpdater.MakeImagePathsOfImportedPagePointToOriginalLocations(importedPage, bookInfo.FolderPath);
+				}
+			}
+		}
+
+
+
+
+		private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
+		{
+			var lastPage =
+				   printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
+			if(lastPage==null)
+			{
+				//currently nothing but front and back matter
+				var lastFrontMatter= printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class,'bloom-frontMatter')][last()]") as XmlElement;
+				if(lastFrontMatter ==null)
+					throw new ApplicationException("GetLastPageForInsertingNewContent() found no content pages nor frontmatter");
+				return lastFrontMatter;
+			}
+			else
+			{
+				return (XmlElement) lastPage;
+			}
 		}
 
 		/// <summary>
