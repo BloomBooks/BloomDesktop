@@ -498,10 +498,13 @@ namespace Bloom.Book
 					UpdateIfNewer(file);
 			}
 
-			var helper = new XMatterHelper(_dom, _collectionSettings.XMatterPackName, _fileLocator);
+			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
 			UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
 
 		}
+
 		private void UpdateIfNewer(string fileName, string factoryPath = "")
 		{
 			string documentPath="notSet";
@@ -556,7 +559,9 @@ namespace Bloom.Book
 		// NB: this knows nothing of book-specific css's... even "basic book.css"
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
-			var helper = new XMatterHelper(_dom, _collectionSettings.XMatterPackName, _fileLocator);
+			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
+
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
 
 			string autocssFilePath = ".."+Path.DirectorySeparatorChar+"settingsCollectionStyles.css";
@@ -656,7 +661,7 @@ namespace Bloom.Book
 					}
 					else
 					{
-						log.WriteError("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath);
+						throw new ApplicationException(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
 					}
 				}
 			}

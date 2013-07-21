@@ -47,15 +47,18 @@ namespace Bloom.Book
 
 		private static void AddLocalizedHintContentsToDictionary(HtmlDom singlePageHtmlDom, Dictionary<string, string> dictionary, CollectionSettings collectionSettings)
 		{
+			var nameOfXMatterPack = singlePageHtmlDom.GetMetaValue("xMatter", collectionSettings.XMatterPackName);
+
+
 			string idPrefix = "";
 			var pageElement = singlePageHtmlDom.RawDom.SelectSingleNode("//div") as XmlElement;
 			if (XMatterHelper.IsFrontMatterPage(pageElement))
 			{
-				idPrefix = "FrontMatter." + collectionSettings.XMatterPackName + ".";
+				idPrefix = "FrontMatter." + nameOfXMatterPack + ".";
 			}
 			else if (XMatterHelper.IsBackMatterPage(pageElement))
 			{
-				idPrefix = "BackMatter." + collectionSettings.XMatterPackName + ".";
+				idPrefix = "BackMatter." + nameOfXMatterPack + ".";
 			}
 			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[@data-hint]"))
 			{

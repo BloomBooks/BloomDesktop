@@ -126,7 +126,7 @@ namespace Bloom.CollectionTab
 			 _bookSelection.SelectBook(book);
 		}
 
-		public void DeleteBook(Book.Book book)//, BookCollection collection)
+		public bool DeleteBook(Book.Book book)//, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
 
@@ -139,8 +139,10 @@ namespace Bloom.CollectionTab
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
+					return true;
 				}
 			}
+			return false;
 		}
 
 		public void DoubleClickedBook()

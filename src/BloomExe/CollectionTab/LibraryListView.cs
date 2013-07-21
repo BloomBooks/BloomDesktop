@@ -448,9 +448,9 @@ namespace Bloom.CollectionTab
 				_lastClickTime = DateTime.Now;
 
 				_bookContextMenu.Enabled = true;
-				Debug.WriteLine("before selecting " + SelectedBook.Title);
+				//Debug.WriteLine("before selecting " + SelectedBook.Title);
 				_model.SelectBook(SelectedBook);
-				Debug.WriteLine("after selecting " + SelectedBook.Title);
+				//Debug.WriteLine("after selecting " + SelectedBook.Title);
 				//didn't help: _listView.Focus();//hack we were losing clicks
 				SelectedBook.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
 				SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
@@ -582,12 +582,13 @@ namespace Bloom.CollectionTab
 		private void deleteMenuItem_Click(object sender, EventArgs e)
 		{
 			var button = AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook.BookInfo);
-			_model.DeleteBook(SelectedBook);
-			//ReloadCollectionButtons();
-			Debug.Assert(button != null && _primaryCollectionFlow.Controls.Contains(button));
-			if (button != null && _primaryCollectionFlow.Controls.Contains(button))
+			if (_model.DeleteBook(SelectedBook))
 			{
-				_primaryCollectionFlow.Controls.Remove(button);
+				Debug.Assert(button != null && _primaryCollectionFlow.Controls.Contains(button));
+				if (button != null && _primaryCollectionFlow.Controls.Contains(button))
+				{
+					_primaryCollectionFlow.Controls.Remove(button);
+				}
 			}
 		}
 

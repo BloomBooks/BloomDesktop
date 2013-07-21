@@ -53,7 +53,14 @@ namespace Bloom.CollectionTab
 
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			LoadBook();
+			try
+			{
+				LoadBook();
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Problem selecting book");
+			}
 		}
 
 		private void LoadBook()

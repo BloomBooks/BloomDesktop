@@ -366,6 +366,8 @@ namespace Bloom.Book
 		/// </summary>
 		public bool IsEditable { get { return BookInfo.IsEditable; } }
 
+
+
 		public IPage FirstPage
 		{
 			get { return GetPages().First(); }
@@ -482,10 +484,15 @@ namespace Bloom.Book
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
 			progress.WriteStatus("Gathering Data...");
-			var helper = new XMatterHelper(bookDOM, _collectionSettings.XMatterPackName, _storage.GetFileLocator());
+
+			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+
+			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
 			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
+
 			helper.InjectXMatter(FolderPath, _bookData.GetWritingSystemCodes(), layout);
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
@@ -1040,9 +1047,7 @@ namespace Bloom.Book
 				var page = GetPageFromStorage(pageDivId);
 				page.InnerXml = divElement.InnerXml;
 
-				 _bookData.SuckInDataFromEditedDom(editedPageDom);
-//                 _collectionSettings.UpdateCustomValuesAndSave(_bookData.GetCollectionVariables());
-
+				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				try
 				{
 					_storage.Save();
@@ -1346,6 +1351,15 @@ namespace Bloom.Book
 						CheckForErrors();
 						errorCallback(this.BookInfo, error);
 					});
+		}
+
+		public string GetErrorsIfNotCheckedBefore()
+		{
+			if (!_haveCheckedForErrorsAtLeastOnce)
+			{
+				return CheckForErrors();
+			}
+			return "";
 		}
 
 		public string CheckForErrors()

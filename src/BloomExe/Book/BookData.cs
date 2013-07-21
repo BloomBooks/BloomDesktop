@@ -60,7 +60,7 @@ namespace Bloom.Book
 			_updateImgNode = updateImgNodeCallback;
 			_collectionSettings = collectionSettings;
 			GetOrCreateDataDiv();
-			_dataset = GartherDataItemsFromCollectionSettings(_collectionSettings);
+			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
 		}
 
@@ -128,6 +128,8 @@ namespace Bloom.Book
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
+			UpdateTitle(_dataset);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+
 			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in data.TextVariables)
 			{
@@ -136,7 +138,7 @@ namespace Bloom.Book
 			}
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
-			UpdateTitle(data);
+
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -252,7 +254,7 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom"> </param>
 		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom)
 		{
-			DataSet data = GartherDataItemsFromCollectionSettings(_collectionSettings);
+			DataSet data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
@@ -261,11 +263,11 @@ namespace Bloom.Book
 //            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
-			UpdateTitle(data);
+			UpdateTitle(data); //REVIEW: does this really have all the vars it needs, e.g. what if there is a bookTitleTemplate variable on the original book?
 			return data;
 		}
 
-		private static DataSet GartherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
+		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
 		{
 			var data = new DataSet();
 
@@ -625,9 +627,25 @@ namespace Bloom.Book
 		{
 			NamedMutliLingualValue title;
 
-			if (data.TextVariables.TryGetValue("bookTitle", out title))
+			if (data.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code });
+				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
+				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+
+				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
+				foreach (var dataItem in _dataset.TextVariables)
+				{
+					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds));
+				}
+
+				_dom.Title = t;
+				//review: notice we're only changing the value in this dataset
+				this.Set("bookTitle", t,"en");
+			}
+			else if (data.TextVariables.TryGetValue("bookTitle", out title))
+			{
+				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
+				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
 				_dom.Title = t;
 			}
 		}

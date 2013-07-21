@@ -33,6 +33,7 @@ namespace Bloom.Book
 		{
 			_bookDom = bookDom;
 			_nameOfXMatterPack = nameOfXMatterPack;
+
 			string directoryName = nameOfXMatterPack + "-XMatter";
 			var directoryPath = fileLocator.LocateDirectory(directoryName, "xmatter pack directory named " + directoryName);
 			string htmName = nameOfXMatterPack + "-XMatter.htm";
@@ -99,6 +100,7 @@ namespace Bloom.Book
 			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
+			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
 			XmlNode divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
 //			if(folderPath!=null)//null in some unit test that don't care about images
