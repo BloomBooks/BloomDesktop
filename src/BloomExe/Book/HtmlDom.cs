@@ -314,7 +314,7 @@ namespace Bloom.Book
 
 		public string GetMetaValue(string name, string defaultValue)
 		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLower() + "']");
 			if (node.Count > 0)
 			{
 				return ((XmlElement) node[0]).GetAttribute("content");
@@ -395,14 +395,13 @@ namespace Bloom.Book
 
 		public void AddStyleSheetIfMissing(string path)
 		{
-			path = path.ToLower();
 			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href").ToLower();
-				if (fileName == path)
+				if (fileName == path.ToLower())
 					return;
 			}
-			_dom.AddStyleSheet(path);
+			_dom.AddStyleSheet(path.Replace("file://", ""));
 		}
 
 		public IEnumerable<string> GetTemplateStyleSheets()

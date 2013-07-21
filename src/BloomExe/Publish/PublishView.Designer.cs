@@ -160,7 +160,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(335, 26);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(434, 48);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -169,8 +169,10 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
 			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
-			this._openinBrowserMenuItem.Size = new System.Drawing.Size(334, 22);
-			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Browser";
+			this._openinBrowserMenuItem.Size = new System.Drawing.Size(433, 22);
+			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Chrome (must be on path)";
+			this._openinBrowserMenuItem.ToolTipText = "Will show in chrome rather than firefox because it is closest to the html engine " +
+    "the htmltopdf engine uses.";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
 			// 
 			// _menusToolStrip

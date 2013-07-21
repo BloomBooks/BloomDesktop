@@ -345,7 +345,13 @@ namespace Bloom.Edit
 
         	_currentlyDisplayedBook = CurrentBook;
 
-            var page = _bookSelection.CurrentSelection.FirstPage;
+	        var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
+	        if (!string.IsNullOrEmpty(errors))
+	        {
+		        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+		        return;
+	        }
+	        var page = _bookSelection.CurrentSelection.FirstPage;
             if (page != null)
                 _pageSelection.SelectPage(page);
             
