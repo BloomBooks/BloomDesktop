@@ -69,8 +69,9 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-		   _sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
-
+#if !DEBUG
+			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+#endif
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user

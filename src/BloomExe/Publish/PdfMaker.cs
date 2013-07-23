@@ -128,9 +128,11 @@ namespace Bloom.Publish
 										{
 											progress.WriteStatus("Making PDF...");
 											//this is a trick... since we are so far failing to get
-											//the progress otu of wkhtml2pdf until it is done,
+											//the progress out of wkhtml2pdf until it is done,
 											//we at least have this indicator which on win 7 does
 											//grow from 0 to the set percentage with some animation
+
+											//nb: Later, on a 100page doc, I did get good progress at the end
 											progress.ProgressIndicator.PercentCompleted = 70;
 											result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
 																		   5*60, progress
@@ -140,8 +142,29 @@ namespace Bloom.Publish
 
 																					try
 																					{
-																						//this wakes up the dialog, which then calls the Refresh() we need
-																						((BackgroundWorker)args.Argument).ReportProgress(100);
+																						//this will hopefully avoid the exception below (which we'll swallow anyhow)
+																						if (((BackgroundWorker) args.Argument).IsBusy)
+																						{
+																							//this wakes up the dialog, which then calls the Refresh() we need
+																							try
+																							{
+																								((BackgroundWorker)args.Argument).ReportProgress(100);
+																							}
+																							catch (Exception)
+																							{
+																								//else swallow; we've gotten this error:
+																								//"This operation has already had OperationCompleted called on it and further calls are illegal"
+																								#if DEBUG
+																								throw;
+																								#endif
+																							}
+																						}
+																						else
+																						{
+																							#if DEBUG
+																							Debug.Fail("Wanna look into this? Why is the process still reporting back?");
+																							#endif
+																						}
 																					}
 																					catch (Exception)
 																					{
@@ -189,12 +212,14 @@ namespace Bloom.Publish
 		//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw
 		//		that the page was too big, leading to an extra page at the end.
 		//		Experimentation showed that 1.041 kept the marge box steady.
+		//
+		//	In July 2013, I needed to get a 200-300 page b5 book out. With the prior 96DPI setting of 1.041, it was drifting upwards (too small). Upping it to 1.042 solved it.
 
 		private double GetZoomBasedOnScreenDPISettings()
 		{
 			if (WorkspaceView.DPIOfThisAccount == 96)
 			{
-				return 1.041;
+				return 1.042;
 			}
 			if (WorkspaceView.DPIOfThisAccount == 120)
 			{

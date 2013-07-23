@@ -1,0 +1,24 @@
+.B5Portrait.cover .bookTitle.bloom-content1
+{
+	font-size: 250%;
+	height: 3.3cm;
+	width: 100%;
+	display: block;
+	line-height: 1;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.coverLabel
+{
+	text-align: center;
+	font-size: 50pt;
+}
+.bookTitle
+{
+	width: 3px;
+	height: 374px;
+	font-size: 64.4pt !important;
+	text-align: center;
+}
