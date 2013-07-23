@@ -1425,5 +1425,23 @@ namespace Bloom.Book
 		{
 			XmlHtmlConverter.GetXmlDomFromHtmlFile(_storage.PathToExistingHtml,true).Save(path);
 		}
+
+		/// <summary>
+		/// public for use in external scripts that set up pre-packaged books/collections
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		/// <param name="libaryValue"></param>
+		public void SetDataItem(string key, string languageCode, string value)
+		{
+			_bookData.Set(key, languageCode, value);
+		}
+
+		public void Save()
+		{
+			_bookData.UpdateVariablesAndDataDivThroughDOM();//will update the title if needed
+			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			_storage.Save();
+		}
 	}
 }
