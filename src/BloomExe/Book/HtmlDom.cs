@@ -101,7 +101,7 @@ namespace Bloom.Book
 			}
 		}
 
-		
+
 
 
 		public void SetBaseForRelativePaths(string path)
@@ -113,10 +113,16 @@ namespace Bloom.Book
 			{
 				head.RemoveChild(baseNode);
 			}
-			var baseElement = _dom.CreateElement("base");
-			baseElement.SetAttribute("href", path);
-			head.AppendChild(baseElement);
+
+			if (path.Trim() != "") //jim (BL-323) reported a problem with  <base href="">
+			{
+				var baseElement = _dom.CreateElement("base");
+
+				baseElement.SetAttribute("href", path);
+				head.AppendChild(baseElement);
+			}
 		}
+	
 
 		public void AddStyleSheet(string locateFile)
 		{
@@ -308,7 +314,7 @@ namespace Bloom.Book
 
 		public string GetMetaValue(string name, string defaultValue)
 		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "']");
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLower() + "']");
 			if (node.Count > 0)
 			{
 				return ((XmlElement) node[0]).GetAttribute("content");
@@ -384,6 +390,47 @@ namespace Bloom.Book
 				}
 
 				n.ParentNode.RemoveChild(n);
+			}
+		}
+
+		public void AddStyleSheetIfMissing(string path)
+		{
+			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href").ToLower();
+				if (fileName == path.ToLower())
+					return;
+			}
+			_dom.AddStyleSheet(path.Replace("file://", ""));
+		}
+
+		public IEnumerable<string> GetTemplateStyleSheets()
+		{
+			var stylesheetsToIgnore = new List<string>();
+			stylesheetsToIgnore.Add("basepage.css");
+			stylesheetsToIgnore.Add("languagedisplay.css");
+			stylesheetsToIgnore.Add("editmode.css");
+			stylesheetsToIgnore.Add("editoriginalmode.css");
+			stylesheetsToIgnore.Add("previewmode.css");
+			stylesheetsToIgnore.Add("settingsCollectionStyles.css".ToLower());
+			stylesheetsToIgnore.Add("customCollectionStyles.css".ToLower());
+			stylesheetsToIgnore.Add("customBookStyles.css".ToLower());
+			stylesheetsToIgnore.Add("xmatter");
+
+			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href").ToLower();
+				bool match = false;
+				foreach (var nameOrFragment in stylesheetsToIgnore)
+				{
+					if (fileName.Contains(nameOrFragment))
+					{
+						match = true;
+						break;
+					}
+				}
+				if(!match)
+					yield return fileName;
 			}
 		}
 	}
