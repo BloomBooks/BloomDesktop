@@ -686,6 +686,35 @@ namespace BloomTests.Book
 			Assert.AreEqual("newTitle", book.Title);
 		}
 
+		[Test]
+		public void SavePage_HasTitleTemplate_ChangesTitleElement()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						  <div data-book='bookTitle' lang='en'>blaah</div>
+						<div data-book='bookTitleTemplate' lang='en'>a {book.flavor} book</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						 <div data-book='book.flavor' lang='en'>sweet</div>
+					</div>
+				  </body></html>");
+
+			var book = CreateBook();
+			Assert.AreEqual("a sweet book", book.Title);
+
+			//simulate editing the page
+			var pageDom = new HtmlDom(@"
+				<html><head></head><body>
+					  <div class='bloom-page' id='guid1'>
+						 <div data-book='book.flavor' lang='en'>sour</div>
+					   </div>
+				  </body></html>");
+
+			book.SavePage(pageDom);
+			Assert.AreEqual("a sour book", book.Title);
+		}
+
 
 
 		private Mock<IPage> CreateTemplatePage(string divContent)

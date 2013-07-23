@@ -117,27 +117,27 @@ namespace Bloom.Book
 		{
 			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
-			DataSet data = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
-			data.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
-			data.UpdateGenericLanguageString("contentLanguage2",
+			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
+			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
 												 : MultilingualContentLanguage2, false);
-			data.UpdateGenericLanguageString("contentLanguage3",
+			incomingData.UpdateGenericLanguageString("contentLanguage3",
 											 String.IsNullOrEmpty(MultilingualContentLanguage3)
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
-			UpdateTitle(_dataset);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 
 			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
-			foreach (var v in data.TextVariables)
+			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
 					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
 			}
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
+			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 
 		}
 
@@ -263,7 +263,7 @@ namespace Bloom.Book
 //            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
-			UpdateTitle(data); //REVIEW: does this really have all the vars it needs, e.g. what if there is a bookTitleTemplate variable on the original book?
+			UpdateTitle();
 			return data;
 		}
 
@@ -623,11 +623,11 @@ namespace Bloom.Book
 #endif
 		}
 
-		private void UpdateTitle(DataSet data)
+		private void UpdateTitle()
 		{
 			NamedMutliLingualValue title;
 
-			if (data.TextVariables.TryGetValue("bookTitleTemplate", out title))
+			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
 				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
 				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
@@ -642,7 +642,7 @@ namespace Bloom.Book
 				//review: notice we're only changing the value in this dataset
 				this.Set("bookTitle", t,"en");
 			}
-			else if (data.TextVariables.TryGetValue("bookTitle", out title))
+			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
 				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
 				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
