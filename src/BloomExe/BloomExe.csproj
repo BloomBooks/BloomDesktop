@@ -181,6 +181,7 @@
     <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
       <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Collection\NaturalSortComparer.cs" />
     <Compile Include="ConfirmRecycleDialog.cs">
       <SubType>Form</SubType>
     </Compile>
