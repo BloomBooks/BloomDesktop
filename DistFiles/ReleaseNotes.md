@@ -1,3 +1,6 @@
+## 0.9.99 23 July 2013
+* Collections now sort by "natural sort order" rather than alphabetic, so "Primer 3" comes before "Primer 21", and folio documents will include them in this order, too.
+
 ## 0.9.97 23 July 2013
  * Add Folio support, which is a book that sucks in the other books in the collection when it comes time to make a PDF
  * Add AllowNewBooks setting to collection, so that collections can be locked down
