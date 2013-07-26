@@ -46,11 +46,15 @@ namespace MakeCollection
 
 			for (int term = 1; term < 3; term++)
 			{
+				var termIntro = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1PrimerTermIntro");
+				termIntro.SetDataItem("term", term.ToString(), "en");
+				termIntro.Save();
+
 				for (int week = 1; week < 20 ; week++)
 				{
 					var weekBook = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1PrimerWeek");
-					weekBook.SetDataItem("book.term", term.ToString(), "en");
-					weekBook.SetDataItem("book.week", week.ToString(), "en");
+					weekBook.SetDataItem("term", term.ToString(), "en");
+					weekBook.SetDataItem("week", week.ToString(), "en");
 					weekBook.Save();
 				}
 			}
