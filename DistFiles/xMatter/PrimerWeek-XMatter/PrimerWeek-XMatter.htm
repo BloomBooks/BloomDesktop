@@ -5,22 +5,36 @@
 	<link rel="stylesheet" href="PrimerWeek-XMatter.css" type="text/css">
 </head>
 <body>
-	<!-- FRONT COVER --->
+	<!-- This is just for gathering information that gets filled in throughout the week (and sets the title of the book) --->
 	<div data-export='front-matter-cover' class="bloom-page cover coverColor bloom-frontMatter  B5Portrait" data-page="required singleton"
 		id="74731b2d-18b0-420f-ac96-6de20f659810">
-		<div class="pageLabel" lang="en">
-			Front Cover
-		</div>
 		<div class="marginBox">
-			<div class="coverLanguageName" data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
+			<div class="introWrapTitleLabel">
+				<div class="coverPrimerLabel">P1 Primer for</div>
+				<div class="coverLanguageName" data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
+			</div>
 
-			<div class="coverLabel">Term</div>
+			<div class="introLabel introTermLabel">Term:</div>
 
-			<div class="coverNumber bloom-editable" data-book="book.term" lang="en"></div>
+			<div class="introField introTermField bloom-editable" data-book="term" lang="en"></div>
 
-			<div class="coverLabel">Week</div>
+			<div class="introLabel introWeekLabel">Week:</div>
 
-			<div class="coverNumber bloom-editable" data-book="book.week" lang="en"></div>
+			<div class="introField introWeekField bloom-editable" data-book="week" lang="en"></div>
+
+			<div class="introLabel introThemeLabel">Theme:</div>
+
+			<div data-book="theme" class="bloom-translationGroup introThemeField"  data-hint="Theme of the week in {lang}">
+				<div  class=" bloom-editable">
+				</div>
+			</div>
+
+			<div class="introLabel introSubthemeLabel">Subtheme:</div>
+
+			<div class="bloom-translationGroup introSubthemeField" data-book="subtheme" data-hint="Subtheme of the week in {lang}" >
+				<div class=" bloom-editable">
+				</div>
+			</div>
 		</div>
 	</div>
 </body>
