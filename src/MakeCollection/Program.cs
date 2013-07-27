@@ -63,6 +63,7 @@ namespace MakeCollection
 		private static Book MakeBook(CollectionSettings collectionSettings, string sourceBookFolderPath)
 		{
 			var xmatterLocations = new List<string>();
+			xmatterLocations.Add(ProjectContext.XMatterAppDataFolder);
 			xmatterLocations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
 			var locator = new BloomFileLocator(collectionSettings, new XMatterPackFinder(xmatterLocations), new string[] {});
 
