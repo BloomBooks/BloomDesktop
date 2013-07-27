@@ -142,7 +142,8 @@
 
   <Target Name="DownloadDistFiles">
 	<Message Text="Downloading Bloom.chm help file" Importance="high"  />
-	<WebDownload FileUri="https://dl.dropbox.com/s/wbhocwhrb2unflc/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+	<!--<WebDownload FileUri="https://dl.dropbox.com/s/wbhocwhrb2unflc/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>-->
+	<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQ&dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
   </Target>
 
   <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
