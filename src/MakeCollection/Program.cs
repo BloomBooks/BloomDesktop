@@ -44,13 +44,13 @@ namespace MakeCollection
 
 			var folio = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1PrimerFolio");
 
-			for (int term = 1; term < 3; term++)
+			for (int term = 1; term < 4; term++)
 			{
 				var termIntro = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1PrimerTermIntro");
 				termIntro.SetDataItem("term", term.ToString(), "en");
 				termIntro.Save();
 
-				for (int week = 1; week < 20 ; week++)
+				for (int week = 1; week < 12 ; week++)
 				{
 					var weekBook = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1PrimerWeek");
 					weekBook.SetDataItem("term", term.ToString(), "en");
