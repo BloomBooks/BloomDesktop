@@ -116,6 +116,31 @@ namespace Bloom.Collection.BloomPack
 				zip.ZipError += (o, args) => { throw args.Exception; };
 
 				zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
+
+				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.InstalledCollectionsDirectory, _folderName);
+				foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
+				{
+					var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
+					try
+					{
+						if (Directory.Exists(destDirName))
+						{
+							Directory.Delete(destDirName, true);
+						}
+					}
+					catch (Exception error)
+					{
+						throw new ApplicationException("Could not delete the existing xmatter pack in order to update it",error);
+					}
+					try
+					{
+						Directory.Move(dir, destDirName);
+					}
+					catch (Exception error)
+					{
+						throw new ApplicationException("Could not move an xmatter pack from collections to xmatter", error);
+					}
+				}
 			}
 		}
 
