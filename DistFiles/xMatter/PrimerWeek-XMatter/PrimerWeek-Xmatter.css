@@ -1,24 +1,92 @@
-.B5Portrait.cover .bookTitle.bloom-content1
+.coverPrimerLabel
 {
-	font-size: 250%;
-	height: 3.3cm;
-	width: 100%;
-	display: block;
-	line-height: 1;
-	/*+placement:anchor-top-left 0px 0px;*/
+	display: inline-block;
+	margin-bottom: 121px;
+	font-size: 16pt !important;
+	margin-left: 7px;
+}
+.coverLanguageName
+{
+	display: inline-block;
+	font-size: 16pt !important;
+}
+.introField
+{
+	font-size: 72pt !important;
+}
+.introLabel
+{
+	font-size: 16pt !important;
+	width: 104px;
+	text-align: left;
+}
+.introTermLabel
+{
+	/*+placement:shift 8px -103px;*/
+	position: relative;
+	left: 8px;
+	top: -103px;
+}
+.introTermField
+{
+	width: 79px !important;
+	height: 114px;
+	/*+placement:anchor-top-left 8px 82px;*/
 	position: absolute;
-	left: 0px;
-	top: 0px;
+	left: 8px;
+	top: 82px;
 }
-.coverLabel
+.introWeekLabel
 {
-	text-align: center;
-	font-size: 50pt;
+	/*+placement:anchor-top-left 111px 48px;*/
+	position: absolute;
+	left: 111px;
+	top: 48px;
 }
-.bookTitle
+.introWeekField
 {
-	width: 3px;
-	height: 374px;
-	font-size: 64.4pt !important;
-	text-align: center;
+	width: 141px !important;
+	/*+placement:anchor-top-left 109px 82px;*/
+	position: absolute !important;
+	left: 109px !important;
+	top: 82px !important;
+	height: 114px;
+}
+.introThemeLabel
+{
+	margin-top: -209px;
+	/*+placement:anchor-top-left 6px 424px;*/
+	position: absolute;
+	left: 6px;
+	top: 424px;
+}
+.introThemeField .bloom-content1
+{
+	width: 13.3cm !important;
+	display: block !important;
+	height: 57px !important;
+	overflow: hidden;
+	/*+placement:anchor-top-left 6px 60px;*/
+	position: absolute;
+	left: 6px;
+	top: 60px;
+}
+.introSubthemeLabel
+{
+	/*+placement:anchor-top-left 8px 310px;*/
+	position: absolute;
+	left: 8px;
+	top: 310px;
+}
+.introSubthemeField .bloom-content1
+{
+	height: 68px;
+	width: 13.3cm !important;
+	display: block !important;
+	height: 57px !important;
+	overflow: hidden;
+	/*+placement:anchor-top-left 7px 155px;*/
+	position: absolute;
+	left: 7px;
+	top: 155px;
 }
