@@ -115,7 +115,9 @@ namespace Bloom.Collection
 	        var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
 			foreach (var folder in orderedBookFolders)
             {
-            	if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
+				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
+					continue; 
+				if (Path.GetFileName(folder.FullName).ToLower().Contains("xmatter"))
                     continue;
 				AddBookInfo(folder.FullName);
             }
