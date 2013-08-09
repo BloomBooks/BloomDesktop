@@ -301,6 +301,9 @@ namespace Bloom.Publish
 				LayoutMethod method;
 				switch(booketLayoutMethod)
 				{
+					case PublishModel.BookletLayoutMethod.NoBooklet:
+						method = new NullLayoutMethod();
+						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
 						method = new SideFoldBookletLayouter();
 						break;

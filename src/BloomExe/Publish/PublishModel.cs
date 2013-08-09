@@ -31,14 +31,15 @@ namespace Bloom.Publish
 
 		public enum BookletPortions
 		{
-			None,
+			AllPagesNoBooklet,
 			BookletCover,
-			BookletPages,//include front and back matter that isn't coverstop
+			BookletPages,//include front and back matter that isn't coverstock
 			InnerContent//excludes all front and back matter
 		}
 
 		public enum BookletLayoutMethod
 		{
+			NoBooklet,
 			SideFold,
 			CutAndStack,
 			Calendar
@@ -55,6 +56,7 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
@@ -81,14 +83,19 @@ namespace Bloom.Publish
 
 			try
 			{
-
 				using(var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
 						return;
 
+					BookletLayoutMethod layoutMethod;
+					if (this.BookletPortion == BookletPortions.AllPagesNoBooklet)
+						layoutMethod = BookletLayoutMethod.NoBooklet;
+					else
+						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
+
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  BookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
+									  layoutMethod, BookletPortion, doWorkEventArgs);
 				}
 			}
 			catch (Exception e)
@@ -106,9 +113,6 @@ namespace Bloom.Publish
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
-
-			//wkhtmltopdf can't handle file://
-			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
@@ -206,7 +210,7 @@ namespace Bloom.Publish
 					var portion = "";
 					switch (BookletPortion)
 					{
-						case BookletPortions.None:
+						case BookletPortions.AllPagesNoBooklet:
 							portion = "Pages";
 							break;
 						case BookletPortions.BookletCover:

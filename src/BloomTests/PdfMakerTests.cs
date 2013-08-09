@@ -22,7 +22,7 @@ namespace BloomTests
 			{
 				File.WriteAllText(input.Path,"<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				maker.MakePdf(input.Path, output.Path, "a5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.None, new DoWorkEventArgs(null));
+				maker.MakePdf(input.Path, output.Path, "a5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.AllPagesNoBooklet, new DoWorkEventArgs(null));
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path));
 			}
