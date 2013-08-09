@@ -84,6 +84,9 @@
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
     </Reference>
+    <Reference Include="geckofxHtmlToPdf">
+      <HintPath>..\..\lib\geckofxHtmlToPdf.exe</HintPath>
+    </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -212,6 +215,9 @@
     <Compile Include="MiscUI\TipDialog.designer.cs">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfComponent.cs" />
+    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfCommandLine.cs" />
+    <Compile Include="Publish\MakePdfUsingWkHtmlToPdf.cs" />
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
