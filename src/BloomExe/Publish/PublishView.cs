@@ -130,7 +130,7 @@ namespace Bloom.Publish
 
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
 			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
-			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.None;
+			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet;
 			_showCropMarks.Checked = _model.ShowCropMarks;
 
 
@@ -226,7 +226,7 @@ namespace Bloom.Publish
 		private void SetModelFromButtons()
 		{
 			if (_noBookletRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.None;
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 			else if (_coverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
 			else
