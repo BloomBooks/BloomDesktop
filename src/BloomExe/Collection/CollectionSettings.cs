@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Bloom.Publish;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
@@ -317,6 +318,11 @@ namespace Bloom.Collection
 		public bool AllowDeleteBooks
 		{
 			get { return AllowNewBooks; } //at the moment, we're combining these two concepts; we can split them if a good reason to comes along
+		}
+
+		public PdfMaker.PdfEngineChoices PdfEngineChoice
+		{
+			get { return PdfMaker.PdfEngineChoices.geckofxHtlmToPdfCommandLine; }//wkHtmlToPdfCommandLine; }
 		}
 
 
