@@ -11,6 +11,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using DesktopAnalytics;
 using Palaso.Reporting;
+using geckofxHtmlToPdf;
 
 
 namespace Bloom.Publish
@@ -34,6 +35,8 @@ namespace Bloom.Publish
 
 			_model = model;
 			_model.View = this;
+
+			geckofxHtmlToPdf.GeckofxHtmlToPdfComponent pdfMaker = new GeckofxHtmlToPdfComponent(this.Container);
 
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
 
