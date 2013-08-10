@@ -47,7 +47,7 @@ namespace Bloom.Publish
 			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
 			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result!=null && doWorkEventArgs.Result is Exception))
 				return;
-			if (bookletPortion != PublishModel.BookletPortions.None)
+			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
 			{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod);
@@ -276,7 +276,7 @@ namespace Bloom.Publish
 					pageSize = PageSize.A5;
 					break;
 				case "B5":
-					pageSize = PageSize.B5;
+					pageSize = PageSize.B4;
 					break;
 				case "Letter":
 					pageSize = PageSize.Letter;//TODO... what's reasonable?

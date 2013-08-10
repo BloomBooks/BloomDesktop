@@ -56,7 +56,7 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
-			_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
+			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
@@ -113,6 +113,9 @@ namespace Bloom.Publish
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+
+			//wkhtmltopdf can't handle file://
+			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
