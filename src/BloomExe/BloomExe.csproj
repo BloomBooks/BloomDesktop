@@ -81,8 +81,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DesktopAnalytics.0.2.9\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
-    <Reference Include="geckofx-11">
-      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
+    <Reference Include="Geckofx-Core">
+      <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms">
+      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="geckofxHtmlToPdf">
       <HintPath>..\..\lib\geckofxHtmlToPdf.exe</HintPath>
