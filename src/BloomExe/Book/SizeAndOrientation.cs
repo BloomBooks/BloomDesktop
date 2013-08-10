@@ -133,7 +133,7 @@ namespace Bloom.Book
 					fileName.ToLower().Contains("matter") || fileName.ToLower().Contains("languagedisplay"))
 					continue;
 
-
+				fileName = fileName.Replace("file://", "");
 				var path = fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(path))
 				{
