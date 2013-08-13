@@ -14,6 +14,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
+using Gecko.Utils;
 using Palaso.Code;
 using Palaso.Reporting;
 using Palaso.Xml;
