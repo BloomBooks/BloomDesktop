@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -11,7 +12,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using DesktopAnalytics;
 using Palaso.Reporting;
-using geckofxHtmlToPdf;
+using GeckofxHtmlToPdf;
 
 
 namespace Bloom.Publish
@@ -20,6 +21,13 @@ namespace Bloom.Publish
 	{
 		private readonly PublishModel _model;
 		private bool _activated;
+
+		/// <summary>
+		/// note, we have this even if we're using some other engine... a bit awkward that, but it comes from
+		/// the fact that geckofx needs to be tied into the application event loop. The other engines work as
+		/// command line apps, in their own process.
+		/// </summary>
+		public GeckofxHtmlToPdfComponent GeckofxHtmlToPdfComponent;
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -36,8 +44,7 @@ namespace Bloom.Publish
 			_model = model;
 			_model.View = this;
 
-			geckofxHtmlToPdf.GeckofxHtmlToPdfComponent pdfMaker = new GeckofxHtmlToPdfComponent(this.Container);
-
+			GeckofxHtmlToPdfComponent = new GeckofxHtmlToPdfComponent(this.components);
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
@@ -64,6 +71,8 @@ namespace Bloom.Publish
 
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
 		}
+
+
 
 
 		private void Activate()
@@ -241,7 +250,11 @@ namespace Bloom.Publish
 		public void MakeBooklet()
 		{
 			SetDisplayMode(PublishModel.DisplayModes.Working);
+
 			_makePdfBackgroundWorker.RunWorkerAsync();
+
+			//but geckofxhtmltopdf can't run in the backgroudn
+			//_makePdfBackgroundWorker_DoWork(this, new DoWorkEventArgs(null));
 		}
 
 		private void OnPrint_Click(object sender, EventArgs e)

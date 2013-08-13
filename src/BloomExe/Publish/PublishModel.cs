@@ -95,7 +95,11 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  layoutMethod, BookletPortion, doWorkEventArgs);
+									  layoutMethod, BookletPortion,
+										// note, we have this even if we're using some other engine... a bit awkward that, but it comes from
+										// the fact that geckofx needs to be tied into the application event loop. The other engines work as
+										// command line apps, in their own process.
+										View.GeckofxHtmlToPdfComponent);
 				}
 			}
 			catch (Exception e)

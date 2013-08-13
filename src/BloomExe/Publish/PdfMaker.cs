@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using Bloom.ToPalaso;
+using GeckofxHtmlToPdf;
 using Palaso.Code;
-using Palaso.CommandLineProcessing;
 using Palaso.IO;
 using Palaso.Progress;
 using PdfDroplet.LayoutMethods;
@@ -44,16 +41,16 @@ namespace Bloom.Publish
 		/// <param name="bookletPortion"></param>
 		/// <param name="doWorkEventArgs"> </param>
 		/// <param name="getIsLandscape"></param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion,  DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, GeckofxHtmlToPdfComponent geckofxHtmlToPdfComponent)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
 			switch (EngineChoice)
 			{
-//				case PdfEngineChoices.geckofxHtmlToPdfComponent:
-//					new MakePdfUsingGeckfxoHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape);
-//					break;
+				case PdfEngineChoices.geckofxHtmlToPdfComponent:
+					new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, geckofxHtmlToPdfComponent);
+					break;
 				case PdfEngineChoices.geckofxHtlmToPdfCommandLine:
 					new MakePdfUsingGeckofxHtmlToPdfCommandLine().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape);
 					break;

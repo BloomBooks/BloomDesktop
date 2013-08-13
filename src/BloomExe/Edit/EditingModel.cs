@@ -404,7 +404,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ChangePicture(GeckoElement img, PalasoImage imageInfo, IProgress progress)
+		public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			try
 			{

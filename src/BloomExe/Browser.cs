@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
+using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -52,7 +53,7 @@ namespace Bloom
 				//so we only use it if we don't find the unnumbered alternative.
 				if(!Directory.Exists(xulRunnerPath))
 					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-												 Path.Combine("lib", "xulrunner11"));
+												 Path.Combine("lib", "xulrunner22"));
 
 				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
 				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
@@ -232,7 +233,7 @@ namespace Bloom
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
+		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 			if (e.CtrlKey && e.KeyChar == 'v')
 			{
@@ -291,7 +292,7 @@ namespace Bloom
 
 
 
-		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.

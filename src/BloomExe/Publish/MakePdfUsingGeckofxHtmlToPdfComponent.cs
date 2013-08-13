@@ -4,9 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using Bloom.ToPalaso;
+using Gecko;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
-using geckofxHtmlToPdf;
+using GeckofxHtmlToPdf;
 
 namespace Bloom.Publish
 {
@@ -15,8 +16,18 @@ namespace Bloom.Publish
 	/// </summary>
 	class MakePdfUsingGeckofxHtmlToPdfComponent
 	{
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, GeckofxHtmlToPdfComponent geckofxHtmlToPdfComponent)
 		{
+
+			Debug.Fail("Read where I left this here in the code.");
+
+			/* where I left this:
+			 * I was facing 1 problem and one big todo:
+			 * 1) problem: when the pdf generator tried to touch the geck prefs, it would get a COM crash. TOdo on this is to replicate it in the official geckofx sample app and report it.
+			 * 2) TODO: the current system is overly complicated anyhow, and in particular with respect to running in a background, and this component approach precludes running in a background
+			 * because we're sharing a geckofx (xpcom), and it can only run on the thread which it was created on (normally the ui thread).
+			 */
+
 
 			//REVIEW: does geckofxthmltopdf need this special treatment?
 
@@ -48,6 +59,9 @@ namespace Bloom.Publish
 						PageSizeName = paperSizeName
 					};
 
+				geckofxHtmlToPdfComponent.Start(conversionOrder);
+
+				//TODO: The rest of this would have to be done on completion
 
 				if (!File.Exists(tempOutput.Path))
 					throw new ApplicationException("Bloom was not able to create the PDF.\r\n\r\nDetails: GeckofxHtmlToPdf (command line) did not produce the expected document.");

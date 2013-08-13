@@ -61,21 +61,26 @@ namespace Bloom
 			_browser.Margin = new Padding(0);
 
 			HTML = _html;//in the likely case that there's html waiting to be shown
-			_browser.DomClick += new EventHandler<GeckoDomEventArgs>(OnBrowser_DomClick);
+			_browser.DomClick += new EventHandler<DomEventArgs>(OnBrowser_DomClick);
 
 		}
 
-		private void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+		private void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 			if (this.DesignModeAtAll())
 				return;
 
-		  var ge = e as GeckoDomEventArgs;
-			if (ge.Target == null)
+			var domEventArgs = e as DomEventArgs;
+			if (domEventArgs.Target == null)
 				return;
-			if (ge.Target.TagName=="A")
+
+			var targetElement = domEventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
+			if (targetElement == null)
+				return;
+
+			if (targetElement.TagName == "A")
 			{
-				var url = ge.Target.GetAttribute("href");
+				var url = targetElement.GetAttribute("href");
 				System.Diagnostics.Process.Start(url);
 				e.Handled = true; //don't let the browser navigate itself
 			}

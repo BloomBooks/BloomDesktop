@@ -318,29 +318,33 @@ namespace Bloom.Edit
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
-			var ge = e as GeckoDomEventArgs;
-			if (ge.Target == null)
+			var domEventArgs = e as DomEventArgs;
+			if (domEventArgs.Target == null)
 				return;//I've seen this happen
 
-			if (ge.Target.ClassName.Contains("sourceTextTab"))
+			var targetElement= domEventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
+			if (targetElement == null)
+				return;
+
+			if (targetElement.ClassName.Contains("sourceTextTab"))
 			{
-				RememberSourceTabChoice(ge.Target);
+				RememberSourceTabChoice(targetElement);
 				return;
 			}
-			if (ge.Target.ClassName.Contains("changeImageButton"))
-				OnChangeImage(ge);
-			if (ge.Target.ClassName.Contains("pasteImageButton"))
-				OnPasteImage(ge);
-			if (ge.Target.ClassName.Contains("editMetadataButton"))
-				OnEditImageMetdata(ge);
+			if (targetElement.ClassName.Contains("changeImageButton"))
+				OnChangeImage(targetElement);
+			if (targetElement.ClassName.Contains("pasteImageButton"))
+				OnPasteImage(targetElement);
+			if (targetElement.ClassName.Contains("editMetadataButton"))
+				OnEditImageMetdata(targetElement);
 
-			var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
+			var anchor = targetElement as Gecko.DOM.GeckoAnchorElement;
 			if(anchor!=null)
 			{
 				if(anchor.Href.Contains("bookMetadataEditor"))
 				{
 					OnShowBookMetadataEditor();
-					ge.Handled = true;
+					domEventArgs.Handled = true;
 					return;
 				}
 				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
@@ -348,24 +352,24 @@ namespace Bloom.Edit
 					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
 					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
 					_browser1.RunJavaScript(function);
-					ge.Handled = true;
+					domEventArgs.Handled = true;
 					return;
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
 					Process.Start(anchor.Href);
-					ge.Handled = true;
+					domEventArgs.Handled = true;
 					return;
 				}
 				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
 				{
-					ge.Handled = false;//let gecko handle it
+					domEventArgs.Handled = false;//let gecko handle it
 					return;
 				}
 				else
 				{
 					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-					ge.Handled = true;
+					domEventArgs.Handled = true;
 				}
 
 			}
@@ -373,7 +377,7 @@ namespace Bloom.Edit
 		}
 
 
-		private void RememberSourceTabChoice(GeckoElement target)
+		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
 			var start = 1+ target.OuterHtml.IndexOf("#");
@@ -382,9 +386,9 @@ namespace Bloom.Edit
 		}
 
 
-		private void OnEditImageMetdata(GeckoDomEventArgs ge)
+		private void OnEditImageMetdata(GeckoHtmlElement target)
 		{
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(target);
 			if (imageElement == null)
 				return;
 			string fileName = imageElement.GetAttribute("src").Replace("%20", " ");
@@ -432,7 +436,7 @@ namespace Bloom.Edit
 			//doesn't work: _browser1.WebBrowser.Reload();
 		}
 
-		private void OnPasteImage(GeckoDomEventArgs ge)
+		private void OnPasteImage(GeckoHtmlElement target)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -452,10 +456,10 @@ namespace Bloom.Edit
 					return;
 				}
 
-				if (ge.Target.ClassName.Contains("licenseImage"))
+				if (target.ClassName.Contains("licenseImage"))
 					return;
 
-				var imageElement = GetImageNode(ge);
+				var imageElement = GetImageNode(target);
 				if (imageElement == null)
 					return;
 				Cursor = Cursors.WaitCursor;
@@ -522,14 +526,14 @@ namespace Bloom.Edit
 		}
 
 
-		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
+		private static GeckoHtmlElement GetImageNode(GeckoHtmlElement target)
 		{
-			GeckoElement imageElement = null;
-			foreach (var n in ge.Target.Parent.ChildNodes)
+			GeckoHtmlElement imageElement = null;
+			foreach (var n in target.Parent.ChildNodes)
 			{
-				if (n is GeckoElement && ((GeckoElement) n).TagName.ToLower() == "img")
+				if (n is GeckoElement && ((GeckoHtmlElement)n).TagName.ToLower() == "img")
 				{
-					imageElement = (GeckoElement) n;
+					imageElement = (GeckoHtmlElement)n;
 					break;
 				}
 			}
@@ -542,9 +546,14 @@ namespace Bloom.Edit
 			return imageElement;
 		}
 
-		private void OnChangeImage(GeckoDomEventArgs ge)
+//	    private GeckoHtmlElement GetHtmlElementTarget(DomEventArgs eventArgs)
+//	    {
+//		    return eventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
+//	    }
+
+		private void OnChangeImage(GeckoHtmlElement target)
 		{
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(target);
 			if (imageElement == null)
 				return;
 			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
@@ -559,7 +568,8 @@ namespace Bloom.Edit
 					return;
 				}
 			}
-			if (ge.Target.ClassName.Contains("licenseImage"))
+
+			if (target.ClassName.Contains("licenseImage"))
 				return;
 
 			Cursor = Cursors.WaitCursor;
