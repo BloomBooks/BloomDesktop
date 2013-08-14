@@ -1,5 +1,6 @@
-
+## 0.9.109 14 Aug 2013
 * Update french localizations
+* Fix extra blank page problem
 
 ## 0.9.105 10 Aug 2013
 * B5 pages turned into booklets now properly use B4 paper (were being squished onto B5 paper).
