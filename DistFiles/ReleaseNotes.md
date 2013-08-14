@@ -1,3 +1,6 @@
+
+* Update french localizations
+
 ## 0.9.105 10 Aug 2013
 * B5 pages turned into booklets now properly use B4 paper (were being squished onto B5 paper).
 
