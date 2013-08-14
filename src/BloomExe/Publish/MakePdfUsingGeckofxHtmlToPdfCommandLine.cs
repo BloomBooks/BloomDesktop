@@ -42,10 +42,10 @@ namespace Bloom.Publish
 				string exePath = @"c:\dev\geckofxhtmltopdf\output\debug\geckofxhtmltopdf.exe";// FindWkhtmlToPdf();
 
 				var arguments = string.Format(
+					"\"{0}\" \"{1}\" " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
-					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
-					"\"{0}\" \"{1}\"",
+					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm",
 					tempInput.Path, tempOutput.Path);
 
 				ExecutionResult result = null;
