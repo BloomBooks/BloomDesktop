@@ -1,3 +1,6 @@
+## 0.9.110 17 Aug 2013
+* Added missing null xmatter
+
 ## 0.9.109 14 Aug 2013
 * Update french localizations
 * Fix extra blank page problem
