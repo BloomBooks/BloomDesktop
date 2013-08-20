@@ -1,20 +1,15 @@
-BODY
-{
-	/*[ph]0*/
-	/*[ph]1*/
-}
 @media print
 {
 	BODY
 	{
-		/*[id]1*/background-color: #363333;
+		background-color: #363333;
 	}
 }
 @media screen
 {
 	BODY
 	{
-		/*[id]0*/background-color: #363333;
+		background-color: #363333;
 	}
 }
 DIV.bloom-page.coverColor
@@ -45,7 +40,7 @@ INPUT
 }
 TEXTAREA
 {
-/*we have javascript function which notices this border and makes it read-only
+	/*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
 	border: 1px solid transparent;
 	/*+placement:anchor-bottom-left 10px -49px;*/
@@ -55,21 +50,20 @@ TEXTAREA
 }
 DIV.bloom-page
 {
-	/*[ph]2*/
 	border-bottom: 15px solid #363333 !important;
-/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+	/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	background-color: #FFFFFF;
-/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 }
 @media print
 {
 	DIV.bloom-page
 	{
-		/*[id]2*/border: 0 none #EF0808 !important;
-/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
-/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
+		/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
+This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
+This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+		border: 0 none #EF0808 !important;
+		/*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
+This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	}
@@ -107,7 +101,7 @@ DIV.bloom-page.cover:after
 	left: 0px;
 	top: 0px;
 	visibility: hidden;
-/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
+	/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
 }
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
@@ -157,4 +151,10 @@ DIV.marginBox
 .titlePage #languageInformation .bloom-contentNational2
 {
 	/*[disabled]visibility:hidden;*/
+}
+.bloom-draggableLabel
+{
+	/*This matches the width of the dragHandle, which doesn't get added in preview mode
+and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
+	padding-left: 22px;
 }
