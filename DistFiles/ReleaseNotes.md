@@ -1,3 +1,6 @@
+## 0.9.111 17 Aug 2013
+* New bloom-draggableLabel feature for when images need editable labels
+
 ## 0.9.110 17 Aug 2013
 * Added missing null xmatter
 

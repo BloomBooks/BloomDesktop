@@ -14,7 +14,7 @@ BODY
 }
 BODY
 {
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2-5% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the basePage.css, we have 10pt, but here, 11pt.
@@ -345,6 +345,37 @@ DIV.marginBox
 }
 .bloom-frontMatter DIV.marginBox
 {
-/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+	/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
 	border: none;
+}
+.bloom-draggableLabel
+{
+	/*Stay in from of the image we're labeling*/
+	z-index: 10000;
+	/*Here we just want enough that it is still visible even if empty*/
+	min-width: 69px !important;
+	/*diplay table gives us the ability to have a min-width, for when the label is empty*/
+	display: table;
+	/*This can still grow, if the child DIV has several lines of text. But this keeps us visible when empty.*/
+	height: 31px;
+}
+.bloom-draggableLabel .dragHandle
+{
+	background-image: url("dragHandle.png");
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	width: 22px;
+	height: 25px;
+	/*+placement:anchor-top-left 0px 3px;*/
+	position: absolute;
+	left: 0px;
+	top: 3px;
+}
+.bloom-draggableLabel .bloom-editable
+{
+	/*This margin-left leaves room for the move button to be inside the translation-group*/
+	margin-left: 20px;
+	/*The normal default un-focussed border isn't visible over an image that
+has the mouse in it, so you can't find these labels if they are empty.*/
+	border: thin dotted #9C9292;
 }
