@@ -62,7 +62,7 @@ namespace Bloom
 				
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
-
+		        
 				//default is to allow tracking
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
 
