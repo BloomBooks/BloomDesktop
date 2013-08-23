@@ -657,6 +657,7 @@ namespace Bloom.Book
 					}
 					if (!string.IsNullOrEmpty(path))
 					{
+						//	                    linkNode.SetAttribute("href", path);//I don't know why I had this... neither FF 23 nor Chrome want it (maybe a prior FF wanted it?) "file://" + path);
 						linkNode.SetAttribute("href", "file://" + path);
 					}
 					else
@@ -677,6 +678,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("basePage.css");
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
+			dom.RemoveFileProtocolFromStyleSheetLinks();
 		}
 
 
