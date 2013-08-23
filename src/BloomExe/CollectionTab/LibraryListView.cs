@@ -297,7 +297,20 @@ namespace Bloom.CollectionTab
 				return;
 
 			BookInfo bookInfo = button.Tag as BookInfo;
-			var book = _model.GetBookFromBookInfo(bookInfo);
+			Book.Book book;
+			try
+			{
+				book = _model.GetBookFromBookInfo(bookInfo);
+			}
+			catch (Exception error)
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				return;
+			}
+
 			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 			if (titleBestForUserDisplay != button.Text)
 			{
@@ -459,9 +472,13 @@ namespace Bloom.CollectionTab
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
-			catch (Exception err)
+			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Bloom cannot display that book.");
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 		}
 
