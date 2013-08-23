@@ -657,7 +657,7 @@ namespace Bloom.Book
 					}
 					if (!string.IsNullOrEmpty(path))
 					{
-						//	                    linkNode.SetAttribute("href", path);//I don't know why I had this... neither FF 23 nor Chrome want it (maybe a prior FF wanted it?) "file://" + path);
+						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
 						linkNode.SetAttribute("href", "file://" + path);
 					}
 					else

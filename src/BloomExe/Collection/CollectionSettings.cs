@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
@@ -117,7 +118,7 @@ namespace Bloom.Collection
 			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
 				return "L1-Unknown-" + Language1Iso639Code;
-			return exactLanguageMatch.Name;
+			return GetLanguageNameInUILangIfPossible(exactLanguageMatch.Name, inLanguage);
 		}
 
 		public string GetLanguage2Name(string inLanguage)
@@ -133,7 +134,8 @@ namespace Bloom.Collection
 				{
 					_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
 				}
-				return _isoToLangNameDictionary[Language2Iso639Code];
+
+				return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[Language2Iso639Code], inLanguage);
 
 			}
 			catch (Exception)
@@ -143,6 +145,15 @@ namespace Bloom.Collection
 				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
 				return "L2-Unknown-" + Language2Iso639Code;
 			}
+		}
+
+		private string GetLanguageNameInUILangIfPossible(string name, string codeOfDesiredLanguage)
+		{
+			//we don't have a general way to get the language names translated yet. But at least we can show a few languages properly
+
+			if (codeOfDesiredLanguage == "fr" && name == "French")
+				return "français";
+			return name;
 		}
 
 		public string GetLanguage3Name(string inLanguage)
@@ -157,7 +168,7 @@ namespace Bloom.Collection
 				{
 					_isoToLangNameDictionary.Add(Language3Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
 				}
-				return _isoToLangNameDictionary[Language3Iso639Code];
+				return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[Language3Iso639Code],inLanguage);
 			}
 			catch (Exception)
 			{
