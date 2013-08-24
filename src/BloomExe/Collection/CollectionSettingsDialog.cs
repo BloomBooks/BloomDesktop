@@ -42,6 +42,8 @@ namespace Bloom.Collection
 
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
+			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
 //		                                                  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
