@@ -621,6 +621,9 @@ function ResizeUsingPercentages(e,ui){
          if (whatToSay == null)
              whatToSay = key; //just show the code
 
+         if (key = "*")
+             return; //seeing a "*" was confusing even to me
+
          //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
          if ($(this).width() < 100) {
              return;
