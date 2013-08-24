@@ -3,6 +3,8 @@
 * Show "French" as "français" in settings dialog.
 * Better error when there's a problem loading a book.
 * Fixed forgetting the "experimental commands" setting
+* Only show the copyright missing if the copyright itself is missing, not the license or illustrator.
+* Don't show a * in the ISBN box
 
 ## 0.9.111 17 Aug 2013
 * New bloom-draggableLabel feature for when images need editable labels
