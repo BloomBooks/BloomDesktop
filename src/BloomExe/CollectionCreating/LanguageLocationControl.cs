@@ -14,7 +14,7 @@ namespace Bloom.CollectionCreating
 
 		public void NowVisible()
 		{
-
+			_countryText.Text = _collectionInfo.Country;
 		}
 
 		public void Init(NewCollectionSettings collectionInfo)

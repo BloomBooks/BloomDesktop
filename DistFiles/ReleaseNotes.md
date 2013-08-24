@@ -5,6 +5,9 @@
 * Fixed forgetting the "experimental commands" setting
 * Only show the copyright missing if the copyright itself is missing, not the license or illustrator.
 * Don't show a * in the ISBN box
+* When making new collection
+ * automatically fill in country based on language chosen (will be wrong sometimes, but you see it and can change it).
+ * If language is in PNG, auto set National Languages to English and Tok Pisin.
 
 ## 0.9.111 17 Aug 2013
 * New bloom-draggableLabel feature for when images need editable labels
