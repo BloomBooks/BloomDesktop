@@ -398,15 +398,18 @@ function MakeSourceTextDivForGroup(group) {
          $(this).remove()
      });
 
-     var license = $(img).attr('data-license');
-     if (!license || license.length == 0) {
+     //NB: we have 3 things we *want*: illustrator, copyright, and license. But we can only "demand" copyright.
+     //For example, a org hires illustrators and doesn't normally retain (or remember) who did the illustration.
+     //And offers no license; you have to contact them (this is recorded as data-license="").
+     var copyright = $(img).attr('data-copyright');
+     if (!copyright || copyright.length == 0) {
 
          var buttonModifier = "largeImageButton";
          if ($(container).height() < 80) {
              buttonModifier = 'smallImageButton';
          }
 
-         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing information on Credits, Copyright, or License'></button>");
+         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing Copyright information'></button>");
      }
  }
 
