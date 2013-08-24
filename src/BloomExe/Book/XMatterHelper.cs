@@ -81,7 +81,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
-		public void InjectXMatter(string folderPath, Dictionary<string, string> writingSystemCodes, Layout layout)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -102,9 +102,6 @@ namespace Bloom.Book
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
 			XmlNode divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
-
-//			if(folderPath!=null)//null in some unit test that don't care about images
-//				ImageMetadataUpdater.UpdateAllHtmlDataAttributesForAllImgElements(folderPath, XMatterDom, new NullProgress());
 
 			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
