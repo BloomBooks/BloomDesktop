@@ -493,7 +493,7 @@ namespace Bloom.Book
 			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
 			progress.WriteStatus("Injecting XMatter...");
 
-			helper.InjectXMatter(FolderPath, _bookData.GetWritingSystemCodes(), layout);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 

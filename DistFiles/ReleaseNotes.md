@@ -1,3 +1,8 @@
+## 0.9.112 23 Aug 2013
+* Will now copy some fields from one global language (like English) to the national languages in use if it needs to in order to preserve information in derived books. For example, who the original illustrator was.
+* Show "French" as "français" in settings dialog.
+* Better error when there's a problem loading a book.
+
 ## 0.9.111 17 Aug 2013
 * New bloom-draggableLabel feature for when images need editable labels
 
