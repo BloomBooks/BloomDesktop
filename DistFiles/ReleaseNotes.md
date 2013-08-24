@@ -8,6 +8,7 @@
 * When making new collection
  * automatically fill in country based on language chosen (will be wrong sometimes, but you see it and can change it).
  * If language is in PNG, auto set National Languages to English and Tok Pisin.
+ * Book folders now take their names from vernacular if possible, rather than English. If the vernacular is empty, then the next choice is the National Language 1, then NL2, and only then English, French, Portuguese, or Thai.
 
 ## 0.9.111 17 Aug 2013
 * New bloom-draggableLabel feature for when images need editable labels

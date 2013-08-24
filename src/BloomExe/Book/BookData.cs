@@ -671,10 +671,9 @@ namespace Bloom.Book
 		private void UpdateTitle()
 		{
 			NamedMutliLingualValue title;
-
+			string[] orderedListOfWritingSystemIds = new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt" };
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
 				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
@@ -689,7 +688,6 @@ namespace Bloom.Book
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
 				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
 				_dom.Title = t;
 			}
