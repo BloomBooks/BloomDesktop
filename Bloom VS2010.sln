@@ -16,6 +16,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B012FF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MakeCollection", "src\MakeCollection\MakeCollection.csproj", "{A9B5F0EC-306E-47F2-9137-01A3BB35BFCF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{04AF3A87-C943-4731-BE3D-659EA705171D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistFiles", "DistFiles", "{D38FC737-8C27-46CB-B490-3CB2E7AB3C99}"
+	ProjectSection(SolutionItems) = preProject
+		DistFiles\ReleaseNotes.md = DistFiles\ReleaseNotes.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +78,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D38FC737-8C27-46CB-B490-3CB2E7AB3C99} = {04AF3A87-C943-4731-BE3D-659EA705171D}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

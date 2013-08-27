@@ -1,4 +1,7 @@
-## 0.9.112 24 Aug 2013
+## 0.9.115 24 Aug 2013
+* Added bloom-copyFromOtherLanguageIfNecessary to limit what fields get the copy treatment introduced in 0.9.114
+
+## 0.9.114 24 Aug 2013
 * Will now copy some fields from one global language (like English) to the national languages in use if it needs to in order to preserve information in derived books. For example, who the original illustrator was.
 * Show "French" as "français" in settings dialog.
 * Better error when there's a problem loading a book.
