@@ -568,8 +568,8 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
-						<div data-book='originalContributions' lang='fr'></div>
-						<div data-book='originalContributions' lang='en'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='en'></div>
 					</div>
 				</div>
 				</body></html>");
@@ -653,8 +653,8 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
-						<div data-book='originalContributions' lang='fr'></div>
-						<div data-book='originalContributions' lang='xyz'></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='xyz'></div>
 					</div>
 				</div>
 				</body></html>");
