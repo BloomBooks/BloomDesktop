@@ -1,3 +1,6 @@
+## 0.9.116 29 Aug 2013
+* Now prompts for registration starting on 3rd launch.
+
 ## 0.9.115 24 Aug 2013
 * Added bloom-copyFromOtherLanguageIfNecessary to limit what fields get the copy treatment introduced in 0.9.114
 

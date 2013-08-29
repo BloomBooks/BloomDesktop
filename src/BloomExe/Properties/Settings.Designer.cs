@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using Bloom.CollectionChoosing;
-
 namespace Bloom.Properties {
     
     
@@ -39,10 +37,9 @@ namespace Bloom.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		public MostRecentPathsList MruProjects
-		{
+        public global::Bloom.CollectionChoosing.MostRecentPathsList MruProjects {
             get {
-                return ((MostRecentPathsList)(this["MruProjects"]));
+                return ((global::Bloom.CollectionChoosing.MostRecentPathsList)(this["MruProjects"]));
             }
             set {
                 this["MruProjects"] = value;
@@ -225,6 +222,18 @@ namespace Bloom.Properties {
             }
             set {
                 this["HowUsing"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int LaunchCount {
+            get {
+                return ((int)(this["LaunchCount"]));
+            }
+            set {
+                this["LaunchCount"] = value;
             }
         }
     }
