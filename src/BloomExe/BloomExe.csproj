@@ -62,7 +62,7 @@
     </Reference>
     <Reference Include="Analytics.NET, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Analytics.1.1.0\lib\Analytics.NET.dll</HintPath>
+      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
     </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
@@ -79,7 +79,7 @@
     </Reference>
     <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\DesktopAnalytics.0.2.9\lib\DesktopAnalytics.dll</HintPath>
+      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
@@ -97,9 +97,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
-    <Reference Include="L10NSharp, Version=1.1.8.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="L10NSharp, Version=1.1.10.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\L10NSharp.1.1.8\lib\net40-Client\L10NSharp.dll</HintPath>
+      <HintPath>..\..\packages\L10NSharp.1.1.10\lib\net40-Client\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
@@ -212,11 +212,11 @@
     <Compile Include="MiscUI\TipDialog.designer.cs">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="RegisterDialog.cs">
+    <Compile Include="RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RegisterDialog.Designer.cs">
-      <DependentUpon>RegisterDialog.cs</DependentUpon>
+    <Compile Include="RegistrationDialog.Designer.cs">
+      <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
@@ -479,8 +479,8 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RegisterDialog.resx">
-      <DependentUpon>RegisterDialog.cs</DependentUpon>
+    <EmbeddedResource Include="RegistrationDialog.resx">
+      <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>

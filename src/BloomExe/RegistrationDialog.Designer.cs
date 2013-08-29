@@ -1,6 +1,6 @@
 ﻿namespace Bloom
 {
-	partial class RegisterDialog
+	partial class RegistrationDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -29,7 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegisterDialog));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegistrationDialog));
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
 			this.label8 = new System.Windows.Forms.Label();
@@ -50,6 +50,7 @@
 			this.l10NSharpExtender1 = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._iAmStuckLabel = new System.Windows.Forms.LinkLabel();
 			this._userIsStuckDetector = new System.Windows.Forms.Timer(this.components);
+			this._cancelButton = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel4.SuspendLayout();
 			this.tableLayoutPanel3.SuspendLayout();
@@ -180,7 +181,6 @@
 			this._email.Name = "_email";
 			this._email.Size = new System.Drawing.Size(177, 25);
 			this._email.TabIndex = 0;
-			this._email.TextChanged += new System.EventHandler(this.OnTextChanged);
 			// 
 			// _organization
 			// 
@@ -323,25 +323,44 @@
 			this.l10NSharpExtender1.SetLocalizingId(this._iAmStuckLabel, "RegisterDialog.IAmStuckLabel");
 			this._iAmStuckLabel.Location = new System.Drawing.Point(28, 370);
 			this._iAmStuckLabel.Name = "_iAmStuckLabel";
-			this._iAmStuckLabel.Size = new System.Drawing.Size(140, 13);
+			this._iAmStuckLabel.Size = new System.Drawing.Size(141, 13);
 			this._iAmStuckLabel.TabIndex = 2;
 			this._iAmStuckLabel.TabStop = true;
-			this._iAmStuckLabel.Text = "I\'m stuck, let me out of here!";
+			this._iAmStuckLabel.Text = "I\'m stuck, I\'ll finsish this later.";
 			this._iAmStuckLabel.Visible = false;
 			this._iAmStuckLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._iAmStuckLabel_LinkClicked);
 			// 
 			// _userIsStuckDetector
 			// 
-			this._userIsStuckDetector.Interval = 5000;
+			this._userIsStuckDetector.Interval = 10000;
 			this._userIsStuckDetector.Tick += new System.EventHandler(this._userIsStuckDetector_Tick);
 			// 
-			// RegisterDialog
+			// _cancelButton
+			// 
+			this._cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this._cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+			this._cancelButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._cancelButton, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._cancelButton, null);
+			this.l10NSharpExtender1.SetLocalizationPriority(this._cancelButton, L10NSharp.LocalizationPriority.High);
+			this.l10NSharpExtender1.SetLocalizingId(this._cancelButton, "Common.CancelButton");
+			this._cancelButton.Location = new System.Drawing.Point(257, 361);
+			this._cancelButton.Name = "_cancelButton";
+			this._cancelButton.Size = new System.Drawing.Size(75, 27);
+			this._cancelButton.TabIndex = 3;
+			this._cancelButton.Text = "&Cancel";
+			this._cancelButton.UseVisualStyleBackColor = true;
+			this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
+			// 
+			// RegistrationDialog
 			// 
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(447, 401);
 			this.ControlBox = false;
+			this.Controls.Add(this._cancelButton);
 			this.Controls.Add(this._iAmStuckLabel);
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this._okButton);
@@ -351,8 +370,9 @@
 			this.l10NSharpExtender1.SetLocalizingId(this, "RegisterDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "RegisterDialog";
+			this.Name = "RegistrationDialog";
 			this.Text = "Register Bloom";
+			this.Load += new System.EventHandler(this.RegistrationDialog_Load);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
 			this.tableLayoutPanel4.ResumeLayout(false);
@@ -389,5 +409,6 @@
 		private System.Windows.Forms.TextBox _sirName;
 		private System.Windows.Forms.LinkLabel _iAmStuckLabel;
 		private System.Windows.Forms.Timer _userIsStuckDetector;
+		private System.Windows.Forms.Button _cancelButton;
 	}
 }
