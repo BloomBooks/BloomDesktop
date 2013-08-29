@@ -95,14 +95,14 @@ namespace Bloom
 
 		private void SetWindowText()
 		{
-			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
+			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetBuiltOnDate());
 			if(_collectionSettings.IsSourceCollection)
 			{
 				Text += "SOURCE COLLECTION";
 			}
 		}
 
-		public static string GetVersionInfo()
+		public static string GetBuiltOnDate()
 		{
 			var asm = Assembly.GetExecutingAssembly();
 			var ver = asm.GetName().Version;
@@ -110,8 +110,18 @@ namespace Bloom
 			file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
-			return string.Format("Version {0}.{1}.{2} Built on {3}", ver.Major, ver.Minor,
-				ver.Build, fi.CreationTime.ToString("dd-MMM-yyyy"));
+			return string.Format("Built on {0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
+		}
+
+		public static string GetShortVersionInfo()
+		{
+			var asm = Assembly.GetExecutingAssembly();
+			var ver = asm.GetName().Version;
+			var file = asm.CodeBase.Replace("file:", string.Empty);
+			file = file.TrimStart('/');
+			var fi = new FileInfo(file);
+
+			return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
 		}
 
 		public bool UserWantsToOpenADifferentProject { get; set; }

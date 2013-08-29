@@ -14,11 +14,14 @@ namespace Bloom
 	public partial class RegistrationDialog : Form
 	{
 		private readonly bool _actAsThoughThisIsOptional;
+		private bool _hadEmailAlready;
 
 		public RegistrationDialog(bool actAsThoughThisIsOptional)
 		{
 			_actAsThoughThisIsOptional = actAsThoughThisIsOptional;
 			InitializeComponent();
+
+			_hadEmailAlready = !string.IsNullOrWhiteSpace(Settings.Default.Email);
 
 			_cancelButton.Visible = _iAmStuckLabel.Visible = _actAsThoughThisIsOptional;
 		}
@@ -82,6 +85,12 @@ namespace Bloom
 			try
 			{
 				DesktopAnalytics.Analytics.IdentifyUpdate(GetAnalyticsUserInfo());
+
+				if (!_hadEmailAlready && !string.IsNullOrWhiteSpace(Settings.Default.Email))
+				{
+					DesktopAnalytics.Analytics.Track("Register");
+				}
+
 			}
 			catch (Exception)
 			{

@@ -104,8 +104,19 @@ namespace Bloom
 
 		private void _browser_Load(object sender, EventArgs e)
 		{
-			_versionInfo.Text = Shell.GetVersionInfo();
+			_versionNumber.Text = Shell.GetShortVersionInfo();
+			_buildDate.Text = Shell.GetBuiltOnDate();
 			_browser.Navigate(FileLocator.GetFileDistributedWithApplication("infoPages", "aboutBox.htm"),false);
+		}
+
+		private void _versionInfo_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void AboutDialog_Load(object sender, EventArgs e)
+		{
+
 		}
 
 	}

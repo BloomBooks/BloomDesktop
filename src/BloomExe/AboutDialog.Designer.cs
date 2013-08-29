@@ -27,116 +27,117 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this._versionInfo = new System.Windows.Forms.Label();
-            this._okButton = new System.Windows.Forms.Button();
-            this._browser = new Bloom.Browser();
-            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Bloom.Properties.Resources.LogoForLibraryChoosingDialog;
-            this._L10NSharpExtender.SetLocalizableToolTip(this.pictureBox1, null);
-            this._L10NSharpExtender.SetLocalizationComment(this.pictureBox1, null);
-            this._L10NSharpExtender.SetLocalizingId(this.pictureBox1, "AboutDialog.pictureBox1");
-            this.pictureBox1.Location = new System.Drawing.Point(13, 9);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(264, 89);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            // 
-            // _versionInfo
-            // 
-            this._versionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this._versionInfo.AutoSize = true;
-            this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._L10NSharpExtender.SetLocalizableToolTip(this._versionInfo, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._versionInfo, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._versionInfo, L10NSharp.LocalizationPriority.NotLocalizable);
-            this._L10NSharpExtender.SetLocalizingId(this._versionInfo, "AboutDialog._versionInfo");
-            this._versionInfo.Location = new System.Drawing.Point(12, 417);
-            this._versionInfo.Name = "_versionInfo";
-            this._versionInfo.Size = new System.Drawing.Size(43, 17);
-            this._versionInfo.TabIndex = 1;
-            this._versionInfo.Text = "label1";
-            // 
-            // _okButton
-            // 
-            this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._okButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
-            this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-            this._okButton.Location = new System.Drawing.Point(604, 417);
-            this._okButton.Name = "_okButton";
-            this._okButton.Size = new System.Drawing.Size(75, 23);
-            this._okButton.TabIndex = 3;
-            this._okButton.Text = "&OK";
-            this._okButton.UseVisualStyleBackColor = true;
-            this._okButton.Click += new System.EventHandler(this._okButton_Click);
-            // 
-            // _browser
-            // 
-            this._browser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.components = new System.ComponentModel.Container();
+			this._buildDate = new System.Windows.Forms.Label();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this.pictureBox2 = new System.Windows.Forms.PictureBox();
+			this._versionNumber = new System.Windows.Forms.Label();
+			this._browser = new Bloom.Browser();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+			this.SuspendLayout();
+			// 
+			// _buildDate
+			// 
+			this._buildDate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this._buildDate.AutoSize = true;
+			this._buildDate.Font = new System.Drawing.Font("Segoe UI", 8F);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._buildDate, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._buildDate, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._buildDate, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._buildDate, "AboutDialog._versionInfo");
+			this._buildDate.Location = new System.Drawing.Point(12, 422);
+			this._buildDate.Name = "_buildDate";
+			this._buildDate.Size = new System.Drawing.Size(38, 13);
+			this._buildDate.TabIndex = 1;
+			this._buildDate.Text = "label1";
+			this._buildDate.Click += new System.EventHandler(this._versionInfo_Click);
+			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = "AboutDialog";
+			// 
+			// pictureBox2
+			// 
+			this.pictureBox2.Image = global::Bloom.Properties.Resources.SILLogoBlue132x184;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.pictureBox2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.pictureBox2, null);
+			this._L10NSharpExtender.SetLocalizingId(this.pictureBox2, "AboutDialog.pictureBox2");
+			this.pictureBox2.Location = new System.Drawing.Point(15, 31);
+			this.pictureBox2.Name = "pictureBox2";
+			this.pictureBox2.Size = new System.Drawing.Size(132, 190);
+			this.pictureBox2.TabIndex = 5;
+			this.pictureBox2.TabStop = false;
+			// 
+			// _versionNumber
+			// 
+			this._versionNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this._versionNumber.AutoSize = true;
+			this._versionNumber.Font = new System.Drawing.Font("Segoe UI", 8F);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._versionNumber, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._versionNumber, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._versionNumber, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._versionNumber, "AboutDialog._versionInfo");
+			this._versionNumber.Location = new System.Drawing.Point(12, 409);
+			this._versionNumber.Name = "_versionNumber";
+			this._versionNumber.Size = new System.Drawing.Size(38, 13);
+			this._versionNumber.TabIndex = 6;
+			this._versionNumber.Text = "label1";
+			// 
+			// _browser
+			// 
+			this._browser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this._browser.BackColor = System.Drawing.Color.DarkGray;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
-            this._L10NSharpExtender.SetLocalizingId(this._browser, "AboutDialog.Browser");
-            this._browser.Location = new System.Drawing.Point(13, 97);
-            this._browser.Name = "_browser";
-            this._browser.Size = new System.Drawing.Size(666, 297);
-            this._browser.TabIndex = 2;
-            this._browser.Load += new System.EventHandler(this._browser_Load);
-            // 
-            // _L10NSharpExtender
-            // 
-            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-            this._L10NSharpExtender.PrefixForNewItems = "AboutDialog";
-            // 
-            // AboutDialog
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
-            this.CancelButton = this._okButton;
-            this.ClientSize = new System.Drawing.Size(691, 452);
-            this.Controls.Add(this._okButton);
-            this.Controls.Add(this._browser);
-            this.Controls.Add(this._versionInfo);
-            this.Controls.Add(this.pictureBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this._L10NSharpExtender.SetLocalizableToolTip(this, null);
-            this._L10NSharpExtender.SetLocalizationComment(this, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.MediumLow);
-            this._L10NSharpExtender.SetLocalizingId(this, "AboutDialog.AboutDialogWindowTitle");
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "AboutDialog";
-            this.Padding = new System.Windows.Forms.Padding(9);
-            this.ShowIcon = false;
-            this.ShowInTaskbar = false;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "About Bloom";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+			this._browser.BackColor = System.Drawing.Color.DarkGray;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
+			this._L10NSharpExtender.SetLocalizingId(this._browser, "AboutDialog.Browser");
+			this._browser.Location = new System.Drawing.Point(166, 31);
+			this._browser.Name = "_browser";
+			this._browser.Size = new System.Drawing.Size(407, 408);
+			this._browser.TabIndex = 2;
+			this._browser.Load += new System.EventHandler(this._browser_Load);
+			// 
+			// AboutDialog
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.BackColor = System.Drawing.Color.White;
+			this.ClientSize = new System.Drawing.Size(585, 451);
+			this.Controls.Add(this._versionNumber);
+			this.Controls.Add(this.pictureBox2);
+			this.Controls.Add(this._browser);
+			this.Controls.Add(this._buildDate);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.MediumLow);
+			this._L10NSharpExtender.SetLocalizingId(this, "AboutDialog.AboutDialogWindowTitle");
+			this.MaximizeBox = false;
+			this.MinimizeBox = false;
+			this.Name = "AboutDialog";
+			this.Padding = new System.Windows.Forms.Padding(9);
+			this.ShowIcon = false;
+			this.ShowInTaskbar = false;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+			this.Text = "About Bloom";
+			this.Load += new System.EventHandler(this.AboutDialog_Load);
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label _versionInfo;
-        private Browser _browser;
-        private System.Windows.Forms.Button _okButton;
+		private System.Windows.Forms.Label _buildDate;
+		private Browser _browser;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private System.Windows.Forms.PictureBox pictureBox2;
+		private System.Windows.Forms.Label _versionNumber;
 
     }
 }

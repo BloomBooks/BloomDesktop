@@ -31,7 +31,8 @@ namespace Bloom
 		private SplashScreen()
 		{
 			InitializeComponent();
-			_versionInfo.Text = Shell.GetVersionInfo();
+			_shortVersionLabel.Text = Shell.GetShortVersionInfo();
+			_longVersionInfo.Text = Shell.GetBuiltOnDate();
 			_feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
 		}
 
@@ -53,6 +54,16 @@ namespace Bloom
 			TopMost = true;
 			Focus();
 			BringToFront();
+		}
+
+		private void label2_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _feedbackStatusLabel_Click(object sender, EventArgs e)
+		{
+
 		}
 
 	}
