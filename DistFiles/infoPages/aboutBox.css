@@ -1,52 +1,20 @@
 BODY
 {
-	font-family: Tahoma;
+	font-family: arial;
+	font-size: 8pt;
+	width: 335px;
 }
 H1
 {
-	font-size: 12pt;
+	font-size: 10pt;
 }
 P, LI
 {
-	width: 550px;
 	text-align: left;
 	margin-top: 6px;
-	font-size: medium;
-	line-height: 200%;
 }
 UL, LI
 {
-	padding-left: 10pt;
-}
-.style1
-{
-	background-color: #FFFF66;
-}
-.style2
-{
-	color: #0099FF;
-}
-.style3
-{
-	background-color: #CCFF99;
-}
-PRE
-{
-	font-family: monospace;
-}
-P.indent
-{
-	/*+placement:shift 67px 1px;*/
-	position: relative;
-	left: 67px;
-	top: 1px;
-}
-DIV.note
-{
-	background: #F2E3E6;
-	border: 1px solid #CC6666;
-	text-align: left;
-	padding: 10px 10px 10px 18px;
-	-moz-border-radius-bottomleft: 4px;
-	-moz-border-radius-bottomright: 4px;
+	list-style-type: none;
+	padding-left: 0px;
 }

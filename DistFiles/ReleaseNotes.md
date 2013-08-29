@@ -1,4 +1,4 @@
-## 0.9.116 29 Aug 2013
+## 0.9.117 29 Aug 2013
 * Now prompts for registration starting on 3rd launch.
 
 ## 0.9.115 24 Aug 2013
