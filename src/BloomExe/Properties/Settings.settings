@@ -11,9 +11,6 @@
     <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="Reporting" Type="Palaso.Reporting.ReportingSettings" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="UserInterfaceLanguage" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -38,23 +35,8 @@
     <Setting Name="ShowExperimentalCommands" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="FirstName" Type="System.String" Scope="User">
+    <Setting Name="Registration" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="SirName" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="Email" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="Organization" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="HowUsing" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="LaunchCount" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

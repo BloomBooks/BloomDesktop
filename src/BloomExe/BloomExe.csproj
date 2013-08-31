@@ -217,12 +217,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RegistrationDialog.cs">
+    <Compile Include="Registration\RegistrationData.cs" />
+    <Compile Include="Registration\RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RegistrationDialog.Designer.cs">
-      <DependentUpon>RegistrationDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Registration\RegistrationDialog.Designer.cs" />
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
@@ -484,7 +483,7 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="RegistrationDialog.resx">
+    <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
@@ -630,7 +629,6 @@
     <Compile Include="XmlHtmlConverter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.md" />
     <None Include="Resources\Bloom.ico" />
   </ItemGroup>
   <ItemGroup>
