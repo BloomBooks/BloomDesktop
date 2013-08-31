@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.Registration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
@@ -104,7 +105,7 @@ namespace Bloom
 					}
 					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-					++Settings.Default.LaunchCount;
+					Settings.Default.Registration.IncrementLaunchCount();
 					Settings.Default.Save();
 
 					Browser.SetUpXulRunner();
