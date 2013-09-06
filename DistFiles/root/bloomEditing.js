@@ -62,12 +62,10 @@ function Cleanup() {
 
 	$('div.bloom-editable').each( function() {
 		TrimTrailingLineBreaksInDivs(this);
-});
+    });
 
-    //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
-    $('#element').css('opacity', '');
-    $('#element').css('overflow', '');
-
+	$('.bloom-imageContainer').css('opacity', '');//comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
+    $('.bloom-imageContainer').css('overflow', '');//review: also comes form myimgscale; is it a problem?
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
