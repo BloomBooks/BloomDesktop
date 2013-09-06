@@ -35,6 +35,7 @@
 			this._fadeOutTimer = new System.Windows.Forms.Timer(this.components);
 			this._versionInfo = new System.Windows.Forms.Label();
 			this.pictureBox2 = new System.Windows.Forms.PictureBox();
+			this._feedbackStatusLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			this.SuspendLayout();
@@ -72,7 +73,7 @@
 			this._versionInfo.Font = new System.Drawing.Font("Segoe UI", 12F);
 			this._versionInfo.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this._versionInfo.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this._versionInfo.Location = new System.Drawing.Point(12, 240);
+			this._versionInfo.Location = new System.Drawing.Point(12, 242);
 			this._versionInfo.Name = "_versionInfo";
 			this._versionInfo.Size = new System.Drawing.Size(94, 21);
 			this._versionInfo.TabIndex = 13;
@@ -87,13 +88,26 @@
 			this.pictureBox2.TabIndex = 15;
 			this.pictureBox2.TabStop = false;
 			// 
+			// _feedbackStatusLabel
+			// 
+			this._feedbackStatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this._feedbackStatusLabel.AutoSize = true;
+			this._feedbackStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._feedbackStatusLabel.ForeColor = System.Drawing.Color.Gold;
+			this._feedbackStatusLabel.Location = new System.Drawing.Point(286, 248);
+			this._feedbackStatusLabel.Name = "_feedbackStatusLabel";
+			this._feedbackStatusLabel.Size = new System.Drawing.Size(105, 15);
+			this._feedbackStatusLabel.TabIndex = 17;
+			this._feedbackStatusLabel.Text = "Feedback Disabled";
+			// 
 			// SplashScreen
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(42)))), ((int)(((byte)(42)))));
-			this.ClientSize = new System.Drawing.Size(452, 309);
+			this.ClientSize = new System.Drawing.Size(415, 280);
 			this.ControlBox = false;
+			this.Controls.Add(this._feedbackStatusLabel);
 			this.Controls.Add(this.pictureBox2);
 			this.Controls.Add(this._versionInfo);
 			this.Controls.Add(this.label1);
@@ -120,5 +134,6 @@
         private System.Windows.Forms.Timer _fadeOutTimer;
         private System.Windows.Forms.Label _versionInfo;
 		private System.Windows.Forms.PictureBox pictureBox2;
+		private System.Windows.Forms.Label _feedbackStatusLabel;
     }
 }

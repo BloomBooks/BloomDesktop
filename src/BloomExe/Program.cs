@@ -95,26 +95,26 @@ namespace Bloom
 				Application.Idle +=Startup;
 	
 				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
-				
-				try
-				{
-					Application.Run();
-				}
-				catch (System.AccessViolationException nasty)
-				{
-					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					System.Environment.FailFast("AccessViolationException");
-				}
 
-				Settings.Default.Save();
+			        try
+			        {
+				        Application.Run();
+			        }
+			        catch (System.AccessViolationException nasty)
+			        {
+				        Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+				        System.Environment.FailFast("AccessViolationException");
+			        }
 
-				Logger.ShutDown();
+			        Settings.Default.Save();
 
-				if (_projectContext != null)
-				{
-					_projectContext.Dispose();
-				}
-			}
+			        Logger.ShutDown();
+
+
+			        if (_projectContext != null)
+				        _projectContext.Dispose();
+		        
+	        }
 			finally
 			{
 				ReleaseMutexForBloom();
