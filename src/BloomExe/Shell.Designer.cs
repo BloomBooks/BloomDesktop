@@ -31,11 +31,11 @@
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Shell));
 			this._contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._size1024x586 = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this._size800x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x768 = new System.Windows.Forms.ToolStripMenuItem();
-			this._size1024x586 = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this._contextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -48,7 +48,19 @@
             this._size1024x600,
             this._size1024x768});
 			this._contextMenu.Name = "_contextMenu";
-			this._contextMenu.Size = new System.Drawing.Size(348, 120);
+			this._contextMenu.Size = new System.Drawing.Size(348, 98);
+			// 
+			// _size1024x586
+			// 
+			this._size1024x586.Name = "_size1024x586";
+			this._size1024x586.Size = new System.Drawing.Size(347, 22);
+			this._size1024x586.Text = "1024 x 586 Low-end netbook with windows Task bar";
+			this._size1024x586.Click += new System.EventHandler(this.On1024x586);
+			// 
+			// toolStripMenuItem1
+			// 
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(344, 6);
 			// 
 			// _size800x600
 			// 
@@ -70,18 +82,6 @@
 			this._size1024x768.Size = new System.Drawing.Size(347, 22);
 			this._size1024x768.Text = "1024 x 768";
 			this._size1024x768.Click += new System.EventHandler(this.On1024x768);
-			// 
-			// _size1024x586
-			// 
-			this._size1024x586.Name = "_size1024x586";
-			this._size1024x586.Size = new System.Drawing.Size(347, 22);
-			this._size1024x586.Text = "1024 x 586 Low-end netbook with windows Task bar";
-			this._size1024x586.Click += new System.EventHandler(this.On1024x586);
-			// 
-			// toolStripMenuItem1
-			// 
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(344, 6);
 			// 
 			// Shell
 			// 
