@@ -463,6 +463,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
