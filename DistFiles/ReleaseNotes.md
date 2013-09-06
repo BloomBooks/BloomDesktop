@@ -1,3 +1,6 @@
+## 0.9.89 16 June 2013
+* Fix page size/layout choices
+
 ## 0.9.86 10 June 2013
 * Environment variable FEEDBACK set to "off" now disables analytics
 
