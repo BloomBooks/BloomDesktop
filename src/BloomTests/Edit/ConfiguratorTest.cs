@@ -45,7 +45,7 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "root"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent()), library.Object);
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 
@@ -227,7 +227,7 @@ namespace BloomTests.Edit
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
-			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent());
+			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent(), new CollectionSettings());
 			return bs;
 		}
 
