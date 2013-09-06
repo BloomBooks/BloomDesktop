@@ -57,3 +57,4 @@ Copy*.bat
 lib/wkhtmltopdf/*
 .nuget/NuGet.exe
 LibChorus.*
+build/Palaso.BuildTasks.dll
