@@ -1,8 +1,14 @@
-## 0.9.78 31 May 2013
-* Language Look Up now searches alternative names from Ethnologue
+## 0.9.79 4 June 2013
+* Localization improvements:
+ * Can now localize the column headers of the language chooser.
+ * Many more "dynamic" strings available before you chance upon them.
+
+## 0.9.78 4 June 2013
+* Language Look Up now searches alternative names from Ethnologue.
 * Language Look Up now lists countries
 * Books now know the ids of their ancestor templates.
 * Experimental InDesign XML Export (write to john if you're interested in helping experiment with this).
+* Fixed bug that could cause lost localization strings during upgrade.
 
 ## 0.9.71 24 May 2013
 * Improved PDF layout when OS is at 120dpi or 144dpi
