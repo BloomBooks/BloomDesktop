@@ -1,3 +1,9 @@
+## 0.9.91 20 June 2013
+These changes will only be noticed by those of us writing new templates from scratch in html:
+
+* When starting a book, now removes incoming content with lang = "x", so we can draft with "x" and know that it won't show to users.
+* data-hints should now live on the enclosing bloom-translationGroup. On the minus side: for now, they will not dissappear even when there is content.
+
 ## 0.9.90 19 June 2013
 * Alleviate problem (Windows 7) of sylesheets from old versions sticking around even when you upgrade (VirtualStore).
 
