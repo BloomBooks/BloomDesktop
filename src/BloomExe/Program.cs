@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -10,7 +9,6 @@ using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using Chorus;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -36,6 +34,8 @@ namespace Bloom
 #else
 		private static Mutex _onlyOneBloomMutex;
 		private static DateTime _earliestWeShouldCloseTheSplashScreen;
+		private static SplashScreen _splashForm;
+		private static bool _alreadyHadSplashOnce;
 #endif
 
 		[STAThread]
@@ -53,7 +53,9 @@ namespace Bloom
 #endif
 
 				if (Platform.Utilities.Platform.IsWindows)
+				{
 					OldVersionCheck();
+				}
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
 				{
@@ -84,40 +86,34 @@ namespace Bloom
 				{
 					Settings.Default.MruProjects.AddNewPath(args[0]);
 				}
-				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(7);
+				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-				EventHandler startAppOnIdle = (sender, e) =>
-				{
-					Application.Idle -= startAppOnIdle;
+				Settings.Default.Save();
 
-					SetUpReporting();
-					Settings.Default.Save();
+				Browser.SetUpXulRunner();
 
-					Browser.SetUpXulRunner();
-
-					StartUpShellBasedOnMostRecentUsedIfPossible();
-					Application.Idle += new EventHandler(Application_Idle);
+				Application.Idle +=Startup;
 
 				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
-					EventHandler hideSplash = (sender2, e2) =>
-					{
-						Splasher.Hide();
-						Application.Idle -= hideSplash;
-					};
 
-					Application.Idle += hideSplash;
-				};
-
-				Application.Idle += startAppOnIdle;
-
-				Splasher.Show();
+				try
+				{
+					Application.Run();
+				}
+				catch (System.AccessViolationException nasty)
+				{
+					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+					System.Environment.FailFast("AccessViolationException");
+				}
 
 				Settings.Default.Save();
 
 				Logger.ShutDown();
 
 				if (_projectContext != null)
+				{
 					_projectContext.Dispose();
+				}
 			}
 			finally
 			{
@@ -125,14 +121,50 @@ namespace Bloom
 			}
 		}
 
-
-
-		private static void Application_Idle(object sender, EventArgs e)
+		private static void Startup(object sender, EventArgs e)
 		{
-			if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
+			Application.Idle -= Startup;
+			CareForSplashScreenAtIdleTime(null, null);
+			Application.Idle += new EventHandler(CareForSplashScreenAtIdleTime);
+			StartUpShellBasedOnMostRecentUsedIfPossible();
+		}
+
+
+		private static void CareForSplashScreenAtIdleTime(object sender, EventArgs e)
+		{
+			//this is a hack... somehow this is getting called again, haven't been able to track down how
+			//to reproduce, remove the user settings so that we get first-run behavior. Instead of going through the
+			//wizard, cancel it and open an existing project. After the new collectino window is created, this
+			//fires *again* and would try to open a new splashform
+			if (_alreadyHadSplashOnce)
 			{
-				Application.Idle -= new EventHandler(Application_Idle);
-				Splasher.Close();
+				Application.Idle -= CareForSplashScreenAtIdleTime;
+				return;
+			}
+			if(_splashForm==null)
+				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
+			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
+			{
+				_alreadyHadSplashOnce = true;
+				Application.Idle -= CareForSplashScreenAtIdleTime;
+				CloseSplashScreen();
+				if (_projectContext!=null && _projectContext.ProjectWindow != null)
+				{
+					var shell = _projectContext.ProjectWindow as Shell;
+					if (shell != null)
+					{
+						shell.ReallyComeToFront();
+					}
+				}
+			}
+		}
+
+		private static void CloseSplashScreen()
+		{
+			if (_splashForm != null)
+			{
+				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
+				_splashForm = null; //but we are done with it
 			}
 		}
 
@@ -282,7 +314,7 @@ namespace Bloom
 			if (Settings.Default.MruProjects.Latest == null  ||
 				!OpenProjectWindow(Settings.Default.MruProjects.Latest))
 			{
-				//since the message pump hasn't started yet, show the UI for choosing when it is
+				//since the message pump hasn't started yet, show the UI for choosing when it is //review june 2013... is it still not going, with the current splash screen?
 				Application.Idle += ChooseAnotherProject;
 			}
 		}
@@ -308,6 +340,9 @@ namespace Bloom
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 
 				_projectContext.ProjectWindow.Show();
+
+				if(_splashForm!=null)
+					_splashForm.StayAboveThisWindow(_projectContext.ProjectWindow);
 
 				return true;
 			}

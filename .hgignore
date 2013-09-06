@@ -58,3 +58,4 @@ lib/wkhtmltopdf/*
 .nuget/NuGet.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll
+lib/failed update of AeroWizard Modified for dotnet 4 client/*
