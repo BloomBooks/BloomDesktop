@@ -1,3 +1,6 @@
+## 0.9.80 5 June 2013
+* When choosing a language, you can now customize how the name is actually displayed. You can also change it later, using the Configuration dialog.
+
 ## 0.9.79 4 June 2013
 * Localization improvements:
  * Can now localize the column headers of the language chooser.
