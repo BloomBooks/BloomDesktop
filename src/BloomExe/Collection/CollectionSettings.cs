@@ -93,7 +93,7 @@ namespace Bloom.Collection
 			set
 			{
 				_language1Iso639Code = value;
-				Language1Name = GetVernacularName(Language2Iso639Code);
+				Language1Name = GetLanguage1Name(Language2Iso639Code);
 			}
 		}
 
@@ -106,8 +106,11 @@ namespace Bloom.Collection
 		/// </summary>
 		public virtual bool IsSourceCollection { get; set; }
 
-		public string GetVernacularName(string inLanguage)
+		public string GetLanguage1Name(string inLanguage)
 		{
+			if(!string.IsNullOrEmpty(this.Language1Name))
+				return Language1Name;
+
 			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
 				return "L1-Unknown-" + Language1Iso639Code;
@@ -291,10 +294,15 @@ namespace Bloom.Collection
 		{
 			get
 			{
-				if(IsSourceCollection)
+				//review: in June 2013, I made it just use the collectionName regardless of the type. I wish I'd make a comment with the previous approach
+				//explaining *why* we would wnat to just say, for example, "Foobar Books". Probably for some good reason.
+				//But it left us with the weird situation of being able to chang the collection name in the settings, and have that only affect the  title
+				//bar of the window (and the on-disk name). People wanted to change to a language name they want to see. (We'll probably have to do something
+				//to enable that anyhow because it shows up elsewhere, but this is a step).
+				//if(IsSourceCollection)
 					return CollectionName;
-				var fmt = L10NSharp.LocalizationManager.GetString("CollectionTab.Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
-				return string.Format(fmt, Language1Name);
+				//var fmt = L10NSharp.LocalizationManager.GetString("CollectionTab.Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
+				//return string.Format(fmt, Language1Name);
 			}
 		}
 
