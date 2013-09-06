@@ -1045,6 +1045,15 @@ namespace Bloom.Book
 				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
 				var page = GetPageFromStorage(pageDivId);
+				/*
+				 * there are too many non-semantic variations that are introduced by various processes (e.g. self closing of empy divs, handling of non-ascii)
+				 * var selfClosingVersion = divElement.InnerXml.Replace("\"></div>", "\"/>");
+					if (page.InnerXml == selfClosingVersion)
+					{
+						return;
+					}
+				 */
+
 				page.InnerXml = divElement.InnerXml;
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
@@ -1371,6 +1380,11 @@ namespace Bloom.Book
 				_log.WriteError(errors);
 			}
 			return errors ?? "";
+		}
+
+		public void CheckBook(IProgress progress)
+		{
+			_storage.CheckBook(progress);
 		}
 
 		public Layout GetLayout()

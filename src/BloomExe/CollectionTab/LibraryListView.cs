@@ -658,9 +658,12 @@ namespace Bloom.CollectionTab
 
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_model.DoChecksAndUpdatesOfAllBooks();
+			_model.DoUpdatesOfAllBooks();
 		}
-
+		private void _doChecksOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.DoChecksOfAllBooks();
+		}
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -675,6 +678,8 @@ namespace Bloom.CollectionTab
 			base.Dispose(disposing);
 			_disposed = true;
 		}
+
+
 
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.

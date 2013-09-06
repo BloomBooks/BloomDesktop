@@ -91,8 +91,8 @@ jQuery(function () {
     //               }
     //        });
 
-        $('h1#libraryTitle').empty().load('libraryName');
-      $('div#libraryContents ul').empty().load('libraryContents');
-      $('div#storeCollectionList ul').empty().load('storeCollectionList');
+      //  $('h1#libraryTitle').empty().load('libraryName');
+      //$('div#libraryContents ul').empty().load('libraryContents');
+      //$('div#storeCollectionList ul').empty().load('storeCollectionList');
 
 });

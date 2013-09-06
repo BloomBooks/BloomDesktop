@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security;
+using System.Security.Policy;
 using System.Text;
 using System.Xml;
 using Bloom.Collection;
@@ -45,6 +47,7 @@ namespace Bloom.Book
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
+		void CheckBook(IProgress progress);
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
@@ -340,7 +343,43 @@ namespace Bloom.Book
 			{
 				return "Could not find an html file to use.";
 			}
+
 			return ValidateBook(PathToExistingHtml);
+		}
+
+		public void CheckBook(IProgress progress)
+		{
+			var error = GetValidateErrors();
+			if(!string.IsNullOrEmpty(error))
+				progress.WriteError(error);
+			foreach (XmlElement imgNode in Dom.SafeSelectNodes("//img"))
+			{
+				var name = imgNode.GetAttribute("src");
+				if (string.IsNullOrEmpty(name))
+				{
+					var classNames=imgNode.GetAttribute("class");
+					if (classNames == null || !classNames.Contains("licenseImage"))//bit of hack... it's ok for licenseImages to be blank
+					{
+						progress.WriteWarning("image src is missing");
+						//review: this, we could fix with a new placeholder... maybe in the javascript edit stuff?
+					}
+					continue;
+				}
+
+				//trim off the end of "license.png?123243"
+
+				var startOfDontCacheHack = name.IndexOf('?');
+				if (startOfDontCacheHack > -1)
+					name = name.Substring(0, startOfDontCacheHack);
+
+				while (Uri.UnescapeDataString(name) != name)
+					name = Uri.UnescapeDataString(name);
+
+				if (!File.Exists(Path.Combine(_folderPath, name)))
+				{
+					progress.WriteWarning(string.Format("image {0} is missing from the folder {1}", name, _folderPath));
+				}
+			}
 		}
 
 		public void UpdateBookFileAndFolderName(CollectionSettings collectionSettings)
