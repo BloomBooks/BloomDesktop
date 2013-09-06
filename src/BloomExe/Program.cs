@@ -96,24 +96,24 @@ namespace Bloom
 
 				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
 
-				try
-				{
-					Application.Run();
-				}
-				catch (System.AccessViolationException nasty)
-				{
-					Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-					System.Environment.FailFast("AccessViolationException");
-				}
+					try
+					{
+						Application.Run();
+					}
+					catch (System.AccessViolationException nasty)
+					{
+						Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+						System.Environment.FailFast("AccessViolationException");
+					}
 
-				Settings.Default.Save();
+					Settings.Default.Save();
 
-				Logger.ShutDown();
+					Logger.ShutDown();
 
-				if (_projectContext != null)
-				{
-					_projectContext.Dispose();
-				}
+
+					if (_projectContext != null)
+						_projectContext.Dispose();
+
 			}
 			finally
 			{
