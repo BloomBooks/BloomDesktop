@@ -623,6 +623,9 @@ namespace Bloom.Book
 				{
 					continue;
 				}
+
+				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
+
 				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
 				href = href.Replace("%5C", "/");
 				// This was in filename for "Basic Book.css" where the space should have been
@@ -634,13 +637,21 @@ namespace Bloom.Book
 				{
 					var path = fileLocator.LocateOptionalFile(fileName);
 
-					if (string.IsNullOrEmpty(path)||
-							path.Contains("languageDisplay.css")) //todo: this feels hacky... problem is that unlike most stylesheets, it is customized for this folder, and the ones found in the factorytemplates should not be used.
+					//we want these stylesheets to come from the book folder
+					if (string.IsNullOrEmpty(path)|| path.Contains("languageDisplay.css"))
 					{
 						//look in the same directory as the book
 						var local = Path.Combine(_folderPath, fileName);
 						if (File.Exists(local))
 							path = local;
+					}
+					//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
+					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
+					{
+						//look in the parent directory of the book
+						var pathInCollection = Path.Combine(Path.GetDirectoryName(_folderPath), fileName);
+						if (File.Exists(pathInCollection))
+							path = pathInCollection;
 					}
 					if (!string.IsNullOrEmpty(path))
 					{
