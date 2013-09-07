@@ -17,7 +17,7 @@
    version="1.1"
    inkscape:version="0.48.2 r9819"
    sodipodi:docname="TemplateThumbnails.svg"
-   inkscape:export-filename="C:\dev\Bloom\src\BloomExe\Resources\placeHolderBookThumbnail.png"
+   inkscape:export-filename="C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1Primer\thumbnail.png"
    inkscape:export-xdpi="63"
    inkscape:export-ydpi="63">
   <sodipodi:namedview
@@ -27,11 +27,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="-62.934378"
-     inkscape:cy="63.166209"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="786.11278"
+     inkscape:cy="-220.14324"
      inkscape:document-units="px"
-     inkscape:current-layer="svg2"
+     inkscape:current-layer="g3379-1"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1178"
@@ -1339,6 +1339,56 @@
          sodipodi:ry="4.5"
          d="m 21.716,29.5 c 0,2.485281 -2.014719,4.5 -4.5,4.5 -2.485282,0 -4.5,-2.014719 -4.5,-4.5 0,-2.485281 2.014718,-4.5 4.5,-4.5 2.485281,0 4.5,2.014719 4.5,4.5 z" />
     </g>
+    <g
+       id="g3379-1"
+       transform="translate(-274.25641,-21.718276)">
+      <rect
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         y="974.94208"
+         x="290.59326"
+         height="98.271706"
+         width="67.331383"
+         id="rect3776-1-5-1-4"
+         style="fill:#e48c84;fill-opacity:1;stroke:#a73125;stroke-width:1.27299999999999990;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.63799999999999990, 2.54599999999999980;stroke-dashoffset:0" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text5280-7-9-6-0"
+         y="996.36499"
+         x="304.76913"
+         style="font-size:54.56119919px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#e48c84;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:10.91224003px;fill:#e48c84;fill-opacity:1"
+           y="996.36499"
+           x="304.76913"
+           sodipodi:role="line"
+           id="tspan5752-0-9" /></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3298-8"
+         y="1047.9309"
+         x="298.83499"
+         style="font-size:59.3179512px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:AbcPrintDottedLined;-inkscape-font-specification:AbcPrintDottedLined"
+           y="1047.9309"
+           x="298.83499"
+           id="tspan3300-2"
+           sodipodi:role="line">P1</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3298-8-8"
+         y="829.24994"
+         x="186.02994"
+         style="font-size:41.59990692px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Andika;-inkscape-font-specification:Andika"
+           y="829.24994"
+           x="186.02994"
+           id="tspan3300-2-4"
+           sodipodi:role="line">P1</tspan></text>
+    </g>
   </g>
   <g
      transform="matrix(0.30237053,0,0,0.30237053,-116.82406,213.29986)"
@@ -1833,16 +1883,16 @@
      id="rect7183-0-2-0-9-1"
      width="70.769341"
      height="99.122887"
-     x="15.457426"
-     y="0.43600741"
+     x="280.1174"
+     y="-275.33563"
      inkscape:export-filename="C:\dev\Bloom\artwork\Template Thumbnails\unknown.png"
      inkscape:export-xdpi="55.556919"
      inkscape:export-ydpi="55.556919" />
   <text
      xml:space="preserve"
      style="font-size:73.61351776px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#96668f;fill-opacity:1;stroke:none;font-family:Sans"
-     x="29.969162"
-     y="74.405998"
+     x="294.62912"
+     y="-201.36565"
      id="text3268-7"
      sodipodi:linespacing="125%"
      inkscape:export-filename="C:\dev\Bloom\artwork\Template Thumbnails\unknown.png"
@@ -1850,6 +1900,6 @@
      inkscape:export-ydpi="55.556919"><tspan
        sodipodi:role="line"
        id="tspan3270-4"
-       x="29.969162"
-       y="74.405998">?</tspan></text>
+       x="294.62912"
+       y="-201.36565">?</tspan></text>
 </svg>
