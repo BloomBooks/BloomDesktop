@@ -302,5 +302,11 @@ namespace Bloom.Collection
             RestartRequired();
         }
 
+		private void checkBox1_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.ShowExperimentalCommands = _showExperimentCommands.Checked;
+			RestartRequired();
+		}
+
 	}
 }
