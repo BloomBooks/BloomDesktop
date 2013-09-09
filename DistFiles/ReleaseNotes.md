@@ -1,3 +1,6 @@
+## 0.1.04 9 Sept 2013
+* New right-click command on the collection to "Replace Missing Images", where you specify a folder to look for replacements.
+
 ## 0.1.03 6 Sept 2013
 * If image file is missing, now shows a message and lets you chose another one.
 * New right-click command on the collection to "Check All Books", which finds missing images.
