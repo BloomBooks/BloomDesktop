@@ -665,6 +665,18 @@ namespace Bloom.CollectionTab
 			_model.DoChecksOfAllBooks();
 		}
 
+		private void _rescueMissingImagesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.Description = "Select the folder where replacement images can be found";
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					_model.AttemptMissingImageReplacements(dlg.SelectedPath);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
@@ -678,6 +690,8 @@ namespace Bloom.CollectionTab
 			base.Dispose(disposing);
 			_disposed = true;
 		}
+
+
 
 
 

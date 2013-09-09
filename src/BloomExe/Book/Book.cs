@@ -1382,9 +1382,9 @@ namespace Bloom.Book
 			return errors ?? "";
 		}
 
-		public void CheckBook(IProgress progress)
+		public void CheckBook(IProgress progress, string pathToFolderOfReplacementImages=null)
 		{
-			_storage.CheckBook(progress);
+			_storage.CheckBook(progress, pathToFolderOfReplacementImages);
 		}
 
 		public Layout GetLayout()

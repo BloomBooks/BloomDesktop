@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Security;
-using System.Security.Policy;
 using System.Text;
 using System.Xml;
 using Bloom.Collection;
@@ -47,7 +45,7 @@ namespace Bloom.Book
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
-		void CheckBook(IProgress progress);
+		void CheckBook(IProgress progress,string pathToFolderOfReplacementImages = null);
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
@@ -347,15 +345,25 @@ namespace Bloom.Book
 			return ValidateBook(PathToExistingHtml);
 		}
 
-		public void CheckBook(IProgress progress)
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>The image-replacement feature is perhaps a one-off for a project where the an advisor replaced the folders
+		/// with a version that lacked most of the images (perhaps because dropbox copies small files first and didn't complete the sync)</remarks>
+		/// <param name="progress"></param>
+		/// <param name="pathToFolderOfReplacementImages">We'll find any matches in the entire folder, regardless of sub-folder name</param>
+		public void CheckBook(IProgress progress, string pathToFolderOfReplacementImages = null)
 		{
 			var error = GetValidateErrors();
 			if(!string.IsNullOrEmpty(error))
 				progress.WriteError(error);
+
+			//check for missing images
+
 			foreach (XmlElement imgNode in Dom.SafeSelectNodes("//img"))
 			{
-				var name = imgNode.GetAttribute("src");
-				if (string.IsNullOrEmpty(name))
+				var imageFileName = imgNode.GetAttribute("src");
+				if (string.IsNullOrEmpty(imageFileName))
 				{
 					var classNames=imgNode.GetAttribute("class");
 					if (classNames == null || !classNames.Contains("licenseImage"))//bit of hack... it's ok for licenseImages to be blank
@@ -368,17 +376,57 @@ namespace Bloom.Book
 
 				//trim off the end of "license.png?123243"
 
-				var startOfDontCacheHack = name.IndexOf('?');
+				var startOfDontCacheHack = imageFileName.IndexOf('?');
 				if (startOfDontCacheHack > -1)
-					name = name.Substring(0, startOfDontCacheHack);
+					imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
 
-				while (Uri.UnescapeDataString(name) != name)
-					name = Uri.UnescapeDataString(name);
+				while (Uri.UnescapeDataString(imageFileName) != imageFileName)
+					imageFileName = Uri.UnescapeDataString(imageFileName);
 
-				if (!File.Exists(Path.Combine(_folderPath, name)))
+				if (!File.Exists(Path.Combine(_folderPath, imageFileName)))
 				{
-					progress.WriteWarning(string.Format("image {0} is missing from the folder {1}", name, _folderPath));
+					if (!string.IsNullOrEmpty(pathToFolderOfReplacementImages))
+					{
+						if (!AttemptToReplaceMissingImage(imageFileName, pathToFolderOfReplacementImages, progress))
+						{
+							progress.WriteWarning(string.Format("Could not find replacement for image {0} in {1}", imageFileName, _folderPath));
+						}
+					}
+					else
+					{
+						progress.WriteWarning(string.Format("Image {0} is missing from the folder {1}", imageFileName, _folderPath));
+					}
 				}
+			}
+		}
+
+		private bool AttemptToReplaceMissingImage(string missingFile, string pathToFolderOfReplacementImages, IProgress progress)
+		{
+			try
+			{
+				foreach (var imageFilePath in Directory.GetFiles(pathToFolderOfReplacementImages, missingFile))
+				{
+					File.Copy(imageFilePath, Path.Combine(_folderPath, missingFile));
+					progress.WriteMessage(string.Format("Replaced image {0} from a copy in {1}", missingFile,
+														pathToFolderOfReplacementImages));
+					return true;
+				}
+				foreach (var dir in Directory.GetDirectories(pathToFolderOfReplacementImages))
+				{
+//				    doesn't really matter
+//					if (dir == _folderPath)
+//				    {
+//						progress.WriteMessage("Skipping the directory of this book");
+//				    }
+					if (AttemptToReplaceMissingImage(missingFile, dir, progress))
+						return true;
+				}
+				return false;
+			}
+			catch (Exception error)
+			{
+				progress.WriteException(error);
+				return false;
 			}
 		}
 
