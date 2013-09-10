@@ -119,7 +119,7 @@ namespace Bloom.Edit
 			dynamic libraryData=null;
 			if(newData.IsDefined("library"))
 			{
-				libraryData = newData.library;
+				libraryData = newData.library; //a couple RuntimeBinderException errors are normal here, just keep going, it eventually gets past it.
 			}
 			//Now in LocalData, we want to save everything that isn't library data
 			newData.Delete("library");
