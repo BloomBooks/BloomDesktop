@@ -1,3 +1,6 @@
+## 0.1.05 10 Sept 2013
+* Fix style-sheet-related problem when showing Calendar pages
+
 ## 0.1.04 9 Sept 2013
 * New right-click command on the collection to "Replace Missing Images", where you specify a folder to look for replacements.
 
