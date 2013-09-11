@@ -1,4 +1,4 @@
-﻿namespace Bloom.Registration
+﻿namespace PalasoUIWinforms.Registration
 {
 	partial class RegistrationDialog
 	{
@@ -114,6 +114,9 @@
 			// _howAreYouUsing
 			// 
 			this._howAreYouUsing.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._howAreYouUsing, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._howAreYouUsing, null);
+			this.l10NSharpExtender1.SetLocalizingId(this._howAreYouUsing, "RegistrationDialog._howAreYouUsing");
 			this._howAreYouUsing.Location = new System.Drawing.Point(3, 40);
 			this._howAreYouUsing.Multiline = true;
 			this._howAreYouUsing.Name = "_howAreYouUsing";
@@ -281,7 +284,7 @@
 			this.l10NSharpExtender1.SetLocalizationComment(this._okButton, null);
 			this.l10NSharpExtender1.SetLocalizationPriority(this._okButton, L10NSharp.LocalizationPriority.High);
 			this.l10NSharpExtender1.SetLocalizingId(this._okButton, "RegisterDialog.RegisterButton");
-			this._okButton.Location = new System.Drawing.Point(348, 362);
+			this._okButton.Location = new System.Drawing.Point(263, 362);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 27);
 			this._okButton.TabIndex = 0;
@@ -318,7 +321,7 @@
 			this.l10NSharpExtender1.SetLocalizationComment(this._cancelButton, null);
 			this.l10NSharpExtender1.SetLocalizationPriority(this._cancelButton, L10NSharp.LocalizationPriority.High);
 			this.l10NSharpExtender1.SetLocalizingId(this._cancelButton, "Common.CancelButton");
-			this._cancelButton.Location = new System.Drawing.Point(257, 361);
+			this._cancelButton.Location = new System.Drawing.Point(348, 362);
 			this._cancelButton.Name = "_cancelButton";
 			this._cancelButton.Size = new System.Drawing.Size(75, 27);
 			this._cancelButton.TabIndex = 3;
