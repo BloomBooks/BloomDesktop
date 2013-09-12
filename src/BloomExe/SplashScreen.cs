@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom
@@ -56,20 +57,10 @@ namespace Bloom
 			BringToFront();
 		}
 
-		private void label2_Click(object sender, EventArgs e)
+
+		private void SplashScreen_Paint(object sender, PaintEventArgs e)
 		{
-
+			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Palette.SILInternationalBlue, ButtonBorderStyle.Solid);
 		}
-
-		private void _feedbackStatusLabel_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void label1_Click(object sender, EventArgs e)
-		{
-
-		}
-
 	}
 }
