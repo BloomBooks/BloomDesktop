@@ -353,6 +353,7 @@
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "RegistrationDialog";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Register {0}";
 			this.Load += new System.EventHandler(this.RegistrationDialog_Load);
 			this.tableLayoutPanel1.ResumeLayout(false);

@@ -73,6 +73,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap BloomLargeOnWhite {
+            get {
+                object obj = ResourceManager.GetObject("BloomLargeOnWhite", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap BloomPack64x64 {
             get {
                 object obj = ResourceManager.GetObject("BloomPack64x64", resourceCulture);
@@ -646,6 +656,66 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap sil_logo_on_dark_132x127 {
             get {
                 object obj = ResourceManager.GetObject("sil logo on dark 132x127", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILBlueWithTagline100x140 {
+            get {
+                object obj = ResourceManager.GetObject("SILBlueWithTagline100x140", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILBlueWithTagline101x141 {
+            get {
+                object obj = ResourceManager.GetObject("SILBlueWithTagline101x141", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILBlueWithTagline102x142 {
+            get {
+                object obj = ResourceManager.GetObject("SILBlueWithTagline102x142", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILInBlueNoTagLineWithTrademark100x113 {
+            get {
+                object obj = ResourceManager.GetObject("SILInBlueNoTagLineWithTrademark100x113", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILInBlueNoTagLineWithTrademark100x50 {
+            get {
+                object obj = ResourceManager.GetObject("SILInBlueNoTagLineWithTrademark100x50", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILInBlueNoTagLineWithTrademark80x90 {
+            get {
+                object obj = ResourceManager.GetObject("SILInBlueNoTagLineWithTrademark80x90", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

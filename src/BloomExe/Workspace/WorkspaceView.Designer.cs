@@ -288,7 +288,7 @@
 			this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
 			this._aboutBloomMenuItem.Size = new System.Drawing.Size(196, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";
-			this._aboutBloomMenuItem.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
 			// 
 			// _uiLanguageMenu
 			// 
