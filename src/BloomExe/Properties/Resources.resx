@@ -133,9 +133,6 @@
   <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="settings16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\settings16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="paste32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\paste32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -145,8 +142,8 @@
   <data name="Copy16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="sil logo on dark 132x127" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\sil logo on dark 132x127.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SILLogoBlue132x184" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SILLogoBlue132x184.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="menuButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\menuButton.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -190,9 +187,6 @@
   <data name="copyDisable16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\copyDisable16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILInBlueNoTagLineWithTrademark100x50" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILInBlueNoTagLineWithTrademark100x50.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="insideBookletPages" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\insideBookletPages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -220,9 +214,6 @@
   <data name="DeletePageDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePageDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILLogoBlue132x184" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILLogoBlue132x184.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="DeletePage32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePage32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -231,12 +222,6 @@
   </data>
   <data name="PagePlaceHolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pagePlaceHolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="newBook1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\newBook1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Usb" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Usb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="open" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\open.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -247,8 +232,8 @@
   <data name="SILInBlueNoTagLineWithTrademark100x113" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SILInBlueNoTagLineWithTrademark100x113.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILBlueWithTagline100x140" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILBlueWithTagline100x140.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="settings16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settings16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="settings32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -256,14 +241,14 @@
   <data name="paste24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\paste24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILBlueWithTagline101x141" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILBlueWithTagline101x141.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="newBook1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\newBook1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Error70x70" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Error70x70.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="BloomLargeOnWhite" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\BloomLargeOnWhite.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="copyDisable16x161" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\copyDisable16x161.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Paste16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Paste16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -271,8 +256,8 @@
   <data name="newLibrary32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\newLibrary32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILBlueWithTagline102x142" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILBlueWithTagline102x142.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Usb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Usb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeletePageDisabled24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePageDisabled24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -294,6 +279,9 @@
   </data>
   <data name="publish32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\publish32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sil logo on dark 132x127" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sil logo on dark 132x127.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Error70x701" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Error70x701.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -331,8 +319,8 @@
   <data name="settings24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="copyDisable16x161" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\copyDisable16x161.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="BloomDarkGrey300-ish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BloomDarkGrey300-ish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="newBook" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\newBook.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -343,7 +331,7 @@
   <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SILInBlueNoTagLineWithTrademark80x90" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SILInBlueNoTagLineWithTrademark80x90.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SIL_Logo_Blue_Smaller_Transparent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SIL_Logo_Blue_Smaller_Transparent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
