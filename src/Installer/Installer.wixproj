@@ -65,6 +65,7 @@
 	<Compile Include="wkhtmltopdf.wxs" />
 	<Compile Include="..\..\output\installer\GeneratedDistFiles.wxs" />
 	<Compile Include="..\..\output\installer\GeneratedXulRunner.wxs" />
+	<!-- See comment below about this WIA stuff <Compile Include="..\..\output\installer\WIA_v2_ForScannersOnXP.wxs" />-->
   </ItemGroup>
   <ItemGroup>
 	  <WixExtension Include="WixFirewallExtension">
@@ -82,4 +83,23 @@
 	</WixExtension>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets" />
+
+  <!-- This project, to auto-install wiaaut.dll for Windows XP installs, needs more work before we can ship it. For now just give the user a helpful message about what to do.
+	I had the wxs being created, but had yet to figure out how to incorporate it into the main Installer.wxs.
+
+
+  <UsingTask TaskName="HeatFile"
+			 AssemblyFile="$(WixToolPath)WixUtilExtension.dll" />
+
+ get the Windows Image Acquisition Library v2 DLL available for XP SP3 machines. This in the end is equivalent to copying it to system32 and running regsvr32 on it.
+  <Target Name="BeforeBuild">
+	<Message Text="WixToolPath = [$(WixToolPath)]" />
+	<HeatFile
+	   File="..\..\build\WindowsImageAcquisitionV2ForXP\wiaaut.dll"
+	   OutputFile="..\..\output\installer\WIA_v2_ForScannersOnXP.wxs"
+	   AutogenerateGuids="true"
+	   ToolPath="$(WixToolPath)"
+	   PreprocessorVariable="..\..\build\"
+	   DirectoryRefId="WIA_v2_ForScannersOnXP"/>
+  </Target>-->
 </Project>
