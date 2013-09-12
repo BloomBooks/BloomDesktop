@@ -95,7 +95,7 @@ namespace Bloom
 
 		private void SetWindowText()
 		{
-			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetBuiltOnDate());
+			Text = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
 			if(_collectionSettings.IsSourceCollection)
 			{
 				Text += "SOURCE COLLECTION";
@@ -110,7 +110,7 @@ namespace Bloom
 			file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
-			return string.Format("Built on {0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
+			return string.Format("{0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
 		}
 
 		public static string GetShortVersionInfo()
