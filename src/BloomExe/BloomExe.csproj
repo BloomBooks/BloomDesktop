@@ -877,6 +877,11 @@
     <None Include="Resources\SILInBlueNoTagLineWithTrademark100x50.png" />
     <None Include="Resources\SILInBlueNoTagLineWithTrademark100x113.png" />
     <None Include="Resources\SILInBlueNoTagLineWithTrademark80x90.png" />
+    <None Include="Resources\BloomDarkGrey300-ish.png" />
+    <None Include="Resources\SILInBlue76.png" />
+    <None Include="Resources\SILInBlue100.png" />
+    <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
+    <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

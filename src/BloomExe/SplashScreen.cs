@@ -60,7 +60,10 @@ namespace Bloom
 
 		private void SplashScreen_Paint(object sender, PaintEventArgs e)
 		{
-			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Palette.SILInternationalBlue, ButtonBorderStyle.Solid);
+			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid);
 		}
 	}
 }
