@@ -89,7 +89,7 @@ namespace Bloom.Collection
 			
 			_xmatterPackCombo.Items.Clear();
 			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());
-			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
+			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_collectionSettings.XMatterPackName); 
 			if (_xmatterPackCombo.SelectedItem == null) //if something goes wrong
 				_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FactoryDefault;
 		}

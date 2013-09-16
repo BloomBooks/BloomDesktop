@@ -149,6 +149,7 @@
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
+    <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
     <Compile Include="Book\BookData.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
       <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Collection\NaturalSortComparer.cs" />
     <Compile Include="ConfirmRecycleDialog.cs">
       <SubType>Form</SubType>
     </Compile>

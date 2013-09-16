@@ -18,6 +18,14 @@ namespace Bloom.Book
 {
 	public class ImageUpdater
 	{
+		public static void MakeImagePathsOfImportedPagePointToOriginalLocations(XmlElement pageDiv, string folderPath)
+		{
+			foreach (XmlElement img in pageDiv.SafeSelectNodes("descendant::img"))
+			{
+				img.SetAttribute("src", "file://"+ Path.Combine(folderPath, img.GetAttribute("src")));
+			}
+		}
+
 		public static void CopyImageMetadataToWholeBook(string folderPath, HtmlDom dom, Metadata metadata, IProgress progress)
 		{
 			progress.WriteStatus("Starting...");

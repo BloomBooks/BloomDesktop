@@ -31,7 +31,8 @@ namespace Bloom.Publish
 		{
 			None,
 			BookletCover,
-			BookletPages
+			BookletPages,//include front and back matter that isn't coverstop
+			InnerContent//excludes all front and back matter
 		}
 
 		public enum BookletLayoutMethod
@@ -43,15 +44,19 @@ namespace Bloom.Publish
 
 		private Book.Book _currentlyLoadedBook;
 		private PdfMaker _pdfMaker;
+		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly BookServer _bookServer;
 		private string _lastDirectory;
-		
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CollectionSettings collectionSettings)
+
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
+			_bookServer = bookServer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			BookletPortion = BookletPortions.BookletPages;
 		}
@@ -74,20 +79,8 @@ namespace Bloom.Publish
 
 			try
 			{
-				PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
-
-				XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
-
-				//wkhtmltopdf can't handle file://
-				dom.InnerXml = dom.InnerXml.Replace("file://", "");
-
-				//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
-				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom,PageLayout);
-				PageLayout.UpdatePageSplitMode(dom);
-
-				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-
-				using(var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom))
+				
+				using(var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
 						return;
@@ -104,6 +97,23 @@ namespace Bloom.Publish
 				//                SetDisplayMode(DisplayModes.NoBook);
 				//                return;
 			}
+		}
+
+		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+		{
+			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
+
+			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+
+			//wkhtmltopdf can't handle file://
+			dom.InnerXml = dom.InnerXml.Replace("file://", "");
+
+			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
+			PageLayout.UpdatePageSplitMode(dom);
+
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -225,23 +235,26 @@ namespace Bloom.Publish
 
 		public void DebugCurrentPDFLayout()
 		{
-			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion);
+			
+//			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+//
+//			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
+//			PageLayout.UpdatePageSplitMode(dom);
+//
+//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+//			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
+//			//var tempHtml = TempFile.WithExtension(".htm");
+//
+//			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
+//			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
+//			{
+//				dom.WriteContentTo(writer);
+//				writer.Close();
+//			}
 
-			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-			PageLayout.UpdatePageSplitMode(dom);
+//			System.Diagnostics.Process.Start(tempHtml.Path);
 
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
-			//var tempHtml = TempFile.WithExtension(".htm");
-
-			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
-			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-
-			System.Diagnostics.Process.Start(tempHtml.Path);
+			System.Diagnostics.Process.Start("Chrome.exe",MakeFinalHtmlForPdfMaker().Path);
 		}
 
 		public void RefreshValuesUponActivation()

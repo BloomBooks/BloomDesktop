@@ -66,6 +66,18 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// A "Folio" document is one that acts as a wrapper for a number of other books
+		/// </summary>
+		public bool IsFolio
+		{
+			get
+			{
+				return _tags.Contains("folio");
+			}
+		}
+
+
 		public bool IsEditable { get; private set; }
 
 
@@ -78,6 +90,8 @@ namespace Bloom.Book
 		{
 			get { return Path.GetFileName(FolderPath); }
 		}
+
+
 
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
