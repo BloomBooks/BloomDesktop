@@ -130,6 +130,7 @@ namespace Bloom.Publish
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
 			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
 			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.None;
+			_showCropMarks.Checked = _model.ShowCropMarks;
 
 
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
@@ -198,6 +199,19 @@ namespace Bloom.Publish
 			ControlsChanged();
 		}
 
+		private void OnShowCropMarks_CheckedChanged(object sender, EventArgs e)
+		{
+			if (!_activated)
+				return;
+
+			var oldSetting = _model.ShowCropMarks;
+			SetModelFromButtons();
+			if (oldSetting == _model.ShowCropMarks)
+				return; // no changes detected
+
+			ControlsChanged();
+		}
+
 		private void ControlsChanged()
 		{
 			if (_makePdfBackgroundWorker.IsBusy)
@@ -216,6 +230,8 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
 			else
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+
+			_model.ShowCropMarks = _showCropMarks.Checked;
 		}
 
 		public void MakeBooklet()
@@ -256,5 +272,7 @@ namespace Bloom.Publish
 		{
 
 		}
+
+
 	}
 }

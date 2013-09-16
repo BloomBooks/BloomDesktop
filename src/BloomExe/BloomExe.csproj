@@ -865,6 +865,7 @@
     <None Include="Resources\cloneFromInternet.png" />
     <None Include="Resources\cloneFromUsb.png" />
     <None Include="Resources\placeHolderBookThumbnail.png" />
+    <None Include="Resources\cropMarks.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

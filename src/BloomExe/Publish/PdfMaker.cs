@@ -24,6 +24,11 @@ namespace Bloom.Publish
 	public class PdfMaker
 	{
 		/// <summary>
+		/// turns on crop marks and TrimBox
+		/// </summary>
+		public bool ShowCropMarks;
+
+		/// <summary>
 		///
 		/// </summary>
 		/// <param name="inputHtmlPath"></param>
@@ -34,7 +39,7 @@ namespace Bloom.Publish
 		/// <param name="bookletPortion"></param>
 		/// <param name="doWorkEventArgs"> </param>
 		/// <param name="getIsLandscape"></param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion,  DoWorkEventArgs doWorkEventArgs)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
@@ -285,7 +290,7 @@ namespace Bloom.Publish
 				}
 				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
-				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, /*TODO: rightToLeft*/ false);
+				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, /*TODO: rightToLeft*/ false, ShowCropMarks);
 			}
 		}
 	}
