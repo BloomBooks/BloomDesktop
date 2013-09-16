@@ -1,3 +1,6 @@
+## 0.9.96 16 July 2013
+ * In Publish Tab, new option to turn on "Crop Marks" for commercial printing. In addition to the visible crop marks, there is a matching "TrimBox" for automated cropping.
+
 ## 0.9.95 13 July 2013
  * Fixed recent problem where custom font and styles were being ignored.
 
