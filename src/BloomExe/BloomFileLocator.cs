@@ -23,15 +23,19 @@ namespace Bloom
 
 		protected override IEnumerable<string> GetSearchPaths()
 		{
-			var xMatterFolder = _xMatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
-			if(null == xMatterFolder)
-				xMatterFolder = _xMatterPackFinder.FindByKey("Factory");
+			//review: if we knew what the xmatter pack they wanted, we could limit to that. for now, we just iterate over all of
+			//them and rely (reasonably) on the names being unique
+			var paths = new List<string>();
+			paths.Add(_collectionSettings.FolderPath);
+			foreach (var xMatterInfo in _xMatterPackFinder.All)
+			{
+				//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
+				//itself, in case they're looking for something inside it
+				paths.Add(xMatterInfo.PathToFolder);
+				paths.Add(Path.GetDirectoryName(xMatterInfo.PathToFolder));
+			}
 
-			//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
-			//itself, in case they're looking for something inside it
-			return base.GetSearchPaths().Concat(new[] { Path.GetDirectoryName(xMatterFolder.PathToFolder), xMatterFolder.PathToFolder,
-				_collectionSettings.FolderPath // settingsCollectionStyles.css & customCollectionStyles.css
-			});
+			return base.GetSearchPaths().Concat(paths);
 		}
 
 		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)

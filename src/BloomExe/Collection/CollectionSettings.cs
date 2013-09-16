@@ -39,11 +39,13 @@ namespace Bloom.Collection
 		{
 			XMatterPackName = "Factory";
 			Language2Iso639Code = "en";
+			AllowNewBooks = true;
 		}
 
 		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
+			AllowNewBooks = true;
 			DefaultLanguage1FontName = GetDefaultFontName();
 
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
@@ -63,6 +65,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public CollectionSettings(string desiredOrExistingSettingsFilePath)
 		{
+			AllowNewBooks = true;
 			SettingsFilePath = desiredOrExistingSettingsFilePath;
 			CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
@@ -224,6 +227,7 @@ namespace Bloom.Collection
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
 				District = GetValue(library, "District", "");
+				AllowNewBooks = GetBoolValue(library, "AllowNewBooks", true);
 				IsSourceCollection = GetBoolValue(library, "IsSourceCollection", GetBoolValue(library, "IsShellLibrary" /*the old name*/, GetBoolValue(library, "IsShellMakingProject" /*an even older name*/, false)));
 			}
 			catch (Exception e)
@@ -307,6 +311,13 @@ namespace Bloom.Collection
 		}
 
 		public string DefaultLanguage1FontName { get; set; }
+
+		public bool AllowNewBooks { get; set; }
+
+		public bool AllowDeleteBooks
+		{
+			get { return AllowNewBooks; } //at the moment, we're combining these two concepts; we can split them if a good reason to comes along
+		}
 
 
 		public static string GetPathForNewSettings(string parentFolderPath, string newCollectionName)

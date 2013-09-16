@@ -60,7 +60,7 @@ namespace Bloom.Book
 			_updateImgNode = updateImgNodeCallback;
 			_collectionSettings = collectionSettings;
 			GetOrCreateDataDiv();
-			_dataset = GartherDataItemsFromCollectionSettings(_collectionSettings);
+			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
 		}
 
@@ -117,26 +117,28 @@ namespace Bloom.Book
 		{
 			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
-			DataSet data = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
-			data.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
-			data.UpdateGenericLanguageString("contentLanguage2",
+			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
+			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
 												 : MultilingualContentLanguage2, false);
-			data.UpdateGenericLanguageString("contentLanguage3",
+			incomingData.UpdateGenericLanguageString("contentLanguage3",
 											 String.IsNullOrEmpty(MultilingualContentLanguage3)
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
+
 			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
-			foreach (var v in data.TextVariables)
+			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
 					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
 			}
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
-			UpdateTitle(data);
+			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -252,7 +254,7 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom"> </param>
 		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom)
 		{
-			DataSet data = GartherDataItemsFromCollectionSettings(_collectionSettings);
+			DataSet data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
@@ -261,11 +263,11 @@ namespace Bloom.Book
 //            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom);
 
-			UpdateTitle(data);
+			UpdateTitle();
 			return data;
 		}
 
-		private static DataSet GartherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
+		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
 		{
 			var data = new DataSet();
 
@@ -621,13 +623,29 @@ namespace Bloom.Book
 #endif
 		}
 
-		private void UpdateTitle(DataSet data)
+		private void UpdateTitle()
 		{
 			NamedMutliLingualValue title;
 
-			if (data.TextVariables.TryGetValue("bookTitle", out title))
+			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(new string[] { "en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code });
+				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
+				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+
+				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
+				foreach (var dataItem in _dataset.TextVariables)
+				{
+					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds));
+				}
+
+				_dom.Title = t;
+				//review: notice we're only changing the value in this dataset
+				this.Set("bookTitle", t,"en");
+			}
+			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
+			{
+				string[] orderedListOfWritingSystemIds = new string[] {"en", _collectionSettings.Language1Iso639Code, _collectionSettings.Language2Iso639Code};
+				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
 				_dom.Title = t;
 			}
 		}

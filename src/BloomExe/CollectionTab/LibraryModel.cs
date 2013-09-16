@@ -31,8 +31,7 @@ namespace Bloom.CollectionTab
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
 		private readonly BookServer _bookServer;
-		private readonly Book.Book.Factory _bookFactory;
-		private readonly BookStorage.Factory _storageFactory;
+		private readonly CurrentEditableCollectionSelection _currentEditableCollectionSelection;
 		private List<BookCollection> _bookCollections;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
@@ -42,7 +41,8 @@ namespace Bloom.CollectionTab
 			BookCollection.Factory bookCollectionFactory,
 			EditBookCommand editBookCommand,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
-			BookServer bookServer)
+			BookServer bookServer,
+			CurrentEditableCollectionSelection currentEditableCollectionSelection)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -52,6 +52,7 @@ namespace Bloom.CollectionTab
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
 			_bookServer = bookServer;
+			_currentEditableCollectionSelection = currentEditableCollectionSelection;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
@@ -59,7 +60,7 @@ namespace Bloom.CollectionTab
 
 		public bool CanDeleteSelection
 		{
-			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete; }
+			get { return _bookSelection.CurrentSelection != null && _collectionSettings.AllowDeleteBooks && _bookSelection.CurrentSelection.CanDelete; }
 
 		}
 		public bool CanUpdateSelection
@@ -102,9 +103,17 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.IsSourceCollection; }
 		}
 
+		public bool ShowSourceCollections
+		{
+			get { return _collectionSettings.AllowNewBooks; }
+
+		}
+
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
-			yield return _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
+			var editableCllection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
+			_currentEditableCollectionSelection.SelectCollection(editableCllection);
+			yield return editableCllection;
 
 			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollections())
 				yield return bookCollection;
@@ -116,7 +125,7 @@ namespace Bloom.CollectionTab
 			 _bookSelection.SelectBook(book);
 		}
 
-		public void DeleteBook(Book.Book book)//, BookCollection collection)
+		public bool DeleteBook(Book.Book book)//, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
 
@@ -129,8 +138,10 @@ namespace Bloom.CollectionTab
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
+					return true;
 				}
 			}
+			return false;
 		}
 
 		public void DoubleClickedBook()

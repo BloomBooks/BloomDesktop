@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Palaso.Reporting;
 
@@ -111,11 +112,14 @@ namespace Bloom.Collection
 		private void LoadBooks()
 		{
 			_bookInfos = new List<Book.BookInfo>();
-			foreach(string path in Directory.GetDirectories(_path))
+			var bookFolders =  new DirectoryInfo(_path).GetDirectories();//although NTFS may already sort them, that's an implementation detail
+			//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
+			var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
+			foreach (var folder in orderedBookFolders)
 			{
-				if (Path.GetFileName(path).StartsWith("."))//as in ".hg"
+				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
 					continue;
-				AddBookInfo(path);
+				AddBookInfo(folder.FullName);
 			}
 		}
 

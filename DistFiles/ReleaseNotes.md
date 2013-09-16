@@ -1,3 +1,13 @@
+## 0.9.99 23 July 2013
+* Collections now sort by "natural sort order" rather than alphabetic, so "Primer 3" comes before "Primer 21", and folio documents will include them in this order, too.
+
+## 0.9.97 23 July 2013
+ * Add Folio support, which is a book that sucks in the other books in the collection when it comes time to make a PDF
+ * Add AllowNewBooks setting to collection, so that collections can be locked down
+ * Add "xmatter" tag on books to select a different front/backmatter pack than the one set as the default for the collection
+ * A book can now have a "bookTitleTemplate" so that the title (and thus file and folder name) can be automatically constructed based on fields in the book. E.g. Primer Term {term} Week {week}
+ * Slight alteration in page zoom during PDF to address page breaks slowing moving upwards in really large documents.
+
 ## 0.9.96 16 July 2013
  * In Publish Tab, new option to turn on "Crop Marks" for commercial printing. In addition to the visible crop marks, there is a matching "TrimBox" for automated cropping.
 
