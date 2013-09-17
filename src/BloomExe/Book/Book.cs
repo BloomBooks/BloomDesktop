@@ -1202,7 +1202,7 @@ namespace Bloom.Book
 
 			switch (bookletPortion)
 			{
-				case PublishModel.BookletPortions.None:
+				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
 					HidePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
