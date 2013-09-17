@@ -29,14 +29,15 @@ namespace Bloom.Publish
 
 		public enum BookletPortions
 		{
-			None,
+			AllPagesNoBooklet,
 			BookletCover,
-			BookletPages,//include front and back matter that isn't coverstop
+			BookletPages,//include front and back matter that isn't coverstock
 			InnerContent//excludes all front and back matter
 		}
 
 		public enum BookletLayoutMethod
 		{
+			NoBooklet,
 			SideFold,
 			CutAndStack,
 			Calendar
@@ -53,6 +54,7 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
@@ -79,14 +81,19 @@ namespace Bloom.Publish
 
 			try
 			{
-				
 				using(var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
 						return;
 
+					BookletLayoutMethod layoutMethod;
+					if (this.BookletPortion == BookletPortions.AllPagesNoBooklet)
+						layoutMethod = BookletLayoutMethod.NoBooklet;
+					else
+						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
+
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-					                  BookSelection.CurrentSelection.GetDefaultBookletLayout(), BookletPortion, doWorkEventArgs);
+					                  layoutMethod, BookletPortion, doWorkEventArgs);
 				}
 			}
 			catch (Exception e)
@@ -204,7 +211,7 @@ namespace Bloom.Publish
 					var portion = "";
 					switch (BookletPortion)
 					{
-						case BookletPortions.None:
+						case BookletPortions.AllPagesNoBooklet:
 							portion = "Pages";
 							break;
 						case BookletPortions.BookletCover:
