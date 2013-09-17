@@ -1,3 +1,6 @@
+## 0.9.101 27 July 2013
+* Allow xmatter to be installed via bloom packs (the creator/distributor of the bloom pack must manually add the xmatter pack to the zip file).
+
 ## 0.9.99 23 July 2013
 * Collections now sort by "natural sort order" rather than alphabetic, so "Primer 3" comes before "Primer 21", and folio documents will include them in this order, too.
 

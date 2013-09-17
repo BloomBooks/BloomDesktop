@@ -275,7 +275,7 @@ namespace Bloom
 			}
 		}
 
-		private static string XMatterAppDataFolder
+		public static string XMatterAppDataFolder
 		{
 			get
 			{

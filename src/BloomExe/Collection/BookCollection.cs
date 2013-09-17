@@ -119,6 +119,8 @@ namespace Bloom.Collection
 			{
 				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
 					continue;
+				if (Path.GetFileName(folder.FullName).ToLower().Contains("xmatter"))
+					continue;
 				AddBookInfo(folder.FullName);
 			}
 		}
