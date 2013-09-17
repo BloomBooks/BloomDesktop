@@ -1,3 +1,13 @@
+## 0.9.111 17 Aug 2013
+* New bloom-draggableLabel feature for when images need editable labels
+
+## 0.9.110 17 Aug 2013
+* Added missing null xmatter
+
+## 0.9.109 14 Aug 2013
+* Update french localizations
+* Fix extra blank page problem
+
 ## 0.9.105 10 Aug 2013
 * B5 pages turned into booklets now properly use B4 paper (were being squished onto B5 paper).
 

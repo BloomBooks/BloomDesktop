@@ -215,11 +215,15 @@ namespace Bloom.Publish
 		//
 		//	In July 2013, I needed to get a 200-300 page b5 book out. With the prior 96DPI setting of 1.041, it was drifting upwards (too small). Upping it to 1.042 solved it.
 
+		// In Auguest 2013, we discovere dthat 1.042 was giving us an extra page even when just doing the cover.
+		// I quickly tested 1.0415, and it solved it. I'm putting off doing a "real" solution because the geckofxhtmltopdf
+		// solution is already working in another branch.
+
 		private double GetZoomBasedOnScreenDPISettings()
 		{
 			if (WorkspaceView.DPIOfThisAccount == 96)
 			{
-				return 1.042;
+				return 1.0415;
 			}
 			if (WorkspaceView.DPIOfThisAccount == 120)
 			{

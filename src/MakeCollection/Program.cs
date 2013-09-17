@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -23,7 +19,10 @@ namespace MakeCollection
 
 
 
-			MakeCollection(root,  "Acholi", "ach");
+			MakeCollection(root,  "Acoli", "ach");
+			MakeCollection(root, "Lugbarati", "lgg");
+			MakeCollection(root, "Lumasaaba", "myx");
+			MakeCollection(root, "Runyoro-Runtooro", "ttj");
 		}
 
 		private static void MakeCollection(string root, string language, string language1Iso639Code)
@@ -50,7 +49,7 @@ namespace MakeCollection
 				termIntro.SetDataItem("term", term.ToString(), "en");
 				termIntro.Save();
 
-				for (int week = 1; week < 12 ; week++)
+				for (int week = 2; week < 12 ; week++)
 				{
 					var weekBook = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\UgandaSHARP\UgandaSHARP-P1PrimerWeek");
 					weekBook.SetDataItem("term", term.ToString(), "en");

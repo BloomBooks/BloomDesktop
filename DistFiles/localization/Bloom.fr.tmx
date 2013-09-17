@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4840.22797" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.59.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.8.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">0.9.108.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -139,12 +139,61 @@
 		<seg>Pour mettre plus d'information sur ce livre, vous pouvez utiliser cette page, qui est la quatrième de couverture.</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
+	  <tuv xml:lang="en">
+		<seg>The {0} Collection is now ready to use on this computer.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>La collection {0} est maintenant prête à utiliser sur cet ordinateur.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
+	  <tuv xml:lang="en">
+		<seg>Bloom was not able to install that Bloom Pack</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Bloom n'a pas pu installer ce paquet Bloom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.Extracting">
+	  <note>Shown while BloomPacks are being installed</note>
+	  <tuv xml:lang="en">
+		<seg>Extracting...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>En train d'extraire {0}...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.MustRestartToSee">
+	  <tuv xml:lang="en">
+		<seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Bloom est déjà actif, mais le contenu ne sera pas affiché avant de redémarrer Bloom.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BloomPackInstallDialog.Opening">
+	  <tuv xml:lang="en">
+		<seg>Opening {0}...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>En train d'ouvrir {0}...</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Configuration avancée (du logiciel)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+	  <tuv xml:lang="en">
+		<seg>Show Experimental Commands (e.g. Export XML for InDesign)</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Afficher des </seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
@@ -370,15 +419,6 @@
 		<seg>Redémarrer</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.WindowTitle">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Settings</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Configuration</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="CollectionSettingsDialog._restartMessage">
 	  <tuv xml:lang="en">
 		<seg>Bloom will close and re-open this project with the new settings.</seg>
@@ -474,6 +514,14 @@
 		<seg>Supprimer livre</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+	  <tuv xml:lang="en">
+		<seg>Export To XML For InDesign...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Exporter en format XML pour InDesign...</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
 	  <tuv xml:lang="en">
 		<seg>Do Checks and Updates of All Books</seg>
@@ -512,6 +560,14 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Collections</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.ConfirmRecycleDescription">
+	  <tuv xml:lang="en">
+		<seg>The book '{0}'</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Le livre '{0}'</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
@@ -565,6 +621,7 @@
 	</tu>
 	<tu tuid="CollectionTab.Vernacular Collection Heading">
 	  <note>The {0} is where we fill in the name of the Vernacular</note>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>{0} Books</seg>
 	  </tuv>
@@ -603,6 +660,14 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Sources pour de nouveaux livres</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.bookSourcesLockNotice">
+	  <tuv xml:lang="en">
+		<seg>This collection is locked, so new books cannot be added/removed.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Cette collection est verrouillée donc on ne peut pas ajouter ou supprimer des livres.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
@@ -680,15 +745,6 @@
 		<seg>Confirmation de suppression</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ConfirmRecycleDialog.WindowTitle">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Confirm Delete</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Confirmation de suppression</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="ConfirmRecycleDialog._messageLabel">
 	  <note>In your translation, put the {0} placeholder where you want the name of the thing to be deleted to appear.</note>
 	  <tuv xml:lang="en">
@@ -717,7 +773,7 @@
 	</tu>
 	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
 	  <tuv xml:lang="en">
-		<seg>Open the Html used to make this PDF, in Browser</seg>
+		<seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Ouvrir dans un navigateur le Html utilisé pour créer ce PDF</seg>
@@ -761,15 +817,6 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Supprimer</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.ConfirmRemovePageDialog.WindowTitle">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Really Delete Page?</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Vraiment supprimer la page?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
@@ -981,6 +1028,15 @@
 		<seg>Quatrième de couverture</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Picture &amp; Word</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Image et mot</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Title Page">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1019,7 +1075,7 @@
 		<seg>Remove Page</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Enlever page</seg>
+		<seg>Supprimer page</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._menusToolStrip">
@@ -1272,6 +1328,22 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Afficher le journal d'évènements</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
+	  <tuv xml:lang="en">
+		<seg>InDesign XML Information</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+	  <tuv xml:lang="en">
+		<seg>Don't Show This Again</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Ne plus afficher ce message</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A4Landscape">
@@ -1638,11 +1710,21 @@
 	</tu>
 	<tu tuid="PublishTab.OnPagePerPaperRadio">
 	  <note>Instead of making a booklet, just make normal pages</note>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>One page per piece of paper</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Une page par feuille de papier</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.OnePagePerPaperRadio">
+	  <note>Instead of making a booklet, just make normal pages</note>
+	  <tuv xml:lang="en">
+		<seg>One page per piece of paper</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Une page par feuille</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.PrintButton">
@@ -1669,6 +1751,14 @@
 		<seg>Enregistrer PDF...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="PublishTab.ShowCropMarks">
+	  <tuv xml:lang="en">
+		<seg>Crop Marks</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Traits de coupe</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="SendReceiveutton">
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -1676,6 +1766,24 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Envoyer/recevoir</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="The Sub-Theme">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>The Sub-Theme</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Le sous-thème</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Theme">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Theme</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Le thème</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Agriculture">

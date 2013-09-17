@@ -45,6 +45,7 @@ function Cleanup() {
         $(this).removeAttr("ariasecondary-describedby");
     });
     $("*.editTimeOnly").remove();
+    $("*.dragHandle").remove();
     $("*").removeAttr("data-easytabs");
 
     $("div.ui-resizable-handle").remove();
@@ -782,6 +783,7 @@ function ResizeUsingPercentages(e,ui){
      });
 
 
+     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
      jQuery(".bloom-draggable").mouseenter(function () {
          $(this).prepend("<button class='moveButton' title='Move'></button>");
          $(this).find(".moveButton").mousedown(function (e) {
@@ -878,6 +880,27 @@ function ResizeUsingPercentages(e,ui){
      //        }
      //    });
 
+     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
+     //This took *enormous* fussing in the css. TODO: copy what we learned there
+     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
+     $(".bloom-draggableLabel")
+         .draggable(
+         {
+             containment: "bloom-imageContainer"
+            ,handle: '.dragHandle'
+         })
+        .mouseenter(function () {
+         $(this).prepend(" <div class='dragHandle'></div>")
+         });
+
+        jQuery(".bloom-draggableLabel").mouseleave(function () {
+         $(this).find(".dragHandle").each(function () {
+             $(this).remove()
+         })});
+
+
+
+
 
      //add drag and resize ability where elements call for it
      //   $(".bloom-draggable").draggable({containment: "parent"});
@@ -889,6 +912,8 @@ function ResizeUsingPercentages(e,ui){
              })
          } //yes, this repositions *all* qtips on the page. Yuck.
      }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
+     //later note: using a real button just absorbs the click event. Other things work better
+     //http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
 
 
      //only make things deletable if they have the deletable class *and* page customization is enabled

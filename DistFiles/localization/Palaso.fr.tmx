@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.4840.22797" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.59.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.8.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">0.9.108.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -166,7 +166,16 @@
 		<seg>Configurer metadonnées...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LanguageLookup.AlternateNamesHeader">
+	  <tuv xml:lang="en">
+		<seg>Other Names</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Autres noms</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LanguageLookup.CannotFindLanguageLink">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Can't find your language?</seg>
 	  </tuv>
@@ -200,11 +209,36 @@
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.CodeColumnHeader">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Code</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Code</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.CodeHeader">
+	  <tuv xml:lang="en">
+		<seg>Code</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Code</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.CountryHeader">
+	  <tuv xml:lang="en">
+		<seg>Country</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Pays</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.DesiredLanguageDisplayNameLabel">
+	  <tuv xml:lang="en">
+		<seg>You can change how the language name will be displayed here:</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Vous pouvez changer l'affichage du nom de la langue ici:</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.LanguageLookupDialogWindowTitle">
@@ -215,12 +249,45 @@
 		<seg>Rechercher code de langue...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LanguageLookup.LookupISOControl._searchText">
+	  <tuv xml:lang="en">
+		<seg>?</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>?</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LanguageLookup.NameColumnHeader">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Name</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Nom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.PrimaryNameHeader">
+	  <tuv xml:lang="en">
+		<seg>Name</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Nom</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.UnlistedLanguage">
+	  <tuv xml:lang="en">
+		<seg>Unlisted Language</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Langue non répertoriée</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup._cannotFindLanguageLink">
+	  <tuv xml:lang="en">
+		<seg>Can't find your language?</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Impossible de trouver votre langue?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="MetadataDisplay.Creator">
