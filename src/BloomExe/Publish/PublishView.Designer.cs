@@ -250,14 +250,14 @@
 			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
 			superToolTipInfo2.BodyText = "Use this for printing just the cover on front and back of a piece of colored pape" +
     "r.";
-			superToolTipInfo2.HeaderText = "Cover Page";
+			superToolTipInfo2.HeaderText = "Cover";
 			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(0, 0);
 			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
 			superToolTipInfoWrapper2.UseSuperToolTip = true;
 			this.superToolTip1.SetSuperStuff(this._coverRadio, superToolTipInfoWrapper2);
 			this._coverRadio.TabIndex = 8;
 			this._coverRadio.TabStop = true;
-			this._coverRadio.Text = "Cover Page";
+			this._coverRadio.Text = "Cover";
 			this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._coverRadio.UseVisualStyleBackColor = true;
 			this._coverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
