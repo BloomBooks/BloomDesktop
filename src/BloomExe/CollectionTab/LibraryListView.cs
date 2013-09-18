@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using DesktopAnalytics;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionTab
@@ -101,10 +102,12 @@ namespace Bloom.CollectionTab
 #if !MONO
 						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
 #endif
+						Analytics.Track("Exported XML For InDesign");
 					}
 					catch (Exception error)
 					{
 						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
+						Analytics.ReportException(error);
 					}
 				}
 			}
@@ -294,7 +297,20 @@ namespace Bloom.CollectionTab
 				return;
 
 			BookInfo bookInfo = button.Tag as BookInfo;
-			var book = _model.GetBookFromBookInfo(bookInfo);
+			Book.Book book;
+			try
+			{
+				book = _model.GetBookFromBookInfo(bookInfo);
+			}
+			catch (Exception error)
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				return;
+			}
+
 			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 			if (titleBestForUserDisplay != button.Text)
 			{
@@ -456,9 +472,13 @@ namespace Bloom.CollectionTab
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
-			catch (Exception err)
+			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Bloom cannot display that book.");
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 		}
 

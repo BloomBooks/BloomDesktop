@@ -13,6 +13,7 @@ using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.IO;
 using Palaso.Progress;
@@ -218,7 +219,7 @@ namespace Bloom.CollectionTab
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
 						Process.Start(Path.GetDirectoryName(path));
-						UsageReporter.SendNavigationNotice("Made BloomPack");
+						Analytics.Track("Create BloomPack");
 					}
 					finally
 					{
@@ -272,7 +273,7 @@ namespace Bloom.CollectionTab
 			//enhance: would be nice to know if this is a new shell
 			if (sourceBook.IsShellOrTemplate)
 			{
-				;//Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
+				Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
 			}
 			_editBookCommand.Raise(newBook);
 		}

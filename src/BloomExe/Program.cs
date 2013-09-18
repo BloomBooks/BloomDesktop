@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -66,14 +67,20 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
-				SetUpErrorHandling();
+#if xDEBUG
+				using (new Analytics("sje2fq26wnnk8c2kzflf",true))
 
-				_applicationContainer = new ApplicationContainer();
+#else
+				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
-				SetUpLocalization();
-				Logger.Init();
+				//default is to allow tracking
+				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
 
+				using (new Analytics("c8ndqrrl7f0twbf2s6cv", allowTracking))
 
+#endif
+
+				 {
 				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 				{
 					using (var dlg = new BloomPackInstallDialog(args[0]))
@@ -82,6 +89,21 @@ namespace Bloom
 					}
 					return;
 				}
+#if !DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
+				if (!GrabMutexForBloom())
+					return;
+#endif
+
+					OldVersionCheck();
+
+
+
+					SetUpErrorHandling();
+
+					_applicationContainer = new ApplicationContainer();
+
+					SetUpLocalization();
+					Logger.Init();
 				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
 				{
 					Settings.Default.MruProjects.AddNewPath(args[0]);
@@ -113,7 +135,7 @@ namespace Bloom
 
 					if (_projectContext != null)
 						_projectContext.Dispose();
-
+				}
 			}
 			finally
 			{
@@ -458,6 +480,7 @@ namespace Bloom
 			}
 		}
 
+
 		private static void ReopenProject(object sender, EventArgs e)
 		{
 			Application.Idle -= ReopenProject;
@@ -521,27 +544,18 @@ namespace Bloom
 			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloom.palaso.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
+
+			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 		}
 
-
-		private static void SetUpReporting()
-		{
-			if (Settings.Default.Reporting == null)
-			{
-				Settings.Default.Reporting = new ReportingSettings();
-				Settings.Default.Save();
-			}
-			UsageReporter.Init(Settings.Default.Reporting, "bloom.palaso.org", "UA-22170471-2",
-#if DEBUG
-				true
-#else
-				false
-#endif
-				);
-		}
 
 		public static void OldVersionCheck()
 		{
+			return;
+
+
+
+
 			var asm = Assembly.GetExecutingAssembly();
 			var file = asm.CodeBase.Replace("file:", string.Empty);
 			file = file.TrimStart('/');
@@ -550,7 +564,7 @@ namespace Bloom
 				{
 					try
 					{
-						if (Dns.GetHostAddresses("ftpx.sil.org.pg").Length > 0)
+						if (Dns.GetHostAddresses("ftp.sil.org.pg").Length > 0)
 						{
 							if(DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the folder on the Ukarumpa FTP site where you can get a new one.","OLD BETA",MessageBoxButtons.YesNo))
 							{

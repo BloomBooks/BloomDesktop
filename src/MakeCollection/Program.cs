@@ -22,7 +22,7 @@ namespace MakeCollection
 			MakeCollection(root,  "Acoli", "ach");
 			MakeCollection(root, "Lugbarati", "lgg");
 			MakeCollection(root, "Lumasaaba", "myx");
-			MakeCollection(root, "Runyoro-Runtooro", "ttj");
+			MakeCollection(root, "Runyoro-Rutooro", "ttj");
 		}
 
 		private static void MakeCollection(string root, string language, string language1Iso639Code)

@@ -344,7 +344,6 @@ namespace Bloom
 
 
 
-
 		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
 		{
 			if (bmp == null)

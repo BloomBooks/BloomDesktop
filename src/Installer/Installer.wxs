@@ -213,6 +213,13 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Ionic.Zip.Reduced.dll" Name="Ionic.Zip.Reduced.dll" KeyPath="yes" Source="..\..\output\release\Ionic.Zip.Reduced.dll" />
 		  </Component>
 
+		  <Component Id="DesktopAnalytics.dll" Guid="{CC30A246-0E27-4078-B37D-7795AB4DC5DA}">
+			<File Id="DesktopAnalytics.dll" Name="DesktopAnalytics.dll" KeyPath="yes" Source="..\..\output\release\DesktopAnalytics.dll" />
+		  </Component>
+		  <Component Id="Analytics.NET.dll" Guid="{8791AA5B-7F42-4CF9-8A2B-48F36DED625E}">
+			<File Id="Analytics.NET.dll" Name="Analytics.NET.dll" KeyPath="yes" Source="..\..\output\release\Analytics.NET.dll" />
+		  </Component>
+
 		  <Component Id="NetSparkle.Net40.dll" Guid="{C57D4748-8B97-4C75-984D-B752BB858C2E}">
 			<File Id="NetSparkle.Net40.dll" Name="NetSparkle.Net40.dll" KeyPath="yes" Source="..\..\output\release\NetSparkle.Net40.dll" />
 		  </Component>
@@ -251,6 +258,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="NetSparkle.Net40.dll"/>
 	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
 	  <ComponentRef Id="PdfSharp.dll" />
+	  <ComponentRef Id="DesktopAnalytics.dll" />
+	  <ComponentRef Id="Analytics.NET.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
 	  <ComponentRef Id="Bloom.exe" />
 	  <ComponentRef Id="Bloom.exe.config" />

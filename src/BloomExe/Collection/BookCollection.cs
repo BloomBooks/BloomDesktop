@@ -55,8 +55,6 @@ namespace Bloom.Collection
 		public CollectionType Type { get; private set; }
 
 
-					//Analytics.Track("Create Book", new Dictionary<string, string>()
-
 		private void NotifyCollectionChanged()
 		{
 			if (CollectionChanged != null)

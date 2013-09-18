@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
 
@@ -191,9 +192,9 @@ namespace Bloom.CollectionCreating
 
 			Logger.WriteEvent("Finshed New Collection Wizard");
 			if (_collectionInfo.IsSourceCollection)
-				UsageReporter.SendNavigationNotice("NewSourceCollection");
+				Analytics.Track("Created New Source Collection");
 			else
-				UsageReporter.SendNavigationNotice("NewVernacularCollection");
+				Analytics.Track("Create New Vernacular Collection");
 			Close();
 		}
 
