@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.Reporting;
 
@@ -152,6 +153,7 @@ namespace Bloom.Collection.BloomPack
 				_message.Text =  L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.ErrorInstallingBloomPack","Bloom was not able to install that Bloom Pack");
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");
+				DesktopAnalytics.Analytics.ReportException(e.Error);
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
 				return;
 			}

@@ -87,8 +87,14 @@
       <HintPath>..\..\..\chorus\output\DebugMono\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+     <Reference Include="Analytics.NET">
+      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="DesktopAnalytics">
+      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>

@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
 
@@ -29,7 +30,7 @@ namespace Bloom.CollectionCreating
 
         public static string CreateNewCollection()
         {
-            bool showNewCollectionWizard = Settings.Default.MruProjects.Latest == null;            
+            bool showNewCollectionWizard = Settings.Default.MruProjects.Latest == null;
             using (var dlg = new NewCollectionWizard(showNewCollectionWizard))
             {
                 dlg.ShowInTaskbar = showNewCollectionWizard;//if we're at this stage, there isn't a bloom icon there already.
@@ -191,9 +192,9 @@ namespace Bloom.CollectionCreating
 
 			Logger.WriteEvent("Finshed New Collection Wizard"); 
 			if (_collectionInfo.IsSourceCollection)
-				UsageReporter.SendNavigationNotice("NewSourceCollection");
+				Analytics.Track("Created New Source Collection");
 			else
-				UsageReporter.SendNavigationNotice("NewVernacularCollection");
+				Analytics.Track("Create New Vernacular Collection");
 			Close();
 		}
 
