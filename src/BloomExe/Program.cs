@@ -67,8 +67,8 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
-#if xDEBUG
-				using (new Analytics("sje2fq26wnnk8c2kzflf",true))
+#if DEBUG
+				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
 
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
@@ -76,11 +76,11 @@ namespace Bloom
 				//default is to allow tracking
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
 
-				using (new Analytics("c8ndqrrl7f0twbf2s6cv", allowTracking))
+				using (new Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
 
 #endif
 
-				 {
+				{
 				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 				{
 					using (var dlg = new BloomPackInstallDialog(args[0]))
@@ -110,6 +110,7 @@ namespace Bloom
 				}
 				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
+					++Settings.Default.LaunchCount;
 				Settings.Default.Save();
 
 				Browser.SetUpXulRunner();

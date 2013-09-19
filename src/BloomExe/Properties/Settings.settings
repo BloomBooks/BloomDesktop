@@ -5,7 +5,7 @@
     <Setting Name="FirstTimeRun" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MruProjects" Type="Bloom.ToPalaso.MostRecentPathsList" Scope="User">
+    <Setting Name="MruProjects" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
@@ -52,6 +52,9 @@
     </Setting>
     <Setting Name="HowUsing" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LaunchCount" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

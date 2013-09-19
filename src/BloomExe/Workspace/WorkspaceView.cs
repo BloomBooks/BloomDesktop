@@ -202,9 +202,15 @@ namespace Bloom.Workspace
 
 		private void Application_Idle(object sender, EventArgs e)
 		{
-			//this didn't work... we got to idle when the lists were still populating
 			Application.Idle -= new EventHandler(Application_Idle);
-			//            Cursor = Cursors.Default;
+
+			if (RegistrationDialog.TimeToAskForInitialOrMoreRegistrationInfo)
+			{
+				using (var dlg = new RegistrationDialog(false))
+				{
+					dlg.ShowDialog(this);
+				}
+			}
 		}
 
 		private void OnUpdateDisplay(object sender, System.EventArgs e)
@@ -374,6 +380,14 @@ namespace Bloom.Workspace
 			CheckDPISettings();
 		}
 
+		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new RegistrationDialog(true))
+			{
+				dlg.ShowDialog();
+			}
+		}
+
 		private void CheckDPISettings()
 		{
 			Graphics g = this.CreateGraphics();
@@ -399,6 +413,8 @@ namespace Bloom.Workspace
 		{
 			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
+
+
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
