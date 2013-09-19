@@ -139,6 +139,9 @@
   <data name="Copy16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SILLogoBlue132x184" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SILLogoBlue132x184.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="menuButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\menuButton.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -262,6 +265,9 @@
   <data name="DeleteMessageBoxImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteMessageBoxImage.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="cropMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\cropMarks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="print" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\print.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -316,7 +322,7 @@
   <data name="WelcomeHeader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WelcomeHeader.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="cropMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\cropMarks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="sil logo on dark 132x127" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sil logo on dark 132x127.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
