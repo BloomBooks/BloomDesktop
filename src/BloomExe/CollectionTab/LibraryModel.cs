@@ -264,7 +264,7 @@ namespace Bloom.CollectionTab
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
-				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg));
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg,null));
 				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
 				{
 					MessageBox.Show("Bloom will now open a list of problems it found.");
@@ -280,7 +280,29 @@ namespace Bloom.CollectionTab
 
 		}
 
-		public void DoChecksOfAllBooksBackgroundWork(ProgressDialogBackground dialog)
+		public void AttemptMissingImageReplacements(string pathToFolderOfReplacementImages=null)
+		{
+			using (var dlg = new ProgressDialogBackground())
+			{
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg, pathToFolderOfReplacementImages));
+				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
+				{
+					MessageBox.Show("There were some problems. Bloom will now open a log of the attempt to replace missing images.");
+				}
+				else
+				{
+					MessageBox.Show("There are no more missing images. Bloom will now open a log of what it did.");
+				}
+
+				var path = Path.GetTempFileName() + ".txt";
+				File.WriteAllText(path, dlg.ProgressString.Text);
+				System.Diagnostics.Process.Start(path);
+			}
+
+		}
+
+
+		public void DoChecksOfAllBooksBackgroundWork(ProgressDialogBackground dialog, string pathToFolderOfReplacementImages)
 		{
 			var bookInfos = TheOneEditableCollection.GetBookInfos();
 			var count = bookInfos.Count();
@@ -295,11 +317,13 @@ namespace Bloom.CollectionTab
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 
 				dialog.Progress.WriteMessage("Checking " + book.TitleBestForUserDisplay);
-				book.CheckBook(dialog.Progress);
+				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
 				dialog.ProgressString.WriteMessage("");
 			}
 			dialog.ProgressBar.Value++;
 		}
+
+
 
 
 		private void CreateFromSourceBook(Book.Book sourceBook)
