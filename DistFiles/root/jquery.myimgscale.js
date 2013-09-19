@@ -57,7 +57,7 @@
         return this.each(function() {
             var $img = $(this);
             var $parent = opts.parent ? $img.parents(opts.parent) : $img.parent(); // if not supplied, use default direct parent
-            $parent.css({opacity: 0, overflow: 'hidden'}); // keep the img inside boundaries
+            $parent.css({overflow: 'hidden'}); // keep the img inside boundaries
             
             if ($parent.length > 0) {
                 $img.removeAttr('height').removeAttr('width');

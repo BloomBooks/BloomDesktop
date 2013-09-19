@@ -1,3 +1,7 @@
+## 0.1.03 6 Sept 2013
+* If image file is missing, now shows a message and lets you chose another one.
+* New right-click command on the collection to "Check All Books", which finds missing images.
+
 ## 0.9.117 29 Aug 2013
 * Now prompts for registration starting on 3rd launch.
 

@@ -32,7 +32,7 @@ namespace Bloom.ToPalaso
 		private void InitializeComponent()
 		{
 			this.ProgressBar = new SimpleProgressIndicator();
-			this._statusLabel = new SimpleStatusProgress();
+			this.StatusLabel = new SimpleStatusProgress();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this.SuspendLayout();
 			// 
@@ -50,18 +50,18 @@ namespace Bloom.ToPalaso
 			// 
 			// _statusLabel
 			// 
-			this._statusLabel.AutoSize = true;
-			this._statusLabel.CancelRequested = false;
-			this._statusLabel.ErrorEncountered = false;
-			this._statusLabel.Location = new System.Drawing.Point(30, 78);
-			this._statusLabel.Name = "_statusLabel";
-			this._statusLabel.ProgressIndicator = null;
-			this._statusLabel.Size = new System.Drawing.Size(16, 13);
-			this._statusLabel.SyncContext = null;
-			this._statusLabel.TabIndex = 2;
-			this._statusLabel.Text = "...";
-			this._statusLabel.UseWaitCursor = true;
-			this._statusLabel.WarningEncountered = false;
+			this.StatusLabel.AutoSize = true;
+			this.StatusLabel.CancelRequested = false;
+			this.StatusLabel.ErrorEncountered = false;
+			this.StatusLabel.Location = new System.Drawing.Point(30, 78);
+			this.StatusLabel.Name = "StatusLabel";
+			this.StatusLabel.ProgressIndicator = null;
+			this.StatusLabel.Size = new System.Drawing.Size(16, 13);
+			this.StatusLabel.SyncContext = null;
+			this.StatusLabel.TabIndex = 2;
+			this.StatusLabel.Text = "...";
+			this.StatusLabel.UseWaitCursor = true;
+			this.StatusLabel.WarningEncountered = false;
 			// 
 			// ProgressDialogBackground
 			// 
@@ -69,7 +69,7 @@ namespace Bloom.ToPalaso
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(421, 130);
 			this.ControlBox = false;
-			this.Controls.Add(this._statusLabel);
+			this.Controls.Add(this.StatusLabel);
 			this.Controls.Add(this.ProgressBar);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.Name = "ProgressDialogBackground";
@@ -85,7 +85,7 @@ namespace Bloom.ToPalaso
 		#endregion
 
 		public SimpleProgressIndicator ProgressBar;
-		public SimpleStatusProgress _statusLabel;
+		public SimpleStatusProgress StatusLabel;
 		private System.ComponentModel.BackgroundWorker _backgroundWorker;
 
 	}
