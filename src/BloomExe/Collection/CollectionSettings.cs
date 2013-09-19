@@ -46,7 +46,7 @@ namespace Bloom.Collection
 		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
-			AllowNewBooks = true;
+			AllowNewBooks = collectionInfo.AllowNewBooks;
 			DefaultLanguage1FontName = GetDefaultFontName();
 
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
@@ -194,7 +194,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
-
+			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			library.Save(SettingsFilePath);
 
 			SavesettingsCollectionStylesCss();
