@@ -446,10 +446,41 @@ namespace Bloom.Book
 							//							else
 							if (!String.IsNullOrEmpty(lang)) //N2, in particular, will often be missing
 							{
-								string s =
-									data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
-									//, "en", "fr", "es" });//review: I really hate to lose the data, but I admit, this is trying a bit too hard :-)
+								string s = data.TextVariables[key].TextAlternatives.GetExactAlternative(lang);
 
+								LanguageForm formToCopyFromSinceOursIsMissing=null;
+
+								//This is a tough decision. Without this, if we have, say, an English Contributors list but English isn't the N1 (L2), then the
+								//book won't show it at all. An ideal solution would just order them and then "display the first non-empty one", but that would require some java script... not
+								//something could be readily done in CSS, far as I can think.
+								//For now, I *think* this won't do any harm, and if it does, it's adding data, not losing it. Users had complained about "losing" the contributor data before.
+
+								if (string.IsNullOrEmpty(s) &&
+									(lang == _collectionSettings.Language2Iso639Code || //is it a national language?
+									lang == _collectionSettings.Language3Iso639Code))
+								{
+									formToCopyFromSinceOursIsMissing = data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] { lang, "*", "en", "fr", "es", "pt" });
+									if (formToCopyFromSinceOursIsMissing != null)
+										s = formToCopyFromSinceOursIsMissing.Form;
+
+									if (string.IsNullOrEmpty(s))
+									{
+										//OK, well even on a non-global language is better than none
+										//s = data.TextVariables[key].TextAlternatives.GetFirstAlternative();
+										formToCopyFromSinceOursIsMissing = GetFirstAlternativeForm(data.TextVariables[key].TextAlternatives);
+										if (formToCopyFromSinceOursIsMissing != null)
+											s = formToCopyFromSinceOursIsMissing.Form;
+									}
+								}
+
+								/* this was a fine idea, execpt that if the user then edits it, well, it's not borrowed anymore but we'll still have this sitting there misleading us
+								//record our dubious deed for posterity
+								if (formToCopyFromSinceOursIsMissing != null)
+								{
+									node.SetAttribute("bloom-languageBloomHadToCopyFrom",
+													  formToCopyFromSinceOursIsMissing.WritingSystemId);
+								}
+								 */
 
 								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
 								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
@@ -493,6 +524,20 @@ namespace Bloom.Book
 					targetDom.OuterXml, error);
 			}
 		}
+
+		public LanguageForm GetFirstAlternativeForm(MultiTextBase alternatives)
+		{
+			foreach (LanguageForm form in alternatives.Forms)
+			{
+				if (form.Form.Trim().Length > 0)
+				{
+					return form;
+				}
+			}
+			return null;
+		}
+
+
 
 		public void SetLicenseMetdata(Metadata metadata)
 		{

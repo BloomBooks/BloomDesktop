@@ -272,7 +272,7 @@ namespace Bloom.Book
 
 				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
+				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation);
 			}
 		}
 

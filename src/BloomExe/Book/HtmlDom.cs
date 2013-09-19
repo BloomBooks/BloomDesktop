@@ -240,6 +240,19 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// gecko 11 requires the file://, but modern firefox and chrome can't handle it. Checked also that IE10 works without it.
+		/// </summary>
+		public void RemoveFileProtocolFromStyleSheetLinks()
+		{
+			List<XmlElement> links = new List<XmlElement>();
+			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var linke = link.GetAttribute("href");
+				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+
 		//        /// <summary>
 		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
 		//        /// </summary>

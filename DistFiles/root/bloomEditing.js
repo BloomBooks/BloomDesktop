@@ -398,15 +398,18 @@ function MakeSourceTextDivForGroup(group) {
          $(this).remove()
      });
 
-     var license = $(img).attr('data-license');
-     if (!license || license.length == 0) {
+     //NB: we have 3 things we *want*: illustrator, copyright, and license. But we can only "demand" copyright.
+     //For example, a org hires illustrators and doesn't normally retain (or remember) who did the illustration.
+     //And offers no license; you have to contact them (this is recorded as data-license="").
+     var copyright = $(img).attr('data-copyright');
+     if (!copyright || copyright.length == 0) {
 
          var buttonModifier = "largeImageButton";
          if ($(container).height() < 80) {
              buttonModifier = 'smallImageButton';
          }
 
-         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing information on Credits, Copyright, or License'></button>");
+         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing Copyright information'></button>");
      }
  }
 
@@ -617,6 +620,9 @@ function ResizeUsingPercentages(e,ui){
          var whatToSay = dictionary[key];
          if (whatToSay == null)
              whatToSay = key; //just show the code
+
+         if (key = "*")
+             return; //seeing a "*" was confusing even to me
 
          //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
          if ($(this).width() < 100) {
