@@ -209,6 +209,12 @@
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Platform\Platform.cs" />
+    <Compile Include="RegisterDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RegisterDialog.Designer.cs">
+      <DependentUpon>RegisterDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="SendReceive\SendReceiver.cs" />
     <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
@@ -478,6 +484,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RegisterDialog.resx">
+      <DependentUpon>RegisterDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
