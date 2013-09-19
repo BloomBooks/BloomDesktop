@@ -368,6 +368,8 @@ namespace Bloom.Edit
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
+			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+
 			if (_view != null)
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)

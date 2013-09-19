@@ -239,15 +239,15 @@ namespace Bloom.CollectionTab
 			return TheOneEditableCollection.Name+".BloomPack";
 		}
 
-		public void DoChecksAndUpdatesOfAllBooks()
+		public void DoUpdatesOfAllBooks()
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
-				dlg.ShowAndDoWork((progress, args) => DoChecksAndUpdatesOfAllBooks(progress));
+				dlg.ShowAndDoWork((progress, args) => DoUpdatesOfAllBooks(progress));
 			}
 		}
 
-		public void DoChecksAndUpdatesOfAllBooks(IProgress progress)
+		public void DoUpdatesOfAllBooks(IProgress progress)
 		{
 			int i = 0;
 			foreach (var bookInfo in TheOneEditableCollection.GetBookInfos())
@@ -259,6 +259,48 @@ namespace Bloom.CollectionTab
 				book.BringBookUpToDate(progress);
 			}
 		}
+
+		public void DoChecksOfAllBooks()
+		{
+			using (var dlg = new ProgressDialogBackground())
+			{
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg));
+				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
+				{
+					MessageBox.Show("Bloom will now open a list of problems it found.");
+					var path = Path.GetTempFileName() + ".txt";
+					File.WriteAllText(path, dlg.ProgressString.Text);
+					System.Diagnostics.Process.Start(path);
+				}
+				else
+				{
+					MessageBox.Show("Bloom didn't find any problems.");
+				}
+			}
+
+		}
+
+		public void DoChecksOfAllBooksBackgroundWork(ProgressDialogBackground dialog)
+		{
+			var bookInfos = TheOneEditableCollection.GetBookInfos();
+			var count = bookInfos.Count();
+			if (count == 0)
+				return;
+
+			foreach (var bookInfo in bookInfos)
+			{
+				//not allowed in this thread: dialog.ProgressBar.Value++;
+				dialog.Progress.ProgressIndicator.PercentCompleted += 100/count;
+
+				var book = _bookServer.GetBookFromBookInfo(bookInfo);
+
+				dialog.Progress.WriteMessage("Checking " + book.TitleBestForUserDisplay);
+				book.CheckBook(dialog.Progress);
+				dialog.ProgressString.WriteMessage("");
+			}
+			dialog.ProgressBar.Value++;
+		}
+
 
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{

@@ -9,17 +9,17 @@
 H1, H2, H3, H4, H5, H6, TH
 {
 	font-weight: inherit;
-	=font-weight: expression(this.__FW?this.__FW:(new Function('t','return (t.__FW=t.parentNode.currentStyle.fontWeight)'))(this));
+
 }
 ADDRESS, CITE, DFN, VAR
 {
 	font-style: inherit;
-	=font-style: expression(this.__FS?this.__FS:(new Function('t','return (t.__FS=t.parentNode.currentStyle.fontStyle)'))(this));
+
 }
 CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON
 {
 	font-family: inherit;
-	=font-family: expression(this.__FF?this.__FF:(new Function('t','return (t.__FF=t.parentNode.currentStyle.fontFamily)'))(this));
+
 }
 TABLE
 {
