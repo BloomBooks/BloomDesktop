@@ -450,7 +450,7 @@ namespace Bloom.Book
 
 								//But if not, maybe we should copy one in from another national language
 								if(string.IsNullOrEmpty(s))
-									s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
+									;// s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
 
 								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
 								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
