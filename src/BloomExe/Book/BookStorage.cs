@@ -660,7 +660,8 @@ namespace Bloom.Book
 					}
                     if (!string.IsNullOrEmpty(path))
                     {
-                        linkNode.SetAttribute("href", "file://" + path);
+						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
+						linkNode.SetAttribute("href", "file://" + path);
                     }
                     else
                     {
@@ -680,6 +681,7 @@ namespace Bloom.Book
             dom.AddStyleSheet("basePage.css");
 	        EnsureHasLinksToStylesheets(dom);
 	        dom.SortStyleSheetLinks();
+	        dom.RemoveFileProtocolFromStyleSheetLinks();
         }
 
 
