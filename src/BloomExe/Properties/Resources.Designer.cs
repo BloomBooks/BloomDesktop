@@ -643,6 +643,26 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sil_logo_on_dark_132x127 {
+            get {
+                object obj = ResourceManager.GetObject("sil logo on dark 132x127", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILLogoBlue132x184 {
+            get {
+                object obj = ResourceManager.GetObject("SILLogoBlue132x184", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap simplePages {
             get {
                 object obj = ResourceManager.GetObject("simplePages", resourceCulture);
