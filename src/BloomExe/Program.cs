@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.Registration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
@@ -104,20 +105,25 @@ namespace Bloom
 
 					SetUpLocalization();
 					Logger.Init();
-				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
-				{
-					Settings.Default.MruProjects.AddNewPath(args[0]);
-				}
-				_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-					++Settings.Default.LaunchCount;
-				Settings.Default.Save();
 
-				Browser.SetUpXulRunner();
 
-				Application.Idle +=Startup;
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+					{
+						Settings.Default.MruProjects.AddNewPath(args[0]);
+					}
+					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-				L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage,false);
+					Settings.Default.Registration.IncrementLaunchCount();
+					Settings.Default.Save();
+
+					Browser.SetUpXulRunner();
+
+					Application.Idle += Startup;
+
+
+
+					L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 					try
 					{

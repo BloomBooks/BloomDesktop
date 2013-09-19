@@ -10,6 +10,7 @@ using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
@@ -212,6 +213,7 @@ namespace Bloom.Workspace
 				}
 			}
 		}
+
 
 		private void OnUpdateDisplay(object sender, System.EventArgs e)
 		{
