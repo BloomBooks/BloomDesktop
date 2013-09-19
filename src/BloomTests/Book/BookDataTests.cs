@@ -138,7 +138,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
             var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
             textarea2.InnerText = "newXyzTitle";
-            var data = new BookData(dom,   new CollectionSettings(), null);
+			var data = new BookData(dom, new CollectionSettings() { Language1Iso639Code = "etr" }, null);
             data.SynchronizeDataItemsThroughoutDOM();
             var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='3']");
             Assert.AreEqual("newXyzTitle", textarea3.InnerText);
@@ -165,7 +165,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
             var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']");
             textarea1.InnerText = "newEnglishTitle";
-            var data = new BookData(dom,   new CollectionSettings(), null);
+            var data = new BookData(dom,   new CollectionSettings(){Language1Iso639Code = "etr"}, null);
             data.SynchronizeDataItemsThroughoutDOM();
             var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
             Assert.AreEqual("xyzTitle", textarea2.InnerText); 
@@ -190,7 +190,10 @@ namespace BloomTests.Book
                     </div>
                 </div>
                 </body></html>");
-            var collectionSettings = new CollectionSettings();
+	        var collectionSettings = new CollectionSettings()
+		        {
+			        Language1Iso639Code = "etr"
+		        };
             var data = new BookData(dom,   collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
             XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
@@ -565,8 +568,8 @@ namespace BloomTests.Book
                 </div>
                 <div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
-						<div data-book='originalContributions' lang='fr'></div>
-						<div data-book='originalContributions' lang='en'></div> 
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='en'></div> 
 					</div>
                 </div>
                 </body></html>");
@@ -650,8 +653,8 @@ namespace BloomTests.Book
                 </div>
                 <div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
-						<div data-book='originalContributions' lang='fr'></div>
-						<div data-book='originalContributions' lang='xyz'></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='xyz'></div>
 					</div>
                 </div>
                 </body></html>");
