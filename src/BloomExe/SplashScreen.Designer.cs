@@ -111,7 +111,7 @@
 			// 
 			this.flowLayoutPanel1.Controls.Add(this._shortVersionLabel);
 			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(163, 31);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(134, 31);
 			this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
 			this.flowLayoutPanel1.Size = new System.Drawing.Size(157, 34);
@@ -138,7 +138,7 @@
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.label1.ForeColor = System.Drawing.Color.Gold;
-			this.label1.Location = new System.Drawing.Point(309, 49);
+			this.label1.Location = new System.Drawing.Point(280, 49);
 			this.label1.Margin = new System.Windows.Forms.Padding(0, 0, 0, 4);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(30, 15);
