@@ -53,6 +53,7 @@ namespace Bloom
 				{
 					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
 					Settings.Default.Upgrade();
+					Settings.Default.Reload();
 					Settings.Default.NeedUpgrade = false;
 					Settings.Default.Save();
 					StartUpWithFirstOrNewVersionBehavior = true;
