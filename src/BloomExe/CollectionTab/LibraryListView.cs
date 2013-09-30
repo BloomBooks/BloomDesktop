@@ -669,6 +669,7 @@ namespace Bloom.CollectionTab
 		{
 			using (var dlg = new FolderBrowserDialog())
 			{
+				dlg.ShowNewFolderButton = false;
 				dlg.Description = "Select the folder where replacement images can be found";
 				if (DialogResult.OK == dlg.ShowDialog())
 				{

@@ -10,7 +10,7 @@ using Bloom.Edit;
 using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
-using Bloom.Registration;
+using PalasoUIWinforms.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
@@ -203,9 +203,9 @@ namespace Bloom.Workspace
 
 		private void Application_Idle(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(Application_Idle);
+			Application.Idle -= Application_Idle;
 
-			if (RegistrationDialog.TimeToAskForInitialOrMoreRegistrationInfo)
+			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
 			{
 				using (var dlg = new RegistrationDialog(false))
 				{
