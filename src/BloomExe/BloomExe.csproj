@@ -145,12 +145,6 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutDialog.Designer.cs">
-      <DependentUpon>AboutDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\BookInfo.cs" />
@@ -463,10 +457,6 @@
       <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AboutDialog.resx">
-      <DependentUpon>AboutDialog.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -885,6 +875,18 @@
     <None Include="Resources\cropMarks.png" />
     <None Include="Resources\SILLogoBlue132x184.png" />
     <None Include="Resources\sil logo on dark 132x127.png" />
+    <None Include="Resources\BloomLargeOnWhite.png" />
+    <None Include="Resources\SILBlueWithTagline100x140.png" />
+    <None Include="Resources\SILBlueWithTagline101x141.png" />
+    <None Include="Resources\SILBlueWithTagline102x142.png" />
+    <None Include="Resources\SILInBlueNoTagLineWithTrademark100x50.png" />
+    <None Include="Resources\SILInBlueNoTagLineWithTrademark100x113.png" />
+    <None Include="Resources\SILInBlueNoTagLineWithTrademark80x90.png" />
+    <None Include="Resources\BloomDarkGrey300-ish.png" />
+    <None Include="Resources\SILInBlue76.png" />
+    <None Include="Resources\SILInBlue100.png" />
+    <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
+    <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

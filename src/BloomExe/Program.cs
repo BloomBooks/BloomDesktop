@@ -176,7 +176,7 @@ namespace Bloom
 			{
 				_alreadyHadSplashOnce = true;
 				Application.Idle -= CareForSplashScreenAtIdleTime;
-				CloseSplashScreen();
+				CloseSplashScreenAndCheckRegistration();
 				if (_projectContext!=null && _projectContext.ProjectWindow != null)
 				{
 					var shell = _projectContext.ProjectWindow as Shell;
@@ -188,12 +188,25 @@ namespace Bloom
 			}
 		}
 
-		private static void CloseSplashScreen()
+		private static void CloseSplashScreenAndCheckRegistration()
 		{
 			if (_splashForm != null)
 			{
 				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
 				_splashForm = null; //but we are done with it
+			}
+
+			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
+			{
+				using (var dlg = new RegistrationDialog(false))
+				{
+					if (_projectContext!=null && _projectContext.ProjectWindow != null)
+						dlg.ShowDialog(_projectContext.ProjectWindow);
+					else
+					{
+						dlg.ShowDialog();
+					}
+				}
 			}
 		}
 

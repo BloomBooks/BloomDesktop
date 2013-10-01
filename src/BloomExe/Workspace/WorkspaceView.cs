@@ -205,13 +205,6 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= Application_Idle;
 
-			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
-			{
-				using (var dlg = new RegistrationDialog(false))
-				{
-					dlg.ShowDialog(this);
-				}
-			}
 		}
 
 
@@ -318,9 +311,9 @@ namespace Bloom.Workspace
 			//_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
 
-		private void toolStripMenuItem1_Click(object sender, EventArgs e)
+		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			using(var dlg = new AboutDialog())
+			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm")))
 			{
 				dlg.ShowDialog();
 			}

@@ -73,6 +73,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap BloomDarkGrey300_ish {
+            get {
+                object obj = ResourceManager.GetObject("BloomDarkGrey300-ish", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap BloomPack64x64 {
             get {
                 object obj = ResourceManager.GetObject("BloomPack64x64", resourceCulture);
@@ -643,9 +653,29 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap SIL_Logo_Blue_Smaller_Transparent {
+            get {
+                object obj = ResourceManager.GetObject("SIL_Logo_Blue_Smaller_Transparent", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap sil_logo_on_dark_132x127 {
             get {
                 object obj = ResourceManager.GetObject("sil logo on dark 132x127", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SILInBlueNoTagLineWithTrademark100x113 {
+            get {
+                object obj = ResourceManager.GetObject("SILInBlueNoTagLineWithTrademark100x113", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
