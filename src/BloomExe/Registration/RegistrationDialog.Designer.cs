@@ -44,7 +44,7 @@
 			this.label6 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
 			this._firstName = new System.Windows.Forms.TextBox();
-			this._sirName = new System.Windows.Forms.TextBox();
+			this._surname = new System.Windows.Forms.TextBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this.l10NSharpExtender1 = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._iAmStuckLabel = new System.Windows.Forms.LinkLabel();
@@ -214,7 +214,7 @@
 			this.tableLayoutPanel2.Controls.Add(this.label6, 1, 0);
 			this.tableLayoutPanel2.Controls.Add(this.label5, 0, 0);
 			this.tableLayoutPanel2.Controls.Add(this._firstName, 0, 1);
-			this.tableLayoutPanel2.Controls.Add(this._sirName, 1, 1);
+			this.tableLayoutPanel2.Controls.Add(this._surname, 1, 1);
 			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 24);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
 			this.tableLayoutPanel2.RowCount = 2;
@@ -229,13 +229,13 @@
 			this.label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this.label6, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this.label6, null);
-			this.l10NSharpExtender1.SetLocalizingId(this.label6, "RegisterDialog.SirName");
+			this.l10NSharpExtender1.SetLocalizingId(this.label6, "RegisterDialog.Surname");
 			this.label6.Location = new System.Drawing.Point(203, 20);
 			this.label6.Margin = new System.Windows.Forms.Padding(3, 20, 3, 0);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(62, 17);
 			this.label6.TabIndex = 8;
-			this.label6.Text = "Sir Name";
+			this.label6.Text = "Surame";
 			// 
 			// label5
 			// 
@@ -265,20 +265,20 @@
 			// 
 			// _sirName
 			// 
-			this._sirName.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.l10NSharpExtender1.SetLocalizableToolTip(this._sirName, null);
-			this.l10NSharpExtender1.SetLocalizationComment(this._sirName, null);
-			this.l10NSharpExtender1.SetLocalizingId(this._sirName, "RegisterDialog.textBox3");
-			this._sirName.Location = new System.Drawing.Point(203, 40);
-			this._sirName.Name = "_sirName";
-			this._sirName.Size = new System.Drawing.Size(181, 25);
-			this._sirName.TabIndex = 1;
-			this._sirName.TextChanged += new System.EventHandler(this.OnTextChanged);
+			this._surname.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._surname, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._surname, null);
+			this.l10NSharpExtender1.SetLocalizingId(this._surname, "RegisterDialog.textBox3");
+			this._surname.Location = new System.Drawing.Point(203, 40);
+			this._surname.Name = "_surname";
+			this._surname.Size = new System.Drawing.Size(181, 25);
+			this._surname.TabIndex = 1;
+			this._surname.TextChanged += new System.EventHandler(this.OnTextChanged);
 			// 
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._okButton.Enabled = false;
+			this._okButton.Enabled =false;
 			this._okButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._okButton, null);
@@ -388,7 +388,7 @@
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox _sirName;
+		private System.Windows.Forms.TextBox _surname;
 		private System.Windows.Forms.LinkLabel _iAmStuckLabel;
 		private System.Windows.Forms.Timer _userIsStuckDetector;
 		private System.Windows.Forms.Button _cancelButton;

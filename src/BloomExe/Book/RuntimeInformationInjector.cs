@@ -42,7 +42,7 @@ namespace Bloom.Book
 
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
-			pageDom.Head.InsertAfter(dictionaryScriptElement, null);
+			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
 		}
 
 		private static void AddLocalizedHintContentsToDictionary(HtmlDom singlePageHtmlDom, Dictionary<string, string> dictionary, CollectionSettings collectionSettings)
@@ -107,7 +107,7 @@ namespace Bloom.Book
 
 			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
 
-			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition" };
+			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
 			var builder = new StringBuilder();
 			builder.Append("[");
 			foreach (var topic in topics)
@@ -121,7 +121,8 @@ namespace Bloom.Book
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
-			pageDom.RawDom.SelectSingleNode("//head").InsertAfter(element, null);
+			var head = pageDom.RawDom.SelectSingleNode("//head");
+			head.InsertAfter(element, head.LastChild);
 		}
 	}
 }

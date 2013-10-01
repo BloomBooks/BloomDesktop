@@ -59,7 +59,7 @@ namespace PalasoUIWinforms.Registration
 		private void UpdateDisplay()
 		{
 			_okButton.Enabled = !string.IsNullOrWhiteSpace(_firstName.Text) &&
-								!string.IsNullOrWhiteSpace(_sirName.Text) &&
+								!string.IsNullOrWhiteSpace(_surname.Text) &&
 								!string.IsNullOrWhiteSpace(_organization.Text) &&
 								!string.IsNullOrWhiteSpace(_howAreYouUsing.Text);
 
@@ -95,7 +95,7 @@ namespace PalasoUIWinforms.Registration
 			return Palaso.UI.WindowsForms.Registration.Registration.Default.LaunchCount > 2 &&
 				   (
 					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName) ||
-					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.SirName) ||
+					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Surname) ||
 					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Organization) ||
 					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Email)
 				   );
@@ -104,7 +104,7 @@ namespace PalasoUIWinforms.Registration
 		private void SaveAndSendIfPossible()
 		{
 			Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName = _firstName.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.SirName = _sirName.Text;
+			Palaso.UI.WindowsForms.Registration.Registration.Default.Surname = _surname.Text;
 			Palaso.UI.WindowsForms.Registration.Registration.Default.Organization = _organization.Text;
 			Palaso.UI.WindowsForms.Registration.Registration.Default.Email = _email.Text;
 			Palaso.UI.WindowsForms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
@@ -133,7 +133,7 @@ namespace PalasoUIWinforms.Registration
 			UserInfo userInfo = new UserInfo()
 				{
 					FirstName = Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName,
-					LastName = Palaso.UI.WindowsForms.Registration.Registration.Default.SirName,
+					LastName = Palaso.UI.WindowsForms.Registration.Registration.Default.Surname,
 					Email = Palaso.UI.WindowsForms.Registration.Registration.Default.Email,
 					UILanguageCode = Settings.Default.UserInterfaceLanguage
 				};
@@ -145,7 +145,7 @@ namespace PalasoUIWinforms.Registration
 		private void RegistrationDialog_Load(object sender, EventArgs e)
 		{
 			_firstName.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName;
-			_sirName.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.SirName;
+			_surname.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Surname;
 			_organization.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Organization;
 			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
 			_howAreYouUsing.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.HowUsing;

@@ -1,3 +1,6 @@
+## 0.1.06 12 Sept 2013
+* Windows XP users trying to scan without the necessary windows components should now get a helpful message.
+
 ## 0.1.05 10 Sept 2013
 * Fix style-sheet-related problem when showing Calendar pages
 

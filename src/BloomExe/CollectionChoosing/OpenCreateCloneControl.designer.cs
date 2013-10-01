@@ -256,6 +256,7 @@ namespace Bloom.CollectionChoosing
 			this._readMoreLink.Size = new System.Drawing.Size(63, 13);
 			this._readMoreLink.TabIndex = 30;
 			this._readMoreLink.TabStop = true;
+			this._readMoreLink.Tag = "sendreceive";
 			this._readMoreLink.Text = "Read More";
 			this._readMoreLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._readMoreLabel_Click);
 			//
