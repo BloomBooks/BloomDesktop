@@ -1,4 +1,4 @@
-## 0.1.07 ?? Oct 2013
+## 0.1.08 10 Oct 2013
 * now supports watermark hints on fields that haven't been filled in yet
 
 ## 0.1.06 12 Sept 2013
