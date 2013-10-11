@@ -30,7 +30,7 @@ namespace MakeCollection
 
 			var spec = new NewCollectionSettings()
 				{
-					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(root, language + " P1 Primer"),
+					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(root, language + " P1 Teacher's Guide"),
 					AllowNewBooks = false,
 					Country = "Uganda",
 					DefaultLanguage1FontName = language,
@@ -51,7 +51,7 @@ namespace MakeCollection
 
 				for (int week = 2; week < 12 ; week++)
 				{
-					var weekBook = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\UgandaSHARP\UgandaSHARP-P1PrimerWeek");
+					var weekBook = MakeBook(collectionSettings, @"C:\dev\Bloom Custom Template Work\UgandaSHARP\UgandaSHARP-P1TeacherGuide");
 					weekBook.SetDataItem("term", term.ToString(), "en");
 					weekBook.SetDataItem("week", week.ToString(), "en");
 					weekBook.Save();
