@@ -68,8 +68,8 @@
 	<!-- replace some parts of the file with the version number & date -->
 
 	<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-				 DatePlaceholder='DEV_RELEASE_DATE'
-				Regex='DEV_VERSION_NUMBER'
+				 DatePlaceholder='RELEASE_RELEASE_DATE'
+				Regex='RELEASE_VERSION_NUMBER'
 				 ReplacementText ="$(Version)" />
 
 	<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml   (note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
