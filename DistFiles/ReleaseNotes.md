@@ -1,5 +1,6 @@
 ## 0.1.09 14 Oct 2013
 * added Spanish localizations
+* dropped 'beta' label
 
 ## 0.1.08 10 Oct 2013
 * now supports watermark hints on fields that haven't been filled in yet
