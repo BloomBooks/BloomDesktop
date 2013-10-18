@@ -1,3 +1,6 @@
+## 0.1.12 18 Oct 2013
+* enabled pages to incorporate combobox that control layouts dynamically
+
 ## 0.1.09 14 Oct 2013
 * added Spanish localizations
 * dropped 'beta' label

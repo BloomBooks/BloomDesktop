@@ -61,8 +61,6 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 
-
-
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
 
 			//we're giving it to the parent control through the TopBarControls property
@@ -136,6 +134,7 @@ namespace Bloom.Edit
 #if TooExpensive
 			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
 #endif
+			//_browser1.WebBrowser.AddMessageEventListener("PreserveHtmlOfElement", elementHtml => _model.PreserveHtmlOfElement(elementHtml));
 		}
 
 		private void OnShowBookMetadataEditor()
