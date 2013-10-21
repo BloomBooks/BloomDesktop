@@ -67,8 +67,8 @@ namespace MakeCollection
 				for (int week = 2; week < 3 ; week++)
 				{
 					var weekBook = MakeBook(collectionSettings, kpathToSHRPTemplates+"UgandaSHARP-P1TeacherGuide");
-					weekBook.SetDataItem("term", term.ToString(), "en");
-					weekBook.SetDataItem("week", week.ToString(), "en");
+					weekBook.SetDataItem("term", term.ToString(), "*");
+					weekBook.SetDataItem("week", week.ToString(), "*");
 
 					SetThemeStuff(weekBook,themes[bookCount],themeNumbers[bookCount],subThemes[bookCount],subThemeNumbers[bookCount]);
 					weekBook.Save();
@@ -105,8 +105,8 @@ namespace MakeCollection
 		{
 			book.SetDataItem("theme",  theme, "en");
 			book.SetDataItem("subtheme",  subtheme, "en");
-			book.SetDataItem("themeNumber",  themeNumber, "en");
-			book.SetDataItem("subthemeNumber",  subthemeNumber, "en");
+			book.SetDataItem("themeNumber",  themeNumber, "*");
+			book.SetDataItem("subthemeNumber",  subthemeNumber, "*");
 		}
 	}
 }

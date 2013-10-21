@@ -691,7 +691,7 @@ namespace Bloom.Book
 		private void UpdateTitle()
 		{
 			NamedMutliLingualValue title;
-			string[] orderedListOfWritingSystemIds = new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt" };
+			string[] orderedListOfWritingSystemIds = new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
 				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
