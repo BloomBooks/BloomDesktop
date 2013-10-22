@@ -1,0 +1,433 @@
+/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*+clearfix {*/
+.tool-items:after
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+	font-size: 0;
+}
+.tool-items
+{
+	display: inline-block;
+}
+.tool-items
+{
+	/*\*/
+	display: block;
+	/**/
+	-height: 1px;
+}
+/*+}*/
+DIV.bloom-imageContainer
+{
+	border: 1px solid #C0B9B9;
+}
+.coverColor DIV.bloom-imageContainer
+{
+	border: thin solid rgba(1, 1, 1, 0.2);
+}
+/*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
+BODY
+{
+	background-color: #363333;
+}
+BODY
+{
+	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2-5% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the basePage.css, we have 10pt, but here, 11pt.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
+	font-size: 10.5pt;
+}
+.ui-languageToolTip.ui-tooltip-titlebar, .ui-languageToolTip .ui-tooltip-content
+{
+	background-color: transparent !important;
+	color: #96A9B3 !important;
+	border-color: transparent !important;
+}
+.ui-languageToolTip
+{
+	background-color: transparent !important;
+	color: #DFDFDF !important;
+	border-color: transparent !important;
+}
+/*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
+.marginBox DIV.pageLabel
+{
+	/*+placement:anchor-top-left -1px -29px;*/
+	position: absolute;
+	left: -1px;
+	top: -29px;
+}
+DIV.pageLabel
+{
+	text-align: left;
+	/*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
+	color: rgba(0, 0, 0, 0.2);
+	margin-left: 5px;
+	/*+placement:anchor-top-left 71px 19px;*/
+	position: absolute;
+	left: 71px;
+	top: 19px;
+	float: left;
+}
+DIV.ui-tooltip-title
+{
+	text-align: justify;
+	margin-left: -9px;
+	margin-bottom: -19px;
+	margin-top: -8px;
+}
+DIV.page
+{
+	background-color: #F8F8F8;
+	border: medium outset #000000;
+}
+DIV.page.coverColor
+{
+	background-color: #D5D5E4;
+	border: medium outset #000000;
+}
+/*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+DIV.readOnlyInTranslationMode
+{
+	border: thin solid #C0B9B9;
+}
+DIV.hoverUp
+{
+	background-color: #D5D5E4;
+}
+BUTTON.smallImageButton
+{
+	width: 50%;
+	height: 50%;
+	/*+border-radius:0;*/
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	-khtml-border-radius: 0;
+	border-radius: 0;
+	border-radius: 0 0 0 0;
+	z-index: 100;
+	background-repeat: no-repeat;
+	border-style: none !important;
+	background-size: contain !important;
+}
+BUTTON.largeImageButton
+{
+	width: 70px;
+	height: 52px;
+	/*+border-radius:3px;*/
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	z-index: 100;
+	background-repeat: no-repeat;
+	background-position: 12px 4px;
+	border: 2px outset #716666;
+}
+BUTTON.pasteImageButton.smallImageButton
+{
+	background-image: url("../img/pasteImageButtonSmall.png") !important;
+	background-position: 67% 28% !important;
+}
+BUTTON.pasteImageButton.largeImageButton
+{
+	background-image: url("../img/pasteImageButtonLarge.png") !important;
+}
+BUTTON.changeImageButton.smallImageButton
+{
+	background-image: url("../img/changeImageButtonSmall.png");
+	background-position: 63% 27% !important;
+}
+BUTTON.changeImageButton.largeImageButton
+{
+	background-image: url("../img/changeImageButtonLarge.png") !important;
+}
+BUTTON.changeImageButton
+{
+	/*+placement:anchor-top-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	/*[disabled]background-position:13px 3px;*/
+	background-color: #96668F;
+}
+BUTTON.pasteImageButton
+{
+	/*+placement:anchor-bottom-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	/*[disabled]background-position:13px 3px;*/
+	background-color: #0C8597;
+}
+BUTTON.editMetadataButton
+{
+	background-image: url("../img/imageMetaDataButton.svg") !important;
+	background-size: contain;
+	background-position: 5px 0px;
+	/*[disabled]width:70px;*/
+	/*[disabled]height:52px;*/
+	background-repeat: no-repeat !important;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: 1000;
+}
+BUTTON.editMetadataButton.smallImageButton
+{
+	background-position: 0 0 !important;
+}
+BUTTON.editMetadataButton.imgMetadataProblem
+{
+	background-image: url("../img/imageMissingMetaData.svg") !important;
+	background: transparent;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: none;
+}
+.hoverUp BUTTON.editMetadataButton
+{
+	background: #3A7F62;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: 2px outset #716666;
+}
+BUTTON.deleteButton
+{
+	/*+placement:anchor-bottom-left;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	background-image: url("../img/deleteButtonSmall.png") !important;
+	width: 40px;
+	height: 40px;
+	z-index: 100;
+	/*[disabled]background-position:13px 3px;*/
+}
+/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
+.moveButtonIcon
+{
+	background-image: url("../img/moveDivButton.png") !important;
+	width: 37px !important;
+	height: 37px !important;
+}
+BUTTON.moveButton
+{
+	/*+placement:anchor-top-left -19px -17px;*/
+	position: absolute;
+	left: -19px;
+	top: -17px;
+	background-image: url("../img/moveDivButton.png") !important;
+	background-repeat: no-repeat;
+	background-color: transparent;
+	width: 16px;
+	height: 16px;
+	border: 0 hidden #000000;
+	z-index: 1000;
+	background-size: contain;
+}
+TEXTAREA, DIV.bloom-editable
+{
+	border: thin solid #C0B9B9;
+	/*[disabled]min-height:34px;*/
+}
+/*need a darker border when we have a background color*/
+.coverColor TEXTAREA, DIV.bloom-editable
+{
+	border: thin solid rgba(0, 0, 0, 0.2);
+}
+IMG.hoverUp
+{
+	background-color: #DFDFDF;
+	border: 1px outset #000000;
+}
+TEXTAREA:focus, DIV.bloom-editable:focus
+{
+	border: 1px solid rgba(82, 168, 236, 0.6);
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+	outline: 0;
+}
+TEXTAREA.province
+{
+	width: 151px;
+	height: 33px;
+}
+.overflow
+{
+	background-color: #C30606 !important;
+}
+/*for use with qtip, showing what language each textarea is in
+.ui-tooltipbloomLang
+{
+}
+.ui-tooltipbloomLang .ui-tooltip-titlebar
+{
+background-color: red;
+color: #FFFFFF;
+border: 0 dashed transparent;
+}*/
+.fieldInfo-qtip .ui-tooltip-content
+{
+	border: 0 solid #A03C50;
+	padding: 0px;
+	text-align: right;
+	color: #363333;
+	font-size: 8pt;
+	margin-top: -8px;
+	margin-right: 8px;
+}
+UL
+{
+	padding: 0;
+	z-index: 1;
+	background-color: transparent;
+	text-align: left;
+	width: 219px;
+	/*+placement:shift -7px 1px;*/
+	position: relative;
+	left: -7px;
+	top: 1px;
+}
+UL LI
+{
+	display: inline-block;
+	padding-right: 11px;
+	padding-left: 7px;
+	font-size: 9pt;
+	margin-right: 11px;
+	height: 31px;
+}
+UL LI A
+{
+	display: block;
+	padding: 5px;
+	outline: none;
+	/*[empty]font-style:;*/
+	text-decoration: none;
+	color: #000000;
+}
+UL LI A:hover
+{
+	text-decoration: underline;
+}
+UL LI.active
+{
+	padding-top: 1px;
+	position: relative;
+	top: 1px;
+	font: bold 11pt sans-serif;
+}
+UL LI A.active
+{
+	font-weight: bold;
+}
+.panel-container
+{
+	border: 1px solid #000000;
+	padding: 0 10px;
+}
+DIV.textWholePage UL
+{
+	/*+placement:displace 1px -37px;*/
+	position: absolute;
+	margin-left: 1px;
+	margin-top: -37px;
+}
+/*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
+.ui-mouseOver .ui-resizable-handle
+{
+	width: 8px;
+	height: 8px;
+	border: 1px solid rgb(128, 128, 128);
+	background: rgb(242, 242, 242);
+}
+.ui-resizable-n, .ui-resizable-s
+{
+	left: 45%;
+}
+.ui-resizable-e, .ui-resizable-w
+{
+	top: 45%;
+}
+.ui-resizable-se
+{
+	/*[disabled]bottom:-5px;*/
+	/*[disabled]right:-5px;*/
+}
+DIV.marginBox
+{
+	border: 1px solid rgba(115, 189, 189, 0.3);
+}
+.bloom-frontMatter DIV.marginBox
+{
+	/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+	border: none;
+}
+/*-------format toolbar*/
+#formatButton
+{
+	width: 18px;
+	height: 21px !important;
+	overflow: hidden;
+	/*+placement:displace 3px -6.1;*/
+	position: absolute;
+	margin-left: 3px;
+	margin-top: -6.1;
+	margin-top: -18px;
+	/*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
+	font-size: 10pt;
+}
+#formatButton IMG
+{
+	width: 14px;
+	height: 14px;
+}
+#formatButton:Hover
+{
+	color: #000000;
+}
+.tool-item
+{
+	font: 17.9pt Andika;
+	text-decoration: none;
+	color: #716666;
+}
+.tool-item:Hover
+{
+	color: #000000;
+}
+.smallerFontButton.tool-item IMG
+{
+	width: 11px;
+	/*+placement:shift 0px -7px;*/
+	position: relative;
+	left: 0px;
+	top: -7px;
+}
+.largerFontButton.tool-item
+{
+	font-size: 17.7pt;
+	/*[disabled]line-height:0.6;*/
+}
+/*[clearfix]*/.tool-items
+{
+	border: 1px solid #DFDFDF;
+	/*+border-radius:3pt;*/
+	-moz-border-radius: 3pt;
+	-webkit-border-radius: 3pt;
+	-khtml-border-radius: 3pt;
+	border-radius: 3pt;
+}
+/*QTIP*/
+.qtip-content
+{
+	font-family: Arial;
+}

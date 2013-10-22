@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="changeImageButtonLarge.png" Guid="1da8b8aa-ce8d-4d5a-9597-19d111f0ae32" />
+  <File Id="changeImageButtonSmall.png" Guid="64d7c2b0-3a79-466a-8c1b-18b6ce624a4f" />
+  <File Id="deleteButtonSmall.png" Guid="453c67e7-db87-4b6e-80ce-35f2cfc56c2d" />
+  <File Id="imageMetaDataButton.svg" Guid="c9ad60a3-7384-4951-a0a9-d0d4241a10f8" />
+  <File Id="imageMissingMetaData.svg" Guid="c3e1e5d8-3e4c-491d-8c65-b3b8eb00181b" />
+  <File Id="imageProblem.png" Guid="a351a654-1530-4667-a666-1973f6f7eb1b" />
+  <File Id="moveDivButton.png" Guid="3107e6c9-a768-4c4b-9425-7696f434df18" />
+  <File Id="pasteImageButtonLarge.png" Guid="4b35f6e5-b9e8-4604-a213-a9c2c6c87734" />
+  <File Id="pasteImageButtonSmall.png" Guid="975bad0b-1d17-4e62-a6c7-c21def184815" />
+  <File Id="BrowserUIDir.bookEdit.img.changeImageButtonLarge.png" Guid="92437c30-0c4a-4f88-a6d3-812ec3b08b5e" />
+  <File Id="BrowserUIDir.bookEdit.img.changeImageButtonSmall.png" Guid="0992f910-196d-4fde-bf22-5bb88fc55b57" />
+  <File Id="BrowserUIDir.bookEdit.img.deleteButtonSmall.png" Guid="3cedd972-4667-49ad-9fef-2c67c8018ef3" />
+  <File Id="BrowserUIDir.bookEdit.img.imageMetaDataButton.svg" Guid="5e2723cd-5b5d-45a0-b77d-73b8ea40423c" />
+  <File Id="BrowserUIDir.bookEdit.img.imageMissingMetaData.svg" Guid="a44035f8-496c-4678-a1eb-325e595f45f8" />
+  <File Id="BrowserUIDir.bookEdit.img.imageProblem.png" Guid="8f9815e0-646f-4f3d-9243-82771b316286" />
+  <File Id="BrowserUIDir.bookEdit.img.moveDivButton.png" Guid="4a808aec-b811-4136-95b7-f4ea0bc23fcb" />
+  <File Id="BrowserUIDir.bookEdit.img.pasteImageButtonLarge.png" Guid="041eb76e-355e-4d57-8f7f-ada1e5ba8f5f" />
+  <File Id="BrowserUIDir.bookEdit.img.pasteImageButtonSmall.png" Guid="b67ffcb3-b5de-46cb-9b34-433d6360f768" />
+  <File Id="owserUIDir.bookEdit.img.changeImageButtonLarge.png" Guid="902237fa-9636-4820-b374-2ed39a315c2e" />
+  <File Id="owserUIDir.bookEdit.img.changeImageButtonSmall.png" Guid="189662a3-3e6f-4bb9-a69d-b4385f20f919" />
+  <File Id="rowserUIDir.bookEdit.img.pasteImageButtonLarge.png" Guid="3deb681d-d429-49b8-94f0-fb8a1ebed6ec" />
+  <File Id="rowserUIDir.bookEdit.img.pasteImageButtonSmall.png" Guid="af8d6949-9a13-40ce-b841-2152376a3fb2" />
+</InstallerMetadata>

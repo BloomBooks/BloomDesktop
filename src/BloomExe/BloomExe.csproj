@@ -3,14 +3,14 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\output\debug\</OutputPath>
+    <OutputPath>..\..\output\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -24,6 +24,17 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/home/richard/src/bloom/lib/xulrunner11" />
+        <Variable name="MOZ_LIBDIR" value="/home/richard/src/bloom/lib/xulrunner11" />
+        <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/:/usr/lib/cli/gtk-sharp-2.0:/usr/lib/cli/atk-sharp-2.0:/usr/lib/cli/glib-sharp-2.0" />
+        <Variable name="LD_PRELOAD" value="./jemallocfix.so" />
+        <Variable name="DISPLAY" value=":1" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\release\</OutputPath>
@@ -39,12 +50,11 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Bloom</RootNamespace>
@@ -56,23 +66,14 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AeroWizard, Version=1.2.6.19328, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">
+    <Reference Include="AeroWizard, Version=1.2.6.19328, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">    
+      <HintPath>..\..\packages\Analytics.1.1.0\lib\Analytics.NET.dll</HintPath>
+    <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
+    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
-    </Reference>
-    <Reference Include="Analytics.NET, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac">
-      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Configuration">
-      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="AxInterop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
@@ -87,11 +88,6 @@
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Interop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip.Reduced, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -112,19 +108,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Palaso">
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
     </Reference>
-    <Reference Include="PalasoUIWindowsForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
-    <Reference Include="PdfSharp, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+    <Reference Include="PdfSharp, Version=1.31.1789.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
@@ -147,6 +141,19 @@
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\TidyManaged.dll</HintPath>
     </Reference>
+    <Reference Include="Autofac">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="AxInterop.AcroPDFLib">
+      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.AcroPDFLib">
+      <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
@@ -882,13 +889,11 @@
     <None Include="Resources\SILInBlue100.png" />
     <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
-    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.7.2.js" />
-    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)\lib\msvcr100.dll" $(OutDir)
