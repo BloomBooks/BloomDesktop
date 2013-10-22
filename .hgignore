@@ -39,6 +39,10 @@ Acorns*
 _NCrunch*
 *.vsp
 build/xulrunner*
+build/Palaso.BuildTasks.dll
+packages/*.*
+copy*.*
+Copy*.bat
 *.orig
 *.ncrunchsolution
 Mercurial/
@@ -59,3 +63,5 @@ lib/wkhtmltopdf/*
 LibChorus.*
 build/Palaso.BuildTasks.dll
 lib/failed update of AeroWizard Modified for dotnet 4 client/*
+Bloom Q&A SIL Literacy Oct 2013.pdf
+Locked Sample Uganda RTI P1 Primer/

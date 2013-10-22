@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="previewMode.css" Guid="7fd0a16f-81fc-4aaa-899d-59893192e47b" />
+  <File Id="BrowserUIDir.bookPreview.css.previewMode.css" Guid="8ea7b4c8-9893-40ae-8132-4a50582aec4e" />
+</InstallerMetadata>

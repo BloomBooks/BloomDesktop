@@ -25,4 +25,18 @@
   <File Id="placeHolder.png5" Guid="90585d52-75c1-41a4-8d16-c1d74359e5a5" />
   <File Id="previewMode.css4" Guid="8d71327b-f815-40f1-a07a-1271cbcf893a" />
   <File Id="thumbnail.png4" Guid="4797931e-41c4-45fb-895b-79f420595f3c" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.basePage.css" Guid="0565268e-4090-43ea-92a0-2136e8651a73" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.languageDisplay.css" Guid="e9473c1f-a16b-4105-bd30-14402553c9b8" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.PictureDictionary.css" Guid="1a88f876-3845-4cdb-a1f0-9e62ff609e14" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.placeHolder.png" Guid="5163bce8-20be-44cd-a8b3-bb96e4c2fdee" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.previewMode.css" Guid="1d251b91-b1b0-4d76-b03f-6554c49bba6e" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.templatePages.htm" Guid="f898ea9a-514f-4e93-9bcf-2281ee1e6ed1" />
+  <File Id="ProgramDir.factoryCollections.Templates.Picture_Dictionary.thumbnail.png" Guid="45978da7-5600-422f-b115-9230de607de8" />
+  <File Id="lections.Templates.Picture_Dictionary.basePage.css" Guid="16d8f126-2bd0-47b7-9bba-92b3fc6cdd3f" />
+  <File Id="s.Templates.Picture_Dictionary.languageDisplay.css" Guid="fb03f95a-81a8-4061-90c8-5c7b80486f0f" />
+  <File Id="Templates.Picture_Dictionary.PictureDictionary.css" Guid="b5a64954-88e1-46e4-ab5b-6f498d8ceb1e" />
+  <File Id="tions.Templates.Picture_Dictionary.placeHolder.png" Guid="b912cc4d-2a7c-4826-8da0-308f7857709d" />
+  <File Id="tions.Templates.Picture_Dictionary.previewMode.css" Guid="b59ab93f-f913-4a70-8f4a-1ff92b81cc47" />
+  <File Id="ons.Templates.Picture_Dictionary.templatePages.htm" Guid="7f6e900e-9393-4068-b1c7-133edf954df3" />
+  <File Id="ections.Templates.Picture_Dictionary.thumbnail.png" Guid="d32d8f1f-dd68-49c2-b5b1-780025acb040" />
 </InstallerMetadata>

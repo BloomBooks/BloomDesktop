@@ -6,7 +6,7 @@ using Bloom;
 using NUnit.Framework;
 using Palaso.Xml;
 
-namespace Palaso.TestUtilities
+namespace BloomTests
 {
 	//NB: if c# ever allows us to add static exension methods,
 	//then all this could be an extension on nunit's Assert class.

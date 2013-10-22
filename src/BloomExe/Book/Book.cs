@@ -190,15 +190,15 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
 			}
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
@@ -211,7 +211,7 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
 		}
 
 
@@ -228,7 +228,6 @@ namespace Bloom.Book
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
 			dom = _storage.MakeDomRelocatable(dom, _log);
-
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
@@ -252,8 +251,8 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 
 			pageDom.SortStyleSheetLinks();
 
@@ -312,7 +311,7 @@ namespace Bloom.Book
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFile(cssFileName));
+				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
 			}
 			dom.SortStyleSheetLinks();
 			return dom;
@@ -849,8 +848,8 @@ namespace Bloom.Book
 		private void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.myimgscale.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.myimgscale.js"));
 //
 //			XmlElement script = dom.CreateElement("script");
 //			script.SetAttribute("type", "text/javascript");
@@ -862,7 +861,12 @@ namespace Bloom.Book
 //			})";
 //			header.AppendChild(script);
 
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
+			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("bloomPreviewBootstrap.js");
+			if(string.IsNullOrEmpty(pathToJavascript))
+			{
+				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");
+			}
+			dom.AddJavascriptFile(pathToJavascript);
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1057,6 +1061,14 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
+				var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
+				if (customStyles != null)
+				{
+					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
+					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+				}
+				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
 				try
 				{
 					_storage.Save();
@@ -1080,7 +1092,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 //        /// <summary>
 //        /// Gets the first element with the given tag & id, within the page-div with the given id.
 //        /// </summary>
@@ -1095,6 +1106,21 @@ namespace Bloom.Book
 //            return (XmlElement)matches[0];
 //        }
 
+		/// <summary>
+		/// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+		/// </summary>
+		private XmlElement GetOrCreateCustomStyleElementFromStorage()
+		{
+			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+			if (matches.Count > 0)
+				return (XmlElement) matches[0];
+
+			var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+			emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+			emptyCustomStylesElement.SetAttribute("type", "text/css");
+			OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
+			return emptyCustomStylesElement;
+		}
 
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
@@ -1309,7 +1335,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFile("languageDisplayTemplate.css"));
+			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);

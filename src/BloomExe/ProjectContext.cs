@@ -193,12 +193,27 @@ namespace Bloom
 			});
 
 		}
-		private static IEnumerable<string> GetFileLocations()
+		public static IEnumerable<string> GetFileLocations()
 		{
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("root"));//hack to get the distfiles folder itself
-			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));//hack to get the distfiles folder itself
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
+
+			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 

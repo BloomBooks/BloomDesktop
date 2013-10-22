@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -489,6 +490,32 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
+				var customStyleSheet = _browser.Document.StyleSheets.Where(s =>
+					{
+						var idNode = s.OwnerNode.Attributes["id"];
+						if (idNode == null)
+							return false;
+						return idNode.NodeValue == "customBookStyles";
+					}).FirstOrDefault();
+
+				if (customStyleSheet != null)
+				{
+					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+					 * rules don't show up inside of it. So
+					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = customStyleSheet.OwnerNode.OuterHtml;
+					 */
+					var styles = new StringBuilder();
+					styles.AppendLine("<style id='customStyles' type='text/css'>");
+					foreach (var cssRule in customStyleSheet.CssRules)
+					{
+						styles.AppendLine(cssRule.CssText);
+					}
+					styles.AppendLine("</style>");
+					Debug.WriteLine("*CustomStylesheet in browser:"+styles);
+					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+				}
+
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
 //				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 //				{
@@ -532,7 +559,7 @@ namespace Bloom
 		{
 			if (_url != "about:blank")
 			{
-				RunJavaScript("Cleanup()");
+		//		RunJavaScript("Cleanup()");
 					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
 				LoadPageDomFromBrowser();
 			}

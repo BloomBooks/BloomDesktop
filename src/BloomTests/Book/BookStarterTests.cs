@@ -34,17 +34,24 @@ namespace BloomTests.Book
 			_librarySettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
 			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
-			_fileLocator = new FileLocator(new string[]
-											{
-												FileLocator.GetDirectoryDistributedWithApplication("root"),
-												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
-											});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), _librarySettings.Object);
+			_fileLocator = new FileLocator(new string[]{});
+			foreach (var location in ProjectContext.GetFileLocations())
+			{
+				_fileLocator.AddPath(location);
+			}
 
+//			new FileLocator(new string[]
+//			                               	{
+//			                               		FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"),
+//												FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCSS"),
+//												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
+//												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+//												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
+//			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+//												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
+//			                               	});
+
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), _librarySettings.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 		}

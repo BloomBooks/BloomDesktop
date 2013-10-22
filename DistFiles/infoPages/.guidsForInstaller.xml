@@ -20,4 +20,27 @@
   <File Id="MakingNewShellsNewProject.png" Guid="484755f9-ef89-4e01-847a-79c8b27c8c30" />
   <File Id="MakingNewShellsOpenBloomLibrary.png" Guid="7a7803b5-006d-434c-a532-e9af964e2e49" />
   <File Id="Deep_Bloom.pdf" Guid="4583a675-0f0a-4f96-92b3-1a09348a4888" />
+  <File Id="aboutBox.css" Guid="0015d260-83bf-4677-98c3-1510cdef8c0d" />
+  <File Id="aboutBox.htm" Guid="bb4a8e16-132d-4fb2-8472-b81f26753967" />
+  <File Id="ProgramDir.infoPages._bloomDataDiv.png" Guid="21171c56-e40f-4693-911d-a0d12f9efd6c" />
+  <File Id="ProgramDir.infoPages.2_Making_New_Shells.htm" Guid="cc2334f6-4775-4085-96c5-a21f3816e3bf" />
+  <File Id="ProgramDir.infoPages.3_Bloom_File_Format.htm" Guid="20718330-0e42-4dfd-a094-f51fe3027c15" />
+  <File Id="ProgramDir.infoPages.4_Building_Dynamic_Templates.html" Guid="5ac65040-e781-493a-88fa-67fee56ea7c9" />
+  <File Id="ProgramDir.infoPages.aboutBox.css" Guid="9ea6f769-ddfa-4d93-9e75-558561c16ad4" />
+  <File Id="ProgramDir.infoPages.aboutBox.htm" Guid="ca7a4c5a-ae62-4820-91ba-145a861c902b" />
+  <File Id="ProgramDir.infoPages.construction.png" Guid="997d0ca4-8e45-40dd-afbe-5395b647ad2e" />
+  <File Id="ProgramDir.infoPages.dataHint.png" Guid="b827c16b-fd11-42dc-ab50-5eac05e2f714" />
+  <File Id="ProgramDir.infoPages.Deep_Bloom.pdf" Guid="daeca21f-62e0-4abe-9284-9b6eb914948c" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsChooseTemplate.png" Guid="d07d8458-0fde-4de4-abd8-db348e462fc4" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsCollectionsFolder.png" Guid="3ade9fb3-d779-4b2d-8d2f-f73ca6ba5778" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsEditBloomLibrary.png" Guid="04bd13ca-d7bf-4e53-9e3c-c2acc30d19b6" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsLanguage.png" Guid="a7b7b7b0-1b3a-4362-adcb-d8a61e90ecf6" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsNewProject.png" Guid="5d9693c4-cf89-4d48-a63e-78ce0b48ab84" />
+  <File Id="ProgramDir.infoPages.MakingNewShellsOpenBloomLibrary.png" Guid="adb3b249-a6db-4659-9a0e-9ad0ec6b0f1f" />
+  <File Id="ProgramDir.infoPages.style.css" Guid="92eaa97d-963c-44df-b12e-ada6c10acf94" />
+  <File Id="ramDir.infoPages.4_Building_Dynamic_Templates.html" Guid="5ce98f95-d9d4-48c2-8381-20deb7c89598" />
+  <File Id="ramDir.infoPages.MakingNewShellsChooseTemplate.png" Guid="4ba657f5-b218-4b1f-adad-b14c81a29a45" />
+  <File Id="Dir.infoPages.MakingNewShellsCollectionsFolder.png" Guid="7416562b-722d-4351-9169-4c47a2c76c45" />
+  <File Id="mDir.infoPages.MakingNewShellsEditBloomLibrary.png" Guid="4631927a-1d25-4918-a18b-cc55421ceec9" />
+  <File Id="mDir.infoPages.MakingNewShellsOpenBloomLibrary.png" Guid="cd49142e-9233-4108-b6eb-4df5a14e97ad" />
 </InstallerMetadata>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="alignmentTest.css" Guid="7656c900-ac99-41c1-bbde-b5fbd43bf860" />
+  <File Id="alignmentTest.html" Guid="c49c172a-284c-44a0-99d8-4860c8771ead" />
+  <File Id="book.png" Guid="8119c12e-e457-4359-ba6e-5c7408a249d8" />
+  <File Id="library___Demo.htm" Guid="abc38f40-35e1-43fa-8135-a88bcbeeae7a" />
+  <File Id="library.htm1" Guid="aac78b8d-cbae-478e-9731-8a44edc3e362" />
+  <File Id="pdfPrintingTests.js" Guid="eda11d09-c2cc-450a-ba68-06e4bd7477ce" />
+  <File Id="preview.html" Guid="f35af4a9-6719-4935-8e22-81cca2966413" />
+  <File Id="BrowserUIDir.nonProductionStuff.book.png" Guid="5fa7be5c-6504-428f-b79e-33ec24164597" />
+  <File Id="BrowserUIDir.nonProductionStuff.library___Demo.htm" Guid="62a2e4ec-ce25-4f1b-a98a-28ba4fff4a74" />
+  <File Id="BrowserUIDir.nonProductionStuff.library.htm" Guid="edfa6983-003c-41b4-82c5-b6baf42d1921" />
+  <File Id="BrowserUIDir.nonProductionStuff.preview.html" Guid="57d18a4a-55bf-4f1b-9cb7-641f151acde2" />
+</InstallerMetadata>

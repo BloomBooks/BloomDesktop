@@ -128,9 +128,8 @@ namespace Bloom.Book
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
-
-			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
-			foreach (var v in incomingData.TextVariables)
+			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
+			foreach (var v in data.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
 					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
@@ -177,9 +176,9 @@ namespace Bloom.Book
 					{
 						node.InnerXml = languageForm.Form;
 					}
-					Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
-									languageForm.Form);
-					Debug.WriteLine("now: " + _dataDiv.OuterXml);
+					//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
+					//				languageForm.Form);
+					//Debug.WriteLine("now: " + _dataDiv.OuterXml);
 				}
 			}
 		}

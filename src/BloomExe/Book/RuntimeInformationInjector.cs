@@ -97,7 +97,7 @@ namespace Bloom.Book
 			element.SetAttribute("id", "ui-settings");
 			var d = new Dictionary<string, string>();
 
-			d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
+			//d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
 			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
@@ -105,7 +105,7 @@ namespace Bloom.Book
 
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 
-			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
+			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"));
 
 			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
 			var builder = new StringBuilder();
