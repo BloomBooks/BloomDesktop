@@ -129,7 +129,7 @@ namespace Bloom.Book
 												 : MultilingualContentLanguage3, false);
 
 			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
-			foreach (var v in data.TextVariables)
+			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
 					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
