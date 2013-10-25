@@ -4,7 +4,7 @@
 interface ToolBarOptions {
 	content: string;
 	position?: string;
-	hideOnClick?: bool;
+	hideOnClick?: boolean;
 	zIndex?: number;
 }
 

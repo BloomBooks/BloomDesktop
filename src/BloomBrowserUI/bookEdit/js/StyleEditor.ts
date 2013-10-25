@@ -60,46 +60,46 @@ class StyleEditor {
 		var styleName = StyleEditor.GetStyleNameForElement(target);
 		if (!styleName)
 			return;
-		var rule = this.GetOrCreateRuleForStyle(styleName);
+		var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName);
 		var sizeString: string = (<any>rule).style.fontSize;
 		if (!sizeString)
 			sizeString = $(target).css("font-size");
 		var units = sizeString.substr(sizeString.length - 2, 2);
 		sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
-		(<any>rule).style.setProperty("font-size", sizeString + units, "important");
+		rule.style.setProperty("font-size", sizeString + units, "important");
 	}
 
 	GetOrCreateCustomStyleSheet(): StyleSheet {
+		//note, this currently just makes an element in the document, not a separate file
 		for (var i = 0; i < document.styleSheets.length; i++) {
-			if ((<any>document.styleSheets[i]).ownerNode.id == "customBookStyles")
+			if ((<any>document.styleSheets[i]).ownerNode.id == "customBookStyleElement")
 				return document.styleSheets[i];
 		}
 		//alert("Will make customBookStyles Sheet:" + document.head.outerHTML);
 
 		var newSheet = document.createElement('style');
-		newSheet.id = "customBookStyles";
+		newSheet.id = "customBookStyleElement";
 		document.getElementsByTagName('head')[0].appendChild(newSheet);
-		newSheet.title = "customBookStyles";
+		newSheet.title = "customBookStyleElement";
 
 		return <StyleSheet><any>newSheet;
 	}
 
-	GetOrCreateRuleForStyle(styleName: string): CSSRule {
+	GetOrCreateRuleForStyle(styleName: string): CSSStyleRule {
 		var styleSheet = this.GetOrCreateCustomStyleSheet();
 		var x: CSSRuleList = (<any>styleSheet).cssRules;
 
 		for (var i = 0; i < x.length; i++) {
 			if (x[i].cssText.indexOf(styleName) > -1) {
-				return x[i];
+				return <CSSStyleRule> x[i];
 			}
 		}
 		(<any>styleSheet).insertRule('.'+styleName+' {}', 0)
 
-		return x[0];      //new guy is first
+		return <CSSStyleRule> x[0];      //new guy is first
 	}
 
-	//Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
-//onto the page
+
 	AttachToBox(targetBox: HTMLElement) {
 		if (!StyleEditor.GetStyleNameForElement(targetBox))
 			return;
