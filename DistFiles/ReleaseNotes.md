@@ -1,3 +1,6 @@
+## 0.1.16 18 Oct 2013
+* Stop complaining if the user has restricted access to the localization files but isn't trying to localize anything
+
 ## 0.1.12 18 Oct 2013
 * enabled pages to incorporate combobox that control layouts dynamically
 
