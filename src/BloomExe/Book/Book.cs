@@ -478,7 +478,10 @@ namespace Bloom.Book
 				_storage.Save();
 			}
 			_storage.Save();
-			_bookRefreshEvent.Raise(this);
+			if (_bookRefreshEvent != null)
+			{
+				_bookRefreshEvent.Raise(this);
+			}
 		}
 
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
@@ -1446,9 +1449,9 @@ namespace Bloom.Book
 		/// <param name="key"></param>
 		/// <param name="value"></param>
 		/// <param name="libaryValue"></param>
-		public void SetDataItem(string key, string languageCode, string value)
+		public void SetDataItem(string key, string value, string languageCode)
 		{
-			_bookData.Set(key, languageCode, value);
+			_bookData.Set(key, value,languageCode);
 		}
 
 		public void Save()
