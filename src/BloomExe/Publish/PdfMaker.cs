@@ -94,8 +94,10 @@ namespace Bloom.Publish
 				string exePath = FindWkhtmlToPdf();
 
 				var arguments = string.Format(
-					"--no-background " +
-					//without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+				//	"--no-background " + //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+				//Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold,
+				//so that's ok.
+
 					" --print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +

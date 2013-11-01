@@ -1,26 +1,29 @@
-## 0.1.16 18 Oct 2013
+## 1.0.17 - 1 Nov 2013
+* Background color on elements wasn't getting through to the PDF
+
+## 1.0.16 - 31 Oct 2013
 * Stop complaining if the user has restricted access to the localization files but isn't trying to localize anything
 
-## 0.1.12 18 Oct 2013
+## 1.0.12 - 18 Oct 2013
 * enabled pages to incorporate combobox that control layouts dynamically
 
-## 0.1.09 14 Oct 2013
+## 1.0.09 - 14 Oct 2013
 * added Spanish localizations
 * dropped 'beta' label
 
-## 0.1.08 10 Oct 2013
+## 1.0.08 - 10 Oct 2013
 * now supports watermark hints on fields that haven't been filled in yet
 
-## 0.1.06 12 Sept 2013
+## 1.0.06 - 12 Sept 2013
 * Windows XP users trying to scan without the necessary windows components should now get a helpful message.
 
-## 0.1.05 10 Sept 2013
+## 1.0.05 - 10 Sept 2013
 * Fix style-sheet-related problem when showing Calendar pages
 
-## 0.1.04 9 Sept 2013
+## 1.0.04 - 9 Sept 2013
 * New right-click command on the collection to "Replace Missing Images", where you specify a folder to look for replacements.
 
-## 0.1.03 6 Sept 2013
+## 1.0.03 - 6 Sept 2013
 * If image file is missing, now shows a message and lets you chose another one.
 * New right-click command on the collection to "Check All Books", which finds missing images.
 
