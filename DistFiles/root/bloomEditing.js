@@ -507,6 +507,7 @@ function ResizeUsingPercentages(e,ui){
     $(ui.element).removeData('hadPreviouslyBeenRelocated');
  }
 
+
  //---------------------------------------------------------------------------------
 
  jQuery(document).ready(function () {
@@ -919,6 +920,37 @@ function ResizeUsingPercentages(e,ui){
      //later note: using a real button just absorbs the click event. Other things work better
      //http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
 
+
+     /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
+     Example:
+          <select name="Story Style" class="bloom-classSwitchingCombobox">
+              <option value="Fictional">Fiction</option>
+              <option value="Informative">Informative</option>
+      </select>
+      */
+     //First we select the initial value based on what class is currently set, or leave to the default if none of them
+     $(".bloom-classSwitchingCombobox").each(function(){
+         //look through the classes of the parent for any that match one of our combobox values
+         var i;
+         for(i=0; i< this.options.length;i++) {
+             var c = this.options[i].value;
+             if($(this).parent().hasClass(c)){
+                 $(this).val(c);
+                 break;
+             }
+         }
+     });
+     //And now we react to the user choosing a different value
+     $(".bloom-classSwitchingCombobox").change(function(){
+         //remove any of the values that might already be set
+         var i;
+        for(i=0; i< this.options.length;i++) {
+             var c = this.options[i].value;
+            $(this).parent().removeClass(c);
+         }
+         //add back in the one they just chose
+         $(this).parent().addClass(this.value);
+     });
 
      //only make things deletable if they have the deletable class *and* page customization is enabled
      $("DIV.bloom-page.enablePageCustomization DIV.bloom-deletable").each(function () {

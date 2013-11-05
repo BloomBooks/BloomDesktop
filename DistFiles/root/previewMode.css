@@ -105,7 +105,7 @@ DIV.bloom-page.cover:after
 }
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
-*.bloom-hideWhenPublishing
+*.bloom-hideWhenPublishing, *.bloom-classSwitchingCombobox
 {
 	visibility: hidden;
 }
