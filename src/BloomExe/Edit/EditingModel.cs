@@ -524,6 +524,49 @@ namespace Bloom.Edit
 			}
 			return null;
 		}
+
+	  /*  Later I found a different explanation for why i wasn't getting the data back... the new classes were at the pag div
+	   *  level, and the c# code was only looking at the innerhtml of that div when saving (still is).
+	   *  /// <summary>
+		/// Although browsers are happy to let you manipulate the DOM, in most cases gecko/xulrunner does not expect that we,
+		/// the host process, are going to need access to those changes. For example, if we have a control that adds a class
+		/// to some element based on a user choice, the user will see the choice take effect, but then when they come back to the
+		/// page later, their choice will be lost. This is because that new class just isn't in the html that gets returned to us,
+		/// if we do, for example, _browser.Document.GetElementsByTagName("body").outerHtml. (Other things changes *are* returned, like
+		/// the new contents of an editable div).
+		///
+		/// Anyhow this method, triggered by javascript that knows it did something that will be lost, is here in order to work
+		/// around this. The Javascript does something like:
+		/// var origin = window.location.protocol + '//' + window.location.host;
+		/// event.initMessageEvent ('PreserveClassAttributeOfElement', true, true, theHTML, origin, 1234, window, null);
+		/// document.dispatchEvent (event);
+		///
+		/// The hard part here is knowing which element gets this html
+		/// </summary>
+		/// <param name="?"></param>
+		public void PreserveHtmlOfElement(string elementHtml)
+		{
+			try
+			{
+				var editor = new PageEditingModel();
+
+				//todo if anyone ever needs it: preserve more than just the class
+				editor.PreserveClassAttributeOfElement(_pageSelection.CurrentSelection.GetDivNodeForThisPage(), elementHtml);
+
+				//we have to save so that when asked by the thumbnailer, the book will give the proper image
+  //              SaveNow();
+				//but then, we need the non-cleaned version back there
+//                _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+
+  //              _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+
+			}
+			catch (Exception e)
+			{
+				ErrorReport.NotifyUserOfProblem(e, "Could not PreserveClassAttributeOfElement");
+			}
+		}
+	   */
 	}
 
 	public class TemplateInsertionCommand
