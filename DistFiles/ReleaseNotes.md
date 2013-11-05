@@ -1,3 +1,10 @@
+## 0.1.09 14 Oct 2013
+* added Spanish localizations
+* dropped 'beta' label
+
+## 0.1.08 10 Oct 2013
+* now supports watermark hints on fields that haven't been filled in yet
+
 ## 0.1.06 12 Sept 2013
 * Windows XP users trying to scan without the necessary windows components should now get a helpful message.
 
