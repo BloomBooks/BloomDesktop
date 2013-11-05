@@ -180,11 +180,15 @@ namespace Bloom.Book
 
 			XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
 			XmlElement newElementInThisLanguage;
-			if (prototype == null)// something bad happened here in the past, or the template wasn't created correctly
+			if (prototype == null)// note that we currently (version 1.0) get this when the prototype was the recommended lang='x'. Which is unfortunate, because it means the prototype is deleted by other code before we can copy it.
 			{
 				newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
 				newElementInThisLanguage.SetAttribute("class", "bloom-editable");
 				newElementInThisLanguage.SetAttribute("contenteditable", "true");
+				if (groupElement.HasAttribute("data-placeholder"))
+				{
+					newElementInThisLanguage.SetAttribute("data-placeholder", groupElement.GetAttribute("data-placeholder"));
+				}
 				groupElement.AppendChild(newElementInThisLanguage);
 			}
 			else  //this is the normal situation, where we're just copying the first element

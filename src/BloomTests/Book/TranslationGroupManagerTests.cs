@@ -190,5 +190,28 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-monolingual')]", 0);//should remove that one
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-bilingual')]", 1);
 		}
+
+		/// <summary>
+		/// the editmode.css rule that lets us simulate the HTML5 "placeholder" attribute with a "data-placeholder"
+		/// cannot reach up to the partent of the div, so it needs to be on the prototype child. But since the prototype these days is usually lang 'x' it is getting
+		/// deleted before we can make use of it. So more now, we are putting the data-placeholder on the partent and make sure we copy it to children.
+		/// </summary>
+		[Test]
+		public void UpdateContentLanguageClasses_TranslationGroupHasPlaceHolder_PlaceholderCopiedToNewChildren()
+		{
+			var contents = @"<div class='bloom-page  bloom-trilingual'>
+								<div class='bloom-translationGroup' data-placeholder='copy me' >
+								</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz' and @data-placeholder='copy me']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-placeholder='copy me']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-placeholder='copy me']", 1);
+		}
 	}
 }
