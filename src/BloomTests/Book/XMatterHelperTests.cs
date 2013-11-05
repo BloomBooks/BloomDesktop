@@ -24,9 +24,9 @@ namespace BloomTests.Book
 		{
 			_dom = new HtmlDom(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body><div id='bloomDataDiv'></div><div id ='firstPage' class='bloom-page'>1st page</div></body></html>");
 			_dataSet = new DataSet();
-			_dataSet.WritingSystemCodes.Add("V","xyz");
-			_dataSet.WritingSystemCodes.Add("N1", "fr");
-			_dataSet.WritingSystemCodes.Add("N2", "en");
+			_dataSet.WritingSystemAliases.Add("V","xyz");
+			_dataSet.WritingSystemAliases.Add("N1", "fr");
+			_dataSet.WritingSystemAliases.Add("N2", "en");
 		}
 		private XMatterHelper CreateHelper()
 		{
@@ -51,7 +51,7 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'verso')]", 1);
@@ -69,10 +69,10 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			var id1 = ((XmlElement) _dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
 			Setup(); //reset for another round
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			var id2 = ((XmlElement)_dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
 
 			Assert.AreNotEqual(id1,id2);
@@ -89,7 +89,7 @@ namespace BloomTests.Book
 			var helper = CreateHelper();
 			helper.XMatterDom = frontMatterDom;
 
-			helper.InjectXMatter( _dataSet.WritingSystemCodes, Layout.A5Portrait);
+			helper.InjectXMatter( _dataSet.WritingSystemAliases, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
@@ -112,7 +112,7 @@ namespace BloomTests.Book
 			var helper = CreateHelper();
 			helper.XMatterDom = xMatterDom;
 
-			helper.InjectXMatter(_dataSet.WritingSystemCodes, Layout.A5Portrait);
+			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][@id='firstPage']", 1);

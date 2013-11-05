@@ -262,9 +262,9 @@ namespace Bloom.Book
 				var data = new DataSet();
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1Iso639Code));
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code));
-				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
-				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
-				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
+				data.WritingSystemAliases.Add("V", _collectionSettings.Language1Iso639Code);
+				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2Iso639Code);
+				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
 
 
 				//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
@@ -272,7 +272,7 @@ namespace Bloom.Book
 
 				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemCodes, sizeAndOrientation);
+				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation);
 			}
 		}
 
