@@ -1,3 +1,7 @@
+## 1.0.19 - 1 Nov 2013
+* Fix Documentation Link from Collection Tab
+* For template designers, offer a file of jade mixins
+
 ## 1.0.17 - 1 Nov 2013
 * Background color on elements wasn't getting through to the PDF
 

@@ -1,9 +1,27 @@
 //- NB: if you get the error : "You should not have jade tags with multiple attributes."
 //-	make sure the mixin name is spelled correctly and capitalized correctly.
 
+
+mixin styleSheets(templateSpecificCSS)
+	link(rel='stylesheet', href='basePage.css', type='text/css')
+	link(rel='stylesheet', href='languageDisplay.css', type='text/css')
+	link(rel='stylesheet', href='editMode.css', type='text/css')
+	link(rel='stylesheet', href=templateSpecificCSS, type='text/css')
+	link(rel='stylesheet', href='file://..\customCollectionStyles.css', type='text/css')
+
+//- Gives an A5Portrait page
+
+mixin pageChoice
+	.bloom-page.bloom-combinedPage.A5Portrait.bloom-monolingual(data-page='extra',class=attributes.class)
+		block
+
 mixin shellField(placeholder)
 	.bloom-translationGroup(class=attributes.class, data-placeholder=placeholder)
 		.bloom-content1.bloom-editable(data-placeholder=placeholder, contenteditable="true")
+
+
+mixin monoField(language, dataBookName, placeholder)
+	div.bloom-editable(class=attributes.class, placeholder=placeholder, lang=language, contenteditable="true")
 
 //- These are useful for front-back matter that will never be translated.
 //- When used in frontMatter, the dataBookName is mandatory.
@@ -15,6 +33,7 @@ mixin monoMetaField(language, dataBookName, placeholder)
 mixin shellImage
 	.bloom-imageContainer(class=attributes.class)
 		img(src="placeHolder.png", width=attributes.initialImageWidth)
+		block
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
 mixin shellGrid(rows, columns)

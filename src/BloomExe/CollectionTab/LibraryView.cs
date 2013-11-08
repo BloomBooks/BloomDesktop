@@ -76,7 +76,17 @@ namespace Bloom.CollectionTab
 
 		public string HelpTopicUrl
 		{
-			get { return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collections_tasks_overview.htm"; }
+			get
+			{
+				if (_model.IsShellProject)
+				{
+					return "/Tasks/Source_Collection_tasks/Source_Collection_tasks_overview.htm";
+				}
+				else
+				{
+					return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collection_tasks_overview.htm";
+				}
+			}
 		}
 
 		public Control TopBarControl
