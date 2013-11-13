@@ -10,7 +10,7 @@ namespace Bloom.Book
 	{
 		public DataSet()
 		{
-			WritingSystemCodes = new Dictionary<string, string>();
+			WritingSystemAliases = new Dictionary<string, string>();
 			TextVariables = new Dictionary<string, NamedMutliLingualValue>();
 		}
 
@@ -20,7 +20,7 @@ namespace Bloom.Book
 		///
 		/// Values in use currently are: "V", "N1", "N2"
 		/// </summary>
-		public Dictionary<string, string> WritingSystemCodes { get; private set; }
+		public Dictionary<string, string> WritingSystemAliases { get; private set; }
 
 		public Dictionary<string, NamedMutliLingualValue> TextVariables { get; private set; }
 
@@ -46,10 +46,19 @@ namespace Bloom.Book
 			{
 				text = new MultiTextBase();
 			}
-			text.SetAlternative(writingSystemId, value);
+			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value);
 			TextVariables.Remove(key);
 			if(text.Count>0)
 				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+		}
+
+		public string DealiasWritingSystemId(string writingSystemId)
+		{
+			if (WritingSystemAliases.ContainsKey(writingSystemId))
+			{
+				writingSystemId = WritingSystemAliases[writingSystemId]; // e.g. convert "V" to the Vernacular
+			}
+			return writingSystemId;
 		}
 
 		public void AddLanguageString(string key, string value, string writingSystemId, bool isCollectionValue)
