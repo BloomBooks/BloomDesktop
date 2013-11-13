@@ -64,6 +64,11 @@ namespace Bloom.SendReceive
 			if (SendReceiveDisabled)
 				return; //we don't do chorus on our source tree
 
+
+            //this gets used in a string format somewhere down the line here:
+            
+            message = message.Replace("{", "{{").Replace("}", "}}");
+
 			_chorusSystem.AsyncLocalCheckIn(BloomLabelForCheckins + " "+ message,
 			                                (result) =>
 			                                	{
