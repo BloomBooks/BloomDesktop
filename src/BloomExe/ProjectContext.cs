@@ -217,7 +217,7 @@ namespace Bloom
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter"); 
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 
-			yield return templatesDir;  //currently, this is where factory-xmatter.htm lives
+			yield return templatesDir; 
 
 			foreach (var templateDir in Directory.GetDirectories(templatesDir))
 			{
@@ -245,7 +245,13 @@ namespace Bloom
 				foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
 				{
 					yield return dir;
-				}
+
+                    //more likely, what we're looking for will be found in the book folders of the collection
+                    foreach (var templateDirectory in Directory.GetDirectories(dir))
+                    {
+                        yield return templateDirectory;
+                    }
+                }
 
 				// add those directories from collections which are just pointed to by shortcuts
 				foreach (var shortcut in Directory.GetFiles(InstalledCollectionsDirectory, "*.lnk", SearchOption.TopDirectoryOnly))
