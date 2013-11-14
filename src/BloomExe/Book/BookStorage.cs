@@ -596,7 +596,15 @@ namespace Bloom.Book
 
 		private void UpdateIfNewer(string fileName, string factoryPath = "")
         {
-            string documentPath="notSet";
+		    if (!IsUserFolder)
+		    {
+		        if (fileName.ToLower().Contains("xmatter") && ! fileName.ToLower().StartsWith("factory-xmatter"))
+		        {
+		            return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
+		        }
+		    }
+
+		    string documentPath="notSet";
             try
             {
                 if(string.IsNullOrEmpty(factoryPath))
@@ -645,7 +653,15 @@ namespace Bloom.Book
             }
         }
 
-		// NB: this knows nothing of book-specific css's... even "basic book.css"
+        /// <summary>
+        /// user folder as opposed to our program installation folder or some template
+        /// </summary>
+        private bool IsUserFolder
+        {
+            get { return _folderPath.Contains(_collectionSettings.FolderPath); }
+        }
+
+        // NB: this knows nothing of book-specific css's... even "basic book.css"
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
