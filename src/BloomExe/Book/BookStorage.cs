@@ -596,6 +596,14 @@ namespace Bloom.Book
 
 		private void UpdateIfNewer(string fileName, string factoryPath = "")
 		{
+			if (!IsUserFolder)
+			{
+				if (fileName.ToLower().Contains("xmatter") && ! fileName.ToLower().StartsWith("factory-xmatter"))
+				{
+					return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
+				}
+			}
+
 			string documentPath="notSet";
 			try
 			{
@@ -643,6 +651,14 @@ namespace Bloom.Book
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", factoryPath,documentPath);
 			}
+		}
+
+		/// <summary>
+		/// user folder as opposed to our program installation folder or some template
+		/// </summary>
+		private bool IsUserFolder
+		{
+			get { return _folderPath.Contains(_collectionSettings.FolderPath); }
 		}
 
 		// NB: this knows nothing of book-specific css's... even "basic book.css"
