@@ -71,7 +71,6 @@
     <Content Include="lib\jasmine\jasmine-1.1.0.js" />
     <Content Include="lib\jasmine\JasmineAdapter-1.1.2.js" />
     <Content Include="lib\jquery-1.10.1.js" />
-    <Content Include="lib\jquery-1.9.1.js" />
     <Content Include="lib\jquery-ui.css" />
     <Content Include="lib\jquery-ui.js" />
     <Content Include="lib\jquery.d.ts" />
@@ -201,9 +200,6 @@
   <ItemGroup>
     <Content Include="bookEdit\img\imageMetaDataButton.svg" />
     <Content Include="bookEdit\img\imageMissingMetaData.svg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="lib\jquery.qtip.css.orig" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bookPreview\html\" />
