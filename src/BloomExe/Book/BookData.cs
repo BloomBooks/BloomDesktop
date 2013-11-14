@@ -270,8 +270,8 @@ namespace Bloom.Book
 		{
 			var data = new DataSet();
 
-			data.WritingSystemCodes.Add("N1", collectionSettings.Language2Iso639Code);
-			data.WritingSystemCodes.Add("N2", collectionSettings.Language3Iso639Code);
+			data.WritingSystemAliases.Add("N1", collectionSettings.Language2Iso639Code);
+			data.WritingSystemAliases.Add("N2", collectionSettings.Language3Iso639Code);
 
 //            if (makeGeneric)
 //            {
@@ -289,7 +289,7 @@ namespace Bloom.Book
 //            }
 //            else
 			{
-				data.WritingSystemCodes.Add("V", collectionSettings.Language1Iso639Code);
+				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
 									   collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code), "*", true);
@@ -433,7 +433,7 @@ namespace Bloom.Book
 						{
 							string lang = node.GetOptionalStringAttribute("lang", "*");
 							if (lang == "N1" || lang == "N2" || lang == "V")
-								lang = data.WritingSystemCodes[lang];
+								lang = data.WritingSystemAliases[lang];
 
 							//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
 							//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
@@ -462,12 +462,12 @@ namespace Bloom.Book
 									continue;
 
 								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-								if (data.WritingSystemCodes.Count != 0 && lang == data.WritingSystemCodes["N2"] &&
+								if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
 									s ==
 									data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
 																										  {
 																											  data.
-																												  WritingSystemCodes
+																												  WritingSystemAliases
 																												  ["N1"]
 																											  , "*"
 																										  }))
@@ -671,7 +671,7 @@ namespace Bloom.Book
 
 		public Dictionary<string, string> GetWritingSystemCodes()
 		{
-			return _dataset.WritingSystemCodes;
+			return _dataset.WritingSystemAliases;
 		}
 
 		private static void SendDataToDebugConsole(DataSet data)
