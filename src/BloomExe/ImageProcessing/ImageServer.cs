@@ -44,13 +44,16 @@ namespace Bloom.ImageProcessing
 
 		public void StartWithSetupIfNeeded()
 		{
+			Exception error=null;
+
 			bool didStart = false;
 			try
 			{
 				didStart = TryStart();
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				error = e;
 			}
 			if (didStart)
 				return;
@@ -60,13 +63,14 @@ namespace Bloom.ImageProcessing
 			{
 				didStart = TryStart();
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				error = e;
 			}
 
 			if(!didStart)
 			{
-				var e = new ApplicationException("Could not start ImageServer");//passing this in will enable the details button
+				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
 				ErrorReport.NotifyUserOfProblem(e, "What Happened\r\nBloom could not start its image server, which keeps hi-res images from chewing up memory. You will still be able to work, but Bloom will take more memory, and hi-res images may not always show.\r\n\r\nWhat caused this?\r\nProbably Bloom does not know how to get your specific Windows operating system to allow its image server to run. \r\n\r\n What can you do?\r\nClick 'Details' and report the problem to the developers.");
 			}
 		}
