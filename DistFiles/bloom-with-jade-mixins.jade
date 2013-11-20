@@ -21,8 +21,14 @@ mixin styleSheets(templateSpecificCSS)
 	+cssLink(templateSpecificCSS)
 	+cssLink('file://..\customCollectionStyles')
 
-//- Gives an A5Portrait page
+//- Uncomment to test above mixin
+	h1 Test styleSheets mixin
+		+styleSheets('mine')
 
+mixin dataBookTitle(langAbbrev, title)
+	div(data-book='bookTitle', lang=langAbbrev)=title
+
+//- Gives an A5Portrait page
 mixin pageChoice
 	.bloom-page.bloom-combinedPage.A5Portrait.bloom-monolingual(data-page='extra',class=attributes.class)
 		block

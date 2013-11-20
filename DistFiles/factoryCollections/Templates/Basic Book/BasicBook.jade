@@ -1,7 +1,8 @@
 doctype html
-// Created by Gordon on 11/20/13.
+// Converted to Jade by Gordon on 11/20/13.
 
 include ../../../bloom-with-jade-mixins
+
 html
 	head
 		+metadata('My Book', 'yes', '056B6F11-4A6C-4942-B2BC-8861E62B03B3', 'Basic Book')
@@ -14,4 +15,52 @@ html
 		+cssLink('previewMode')
 	body
 		div#bloomDataDiv
-		.bloom-page.numberedPage.imageOnTop.bloom-combinedPage.A5Portrait(data-page='extra', title='foo', id='5dcd48df-e9ab-4a07-afd4-6a24d0398382')
+			+dataBookTitle('en', 'Basic Book')
+			+dataBookTitle('tpi', 'Nupela Buk')
+			+dataBookTitle('id', 'Buku Dasar')
+		.bloom-page.numberedPage.imageOnTop.bloom-combinedPage.A5Portrait(
+				data-page='extra', title='foo', id='5dcd48df-e9ab-4a07-afd4-6a24d0398382')
+			.pageLabel(lang='en') Basic Text & Image
+			.marginBox
+				.bloom-imageContainer.bloom-leadingElement
+					img(alt='missing', src='placeHolder.png')
+				.bloom-translationGroup.bloom-trailingElement.default-style
+					.bloom-editable
+		.bloom-page.numberedPage.imageInMiddle.bloom-combinedPage.A5Portrait(
+				data-page='extra', id='5dcd48df-e9ab-4a07-afd4-6a24d0398383')
+			.pageLabel(lang='en') Image in Middle
+			.marginBox
+				.top.bloom-translationGroup.bloom-trailingElement
+					.bloom-editable
+				.bloom-imageContainer.bloom-leadingElement
+					img(alt='missing', src='placeHolder.png')
+				.bottom.bloom-translationGroup.bloom-trailingElement.default-style
+					.bloom-editable
+		.bloom-page.numberedPage.imageOnBottom.bloom-combinedPage.A5Portrait(
+				data-page='extra', id='5dcd48df-e9ab-4a07-afd4-6a24d0398384')
+			.pageLabel(lang='en') Image On Bottom
+			.marginBox
+				.bloom-translationGroup.bloom-trailingElement.default-style
+					.bloom-editable
+				.bloom-imageContainer.bloom-leadingElement
+					img(alt='missing', src='placeHolder.png')
+		.bloom-page.numberedPage.imageWholePage.A5Portrait(
+				data-page='extra', id='5dcd48df-e9ab-4a07-afd4-6a24d0398385')
+			.pageLabel(lang='en') Just an Image
+			.marginBox
+			.bloom-imageContainer.bloom-leadingElement
+				img(alt='missing', src='placeHolder.png')
+		.bloom-page.numberedPage.textWholePage.A5Portrait(
+				data-page='extra', id='d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb')
+			.pageLabel(lang='en') Just Text
+			.marginBox
+				.bloom-translationGroup.bloom-centerVertically.default-style
+					.bloom-editable
+		.bloom-page.numberedPage.pictureAndWordPage.A5Portrait(
+				data-page='extra', id='FD115DFF-0415-4444-8E76-3D2A18DBBD27')
+			.pageLabel(lang='en') Picture & Word
+			.marginBox
+				.bloom-imageContainer.bloom-leadingElement
+					img(alt='missing', src='placeHolder.png')
+				.bloom-translationGroup.bloom-trailingElement
+					.bloom-editable
