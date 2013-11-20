@@ -1,13 +1,25 @@
 //- NB: if you get the error : "You should not have jade tags with multiple attributes."
 //-	make sure the mixin name is spelled correctly and capitalized correctly.
 
+mixin metadata(defName, shellable, bookId, source)
+	meta(charset='UTF-8')
+	meta(name='defaultNameForDerivedBooks', content=defName)
+	meta(name='SuitableForMakingShells', content=shellable)
+	meta(name='bloomBookId', content=bookId)
+	meta(name='Generator', content='Bloom')
+	meta(name='BloomFormatVersion', content='0.5')
+	meta(name='pageTemplateSource', content=source)
+	title=source
+
+mixin cssLink(href)
+	link(rel='stylesheet', href=href+'.css', type='text/css')
 
 mixin styleSheets(templateSpecificCSS)
-	link(rel='stylesheet', href='basePage.css', type='text/css')
-	link(rel='stylesheet', href='languageDisplay.css', type='text/css')
-	link(rel='stylesheet', href='editMode.css', type='text/css')
-	link(rel='stylesheet', href=templateSpecificCSS, type='text/css')
-	link(rel='stylesheet', href='file://..\customCollectionStyles.css', type='text/css')
+	+cssLink('basePage')
+	+cssLink('languageDisplay')
+	+cssLink('editMode')
+	+cssLink(templateSpecificCSS)
+	+cssLink('file://..\customCollectionStyles')
 
 //- Gives an A5Portrait page
 
