@@ -15,17 +15,13 @@ html
 			+dataBookTitle('id', 'Buku Dasar')
 		+templatePage('5dcd48df-e9ab-4a07-afd4-6a24d0398382', 'Basic Text & Image')(class='imageOnTop A5Portrait', title='foo')
 			+imagePlaceholder
-			.bloom-translationGroup.bloom-trailingElement.default-style
-				.bloom-editable
+			+trailingTranslationGroup(class='default-style')
 		+templatePage('5dcd48df-e9ab-4a07-afd4-6a24d0398383', 'Image in Middle')(class='imageInMiddle A5Portrait')
-			.top.bloom-translationGroup.bloom-trailingElement
-				.bloom-editable
+			+trailingTranslationGroup(class='top')
 			+imagePlaceholder
-			.bloom-translationGroup.bloom-trailingElement.bottom.default-style
-				.bloom-editable
+			+trailingTranslationGroup(class='bottom default-style')
 		+templatePage('5dcd48df-e9ab-4a07-afd4-6a24d0398384', 'Image On Bottom')(class='imageOnBottom A5Portrait')
-			.bloom-translationGroup.bloom-trailingElement.default-style
-				.bloom-editable
+			+trailingTranslationGroup(class='default-style')
 			+imagePlaceholder
 		+numberedBloomPage('5dcd48df-e9ab-4a07-afd4-6a24d0398385', 'Just an Image')(class='imageWholePage A5Portrait')
 			+imagePlaceholder
@@ -34,5 +30,4 @@ html
 				.bloom-editable
 		+numberedBloomPage('FD115DFF-0415-4444-8E76-3D2A18DBBD27', 'Picture & Word')(class='pictureAndWordPage A5Portrait')
 			+imagePlaceholder
-			.bloom-translationGroup.bloom-trailingElement
-				.bloom-editable
+			+trailingTranslationGroup

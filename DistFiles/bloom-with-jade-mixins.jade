@@ -49,6 +49,12 @@ mixin pageChoice
 	.bloom-page.bloom-combinedPage.A5Portrait.bloom-monolingual(data-page='extra',class=attributes.class)
 		block
 
+//- Gives a Bloom translationGroup as a trailingElement
+mixin trailingTranslationGroup
+	.bloom-translationGroup.bloom-trailingElement(class=attributes.class)
+		.bloom-editable
+			block
+
 mixin shellField(placeholder)
 	.bloom-translationGroup(class=attributes.class, data-placeholder=placeholder)
 		.bloom-content1.bloom-editable(data-placeholder=placeholder, contenteditable="true")
