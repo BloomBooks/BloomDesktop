@@ -1,6 +1,5 @@
-# **License**
+Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
 
-Bloom is open source, using the [MIT License](http://sil.mit-license.org). It is Copyright SIL International.
 
 # Development Process
 
@@ -18,13 +17,9 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Source Code
 
-Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript. You will need Visual Studio 2010 SP1, or greater, to build it. The free Visual Studio Express version should be fine, but we don't test it.
-
-To get the source code, you'll need Mercurial. Windows users, install TortoiseHg. Then from a command line, go to where you keep your development projects, and give this command:
+Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript. You will need Visual Studio 2010 SP1, or greater, to build it. The free Visual Studio Express version should be fine, but we don't test it.
 `
-hg clone http://hg.palaso.org/bloom
-`
-You should now have a solution which you can build using any 2010 edition of Visual Studio 2010, including the free Express version. We could help you do it in VS 2008, if necessary.
+You'll need at least a 2010 edition of Visual Studio, including the free Express version.
 
 Now, what revision should you be on? If you're not familiar with DVCS (Distributed version control), this could be a big stumbling block. I hesitate to give advice in this document in case I forget to update it. But a reasonable start is to update to the tip revision, which is the most recent one that anyone has checked in, regardless of which branch it is on. To update to the tip, do:
 `
@@ -67,3 +62,7 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 # Testers
 
 Please see "Tips for Testing Palaso Software":https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit
+
+# **License**
+
+Bloom is open source, using the [MIT License](http://sil.mit-license.org). It is Copyright SIL International.
