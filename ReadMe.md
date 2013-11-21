@@ -1,6 +1,6 @@
 # **License**
 
-Bloom is open source, using the [MIT License](http://sil.mit-license.org).
+Bloom is open source, using the [MIT License](http://sil.mit-license.org). It is Copyright SIL International.
 
 # Development Process
 
@@ -63,4 +63,7 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 2) GeckoFX intended for that version of XulRunner
 3) Bloom source code which is expecting that same version of GeckoFX.
 
-&nbsp;
+
+# Testers
+
+Please see "Tips for Testing Palaso Software":https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit
