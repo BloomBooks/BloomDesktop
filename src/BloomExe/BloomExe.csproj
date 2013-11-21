@@ -28,8 +28,8 @@
     <Optimize>false</Optimize>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/home/richard/src/bloom/lib/xulrunner11" />
-        <Variable name="MOZ_LIBDIR" value="/home/richard/src/bloom/lib/xulrunner11" />
+        <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:../../lib/xulrunner11" />
+        <Variable name="MOZ_LIBDIR" value="../../lib/xulrunner11" />
         <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/:/usr/lib/cli/gtk-sharp-2.0:/usr/lib/cli/atk-sharp-2.0:/usr/lib/cli/glib-sharp-2.0" />
         <Variable name="LD_PRELOAD" value="./jemallocfix.so" />
         <Variable name="DISPLAY" value=":1" />
@@ -66,10 +66,6 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AeroWizard, Version=1.2.6.19328, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
-    </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\..\chorus\output\DebugMono\Chorus.exe</HintPath>
     </Reference>
@@ -87,14 +83,14 @@
       <HintPath>..\..\..\chorus\output\DebugMono\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-     <Reference Include="Analytics.NET">
+    <Reference Include="Analytics.NET">
       <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
     </Reference>
     <Reference Include="DesktopAnalytics">
       <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\output\Debug\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>
@@ -143,6 +139,9 @@
       <HintPath>..\..\..\palaso\output\DebugMono\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="AeroWizard">
+      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
