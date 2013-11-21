@@ -28,6 +28,22 @@ mixin styleSheets(templateSpecificCSS)
 mixin dataBookTitle(langAbbrev, title)
 	div(data-book='bookTitle', lang=langAbbrev)=title
 
+//- Extra numbered template page
+mixin numberedBloomPage(idGuid, title)
+	.bloom-page.numberedPage(class=attributes.class, title=attributes.title, data-page='extra', id=idGuid)
+		.pageLabel(lang='en')=title
+		.marginBox
+			block
+
+//- Extra combined template page
+mixin templatePage(idGuid, title)
+	+numberedBloomPage(idGuid, title)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
+		block
+//-
+	.bloom-page.bloom-combinedPage.numberedPage(class=attributes.class, data-page='extra', title='foo', id=idGuid)
+		.pageLabel(lang='en')=title
+		block
+
 //- Gives an A5Portrait page
 mixin pageChoice
 	.bloom-page.bloom-combinedPage.A5Portrait.bloom-monolingual(data-page='extra',class=attributes.class)
@@ -50,8 +66,12 @@ mixin monoMetaField(language, dataBookName, placeholder)
 //- Will show a placeholder and allow the user to change the image
 mixin shellImage
 	.bloom-imageContainer(class=attributes.class)
-		img(src="placeHolder.png", width=attributes.initialImageWidth)
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt=attributes.alt)
 		block
+
+//- Will show a placeholder and allow the user to change the image, including 'missing' alt text
+mixin imagePlaceholder
+	+shellImage(class='bloom-leadingElement', alt='missing')
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
 mixin shellGrid(rows, columns)
