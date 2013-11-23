@@ -317,7 +317,7 @@
     <Compile Include="ImageProcessing\ImageServer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="WebLibraryIntegration\S3Transfer.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
     </Compile>

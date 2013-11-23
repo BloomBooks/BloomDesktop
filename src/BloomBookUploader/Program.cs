@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.WebLibraryIntegration;
 
 namespace BloomBookUploader
 {
@@ -25,7 +26,7 @@ namespace BloomBookUploader
                 return 3;
             }
 
-            var t = new Bloom.WebLibraryIntegration.S3Transfer();
+            var t = new Bloom.WebLibraryIntegration.BloomS3Client(BloomS3Client.SandboxBucketName);
             t.UploadBook(Guid.NewGuid().ToString(), arguments[0]);
 
             return 0;
