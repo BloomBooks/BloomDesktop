@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -11,11 +12,25 @@ namespace BloomBookDownloader
 		/// The main entry point for the application.
 		/// </summary>
 		[STAThread]
-		static void Main()
+		static int Main(string[] arguments)
 		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new Form1());
+			if (arguments.Length != 1)
+			{
+				Console.WriteLine("Usage: BloomBookDownloader keyOnAmazonS3");
+				return 1;
+			}
+
+			var t = new Bloom.WebLibraryIntegration.BloomS3Client();
+
+			var destinationPath = Path.Combine(Path.GetTempPath(), "BloomBookDownloader");
+			if (!Directory.Exists(destinationPath))
+			{
+				Directory.CreateDirectory(destinationPath);
+			}
+
+			t.DownloadBook(arguments[0], destinationPath);
+
+			return 0;
 		}
 	}
 }
