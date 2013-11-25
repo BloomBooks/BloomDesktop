@@ -65,8 +65,8 @@ namespace Bloom.Collection
 		/// can be used whether the library exists already, or not
 		/// </summary>
 		public CollectionSettings(string desiredOrExistingSettingsFilePath)
+			:this()
 		{
-			AllowNewBooks = true;
 			SettingsFilePath = desiredOrExistingSettingsFilePath;
 			CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);

@@ -12,6 +12,7 @@ using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
 using Palaso.Xml;
+using TempFile = BloomTemp.TempFile;
 
 namespace BloomTests.Book
 {
@@ -51,9 +52,12 @@ namespace BloomTests.Book
 //												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
 //			                               	});
 
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), _librarySettings.Object);
-			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+			//review
+			var collectionSettings = new CollectionSettings(Path.Combine(_projectFolder.Path, "test.bloomCollection"));
+
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings.Object);
+			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 		}
 
 		[TearDown]
