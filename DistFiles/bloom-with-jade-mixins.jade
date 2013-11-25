@@ -3,13 +3,16 @@
 
 //- All Bloom templates should use this mixin, so that when the format version
 //- changes we can change the version number in one place
-mixin bloom-standard-metadata()
+mixin bloom-standard-metadata
 	meta(charset='UTF-8')
 	meta(name='Generator', content='Bloom')
 	meta(name='BloomFormatVersion', content='0.5')
 
 mixin cssLink(href)
 	link(rel='stylesheet', href=href+'.css', type='text/css')
+
+mixin scriptLink(href)
+	script(type='text/javascript', src=href+'.js')
 
 mixin styleSheets(templateSpecificCSS)
 	+cssLink('basePage')
@@ -24,6 +27,12 @@ mixin styleSheets(templateSpecificCSS)
 
 mixin bloom-title(langAbbrev, title)
 	div(data-book='bookTitle', lang=langAbbrev)=title
+
+mixin bloom-topic(langAbbrev, topic)
+	div(data-book='topic', lang=langAbbrev)=topic
+
+mixin bloom-CCHyperlink
+	a(rel='license', href='http://creativecommons.org/licenses/by/3.0/') Creative Commons Attribution
 
 //- Extra template page (numbered)
 mixin bloom-template-page(idGuid, title)
