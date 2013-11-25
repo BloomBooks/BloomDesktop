@@ -487,7 +487,7 @@ namespace Bloom.Book
     	{
             progress.WriteStatus("Gathering Data...");
 
-			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());

@@ -44,18 +44,14 @@ namespace BloomTests.Book
 	    [Test]
         public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
         {
-            File.WriteAllText(_bookPath, "<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
-            storage.Save();
+            GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
              AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
         }
 
         [Test]
         public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
         {
-            File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
-            storage.Save();
+            GetInitialStorageWithCustomHtml("<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
             AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
             AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
         }
@@ -64,19 +60,26 @@ namespace BloomTests.Book
 //        [Test]
 //        public void Delete_IsDeleted()
 //        {
-//            BookStorage storage = GetInitialStorage();
+//            BookStorage storage = GetInitialStorageWithCustomHtml();
 //            Assert.IsTrue(Directory.Exists(_folder.Path)); 
 //            Assert.IsTrue(storage.DeleteBook());
 //            Thread.Sleep(2000);
 //            Assert.IsFalse(Directory.Exists(_folder.Path));
 //        }
 
+        private BookStorage GetInitialStorageWithCustomHtml(string html)
+        {
+            File.WriteAllText(_bookPath, html);
+            var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+            var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+            storage.Save();
+            return storage;
+        }
+
 	    private BookStorage GetInitialStorage()
 	    {
-	        File.WriteAllText(_bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
-	        storage.Save();
-	        return storage;
+	        return GetInitialStorageWithCustomHtml("<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 	    }
 
 		private BookStorage GetInitialStorageWithCustomHead(string head)
@@ -91,7 +94,9 @@ namespace BloomTests.Book
         {
             var bookPath = _folder.Combine(bookName + ".htm");
             File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
+            var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+            var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
             storage.Save();
             return storage;
         }
@@ -116,9 +121,13 @@ namespace BloomTests.Book
             using (var y = new TemporaryFolder(_folder, "foo1"))
             using (var z = new TemporaryFolder(_folder, "foo2"))
             {
+
                 File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-				var storage = new BookStorage(original.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
-            storage.Save();
+
+                var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection");
+                var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+                var storage = new BookStorage(original.Path, _fileLocator, new BookRenamedEvent(), collectionSettings); 
+                storage.Save();
                 
                 Directory.Delete(z.Path);
                 //so, we ask for "foo", but should get "foo2", because there is already a foo and foo1
