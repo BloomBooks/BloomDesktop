@@ -22,13 +22,13 @@
 	height: 269.3mm;
 }
 /*....Title*/
-.bloom-translationGroup.coverTitle
+.coverTitle-style
 {
 	width: 100%;
 	text-align: center;
 }
 /*....................National 1*/
-.A5Portrait.cover .bookTitle.bloom-contentNational1
+.A5Portrait.cover .bookTitle-style.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 1.3cm;
@@ -39,7 +39,7 @@
 	left: 0px;
 	top: 130px;
 }
-.B5Portrait.cover .bookTitle.bloom-contentNational1
+.B5Portrait.cover .bookTitle-style.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 1.3cm;
@@ -50,7 +50,7 @@
 	left: 0px;
 	top: 130px;
 }
-.A5Landscape.cover .bookTitle.bloom-contentNational1
+.A5Landscape.cover .bookTitle-style.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 0.8cm;

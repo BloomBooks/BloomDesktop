@@ -263,7 +263,7 @@
 			this._firstName.TabIndex = 0;
 			this._firstName.TextChanged += new System.EventHandler(this.OnTextChanged);
 			// 
-			// _sirName
+			// _surname
 			// 
 			this._surname.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._surname, null);
