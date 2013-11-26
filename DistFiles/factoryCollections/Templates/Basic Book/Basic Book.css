@@ -42,19 +42,39 @@ BODY
 {
 }
 /*+}*/
-/*The following is json, read by Bloom to get size/orientation options
-STARTLAYOUTS{"layouts": [{"A5Portrait" : { "Styles": ["Default", "BottomAlign"]}},{"A4Portrait" : { "Styles": ["Default"]}},
-{"A4Landscape" : { "Styles": ["Default", "SideBySide", "SplitAcrossPages"]}}]}ENDLAYOUTS
+/*The following is json. Bloom reads it in order to know what size/orientation options this stylesheet supports
+STARTLAYOUTS
+{
+   "layouts":[
+      {
+         "A5Portrait":{
+            "Styles":[
+               "Default",
+               "BottomAlign"
+            ]
+         }
+      },
+      {
+         "A4Portrait":{
+            "Styles":[
+               "Default"
+            ]
+         }
+      },
+      {
+         "A4Landscape":{
+            "Styles":[
+               "Default",
+               "SideBySide",
+               "SplitAcrossPages"
+            ]
+         }
+      }
+   ]
+}
+ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
-#bloom-supportedPageConfigurations
-{
-	content: "A5Portrait, A4Landscape (Layout: 'DefaultLayout SideBySideLayout')";
-}
-/*This is a dummy rule used to transmit to bloom what alternative layouts this stylesheet offers*/
-#bloom-a4landscape-alternatives
-{
-	content: Default, SideBySide;
-}
+
 /*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
 generic*/
 TEXTAREA

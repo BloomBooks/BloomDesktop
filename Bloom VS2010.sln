@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistFiles", "DistFiles", "{
 		DistFiles\ReleaseNotes.md = DistFiles\ReleaseNotes.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomBookUploader", "src\BloomBookUploader\BloomBookUploader.csproj", "{028817D6-1CC9-4879-89D7-C29BEA323235}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomBookDownloader", "src\BloomBookDownloader\BloomBookDownloader.csproj", "{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
