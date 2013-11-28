@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -33,7 +34,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 
-		private RestRequest GetRequest(string path)
+		private RestRequest MakeGetRequest(string path)
 		{
 			// client.Authenticator = new HttpBasicAuthenticator(username, password);
 			var request = new RestRequest(path, Method.GET);
@@ -43,10 +44,21 @@ namespace Bloom.WebLibraryIntegration
 				request.AddHeader("X-Parse-Session-Token", _sessionToken);
 			return request;
 		}
+		private RestRequest MakePostRequest(string path)
+		{
+			// client.Authenticator = new HttpBasicAuthenticator(username, password);
+			var request = new RestRequest(path, Method.POST);
+			request.RequestFormat = DataFormat.Json;
+			request.AddHeader("X-Parse-Application-Id", "R6qNTeumQXjJCMutAJYAwPtip1qBulkFyLefkCE5");
+			request.AddHeader("X-Parse-REST-API-Key", _apiKey);
+			if (!string.IsNullOrEmpty(_sessionToken))
+				request.AddHeader("X-Parse-Session-Token", _sessionToken);
+			return request;
+		}
 
 		public int GetBookCount()
 		{
-			var request = GetRequest("classes/books");
+			var request = MakeGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
 			var response = _client.Execute(request);
@@ -54,16 +66,48 @@ namespace Bloom.WebLibraryIntegration
 			return dy.count;
 		}
 
+		public IRestResponse GetBookRecords(string query)
+		{
+			var request = MakeGetRequest("classes/books");
+			request.AddParameter("where",query, ParameterType.QueryString);
+			return _client.Execute(request);
+		}
+
+		public dynamic GetSingleBookRecord(string bookInstanceId)
+		{
+			var response= GetBookRecords("{\"bookInstanceId\":\"" + bookInstanceId + "\"}");
+			if (response.StatusCode != HttpStatusCode.OK)
+				return null;
+
+			dynamic json = JObject.Parse(response.Content);
+			if (json.results.Count == 0)
+				return null;
+			return json.results[0];
+		}
+
+
 		public bool LogIn(string account, string password)
 		{
 			_sessionToken = String.Empty;
-			var request = GetRequest("login");
+			var request = MakeGetRequest("login");
 			request.AddParameter("username", account);
 			request.AddParameter("password", password);
 			var response = _client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
 			return LoggedIn;
+		}
+
+		public IRestResponse CreateBookRecord(string metadataJson)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException();
+			var request = MakePostRequest("classes/books");
+			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
+			var response = _client.Execute(request);
+			if(response.StatusCode!=HttpStatusCode.Created)
+				throw new ApplicationException(response.StatusDescription+" "+response.Content);
+			return response;
 		}
 	}
 }
