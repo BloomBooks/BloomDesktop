@@ -134,7 +134,7 @@ namespace Bloom
 
 				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>(), c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
+				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
 				const int kListViewIconHeightAndSize = 70;
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
@@ -193,9 +193,18 @@ namespace Bloom
 			});
 
 		}
-		public static IEnumerable<string> GetFileLocations()
+
+
+		/// <summary>
+		/// Give the locations of the bedrock files/folders that come with Bloom. These will have priority
+		/// </summary>
+		public static IEnumerable<string> GetFactoryFileLocations()
 		{
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));//hack to get the distfiles folder itself
+			//bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
+
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+				//hack to get the distfiles folder itself
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
@@ -207,7 +216,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
+
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
 
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
@@ -225,14 +234,20 @@ namespace Bloom
 			}
 
 			yield return FactoryCollectionsDirectory;
-			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
+		}
 
+		/// <summary>
+		/// Give the locations of files/folders that the user has installed (plus sample shells)
+		/// </summary>
+		public static IEnumerable<string> GetFoundFileLocations()
+		{
+			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
 			foreach (var dir in Directory.GetDirectories(samplesDir))
 			{
 				yield return dir;
 			}
 
-			//TODO: This is not going to cut it. The intent is to use the versino of a css from
+			//Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
 			//the template directory, to aid the template developer (he/she will want to make tweaks in the
 			//original, not the copies with sample data). But this is very blunt; we're throwing in every
 			//template we can find; so the code which uses this big pot could easily link to the wrong thing
