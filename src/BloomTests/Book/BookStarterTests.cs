@@ -35,14 +35,13 @@ namespace BloomTests.Book
 			_librarySettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
 			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory"); 
 			ErrorReport.IsOkToInteractWithUser = false;
-			_fileLocator = new FileLocator(new string[]{});
-
-            _projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
-			foreach (var location in ProjectContext.GetFileLocations())
-			{
-				_fileLocator.AddPath(location);
-			}
+            _projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection"); 
             var collectionSettings = new CollectionSettings(Path.Combine(_projectFolder.Path, "test.bloomCollection"));
+
+            var xmatterFinder = new XMatterPackFinder(new []{FileLocator.GetDirectoryDistributedWithApplication("xMatter")});
+
+            _fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations());
+
 
             _starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings.Object); 
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
