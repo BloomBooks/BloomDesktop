@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.WebLibraryIntegration;
 
 namespace BloomBookDownloader
 {
@@ -20,7 +21,7 @@ namespace BloomBookDownloader
                 return 1;
             }
 
-            var t = new Bloom.WebLibraryIntegration.BloomS3Client();
+            var t = new Bloom.WebLibraryIntegration.BloomS3Client(BloomS3Client.SandboxBucketName);
 
             var destinationPath = Path.Combine(Path.GetTempPath(), "BloomBookDownloader");
             if (!Directory.Exists(destinationPath))

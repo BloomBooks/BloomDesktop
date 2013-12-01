@@ -128,9 +128,9 @@ namespace Bloom.Book
             foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
             {
                 MakeElementWithLanguageForOneGroup(groupElement, isoCode, "*");
-                //remove any elements in teh translationgroup which don't have a lang
-                foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang)]"))
-                {
+                //remove any elements in the translationgroup which don't have a lang (but ignore any label elements, which we're using for annotating groups)
+                foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang) and not(self::label)]"))
+                    {
                     elementWithoutLanguage.ParentNode.RemoveChild(elementWithoutLanguage);
                 }
             }
@@ -164,12 +164,15 @@ namespace Bloom.Book
         /// </summary>
         private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode, string elementTag)
         {
-            XmlNodeList editableElementsWithinTheIndicatedParagraph = groupElement.SafeSelectNodes(elementTag);
+            //<label>s are annotations on the translation, group, we don't want to mess with them here.
+            //the caller at the moment is using '*' for element, so it takes this xpath to filter them out...
+            XmlNodeList editableElementsWithinTheIndicatedElement = groupElement.SafeSelectNodes(elementTag+"[not(self::label)]");
+
 
             //true, this is a weird situation...			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
             //				return;
 
-            var elementsAlreadyInThisLanguage = from XmlElement x in editableElementsWithinTheIndicatedParagraph
+            var elementsAlreadyInThisLanguage = from XmlElement x in editableElementsWithinTheIndicatedElement
                                                 where x.GetAttribute("lang") == isoCode
                                                 select x;
             if (elementsAlreadyInThisLanguage.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
@@ -178,7 +181,7 @@ namespace Bloom.Book
             if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
                 return;
 
-            XmlElement prototype = editableElementsWithinTheIndicatedParagraph[0] as XmlElement;
+            XmlElement prototype = editableElementsWithinTheIndicatedElement[0] as XmlElement;
             XmlElement newElementInThisLanguage;
             if (prototype == null)// note that we currently (version 1.0) get this when the prototype was the recommended lang='x'. Which is unfortunate, because it means the prototype is deleted by other code before we can copy it.
             {
