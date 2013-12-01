@@ -6,7 +6,7 @@
 mixin bloom-standard-metadata
 	meta(charset='UTF-8')
 	meta(name='Generator', content='Bloom')
-	meta(name='BloomFormatVersion', content='0.5')
+	meta(name='BloomFormatVersion', content='0.8')
 
 mixin cssLink(href)
 	link(rel='stylesheet', href=href+'.css', type='text/css')
@@ -14,7 +14,7 @@ mixin cssLink(href)
 mixin scriptLink(href)
 	script(type='text/javascript', src=href+'.js')
 
-mixin styleSheets(templateSpecificCSS)
+mixin stylesheets(templateSpecificCSS)
 	+cssLink('basePage')
 	+cssLink('languageDisplay')
 	+cssLink('editMode')
@@ -25,72 +25,103 @@ mixin styleSheets(templateSpecificCSS)
 	h1 Test styleSheets mixin
 		+styleSheets('mine')
 
-mixin bloom-title(langAbbrev, title)
-	div(data-book='bookTitle', lang=langAbbrev)=title
+// TODO: Move all this stuff out of here, it's too specific
 
-mixin bloom-topic(langAbbrev, topic)
-	div(data-book='topic', lang=langAbbrev)=topic
+	mixin bloom-title(langAbbrev, title)
+		div(data-book='bookTitle', lang=langAbbrev)=title
 
-mixin bloom-CCHyperlink
-	a(rel='license', href='http://creativecommons.org/licenses/by/3.0/') Creative Commons Attribution
+	mixin bloom-topic(langAbbrev, topic)
+		div(data-book='topic', lang=langAbbrev)=topic
+
+	mixin bloom-CCHyperlink
+		a(rel='license', href='http://creativecommons.org/licenses/by/3.0/') Creative Commons Attribution
+
+	//- TODO: move this to basic book, the use of this is too rare to be supported/documented here
+	mixin page-extra-combined(label)
+		+page(label)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
+			block
+
+mixin page-label(label)
+	.pageLabel(lang='en')=label
 
 //- Extra template page (numbered)
-mixin bloom-template-page(idGuid, title)
-	.bloom-page.numberedPage(class=attributes.class, title=attributes.title, data-page='extra', id=idGuid)
-		.pageLabel(lang='en')=title
+mixin page(label)
+	.bloom-page.numberedPage(class=attributes.class)
+		+page-label(label)
 		.marginBox
 			block
 
-//- Extra combined template page
-mixin bloom-template-combined(idGuid, title)
-	+bloom-template-page(idGuid, title)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
+//- page that the user can choose to add
+mixin page-extra(label)
+	+page(label)(data-page='extra', class=attributes.class)
 		block
 
-//- Gives an A5Portrait page
-mixin pageChoice
-	.bloom-page.bloom-combinedPage.A5Portrait.bloom-monolingual(data-page='extra', class=attributes.class)
-		block
+
 
 //- Gives a basic Bloom translationGroup
-mixin bloom-translation-group
-	.bloom-translationGroup(class=attributes.class)
-		.bloom-editable
-			block
+//mixin bloom-translation-group
+//	.bloom-translationGroup(class=attributes.class)
+//		.bloom-editable
+//			block
 
-mixin shellField(placeholder)
-	.bloom-translationGroup(class=attributes.class, data-placeholder=placeholder)
-		.bloom-content1.bloom-editable(data-placeholder=placeholder, contenteditable="true")
+//this should rarely if ever be used outside this mixin
+
+mixin editable
+	.bloom-content1.bloom-editable(contenteditable="true", attributes)
 
 
-mixin monoField(language, dataBookName, placeholder)
-	div.bloom-editable(class=attributes.class, placeholder=placeholder, lang=language, contenteditable="true")
+//- Example Usage with placeholder and bubble:
+	+shellField.question
+		label.bubble Don't forget to fill this in using {lang}
+		label.placeholder question
+mixin field
+	.bloom-translationGroup(attributes)
+		block //this is where <label>s go
+		+editable
 
+//- deprecated. Starting with version 1.1, we've changed how placeholders are handled
+mixin field-version1(placeholder)
+	+field(data-placeholder=placeholder)
+		+editable(data-placeholder=placeholder)
+
+
+//REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
+//use this for fields that are always in the specified language, no translation possible
+mixin field-mono-version1(language, placeholder)
+	+editable(placeholder=placeholder, lang=language,attributes=attributes)
+
+
+//REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
 //- These are useful for front-back matter that will never be translated.
 //- When used in frontMatter, the dataBookName is mandatory.
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
-mixin monoMetaField(language, dataBookName, placeholder)
-	div.bloom-editable(class=attributes.class, data-book=dataBookName, placeholder=placeholder, lang=language, contenteditable="true")
+mixin field-mono-meta-version1(language, dataBookName, placeholder)
+	+field-mono-version1(placeholder)(lang=language,data-book=dataBookName)
 
-//- Will show a placeholder and allow the user to change the image
-mixin shellImage
+//- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
+	.roundedBorder
+		+image.storyPicture
+			+shell-field.bloom-draggableLabel
+			+shell-field.bloom-draggableLabel
+mixin image
 	.bloom-imageContainer(class=attributes.class)
 		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
 		block
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
-mixin shellGrid(rows, columns)
+mixin grid(rows, columns)
 	table.bloomGrid(class=attributes.class)
 		- for (var r = 0; r < rows; r++)
 			tr
 				- for(var c = 0; c < columns; c++)
 					td
-						+shellField
+						+field-shell
 
 mixin repeat(count)
 	- for (var i=0;i<count;i++)
 		block
 
-mixin numberedList(count)
+mixin list-numbered(count)
 	ol(class=attributes.class)
 		- for (var i=0;i<count;i++)
 			li
