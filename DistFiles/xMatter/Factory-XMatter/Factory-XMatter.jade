@@ -1,0 +1,52 @@
+include ../../bloom-with-jade-mixins
+
+mixin field-common(key)
+	+field(data-book=key, attributes=atttributes)
+		block
+
+mixin field-xmatter(key)
+	+field-common(key)(attributes=atttributes)
+
+mixin image-common(key)
+	+image(data-book=key,attributes=attributes)
+		block
+
+// in xmatter, everything must be keyed
+mixin image-xmatter(key)
+	+image-common(key)(attributes=atttributes)
+
+mixin page-xmatter(label)
+	.bloom-page(data-page="required singleton", attributes=attributes)
+		+page-label(label)
+		.marginBox
+			block
+
+mixin page-cover(label)
+	+page-xmatter(label).cover.coverColor.bloom-frontMatter.A5Portrait(attributes)
+		block
+
+mixin chooser-topic
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()")
+		//REVIEW Make sure this is not visible even when the user isn't allowed to edit it.
+		label.bubble Click to choose topic
+		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='0.8')
+		title Factory-default Front & Back Matter
+		+stylesheets('Factory-XMatter.css')
+	body
+		+page-cover('Cover Page')#74731b2d-18b0-420f-ac96-6de20f659810
+			+field-xmatter('bookTitle').coverTitle-style
+				label Book title in {lang}
+			+image-xmatter('coverImage')
+			//'V' means this field is only available in the vernacular
+			+field-mono-version1('V','smallCoverCredits').smallCoverCredits.cover-credits-style
+			.coverBottomLangName
+				//lang='N1' means show the language name here using the national language
+				div(data-library="nameOfLanguage",lang="N1")
+					{Lang in N1}
+			+chooser-topic.coverBottomBookTopic
