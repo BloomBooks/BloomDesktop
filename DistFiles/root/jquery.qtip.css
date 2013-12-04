@@ -40,7 +40,7 @@ Core qTip styles*/
 	border: 1px solid #000001;
 	text-align: left;
 	word-wrap: break-word;
-	overflow: hidden;
+	overflow: visible;
 }
 .ui-tooltip-titlebar
 {
@@ -92,9 +92,9 @@ Core qTip styles*/
 	height: 14px;
 	text-align: left;
 	text-indent: 0;
-	font: normal bold 10px/13px Tahoma, sans-serif;
+	font: normal bold 10px / 13px Tahoma, sans-serif;
 	color: inherit;
-	background: transparent none no-repeat -100em -100em;
+	background: transparent no-repeat -100em -100em;
 }
 /*Applied to 'focused' tooltips e.g. most recently displayed/interacted with*/
 .ui-tooltip-focus
@@ -110,6 +110,9 @@ Core qTip styles*/
 	border-color: #F1D031;
 	background-color: #FFFFA3;
 	color: #000000;
+	overflow: visible;
+	/*Added by hatton; without this, in justext, the bubble is restricted to the height of the target div, which may be much shorter. That is done by qtip code somewhere, making an inilne style that limits the height.*/
+	height: auto !important;
 }
 .ui-tooltip-default .ui-tooltip-titlebar
 {
@@ -232,10 +235,12 @@ Core qTip styles*/
 {
 	border-color: #90D93F;
 	color: #000000;
+	overflow: visible;
 }
 .ui-tooltip-green .ui-tooltip-content
 {
 	background-color: #CAED9E;
+	overflow: visible;
 }
 .ui-tooltip-green .ui-tooltip-titlebar
 {
@@ -274,9 +279,9 @@ Core qTip styles*/
 	filter: progid:DXImageTransform.Microsoft.Shadow(Color='gray', Direction=135, Strength=3);
 	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Color='gray', Direction=135, Strength=3)";
 	-margin-bottom: -3px;
-/*IE6*/
+	/*IE6*/
 	margin-bottom: -3px;
-/*IE7*/
+	/*IE7*/
 }
 /*! Add rounded corners to your tooltips in: FF3+, Chrome 2+, Opera 10.6+, IE9+, Safari 2+*/
 .ui-tooltip-rounded, .ui-tooltip-rounded .ui-tooltip-content, .ui-tooltip-tipsy, .ui-tooltip-tipsy .ui-tooltip-content, .ui-tooltip-youtube, .ui-tooltip-youtube .ui-tooltip-content
@@ -307,9 +312,9 @@ Core qTip styles*/
 .ui-tooltip-youtube .ui-tooltip-titlebar, .ui-tooltip-youtube .ui-tooltip-content
 {
 	-margin-bottom: 0;
-/*IE6*/
+	/*IE6*/
 	margin-bottom: 0;
-/*IE7*/
+	/*IE7*/
 	background: transparent;
 	background: rgba(0, 0, 0, 0.85);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#D9000000,endColorstr=#D9000000);
@@ -402,9 +407,9 @@ Core qTip styles*/
 .ui-tooltip-tipsy .ui-tooltip-titlebar, .ui-tooltip-tipsy .ui-tooltip-content
 {
 	-margin-bottom: 0;
-/*IE6*/
+	/*IE6*/
 	margin-bottom: 0;
-/*IE7*/
+	/*IE7*/
 	background: transparent;
 	background: rgba(0, 0, 0, 0.87);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#D9000000,endColorstr=#D9000000);
