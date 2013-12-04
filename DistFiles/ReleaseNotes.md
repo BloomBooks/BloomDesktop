@@ -1,5 +1,6 @@
 ## 1.0.24 - 1 Nov 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
+* Fix height of green source text bubble on Just Text pages.
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab
