@@ -33,11 +33,14 @@ namespace BloomTests.Book
     	private TemporaryFolder _tempFolder;
     	private CollectionSettings _collectionSettings;
         private HtmlDom _bookDom;
+    	private BookMetaData _metadata;
 
         [SetUp]
         public void Setup()
         {
+			_metadata = new BookMetaData();
             _storage = new Moq.Mock<IBookStorage>();
+        	_storage.SetupGet(x => x.MetaData).Returns(_metadata);
             _storage.Setup(x => x.GetLooksOk()).Returns(true);
     	    _bookDom = new HtmlDom(GetThreePageDom());
             _storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
@@ -630,7 +633,111 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
 		}
 
+	    [Test]
+	    public void BringBookUpToDate_MovesMetaDataToJson()
+	    {
+			_bookDom = new HtmlDom(
+				@"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bookLineage' content='old rubbish' />
+					<meta name='bloomBookLineage' content='first,second' />
+					<meta name='bloomBookId' content='MyId' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
 
+			var book = CreateBook();
+
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bookLineage']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 0);
+
+			Assert.That(_metadata.id, Is.EqualTo("MyId"));
+			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("first,second"));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='pageTemplateSource' content='Basic Book' />
+					<meta name='bloomBookId' content='MyId' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.bloom.bookLineage = ""; // not sure if these could be left from another test
+			_metadata.id = "";
+			var book = CreateBook();
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 1);
+			//Assert.That(_metadata.bloom.bookLineage, Is.EqualTo(Bloom.Book.Book.kIdOfBasicBook));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_OnBookThatHasJsonLineage_DoesNotSetLineage()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='pageTemplateSource' content='Basic Book' />
+					<meta name='bloomBookId' content='MyId' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.bloom.bookLineage = "something current";
+			_metadata.id = "";
+			var book = CreateBook();
+
+			// 0 because it should NOT make the change.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
+			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("something current"));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_FixesBasicBookId()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bloomBookId' content='" + Bloom.Book.Book.kIdOfBasicBook + @"' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.id = "";
+			var book = CreateBook();
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
+		}
 
         [Test]
         public void Constructor_HadNoTitleButDOMHasItInADataItem_TitleElementIsSet()

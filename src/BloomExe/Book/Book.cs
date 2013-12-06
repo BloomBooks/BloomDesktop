@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml;
+using Amazon.EC2.Model;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
@@ -19,6 +20,7 @@ using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
+using Image = System.Drawing.Image;
 
 namespace Bloom.Book
 {
@@ -35,7 +37,7 @@ namespace Bloom.Book
     	private readonly BookRefreshEvent _bookRefreshEvent;
 	    private readonly IBookStorage _storage;
         private List<IPage> _pagesCache;
-		private const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
+		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
         public event EventHandler ContentsChanged;
 
@@ -80,7 +82,7 @@ namespace Bloom.Book
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
             }
 
-			FixBookIdAndLineageIfNeeded(_storage.Dom);
+			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");        
         }
@@ -511,14 +513,18 @@ namespace Bloom.Book
                 bd.SynchronizeDataItemsThroughoutDOM();
             }
 
-    		bookDOM.RenameMetaElement("bookLineage", "bloomBookLineage");
-    	}
+			bookDOM.RemoveMetaElement("bloomBookLineage", () => _storage.MetaData.bloom.bookLineage, val => _storage.MetaData.bloom.bookLineage = val);
+			bookDOM.RemoveMetaElement("bookLineage", () => _storage.MetaData.bloom.bookLineage, val => _storage.MetaData.bloom.bookLineage = val);
+			bookDOM.RemoveMetaElement("bloomBookId", () => _storage.MetaData.id, val => _storage.MetaData.id = val);
+		}
 
-	    private static void FixBookIdAndLineageIfNeeded(HtmlDom bookDOM)
+	    private void FixBookIdAndLineageIfNeeded()
 	    {
+	    	HtmlDom bookDOM = _storage.Dom;
 //at version 0.9.71, we introduced this book lineage for real. At that point almost all books were from Basic book, 
-		    //so let's get further evidence by looking at the page source and then fix the lineage 
-		    if (bookDOM.GetMetaValue("bloomBookLineage", "") == "")
+		    //so let's get further evidence by looking at the page source and then fix the lineage
+			// However, if we have json lineage, it is normal not to have it in HTML metadata.
+		    if (string.IsNullOrEmpty(_storage.MetaData.bloom.bookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
 			    if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
 			    {
 				    bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
@@ -956,7 +962,7 @@ namespace Bloom.Book
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
 		{
 			return new Page(this, pageNode, caption,
-//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
+//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
 //					//	(page => GetPageThumbNail()),
 						(page => FindPageDiv(page)));
 		}
