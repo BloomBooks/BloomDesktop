@@ -67,12 +67,13 @@ namespace BloomTests.Book
 //            Assert.IsFalse(Directory.Exists(_folder.Path));
 //        }
 
-		private BookStorage GetInitialStorageWithCustomHtml(string html)
+		private BookStorage GetInitialStorageWithCustomHtml(string html, BookMetaData metadata = null)
 		{
 			File.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+			storage.MetaData = metadata; // setting to null is harmless, will re-create on next request.
 			storage.Save();
 			return storage;
 		}
@@ -101,6 +102,19 @@ namespace BloomTests.Book
 			return storage;
 		}
 
+		[Test]
+		public void BookCreation_LoadsMetaDataFromJson()
+		{
+			var metadata = new BookMetaData();
+			metadata.id = "my nice id";
+			var oldStorage = GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>", metadata);
+			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
+			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+			var newStorage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+
+			Assert.That(newStorage.MetaData.id, Is.EqualTo("my nice id"));
+			// We could check other properties, but basically that would just be verifying the NewtonSoft serialization.
+		}
 
 		[Test]
 		public void SetBookName_EasyCase_ChangesFolderAndFileName()

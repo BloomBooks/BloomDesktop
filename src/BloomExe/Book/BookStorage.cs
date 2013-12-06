@@ -49,6 +49,8 @@ namespace Bloom.Book
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
+
+		BookMetaData MetaData { get; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -68,7 +70,19 @@ namespace Bloom.Book
 		private string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
+		private BookMetaData _metaData;
 		public event EventHandler FolderPathChanged;
+
+		public BookMetaData MetaData
+		{
+			get
+			{
+				if (_metaData == null)
+					_metaData = new BookMetaData();
+				return _metaData;
+			}
+			set { _metaData = value; }
+		}
 
 
 		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
@@ -76,12 +90,23 @@ namespace Bloom.Book
 		{
 			_folderPath = folderPath;
 
+			InitializeMetaData();
+
 			//we clone becuase we'll be customizing this for use by just this book
 			_fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 			_bookRenamedEvent = bookRenamedEvent;
 			_collectionSettings = collectionSettings;
 
 			ExpensiveInitialization();
+		}
+
+		private void InitializeMetaData()
+		{
+			var metaDataPath = MetaDataPath;
+			if (File.Exists(metaDataPath))
+				MetaData = BookMetaData.Deserialize(File.ReadAllText(metaDataPath));
+			else
+				MetaData = new BookMetaData();
 		}
 
 		public Book.BookType BookType
@@ -220,6 +245,8 @@ namespace Bloom.Book
 				{ Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null); }
 
 			}
+
+			File.WriteAllText(MetaDataPath, BookMetaData.Serialize(MetaData));
 		}
 
 		private void AssertIsAlreadyInitialized()
@@ -819,6 +846,16 @@ namespace Bloom.Book
 			}
 			return Path.Combine(parent, name + suffix);
 		}
+
+		public string MetaDataPath
+		{
+			get
+			{
+				return Path.Combine(_folderPath, MetaDataFileName);
+			}
+		}
+
+		public const string MetaDataFileName = "meta.json";
 	}
 
 }

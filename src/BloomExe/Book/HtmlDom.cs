@@ -359,16 +359,16 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Can be called without knowing that the old or new exists.
+		/// Can be called without knowing that the old exists.
 		/// If it already has the new, the old is just removed.
 		/// This is just for migration.
 		/// </summary>
-		public void RenameMetaElement(string oldName, string newName)
+		public void RemoveMetaElement(string oldName, Func<string> read, Action<string> write)
 		{
 			if (!HasMetaElement(oldName))
 				return;
 
-			if (HasMetaElement(newName))
+			if (!string.IsNullOrEmpty(read()))
 			{
 				RemoveMetaElement(oldName);
 				return;
@@ -376,7 +376,7 @@ namespace Bloom.Book
 
 			//ok, so we do have to transfer the value over
 
-			UpdateMetaElement(newName,GetMetaValue(oldName,""));
+			write(GetMetaValue(oldName,""));
 
 			//and remove any of the old name
 			foreach(XmlElement node in _dom.SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
