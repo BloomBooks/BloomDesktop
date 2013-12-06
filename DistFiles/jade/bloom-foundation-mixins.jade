@@ -79,12 +79,12 @@ mixin image
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
 mixin grid(rows, columns)
-	table.bloomGrid(class=attributes.class)
+	table.bloomGrid(attributes)
 		- for (var r = 0; r < rows; r++)
 			tr
 				- for(var c = 0; c < columns; c++)
 					td
-						+field-shell
+						+field
 
 //- ------------------------------------------------
 //- Mixins for Repetition
@@ -124,7 +124,7 @@ mixin field-mono-meta-version1(language, dataBookName, placeholder)
 
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
 //- The css for the page should then respond to the page having either bloom-combined (when not split) and
-//- either bloom-leadingPage or bloom-trailingPage (when split)
+//- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
 mixin  page-splittable-choice(englishLabel)
 	+page-choice(englishLabel)(class='bloom-combinedPage', attributes)
 		block
