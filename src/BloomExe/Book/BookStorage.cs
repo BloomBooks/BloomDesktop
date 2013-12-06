@@ -84,15 +84,15 @@ namespace Bloom.Book
 			ExpensiveInitialization();
 		}
 
+		//TODO: this is in conflict with the BookType on Book. Get rid of one of them (has trello card for v1.1)
 		public Book.BookType BookType
 		{
 			get
 			{
 				var pathToHtml = PathToExistingHtml;
-				if (pathToHtml.EndsWith("templatePages.htm"))
+				//as of v1.1. this is bogus; previously all templates were supposed to be named "templatePages.htm", so you could tell.
+				if (pathToHtml.EndsWith("Basic Book.htm"))
 					return Book.BookType.Template;
-				if (pathToHtml.EndsWith("shellPages.htm"))
-					return Book.BookType.Shell;
 
 				//directory name matches htm name
 				//                if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
