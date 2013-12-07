@@ -1,4 +1,4 @@
-include ../bloom-foundation-mixins
+include bloom-foundation-mixins
 
 //- -------------------------------------------------------------------------------
 //-	This first group of mixins should be used to construct the factory as well
@@ -29,7 +29,7 @@ mixin page-xmatter(label)
 		block
 
 mixin page-cover(label)
-	+page-xmatter(label).cover.coverColor.bloom-frontMatter.A5Portrait(attributes)
+	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
 		block
 
 mixin chooser-topic
@@ -41,7 +41,7 @@ mixin chooser-topic
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
 		span.bloom-doNotPublishIfParentOtherwiseEmpty
-			ISBN
+			| ISBN
 		div.bloom-editable(data-book="ISBN", lang="*")
 
 mixin field-acknowledgments-localizedVersion
