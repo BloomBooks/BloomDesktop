@@ -4,8 +4,12 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
+using Moq;
 using NUnit.Framework;
+using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
 
@@ -171,6 +175,41 @@ namespace BloomTests.Book
 			storage.SetBookName("/b?loom*test/");
 			Assert.IsTrue(Directory.Exists(_fixtureFolder.Combine("b loom test")));
 			Assert.IsTrue(File.Exists(_fixtureFolder.Combine("b loom test", "b loom test.htm")));
+		}
+
+		/// <summary>
+		/// This is really testing some Book.cs functionality, but it has to manipulate real files with a real storage,
+		/// so it seems to fit better here.
+		/// </summary>
+		[Test]
+		public void BringBookUpToDate_ConvertsTagsToJson()
+		{
+			var storage = GetInitialStorage();
+			var locator = (FileLocator)storage.GetFileLocator();
+			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+			locator.AddPath(root.CombineForPath("bookLayout"));
+			var folder = storage.FolderPath;
+			var tagsPath = Path.Combine(folder, "tags.txt");
+			var jsonPath = storage.MetaDataPath;
+			File.WriteAllText(tagsPath, "suitableForMakingShells\nexperimental\nfolio\n");
+			var collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
+				collectionSettings,
+				new Moq.Mock<HtmlThumbNailer>(new object[] { 60 }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+
+			book.BringBookUpToDate(new NullProgress());
+
+			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
+			Assert.That(storage.MetaData.bloom.suitableForMakingShells, Is.True);
+			Assert.That(storage.MetaData.bloom.folio, Is.True);
+			Assert.That(storage.MetaData.bloom.experimental, Is.True);
+		}
+
+		[Test]
+		public void Save_SetsJsonFormatVersion()
+		{
+			var storage = GetInitialStorage();
+			Assert.That(storage.MetaData.bloom.formatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
 		}
 
 

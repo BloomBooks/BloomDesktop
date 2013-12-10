@@ -60,9 +60,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// History of this number:
 		///		0.4 had version 0.4
-		///		0.8, 0.9 had version 0.8
+		///		0.8, 0.9, 1.0 had version 0.8
+		///		1.1 had version 1.1
 		/// </summary>
-		private const string kBloomFormatVersion = "0.8";
+		internal const string kBloomFormatVersion = "1.1";
 		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
@@ -223,6 +224,7 @@ namespace Bloom.Book
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
+			MetaData.bloom.formatVersion = kBloomFormatVersion;
 			string tempPath = SaveHtml(Dom);
 
 
@@ -587,6 +589,7 @@ namespace Bloom.Book
 					_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				}
 
+				_dom.MetaData = _metaData;
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 

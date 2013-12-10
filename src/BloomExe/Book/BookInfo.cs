@@ -15,9 +15,20 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookInfo
 	{
-		private string _tags;
 		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
 		private static int _coverColorIndex = 0;
+
+		private BookMetaData _metadata;
+
+		// Be careful. BookInfo sometimes exists independently of a Book or a BookStorage (e.g., in building a collection of available books)
+		// and needs independent metadata. So it has its own. But this is redundant with the main MetaData in the BookStorage, for a real book.
+		// The metadata here is not necessarily updated to have all the same information as the main one, though an attempt is made
+		// to cause it to be the same object when a book is created.
+		internal BookMetaData MetaData
+		{
+			set { _metadata = value; }
+			get { return _metadata ?? (_metadata = new BookMetaData()); }
+		}
 
 		public BookInfo(string folderPath,bool isEditable)
 		{
@@ -25,14 +36,19 @@ namespace Bloom.Book
 			Id = Guid.NewGuid().ToString();
 			CoverColor = NextBookColor();
 
-			var tagsPath = Path.Combine(FolderPath, "tags.txt");
-			if (File.Exists(tagsPath))
+			var jsonPath = Path.Combine(folderPath, BookStorage.MetaDataFileName);
+			if (File.Exists(jsonPath))
 			{
-				_tags = File.ReadAllText(tagsPath);
+				_metadata = BookMetaData.Deserialize(File.ReadAllText(jsonPath)); // Enhance: error handling?
 			}
 			else
 			{
-				_tags = "";
+				// Look for old tags files not yet migrated
+				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
+				if (File.Exists(oldTagsPath))
+				{
+					Book.ConvertTagsToMetaData(oldTagsPath, MetaData);
+				}
 			}
 
 			//TODO
@@ -48,12 +64,12 @@ namespace Bloom.Book
 
 		public bool IsSuitableForMakingShells
 		{
-			get { return _tags.Contains("suitableForMakingShells"); }
+			get { return MetaData.bloom.suitableForMakingShells; }
 		}
 
 		public bool IsSuitableForVernacularLibrary
 		{
-			get { return true; } //TODO
+			get { return true; } //TODO -- MetaData.bloom.suitableForMakingVernacularBooks?
 		}
 
 
@@ -62,7 +78,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return _tags.Contains("experimental");
+				return MetaData.bloom.experimental;
 			}
 		}
 
@@ -73,7 +89,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return _tags.Contains("folio");
+				return MetaData.bloom.folio;
 			}
 		}
 

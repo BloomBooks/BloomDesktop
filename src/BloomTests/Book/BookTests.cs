@@ -15,6 +15,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.TestUtilities;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
@@ -43,6 +44,7 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
 			_storage.Setup(x => x.GetLooksOk()).Returns(true);
 			_bookDom = new HtmlDom(GetThreePageDom());
+			_bookDom.MetaData = _metadata; // a real storage would do this for us.
 			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
@@ -96,6 +98,7 @@ namespace BloomTests.Book
 
 		private Bloom.Book.Book CreateBook()
 		{
+			_bookDom.MetaData = _metadata; // many tests change _bookDom. A real storage would set the Dom's metadata.
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath,true), _storage.Object, _templateFinder.Object,
 				_collectionSettings,
@@ -649,18 +652,50 @@ namespace BloomTests.Book
 				</head>
 				<body>
 					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+						</div>
 					</div>
 				</body></html>");
 
 			var book = CreateBook();
-
 			book.BringBookUpToDate(new NullProgress());
+
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage']", 0);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bookLineage']", 0);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 0);
 
 			Assert.That(_metadata.id, Is.EqualTo("MyId"));
 			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("first,second"));
+			Assert.That(_metadata.volumeInfo.title, Is.EqualTo("my nice title"));
+			// Checking the defaults, when not specified in the metadata
+			Assert.That(_metadata.bloom.suitableForMakingShells, Is.False);
+			Assert.That(_metadata.bloom.suitableForMakingVernacularBooks, Is.True);
+
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='SuitableForMakingShells' content='yes' />
+					<meta name='SuitableForMakingVernacularBooks' content='no' />
+					<meta name='bloomBookId' content='MyId' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			book = CreateBook();
+			book.BringBookUpToDate(new NullProgress());
+
+			Assert.That(_metadata.bloom.suitableForMakingShells, Is.True);
+			Assert.That(_metadata.bloom.suitableForMakingVernacularBooks, Is.False);
 		}
 
 		[Test]
@@ -715,6 +750,117 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
 			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("something current"));
 		}
+		[Test]
+		public void Save_UpdatesMetadataTitle()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='bookTitle'>original</textarea>
+						</div>
+					</div>
+				</body></html>");
+			_bookDom.MetaData = _metadata; // a real storage would do this automatically.
+
+			var book = CreateBook();
+
+			var isbnElt = _bookDom.SelectSingleNode("//textarea");
+			isbnElt.InnerText = "changed";
+			book.Save();
+			Assert.That(_metadata.volumeInfo.title, Is.EqualTo("changed"));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataIsbn()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='ISBN'>original</textarea>
+						</div>
+					</div>
+				</body></html>");
+			_bookDom.MetaData = _metadata; // a real storage would do this automatically.
+
+			var book = CreateBook();
+
+			var isbnElt = _bookDom.SelectSingleNode("//textarea");
+			isbnElt.InnerText = "978-0-306-40615-7";
+			book.Save();
+			Assert.That(_metadata.volumeInfo.industryIdentifiers[0].identifier, Is.EqualTo("978-0-306-40615-7"));
+			Assert.That(_metadata.volumeInfo.industryIdentifiers[0].type, Is.EqualTo("ISBN_13"));
+
+			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
+			//isbnElt.InnerText = " ";
+			//book.Save();
+			//Assert.That(_metadata.volumeInfo.industryIdentifiers.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void UpdateLicenseMetdata_UpdatesJson()
+		{
+			var book = CreateBook();
+
+			// Creative Commons License
+			var licenseData = new Metadata();
+			licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
+			licenseData.License.RightsStatement = "Please acknowledge nicely";
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.bloom.license, Is.EqualTo("by-sa"));
+			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Please acknowledge nicely"));
+
+			// Custom License
+			licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.bloom.license, Is.EqualTo("custom"));
+			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Use it if you dare"));
+
+			// Null License (ask the user)
+			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.bloom.license, Is.EqualTo("ask"));
+			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Ask me"));
+
+			// One we don't know about (future-proofing)
+			licenseData.License = new FakeLicense { RightsStatement = "Whatever" }; ;
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.bloom.license, Is.EqualTo("unknown"));
+			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Whatever"));
+		}
+
+		class FakeLicense : LicenseInfo
+		{
+			public override string GetDescription(string iso639_3LanguageCode)
+			{
+				return "fake";
+			}
+
+			public override string Url { get; set; }
+		}
 
 		[Test]
 		public void FixBookIdAndLineageIfNeeded_FixesBasicBookId()
@@ -736,7 +882,10 @@ namespace BloomTests.Book
 			_metadata.id = "";
 			var book = CreateBook();
 
+			// 0 indicates it should NOT match, that is, that it doesn't have the mistaken ID any more.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
+			// but it should have SOME ID. Hopefully a new one, but that is hard to verify.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 1);
 		}
 
 		[Test]
