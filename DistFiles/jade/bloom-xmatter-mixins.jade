@@ -1,0 +1,123 @@
+include bloom-foundation-mixins
+
+//- -------------------------------------------------------------------------------
+//-	This first group of mixins should be used to construct the factory as well
+//- as custom xmatter templates.
+//-	At this point you'd still have to copy the CSS from factory-xmatter.css
+//-	for them to be useful.
+//- -------------------------------------------------------------------------------
+
+mixin field-xmatter(key)
+	+field-common(key)(attributes)
+
+//- NB: In Bloom-alpha days we called the shared stuff the "library", then that became "collection" for Version 1.0.  However the
+//- model of "collections" doesn't work for the new web-library approach, so this is slated to be changed to "profile".
+//- Hence the mixin name is "profile" but the data it is setting is currently "data-library"
+mixin field-xmatter-profile(key)
+	+field(data-library=key, attributes=atttributes)
+		block
+mixin image-common(key)
+	+image(data-book=key,attributes=attributes)
+		block
+//- in xmatter, everything must be keyed
+
+mixin image-xmatter(key)
+	+image-common(key)(attributes=atttributes)
+
+mixin page-xmatter(label)
+	+page(label)(data-page="required singleton", attributes=attributes)
+		block
+
+mixin page-cover(label)
+	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
+		block
+
+mixin chooser-topic
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()")
+		//- REVIEW Make sure this is not visible even when the user isn't allowed to edit it.
+		label.bubble Click to choose topic
+		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
+
+mixin field-ISBN
+	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
+		span.bloom-doNotPublishIfParentOtherwiseEmpty
+			| ISBN
+		div.bloom-editable(data-book="ISBN", lang="*")
+
+mixin field-acknowledgments-localizedVersion
+	//- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
+	.bloom-editable.bloom-readOnlyInEditMode(lang="N1", data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+
+//- TODO: this is a mess
+mixin field-acknowledgments-originalVersion
+	+field-xmatter('originalAcknowledgments').bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style
+		div.bloom-editable.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(contenteditable="true" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments")
+			{Original Acknowledgments}
+
+mixin block-licenseAndCopyright
+	div.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+		.copyright(data-book="copyright", lang="*")
+			{copyright}
+		img.licenseImage(data-book="licenseImage")
+		.licenseUrl(data-book="licenseUrl", lang="en")
+			{License Url}
+		.licenseNotes(data-book="licenseNotes", lang="en")
+			{License Notes}
+		.licenseDescription(data-book="licenseDescription",lang="en")
+			{License Description}
+
+//- -------------------------------------------------------------------------------
+//-	Unless every page of your xmatter pack needs to be different than the "factory"
+//-	one that comes with Bloom, use the following mixins to reuse the pages that
+//-	don't have to be customized.
+//-	HOWEVER: at this point you'd still have to copy the CSS from factory-xmatter.css
+//-	for them to be useful. In the future, Bloom may make it easier to just borrow
+//-	pages along with the stylesheets that are needed.
+//- -------------------------------------------------------------------------------
+
+//- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//- If you copy any of these and paste them into your own custom xmatter template,
+//- be sure to change the ids to your own unique ones!
+//- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+mixin factoryStandard-outsideFrontCover
+	+page-cover('Cover Page')#74731b2d-18b0-420f-ac96-6de20f659810
+		+field-xmatter('bookTitle').coverTitle-style
+			label Book title in {lang}
+		+image-xmatter('coverImage')
+		//- 'V' means this field is only available in the vernacular
+		+field-mono-version1('V','smallCoverCredits').smallCoverCredits.cover-credits-style
+		.coverBottomLangName
+			//- lang='N1' means show the language name here using the national language
+			div(data-library="nameOfLanguage",lang="N1")
+				{Lang in N1}
+		+chooser-topic.coverBottomBookTopic
+
+mixin factoryStandard-creditsInsideFrontCover
+	+page-cover("Credits Page")#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9.verso(data-export='front-matter-credits')
+		+field-acknowledgments-originalVersion
+		+block-licenseAndCopyright#versoLicenseAndCopyright
+		+field-ISBN
+		+field-acknowledgments-localizedVersion.inside-cover-version-aknowledgments-style.versionAcknowledgments
+
+mixin factoryStandard-titlePage
+	+page-xmatter('Title Page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381.titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')
+		+field-xmatter(bookTitle)#titePageTitleBlock
+			label.bubble Book title in {lang}
+		+field-xmatter(originalContributions)#originalContributions.credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style
+			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+		+field-xmatter("funding")#funding.funding.title-page-funding-style
+			label.bubble Use this to acknowledge any funding agencies.
+		.languageInformation
+			+field-xmatter-profile("nameOfLanguage").langName
+			//- review: can we get rid of these "langName" classes?
+			+field-xmatter-profile("dialect").langName
+			+field-xmatter-profile("languageLocation").langName
+
+mixin factoryStandard-insideBackCover
+	+page-xmatter('Inside Back Cover')#502BE62F-A4D0-4225-A598-1A203FA73239.cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')
+		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.").inside-back-cover-style(data-book='insideBackCover')
+
+mixin factoryStandard-outsideBackCover
+	+page-xmatter('Outside Back Cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4.cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')
+		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')

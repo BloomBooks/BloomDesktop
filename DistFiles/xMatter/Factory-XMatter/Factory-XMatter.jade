@@ -1,0 +1,17 @@
+
+include ../factoryStandard-xmatter-mixins.jade
+
+
+!!! 5
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='0.8')
+		title Factory-default Front & Back Matter
+		+stylesheets('Factory-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+factoryStandard-creditsInsideFrontCover
+		+factoryStandard-titlePage
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover
