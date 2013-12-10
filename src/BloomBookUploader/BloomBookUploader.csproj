@@ -35,6 +35,12 @@
   <PropertyGroup>
     <StartupObject>BloomBookUploader.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <OutputPath>..\..\output\debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\output\release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Palaso">
       <HintPath>..\..\..\Bloom-CollectionGenerator\lib\Palaso.dll</HintPath>
