@@ -489,3 +489,9 @@ UL.toolbox LI
 {
 	z-index: 20000;
 }
+/* Simulate the html5 placeholder attribute which is not available on divs*/
+[contentEditable=true]:empty:not(:focus):before
+{
+    content: attr(data-placeholder);
+    color: #DDDBDB;
+}
