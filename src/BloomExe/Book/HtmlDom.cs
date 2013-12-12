@@ -16,7 +16,7 @@ namespace Bloom.Book
 	/// HtmlDom manages the lower-level operations on a Bloom XHTML DOM.
 	/// These doms can be a whole book, or just one page we're currently editing.
 	/// They are actually XHTML, though when we save or send to a browser, we always convert to plain html.
-	/// May also contain a _metadata, which for certain operations should be kept in sync with the HTML.
+	/// May also contain a BookInfo, which for certain operations should be kept in sync with the HTML.
 	/// </summary>
 	public class HtmlDom
 	{
@@ -39,7 +39,7 @@ namespace Bloom.Book
 			_dom.LoadXml(xhtml);
 		}
 
-		public BookMetaData MetaData { get; internal set; }
+		public BookInfo MetaData { get; internal set; }
 
 		public XmlElement Head
 		{
@@ -71,7 +71,7 @@ namespace Bloom.Book
 					//and set the text again!
 					titleNode.InnerText = justTheText;
 					if (MetaData != null)
-						MetaData.volumeInfo.title = t;
+						MetaData.Title = t;
 				}
 			}
 		}

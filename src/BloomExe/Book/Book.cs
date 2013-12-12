@@ -55,11 +55,11 @@ namespace Bloom.Book
 			BookRefreshEvent bookRefreshEvent)
 		{
 			BookInfo = info;
-			// The BookInfo will have loaded metadata independently. But it is better for it to share the same object with the storage,
-			// since then they cannot get out of sync.
-			BookInfo.MetaData = storage.MetaData;
 
 			Guard.AgainstNull(storage,"storage");
+
+			// This allows the _storage to
+			storage.MetaData = info;
 
 			_storage = storage;
 
@@ -506,7 +506,6 @@ namespace Bloom.Book
 
 
 			//hack
-			var bookMetaData = _storage.MetaData;
 			if(bookDOM == OurHtmlDom)//we already have a data for this
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
@@ -515,7 +514,7 @@ namespace Bloom.Book
 				var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
 				if (File.Exists(oldTagsPath))
 				{
-					ConvertTagsToMetaData(oldTagsPath, bookMetaData);
+					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					File.Delete(oldTagsPath);
 				}
 			}
@@ -525,26 +524,28 @@ namespace Bloom.Book
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 
-			bookDOM.RemoveMetaElement("bloomBookLineage", () => bookMetaData.bloom.bookLineage, val => bookMetaData.bloom.bookLineage = val);
-			bookDOM.RemoveMetaElement("bookLineage", () => bookMetaData.bloom.bookLineage, val => bookMetaData.bloom.bookLineage = val);
-			bookDOM.RemoveMetaElement("bloomBookId", () => bookMetaData.id, val => bookMetaData.id = val);
+			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+			// BookInfo will always have an ID, the constructor makes one even if there is no json file.
+			// To allow migration, pretend it has no ID if there is not yet a meta.json.
+			bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null), val => BookInfo.Id = val);
 
 			// Title should be replicated in json
-			if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
-				bookDOM.Title = Title;
+			//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
+			//    bookDOM.Title = Title;
 			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
 			// thus ensuring that if something is in the metadata we use it.
-			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => bookMetaData.bloom.suitableForMakingShells = val == "yes" || val == "definitely");
+			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
-			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => bookMetaData.bloom.suitableForMakingVernacularBooks = val == "yes" || val == "definitely");
+			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 		}
 
-		internal static void ConvertTagsToMetaData(string oldTagsPath, BookMetaData bookMetaData)
+		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
 			var oldTags = File.ReadAllText(oldTagsPath);
-			bookMetaData.bloom.suitableForMakingShells = oldTags.Contains("suitableForMakingShells");
-			bookMetaData.bloom.folio = oldTags.Contains("folio");
-			bookMetaData.bloom.experimental = oldTags.Contains("experimental");
+			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
+			bookMetaData.IsFolio = oldTags.Contains("folio");
+			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
 
 		private void FixBookIdAndLineageIfNeeded()
@@ -553,7 +554,7 @@ namespace Bloom.Book
 //at version 0.9.71, we introduced this book lineage for real. At that point almost all books were from Basic book,
 			//so let's get further evidence by looking at the page source and then fix the lineage
 			// However, if we have json lineage, it is normal not to have it in HTML metadata.
-			if (string.IsNullOrEmpty(_storage.MetaData.bloom.bookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
+			if (string.IsNullOrEmpty(BookInfo.BookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
 				if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
 				{
 					bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
@@ -795,7 +796,7 @@ namespace Bloom.Book
 		/// </summary>
 		public bool IsSuitableForVernacularLibrary
 		{
-			get { return _storage.MetaData.bloom.suitableForMakingVernacularBooks; }
+			get { return BookInfo.IsSuitableForVernacularLibrary; }
 		}
 
 
@@ -817,7 +818,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return _storage.MetaData.bloom.suitableForMakingShells;
+				return BookInfo.IsSuitableForMakingShells;
 			}
 		}
 
@@ -1495,21 +1496,21 @@ namespace Bloom.Book
 				var urlParts = cclicense.Url.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
 				// currently the last part is a version number and the second-last is the bit we want
 				// that distinguishes the different kinds of cc license.
-				_storage.MetaData.bloom.license = urlParts[urlParts.Length - 2];
+				BookInfo.License = urlParts[urlParts.Length - 2];
 			}
 			else if (metadata.License is CustomLicense)
 			{
-				_storage.MetaData.bloom.license = "custom";
+				BookInfo.License = "custom";
 			}
 			else if (metadata.License is NullLicense)
 			{
-				_storage.MetaData.bloom.license = "ask";
+				_storage.MetaData.License = "ask";
 			}
 			else
 			{
-				_storage.MetaData.bloom.license = "unknown";
+				BookInfo.License = "unknown";
 			}
-			_storage.MetaData.bloom.licenseNotes = metadata.License.RightsStatement;
+			BookInfo.LicenseNotes = metadata.License.RightsStatement;
 		}
 
 		public void SetTitle(string name)
