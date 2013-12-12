@@ -8,6 +8,7 @@ include bloom-foundation-mixins
 //- -------------------------------------------------------------------------------
 
 mixin field-xmatter(key)
+	- requireOneArgument('field-xmatter', arguments);
 	+field-common(key)(attributes)
 
 //- NB: In Bloom-alpha days we called the shared stuff the "library", then that became "collection" for Version 1.0.  However the
@@ -45,26 +46,29 @@ mixin field-ISBN
 		div.bloom-editable(data-book="ISBN", lang="*")
 
 mixin field-acknowledgments-localizedVersion
-	//- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
-	.bloom-editable.bloom-readOnlyInEditMode(lang="N1", data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
+	//- TODO: why both versionAcknowledgments && inside-cover-version-aknowledgments-style?
+	+editable.versionAcknowledgments.inside-cover-version-aknowledgments-style.bloom-readOnlyInEditMode(lang="N1", data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
-//- TODO: this is a mess
+// TODO: this is a mess
 mixin field-acknowledgments-originalVersion
-	+field-xmatter('originalAcknowledgments').bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style
-		div.bloom-editable.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(contenteditable="true" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments")
+	+field-prototypeDeclaredExplicity().originalAcknowledgments
+		+editable.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(data-hint="Acknowledgments in {lang}", data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
-	div.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+	div.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")#versoLicenseAndCopyright
 		.copyright(data-book="copyright", lang="*")
 			{copyright}
-		img.licenseImage(data-book="licenseImage")
+		img.licenseImage(src="" data-book="licenseImage")
 		.licenseUrl(data-book="licenseUrl", lang="en")
 			{License Url}
 		.licenseNotes(data-book="licenseNotes", lang="en")
 			{License Notes}
 		.licenseDescription(data-book="licenseDescription",lang="en")
 			{License Description}
+
+
 
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
@@ -81,12 +85,16 @@ mixin block-licenseAndCopyright
 //- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 mixin factoryStandard-outsideFrontCover
-	+page-cover('Cover Page')#74731b2d-18b0-420f-ac96-6de20f659810
-		+field-xmatter('bookTitle').coverTitle-style
-			label Book title in {lang}
-		+image-xmatter('coverImage')
+	// FRONT COVER
+	+page-cover('Front Cover')(data-export='front-matter-cover')#74731b2d-18b0-420f-ac96-6de20f659810
+		+field-prototypeDeclaredExplicity.coverTitle-style
+			+editable.bookTitle(data-book='bookTitle', data-hint='Book title in {lang}')
+		//+image-xmatter('coverImage')
+		.bloom-imageContainer
+			img(src="placeholder.png", data-book='coverImage')
+
 		//- 'V' means this field is only available in the vernacular
-		+field-mono-version1('V','smallCoverCredits').smallCoverCredits.cover-credits-style
+		+field-mono-version1('V','*You may use this space for author/illustrator, or anything else.').smallCoverCredits.cover-credits-style(data-book='smallCoverCredits')
 		.coverBottomLangName
 			//- lang='N1' means show the language name here using the national language
 			div(data-library="nameOfLanguage",lang="N1")
@@ -94,30 +102,44 @@ mixin factoryStandard-outsideFrontCover
 		+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
-	+page-cover("Credits Page")#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9.verso(data-export='front-matter-credits')
+	// Inside Front Cover CREDITS PAGE
+	+page-cover("Credits Page").verso(data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
 		+field-acknowledgments-originalVersion
 		+block-licenseAndCopyright#versoLicenseAndCopyright
 		+field-ISBN
 		+field-acknowledgments-localizedVersion.inside-cover-version-aknowledgments-style.versionAcknowledgments
 
 mixin factoryStandard-titlePage
-	+page-xmatter('Title Page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381.titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')
-		+field-xmatter(bookTitle)#titePageTitleBlock
+	// TITLE PAGE
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+field-prototypeDeclaredExplicity#titePageTitleBlock
 			label.bubble Book title in {lang}
-		+field-xmatter(originalContributions)#originalContributions.credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style
+			+editable(data-book='bookTitle')
+
+		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-		+field-xmatter("funding")#funding.funding.title-page-funding-style
+			+editable.credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
+		+field-prototypeDeclaredExplicity#funding
 			label.bubble Use this to acknowledge any funding agencies.
-		.languageInformation
-			+field-xmatter-profile("nameOfLanguage").langName
-			//- review: can we get rid of these "langName" classes?
-			+field-xmatter-profile("dialect").langName
-			+field-xmatter-profile("languageLocation").langName
+			+editable.funding.title-page-funding-style(data-book='funding')
+		#languageInformation
+			+field-prototypeDeclaredExplicity
+				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				.langName(data-library='nameOfLanguage')
+			// review: can we get rid of these "langName" classes?
+			+field-prototypeDeclaredExplicity
+				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				.langName('data-library'='dialect')
+			+field-prototypeDeclaredExplicity
+				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				.langName(data-library='languageLocation')
 
 mixin factoryStandard-insideBackCover
-	+page-xmatter('Inside Back Cover')#502BE62F-A4D0-4225-A598-1A203FA73239.cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')
+	// Inside Back Cover
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
 		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.").inside-back-cover-style(data-book='insideBackCover')
 
 mixin factoryStandard-outsideBackCover
-	+page-xmatter('Outside Back Cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4.cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')
+	// Outside Back Cover
+	+page-xmatter('Outside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
