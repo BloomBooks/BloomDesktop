@@ -624,7 +624,7 @@ function ResizeUsingPercentages(e,ui){
 
  jQuery(document).ready(function () {
 
-     $.fn.qtip.zindex = 1000000;
+     $.fn.qtip.zindex = 15000;
      //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
 
      //add a marginBox if it's missing. We introduced it early in the first beta
@@ -1122,7 +1122,7 @@ function ShowTopicChooser() {
     var dlg = $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
-        zIndex: 30000, //qtip is in the 15000 range
+        //zIndex removed in newer jquery, now we get it in the css
         buttons: {
             "OK": function () {
                 var t = $("ol#topics li.ui-selected");
