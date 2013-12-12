@@ -30,6 +30,77 @@ function TrimTrailingLineBreaksInDivs(node) {
     }
 }
 
+
+//show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
+function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
+
+    if ($(targetElement).css('display') == 'none') {
+        return;
+    }
+
+    if ($(targetElement).css('border-bottom-color') == 'transparent') {
+        return; //don't put tips if they can't edit it. That's just confusing
+    }
+    if ($(targetElement).css('display') == 'none') {
+        return; //don't put tips if they can't see it.
+    }
+
+    theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+    if ($(targetElement).height() < 100) {
+        pos = {
+            at: 'right center', //I like this, but it doesn't reposition well -->'right center',
+            my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
+           , viewport: $(window)
+            // , adjust: { y: -20 }
+        };
+    }
+    else { // with the big back covers, the adjustment just makes things worse.      
+        pos = {
+            at: 'right center',
+            my: 'left center'
+        };
+    }
+
+    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
+    //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
+    //at the moment, the logic is all around whoever has the data-hint
+    //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
+    var shouldShowAlways = true;
+    var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+
+    var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
+    if (functionCall) {
+        shouldShowAlways = true;
+        whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+        hideEvents = false;
+    }
+
+    if (onFocusOnly) {
+        shouldShowAlways = false;
+        hideEvents = 'unfocus mouseleave';
+    }
+    
+    whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
+    
+    $(targetElement).qtip({
+        content: whatToSay,
+        position: pos,
+        show: {
+            event: " focusin mouseenter",
+            ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
+        }
+       , tip: { corner: "left center" }
+       , hide: {
+           event: hideEvents
+       },
+        adjust: { method: "flip none" },
+        style: {
+            classes: theClasses
+        }
+        //            ,adjust:{screen:true, resize:true}
+    });
+}
+
 function Cleanup() {
 
         //for stuff bloom introduces, just use this "bloom-ui" class to have it removed
@@ -334,9 +405,8 @@ function MakeSourceTextDivForGroup(group) {
 }
 
 
-function GetLocalizedHint(element) {
+function GetLocalizedHint(whatToSay, targetElement) {
     
-    var whatToSay = $(element).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
      if(whatToSay.startsWith("*")){
          whatToSay = whatToSay.substring(1,1000);
      }
@@ -352,7 +422,7 @@ function GetLocalizedHint(element) {
          if (key.startsWith("{"))
              whatToSay = whatToSay.replace(key, dictionary[key]);
 
-         whatToSay = whatToSay.replace("{lang}", dictionary[$(element).attr('lang')]);
+         whatToSay = whatToSay.replace("{lang}", dictionary[$(targetElement).attr('lang')]);
      }
      return whatToSay;
  }
@@ -554,7 +624,7 @@ function ResizeUsingPercentages(e,ui){
 
  jQuery(document).ready(function () {
 
-     $.fn.qtip.zindex = 1000000;
+     $.fn.qtip.zindex = 15000;
      //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
 
      //add a marginBox if it's missing. We introduced it early in the first beta
@@ -710,75 +780,34 @@ function ResizeUsingPercentages(e,ui){
      //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
      //    });
 
-     //put hint bubbles next to elements which call for them.
-     //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-     $("*[data-hint]").each(function () {
-
-         if ($(this).css('border-bottom-color') == 'transparent') {
-             return; //don't put tips if they can't edit it. That's just confusing
-         }
-         if ($(this).css('display') == 'none') {
-             return; //don't put tips if they can't see it.
-         }
-         theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-         if ($(this).height() < 100) {
-             pos = {
-                 at: 'right center', //I like this, but it doesn't reposition well -->'right center',
-                 my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
-                , viewport: $(window)
-                 // , adjust: { y: -20 }
-             };
-         }
-         else { // with the big back covers, the adjustment just makes things worse.      
-             pos = {
-                 at: 'right center',
-                 my: 'left center'
-             }
-         }
-
-
-
-         var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
-         var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
-
-         var x = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-
-         //make hints that start with a * only show when the field has focus
-         //if ($(this).attr("data-hint").startsWith("*")) { //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-         if (x && x.startsWith("*")) { //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-             shouldShowAlways = false;
-             hideEvents = 'unfocus mouseleave';
-         }
-
-         var whatToSay = GetLocalizedHint(this);
-
-         var functionCall = $(this).data("functiononhintclick");
-         if (functionCall) {
-             shouldShowAlways = true;
-             whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-             hideEvents = false;
-         }
-
-
-
-
-         $(this).qtip({
-             content: whatToSay,
-             position: pos,
-             show: {
-                 event: " focusin mouseenter",
-                 ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
-             }
-            , tip: { corner: "left center" }
-            , hide: {
-                event: hideEvents
-            },
-             adjust: { method: "flip none" },
-             style: {
-                 classes: theClasses
-             }
-             //            ,adjust:{screen:true, resize:true}
+     //Process div.bloom-bubble inside of translation Groups
+     $("*.bloom-translationGroup label").each(function () {
+         var labelElement = $(this);
+         var whatToSay = labelElement.text();
+         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+         
+         //attach the bubble, separately, to every field inside the group
+         labelElement.parent().find("div").each(function () {
+             MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
          });
+     });
+
+     //this is the "old-style" way to get a hint bubble, cramming it all into a data-hint attribute
+     //The preferred way is to use a <label> element inside the div.bloom-translationGroup
+     $("*[data-hint]").each(function () {
+         var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+         if (!whatToSay || whatToSay.length == 0)
+             return;
+         
+         //make hints that start with a * only show when the field has focus
+         var showOnFocusOnly = whatToSay.startsWith("*");
+
+         if (whatToSay.startsWith("*")) {
+             whatToSay = whatToSay.substring(1, 1000);
+         }
+       
+   
+         MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
      });
 
      $.fn.hasAttr = function (name) {
@@ -873,7 +902,9 @@ function ResizeUsingPercentages(e,ui){
                  whyDisabled = "You cannot put anything in there while making an original book.";
              }
 
-             var whatToSay = GetLocalizedHint(this) + " <br/>" + whyDisabled;
+             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+             
+             whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
              var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
              var pos = { at: 'right center',
                  my: 'left center'
@@ -1091,7 +1122,7 @@ function ShowTopicChooser() {
     var dlg = $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
-        zIndex: 30000, //qtip is in the 15000 range
+        //zIndex removed in newer jquery, now we get it in the css
         buttons: {
             "OK": function () {
                 var t = $("ol#topics li.ui-selected");

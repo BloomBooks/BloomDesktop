@@ -1,4 +1,4 @@
-<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1630" measuredH="978" mockupW="1510" mockupH="832">
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1632" measuredH="978" mockupW="1512" mockupH="832">
   <controls>
     <control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="120" y="146" w="845" h="625" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
       <controlProperties>
@@ -54,13 +54,13 @@
         <src>http%3A//mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png</src>
       </controlProperties>
     </control>
-    <control controlID="9" controlTypeID="com.balsamiq.mockups::Label" x="347" y="460" w="-1" h="-1" measuredW="82" measuredH="21" zOrder="9" locked="false" isInGroup="-1">
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Label" x="1073" y="286" w="-1" h="-1" measuredW="82" measuredH="21" zOrder="9" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Type%20of%20Book</text>
       </controlProperties>
     </control>
-    <control controlID="11" controlTypeID="com.balsamiq.mockups::Label" x="347" y="557" w="-1" h="-1" measuredW="203" measuredH="21" zOrder="10" locked="false" isInGroup="-1">
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::Label" x="349" y="457" w="-1" h="-1" measuredW="203" measuredH="21" zOrder="10" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Notes%20To%20People%20Using%20This%20Book</text>
@@ -72,13 +72,13 @@
         <color>15658734</color>
       </controlProperties>
     </control>
-    <control controlID="19" controlTypeID="com.balsamiq.mockups::TextArea" x="347" y="578" w="570" h="63" measuredW="200" measuredH="140" zOrder="12" locked="false" isInGroup="-1">
+    <control controlID="19" controlTypeID="com.balsamiq.mockups::TextArea" x="349" y="478" w="570" h="63" measuredW="200" measuredH="140" zOrder="12" locked="false" isInGroup="-1">
       <controlProperties>
         <text>lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20adipisicing%20elit%2C%20sed%20do%20eiusmod%20tempor%20incididunt%20ut%20labore%20et%20dolore%20magna%20aliqua.%20Ut%20enim%20ad%20minim%20veniam%2C%20quis%20nostrud%20exercitation%20ullamco%20laboris%20nisi%20ut%20aliquip%20ex%20ea%20commodo%20consequat.%20Duis%20aute%20irure%20dolor%20in%20reprehenderit%20in%20voluptate%20velit%20esse%20cillum%20dolore%20eu%20fugiat%20nulla%20pariatur.%20Excepteur%20sint%20occaecat%20cupidatat%20non%20proident%2C%20sunt%20in%20culpa%20qui%20officia%20deserunt%20mollit%20anim%20id%20est%20laborum.</text>
         <verticalScrollbar>true</verticalScrollbar>
       </controlProperties>
     </control>
-    <control controlID="21" controlTypeID="com.balsamiq.mockups::RadioButtonGroup" x="347" y="480" w="308" h="66" measuredW="308" measuredH="61" zOrder="13" locked="false" isInGroup="-1">
+    <control controlID="21" controlTypeID="com.balsamiq.mockups::RadioButtonGroup" x="1073" y="307" w="308" h="66" measuredW="308" measuredH="61" zOrder="13" locked="false" isInGroup="-1">
       <controlProperties>
         <text>%28o%29%20A%20shell%20book%0A%28%20%29%20A%20set%20of%20template%20pages%20for%20making%20other%20books%0A%28%20%29%20A%20unique%20local%20language%20book</text>
       </controlProperties>
@@ -106,30 +106,30 @@
         <text>Step%201%3A%20Confirm%20Metadata</text>
       </controlProperties>
     </control>
-    <control controlID="26" controlTypeID="com.balsamiq.mockups::Label" x="314" y="677" w="-1" h="-1" measuredW="92" measuredH="21" zOrder="18" locked="false" isInGroup="-1">
+    <control controlID="26" controlTypeID="com.balsamiq.mockups::Label" x="316" y="577" w="-1" h="-1" measuredW="92" measuredH="21" zOrder="18" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Step%202%3A%20Upload</text>
       </controlProperties>
     </control>
-    <control controlID="27" controlTypeID="com.balsamiq.mockups::Button" x="339" y="716" w="-1" h="-1" measuredW="169" measuredH="27" zOrder="19" locked="false" isInGroup="-1">
+    <control controlID="27" controlTypeID="com.balsamiq.mockups::Button" x="341" y="616" w="-1" h="-1" measuredW="169" measuredH="27" zOrder="19" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Login%20to%20BloomLibrary.org</text>
       </controlProperties>
     </control>
-    <control controlID="28" controlTypeID="com.balsamiq.mockups::Button" x="531" y="716" w="-1" h="-1" measuredW="96" measuredH="27" zOrder="20" locked="false" isInGroup="-1">
+    <control controlID="28" controlTypeID="com.balsamiq.mockups::Button" x="533" y="616" w="-1" h="-1" measuredW="96" measuredH="27" zOrder="20" locked="false" isInGroup="-1">
       <controlProperties>
         <state>disabled</state>
         <text>Upload%20Book</text>
       </controlProperties>
     </control>
     <control controlID="30" controlTypeID="com.balsamiq.mockups::VerticalScrollBar" x="947" y="201" w="-1" h="743" measuredW="16" measuredH="100" zOrder="21" locked="false" isInGroup="-1"/>
-    <control controlID="31" controlTypeID="com.balsamiq.mockups::TextArea" x="339" y="785" w="583" h="136" measuredW="200" measuredH="140" zOrder="22" locked="false" isInGroup="-1">
+    <control controlID="31" controlTypeID="com.balsamiq.mockups::TextArea" x="341" y="685" w="583" h="136" measuredW="200" measuredH="140" zOrder="22" locked="false" isInGroup="-1">
       <controlProperties>
         <text/>
       </controlProperties>
     </control>
-    <control controlID="32" controlTypeID="com.balsamiq.mockups::Label" x="339" y="758" w="-1" h="-1" measuredW="101" measuredH="21" zOrder="23" locked="false" isInGroup="-1">
+    <control controlID="32" controlTypeID="com.balsamiq.mockups::Label" x="341" y="658" w="-1" h="-1" measuredW="101" measuredH="21" zOrder="23" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Upload%20Progress</text>
@@ -140,36 +140,36 @@
         <icon>CloudIcon%7Clarge</icon>
       </controlProperties>
     </control>
-    <control controlID="36" controlTypeID="com.balsamiq.mockups::Label" x="1019" y="705" w="-1" h="-1" measuredW="92" measuredH="21" zOrder="25" locked="false" isInGroup="-1">
+    <control controlID="36" controlTypeID="com.balsamiq.mockups::Label" x="1021" y="605" w="-1" h="-1" measuredW="92" measuredH="21" zOrder="25" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Step%202%3A%20Upload</text>
       </controlProperties>
     </control>
-    <control controlID="37" controlTypeID="com.balsamiq.mockups::Button" x="1047" y="731" w="-1" h="-1" measuredW="169" measuredH="27" zOrder="26" locked="false" isInGroup="-1">
+    <control controlID="37" controlTypeID="com.balsamiq.mockups::Button" x="1049" y="631" w="-1" h="-1" measuredW="169" measuredH="27" zOrder="26" locked="false" isInGroup="-1">
       <controlProperties>
         <state>disabled</state>
         <text>Login%20to%20BloomLibrary.org</text>
       </controlProperties>
     </control>
-    <control controlID="38" controlTypeID="com.balsamiq.mockups::Button" x="1231" y="731" w="-1" h="-1" measuredW="96" measuredH="27" zOrder="27" locked="false" isInGroup="-1">
+    <control controlID="38" controlTypeID="com.balsamiq.mockups::Button" x="1233" y="631" w="-1" h="-1" measuredW="96" measuredH="27" zOrder="27" locked="false" isInGroup="-1">
       <controlProperties>
         <state>disabled</state>
         <text>Upload%20Book</text>
       </controlProperties>
     </control>
-    <control controlID="39" controlTypeID="com.balsamiq.mockups::TextArea" x="1047" y="792" w="583" h="136" measuredW="200" measuredH="140" zOrder="28" locked="false" isInGroup="-1">
+    <control controlID="39" controlTypeID="com.balsamiq.mockups::TextArea" x="1049" y="692" w="583" h="136" measuredW="200" measuredH="140" zOrder="28" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Creating%20PDF%20Preview...%20done.%0ACreating%20Book%20Record...%20done%0AUploading%20mybook.htm%0AUploading%20foo.css%0AUploading%20image1.png%0A...%0ACompleting%20Book%20Record..%20done%0ACongratulations%2C%20%5Bmybook%5D%20is%20now%20on%20bloom%20library.</text>
       </controlProperties>
     </control>
-    <control controlID="40" controlTypeID="com.balsamiq.mockups::Label" x="1047" y="771" w="-1" h="-1" measuredW="101" measuredH="21" zOrder="29" locked="false" isInGroup="-1">
+    <control controlID="40" controlTypeID="com.balsamiq.mockups::Label" x="1049" y="671" w="-1" h="-1" measuredW="101" measuredH="21" zOrder="29" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Upload%20Progress</text>
       </controlProperties>
     </control>
-    <control controlID="41" controlTypeID="com.balsamiq.mockups::Arrow" x="917" y="743" w="100" h="36" measuredW="150" measuredH="100" zOrder="30" locked="false" isInGroup="-1">
+    <control controlID="41" controlTypeID="com.balsamiq.mockups::Arrow" x="919" y="643" w="100" h="36" measuredW="150" measuredH="100" zOrder="30" locked="false" isInGroup="-1">
       <controlProperties>
         <direction>bottom</direction>
         <leftArrow>false</leftArrow>
@@ -180,12 +180,12 @@
         <text>Should%20there%20be%20a%20way%20to%20package%20this%20as%20BloomPack%20from%20here%3F</text>
       </controlProperties>
     </control>
-    <control controlID="43" controlTypeID="com.balsamiq.mockups::StickyNote" x="676" y="464" w="129" h="98" measuredW="109" measuredH="123" zOrder="32" locked="false" isInGroup="-1">
+    <control controlID="43" controlTypeID="com.balsamiq.mockups::StickyNote" x="1212" y="219" w="129" h="98" measuredW="109" measuredH="123" zOrder="32" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Do%20we%20know%20enough%20to%20limit%20these%20options%3F</text>
       </controlProperties>
     </control>
-    <control controlID="44" controlTypeID="com.balsamiq.mockups::StickyNote" x="1086" y="573" w="162" h="104" measuredW="109" measuredH="123" zOrder="33" locked="false" isInGroup="-1">
+    <control controlID="44" controlTypeID="com.balsamiq.mockups::StickyNote" x="731" y="821" w="162" h="104" measuredW="109" measuredH="123" zOrder="33" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Todo%3A%20show%20what%20happens%20if%20the%20book%20is%20already%20there.</text>
       </controlProperties>

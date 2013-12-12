@@ -213,5 +213,20 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-placeholder='copy me']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-placeholder='copy me']", 1);
 		}
+
+        [Test]
+        public void PrepareElementsOnPage_HasLabelElementInsideTranslationGroup_LeavesUntouched()
+        {
+            var contents = @"<div class='bloom-page bloom-translationGroup'>
+                        <label class='bloom-bubble'>something helpful</label>
+                    </div>";
+            var dom = new XmlDocument();
+            dom.LoadXml(contents);
+
+            TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//label[@class='bloom-bubble']", 1);
+            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//label[@class='bloom-bubble' and text()='something helpful']", 1);
+        }
 	}
 }

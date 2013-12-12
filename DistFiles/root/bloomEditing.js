@@ -154,6 +154,74 @@ function AddExperimentalNotice(element) {
     });
 }
 
+//show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
+function MakeBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
+    
+    if ($(targetElement).css('display') == 'none') {
+        return;
+    }
+         
+    if ($(targetElement).css('border-bottom-color') == 'transparent') {
+        return; //don't put tips if they can't edit it. That's just confusing
+    }
+    if ($(targetElement).css('display') == 'none') {
+        return; //don't put tips if they can't see it.
+    }
+         
+    theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+    if ($(targetElement).height() < 100) {
+        pos = {
+            at: 'right center', //I like this, but it doesn't reposition well -->'right center',
+            my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
+           , viewport: $(window)
+            // , adjust: { y: -20 }
+        };
+    }
+    else { // with the big back covers, the adjustment just makes things worse.      
+        pos = {
+            at: 'right center',
+            my: 'left center'
+        };
+    }
+
+    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
+    //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
+    //at the moment, the logic is all around whoever has the data-hint
+    //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
+    var shouldShowAlways = true;
+    var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+
+    var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
+    if (functionCall) {
+        shouldShowAlways = true;
+        whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+        hideEvents = false;
+    }
+    
+    if (onFocusOnly)
+    {
+        shouldShowAlways = false;
+        hideEvents = 'unfocus mouseleave';
+    }
+    $(targetElement).qtip({
+        content: whatToSay,
+        position: pos,
+        show: {
+            event: " focusin mouseenter",
+            ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
+        }
+       , tip: { corner: "left center" }
+       , hide: {
+           event: hideEvents
+       },
+        adjust: { method: "flip none" },
+        style: {
+            classes: theClasses
+        }
+        //            ,adjust:{screen:true, resize:true}
+    });
+}
+
  //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
     
@@ -290,12 +358,7 @@ function MakeSourceTextDivForGroup(group) {
 }
 
 
- function GetLocalizedHint(element) {
-     var whatToSay = $(element).data("hint");
-     if(whatToSay.startsWith("*")){
-         whatToSay = whatToSay.substring(1,1000);
-     }
-     
+ function GetLocalizedHint(element, whatToSay) {     
      var dictionary = GetDictionary();
 
      if(whatToSay in dictionary) {
@@ -510,13 +573,13 @@ function ResizeUsingPercentages(e,ui){
 
  //---------------------------------------------------------------------------------
 
- jQuery(document).ready(function () {
+ jQuery(document).ready(function() {
 
      $.fn.qtip.zindex = 1000000;
      //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
 
      //add a marginBox if it's missing. We introduced it early in the first beta
-     $(".bloom-page").each(function () {
+     $(".bloom-page").each(function() {
          if ($(this).find(".marginBox").length == 0) {
              $(this).wrapInner("<div class='marginBox'></div>");
          }
@@ -525,7 +588,7 @@ function ResizeUsingPercentages(e,ui){
      AddToolbox();
 
      //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
-     jQuery("textarea").blur(function () {
+     jQuery("textarea").blur(function() {
          this.innerHTML = this.value;
      });
 
@@ -549,9 +612,9 @@ function ResizeUsingPercentages(e,ui){
      */
 
      //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
-     $(".bloom-translationGroup").each(function () {
+     $(".bloom-translationGroup").each(function() {
          var contentElements = $(this).find("textarea, div.bloom-editable");
-         contentElements.sort(function (a, b) {
+         contentElements.sort(function(a, b) {
              //using negatives so that something with none of these labels ends up with a > score and at the end
              var scoreA = $(a).hasClass('bloom-content1') * -3 + ($(a).hasClass('bloom-content2') * -2) + ($(a).hasClass('bloom-content3') * -1);
              var scoreB = $(b).hasClass('bloom-content1') * -3 + ($(b).hasClass('bloom-content2') * -2) + ($(b).hasClass('bloom-content3') * -1);
@@ -598,22 +661,20 @@ function ResizeUsingPercentages(e,ui){
      //do it initially
      $(".bloom-centerVertically").CenterVerticallyInParent();
      //reposition as needed
-     $(".bloom-centerVertically").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
+     $(".bloom-centerVertically").resize(function() { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
          $(this).CenterVerticallyInParent();
      });
 
 
-
-
      /* Defines a starts-with function*/
      if (typeof String.prototype.startsWith != 'function') {
-         String.prototype.startsWith = function (str) {
+         String.prototype.startsWith = function(str) {
              return this.indexOf(str) == 0;
          };
      }
 
      //Add little language tags
-     $("div.bloom-editable:visible").each(function () {
+     $("div.bloom-editable:visible").each(function() {
          var key = $(this).attr("lang");
          var dictionary = GetDictionary();
          var whatToSay = dictionary[key];
@@ -643,8 +704,8 @@ function ResizeUsingPercentages(e,ui){
 
              position: {
                  my: 'top right',
-                 at: 'bottom right'
-                 , adjust: { y: -25 }
+                 at: 'bottom right',
+                 adjust: { y: -25 }
              },
              show: { ready: shouldShowAlways },
              hide: {
@@ -668,77 +729,30 @@ function ResizeUsingPercentages(e,ui){
      //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
      //    });
 
-     //put hint bubbles next to elements which call for them.
-     //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-     $("*[data-hint]").each(function () {
-
-         if($(this).css('display') == 'none'){
-             return;
-         }
+     //Process div.bloom-bubble inside of translation Groups
+     $(".bloom-bubble").each(function () {
+         var whatToSay = $(element).text();
+         var onFocusOnly = $(this).hasClass('bloom-showOnlyWhenHasFocus');
          
-         if ($(this).css('border-bottom-color') == 'transparent') {
-             return; //don't put tips if they can't edit it. That's just confusing
-         }
-         if ($(this).css('display') == 'none') {
-             return; //don't put tips if they can't see it.
-         }
-         theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-         if ($(this).height() < 100) {
-             pos = {
-                 at: 'right center', //I like this, but it doesn't reposition well -->'right center',
-                 my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
-                , viewport: $(window)
-                 // , adjust: { y: -20 }
-             };
-         }
-         else { // with the big back covers, the adjustment just makes things worse.      
-             pos = {
-                 at: 'right center',
-                 my: 'left center'
-             }
+         MakeBubble($(this).parent(), $(this), whatToSay, onFocusOnly);
+     });
+     
+     //this is the "old-style" way to get a hint bubble, cramming it all into a data-hint attribute
+     $("*[data-hint]").each(function() {
+
+         var whatToSay = $(element).data("hint");
+         if (whatToSay.startsWith("*")) {
+             whatToSay = whatToSay.substring(1, 1000);
          }
 
-         //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
-         //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
-         //at the moment, the logic is all around whoever has the data-hint
-         //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
-         var shouldShowAlways = true;
-         var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+         whatToSay = GetLocalizedHint(this, whatToSay);
 
          //make hints that start with a * only show when the field has focus
-         if ($(this).data("hint").startsWith("*")) {
-             shouldShowAlways = false;
-             hideEvents = 'unfocus mouseleave';
-         }
+         var showOnFocusOnly = $(this).data("hint").startsWith("*");
 
-         var whatToSay = GetLocalizedHint(this);
-
-         var functionCall = $(this).data("functiononhintclick");
-         if (functionCall) {
-             shouldShowAlways = true;
-             whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-             hideEvents = false;
-         }
-
-         $(this).qtip({
-             content: whatToSay,
-             position: pos,
-             show: {
-                 event: " focusin mouseenter",
-                 ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
-             }
-            , tip: { corner: "left center" }
-            , hide: {
-                event: hideEvents
-            },
-             adjust: { method: "flip none" },
-             style: {
-                 classes: theClasses
-             }
-             //            ,adjust:{screen:true, resize:true}
-         });
+         MakeBubble($(this), $(this),whatToSay, showOnFocusOnly);
      });
-
+     
      $.fn.hasAttr = function (name) {
          var attr = $(this).attr(name);
 
