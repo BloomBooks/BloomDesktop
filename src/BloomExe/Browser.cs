@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -269,6 +271,26 @@ namespace Bloom
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
+
+			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+		}
+		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
+		{
+			//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
+			//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
+			//on a developer/ support-person computer.
+			var builder = new StringBuilder();
+
+			foreach (string label in ErrorReport.Properties.Keys)
+			{
+				 builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
+			}
+
+			builder.AppendLine();
+
+			builder.AppendLine(File.ReadAllText(_url));
+			Clipboard.SetText(builder.ToString());
+			MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
 		}
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
