@@ -780,8 +780,33 @@ function ResizeUsingPercentages(e,ui){
      //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
      //    });
 
-     //Process div.bloom-bubble inside of translation Groups
-     $("*.bloom-translationGroup label").each(function () {
+
+     //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a 
+     //bloom-translationGroup (those should have a single <label> for the whole group).
+     //Notice that the <label> inside an editable div is in a precarious position, it could get
+     //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
+     //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
+     //so it is preferred when making new templates by hand.
+     $("*.bloom-editable label.bubble").each(function () {
+         var labelElement = $(this);
+         var whatToSay = labelElement.text();
+         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+         
+         var enclosingEditableDiv = labelElement.parent();
+         enclosingEditableDiv.attr('data-hint', labelElement.text());
+         labelElement.remove();
+         
+         //attach the bubble, this editable only, then remove it
+         MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
+     });
+
+     
+     //<label class='bubble'> inside a div.bloom-translationGroup to gives a hint bubble outside each of
+     // the fields, with some template-filing and localization for each.
+     // Note that Version 1.0, we didn't have this <label> ability but we had @data-hint.
+     //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
+     //behaviors through classes
+     $("*.bloom-translationGroup > label.bubble").each(function () {
          var labelElement = $(this);
          var whatToSay = labelElement.text();
          var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
@@ -792,8 +817,26 @@ function ResizeUsingPercentages(e,ui){
          });
      });
 
-     //this is the "old-style" way to get a hint bubble, cramming it all into a data-hint attribute
-     //The preferred way is to use a <label> element inside the div.bloom-translationGroup
+
+     
+     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
+     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
+     //@placeholder behavior.
+     //Now, what's going on here is that we also support
+     //<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
+     //behavior on each of the fields inside the group .
+     //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
+     //behaviors through classes.
+     //So the job of this bit here is to take the label.bubble and create the data-placeholders.
+     $("*.bloom-translationGroup > label.placeholder").each(function () {
+         $(this).parent().attr('data-placeholder',  $(this).text());
+         //now in it's up to the code that notices data-hint to do the rest
+     });
+     
+
+    //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
+    //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
+     //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
      $("*[data-hint]").each(function () {
          var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
          if (!whatToSay || whatToSay.length == 0)
