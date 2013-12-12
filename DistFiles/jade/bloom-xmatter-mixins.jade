@@ -34,9 +34,9 @@ mixin page-cover(label)
 		block
 
 mixin chooser-topic
-	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()")
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode
 		//- REVIEW Make sure this is not visible even when the user isn't allowed to edit it.
-		label.bubble Click to choose topic
+		label.bubble(data-functionOnHintClick="ShowTopicChooser()") Click to choose topic
 		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
 
 mixin field-ISBN
