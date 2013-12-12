@@ -1,0 +1,184 @@
+//- ---------------------------------------------------------------------------------------
+//- Notes on Mixin use
+//- 		If you get the error : "You should not have jade tags with multiple attributes."
+//- 	1) check that you don't have something like (class='foo')(attributes), which should
+//-			be (class='bloom-combinedPage', attributes)
+//-		2) make sure the mixin name is spelled correctly and capitalized correctly.
+//-		In WebStorm, ctrl+/ will comment out a large section so you can narrow it down
+//- ---------------------------------------------------------------------------------------
+
+//- All Bloom templates should use this mixin, so that when the format version
+//- changes we can change the version number in one place
+mixin metadata-standard
+	meta(charset='UTF-8')
+	meta(name='Generator', content='Bloom')
+	meta(name='BloomFormatVersion', content='0.8')
+
+mixin stylesheets(nameOfTemplateSpecificCSS)
+	+stylesheet('basePage.css')
+	//- +stylesheet('languageDisplay.css')
+	+stylesheet('editMode.css')
+	+stylesheet(nameOfTemplateSpecificCSS)
+	//- +stylesheet('file://..\customCollectionStyles.css')
+
+mixin bookVariable-title(langCode, title)
+	div(data-book='bookTitle', lang=langCode)=title
+
+mixin page(englishLabel)
+	//- A5Portrait is just the default in Bloom
+	.bloom-page.A5Portrait(attributes)
+		+page-label-english(englishLabel)
+		.marginBox
+			block
+
+//- The most common kind of page template; it is numbered and not required.
+mixin page-choice(englishLabel)
+	+page(englishLabel).numberedPage(attributes, data-page='extra')
+		block
+
+//- This is a page that is always in the book and can't be removed, like a cover page.
+mixin page-required(englishLabel)
+	+page(englishLabel)(data-page='required', attributes)
+		block
+
+mixin page-label-english(englishLabel)
+	.pageLabel(lang='en')=englishLabel
+
+//- Gives a basic Bloom translationGroup
+//- mixin bloom-translation-group
+//-	.bloom-translationGroup(class=attributes.class)
+//-		.bloom-editable
+//-			block
+
+
+//- Example Usage with placeholder and bubble:
+//-	+shellField.question
+//-		label.bubble Don't forget to fill this in using {lang}
+//-		label.placeholder question
+mixin field
+	-requireZeroArguments('field');
+	.bloom-translationGroup(attributes)
+		block //this is where <label>s go
+		+editable
+
+//- Sometimes, especially when we're just jade-ifying some existing html with existing css,
+//- we need to put attributes directly on the prototyp div instide of a translation group.
+//- This one lets us do that
+mixin field-prototypeDeclaredExplicity
+	- requireZeroArguments('field-prototypeDeclaredExplicity', arguments);
+	.bloom-translationGroup(attributes)
+		block
+
+//- deprecated. Starting with version 1.1, we've changed how placeholders are handled
+mixin field-version1(placeholder)
+	+field(data-placeholder=placeholder)
+		+editable(data-placeholder=placeholder)
+
+
+
+//- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
+//-	.roundedBorder
+//-		+image.storyPicture
+//-			+field.bloom-draggableLabel
+//-			+field.bloom-draggableLabel
+mixin image
+	- requireZeroArguments('image', arguments);
+	.bloom-imageContainer(attributes)
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
+		block
+
+//- Will show a table. Bloom's basePage.css should style it with a border around each cell
+mixin grid(rows, columns)
+	- requireTwoArguments("grid", arguments);
+	table.bloomGrid(attributes)
+		- for (var r = 0; r < rows; r++)
+			tr
+				- for(var c = 0; c < columns; c++)
+					td
+						+field
+
+//- ------------------------------------------------
+//- Mixins for Repetition
+//- ------------------------------------------------
+
+mixin repeat(count)
+	- if(!count) throw "Usage Error: +repeat requires a count parameter.";
+	- for (var i=0;i<count;i++)
+		block
+
+mixin list-numbered(count)
+	- if(!count) throw "Usage Error: +list-numbered requires a count parameter.";
+	ol(class=attributes.class)
+		- for (var i=0;i<count;i++)
+			li
+				block
+
+
+//- ------------------------------------------------
+//- Lesser-used Mixins
+//- ------------------------------------------------
+
+//- Use this to have an element that repeats on multiple pages with the same value
+mixin field-common(key)
+	- requireOneArgument('field-common', arguments);
+	+field(data-book=key, attributes)
+		block
+
+//- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
+//- use this for fields that are always in the specified language, no translation possible
+mixin field-mono-version1(language, bubbleText)
+	- requireTwoArguments('field-mono-version1', arguments);
+	+editable(data-hint=bubbleText, lang=language,attributes)
+
+//- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
+//- These are useful for front-back matter that will never be translated.
+//- When used in frontMatter, the dataBookName is mandatory.
+//- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
+mixin field-mono-meta-version1(language, dataBookName, bubbleText)
+	- requireThreeArugments('field-mono-meta-version1', arguments);
+	+field-mono-version1(language, bubbleText)(data-book=dataBookName,attributes)
+
+//- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
+//- The css for the page should then respond to the page having either bloom-combined (when not split) and
+//- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
+mixin  page-splittable-choice(englishLabel)
+	+page-choice(englishLabel)(class='bloom-combinedPage', attributes)
+		block
+mixin script(javascriptfileName)
+	script(type='text/javascript', src=javascriptfileName)
+mixin stylesheet(fullName)
+	- requireOneArgument('stylesheet', arguments);
+	link(rel='stylesheet', href=fullName, type='text/css')
+mixin dataDiv
+	div#bloomDataDiv
+		block
+//- TODO: Move all this stuff out of here, it's too specific
+//-	mixin bloom-topic(langAbbrev, topic)
+//-		div(data-book='topic', lang=langAbbrev)=topic
+//-	mixin bloom-CCHyperlink
+//-		a(rel='license', href='http://creativecommons.org/licenses/by/3.0/') Creative Commons Attribution
+//- TODO: move this to basic book, the use of this is too rare to be supported/documented here
+//-	mixin page-extra-combined(label)
+//-		+page(label)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
+//-			block
+//- +editable should rarely if ever be used directly in a template; it is for other mixins
+mixin editable
+	.bloom-content1.bloom-editable(contenteditable="true", attributes)
+		block
+
+//----- utility functions------------------------------
+- function requireZeroArguments(functionName, args) {
+-    if(args && args.length) throw "Usage Error: "+functionName+" takes no parameters."+args.length;
+- }
+
+- function requireOneArgument(functionName, args) {
+-    if(args.length != 1) throw "Usage Error: "+functionName+" requires 1 parameter.";
+- }
+
+- function requireTwoArguments(functionName, args) {
+-    if(args.length != 2) throw "Usage Error: "+functionName+" requires 2 parameters.";
+- }
+
+- function requireThreeArguments(functionName, args) {
+-    if(args.length != 3) throw "Usage Error: "+functionName+" requires 3 parameters.";
+- }

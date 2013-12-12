@@ -431,3 +431,57 @@ DIV.marginBox
 {
 	font-family: Arial;
 }
+/*Toolbox*/
+#toolbox
+{
+	background-color: #FFFFA3;
+	/*+placement:shift 564px -649px;*/
+	position: relative;
+	left: 564px;
+	top: -649px;
+	width: 274px;
+	height: 645px;
+	/*[empty]padding-top:;*/
+	/*[empty]margin-top:;*/
+}
+.ui-resizable, .ui-draggable, .ui-deletable
+{
+	border: 1px solid #C1E6CA;
+}
+#toolbox IMG
+{
+	width: 116px;
+}
+#toolbox > UL > LI > DIV
+{
+	border: 1px dotted #787800;
+	margin-top: 34px;
+	/*[empty]padding-top:;*/
+}
+UL.toolbox
+{
+	height: 212px;
+	width: 207px;
+	margin-left: 31px;
+	margin-top: 15px;
+	background-color: transparent;
+}
+UL.toolbox LI
+{
+	display: inline-block;
+	width: 162px;
+}
+.heading1-style
+{
+	font-weight: bold;
+	font-size: 14pt;
+}
+.heading2-style
+{
+	font-weight: bold;
+	font-size: 13pt;
+}
+.centered
+{
+	text-align: center;
+}

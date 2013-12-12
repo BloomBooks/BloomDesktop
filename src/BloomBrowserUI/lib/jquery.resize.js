@@ -48,7 +48,8 @@
 
 //Added by Hatton for Bloom, to prevent image scaling from triggering resize which triggers image scaling, which...
 function ResetRememberedSize(element) {
-      var elem = $(this);
+    var elem = $(this);
+    if (elem.str_data)//check to avoid error when this is called when str_data isn't defined yet (Bloom custom toolbox widget experiment)
       $.data( this, elem.str_data, { w: elem.width(), h: elem.height() } );
 }
 
