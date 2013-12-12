@@ -21,7 +21,7 @@ namespace BloomBookDownloader
 				return 1;
 			}
 
-			var t = new Bloom.WebLibraryIntegration.BloomS3Client(BloomS3Client.SandboxBucketName);
+			var t = new BloomS3Client(BloomS3Client.SandboxBucketName);
 
 			var destinationPath = Path.Combine(Path.GetTempPath(), "BloomBookDownloader");
 			if (!Directory.Exists(destinationPath))
