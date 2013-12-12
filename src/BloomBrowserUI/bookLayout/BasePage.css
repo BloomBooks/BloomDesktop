@@ -38,6 +38,9 @@ FIELDSET, A IMG
 {
 	border: 0;
 }
+/*Bloom uses labels to make bubbles*/
+.bloom-translationGroup label {display:none}
+
 BODY
 {
 	font-size: 100%;
