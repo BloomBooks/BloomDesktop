@@ -406,8 +406,8 @@ namespace BloomTests.Book
 			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
 
-			var metadata = GetMetaData(bookFolderPath);
-			Assert.That(metadata.volumeInfo.title, Is.EqualTo("My Book"));
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.That(metadata.Title, Is.EqualTo("My Book"));
 		}
 
 		[Test]
@@ -428,11 +428,11 @@ namespace BloomTests.Book
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			var jsonFile = Path.Combine(bookFolderPath, BookStorage.MetaDataFileName);
+			var jsonFile = Path.Combine(bookFolderPath, BookInfo.MetaDataFileName);
 			Assert.That(File.Exists(jsonFile), "Creating a book should create a metadata json file meta.json");
 
-			var metadata = BookMetaData.Deserialize(File.ReadAllText(jsonFile));
-			Assert.That(metadata.id, Is.Not.Null, "New book should get an ID");
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.That(metadata.Id, Is.Not.Null, "New book should get an ID");
 		}
 
 		[Test]
@@ -442,14 +442,14 @@ namespace BloomTests.Book
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			var jsonFile = Path.Combine(bookFolderPath, BookStorage.MetaDataFileName);
+			var jsonFile = Path.Combine(bookFolderPath, BookInfo.MetaDataFileName);
 			Assert.That(File.Exists(jsonFile), "Creating a book should create a metadata json file meta.json");
-			var metadata = BookMetaData.Deserialize(File.ReadAllText(jsonFile));
+			var metadata = new BookInfo(bookFolderPath, false);
 
 			var kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
-			Assert.That(metadata.bloom.bookLineage, Is.EqualTo(kIdOfBasicBook));
+			Assert.That(metadata.BookLineage, Is.EqualTo(kIdOfBasicBook));
 			//we should get our own id, not reuse our parent's
-			Assert.That(metadata.id, Is.Not.EqualTo(kIdOfBasicBook), "New book should get its own ID, not reuse parent's");
+			Assert.That(metadata.Id, Is.Not.EqualTo(kIdOfBasicBook), "New book should get its own ID, not reuse parent's");
 		}
 
 		[Test]
@@ -468,15 +468,8 @@ namespace BloomTests.Book
 				@" ", null, lineage, includeJson);
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
 
-			var metadata = GetMetaData(folderPath);
-			Assert.That(metadata.bloom.bookLineage, Is.EqualTo("first,second,thisNewGuy"));
-		}
-
-		private static BookMetaData GetMetaData(string folderPath)
-		{
-			var jsonFile = Path.Combine(folderPath, BookStorage.MetaDataFileName);
-			var metadata = BookMetaData.Deserialize(File.ReadAllText(jsonFile));
-			return metadata;
+			var metadata = new BookInfo(folderPath, false);
+			Assert.That(metadata.BookLineage, Is.EqualTo("first,second,thisNewGuy"));
 		}
 
 		[Test]
@@ -599,12 +592,12 @@ namespace BloomTests.Book
             File.WriteAllText(shellFolderPath, content);
 			if (includeJson)
 			{
-				var json = "{'bloom':{'bookLineage':'first,second'},'id':'thisNewGuy', 'volumeInfo':{'title':'Test Shell'}}";
-				File.WriteAllText(Path.Combine(folder, BookStorage.MetaDataFileName), json);
+				var json = "{'bookLineage':'first,second','id':'thisNewGuy','title':'Test Shell'}";
+				File.WriteAllText(Path.Combine(folder, BookInfo.MetaDataFileName), json);
 			}
 			else
 			{
-				File.Delete(Path.Combine(folder, BookStorage.MetaDataFileName)); // in case an earlier run created it
+				File.Delete(Path.Combine(folder, BookInfo.MetaDataFileName)); // in case an earlier run created it
 			}
 			return folder;
         }

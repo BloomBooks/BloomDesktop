@@ -50,7 +50,7 @@ namespace Bloom.Book
     	IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 
-		BookMetaData MetaData { get; }
+		BookInfo MetaData { get; set; }
     }
 
     public class BookStorage : IBookStorage
@@ -71,15 +71,15 @@ namespace Bloom.Book
 	    private string ErrorMessages;
         private static bool _alreadyNotifiedAboutOneFailedCopy;
         private HtmlDom _dom; //never remove the readonly: this is shared by others
-	    private BookMetaData _metaData;
+	    private BookInfo _metaData;
 	    public event EventHandler FolderPathChanged;
 
-	    public BookMetaData MetaData
+		public BookInfo MetaData
 	    {
 		    get
 		    {
 				if (_metaData == null)
-					_metaData = new BookMetaData();
+					_metaData = new BookInfo(_folderPath, false);
 			    return _metaData;
 		    }
 		    set { _metaData = value; }
@@ -91,8 +91,6 @@ namespace Bloom.Book
 	    {
 		    _folderPath = folderPath;
 
-	    	InitializeMetaData();
-
 	    	//we clone becuase we'll be customizing this for use by just this book
 		    _fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 		    _bookRenamedEvent = bookRenamedEvent;
@@ -100,15 +98,6 @@ namespace Bloom.Book
 
 		    ExpensiveInitialization();
 	    }
-
-    	private void InitializeMetaData()
-    	{
-    		var metaDataPath = MetaDataPath;
-    		if (File.Exists(metaDataPath))
-    			MetaData = BookMetaData.Deserialize(File.ReadAllText(metaDataPath));
-    		else
-    			MetaData = new BookMetaData();
-    	}
 
         //TODO: this is in conflict with the BookType on Book. Get rid of one of them (has trello card for v1.1)
 	    public Book.BookType BookType
@@ -224,7 +213,7 @@ namespace Bloom.Book
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
-			MetaData.bloom.formatVersion = kBloomFormatVersion;
+			MetaData.FormatVersion = kBloomFormatVersion;
 			string tempPath = SaveHtml(Dom);
 
 
@@ -248,7 +237,7 @@ namespace Bloom.Book
 
 			}
 
-			File.WriteAllText(MetaDataPath, BookMetaData.Serialize(MetaData));
+			MetaData.Save();
 		}
 
 		private void AssertIsAlreadyInitialized()
@@ -849,16 +838,6 @@ namespace Bloom.Book
             }
             return Path.Combine(parent, name + suffix);
         }
-
-	    public string MetaDataPath
-	    {
-		    get
-		    {
-			    return Path.Combine(_folderPath, MetaDataFileName);
-		    }
-	    }
-
-	    public const string MetaDataFileName = "meta.json";
     }
 
 }

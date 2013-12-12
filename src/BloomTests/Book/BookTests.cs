@@ -34,17 +34,14 @@ namespace BloomTests.Book
     	private TemporaryFolder _tempFolder;
     	private CollectionSettings _collectionSettings;
         private HtmlDom _bookDom;
-    	private BookMetaData _metadata;
+    	private BookInfo _metadata;
 
         [SetUp]
         public void Setup()
         {
-			_metadata = new BookMetaData();
             _storage = new Moq.Mock<IBookStorage>();
-        	_storage.SetupGet(x => x.MetaData).Returns(_metadata);
             _storage.Setup(x => x.GetLooksOk()).Returns(true);
     	    _bookDom = new HtmlDom(GetThreePageDom());
-        	_bookDom.MetaData = _metadata; // a real storage would do this for us.
             _storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
             _storage.SetupGet(x => x.Key).Returns("testkey");
             _storage.SetupGet(x => x.FileName).Returns("testTitle");
@@ -63,7 +60,9 @@ namespace BloomTests.Book
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
             MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path,"original.png"));
         	_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
-
+			_metadata = new BookInfo(_tempFolder.Path, true);
+			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
+			_bookDom.MetaData = _metadata; // a real storage would do this for us.
 			
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
             _fileLocator = new Moq.Mock<IFileLocator>();
@@ -100,7 +99,7 @@ namespace BloomTests.Book
     	{
 			_bookDom.MetaData = _metadata; // many tests change _bookDom. A real storage would set the Dom's metadata.
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-    		return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath,true), _storage.Object, _templateFinder.Object, 
+    		return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object, 
 				_collectionSettings,
                 _thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
     	}
@@ -665,12 +664,12 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bookLineage']", 0);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 0);
 
-			Assert.That(_metadata.id, Is.EqualTo("MyId"));
-			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("first,second"));
-			Assert.That(_metadata.volumeInfo.title, Is.EqualTo("my nice title"));
+			Assert.That(_metadata.Id, Is.EqualTo("MyId"));
+			Assert.That(_metadata.BookLineage, Is.EqualTo("first,second"));
+			Assert.That(_metadata.Title, Is.EqualTo("my nice title"));
 			// Checking the defaults, when not specified in the metadata
-			Assert.That(_metadata.bloom.suitableForMakingShells, Is.False);
-			Assert.That(_metadata.bloom.suitableForMakingVernacularBooks, Is.True);
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.False);
+			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.True);
 
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -694,8 +693,8 @@ namespace BloomTests.Book
 			book = CreateBook();
 		    book.BringBookUpToDate(new NullProgress());
 
-			Assert.That(_metadata.bloom.suitableForMakingShells, Is.True);
-			Assert.That(_metadata.bloom.suitableForMakingVernacularBooks, Is.False);
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.True);
+			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.False);
 		}
 
 		[Test]
@@ -716,8 +715,8 @@ namespace BloomTests.Book
 					</div>
 				</body></html>");
 
-			_metadata.bloom.bookLineage = ""; // not sure if these could be left from another test
-			_metadata.id = "";
+			_metadata.BookLineage = ""; // not sure if these could be left from another test
+			_metadata.Id = "";
 			var book = CreateBook();
 
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 1);
@@ -742,13 +741,13 @@ namespace BloomTests.Book
 					</div>
 				</body></html>");
 
-			_metadata.bloom.bookLineage = "something current";
-			_metadata.id = "";
+			_metadata.BookLineage = "something current";
+			_metadata.Id = "";
 			var book = CreateBook();
 
 			// 0 because it should NOT make the change.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
-			Assert.That(_metadata.bloom.bookLineage, Is.EqualTo("something current"));
+			Assert.That(_metadata.BookLineage, Is.EqualTo("something current"));
 		}
 		[Test]
 		public void Save_UpdatesMetadataTitle()
@@ -775,7 +774,7 @@ namespace BloomTests.Book
 			var isbnElt = _bookDom.SelectSingleNode("//textarea");
 			isbnElt.InnerText = "changed";
 			book.Save();
-			Assert.That(_metadata.volumeInfo.title, Is.EqualTo("changed"));
+			Assert.That(_metadata.Title, Is.EqualTo("changed"));
 		}
 
 		[Test]
@@ -796,15 +795,13 @@ namespace BloomTests.Book
 						</div>  
 					</div>
 				</body></html>");
-			_bookDom.MetaData = _metadata; // a real storage would do this automatically.
 
 			var book = CreateBook();
 
 			var isbnElt = _bookDom.SelectSingleNode("//textarea");
 			isbnElt.InnerText = "978-0-306-40615-7";
 			book.Save();
-			Assert.That(_metadata.volumeInfo.industryIdentifiers[0].identifier, Is.EqualTo("978-0-306-40615-7"));
-			Assert.That(_metadata.volumeInfo.industryIdentifiers[0].type, Is.EqualTo("ISBN_13"));
+			Assert.That(book.BookInfo.Isbn, Is.EqualTo("978-0-306-40615-7"));
 
 			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
 			//isbnElt.InnerText = " ";
@@ -824,32 +821,32 @@ namespace BloomTests.Book
 
 			book.UpdateLicenseMetdata(licenseData);
 
-			Assert.That(_metadata.bloom.license, Is.EqualTo("by-sa"));
-			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Please acknowledge nicely"));
+			Assert.That(_metadata.License, Is.EqualTo("by-sa"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
 
 			// Custom License
 		    licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
 
 			book.UpdateLicenseMetdata(licenseData);
 
-			Assert.That(_metadata.bloom.license, Is.EqualTo("custom"));
-			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Use it if you dare"));
+			Assert.That(_metadata.License, Is.EqualTo("custom"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Use it if you dare"));
 
 			// Null License (ask the user)
 			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
 
 			book.UpdateLicenseMetdata(licenseData);
 
-			Assert.That(_metadata.bloom.license, Is.EqualTo("ask"));
-			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Ask me"));
+			Assert.That(_metadata.License, Is.EqualTo("ask"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));
 
 			// One we don't know about (future-proofing)
 			licenseData.License = new FakeLicense { RightsStatement = "Whatever" }; ;
 
 			book.UpdateLicenseMetdata(licenseData);
 
-			Assert.That(_metadata.bloom.license, Is.EqualTo("unknown"));
-			Assert.That(_metadata.bloom.licenseNotes, Is.EqualTo("Whatever"));
+			Assert.That(_metadata.License, Is.EqualTo("unknown"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Whatever"));
 	    }
 
 	    class FakeLicense : LicenseInfo
@@ -879,7 +876,7 @@ namespace BloomTests.Book
 					</div>
 				</body></html>");
 
-			_metadata.id = "";
+			_metadata.Id = "";
 			var book = CreateBook();
 
 			// 0 indicates it should NOT match, that is, that it doesn't have the mistaken ID any more.

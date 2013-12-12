@@ -153,10 +153,7 @@ namespace Bloom.Book
 			}
 			if (_dom.MetaData != null)
 			{
-				if (string.IsNullOrWhiteSpace(isbn))
-					_dom.MetaData.volumeInfo.industryIdentifiers = new IndustryIdentifier[0];
-				else
-					_dom.MetaData.volumeInfo.industryIdentifiers = new[] {new IndustryIdentifier {identifier = isbn, type = "ISBN_13"}};
+				_dom.MetaData.Isbn = isbn;
 			}
 		}
 

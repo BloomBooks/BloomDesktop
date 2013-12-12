@@ -31,8 +31,8 @@ namespace BloomTests.Book
 		[Test]
 		public void Constructor_LoadsMetaDataFromJson()
 		{
-			var jsonPath = Path.Combine(_folder.Path, BookStorage.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'bloom':{'folio':'true','experimental':'true','suitableForMakingShells':'true'}}");
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{'folio':'true','experimental':'true','suitableForMakingShells':'true'}");
 			var bi = new BookInfo(_folder.Path, true);
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio);
@@ -50,8 +50,8 @@ namespace BloomTests.Book
 			Assert.That(bi.IsSuitableForMakingShells);
 
 			// Check that json takes precedence
-			var jsonPath = Path.Combine(_folder.Path, BookStorage.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'bloom':{'folio':'false','experimental':'true','suitableForMakingShells':'false'}}");
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{'folio':'false','experimental':'true','suitableForMakingShells':'false'}");
 			bi = new BookInfo(_folder.Path, true);
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio, Is.False);

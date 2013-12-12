@@ -166,13 +166,13 @@ namespace Bloom.Book
 		{
 			string parentId = null;
 			string lineage = null;
-			try
+			if (File.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
 			{
-				var sourceMetaData = BookMetaData.Deserialize(File.ReadAllText(Path.Combine(sourceFolderPath, BookStorage.MetaDataFileName)));
-				parentId = sourceMetaData.id;
-				lineage = sourceMetaData.bloom.bookLineage;
+				var sourceMetaData = new BookInfo(sourceFolderPath, false);
+				parentId = sourceMetaData.Id;
+				lineage = sourceMetaData.BookLineage;
 			}
-			catch (FileNotFoundException)
+			else
 			{
 				// No parent meta.json, try for legacy embedded metadata in html
 				parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
@@ -181,15 +181,15 @@ namespace Bloom.Book
 				{
 					lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
 				}
-			}				
-			
+			}
+
 			if (!string.IsNullOrEmpty(lineage))
 				lineage += ",";
 			if (!string.IsNullOrEmpty(parentId))
 			{
-				storage.MetaData.bloom.bookLineage = lineage + parentId;
+				storage.MetaData.BookLineage = lineage + parentId;
 			}
-			storage.MetaData.id = Guid.NewGuid().ToString();
+			storage.MetaData.Id = Guid.NewGuid().ToString();
 			storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
 			storage.Dom.RemoveMetaElement("bookLineage"); // even older name
 		}
@@ -252,7 +252,7 @@ namespace Bloom.Book
 		    if (nameSuggestion != null)
 		    {
 			    bookData.Set("bookTitle", nameSuggestion, "en");
-			    storage.MetaData.volumeInfo.title = nameSuggestion;
+			    storage.MetaData.Title = nameSuggestion;
 		    }
 		    storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 

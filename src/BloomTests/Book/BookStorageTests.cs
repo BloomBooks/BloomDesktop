@@ -71,7 +71,7 @@ namespace BloomTests.Book
 //            Assert.IsFalse(Directory.Exists(_folder.Path));
 //        }
 
-        private BookStorage GetInitialStorageWithCustomHtml(string html, BookMetaData metadata = null)
+        private BookStorage GetInitialStorageWithCustomHtml(string html, BookInfo metadata = null)
         {
             File.WriteAllText(_bookPath, html);
             var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
@@ -105,20 +105,6 @@ namespace BloomTests.Book
             storage.Save();
             return storage;
         }
-
-		[Test]
-		public void BookCreation_LoadsMetaDataFromJson()
-		{
-			var metadata = new BookMetaData();
-			metadata.id = "my nice id";
-			var oldStorage = GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>", metadata);
-			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
-            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
-			var newStorage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
-
-			Assert.That(newStorage.MetaData.id, Is.EqualTo("my nice id"));
-			// We could check other properties, but basically that would just be verifying the NewtonSoft serialization.
-		}
 
 	    [Test]
         public void SetBookName_EasyCase_ChangesFolderAndFileName()
@@ -190,7 +176,6 @@ namespace BloomTests.Book
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
 			var tagsPath = Path.Combine(folder, "tags.txt");
-			var jsonPath = storage.MetaDataPath;
 			File.WriteAllText(tagsPath, "suitableForMakingShells\nexperimental\nfolio\n");
 			var collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
@@ -200,16 +185,16 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 
 			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
-			Assert.That(storage.MetaData.bloom.suitableForMakingShells, Is.True);
-			Assert.That(storage.MetaData.bloom.folio, Is.True);
-			Assert.That(storage.MetaData.bloom.experimental, Is.True);
+			Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.True);
+			Assert.That(storage.MetaData.IsFolio, Is.True);
+			Assert.That(storage.MetaData.IsExperimental, Is.True);
 		}
 
 		[Test]
 		public void Save_SetsJsonFormatVersion()
 		{
 			var storage = GetInitialStorage();
-			Assert.That(storage.MetaData.bloom.formatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
+			Assert.That(storage.MetaData.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
 		}
 
 
