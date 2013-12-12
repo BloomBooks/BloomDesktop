@@ -15,12 +15,13 @@
 	  <div lang="en" class="pageLabel">Front Cover</div>
 	  <div class="marginBox">
 		<div class="bloom-translationGroup coverTitle-style">
-		  <div contenteditable="true" class="bloom-content1 bloom-editable bookTitle" data-book="bookTitle" data-hint="Book title in {lang}">
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bookTitle" data-book="bookTitle">
+			<label class="bubble">Book title in {lang}</label>
 		  </div>
 		</div>
-		<!--+image-xmatter('coverImage')-->
 		<div class="bloom-imageContainer"><img src="placeholder.png" data-book="coverImage"/></div>
-		<div contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits cover-credits-style" data-hint="*You may use this space for author/illustrator, or anything else." lang="V" data-book="smallCoverCredits">
+		<div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits cover-credits-style" data-book="smallCoverCredits">
+		  <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
 		</div>
 		<div class="coverBottomLangName">
 		  <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
@@ -36,7 +37,9 @@
 	  <div lang="en" class="pageLabel">Credits Page</div>
 	  <div class="marginBox">
 		<div class="bloom-translationGroup originalAcknowledgments">
-		  <div contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary inside-cover-original-acknowledments-style" data-hint="Acknowledgments in {lang}" data-book="originalAcknowledgments">{Original Acknowledgments}
+		  <label class="placeholder">Original (or Shell) Acknowledgments</label>
+		  <label class="bubble">Original (or Shell) Acknowledgments in {lang}</label>
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary inside-cover-original-acknowledments-style" data-book="originalAcknowledgments">{Original Acknowledgments}
 		  </div>
 		</div>
 		<div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" id="versoLicenseAndCopyright" class="bloom-metaData">
@@ -49,7 +52,7 @@
 		  <div data-book="ISBN" lang="*" class="bloom-editable"></div>
 		</div>
 		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.-->
-		<div contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments inside-cover-version-aknowledgments-style bloom-readOnlyInEditMode" lang="N1" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
+		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments inside-cover-version-aknowledgments-style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
 		</div>
 	  </div>
 	</div>
@@ -59,17 +62,17 @@
 	  <div class="marginBox">
 		<div class="bloom-translationGroup" id="titePageTitleBlock">
 		  <label class="bubble">Book title in {lang}</label>
-		  <div contenteditable="true" class="bloom-content1 bloom-editable" data-book="bookTitle">
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable" data-book="bookTitle">
 		  </div>
 		</div>
 		<div class="bloom-translationGroup" id="originalContributions">
 		  <label class="bubble">The contributions made by writers, illustrators, editors, etc., in {lang}</label>
-		  <div contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode title-page-original-contributors-style" data-book="originalContributions">
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode title-page-original-contributors-style" data-book="originalContributions">
 		  </div>
 		</div>
 		<div class="bloom-translationGroup" id="funding">
 		  <label class="bubble">Use this to acknowledge any funding agencies.</label>
-		  <div contenteditable="true" class="bloom-content1 bloom-editable funding title-page-funding-style" data-book="funding">
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable funding title-page-funding-style" data-book="funding">
 		  </div>
 		</div>
 		<div id="languageInformation">
@@ -93,7 +96,8 @@
 	<div class="bloom-page A5Portrait cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-inside-back-cover" id="502BE62F-A4D0-4225-A598-1A203FA73239">
 	  <div lang="en" class="pageLabel">Inside Back Cover</div>
 	  <div class="marginBox">
-		<div contenteditable="true" class="bloom-content1 bloom-editable inside-back-cover-style" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover." lang="N1" data-book="insideBackCover">
+		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable inside-back-cover-style" data-book="insideBackCover">
+		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
 		</div>
 	  </div>
 	</div>
@@ -101,7 +105,8 @@
 	<div class="bloom-page A5Portrait cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-back-cover" id="6AB1D898-9E35-498E-99D4-132B46FAFDA4">
 	  <div lang="en" class="pageLabel">Outside Back Cover</div>
 	  <div class="marginBox">
-		<div contenteditable="true" class="bloom-content1 bloom-editable outside-back-cover-style" data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." lang="N1" data-book="outsideBackCover">
+		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable outside-back-cover-style" data-book="outsideBackCover">
+		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."</label>
 		</div>
 	  </div>
 	</div>

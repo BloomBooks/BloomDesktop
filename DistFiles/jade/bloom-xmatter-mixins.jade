@@ -30,6 +30,7 @@ mixin page-xmatter(label)
 		block
 
 mixin page-cover(label)
+	- requireOneArgument('page-cover',arguments)
 	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
 		block
 
@@ -48,12 +49,14 @@ mixin field-ISBN
 mixin field-acknowledgments-localizedVersion
 	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
 	//- TODO: why both versionAcknowledgments && inside-cover-version-aknowledgments-style?
-	+editable.versionAcknowledgments.inside-cover-version-aknowledgments-style.bloom-readOnlyInEditMode(lang="N1", data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	+editable("N1").versionAcknowledgments.inside-cover-version-aknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
-		+editable.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(data-hint="Acknowledgments in {lang}", data-book='originalAcknowledgments')
+		label.placeholder Original (or Shell) Acknowledgments
+		label.bubble Original (or Shell) Acknowledgments in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
@@ -87,14 +90,24 @@ mixin block-licenseAndCopyright
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover')#74731b2d-18b0-420f-ac96-6de20f659810
+
+		//- enchance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
+		//- 	+field-matter('bookTitle').coverTitle-style
+		//- 		label.bubble Book title in {lang}
+		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
+		//- light of jade it is overly complicated.
+
 		+field-prototypeDeclaredExplicity.coverTitle-style
-			+editable.bookTitle(data-book='bookTitle', data-hint='Book title in {lang}')
-		//+image-xmatter('coverImage')
+			+editable(kLanguageForPrototypeOnly).bookTitle(data-book='bookTitle')
+				label.bubble Book title in {lang}
+
 		.bloom-imageContainer
 			img(src="placeholder.png", data-book='coverImage')
 
 		//- 'V' means this field is only available in the vernacular
-		+field-mono-version1('V','*You may use this space for author/illustrator, or anything else.').smallCoverCredits.cover-credits-style(data-book='smallCoverCredits')
+		+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.cover-credits-style
+			label.bubble *You may use this space for author/illustrator, or anything else.
+
 		.coverBottomLangName
 			//- lang='N1' means show the language name here using the national language
 			div(data-library="nameOfLanguage",lang="N1")
@@ -114,14 +127,14 @@ mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titePageTitleBlock
 			label.bubble Book title in {lang}
-			+editable(data-book='bookTitle')
+			+editable(kLanguageForPrototypeOnly)(data-book='bookTitle')
 
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable.credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
 		+field-prototypeDeclaredExplicity#funding
 			label.bubble Use this to acknowledge any funding agencies.
-			+editable.funding.title-page-funding-style(data-book='funding')
+			+editable(kLanguageForPrototypeOnly).funding.title-page-funding-style(data-book='funding')
 		#languageInformation
 			+field-prototypeDeclaredExplicity
 				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
@@ -137,9 +150,12 @@ mixin factoryStandard-titlePage
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
-		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.").inside-back-cover-style(data-book='insideBackCover')
+		+field-mono-meta("N1","insideBackCover").inside-back-cover-style
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
 	+page-xmatter('Outside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
-		+field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
+		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
+		+field-mono-meta("N1","outsideBackCover").outside-back-cover-style
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."

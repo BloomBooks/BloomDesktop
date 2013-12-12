@@ -7,6 +7,8 @@
 //-		In WebStorm, ctrl+/ will comment out a large section so you can narrow it down
 //- ---------------------------------------------------------------------------------------
 
+- const kLanguageForPrototypeOnly = 'z';
+
 //- All Bloom templates should use this mixin, so that when the format version
 //- changes we can change the version number in one place
 mixin metadata-standard
@@ -59,7 +61,7 @@ mixin field
 	-requireZeroArguments('field');
 	.bloom-translationGroup(attributes)
 		block //this is where <label>s go
-		+editable
+		+editable(kLanguageForPrototypeOnly)
 
 //- Sometimes, especially when we're just jade-ifying some existing html with existing css,
 //- we need to put attributes directly on the prototyp div instide of a translation group.
@@ -72,7 +74,7 @@ mixin field-prototypeDeclaredExplicity
 //- deprecated. Starting with version 1.1, we've changed how placeholders are handled
 mixin field-version1(placeholder)
 	+field(data-placeholder=placeholder)
-		+editable(data-placeholder=placeholder)
+		+editable(kLanguageForPrototypeOnly)(data-placeholder=placeholder)
 
 
 
@@ -128,15 +130,15 @@ mixin field-common(key)
 //- use this for fields that are always in the specified language, no translation possible
 mixin field-mono-version1(language, bubbleText)
 	- requireTwoArguments('field-mono-version1', arguments);
-	+editable(data-hint=bubbleText, lang=language,attributes)
+	+editable(language)(data-hint=bubbleText, attributes)
 
-//- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
 //- These are useful for front-back matter that will never be translated.
 //- When used in frontMatter, the dataBookName is mandatory.
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
-mixin field-mono-meta-version1(language, dataBookName, bubbleText)
-	- requireThreeArugments('field-mono-meta-version1', arguments);
-	+field-mono-version1(language, bubbleText)(data-book=dataBookName,attributes)
+mixin field-mono-meta(language, dataBookName)
+	- requireTwoArguments('field-mono-meta', arguments);
+	+editable(language)(data-book=dataBookName,attributes)
+		block
 
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
 //- The css for the page should then respond to the page having either bloom-combined (when not split) and
@@ -162,8 +164,9 @@ mixin dataDiv
 //-		+page(label)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
 //-			block
 //- +editable should rarely if ever be used directly in a template; it is for other mixins
-mixin editable
-	.bloom-content1.bloom-editable(contenteditable="true", attributes)
+mixin editable(language)
+	- requireOneArgument('editable', arguments)
+	.bloom-content1.bloom-editable(lang=language, contenteditable="true", attributes)
 		block
 
 //----- utility functions------------------------------
