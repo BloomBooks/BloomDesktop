@@ -838,6 +838,24 @@ namespace BloomTests.Book
 
 			Assert.That(_metadata.License, Is.EqualTo("ask"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));
+
+			// One we don't know about (future-proofing)
+			licenseData.License = new FakeLicense { RightsStatement = "Whatever" }; ;
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.License, Is.EqualTo("unknown"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Whatever"));
+		}
+
+		class FakeLicense : LicenseInfo
+		{
+			public override string GetDescription(string iso639_3LanguageCode)
+			{
+				return "fake";
+			}
+
+			public override string Url { get; set; }
 		}
 
 		[Test]
