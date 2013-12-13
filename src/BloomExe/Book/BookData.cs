@@ -41,6 +41,9 @@ namespace Bloom.Book
 		</div>
 	*/
 	/// This class must keep these in sync
+	/// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
+	/// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
+	/// bloomDataDiv bookTitle div.
 	/// </remarks>
 	public class BookData
 	{
@@ -138,7 +141,21 @@ namespace Bloom.Book
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+			UpdateIsbn();
+		}
 
+		private void UpdateIsbn()
+		{
+			NamedMutliLingualValue isbnData;
+			string isbn = null;
+			if (_dataset.TextVariables.TryGetValue("ISBN", out isbnData))
+			{
+				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
+			}
+			if (_dom.MetaData != null)
+			{
+				_dom.MetaData.Isbn = isbn;
+			}
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -692,15 +709,14 @@ namespace Bloom.Book
 		private void UpdateTitle()
 		{
 			NamedMutliLingualValue title;
-			string[] orderedListOfWritingSystemIds = new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
 				foreach (var dataItem in _dataset.TextVariables)
 				{
-					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds));
+					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
 				}
 
 				_dom.Title = t;
@@ -709,8 +725,16 @@ namespace Bloom.Book
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 				_dom.Title = t;
+			}
+		}
+
+		private string[] WritingSystemIdsToTry
+		{
+			get
+			{
+				return new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			}
 		}
 
