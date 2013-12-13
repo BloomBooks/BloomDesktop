@@ -97,9 +97,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
-    <Reference Include="L10NSharp, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="L10NSharp, Version=1.2.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\L10NSharp.1.2.1\lib\net40-Client\L10NSharp.dll</HintPath>
+      <HintPath>..\..\packages\L10NSharp.1.2.2\lib\net40-Client\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
