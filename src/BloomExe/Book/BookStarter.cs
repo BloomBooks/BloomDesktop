@@ -133,7 +133,7 @@ namespace Bloom.Book
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
-			SetLineageAndId(storage, sourceFolderPath);
+			SetLineageAndId(storage);
 
 		    SetBookTitle(storage, bookData);
 
@@ -162,36 +162,23 @@ namespace Bloom.Book
 		    return storage.FolderPath;
 		}
 
-		private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
+		private void SetLineageAndId(BookStorage storage)
 		{
-			string parentId = null;
-			string lineage = null;
-			if (File.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
+			var parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
+			
+			var lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
+			if (string.IsNullOrEmpty(lineage))
 			{
-				var sourceMetaData = new BookInfo(sourceFolderPath, false);
-				parentId = sourceMetaData.Id;
-				lineage = sourceMetaData.BookLineage;
+				lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
 			}
-			else
-			{
-				// No parent meta.json, try for legacy embedded metadata in html
-				parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
-				lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
-				if (string.IsNullOrEmpty(lineage))
-				{
-					lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
-				}
-			}
-
 			if (!string.IsNullOrEmpty(lineage))
 				lineage += ",";
 			if (!string.IsNullOrEmpty(parentId))
 			{
-				storage.MetaData.BookLineage = lineage + parentId;
+				storage.Dom.UpdateMetaElement("bloomBookLineage", lineage + parentId);
 			}
-			storage.MetaData.Id = Guid.NewGuid().ToString();
-			storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
-			storage.Dom.RemoveMetaElement("bookLineage"); // even older name
+			storage.Dom.UpdateMetaElement("bloomBookId",Guid.NewGuid().ToString());
+			storage.Dom.RemoveMetaElement("bookLineage");//old name
 		}
 
 //		private static void ClearAwayAllTranslations(XmlNode element)
@@ -249,12 +236,9 @@ namespace Bloom.Book
             var nameSuggestion = storage.Dom.GetMetaValue("defaultNameForDerivedBooks", kdefaultName);
 //	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 
-		    if (nameSuggestion != null)
-		    {
-			    bookData.Set("bookTitle", nameSuggestion, "en");
-			    storage.MetaData.Title = nameSuggestion;
-		    }
-		    storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
+            if(nameSuggestion!=null)
+                bookData.Set("bookTitle",nameSuggestion,"en");
+            storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
 //	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
 //	        if (nameSuggestion.Count > 0)
