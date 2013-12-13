@@ -612,7 +612,7 @@ namespace Bloom.Book
 			NamedMutliLingualValue d;
 			if (data.TextVariables.TryGetValue("copyright", out d))
 			{
-				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
+				metadata.CopyrightNotice = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 			}
 			string licenseUrl = "";
 			if (data.TextVariables.TryGetValue("licenseUrl", out d))
