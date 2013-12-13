@@ -1463,26 +1463,7 @@ namespace Bloom.Book
 		public void UpdateLicenseMetdata(Metadata metadata)
 		{
 			_bookData.SetLicenseMetdata(metadata);
-			var cclicense = metadata.License as CreativeCommonsLicense;
-			if (cclicense != null)
-			{
-				var urlParts = cclicense.Url.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
-				// currently the last part is a version number and the second-last is the bit we want
-				// that distinguishes the different kinds of cc license.
-				BookInfo.License = urlParts[urlParts.Length - 2];
-			}
-			else if (metadata.License is CustomLicense)
-			{
-				BookInfo.License = "custom";
-			}
-			else if (metadata.License is NullLicense)
-			{
-				_storage.MetaData.License = "ask";
-			}
-			else
-			{
-				BookInfo.License = "unknown";
-			}
+			BookInfo.License = metadata.License.Token;
 			BookInfo.LicenseNotes = metadata.License.RightsStatement;
 		}
 
