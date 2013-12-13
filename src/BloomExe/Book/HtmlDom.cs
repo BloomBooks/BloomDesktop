@@ -16,6 +16,7 @@ namespace Bloom.Book
 	/// HtmlDom manages the lower-level operations on a Bloom XHTML DOM.
 	/// These doms can be a whole book, or just one page we're currently editing.
 	/// They are actually XHTML, though when we save or send to a browser, we always convert to plain html.
+	/// May also contain a BookInfo, which for certain operations should be kept in sync with the HTML.
 	/// </summary>
 	public class HtmlDom
 	{
@@ -37,6 +38,8 @@ namespace Bloom.Book
 			_dom = new XmlDocument();
 			_dom.LoadXml(xhtml);
 		}
+
+		public BookInfo MetaData { get; internal set; }
 
 		public XmlElement Head
 		{
@@ -67,6 +70,8 @@ namespace Bloom.Book
 					titleNode.InnerXml = "";
 					//and set the text again!
 					titleNode.InnerText = justTheText;
+					if (MetaData != null)
+						MetaData.Title = t;
 				}
 			}
 		}
@@ -359,16 +364,16 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Can be called without knowing that the old or new exists.
+		/// Can be called without knowing that the old exists.
 		/// If it already has the new, the old is just removed.
 		/// This is just for migration.
 		/// </summary>
-		public void RenameMetaElement(string oldName, string newName)
+		public void RemoveMetaElement(string oldName, Func<string> read, Action<string> write)
 		{
 			if (!HasMetaElement(oldName))
 				return;
 
-			if (HasMetaElement(newName))
+			if (!string.IsNullOrEmpty(read()))
 			{
 				RemoveMetaElement(oldName);
 				return;
@@ -376,7 +381,7 @@ namespace Bloom.Book
 
 			//ok, so we do have to transfer the value over
 
-			UpdateMetaElement(newName,GetMetaValue(oldName,""));
+			write(GetMetaValue(oldName,""));
 
 			//and remove any of the old name
 			foreach(XmlElement node in _dom.SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
