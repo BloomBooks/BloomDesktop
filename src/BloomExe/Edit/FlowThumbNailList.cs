@@ -124,7 +124,7 @@ namespace Bloom.Edit
 			Image thumbnail = Resources.PagePlaceHolder; ;
 			if (page is PlaceHolderPage)
 				thumbnail = _placeHolderImage;
-			_thumbnailImageList.Images.Add(page.id, thumbnail);
+			_thumbnailImageList.Images.Add(page.Id, thumbnail);
 			item.ImageIndex = _thumbnailImageList.Images.Count - 1;
 			_listView.Items.Add(item);
 			if (!(page is PlaceHolderPage))
@@ -136,7 +136,7 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.id, page.Book.GetPreviewXmlDocumentForPage(page),
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, page.Book.GetPreviewXmlDocumentForPage(page),
 													  Palette.TextAgainstDarkBackground,
 													  false, image => RefreshOneThumbnailCallback(page, image));
 		}
@@ -145,7 +145,7 @@ namespace Bloom.Edit
 		{
 			if (IsDisposed)
 				return;
-			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.id);
+			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
 			if (imageIndex > -1)
 			{
 				_thumbnailImageList.Images[imageIndex] = image;
@@ -153,7 +153,7 @@ namespace Bloom.Edit
 				//at one time the page we just inserted would have the same id, but be a different IPage object.
 				//Now, the above checks for id equality too (never did track down why the objects change, but this is robust, so I'm not worried about it)
 
-				var listItem = (from ListViewItem i in _listView.Items where ((i.Tag == page) || ((IPage)i.Tag).id == page.id) select i).FirstOrDefault();
+				var listItem = (from ListViewItem i in _listView.Items where ((i.Tag == page) || ((IPage)i.Tag).Id == page.Id) select i).FirstOrDefault();
 				if(listItem!=null)
 				{
 					_listView.Invalidate(listItem.Bounds);
@@ -366,7 +366,7 @@ namespace Bloom.Edit
 				if (itemPage == null)
 					continue;
 
-				if(itemPage.id == page.id) //actual page object may change between book loads, but the id is consistent
+				if(itemPage.Id == page.Id) //actual page object may change between book loads, but the id is consistent
 				{
 					try
 					{
@@ -394,7 +394,7 @@ namespace Bloom.Edit
 			foreach (ListViewItem item in _listView.Items)
 			{
 
-				var pageId = (item.Tag as IPage).id;
+				var pageId = (item.Tag as IPage).Id;
 				if(!(item.Tag is PlaceHolderPage))
 					Thumbnailer.PageChanged(pageId);
 			}

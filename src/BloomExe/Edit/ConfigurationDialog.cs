@@ -112,7 +112,7 @@ Document.Body.AppendChild(script);
 
 DOM.GeckoInputElement button = Document.CreateElement("input").AsInputElement();
 button.Type = "button";
-button.id = "myButton";
+button.Id = "myButton";
 button.Value = "Automated Button";
 button.SetAttribute("onclick", "javascript:doAlert();");
 
@@ -120,7 +120,7 @@ Document.Body.AppendChild(button);
 
 DOM.GeckoInputElement button2 = Document.CreateElement("input").AsInputElement();
 button2.Type = "button";
-button2.id = "myOtherButton";
+button2.Id = "myOtherButton";
 button2.Value = "Press Me";
 button2.SetAttribute("onclick", "javascript:document.getElementById('myButton').click();");
 
