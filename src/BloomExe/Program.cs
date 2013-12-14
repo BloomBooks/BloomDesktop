@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
@@ -82,9 +83,13 @@ namespace Bloom
 					}
 
 
-#if !DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
-				if (!GrabMutexForBloom())
-					return;
+#if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
+					if (args.Length > 1)
+						Thread.Sleep(3000);//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
+
+#else
+					if (!GrabMutexForBloom())
+						return;
 #endif
 
 					OldVersionCheck();
@@ -100,10 +105,33 @@ namespace Bloom
 
 
 
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+					if ( args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
 					{
 						Settings.Default.MruProjects.AddNewPath(args[0]);
 					}
+
+
+					if (args.Length > 0 && args[0] == "--rename")
+					{
+						try
+						{
+							var pathToNewCollection = CollectionSettings.RenameCollection(args[1], args[2]);
+							//MessageBox.Show("Your collection has been renamed.");
+							Settings.Default.MruProjects.AddNewPath(pathToNewCollection);
+						}
+						catch (ApplicationException error)
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+							Environment.Exit(-1);
+						}
+						catch (Exception error)
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
+							Environment.Exit(-1);
+						}
+
+					}
+
 					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
 					Settings.Default.Save();

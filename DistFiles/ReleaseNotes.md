@@ -1,3 +1,8 @@
+﻿## 1.1.5 - 13 Dec 2013
+* You can now add additional usage limitation information to a Creative Commons license.
+* [Template Development] JADE is now the standard way to make custom templates
+* Fixed problem that prevented changing the collection name.
+
 ## 1.1.1 - 1 Nov 2013
 * Fixed problem with picking the wrong version of xmatter stylesheets at runtime
 

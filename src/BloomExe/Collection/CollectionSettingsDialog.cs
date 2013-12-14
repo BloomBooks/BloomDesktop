@@ -179,7 +179,7 @@ namespace Bloom.Collection
 			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
 			{
 				_queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
-				//_collectionSettings.AttemptSaveAsToNewName(_bloomCollectionName.Text.SanitizeFilename('-'));
+				//_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
 			}
 			_collectionSettings.Save();
 
