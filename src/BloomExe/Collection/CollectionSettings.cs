@@ -336,47 +336,52 @@ namespace Bloom.Collection
 			return parentFolderPath.CombineForPath(newCollectionName, newCollectionName + ".bloomCollection");
         }
 
-	    public void AttemptSaveAsToNewName(string name)
+
+	    public static string RenameCollection(string fromDirectory, string toDirectory)
 	    {
-	        name = name.Trim().SanitizeFilename('-');
-	        var newName = name + ".BloomCollection";
-
-            if (name == CollectionName.Trim())
-                return;
-
-            //first try renaming the collections settings file
-            try
-	        {   Save();
-	            var current = SettingsFilePath;
-	            var newPath = Path.Combine(Path.GetDirectoryName(SettingsFilePath), newName);
-                File.Move(current, newPath);
-	            SettingsFilePath = newPath;
+	        if (!Directory.Exists(fromDirectory))
+	        {
+                throw new ApplicationException("Bloom could not complete the renaming of the collection, because there isn't a directory with the source name anymore: " + fromDirectory);
 	        }
-            catch (Exception e1)
-            {
-                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e1,
-                                                                 "Bloom was unable to change the collection name to '{0}'",
-                                                                 name);
-            }
 
-            //now try renaming the directory
+	        if (Directory.Exists(toDirectory)) //there's already a folder taking this name
+	        {
+                throw new ApplicationException("Bloom could not complete the renaming of the collection, because there is already a directory with the new name: " + toDirectory);
+	        }
+
+            //this is just a sanity check, it will throw if the existing directory doesn't have a collection
+            FindSettingsFileInFolder(fromDirectory);
+
+//first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
+	        Directory.Move(fromDirectory, toDirectory);
+	        string  collectionSettingsPath;
             try
-            {
-                var existingDirectory = Path.GetDirectoryName(SettingsFilePath);
-                var parentDirectory = Path.GetDirectoryName(existingDirectory);
-                var newDirectory = Path.Combine(parentDirectory, name);
-                Directory.Move(existingDirectory, newDirectory);
-                SettingsFilePath = Path.Combine(newDirectory, newName);
+	        {
+	            collectionSettingsPath = FindSettingsFileInFolder(toDirectory);
+	        }
+	        catch (Exception)
+	        {
+	            throw;
+	        }
+
+	        try
+	        {
+                //we now make a default name based on the name of the directory
+                string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory)+".bloomCollection");
+                if (!File.Exists(destinationPath))
+                    File.Move(collectionSettingsPath, destinationPath);
+
+                return destinationPath;
             }
-            catch (Exception e2)
-            {
-                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e2,
-                                                                 "Bloom did change the collection name to {0}, but was unable to change name of the folder. Perhaps there is already a folder with that name?",
-                                                                 name);
-            }
+	        catch (Exception error)
+	        {
+                //change the directory name back, so the rename isn't half-done.
+                Directory.Move(toDirectory, fromDirectory);
+	            throw new ApplicationException(string.Format("Could change the folder name, but not the collection file name",fromDirectory,toDirectory),error);
+	        }
 	    }
 
-        private string GetDefaultFontName()
+	    private string GetDefaultFontName()
         {
             foreach (var candidate in new[] { "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
             {

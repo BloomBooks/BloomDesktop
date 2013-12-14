@@ -4,12 +4,14 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using NetSparkle;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
+using Palaso.Extensions;
 
 
 namespace Bloom
@@ -23,13 +25,11 @@ namespace Bloom
 
 		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection, Sparkle _sparkle)
         {
-            queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName);
+            queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 		    _collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
-
-          
-
+            
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
@@ -77,18 +77,32 @@ namespace Bloom
             //get everything saved (under the old collection name, if we are changing the name and restarting)
 			_libraryClosingEvent.Raise(null);
 
-            //change the collection name now, when it's safe
-            try
-            {
-                if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
-                    _collectionSettings.AttemptSaveAsToNewName(_nameToChangeCollectionUponClosing);
-            }
-            catch (Exception error)
-            {
-                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom could not rename the project to '{0}'", _nameToChangeCollectionUponClosing);
-            }
+		    if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) &&
+		        _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
+		    {
+                //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
+                //when this run isn't holding onto anything.
+		        try
+		        {
+		            var existingDirectoryPath = Path.GetDirectoryName(_collectionSettings.SettingsFilePath);
+		            var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
+		            var newDirectoryPath = Path.Combine(parentDirectory, _nameToChangeCollectionUponClosing);
 
-            Settings.Default.MruProjects.AddNewPath(_collectionSettings.SettingsFilePath); 
+		            Process.Start(Application.ExecutablePath,
+                        string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
+
+		            //give some time for that process.start to finish staring the new instance, which will see 
+                    //we have a mutex and wait for us to die, then see the --rename, and do its work.
+
+		            Thread.Sleep(2000);
+		            Environment.Exit(-1); //Force termination of the current process.
+		        }
+		        catch (Exception error)
+		        {
+		            Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+		                "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'", _nameToChangeCollectionUponClosing);
+		        }
+		    }
 
 			base.OnClosing(e);
 		}
