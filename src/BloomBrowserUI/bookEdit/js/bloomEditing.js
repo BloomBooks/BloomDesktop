@@ -813,10 +813,18 @@ function ResizeUsingPercentages(e,ui){
 
          //attach the bubble, separately, to every field inside the group
          labelElement.parent().find("div").each(function () {
+             var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
              MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
          });
      });
 
+     $("*.bloom-imageContainer > label.bubble").each(function () {
+         var labelElement = $(this);
+         var imageContainer = $(this).parent();
+         var whatToSay = labelElement.text();
+         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+         MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
+     });
 
 
      //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
@@ -829,8 +837,17 @@ function ResizeUsingPercentages(e,ui){
      //behaviors through classes.
      //So the job of this bit here is to take the label.bubble and create the data-placeholders.
      $("*.bloom-translationGroup > label.placeholder").each(function () {
-         $(this).parent().attr('data-placeholder',  $(this).text());
-         //now in it's up to the code that notices data-hint to do the rest
+
+         var labelText = $(this).text();
+
+         //put the attributes on the individual child divs
+         $(this).parent().find('.bloom-editable').each(function () {
+
+             //enhance: it would make sense to allow each of these to be customized for their div
+             //so that you could have a placeholder that said "Name in {lang}", for example.
+             $(this).attr('data-placeholder', labelText);
+             //next, it's up to CSS to draw the placeholder when the field is empty.
+         });
      });
 
 

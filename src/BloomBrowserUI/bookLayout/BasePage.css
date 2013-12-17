@@ -38,9 +38,6 @@ FIELDSET, A IMG
 {
 	border: 0;
 }
-/*Bloom uses labels to make bubbles*/
-.bloom-translationGroup label {display:none}
-
 BODY
 {
 	font-size: 100%;
@@ -245,4 +242,9 @@ DIV.bloom-page:nth-of-type(even) DIV.marginBox
 	left: 13.8mm;
 	top: 12.8mm;
 	height: 178.5mm;
+}
+/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+LABEL.bubble, LABEL.placeholder
+{
+	display: none;
 }
