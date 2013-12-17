@@ -4,6 +4,8 @@
 * Fix bug tht would cause problems if you used a '&' in a copyright notice.
 * Add context menu item for getting stylesheet troubleshooting information to the clipboard.
 * Avoid collecting new strings for localization from non-developer machines.
+* Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
+	this to do different things when editing vs. publishing.
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab

@@ -446,5 +446,18 @@ namespace Bloom.Book
 					yield return fileName;
 			}
 		}
+
+
+	    public void AddPublishClassToBody()
+	    {
+            AddPublishClassToBody(_dom);
+	    }
+
+	    public static void AddPublishClassToBody(XmlDocument dom)
+        {
+            XmlElement body = (XmlElement)dom.SelectSingleNode("//body");
+            var existingBodyClasses = body.GetAttribute("class");
+            body.SetAttribute("class", existingBodyClasses.Replace("publishMode", "") + "publishMode");
+        }
 	}
 }
