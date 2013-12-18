@@ -27,22 +27,28 @@ namespace Bloom.WebLibraryIntegration
         public BloomS3Client(string bucketName)
         {
             _bucketName = bucketName; 
-            _amazonS3 = AWSClientFactory.CreateAmazonS3Client("AKIAJEKSYRFYYQQFJ6VQ",
-                "8sMcTTUkA2GlqeJDDD9QZWRmYMmjVxrAckocnB5r", new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
+            _amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
+                KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
             _transferUtility = new TransferUtility(_amazonS3);
         }
 
         public bool GetBookExists(string key)
         {
-            var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-            {
-                BucketName = _bucketName,
-                Prefix = key
-            });
-            return matchingFilesResponse.S3Objects.Count>0;
+	        return GetBookFileCount(key) > 0;
         }
 
-        public int GetCountOfAllFilesInBucket()
+	    internal int GetBookFileCount(string key)
+	    {
+		    var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
+		    {
+			    BucketName = _bucketName,
+			    Prefix = key
+		    });
+		    var count = matchingFilesResponse.S3Objects.Count;
+		    return count;
+	    }
+
+	    public int GetCountOfAllFilesInBucket()
         {
             var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
             {
@@ -60,6 +66,27 @@ namespace Bloom.WebLibraryIntegration
             });
             return from x in matchingFilesResponse.S3Objects select x.Key;
         }
+
+	    public void DeleteBookData(string key)
+	    {
+			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
+			{
+				BucketName = _bucketName,
+				Prefix = key
+			});
+			if (matchingFilesResponse.S3Objects.Count == 0)
+				return;
+
+			var deleteObjectsRequest = new DeleteObjectsRequest()
+			{
+				BucketName = UnitTestBucketName,
+				Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
+			};
+
+			var response = _amazonS3.DeleteObjects(deleteObjectsRequest);
+			Debug.Assert(response.DeleteErrors.Count == 0);
+		    
+	    }
 
 
         public bool FileExists(params string[] parts)
@@ -98,8 +125,9 @@ namespace Bloom.WebLibraryIntegration
         /// </summary>
         /// <param name="storageKeyOfBookFolder"></param>
         /// <param name="pathToBloomBookDirectory"></param>
-        public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory)
+        public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
         {
+	        DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
             //first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
             //and at the same time introduce a wrapper with the unique key for this person+book
 
@@ -107,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
             Directory.CreateDirectory(wrapperPath);
 
             CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
-            UploadDirectory(wrapperPath);
+            UploadDirectory(wrapperPath, notifier);
 
             Directory.Delete(wrapperPath, true);
         }
@@ -117,12 +145,12 @@ namespace Bloom.WebLibraryIntegration
         /// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
         /// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
         /// </summary>
-        private void UploadDirectory(string directoryPath)
+		private void UploadDirectory(string directoryPath, Action<string> notifier = null)
         {
-            UploadDirectory("", directoryPath);
+            UploadDirectory("", directoryPath, notifier);
         }
 
-        private void UploadDirectory(string prefix, string directoryPath)
+		private void UploadDirectory(string prefix, string directoryPath, Action<string> notifier = null)
         {
             if (!Directory.Exists(directoryPath))
             {
@@ -142,12 +170,14 @@ namespace Bloom.WebLibraryIntegration
                     Key = prefix+ Path.GetFileName(file)
                 };
 
+	            if (notifier != null)
+		            notifier(string.Format("Uploading {0}", Path.GetFileName(file)));
                 _amazonS3.UploadPart(request);
             }
 
             foreach (string subdir in Directory.GetDirectories(directoryPath))
             {
-                UploadDirectory(prefix, subdir);
+                UploadDirectory(prefix, subdir, notifier);
             }
         }
 
@@ -187,7 +217,7 @@ namespace Bloom.WebLibraryIntegration
         /// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.
         /// </summary>
         /// <param name="storageKeyOfBookFolder"></param>
-        public void DownloadBook(string storageKeyOfBookFolder, string pathToDestinationParentDirectory)
+        public string DownloadBook(string storageKeyOfBookFolder, string pathToDestinationParentDirectory)
         {
             //TODO tell it not to download pdfs. Those are just in there for previewing purposes, we don't need to get them now that we're getting the real thing
 
@@ -244,6 +274,7 @@ namespace Bloom.WebLibraryIntegration
                 {
                     CopyDirectory(children[0], destinationPath);
                 }
+	            return destinationPath;
             }
         }
 
