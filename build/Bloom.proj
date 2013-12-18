@@ -160,7 +160,9 @@
   <Target Name="DownloadDistFiles">
 	<Message Text="Downloading Bloom.chm help file" Importance="high"  />
 	<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
-  </Target>
+		FileName="$(RootDir)\DistFiles\connections.dll"></WebDownload>
+		<WebDownload FileUri="https://dl.dropboxusercontent.com/u/14475494/connections.dll" FileName="$(RootDir)\DistFiles\connections.dll"></WebDownload>
+	</Target>
 
   <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
   <ItemGroup>
