@@ -131,6 +131,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\PdfSharp.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -317,7 +320,16 @@
     <Compile Include="ImageProcessing\ImageServer.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
+    <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
+    <Compile Include="WebLibraryIntegration\KeyManager.cs" />
+    <Compile Include="WebLibraryIntegration\LoginDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
+      <DependentUpon>LoginDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -517,6 +529,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebLibraryIntegration\LoginDialog.resx">
+      <DependentUpon>LoginDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>
