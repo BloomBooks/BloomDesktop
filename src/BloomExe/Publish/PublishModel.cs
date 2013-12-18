@@ -108,11 +108,14 @@ namespace Bloom.Publish
 			}
 		}
 
+
 		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+
+            HtmlDom.AddPublishClassToBody(dom);
 
 			//wkhtmltopdf can't handle file://
 			dom.InnerXml = dom.InnerXml.Replace("file://", "");
