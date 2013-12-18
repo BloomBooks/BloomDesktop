@@ -13,6 +13,7 @@ using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
 using Bloom.SendReceive;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
@@ -98,6 +99,7 @@ namespace Bloom
 					typeof(RelocatePageEvent),
 					typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
+					typeof(BloomParseClient),
 					typeof(EditingModel)}.Contains(t));
 
 
