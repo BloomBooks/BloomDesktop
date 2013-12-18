@@ -573,6 +573,18 @@ namespace Bloom
 										   installedStringFileFolder,
 										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
 
+				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
+				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
+				//faced with a bunch of string that made no sense to them, because they don't have those templates.
+				//So for now, we only soak up new strings if it's a developer, and hope that the Commit process will be enough for them to realize "oh no, I
+				//don't want to check that stuff in".
+
+#if DEBUG
+				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = true;
+#else
+				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = false;
+#endif
+
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,

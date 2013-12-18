@@ -257,8 +257,7 @@ namespace Bloom.Book
 			pageDom.SortStyleSheetLinks();
 
 			AddCoverColor(pageDom, CoverColor);
-			AddPreviewJScript(pageDom);
-
+			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
@@ -462,6 +461,7 @@ namespace Bloom.Book
 			AddCoverColor(previewDom, CoverColor);
 
 			AddPreviewJScript(previewDom);
+			previewDom.AddPublishClassToBody();
 			return previewDom;
 		}
 
