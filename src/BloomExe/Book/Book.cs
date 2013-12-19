@@ -466,6 +466,7 @@ namespace Bloom.Book
 
             AddPreviewJScript(previewDom);
             previewDom.AddPublishClassToBody();
+    	    previewDom.AddFirefoxClassToBody();
             return previewDom;
         }
 
