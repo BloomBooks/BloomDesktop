@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Palaso.Extensions;
+using Palaso.IO;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -35,8 +36,7 @@ namespace Bloom.WebLibraryIntegration
 
 		static KeyManager()
 		{
-			var connectionsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase.Replace("file:", string.Empty).TrimStart('/'))
-				.CombineForPath("connections.dll");
+			var connectionsPath = FileLocator.GetFileDistributedWithApplication("connections.dll");
 			var lines = File.ReadAllLines(connectionsPath);
 			S3AccessKey = lines[0];
 			S3SecretAccessKey = lines[1];
