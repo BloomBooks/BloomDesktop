@@ -458,11 +458,35 @@ namespace Bloom.Book
 			AddPublishClassToBody(_dom);
 		}
 
+
+		/// <summary>
+		/// By including this class, we help stylesheets do something different for edit vs. publish mode.
+		/// </summary>
 		public static void AddPublishClassToBody(XmlDocument dom)
 		{
 			XmlElement body = (XmlElement)dom.SelectSingleNode("//body");
 			var existingBodyClasses = body.GetAttribute("class");
 			body.SetAttribute("class", existingBodyClasses.Replace("publishMode", "") + "publishMode");
+		}
+
+		/// <summary>
+		/// By including this class, we help stylesheets do something different for the V1.0 wkthmltopdf webkit browser vs. the later gecko-based browser.
+		/// </summary>
+		public static void AddWebkitClassToBody(XmlDocument dom)
+		{
+			XmlElement body = (XmlElement)dom.SelectSingleNode("//body");
+			var existingBodyClasses = body.GetAttribute("class");
+			body.SetAttribute("class", existingBodyClasses.Replace("webkit", "").Replace("firefox", "") + "webkit");
+		}
+
+		/// <summary>
+		/// By including this class, we help stylesheets do something different for the V1.0 wkthmltopdf webkit browser vs. the later gecko-based browser.
+		/// </summary>
+		public void AddFirefoxClassToBody()
+		{
+			XmlElement body = (XmlElement)_dom.SelectSingleNode("//body");
+			var existingBodyClasses = body.GetAttribute("class");
+			body.SetAttribute("class", existingBodyClasses.Replace("webkit", "").Replace("firefox", "") + "firefox");
 		}
 	}
 }
