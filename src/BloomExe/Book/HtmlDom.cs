@@ -279,7 +279,7 @@ namespace Bloom.Book
 
 		public static void AddClass(XmlElement e, string className)
 		{
-			e.SetAttribute("class", (e.GetAttribute("class") + " " + className).Trim());
+			e.SetAttribute("class", (e.GetAttribute("class").Replace(className,"").Trim() + " " + className).Trim());
 		}
 
 		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
@@ -464,29 +464,27 @@ namespace Bloom.Book
         /// </summary>
 	    public static void AddPublishClassToBody(XmlDocument dom)
         {
-            XmlElement body = (XmlElement)dom.SelectSingleNode("//body");
-            var existingBodyClasses = body.GetAttribute("class");
-            body.SetAttribute("class", existingBodyClasses.Replace("publishMode", "") + "publishMode");
+            AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
         }
-
+        /* decided for now that since webkit is going to be phased out, and we haven't need this class yet, it's the wrong time to add it
+         
         /// <summary>
         /// By including this class, we help stylesheets do something different for the V1.0 wkthmltopdf webkit browser vs. the later gecko-based browser.
         /// </summary>
         public static void AddWebkitClassToBody(XmlDocument dom)
         {
-            XmlElement body = (XmlElement)dom.SelectSingleNode("//body");
-            var existingBodyClasses = body.GetAttribute("class");
-            body.SetAttribute("class", existingBodyClasses.Replace("webkit", "").Replace("firefox", "") + "webkit");
-        }
+            RemoveClassesBeginingWith((XmlElement)dom.SelectSingleNode("//body"),"firefox");
+            AddClass((XmlElement)dom.SelectSingleNode("//body"), "webkit");
+         }
 
         /// <summary>
         /// By including this class, we help stylesheets do something different for the V1.0 wkthmltopdf webkit browser vs. the later gecko-based browser.
         /// </summary>
         public void AddFirefoxClassToBody()
         {
-            XmlElement body = (XmlElement)_dom.SelectSingleNode("//body");
-            var existingBodyClasses = body.GetAttribute("class");
-            body.SetAttribute("class", existingBodyClasses.Replace("webkit", "").Replace("firefox", "") + "firefox");
+            RemoveClassesBeginingWith((XmlElement)_dom.SelectSingleNode("//body"),"webkit");
+            AddClass((XmlElement)_dom.SelectSingleNode("//body"), "firefox");
         }
+        */
 	}
 }

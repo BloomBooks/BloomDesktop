@@ -116,6 +116,7 @@ namespace Bloom.Publish
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
             HtmlDom.AddPublishClassToBody(dom);
+            //HtmlDom.AddWebkitClassToBody(dom);
 
 			//wkhtmltopdf can't handle file://
 			dom.InnerXml = dom.InnerXml.Replace("file://", "");
