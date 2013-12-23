@@ -26,7 +26,8 @@ namespace Bloom.Publish
 		{
 			NoBook,
 			Working,
-			ShowPdf
+			ShowPdf,
+			Upload
 		}
 
 		public enum BookletPortions
@@ -66,6 +67,11 @@ namespace Bloom.Publish
 		}
 
 		public PublishView View { get; set; }
+
+		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
+		public bool UploadMode { get; set; }
+
+		public bool PdfGenerationSucceeded { get; set; }
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
@@ -151,10 +157,19 @@ namespace Bloom.Publish
 			return path;
 		}
 
-		private void SetDisplayMode(DisplayModes displayMode)
+		DisplayModes _currentDisplayMode = DisplayModes.NoBook;
+		internal DisplayModes DisplayMode
 		{
-			if (View != null)
-				View.SetDisplayMode(displayMode);
+			get
+			{
+				return _currentDisplayMode;
+			}
+			set
+			{
+				_currentDisplayMode = value;
+				if (View != null)
+					View.SetDisplayMode(value);
+			}
 		}
 
 		public void Dispose()

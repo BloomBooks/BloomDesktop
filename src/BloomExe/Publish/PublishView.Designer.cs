@@ -37,19 +37,20 @@
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this._topBarPanel = new System.Windows.Forms.Panel();
-			this._saveButton = new System.Windows.Forms.Button();
-			this._printButton = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
+			this._cloudRadio = new System.Windows.Forms.RadioButton();
 			this._showCropMarks = new System.Windows.Forms.CheckBox();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
+			this._saveButton = new System.Windows.Forms.Button();
+			this._printButton = new System.Windows.Forms.Button();
 			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
@@ -84,6 +85,202 @@
 			this._topBarPanel.Name = "_topBarPanel";
 			this._topBarPanel.Size = new System.Drawing.Size(327, 70);
 			this._topBarPanel.TabIndex = 14;
+			// 
+			// tableLayoutPanel1
+			// 
+			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.tableLayoutPanel1.ColumnCount = 1;
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.ContextMenuStrip = this.contextMenuStrip1;
+			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 1);
+			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this._noBookletRadio, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this._cloudRadio, 0, 4);
+			this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 5);
+			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
+			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
+			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+			this.tableLayoutPanel1.RowCount = 5;
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 540);
+			this.tableLayoutPanel1.TabIndex = 10;
+			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
+			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._openinBrowserMenuItem});
+			this._L10NSharpExtender.SetLocalizableToolTip(this.contextMenuStrip1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(434, 26);
+			// 
+			// _openinBrowserMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
+			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
+			this._openinBrowserMenuItem.Size = new System.Drawing.Size(433, 22);
+			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Chrome (must be on path)";
+			this._openinBrowserMenuItem.ToolTipText = "Will show in chrome rather than firefox because it is closest to the html engine " +
+    "the htmltopdf engine uses.";
+			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
+			// 
+			// _menusToolStrip
+			// 
+			this._menusToolStrip.AutoSize = false;
+			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._menusToolStrip.CanOverflow = false;
+			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._layoutChoices});
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
+			this._menusToolStrip.Location = new System.Drawing.Point(0, 0);
+			this._menusToolStrip.Name = "_menusToolStrip";
+			this._menusToolStrip.Size = new System.Drawing.Size(100, 24);
+			this._menusToolStrip.TabIndex = 13;
+			this._menusToolStrip.Text = "toolStrip1";
+			// 
+			// _layoutChoices
+			// 
+			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._layoutChoices.ForeColor = System.Drawing.Color.White;
+			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "._layoutChoices");
+			this._layoutChoices.Name = "_layoutChoices";
+			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
+			this._layoutChoices.Text = "Page Layout";
+			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
+			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = null;
+			// 
+			// superToolTip1
+			// 
+			this.superToolTip1.FadingInterval = 10;
+			// 
+			// _bodyRadio
+			// 
+			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._bodyRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._bodyRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
+			this._bodyRadio.Location = new System.Drawing.Point(3, 27);
+			this._bodyRadio.Name = "_bodyRadio";
+			this._bodyRadio.Size = new System.Drawing.Size(94, 96);
+			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo1.BodyText = "Use this for making a booklet.\r\nThe pages will be laid out and reordered so that " +
+    "when you fold it, you\'ll have a booklet.\r\nThe cover page won\'t be included; use " +
+    "the \"Cover Page\" option for that.";
+			superToolTipInfo1.HeaderText = "Booklet Inside Pages";
+			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(0, 0);
+			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
+			superToolTipInfoWrapper1.UseSuperToolTip = true;
+			this.superToolTip1.SetSuperStuff(this._bodyRadio, superToolTipInfoWrapper1);
+			this._bodyRadio.TabIndex = 14;
+			this._bodyRadio.TabStop = true;
+			this._bodyRadio.Text = "Booklet Inside Pages";
+			this._bodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._bodyRadio.UseVisualStyleBackColor = true;
+			this._bodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _coverRadio
+			// 
+			this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._coverRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._coverRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
+			this._coverRadio.Location = new System.Drawing.Point(3, 129);
+			this._coverRadio.Name = "_coverRadio";
+			this._coverRadio.Size = new System.Drawing.Size(94, 88);
+			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo2.BodyText = "Use this for printing just the cover on front and back of a piece of colored pape" +
+    "r.";
+			superToolTipInfo2.HeaderText = "Cover";
+			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(0, 0);
+			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
+			superToolTipInfoWrapper2.UseSuperToolTip = true;
+			this.superToolTip1.SetSuperStuff(this._coverRadio, superToolTipInfoWrapper2);
+			this._coverRadio.TabIndex = 8;
+			this._coverRadio.TabStop = true;
+			this._coverRadio.Text = "Cover";
+			this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._coverRadio.UseVisualStyleBackColor = true;
+			this._coverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _noBookletRadio
+			// 
+			this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._noBookletRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
+			this._L10NSharpExtender.SetLocalizingId(this._noBookletRadio, "PublishTab.OnePagePerPaperRadio");
+			this._noBookletRadio.Location = new System.Drawing.Point(3, 223);
+			this._noBookletRadio.Name = "_noBookletRadio";
+			this._noBookletRadio.Size = new System.Drawing.Size(94, 97);
+			this._noBookletRadio.TabIndex = 10;
+			this._noBookletRadio.TabStop = true;
+			this._noBookletRadio.Text = "One page per piece of paper";
+			this._noBookletRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._noBookletRadio.UseVisualStyleBackColor = true;
+			this._noBookletRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _cloudRadio
+			// 
+			this._cloudRadio.Image = global::Bloom.Properties.Resources.cloud;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._cloudRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._cloudRadio, "Instead of making a booklet, just make normal pages");
+			this._L10NSharpExtender.SetLocalizingId(this._cloudRadio, "PublishTab.OnePagePerPaperRadio");
+			this._cloudRadio.Location = new System.Drawing.Point(3, 326);
+			this._cloudRadio.Name = "_cloudRadio";
+			this._cloudRadio.Size = new System.Drawing.Size(105, 65);
+			this._cloudRadio.TabIndex = 16;
+			this._cloudRadio.TabStop = true;
+			this._cloudRadio.Text = "Upload to Bloom Library.org";
+			this._cloudRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._cloudRadio.UseVisualStyleBackColor = true;
+	        this._cloudRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _showCropMarks
+			// 
+			this._showCropMarks.AutoSize = true;
+			this._showCropMarks.Image = global::Bloom.Properties.Resources.cropMarks;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._showCropMarks, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._showCropMarks, null);
+			this._L10NSharpExtender.SetLocalizingId(this._showCropMarks, "PublishTab.ShowCropMarks");
+			this._showCropMarks.Location = new System.Drawing.Point(3, 409);
+			this._showCropMarks.Margin = new System.Windows.Forms.Padding(3, 15, 3, 3);
+			this._showCropMarks.Name = "_showCropMarks";
+			this._showCropMarks.Size = new System.Drawing.Size(80, 62);
+			this._showCropMarks.TabIndex = 15;
+			this._showCropMarks.Text = "Crop Marks";
+			this._showCropMarks.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._showCropMarks.UseVisualStyleBackColor = true;
+			this._showCropMarks.CheckedChanged += new System.EventHandler(this.OnShowCropMarks_CheckedChanged);
 			// 
 			// _saveButton
 			// 
@@ -126,183 +323,6 @@
 			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._printButton.UseVisualStyleBackColor = false;
 			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
-			// 
-			// tableLayoutPanel1
-			// 
-			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.tableLayoutPanel1.ColumnCount = 1;
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.ContextMenuStrip = this.contextMenuStrip1;
-			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
-			this.tableLayoutPanel1.Controls.Add(this._noBookletRadio, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 4);
-			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
-			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
-			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 5;
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(100, 540);
-			this.tableLayoutPanel1.TabIndex = 10;
-			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
-			// 
-			// contextMenuStrip1
-			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._openinBrowserMenuItem});
-			this._L10NSharpExtender.SetLocalizableToolTip(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(434, 48);
-			// 
-			// _openinBrowserMenuItem
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
-			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
-			this._openinBrowserMenuItem.Size = new System.Drawing.Size(433, 22);
-			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Chrome (must be on path)";
-			this._openinBrowserMenuItem.ToolTipText = "Will show in chrome rather than firefox because it is closest to the html engine " +
-    "the htmltopdf engine uses.";
-			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
-			// 
-			// _menusToolStrip
-			// 
-			this._menusToolStrip.AutoSize = false;
-			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._menusToolStrip.CanOverflow = false;
-			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
-			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._layoutChoices});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(0, 0);
-			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(100, 47);
-			this._menusToolStrip.TabIndex = 13;
-			this._menusToolStrip.Text = "toolStrip1";
-			// 
-			// _layoutChoices
-			// 
-			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._layoutChoices.ForeColor = System.Drawing.Color.White;
-			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "._layoutChoices");
-			this._layoutChoices.Name = "_layoutChoices";
-			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
-			this._layoutChoices.Text = "Page Layout";
-			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
-			// 
-			// _bodyRadio
-			// 
-			this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._bodyRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._bodyRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
-			this._bodyRadio.Location = new System.Drawing.Point(3, 50);
-			this._bodyRadio.Name = "_bodyRadio";
-			this._bodyRadio.Size = new System.Drawing.Size(94, 106);
-			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo1.BodyText = "Use this for making a booklet.\r\nThe pages will be laid out and reordered so that " +
-    "when you fold it, you\'ll have a booklet.\r\nThe cover page won\'t be included; use " +
-    "the \"Cover Page\" option for that.";
-			superToolTipInfo1.HeaderText = "Booklet Inside Pages";
-			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(0, 0);
-			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
-			superToolTipInfoWrapper1.UseSuperToolTip = true;
-			this.superToolTip1.SetSuperStuff(this._bodyRadio, superToolTipInfoWrapper1);
-			this._bodyRadio.TabIndex = 14;
-			this._bodyRadio.TabStop = true;
-			this._bodyRadio.Text = "Booklet Inside Pages";
-			this._bodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._bodyRadio.UseVisualStyleBackColor = true;
-			this._bodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
-			// _coverRadio
-			// 
-			this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._coverRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._coverRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
-			this._coverRadio.Location = new System.Drawing.Point(3, 162);
-			this._coverRadio.Name = "_coverRadio";
-			this._coverRadio.Size = new System.Drawing.Size(94, 91);
-			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo2.BodyText = "Use this for printing just the cover on front and back of a piece of colored pape" +
-    "r.";
-			superToolTipInfo2.HeaderText = "Cover";
-			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(0, 0);
-			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
-			superToolTipInfoWrapper2.UseSuperToolTip = true;
-			this.superToolTip1.SetSuperStuff(this._coverRadio, superToolTipInfoWrapper2);
-			this._coverRadio.TabIndex = 8;
-			this._coverRadio.TabStop = true;
-			this._coverRadio.Text = "Cover";
-			this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._coverRadio.UseVisualStyleBackColor = true;
-			this._coverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
-			// _noBookletRadio
-			// 
-			this._noBookletRadio.Image = global::Bloom.Properties.Resources.simplePages;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._noBookletRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
-			this._L10NSharpExtender.SetLocalizingId(this._noBookletRadio, "PublishTab.OnePagePerPaperRadio");
-			this._noBookletRadio.Location = new System.Drawing.Point(3, 259);
-			this._noBookletRadio.Name = "_noBookletRadio";
-			this._noBookletRadio.Size = new System.Drawing.Size(94, 108);
-			this._noBookletRadio.TabIndex = 10;
-			this._noBookletRadio.TabStop = true;
-			this._noBookletRadio.Text = "One page per piece of paper";
-			this._noBookletRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._noBookletRadio.UseVisualStyleBackColor = true;
-			this._noBookletRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
-			// _showCropMarks
-			// 
-			this._showCropMarks.AutoSize = true;
-			this._showCropMarks.Image = global::Bloom.Properties.Resources.cropMarks;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showCropMarks, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showCropMarks, null);
-			this._L10NSharpExtender.SetLocalizingId(this._showCropMarks, "PublishTab.ShowCropMarks");
-			this._showCropMarks.Location = new System.Drawing.Point(3, 400);
-			this._showCropMarks.Margin = new System.Windows.Forms.Padding(3, 30, 3, 3);
-			this._showCropMarks.Name = "_showCropMarks";
-			this._showCropMarks.Size = new System.Drawing.Size(80, 62);
-			this._showCropMarks.TabIndex = 15;
-			this._showCropMarks.Text = "Crop Marks";
-			this._showCropMarks.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._showCropMarks.UseVisualStyleBackColor = true;
-			this._showCropMarks.CheckedChanged += new System.EventHandler(this.OnShowCropMarks_CheckedChanged);
-			// 
-			// _L10NSharpExtender
-			// 
-			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// superToolTip1
-			// 
-			this.superToolTip1.FadingInterval = 10;
 			// 
 			// _adobeReaderControl
 			// 
@@ -365,5 +385,6 @@
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
 		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip superToolTip1;
 		private System.Windows.Forms.CheckBox _showCropMarks;
+		private System.Windows.Forms.RadioButton _cloudRadio;
     }
 }

@@ -165,5 +165,17 @@ namespace Bloom.Properties {
                 this["WebUserId"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string WebPassword {
+            get {
+                return ((string)(this["WebPassword"]));
+            }
+            set {
+                this["WebPassword"] = value;
+            }
+        }
     }
 }

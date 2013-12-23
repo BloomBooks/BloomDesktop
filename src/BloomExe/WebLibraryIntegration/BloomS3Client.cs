@@ -8,6 +8,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
+using L10NSharp;
+using RestSharp.Contrib;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -31,6 +33,8 @@ namespace Bloom.WebLibraryIntegration
                 KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
             _transferUtility = new TransferUtility(_amazonS3);
         }
+
+		public string ThumbnailUrl { get; private set; }
 
         public bool GetBookExists(string key)
         {
@@ -127,6 +131,7 @@ namespace Bloom.WebLibraryIntegration
         /// <param name="pathToBloomBookDirectory"></param>
         public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
         {
+	        ThumbnailUrl = null;
 	        DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
             //first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
             //and at the same time introduce a wrapper with the unique key for this person+book
@@ -162,17 +167,36 @@ namespace Bloom.WebLibraryIntegration
 
             foreach (string file in Directory.GetFiles(directoryPath))
             {
-                var request = new UploadPartRequest()
+	            string fileName = Path.GetFileName(file);
+				var request = new TransferUtilityUploadRequest()
                 {
                     BucketName = _bucketName,
                     FilePath = file,
-                    IsLastPart = true,
-                    Key = prefix+ Path.GetFileName(file)
+                    Key = prefix+ fileName,
                 };
+				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 	            if (notifier != null)
-		            notifier(string.Format("Uploading {0}", Path.GetFileName(file)));
-                _amazonS3.UploadPart(request);
+	            {
+		            string uploading = LocalizationManager.GetString("PublishWeb.Uploading","Uploading {0}");
+		            notifier(string.Format(uploading, fileName));
+	            }
+	            try
+	            {
+					_transferUtility.Upload(request);
+
+	            }
+	            catch (Exception e)
+	            {
+		            throw;
+	            }
+                //var response =_amazonS3.UploadPart(request);
+	            if (fileName == "thumbnail.png")
+	            {
+		            // Remember the url that can be used to download the thumbnail. This seems to work but I wish
+					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
+		            ThumbnailUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+	            }
             }
 
             foreach (string subdir in Directory.GetDirectories(directoryPath))
