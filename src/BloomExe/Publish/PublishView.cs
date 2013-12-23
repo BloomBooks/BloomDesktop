@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
 
@@ -19,15 +20,21 @@ namespace Bloom.Publish
 	{
 		private readonly PublishModel _model;
 		private bool _activated;
+		private BloomLibraryPublishControl _libraryPublishControl;
+		private BookTransfer _bookTransferrer;
+		private LoginDialog _loginDialog;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
 		{
-				InitializeComponent();
-				Controls.Remove(_saveButton);//our parent will retrieve this
-				Controls.Remove(_printButton);//our parent will retrieve this
+			_bookTransferrer = bookTransferrer;
+			_loginDialog = login;
+
+			InitializeComponent();
+			Controls.Remove(_saveButton);//our parent will retrieve this
+			Controls.Remove(_printButton);//our parent will retrieve this
 
 			if(this.DesignMode)
 				return;
@@ -88,6 +95,7 @@ namespace Bloom.Publish
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
+			_model.PdfGenerationSucceeded = false;
 			if(e.Result is Exception)
 			{
 				var error = e.Result as Exception;
@@ -103,10 +111,11 @@ namespace Bloom.Publish
 				{
 					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 				}
-				SetDisplayMode(PublishModel.DisplayModes.NoBook);
+				_model.DisplayMode = PublishModel.DisplayModes.NoBook;
 				return;
 			}
-			SetDisplayMode(PublishModel.DisplayModes.ShowPdf);
+			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
+			_model.DisplayMode = (_cloudRadio.Checked && File.Exists(_model.PdfFilePath) ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
 			UpdateDisplay();
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
@@ -160,6 +169,12 @@ namespace Bloom.Publish
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
+			if (displayMode != PublishModel.DisplayModes.Upload && _libraryPublishControl != null)
+			{
+				Controls.Remove(_libraryPublishControl);
+				_libraryPublishControl = null;
+				_adobeReaderControl.Visible = true;
+			}
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.NoBook:
@@ -182,6 +197,21 @@ namespace Bloom.Publish
 						_printButton.Enabled = _adobeReaderControl.ShowPdf(_model.PdfFilePath);
 					}
 					break;
+				case PublishModel.DisplayModes.Upload:
+				{
+					_workingIndicator.Visible = false; // We only go to this mode when the PDF is successfully created.
+					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
+					_adobeReaderControl.Visible = false; // We will replace it with another control.
+					if (_libraryPublishControl == null)
+					{
+						_libraryPublishControl = new BloomLibraryPublishControl(_bookTransferrer, _loginDialog, _model.BookSelection.CurrentSelection);
+						_libraryPublishControl.SetBounds(_adobeReaderControl.Left, _adobeReaderControl.Top,
+							_adobeReaderControl.Width, _adobeReaderControl.Height);
+						_libraryPublishControl.Anchor = _adobeReaderControl.Anchor;
+						Controls.Add(_libraryPublishControl);
+					}
+					break;
+				}
 			}
 		}
 
@@ -194,7 +224,26 @@ namespace Bloom.Publish
 			var oldPortion = _model.BookletPortion;
 			SetModelFromButtons();
 			if (oldPortion == _model.BookletPortion)
-				return; // no changes detected
+			{
+				// no changes detected
+				if (_cloudRadio.Checked)
+				{
+					// no change because switching to the cloud button does not affect which BookletPortion we are showing.
+					// But if we've already generated the PDF we can show the upload control.
+					// Otherwise we will show it when the PDF generation finishes.
+					if (_model.DisplayMode == PublishModel.DisplayModes.ShowPdf && File.Exists(_model.PdfFilePath))
+						_model.DisplayMode = PublishModel.DisplayModes.Upload;
+				}
+				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
+				{
+					// no change because the PREVIOUS button was the cloud one. Need to restore the appropriate
+					// non-cloud display
+					_model.DisplayMode = _model.PdfGenerationSucceeded
+						? PublishModel.DisplayModes.ShowPdf
+						: PublishModel.DisplayModes.NoBook;
+				}
+				return;
+			}
 
 
 			ControlsChanged();
@@ -229,14 +278,18 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 			else if (_coverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-			else
+			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+			// Otherwise the user checked _cloudRadio. We'll push to the cloud whatever
+			// kind of PDF they previously selected, so don't change it.
+			// Review: is this right? Maybe we want to always push the cover? Maybe we want to push all varieties?
 
 			_model.ShowCropMarks = _showCropMarks.Checked;
 		}
 
 		public void MakeBooklet()
 		{
+			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate is successfully.
 			SetDisplayMode(PublishModel.DisplayModes.Working);
 			_makePdfBackgroundWorker.RunWorkerAsync();
 		}

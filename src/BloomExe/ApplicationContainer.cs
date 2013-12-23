@@ -5,6 +5,7 @@ using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using NetSparkle;
 

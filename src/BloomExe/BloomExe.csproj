@@ -217,6 +217,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Publish\BloomLibraryPublishControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\BloomLibraryPublishControl.Designer.cs">
+      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Registration\RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -329,6 +335,12 @@
     </Compile>
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.Designer.cs">
+      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
@@ -490,6 +502,9 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\BloomLibraryPublishControl.resx">
+      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -532,6 +547,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WebLibraryIntegration\LoginDialog.resx">
       <DependentUpon>LoginDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
+      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>
@@ -901,6 +919,7 @@
     <None Include="Resources\SILInBlue100.png" />
     <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
+    <None Include="Resources\cloud.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

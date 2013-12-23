@@ -8,6 +8,7 @@ using System.Text;
 using Bloom.Collection;
 using Bloom.Properties;
 using Newtonsoft.Json;
+using Palaso.Extensions;
 
 namespace Bloom.Book
 {
@@ -189,17 +190,9 @@ namespace Bloom.Book
 			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
-		public string Json
-		{
-			get
-			{
-				return JsonConvert.SerializeObject(_metadata);
-			}
-		}
-
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, Json);
+			File.WriteAllText(MetaDataPath, _metadata.Json);
 		}
 
 		internal string MetaDataPath
@@ -234,6 +227,31 @@ namespace Bloom.Book
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
 		}
+
+		public static BookMetaData FromFolder(string bookFolderPath)
+		{
+			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
+		}
+
+		private static string MetaDataPath(string bookFolderPath)
+		{
+			return bookFolderPath.CombineForPath(BookInfo.MetaDataFileName);
+		}
+
+		public void WriteToFolder(string bookFolderPath)
+		{
+			File.WriteAllText(MetaDataPath(bookFolderPath), Json);
+		}
+
+		[JsonIgnore]
+		public string Json
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(this);
+			}
+		}
+
 		[JsonProperty("bookInstanceId")]
 		public string Id { get; set; }
 

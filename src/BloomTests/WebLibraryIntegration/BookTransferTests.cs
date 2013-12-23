@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
@@ -160,6 +161,28 @@ namespace BloomTests.WebLibraryIntegration
 			var records = _parseClient.GetBookRecords("myId", "me");
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse.com record, not added or deleted");
 			Assert.That(records[0].bookLineage.Value, Is.EqualTo("other"));
+		}
+
+		[Test]
+		public void UploadBook_FillsInMetaData()
+		{
+			var bookFolder = MakeBook("My incomplete book", "", "", "data");
+			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
+
+			Login();
+			string s3Id = _transfer.UploadBook(bookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
+			var dest = _workFolderPath.CombineForPath("output");
+			Directory.CreateDirectory(dest);
+			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
+			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
+			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
+			Assert.That(metadata.UploadedBy, Is.EqualTo("unittest@example.com"), "should have set updatedBy to id of logged-in user");
+
+			var record = _parseClient.GetSingleBookRecord(metadata.Id, _parseClient.Account);
+			string thumbnail = record.thumbnail;
+			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
+			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
 		}
 
 		[Test]
