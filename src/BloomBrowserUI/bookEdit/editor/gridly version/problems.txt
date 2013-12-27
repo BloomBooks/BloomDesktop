@@ -1,0 +1,9 @@
+PRO: does the zig-zag we need for pages
+
+CON: can't make some items non-draggable, which we need for front/back matter. (Author just closed someone's request on github).
+
+CON: The base (roughly the column width.. this is undocumented) is difficult. If too small, all objects take 2 columns. If too large, all objects are placed in a single cell. Not just for that row, but all rows! I never could find a vale base that worked.
+
+CON: the behavior for "when should I move out of the way" is difficult to work with, as a user.
+
+CON: Code style is quite obtuse
