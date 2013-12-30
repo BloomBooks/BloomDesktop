@@ -85,7 +85,7 @@ namespace BloomTests.Book
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
+            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 });
             _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
       }
