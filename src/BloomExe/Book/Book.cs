@@ -472,7 +472,7 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			BringBookUpToDate(OurHtmlDom, progress);
+		    BringBookUpToDate(OurHtmlDom, progress);
             if (Type == Book.BookType.Publication)
             {
                 ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
@@ -480,11 +480,18 @@ namespace Bloom.Book
                 ImageUpdater.CompressImages(FolderPath, progress);
                 _storage.Save();
             }
-			_storage.Save();
-		    if (_bookRefreshEvent != null)
+
+		    if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
+                                                        + _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
 		    {
-		        _bookRefreshEvent.Raise(this);
+                SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 		    }
+
+		    _storage.Save();
+            if (_bookRefreshEvent != null)
+            {
+                _bookRefreshEvent.Raise(this);
+            }
 		}
 
     	private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
@@ -568,6 +575,11 @@ namespace Bloom.Book
 			    }
 		    }
 	    }
+
+        /// <summary>
+        /// THe bloomBookId meta value
+        /// </summary>
+        public string ID { get { return _storage.Dom.GetMetaValue("bloomBookId", ""); } }
 
 	    private void UpdateImageMetadataAttributes(XmlElement imgNode)
         {
@@ -1520,5 +1532,11 @@ namespace Bloom.Book
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 		    _storage.Save();
 	    }
+
+        //TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
+        public string GetBookLineage()
+        {
+            return OurHtmlDom.GetMetaValue("bloomBookLineage","");
+        }
     }
 }
