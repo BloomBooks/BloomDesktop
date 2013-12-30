@@ -139,8 +139,8 @@ function Cleanup() {
     });
 
     //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
-    $('#element').css('opacity', '');
-    $('#element').css('overflow', '');
+    $('*').css('opacity', '');
+    $('*').css('overflow', '');
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
