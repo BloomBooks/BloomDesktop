@@ -480,6 +480,13 @@ namespace Bloom.Book
 				ImageUpdater.CompressImages(FolderPath, progress);
 				_storage.Save();
 			}
+
+			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
+														+ _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
+			{
+				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
+			}
+
 			_storage.Save();
 			if (_bookRefreshEvent != null)
 			{
@@ -568,6 +575,11 @@ namespace Bloom.Book
 				}
 			}
 		}
+
+		/// <summary>
+		/// THe bloomBookId meta value
+		/// </summary>
+		public string ID { get { return _storage.Dom.GetMetaValue("bloomBookId", ""); } }
 
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
@@ -1519,6 +1531,12 @@ namespace Bloom.Book
 			_bookData.UpdateVariablesAndDataDivThroughDOM();//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 			_storage.Save();
+		}
+
+		//TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
+		public string GetBookLineage()
+		{
+			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
 		}
 	}
 }
