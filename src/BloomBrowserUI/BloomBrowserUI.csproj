@@ -202,6 +202,7 @@
     <Content Include="bookEdit\img\imageMissingMetaData.svg" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bookEdit\editor\" />
     <Folder Include="bookPreview\html\" />
     <Folder Include="bookPreview\img\" />
   </ItemGroup>
