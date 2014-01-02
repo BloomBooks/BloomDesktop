@@ -366,7 +366,7 @@ namespace Bloom.Book
 		/// <summary>
 		///
 		/// </summary>
-		/// <remarks>The image-replacement feature is perhaps a one-off for a project where the an advisor replaced the folders
+		/// <remarks>The image-replacement feature is perhaps a one-off for a project where an advisor replaced the folders
 		/// with a version that lacked most of the images (perhaps because dropbox copies small files first and didn't complete the sync)</remarks>
 		/// <param name="progress"></param>
 		/// <param name="pathToFolderOfReplacementImages">We'll find any matches in the entire folder, regardless of sub-folder name</param>

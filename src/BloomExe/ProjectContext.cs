@@ -137,8 +137,8 @@ namespace Bloom
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
-				const int kListViewIconHeightAndSize = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
+				const int kListViewIconHeightAndWidth = 70;
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth)).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{

@@ -277,7 +277,6 @@ namespace Bloom.CollectionTab
 					MessageBox.Show("Bloom didn't find any problems.");
 				}
 			}
-
 		}
 
 		public void AttemptMissingImageReplacements(string pathToFolderOfReplacementImages=null)

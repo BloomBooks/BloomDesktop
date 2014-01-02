@@ -236,9 +236,9 @@ namespace Bloom
 		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
 		{
-			if (e.CtrlKey && e.KeyChar == 'v')
+			const uint DOM_VK_INSERT = 0x2D;
+			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				Debug.WriteLine("Ctrl-v pressed.");
 				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
@@ -247,8 +247,6 @@ namespace Bloom
 				else if(_browser.CanPaste && Clipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-
-
 					PasteFilteredText();
 				}
 			}
@@ -256,12 +254,10 @@ namespace Bloom
 
 		private void PasteFilteredText()
 		{
-//filter whatever's on there down to just simple text.
-			//While it's tempting to allow formatted pasting, if you're making a shell, that's just
-			//kidding yourself; the translator won't get to have that formatting too.
+			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			//setting clears everything else:
 			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
-			Debug.WriteLine("Asking browser to paste:" + Clipboard.GetText());
 			_browser.Paste();
 		}
 

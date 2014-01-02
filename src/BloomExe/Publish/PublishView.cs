@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -19,6 +22,7 @@ namespace Bloom.Publish
 	public partial class PublishView : UserControl, IBloomTabArea
 	{
 		private readonly PublishModel _model;
+		private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
 		private BloomLibraryPublishControl _libraryPublishControl;
 		private BookTransfer _bookTransferrer;
@@ -80,7 +84,21 @@ namespace Bloom.Publish
 
 //			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 
+
 			_model.RefreshValuesUponActivation();
+
+			//reload items from extension(s), as they may differ by book (e.g. if the extension comes from the template of the book)
+			var toolStripItemCollection = new List<ToolStripItem>(from ToolStripItem x in _contextMenuStrip.Items select x);
+			foreach (ToolStripItem item in toolStripItemCollection)
+			{
+				if (item.Tag == "extension")
+					_contextMenuStrip.Items.Remove(item);
+			}
+			foreach (var item in _model.GetExtensionMenuItems())
+			{
+				item.Tag = "extension";
+				_contextMenuStrip.Items.Add(item);
+			}
 
 			UpdateDisplay();
 			MakeBooklet();
@@ -123,11 +141,11 @@ namespace Bloom.Publish
 			}
 		}
 
+
+
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			//_loadTimer.Enabled = true;
-			//UpdateEditButtons();
 		}
 
 		private void UpdateDisplay()
@@ -326,7 +344,5 @@ namespace Bloom.Publish
 		{
 
 		}
-
-
 	}
 }

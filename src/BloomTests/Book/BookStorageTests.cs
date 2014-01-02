@@ -179,7 +179,7 @@ namespace BloomTests.Book
 			var collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
 				collectionSettings,
-				new Moq.Mock<HtmlThumbNailer>(new object[] { 60 }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+				new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 
 			book.BringBookUpToDate(new NullProgress());
 

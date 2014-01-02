@@ -38,7 +38,7 @@
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
@@ -51,11 +51,11 @@
 			this._showCropMarks = new System.Windows.Forms.CheckBox();
 			this._saveButton = new System.Windows.Forms.Button();
 			this._printButton = new System.Windows.Forms.Button();
-			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+            this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
-			this.contextMenuStrip1.SuspendLayout();
+            this._contextMenuStrip.SuspendLayout();
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -91,7 +91,7 @@
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.ContextMenuStrip = this.contextMenuStrip1;
+            this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
@@ -114,15 +114,16 @@
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
-			// contextMenuStrip1
+            // _contextMenuStrip
 			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem});
-			this._L10NSharpExtender.SetLocalizableToolTip(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(434, 26);
+            this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
+            this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
+            this._contextMenuStrip.Name = "_contextMenuStrip";
+            this._contextMenuStrip.Size = new System.Drawing.Size(434, 48);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -338,6 +339,10 @@
 			this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
 			this._adobeReaderControl.TabIndex = 16;
 			// 
+            // superToolTip1
+            // 
+            this.superToolTip1.FadingInterval = 10;
+            // 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -356,7 +361,7 @@
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
-			this.contextMenuStrip1.ResumeLayout(false);
+            this._contextMenuStrip.ResumeLayout(false);
 			this._menusToolStrip.ResumeLayout(false);
 			this._menusToolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
@@ -376,7 +381,7 @@
 		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private AdobeReaderControl _adobeReaderControl;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
 		private System.Windows.Forms.RadioButton _noBookletRadio;
 		private System.Windows.Forms.RadioButton _coverRadio;

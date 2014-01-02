@@ -24,7 +24,8 @@ namespace Bloom
 	public class HtmlThumbNailer: IDisposable
 	{
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
-		private readonly int _sizeInPixels =70;
+		private readonly int _widthInPixels =70;
+		private readonly int _heightInPixels = 70;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
 		private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
@@ -37,9 +38,10 @@ namespace Bloom
 
 		private bool _disposed;
 
-		public HtmlThumbNailer(int sizeInPixels)
+		public HtmlThumbNailer(int widthInPixels,int heightInPixels)
 		{
-			_sizeInPixels = sizeInPixels;
+			_widthInPixels = widthInPixels;
+			_heightInPixels = heightInPixels;
 			Application.Idle += new EventHandler(Application_Idle);
 		}
 
@@ -148,8 +150,9 @@ namespace Bloom
 
 						browser.Navigate(temp.Path);
 
+						var minimumTime = DateTime.Now.AddSeconds(1);
 						var stopTime = DateTime.Now.AddSeconds(5);
-						while (!_disposed && (!order.Done || browser.Document.ActiveElement == null )&& DateTime.Now < stopTime)
+						while (!_disposed && (DateTime.Now < minimumTime || !order.Done || browser.Document.ActiveElement == null) && DateTime.Now < stopTime)
 						{
 							Application.DoEvents(); //TODO: avoid this
 							//Thread.Sleep(100);
@@ -208,7 +211,7 @@ namespace Bloom
 #endif
 							if (_disposed)
 								return;
-							pendingThumbnail = MakeThumbNail(docImage, _sizeInPixels, _sizeInPixels,
+							pendingThumbnail = MakeThumbNail(docImage, _widthInPixels, _heightInPixels,
 															 Color.Transparent,
 															 order.DrawBorderDashed);
 						}
@@ -257,7 +260,7 @@ namespace Bloom
 
 				pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
 
-				Debug.WriteLine("THumbnail browser ({0},{1})", browser.Width, browser.Height);
+				Debug.WriteLine("THumbnail created with dimensions ({0},{1})", browser.Width, browser.Height);
 
 				try
 				//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.

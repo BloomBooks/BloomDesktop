@@ -61,6 +61,8 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 2) GeckoFX intended for that version of XulRunner
 3) Bloom source code which is expecting that same version of GeckoFX.
 
+Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
+
 
 # Testers
 
