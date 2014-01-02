@@ -34,6 +34,11 @@ namespace Bloom.WebLibraryIntegration
 			_transferUtility = new TransferUtility(_amazonS3);
 		}
 
+		/// <summary>
+		/// This is set during UploadBook if the book has a thumbnail.png file in the book's folder, to the URL
+		/// that will retrieve that file from S3.
+		/// It only contains useful information after UploadBook.
+		/// </summary>
 		public string ThumbnailUrl { get; private set; }
 
 		public bool GetBookExists(string key)
