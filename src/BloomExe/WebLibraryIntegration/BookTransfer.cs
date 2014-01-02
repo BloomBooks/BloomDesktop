@@ -67,13 +67,13 @@ namespace Bloom.WebLibraryIntegration
 			return File.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
 		}
 
-		private static string S3BookId(BookMetaData metadata)
+		private string S3BookId(BookMetaData metadata)
 		{
 			// It's tempting to use '/' so that S3 tools will treat all the books with the same ID as a folder.
 			// But this complicates things because that character is taken as a path separator (even in Windows),
 			// which gives us an extra level of folder in our temp folder...too much trouble for now, anyway.
 			// So use a different separator.
-			var s3BookId = metadata.Id + "-" + metadata.UploadedBy;
+			var s3BookId = _parseClient.Account + "/" + metadata.Id;
 			return s3BookId;
 		}
 
