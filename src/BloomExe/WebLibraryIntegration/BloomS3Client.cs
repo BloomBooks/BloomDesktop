@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Amazon;
+using Amazon.EC2.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -139,27 +140,34 @@ namespace Bloom.WebLibraryIntegration
 	        ThumbnailUrl = null;
 	        DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
             //first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
-            //and at the same time introduce a wrapper with the unique key for this person+book
+            //and at the same time introduce a wrapper with the last part of the unique key for this person+book
+			string prefix = ""; // storageKey up to last slash (or empty)
+			string tempFolderName = storageKeyOfBookFolder; // storage key after last slash (or all of it)
 
-            var wrapperPath = Path.Combine(Path.GetTempPath(), storageKeyOfBookFolder);
+			// storageKeyOfBookFolder typically has a slash in it, email/id.
+			// We only want the id as the temp folder name.
+			// If there is anything before it, though, we want that as a prefix to make a parent 'folder' on parse.com.
+			int index = storageKeyOfBookFolder.LastIndexOf('/');
+	        if (index >= 0)
+	        {
+		        prefix = storageKeyOfBookFolder.Substring(0, index + 1); // must include the slash
+		        tempFolderName = storageKeyOfBookFolder.Substring(index + 1);
+	        }
+
+			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
             Directory.CreateDirectory(wrapperPath);
 
             CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
-            UploadDirectory(wrapperPath, notifier);
+			UploadDirectory(prefix, wrapperPath, notifier);
 
             Directory.Delete(wrapperPath, true);
         }
 
 
-        /// <summary>
-        /// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
-        /// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
-        /// </summary>
-		private void UploadDirectory(string directoryPath, Action<string> notifier = null)
-        {
-            UploadDirectory("", directoryPath, notifier);
-        }
-
+		/// <summary>
+		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
+		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
+		/// </summary>
 		private void UploadDirectory(string prefix, string directoryPath, Action<string> notifier = null)
         {
             if (!Directory.Exists(directoryPath))
