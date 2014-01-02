@@ -57,7 +57,7 @@
         return this.each(function() {
             var $img = $(this);
             var $parent = opts.parent ? $img.parents(opts.parent) : $img.parent(); // if not supplied, use default direct parent
-            $parent.css({overflow: 'hidden'}); // keep the img inside boundaries
+            //hatton removed this... leave it to the stylesheet: $parent.css({overflow: 'hidden'}); // keep the img inside boundaries
             
             if ($parent.length > 0) {
                 $img.removeAttr('height').removeAttr('width');
@@ -119,12 +119,12 @@
                 $img.css("margin-left", Math.floor((destW - newWidth) / 2));
                 $img.css("margin-top", Math.floor((destH - newHeight) / 2));
             }
-        
-            if (opts.fade > 0) { // fade-in effect
-                $parent.animate({opacity: 1}, opts.fade);
-            } else {
-                $parent.css("opacity", 1);
-            }
+//        
+//       hatton: leave opacity to the stylesheet     if (opts.fade > 0) { // fade-in effect
+//                $parent.animate({opacity: 1}, opts.fade);
+//            } else {
+//                $parent.css("opacity", 1);
+//            }
         }
 
         /**

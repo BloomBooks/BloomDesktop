@@ -135,6 +135,7 @@
       <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -223,6 +224,8 @@
     <Compile Include="Publish\BloomLibraryPublishControl.Designer.cs">
       <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
+    <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
     <Compile Include="Registration\RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>

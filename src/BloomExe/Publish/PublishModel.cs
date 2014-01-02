@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -10,6 +17,7 @@ using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
+using TempFile = BloomTemp.TempFile;
 
 namespace Bloom.Publish
 {
@@ -122,6 +130,7 @@ namespace Bloom.Publish
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
             HtmlDom.AddPublishClassToBody(dom);
+            //HtmlDom.AddWebkitClassToBody(dom);
 
 			//wkhtmltopdf can't handle file://
 			dom.InnerXml = dom.InnerXml.Replace("file://", "");
@@ -289,13 +298,98 @@ namespace Bloom.Publish
 			System.Diagnostics.Process.Start("Chrome.exe",MakeFinalHtmlForPdfMaker().Path);
 		}
 
-		public void RefreshValuesUponActivation()
-		{
-			if (BookSelection.CurrentSelection!=null)
-			{
-				PageLayout = BookSelection.CurrentSelection.GetLayout();
-			}
+        public void RefreshValuesUponActivation()
+        {
+            if (BookSelection.CurrentSelection != null)
+            {
+                PageLayout = BookSelection.CurrentSelection.GetLayout();
+            }
 
-		}
+        }
+
+        [Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
+        private Func<IEnumerable<ToolStripItem>> _getExtensionMenuItems;
+
+	    public IEnumerable<HtmlDom> GetPageDoms()
+	    {
+	        if (BookSelection.CurrentSelection.IsFolio)
+	        {
+	            foreach (var bi in _currentBookCollectionSelection.CurrentSelection.GetBookInfos())
+	            {
+	                var book = _bookServer.GetBookFromBookInfo(bi);
+                    //need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
+                    book.SetLayout(new Layout()
+	                {
+	                    SizeAndOrientation =  SizeAndOrientation.FromString("B5Portrait"),
+	                    Style = "HideProductionNotes"
+	                });
+	                foreach (var page in  book.GetPages())
+	                {
+	                    yield return book.GetPreviewXmlDocumentForPage(page);
+	                }
+	            }
+	        }
+	        else //this one is just for testing, it's not especially fruitfal to export for a single book
+	        {
+                //need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
+                BookSelection.CurrentSelection.SetLayout(new Layout()
+                {
+                    SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
+                    Style = "HideProductionNotes"
+                });
+
+                foreach (var page in BookSelection.CurrentSelection.GetPages())
+                {
+                    var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
+                    //get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
+                    BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath, false);
+                    yield return previewXmlDocumentForPage;
+                }
+	        }
+	    }
+
+
+	    public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
+	    {
+            var thumbnailer = new HtmlThumbNailer(width, height);//enhance some way to cache this
+	        thumbnailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+	    }
+
+	    public IEnumerable<ToolStripItem> GetExtensionMenuItems()
+	    {
+            //for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
+            //to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
+            //TODO: this should work, but it doesn't because BookInfo.BookLineage isn't working: if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.BookInfo.BookLineage))
+            if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.GetBookLineage()))
+	        {
+	            //load any extension assembly found in the template's root directory
+	            //var catalog = new DirectoryCatalog(this.BookSelection.CurrentSelection.FindTemplateBook().FolderPath, "*.dll");
+	            var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
+	            var container = new CompositionContainer(catalog);
+	            //inject what we have to offer for the extension to consume
+	            container.ComposeExportedValue<string>("PathToBookFolder",BookSelection.CurrentSelection.FolderPath);
+                container.ComposeExportedValue<string>("Language1Iso639Code", _collectionSettings.Language1Iso639Code);
+                container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
+	          //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
+                container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
+	            container.SatisfyImportsOnce(this);
+	            return _getExtensionMenuItems == null ? new List<ToolStripItem>() : _getExtensionMenuItems();
+	        }
+	        else
+	        {
+	            return new List<ToolStripMenuItem>();
+	        }
+	    }
+//
+//	    private IEnumerable<XmlDocument> GetFileForPrinting()
+//	    {
+////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+////            HtmlDom.AddPublishClassToBody(dom);
+////
+////	        foreach (var pageDom in dom.SelectNodes("/html/body/div[contains(@class,'bloom-page')]"))
+////	        {
+////	            yield return pageDom;
+////	        }
+//	    }
 	}
 }

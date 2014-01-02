@@ -1,4 +1,8 @@
-﻿## 1.1.5 - 13 Dec 2013
+﻿## 1.1.6 - 19 Dec 2013
+* for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
+* make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
+
+## 1.1.5 - 13 Dec 2013
 * You can now add additional usage limitation information to a Creative Commons license.
 * [Template Development] JADE is now the standard way to make custom templates
 * Fixed problem that prevented changing the collection name.
