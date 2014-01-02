@@ -178,6 +178,7 @@ namespace BloomTests.WebLibraryIntegration
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
 			Assert.That(metadata.UploadedBy, Is.EqualTo("unittest@example.com"), "should have set updatedBy to id of logged-in user");
+			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
 
 		    var record = _parseClient.GetSingleBookRecord(metadata.Id, _parseClient.Account);
 		    string thumbnail = record.thumbnail;

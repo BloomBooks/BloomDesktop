@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Autofac.Features.Metadata;
 using Bloom.Book;
 using L10NSharp;
 using Palaso.Extensions;
@@ -47,12 +48,15 @@ namespace Bloom.WebLibraryIntegration
 				metadata.Id = Guid.NewGuid().ToString();
 			}
 			metadata.UploadedBy = _parseClient.Account;
+			var s3BookId = S3BookId(metadata);
+		    metadata.DownloadSource = s3BookId;
 			// Any updated ID at least needs to become a permanent part of the book.
+			// The file uploaded must also contain the correct DownloadSource data, so that it can be used
+			// as an 'order' to download the book.
 			// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
 			// Not sure if there is any other reason to do it (or not do it).
 			// For example, do we want to send/receive who is the latest person to upload?
 			metadata.WriteToFolder(bookFolder);
-			var s3BookId = S3BookId(metadata);
 			_s3Client.UploadBook(s3BookId, bookFolder, notifier);
 		    metadata.Thumbnail = _s3Client.ThumbnailUrl;
 		    if (notifier != null)

@@ -292,6 +292,11 @@ namespace Bloom.Book
 		[JsonProperty("uploadedBy")]
 		public string UploadedBy { get; set; }
 
+		// This tells Bloom where the data files can be found.
+		// Strictly it is the first argument that needs to be passed to BookTransfer.DownloadBook in order to get the entire book data.
+		[JsonProperty("downloadSource")]
+		public string DownloadSource { get; set; }
+
 		// This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
 		// object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,
 		// ask the copyright holder for permission to use) 'custom' (rights presumably specified in licenseNotes)
