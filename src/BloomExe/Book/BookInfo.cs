@@ -233,7 +233,7 @@ namespace Bloom.Book
 			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
 		}
 
-		private static string MetaDataPath(string bookFolderPath)
+		public static string MetaDataPath(string bookFolderPath)
 		{
 			return bookFolderPath.CombineForPath(BookInfo.MetaDataFileName);
 		}
@@ -275,11 +275,17 @@ namespace Bloom.Book
 		[JsonProperty("title")]
 		public string Title { get; set; }
 
-		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
-		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
-		// What we upload needs to be a functional URL (probably relative to our site root).
+		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
+		// containing the actual url where we can grab the thumbnail.
+		// Locally the thumbnail is always called just thumbnail.png.
 		[JsonProperty("thumbnail")]
 		public string Thumbnail { get; set; }
+
+		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
+		// containing the actual url where we can grab the book order file which when opened by Bloom causes it
+		// to download the book.
+		[JsonProperty("bookOrder")]
+		public string BookOrder { get; set; }
 
 		[JsonProperty("isbn")]
 		public string Isbn { get; set; }

@@ -184,6 +184,12 @@ namespace BloomTests.WebLibraryIntegration
 			string thumbnail = record.thumbnail;
 			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
 			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
+
+			string order = record.bookOrder;
+			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
+			Assert.That(order.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "order url should start with s3 prefix");
+
+			Assert.That(File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")), "Should have created, uploaded and downloaded the book order");
 		}
 
 		[Test]
