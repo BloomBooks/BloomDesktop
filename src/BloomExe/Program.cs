@@ -10,6 +10,8 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.WebLibraryIntegration;
+using Microsoft.Win32;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -110,6 +112,12 @@ namespace Bloom
 				        Settings.Default.MruProjects.AddNewPath(args[0]);
 			        }
 
+					// If we are passed a bloom book order, download the corresponding book and exit.
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloombookorder") && File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+					{
+						new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(args[0], Settings.Default.MruProjects.Latest);
+						return;
+					}
 
                     if (args.Length > 0 && args[0] == "--rename")
                     {

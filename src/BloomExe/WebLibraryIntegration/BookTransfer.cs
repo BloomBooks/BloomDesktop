@@ -94,6 +94,13 @@ namespace Bloom.WebLibraryIntegration
 			return _s3Client.DownloadBook(s3BookId, dest);
 		}
 
+	    public void HandleBookOrder(string bookOrderPath, string projectPath)
+	    {
+		    var metadata = BookMetaData.FromString(File.ReadAllText(bookOrderPath));
+		    var s3BookId = metadata.DownloadSource;
+		    _s3Client.DownloadBook(s3BookId, Path.GetDirectoryName(projectPath));
+	    }
+
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
