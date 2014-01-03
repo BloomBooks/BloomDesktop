@@ -174,12 +174,7 @@ namespace Bloom
 				builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
 
 				// Enhance: may need some way to test a release build in the sandbox.
-#if DEBUG
-				var bucket = "BloomLibraryBooks-Sandbox";
-#else
-				var bucket = "BloomLibraryBooks-Production";
-#endif
-				builder.Register(c => new BloomS3Client(bucket)).AsSelf().SingleInstance();
+				builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
 				builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
 				builder.RegisterType<LoginDialog>().AsSelf();
 
@@ -205,6 +200,16 @@ namespace Bloom
 													});
 			});
 
+		}
+
+		internal static BloomS3Client CreateBloomS3Client()
+		{
+#if DEBUG
+			var bucket = "BloomLibraryBooks-Sandbox";
+#else
+			var bucket = "BloomLibraryBooks-Production";
+#endif
+			return new BloomS3Client(bucket);
 		}
 
 
