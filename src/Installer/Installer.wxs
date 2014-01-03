@@ -89,8 +89,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
             <File Id="Bloom.exe" Name="Bloom.exe"  Source="..\..\output\release\Bloom.exe" />
             <File Id="BloomPackIcon" Name="BloomPackIcon.ico" Source="..\..\artwork\BloomPack.ico" />
             <File Id="BloomCollectionIcon" Name="BloomCollectionIcon.ico" Source="..\..\artwork\BloomCollectionIcon.ico" />
-            
-            <fire:FirewallException Id="ChorusHubFireWallException" Name="Bloom Access to Chorus Hub" Program="[#Bloom.exe]" Scope="localSubnet" IgnoreFailure="yes"/>
+						<File Id="BloomOrderIcon" Name="BloomOrderIcon.ico" Source="..\..\artwork\BloomOrderIcon.ico" />
+
+						<fire:FirewallException Id="ChorusHubFireWallException" Name="Bloom Access to Chorus Hub" Program="[#Bloom.exe]" Scope="localSubnet" IgnoreFailure="yes"/>
             
             <!--- todo: icons for Bloom files -->
 
@@ -114,7 +115,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
                 <Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
               </Extension>
             </ProgId>
-
+												
             <Registry  Id='BloomCollectionIcon1' Root='HKCR' Key='.BloomCollection' Action='write'
               Type='string' Value='Bloom.BloomCollectionFile' />
             <Registry Id='BloomCollectionIcon2' Root='HKCR' Key='Bloom.BloomCollectionFile' Action='write'
@@ -122,7 +123,21 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
             <Registry Id='BloomCollectionIcon3' Root='HKCR' Key='Bloom.BloomCollectionFile\DefaultIcon' Action='write'
               Type='string' Value='[!BloomCollectionIcon], 0' />
 
-            <!-- Bloom Pack Files -->
+						<!-- Bloom Order Files -->
+						<ProgId Id='Bloom.BloomOrderFile' Description='Bloom download order file' >
+							<Extension Id='BloomBookOrder' ContentType='application/bloom'> <!-- I know application/bloom looks weird, but it copies MSword docs -->
+								<Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
+							</Extension>
+						</ProgId>
+						
+						<Registry  Id='BloomOrderIcon1' Root='HKCR' Key='.BloomOrder' Action='write'
+							 Type='string' Value='Bloom.BloomOrderFile' />
+						<Registry Id='BloomOrderIcon2' Root='HKCR' Key='Bloom.BloomOrderFile' Action='write'
+              Type='string' Value='Bloom Book Order' />
+						<Registry Id='BloomOrderIcon3' Root='HKCR' Key='Bloom.BloomOrderFile\DefaultIcon' Action='write'
+              Type='string' Value='[!BloomOrderIcon], 0' />
+
+						<!-- Bloom Pack Files -->
             <ProgId Id='Bloom.BloomPackFile' Description='BloomPack file' >
               <Extension Id='BloomPackFile' ContentType='application/bloom'>  <!-- I know application/bloom looks weird, but it copies MSword docs -->
                 <Verb Id='open' Command='Open' TargetFile ='Bloom.exe' Argument='"%1"' />
