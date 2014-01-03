@@ -4,7 +4,13 @@ Requirements for building the installer:
 
 - WIX Toolset. Version 1.0 shipped with WIX Toolset 3.7.
 
+- MSBuild Community tasks. I got the msi from https://github.com/loresoft/msbuildtasks/downloads.
+
+- Palaso.BuildTasks.dll must be in your build directory. I found one in lib/dotnet and copied it. You may need to download it if you haven't already.
+
 - The ZIP file of [XulRunner](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/) that build/bloom.proj calls for. At Version 1.0, this is xulrunner-8.0.en-US.win32.zip.
+
+- build/ChorusInstallerStuff/ChorusMergeModule.msm. I got one from build.palaso.org, one of the artifacts of the "chorus-win32-master Continuous" branch. Probably a more appropriate branch to use would be chorus-win32-Bloom1.0, but this does not currently have the artifact. Maybe it will by the time you read this.
 
 - A customized .bat for running the installer:
 Copy build/testInstallerBuild.bat, rename it something like 'RalphsTestInstallerBuild.bat'. Then modify the location of the 
