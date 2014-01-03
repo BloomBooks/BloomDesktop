@@ -41,6 +41,8 @@ namespace Bloom.WebLibraryIntegration
 		/// It only contains useful information after UploadBook.
 		/// </summary>
 		public string ThumbnailUrl { get; private set; }
+		// Similarly for the book order file.
+		public string BookOrderUrl { get; private set; }
 
         public bool GetBookExists(string key)
         {
@@ -138,6 +140,7 @@ namespace Bloom.WebLibraryIntegration
         public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
         {
 	        ThumbnailUrl = null;
+	        BookOrderUrl = null;
 	        DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
             //first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
             //and at the same time introduce a wrapper with the last part of the unique key for this person+book
@@ -210,6 +213,12 @@ namespace Bloom.WebLibraryIntegration
 					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
 		            ThumbnailUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
 	            }
+				else if (fileName.EndsWith(BookTransfer.BookOrderExtension))
+				{
+					// Remember the url that can be used to download the book order. This seems to work but I wish
+					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
+					BookOrderUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+				}
             }
 
             foreach (string subdir in Directory.GetDirectories(directoryPath))

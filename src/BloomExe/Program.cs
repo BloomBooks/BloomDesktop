@@ -113,7 +113,7 @@ namespace Bloom
 			        }
 
 					// If we are passed a bloom book order, download the corresponding book and exit.
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloombookorder") && File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+					if (args.Length == 1 && args[0].ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
 					{
 						new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(args[0], Settings.Default.MruProjects.Latest);
 						return;

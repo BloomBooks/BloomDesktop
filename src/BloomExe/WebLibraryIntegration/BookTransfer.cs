@@ -38,6 +38,8 @@ namespace Bloom.WebLibraryIntegration
 		    get { return _parseClient.LoggedIn; }
 	    }
 
+	    public const string BookOrderExtension = ".BloomBookOrder";
+
 	    public string UploadBook(string bookFolder, Action<String> notifier = null)
 		{
 			var metaDataText = MetaDataText(bookFolder);
@@ -57,8 +59,16 @@ namespace Bloom.WebLibraryIntegration
 			// Not sure if there is any other reason to do it (or not do it).
 			// For example, do we want to send/receive who is the latest person to upload?
 			metadata.WriteToFolder(bookFolder);
+			// The metadata is also a book order...but we need it on the server with the desired file name,
+			// because we can't rename on download. The extension must be the one Bloom knows about,
+			// and we want the file name to indicate which book, so use the name of the book folder.
+		    var metadataPath = BookMetaData.MetaDataPath(bookFolder);
+		    var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
+			File.Copy(metadataPath, orderPath, true);
+
 			_s3Client.UploadBook(s3BookId, bookFolder, notifier);
 		    metadata.Thumbnail = _s3Client.ThumbnailUrl;
+		    metadata.BookOrder = _s3Client.BookOrderUrl;
 		    if (notifier != null)
 				notifier(LocalizationManager.GetString("PublishWeb.UploadingBook","Uploading book record"));
 			// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
