@@ -188,8 +188,11 @@ namespace Bloom.WebLibraryIntegration
 				{
 					BucketName = _bucketName,
 					FilePath = file,
-					Key = prefix+ fileName,
+					Key = prefix+ fileName
 				};
+				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
+				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
+				request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 				if (notifier != null)
