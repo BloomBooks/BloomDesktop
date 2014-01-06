@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
@@ -17,11 +20,13 @@ namespace Bloom.Publish
 	/// </summary>
 	public partial class BloomLibraryPublishControl : UserControl
 	{
+		private PublishView _parentView;
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private Book.Book _book;
-		public BloomLibraryPublishControl(BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
+		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
+			_parentView = parentView;
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_book = book;
@@ -92,6 +97,24 @@ namespace Bloom.Publish
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var bookFolder = (string)e.Argument;
+			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
+			// If there is not already a locked preview in the book folder
+			// (which we take to mean the user has created a customized one that he prefers),
+			// copy the current preview to the book folder so it gets uploaded.
+			if (!FileUtils.IsFileLocked(uploadPdfPath))
+			{
+				// If we're in the process of making it, finish.
+				if (_parentView.IsMakingPdf)
+				{
+					AddNotification(LocalizationManager.GetString("PublishWeb.MakingPdf", "Making PDF Preview..."));
+					while (_parentView.IsMakingPdf)
+						Thread.Sleep(100);
+				}
+				if (File.Exists(_parentView.PdfPreviewPath))
+				{
+					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath);
+				}
+			}
 			_bookTransferrer.UploadBook(bookFolder, AddNotification);
 		}
 

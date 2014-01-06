@@ -14,6 +14,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
+using Palaso.IO;
 using Palaso.Reporting;
 
 
@@ -56,7 +57,7 @@ namespace Bloom.Publish
 													{
 														Activate();
 													}
-													else if (c.To!=this && _makePdfBackgroundWorker.IsBusy)
+													else if (c.To!=this && IsMakingPdf)
 														_makePdfBackgroundWorker.CancelAsync();
 			                                  	});
 
@@ -77,7 +78,7 @@ namespace Bloom.Publish
 		private void Activate()
 		{
 			Logger.WriteEvent("Entered Publish Tab");
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 				return;
 
 			_activated = true;
@@ -104,7 +105,11 @@ namespace Bloom.Publish
 			MakeBooklet();
 		}
 
-		
+		internal bool IsMakingPdf
+		{
+			get { return _makePdfBackgroundWorker.IsBusy; }
+		}
+
 
 		public Control TopBarControl
     	{
@@ -129,11 +134,13 @@ namespace Bloom.Publish
 				{
 					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 				}
-				_model.DisplayMode = PublishModel.DisplayModes.NoBook;
+				// We CAN upload even without a preview.
+				_model.DisplayMode = (_cloudRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.NoBook);
+				UpdateDisplay();
 				return;
 			}
 			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
-			_model.DisplayMode = (_cloudRadio.Checked && File.Exists(_model.PdfFilePath) ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
+			_model.DisplayMode = (_cloudRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
 			UpdateDisplay();
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
@@ -155,10 +162,13 @@ namespace Bloom.Publish
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
-			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
-			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
-			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet;
-			_showCropMarks.Checked = _model.ShowCropMarks;
+			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
+			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
+			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_cloudRadio.Checked = _model.UploadMode;
+			// No reason to update from model...we only change the model when the user changes the check box,
+			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
+			//_showCropMarks.Checked = _model.ShowCropMarks;
 
 
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
@@ -217,12 +227,13 @@ namespace Bloom.Publish
 					break;
 				case PublishModel.DisplayModes.Upload:
 	            {
-		            _workingIndicator.Visible = false; // We only go to this mode when the PDF is successfully created.
+		            _workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
 		            _saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 		            _adobeReaderControl.Visible = false; // We will replace it with another control.
-		            if (_libraryPublishControl == null)
+					Cursor = Cursors.Default;
+					if (_libraryPublishControl == null)
 		            {
-			            _libraryPublishControl = new BloomLibraryPublishControl(_bookTransferrer, _loginDialog, _model.BookSelection.CurrentSelection);
+			            _libraryPublishControl = new BloomLibraryPublishControl(this, _bookTransferrer, _loginDialog, _model.BookSelection.CurrentSelection);
 			            _libraryPublishControl.SetBounds(_adobeReaderControl.Left, _adobeReaderControl.Top,
 				            _adobeReaderControl.Width, _adobeReaderControl.Height);
 			            _libraryPublishControl.Anchor = _adobeReaderControl.Anchor;
@@ -240,17 +251,14 @@ namespace Bloom.Publish
 				return;
 
         	var oldPortion = _model.BookletPortion;
+	        var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
 			SetModelFromButtons();
-	        if (oldPortion == _model.BookletPortion)
+	        if (oldPortion == _model.BookletPortion && oldCrop == _model.ShowCropMarks)
 	        {
 				// no changes detected
 		        if (_cloudRadio.Checked)
 		        {
-			        // no change because switching to the cloud button does not affect which BookletPortion we are showing.
-					// But if we've already generated the PDF we can show the upload control.
-					// Otherwise we will show it when the PDF generation finishes.
-					if (_model.DisplayMode == PublishModel.DisplayModes.ShowPdf && File.Exists(_model.PdfFilePath))
-						_model.DisplayMode = PublishModel.DisplayModes.Upload;
+					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 		        }
 				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{
@@ -262,7 +270,6 @@ namespace Bloom.Publish
 				}
 		        return;
 	        }
-
 
 	        ControlsChanged();
         }
@@ -282,7 +289,7 @@ namespace Bloom.Publish
 
 		private void ControlsChanged()
 		{
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 			{
 				_makePdfBackgroundWorker.CancelAsync();
 			}
@@ -292,22 +299,27 @@ namespace Bloom.Publish
 
 		private void SetModelFromButtons()
 		{
-			if (_noBookletRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-			else if (_coverRadio.Checked)
+			if (_coverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
 			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-			// Otherwise the user checked _cloudRadio. We'll push to the cloud whatever
-			// kind of PDF they previously selected, so don't change it.
-			// Review: is this right? Maybe we want to always push the cover? Maybe we want to push all varieties?
-
-			_model.ShowCropMarks = _showCropMarks.Checked;
+			else // no booklet radio, or cloud radio (We want to upload the all-pages version.)
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+			_model.UploadMode = _cloudRadio.Checked;
+			_model.ShowCropMarks = _showCropMarks.Checked && !_cloudRadio.Checked; // don't want crop-marks on upload PDF
 		}
+
+		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
     	public void MakeBooklet()
     	{
-    		_model.PdfGenerationSucceeded = false; // and so it stays unless we generate is successfully.
+			if (IsMakingPdf)
+			{
+				// Can't start again until this one finishes
+				return;
+			}
+    		_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+
     		SetDisplayMode(PublishModel.DisplayModes.Working);
     		_makePdfBackgroundWorker.RunWorkerAsync();
     	}
