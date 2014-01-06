@@ -246,6 +246,13 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
           <Component Id="PdfDroplet.exe" Guid="{B192D381-F993-463E-9AA6-0920AFEFC637}">
             <File Id="PdfDroplet.exe" Name="PdfDroplet.exe" KeyPath="yes" Source="..\..\output\release\PdfDroplet.exe" />
           </Component>
+          <Component Id="AWSSDK.dll" Guid="{6B2EE242-5E6F-4403-BA91-F96769D17473}">
+            <File Id="AWSSDK.dll" Name="AWSSDK.dll" KeyPath="yes" Source="..\..\output\release\AWSSDK.dll" />
+          </Component>
+          <Component Id="RestSharp.dll" Guid="{CC21B89E-5A41-4841-9DCE-C3551894E295}">
+            <File Id="RestSharp.dll" Name="RestSharp.dll" KeyPath="yes" Source="..\..\output\release\RestSharp.dll" />
+          </Component>
+          
         </Directory>
       </Directory>
     </Directory>
@@ -277,6 +284,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
       <ComponentRef Id="DesktopAnalytics.dll" />
       <ComponentRef Id="Analytics.NET.dll" />
       <ComponentRef Id="PdfDroplet.exe" />
+      <ComponentRef Id="AWSSDK.dll" />
+      <ComponentRef Id="RestSharp.dll" />
       <ComponentRef Id="Bloom.exe" />
       <ComponentRef Id="Bloom.exe.config" />
       <ComponentRef Id="BloomChorusPlugin.dll" />
