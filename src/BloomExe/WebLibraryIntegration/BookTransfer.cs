@@ -49,6 +49,11 @@ namespace Bloom.WebLibraryIntegration
 			{
 				metadata.Id = Guid.NewGuid().ToString();
 			}
+			// And similarly it should have SOME title.
+		    if (string.IsNullOrEmpty(metadata.Title))
+		    {
+			    metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
+		    }
 			metadata.UploadedBy = _parseClient.Account;
 			var s3BookId = S3BookId(metadata);
 		    metadata.DownloadSource = s3BookId;
