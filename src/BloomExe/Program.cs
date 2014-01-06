@@ -116,7 +116,6 @@ namespace Bloom
 					if (args.Length == 1 && args[0].ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
 					{
 						new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(args[0], Settings.Default.MruProjects.Latest);
-						return;
 					}
 
                     if (args.Length > 0 && args[0] == "--rename")
