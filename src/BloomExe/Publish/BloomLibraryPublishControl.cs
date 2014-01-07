@@ -32,6 +32,8 @@ namespace Bloom.Publish
 			_book = book;
 			InitializeComponent();
 			_loginDialog.LogIn(); // See if saved credentials work.
+			if (bookTransferrer.LoggedIn)
+				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
 			UpdateDisplay();
 		}
 
@@ -45,6 +47,7 @@ namespace Bloom.Publish
 			// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
 			// which it will update with all the relevant information if login is successful.
 			_loginDialog.ShowDialog();
+			_uploadedByTextBox.Text = _bookTransferrer.UploadedBy;
 			UpdateDisplay();
 		}
 
@@ -112,7 +115,7 @@ namespace Bloom.Publish
 				}
 				if (File.Exists(_parentView.PdfPreviewPath))
 				{
-					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath);
+					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
 			_bookTransferrer.UploadBook(bookFolder, AddNotification);
@@ -134,6 +137,11 @@ namespace Bloom.Publish
 		{
 			_progressBox.SelectionStart = _progressBox.Text.Length;
 			_progressBox.ScrollToCaret();
+		}
+
+		private void _uploadedByTextBox_TextChanged(object sender, EventArgs e)
+		{
+			_bookTransferrer.UploadedBy = _uploadedByTextBox.Text;
 		}
 	}
 }
