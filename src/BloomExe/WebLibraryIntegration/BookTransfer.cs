@@ -40,6 +40,31 @@ namespace Bloom.WebLibraryIntegration
 
 	    public const string BookOrderExtension = ".BloomBookOrder";
 
+	    private string _uploadedBy;
+	    private string _accountWhenUploadedByLastSet;
+
+		/// <summary>
+		/// The string that should be used to indicate who is uploading books.
+		/// When set, this is remembered until someone different logs in; when next
+		/// retrieved, it resets to the new account.
+		/// </summary>
+	    public string UploadedBy
+	    {
+		    get
+		    {
+			    if (_accountWhenUploadedByLastSet == _parseClient.Account)
+				    return _uploadedBy;
+				// If a different login has since occurred, default to uploaded by that account.
+			    UploadedBy = _parseClient.Account;
+			    return _uploadedBy;
+		    }
+		    set
+		    {
+			    _accountWhenUploadedByLastSet = _parseClient.Account;
+			    _uploadedBy = value;
+		    }
+	    }
+
 	    public string UploadBook(string bookFolder, Action<String> notifier = null)
 		{
 			var metaDataText = MetaDataText(bookFolder);
@@ -54,7 +79,7 @@ namespace Bloom.WebLibraryIntegration
 		    {
 			    metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 		    }
-			metadata.UploadedBy = _parseClient.Account;
+			metadata.UploadedBy = UploadedBy;
 			var s3BookId = S3BookId(metadata);
 		    metadata.DownloadSource = s3BookId;
 			// Any updated ID at least needs to become a permanent part of the book.
