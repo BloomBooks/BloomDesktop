@@ -739,7 +739,7 @@ function ResizeUsingPercentages(e,ui){
 
          // if this or any parent element has the class .noLangDisplay, we don't want to show any of these tags
          // first usage (for instance) was turning off language tags for a whole page
-         if ($(this).hasClass('noLangDisplay') || $(this).parents('.noLangDisplay').length != 0) {
+         if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
              return;
          }
 
