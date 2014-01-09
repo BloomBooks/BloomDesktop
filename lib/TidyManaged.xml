@@ -4,22 +4,21 @@
         <name>TidyManaged</name>
     </assembly>
     <members>
-        <member name="T:TidyManaged.RepeatedAttributeMode">
+        <member name="T:TidyManaged.SortStrategy">
             <summary>
-            Represents the available repeated-attribute handling modes.
+            Represents values used by some Tidy <see cref="T:TidyManaged.Document"/> properties.
             </summary>
         </member>
-        <member name="F:TidyManaged.RepeatedAttributeMode.KeepFirst">
+        <member name="F:TidyManaged.SortStrategy.None">
             <summary>
-            Keep the first attribute.
+            None.
             </summary>
         </member>
-        <member name="F:TidyManaged.RepeatedAttributeMode.KeepLast">
+        <member name="F:TidyManaged.SortStrategy.Alpha">
             <summary>
-            Keep the last attribute.
+            Alpha.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "F:TidyManaged.Interop.TidyOptionId.TidyReplaceColor" -->
         <member name="T:TidyManaged.Document">
             <summary>
             Represents an HTML document (or XML, XHTML) to be processed by Tidy.
@@ -35,7 +34,7 @@
             <summary>
             Parses input markup, and executes configured cleanup and repair operations.
             </summary>
-            <param name="logStream">A _stream to which errors encountered during the CleanAndRepair operation will be written to.</param>
+            <param name="logStream">A stream to which errors encountered during the CleanAndRepair operation will be written to.</param>
         </member>
         <member name="M:TidyManaged.Document.Save">
             <summary>
@@ -51,7 +50,7 @@
         </member>
         <member name="M:TidyManaged.Document.Save(System.IO.Stream)">
             <summary>
-            Saves the processed markup to the supplied _stream.
+            Saves the processed markup to the supplied stream.
             </summary>
             <param name="stream">A <see cref="T:System.IO.Stream"/> to write the markup to.</param>
         </member>
@@ -504,6 +503,76 @@
             [write-back] Gets or sets whether Tidy should write back the tidied markup to the same file it read from. You are advised to keep copies of important files before tidying them, as on rare occasions the result may not be what you expect. Defaults to false.
             </summary>
         </member>
+        <member name="T:TidyManaged.RepeatedAttributeMode">
+            <summary>
+            Represents the available repeated-attribute handling modes.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.RepeatedAttributeMode.KeepFirst">
+            <summary>
+            Keep the first attribute.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.RepeatedAttributeMode.KeepLast">
+            <summary>
+            Keep the last attribute.
+            </summary>
+        </member>
+        <member name="T:TidyManaged.DocTypeMode">
+            <summary>
+            Represents the available accessibility DOCTYPE modes.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.Html5">
+            <summary>
+            &lt;!DOCTYPE html&gt;
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.Omit">
+            <summary>
+            Omit DOCTYPE altogether.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.Auto">
+            <summary>
+            Keep DOCTYPE in input.  Set version to content.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.Strict">
+            <summary>
+            Convert document to strict content model.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.Loose">
+            <summary>
+            Convert document to transitional content model.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.DocTypeMode.User">
+            <summary>
+            User-specified doctype.
+            </summary>
+        </member>
+        <member name="T:TidyManaged.AutoBool">
+            <summary>
+            Represents yes/no/auto values used by some Tidy <see cref="T:TidyManaged.Document"/> properties.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.AutoBool.No">
+            <summary>
+            No.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.AutoBool.Yes">
+            <summary>
+            Yes.
+            </summary>
+        </member>
+        <member name="F:TidyManaged.AutoBool.Auto">
+            <summary>
+            Automatic.
+            </summary>
+        </member>
         <member name="T:TidyManaged.AccessibilityCheckLevel">
             <summary>
             Represents the available accessibility check levels.
@@ -602,71 +671,6 @@
         <member name="F:TidyManaged.EncodingType.ShiftJIS">
             <summary>
             The Shift JIS encoding scheme for Japanese characters.
-            </summary>
-        </member>
-        <member name="T:TidyManaged.DocTypeMode">
-            <summary>
-            Represents the available accessibility DOCTYPE modes.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.DocTypeMode.Omit">
-            <summary>
-            Omit DOCTYPE altogether.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.DocTypeMode.Auto">
-            <summary>
-            Keep DOCTYPE in input.  Set version to content.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.DocTypeMode.Strict">
-            <summary>
-            Convert document to strict content model.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.DocTypeMode.Loose">
-            <summary>
-            Convert document to transitional content model.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.DocTypeMode.User">
-            <summary>
-            User-specified doctype.
-            </summary>
-        </member>
-        <member name="T:TidyManaged.SortStrategy">
-            <summary>
-            Represents values used by some Tidy <see cref="T:TidyManaged.Document"/> properties.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.SortStrategy.None">
-            <summary>
-            None.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.SortStrategy.Alpha">
-            <summary>
-            Alpha.
-            </summary>
-        </member>
-        <member name="T:TidyManaged.AutoBool">
-            <summary>
-            Represents yes/no/auto values used by some Tidy <see cref="T:TidyManaged.Document"/> properties.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.AutoBool.No">
-            <summary>
-            No.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.AutoBool.Yes">
-            <summary>
-            Yes.
-            </summary>
-        </member>
-        <member name="F:TidyManaged.AutoBool.Auto">
-            <summary>
-            Automatic.
             </summary>
         </member>
         <member name="T:TidyManaged.NewlineType">
