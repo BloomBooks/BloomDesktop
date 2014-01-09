@@ -59,3 +59,5 @@ lib/wkhtmltopdf/*
 LibChorus.*
 build/Palaso.BuildTasks.dll
 lib/failed update of AeroWizard Modified for dotnet 4 client/*
+*.userprefs
+lib/libtidy-html5.so
