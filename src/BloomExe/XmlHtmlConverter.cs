@@ -186,28 +186,23 @@ namespace Bloom
 			}
 		}
 
+		/// <summary>
+		/// Convert the DOM (which is expected to be XHTML5) to HTML5
+		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
 		{
-			
 			var initialOutputPath = Path.GetTempFileName();
 
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
-			//I know... bizarre
-			typeof (XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance)
-			                          .SetValue(settings, XmlOutputMethod.Html);
+			settings.OmitXmlDeclaration = true;
 
-			
 			using (var writer = XmlWriter.Create(initialOutputPath, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
-
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
 
 			//now re-write, indented nicely
 			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
@@ -217,7 +212,7 @@ namespace Bloom
 				tidy.AddTidyMetaElement = false;
 				tidy.OutputXml = false;
 				tidy.OutputHtml = true;
-				tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+				tidy.DocType = DocTypeMode.Html5;
 				tidy.MergeDivs = AutoBool.No;
 				tidy.MergeSpans = AutoBool.No;
 				tidy.PreserveEntities = true;
@@ -229,7 +224,6 @@ namespace Bloom
 				tidy.CleanAndRepair();
 				tidy.Save(tempPath);
 			}
-			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
 			File.Delete(initialOutputPath);
 			return tempPath;
 		}
