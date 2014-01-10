@@ -737,6 +737,12 @@ function ResizeUsingPercentages(e,ui){
              return;
          }
 
+         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+         // first usage (for instance) was turning off language tags for a whole page
+         if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
+             return;
+         }
+
          //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
          //then reappear
 
