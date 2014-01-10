@@ -155,7 +155,15 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<Shortcut Id="startmenuShortcut"  Directory="BloomShortcutDir" Name="Bloom"
 				 WorkingDirectory="ProgramDir" Target="[!Bloom.exe]"  Icon ="Bloom.exe" />
 
-		  </Component>
+						<!--Keys that allow Bloom to handle urls beginning bloom:-->
+						<RegistryKey Root="HKCR" Key="bloom">
+							<RegistryValue Type="string" Name="URL Protocol" Value=""/>
+							<RegistryValue Type="string" Value="BLOOM:URL Protocol"/>
+						</RegistryKey>
+						<RegistryKey Root="HKCR" Key="bloom\shell\open\command">
+							<RegistryValue Type="string" Value="&quot;[#Bloom.exe]&quot; &quot;%1&quot;"/>
+						</RegistryKey>
+					</Component>
 
 		  <Component Id="Bloom.exe.config" Guid="{5173C7E9-39FD-4438-B1C1-BA189707AA35}">
 			<File Id="Bloom.exe.config" Name="Bloom.exe.config" KeyPath="yes" Source="..\..\output\release\Bloom.exe.config" />
