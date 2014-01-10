@@ -4,7 +4,6 @@
 		<Solution>Bloom VS2010.sln</Solution>
 		<ApplicationName>Bloom</ApplicationName>
 		<Configuration>Release</Configuration>
-		<LargeFilesDir>c:\builddownloads</LargeFilesDir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -167,32 +166,17 @@
 		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
 
-  <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
-  <ItemGroup>
-	<XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-11.0.en-US.win32\xulrunner\**\*.*"/>
-	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
-  </ItemGroup>
-
-
   <Target Name="GetXulRunnerIntoLib">
-	<!--   <RemoveDir Directories="..\lib\xulrunner" />-->
-
+	<RemoveDir Directories="..\lib\xulrunner" />
 	<!-- we expect this has only one element, named "xulrunner"-->
-	<!-- always dies with errors in the unzipper
-		<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
+		<Unzip ZipFileName="..\lib\xulrunner-11.0.en-US.win32.zip"
 		   TargetDirectory="..\lib\"/>
-		   -->
-
-	<Copy
-		SourceFiles="@(XulRunnerFiles)"
-		DestinationFiles="@(XulRunnerFiles->'..\lib\xulrunner\%(RecursiveDir)%(Filename)%(Extension)')"
-		/>
   </Target>
 
   <Target Name="GetWkhtmlToXIntoLib">
 	<RemoveDir
 		   Directories="..\lib\wkhtmltopdf" />
-	<Unzip ZipFileName="$(LargeFilesDir)\wkhtmltopdf-0.10.0_rc2.zip"
+	<Unzip ZipFileName="..\lib\wkhtmltopdf-0.10.0_rc2.zip"
 		   TargetDirectory="..\lib\"/>
   </Target>
 
