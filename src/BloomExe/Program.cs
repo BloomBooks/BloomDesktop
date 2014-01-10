@@ -61,6 +61,13 @@ namespace Bloom
 			        Settings.Default.Save();
 			        StartUpWithFirstOrNewVersionBehavior = true;
 		        }
+#if DEBUG
+		        if (args.Length > 0)
+		        {
+					// This allows us to debug things like  interpreting a URL.
+			        MessageBox.Show("Attach debugger now");
+		        }
+#endif
 
 #if DEBUG
 				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
@@ -106,19 +113,30 @@ namespace Bloom
 			        Logger.Init();
 
 
-
-                    if ( args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
-			        {
-				        Settings.Default.MruProjects.AddNewPath(args[0]);
-			        }
-
-					// If we are passed a bloom book order, download the corresponding book and exit.
-					if (args.Length == 1 && args[0].ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+					if (args.Length == 1)
 					{
-						new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(args[0], Settings.Default.MruProjects.Latest);
+						if (args[0].ToLower().EndsWith(".bloomcollection"))
+						{
+							Settings.Default.MruProjects.AddNewPath(args[0]);
+						}
+
+						// If we are passed a bloom book order URL, download the corresponding book and open it.
+						else if (args[0].ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix) &&
+							!string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+						{
+							var link = new BloomLinkArgs(args[0]);
+							if (File.Exists(link.OrderPath))
+								HandleBookOrder(link.OrderPath);
+						}
+						// If we are passed a bloom book order, download the corresponding book and open it.
+						else if (args[0].ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+						    File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+						{
+							HandleBookOrder(args[0]);
+						}
 					}
 
-                    if (args.Length > 0 && args[0] == "--rename")
+					if (args.Length > 0 && args[0] == "--rename")
                     {
                         try
                         {
@@ -176,6 +194,11 @@ namespace Bloom
 				ReleaseMutexForBloom();
 			}
         }
+
+		private static void HandleBookOrder(string bookOrderPath)
+		{
+			new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(bookOrderPath, Settings.Default.MruProjects.Latest);
+		}
 
 		private static void Startup(object sender, EventArgs e)
 		{
