@@ -44,7 +44,10 @@ namespace Bloom.WebLibraryIntegration
 		public const string kOrderFile = "orderFile";
 		public const string kBloomUrlPrefix = kBloomScheme + "://" + kLocalHost + "/" + kOrder + "?";
 
-		public string OrderPath { get; set; }
+		/// <summary>
+		/// The url extracted from the overall order where we can find the bloom book order file.
+		/// </summary>
+		public string OrderUrl { get; set; }
 
 		public BloomLinkArgs(string url)
 		{
@@ -55,7 +58,7 @@ namespace Bloom.WebLibraryIntegration
 			var parts = query.Split('=');
 			if (parts.Length != 2 || parts[0] != kOrderFile)
 				throw new ArgumentException(String.Format("badly formed BloomLinkArgs URL string: {0}", url));
-			OrderPath = parts[1];
+			OrderUrl = parts[1];
 		}
 	}
 }

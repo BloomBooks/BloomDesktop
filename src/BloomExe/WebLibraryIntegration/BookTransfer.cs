@@ -6,8 +6,10 @@ using System.Text;
 using System.Threading;
 using Autofac.Features.Metadata;
 using Bloom.Book;
+using Bloom.Properties;
 using L10NSharp;
 using Palaso.Extensions;
+using Palaso.Network;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -20,11 +22,75 @@ namespace Bloom.WebLibraryIntegration
 	{
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
+		// A list of 'orders' to download books. These may be urls or (this may be obsolete) paths to book order files.
+		// One order is created when a url or book order is found as the single command line argument.
+		// It gets processed by an initial call to HandleOrders in LibraryListView.ManageButtonsAtIdleTime
+		// when everything is sufficiently initialized to handle downloading a new book.
+		// Orders may also be created in the Program.ServerThreadAction method, on a thread that is set up
+		// to receive download orders from additional instances of Bloom created by clicking a download link
+		// in a web page. These may be handled at any time.
+		private OrderList _orders;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client)
+		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
+
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, OrderList orders)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
+			_orders = orders;
+			if (_orders != null)
+			{
+				_orders.OrderAdded += _OrderAdded;
+			}
+		}
+
+		void _OrderAdded(object sender, EventArgs e)
+		{
+			HandleOrders();
+		}
+
+		public void HandleOrders()
+		{
+			if (_orders == null)
+				return;
+			string order;
+			while ((order = _orders.GetOrder()) != null)
+			{
+				HandleBloomBookOrder(order);
+			}
+		}
+
+		public string DownloadFromOrderUrl(string orderUrl, string destPath)
+		{
+			var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
+			var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
+			if (bucketStart == -1)
+				throw new ArgumentException("URL is not within expected bucket");
+			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
+			var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+			return DownloadBook(metadata.DownloadSource, destPath);
+		}
+
+		private void HandleBloomBookOrder(string argument)
+		{
+			// If we are passed a bloom book order URL, download the corresponding book and open it.
+			if (argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix) &&
+					 !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+			{
+				var link = new BloomLinkArgs(argument);
+				DownloadFromOrderUrl(link.OrderUrl, Path.GetDirectoryName(Settings.Default.MruProjects.Latest));
+			}
+			// If we are passed a bloom book order, download the corresponding book and open it.
+			else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+					 File.Exists(argument) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+			{
+				HandleBookOrder(argument);
+			}
+		}
+
+		private void HandleBookOrder(string bookOrderPath)
+		{
+			HandleBookOrder(bookOrderPath, Settings.Default.MruProjects.Latest);
 		}
 
 
@@ -106,6 +172,8 @@ namespace Bloom.WebLibraryIntegration
 			return s3BookId;
 		}
 
+		internal string BookOrderUrl {get { return _s3Client.BookOrderUrl; }}
+
 		private static string MetaDataText(string bookFolder)
 		{
 			return File.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
@@ -131,7 +199,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns></returns>
 		internal string DownloadBook(string s3BookId, string dest)
 		{
-			return _s3Client.DownloadBook(s3BookId, dest);
+			var result = _s3Client.DownloadBook(s3BookId, dest);
+			if (BookDownLoaded != null)
+			{
+				var bookInfo = new BookInfo(result, true); // Review: could a downloaded book ever not be editable?
+				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
+			}
+
+			return result;
 		}
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)

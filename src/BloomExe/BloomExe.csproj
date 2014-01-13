@@ -332,6 +332,7 @@
     <Compile Include="WebLibraryIntegration\BloomLinkArgs.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
     <Compile Include="WebLibraryIntegration\KeyManager.cs" />
     <Compile Include="WebLibraryIntegration\LoginDialog.cs">
@@ -340,6 +341,7 @@
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="WebLibraryIntegration\OrderList.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
