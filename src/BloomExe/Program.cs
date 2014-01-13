@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -91,6 +93,8 @@ namespace Bloom
 				        return;
 			        }
 
+					if (SendArgsToOtherBloomInstance(args))
+						return;
 
 #if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
 				    if (args.Length > 1)
@@ -103,11 +107,11 @@ namespace Bloom
 
 			        OldVersionCheck();
 
-
-
 			        SetUpErrorHandling();
 
 			        _applicationContainer = new ApplicationContainer();
+
+					StartReceivingArgsFromOtherBloom();
 
 			        SetUpLocalization();
 			        Logger.Init();
@@ -119,21 +123,8 @@ namespace Bloom
 						{
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
-
-						// If we are passed a bloom book order URL, download the corresponding book and open it.
-						else if (args[0].ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix) &&
-							!string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
-						{
-							var link = new BloomLinkArgs(args[0]);
-							if (File.Exists(link.OrderPath))
-								HandleBookOrder(link.OrderPath);
-						}
-						// If we are passed a bloom book order, download the corresponding book and open it.
-						else if (args[0].ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
-						    File.Exists(args[0]) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
-						{
-							HandleBookOrder(args[0]);
-						}
+						else
+							HandleBloomBookOrder(args[0]);
 					}
 
 					if (args.Length > 0 && args[0] == "--rename")
@@ -173,6 +164,7 @@ namespace Bloom
 			        try
 			        {
 				        Application.Run();
+				        StopReceivingArgsFromOtherBloom();
 			        }
 			        catch (System.AccessViolationException nasty)
 			        {
@@ -195,9 +187,108 @@ namespace Bloom
 			}
         }
 
-		private static void HandleBookOrder(string bookOrderPath)
+		private static Thread _serverThread;
+		private static bool _shuttingDown;
+		/// <summary>
+		/// Start a server which can process requests from another instance of bloom
+		/// (typically started by initiating a download by navigating to a link starting with bloom://;
+		/// can also be by opening a bookorder file.)
+		/// </summary>
+		private static void StartReceivingArgsFromOtherBloom()
 		{
-			new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client()).HandleBookOrder(bookOrderPath, Settings.Default.MruProjects.Latest);
+			_serverThread = new Thread(ServerThreadAction);
+			_serverThread.Start();
+		}
+
+		private static void StopReceivingArgsFromOtherBloom()
+		{
+			if (_serverThread != null)
+			{
+				_shuttingDown = true;
+				// This will go to our own thread that is waiting for such a connection, allowing the WaitForConnection
+				// to unblock so the thread can terminate.
+				NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
+				try
+				{
+					pipeClient.Connect(100);
+				}
+				catch (TimeoutException)
+				{
+					return; // failed to send, maybe we got a real request during shutdown?
+				}
+				_serverThread.Join(1000); // If for some reason we can't clean up nicely, we'll exit anyway
+				_serverThread = null;
+			}
+		}
+
+		private const string ArgsPipeName = @"SendBloomArgs";
+
+		/// <summary>
+		/// The function executed by the server thread which listens for messages from other bloom instances.
+		/// Review: do we need to be able to handle many at once? What will happen if the user opens one order while we are handling another?
+		/// </summary>
+		/// <param name="data"></param>
+		private static void ServerThreadAction(object data)
+		{
+			for (;!_shuttingDown;)
+			{
+				NamedPipeServerStream pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
+				pipeServer.WaitForConnection();
+				if (_shuttingDown)
+					return; // We got the spurious message that allows us to unblock and exit
+				string argument = null;
+				try
+				{
+					int len = pipeServer.ReadByte()*256;
+					len += pipeServer.ReadByte();
+					byte[] inBuffer = new byte[len];
+					pipeServer.Read(inBuffer, 0, len);
+					argument = Encoding.UTF8.GetString(inBuffer);
+				}
+				catch (IOException e)
+				{
+					//Catch the IOException that is raised if the pipe is broken
+					// or disconnected.
+					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
+					// was trying to do doesn't happen.
+				}
+				HandleBloomBookOrder(argument);
+				pipeServer.Dispose();
+			}
+		}
+
+		private static void HandleBloomBookOrder(string argument)
+		{
+			_applicationContainer.OrderList.AddOrder(argument);
+		}
+
+		/// <summary>
+		/// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
+		/// </summary>
+		/// <param name="args"></param>
+		/// <returns>true if another instance is handling things and this one should exit</returns>
+		private static bool SendArgsToOtherBloomInstance(string[] args)
+		{
+			if (args.Length != 1)
+				return false; // We only try to send exactly one argument to another instance.
+			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
+			try
+			{
+				pipeClient.Connect(200);
+			}
+			catch (TimeoutException)
+			{
+				return false; // no other bloom running, go ahead and deal with request ourselves.
+			}
+			// Send the argument across the pipe to the other instance.
+			byte[] outBuffer = Encoding.UTF8.GetBytes(args[0]);
+			int len = outBuffer.Length;
+			pipeClient.WriteByte((byte)(len / 256));
+			pipeClient.WriteByte((byte)(len & 255));
+			pipeClient.Write(outBuffer, 0, len);
+			pipeClient.Flush();
+			pipeClient.Dispose();
+			return true; // Abort this instance.
 		}
 
 		private static void Startup(object sender, EventArgs e)

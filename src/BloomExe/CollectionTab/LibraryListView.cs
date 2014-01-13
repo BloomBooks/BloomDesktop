@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
 
@@ -27,6 +28,7 @@ namespace Bloom.CollectionTab
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
     	private bool _thumbnailRefreshPending;
+	    private BookTransfer _bookTransferrer;
     	private DateTime _lastClickTime;
     	private bool _primaryCollectionReloadPending;
         private LinkLabel _missingBooksLink;
@@ -46,11 +48,12 @@ namespace Bloom.CollectionTab
 		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
 
         public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
-			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
+			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
         {
             _model = model;
             _bookSelection = bookSelection;
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
+	        _bookTransferrer = bookTransferrer;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
 	        selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
@@ -80,7 +83,6 @@ namespace Bloom.CollectionTab
 			if(Settings.Default.ShowExperimentalCommands)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
-
         }
 
 	    private void OnExportToXmlForInDesign(object sender, EventArgs e)
@@ -142,7 +144,7 @@ namespace Bloom.CollectionTab
 	    private void ManageButtonsAtIdleTime(object sender, EventArgs e)
 	    {
 			if (_disposed) //could happen if a version update was detected on app launch
-				return; 
+				return;
 			
 			switch (_buttonManagementStage)
 			{
@@ -150,6 +152,14 @@ namespace Bloom.CollectionTab
 					LoadPrimaryCollectionButtons();
 					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
 					_primaryCollectionFlow.Refresh();
+					// now we're all set to handle any pending book orders, especially one that may have been created
+					// at startup from a command line argument. We're also ready to receive any notifications of new books
+					// downloaded.
+					if (_bookTransferrer != null)
+					{
+						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
+						_bookTransferrer.HandleOrders();
+					}
 					break;
 
 				//here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
@@ -436,29 +446,71 @@ namespace Bloom.CollectionTab
     		_primaryCollectionReloadPending = true;
     	}
 
+		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
+		{
+			var newBook = e.BookDetails;
+			Invoke((Action) (() =>
+			{
+				if (!HaveButtonForBook(newBook))
+					AddOneBook(newBook, _primaryCollectionFlow); // Review: should we insert it somewhere else, maybe in order?
+				SelectBook(newBook);
+			}));
+		}
+
+		private bool HaveButtonForBook(BookInfo newBook)
+		{
+			foreach (var item in _primaryCollectionFlow.Controls)
+			{
+				var button = item as Button;
+				if (button == null)
+					continue;
+				var info = button.Tag as BookInfo;
+				if (info == null)
+					continue;
+				if (info.FolderPath == newBook.FolderPath)
+					return true;
+			}
+			return false;
+		}
+
 		private void OnClickBook(object sender, EventArgs e)
 		{
+			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
+			if (bookInfo == null)
+				return;
+
+			var lastClickTime = _lastClickTime;
+			_lastClickTime = DateTime.Now;
+
 			try
 			{
-				BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
-				if (bookInfo == null)
-					return;
-
-				if (SelectedBook!=null && bookInfo == SelectedBook.BookInfo)
+				if (SelectedBook != null && bookInfo == SelectedBook.BookInfo)
 				{
 					//I couldn't get the DoubleClick event to work, so I rolled my own
-					if (Control.MouseButtons == MouseButtons.Left  && DateTime.Now.Subtract(_lastClickTime).TotalMilliseconds <SystemInformation.DoubleClickTime)
+					if (Control.MouseButtons == MouseButtons.Left &&
+					    DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
 					{
 						_model.DoubleClickedBook();
-						return;
 					}
+					return; // already selected, nothing to do.
 				}
-				else
-				{
-					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
-				}
-				
-				_lastClickTime = DateTime.Now;
+			}
+			catch (Exception error) // Review: is this needed now bulk of method refactored into SelectBook?
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
+			}
+			SelectBook(bookInfo);
+		}
+
+	    private void SelectBook(BookInfo bookInfo)
+	    {
+			try
+			{
+				_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
 
 				_bookContextMenu.Enabled = true;
 				//Debug.WriteLine("before selecting " + SelectedBook.Title);
@@ -470,19 +522,19 @@ namespace Bloom.CollectionTab
 
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
-				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;		
+				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
 			catch (Exception error)
 			{
 				//skip over the dependency injection layer
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
-				
+
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 		}
 
-		private Book.Book SelectedBook
+	    private Book.Book SelectedBook
 		{
 			set
 			{

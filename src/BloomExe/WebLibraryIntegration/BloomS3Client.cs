@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using Amazon;
 using Amazon.EC2.Model;
 using Amazon.S3;
@@ -11,6 +13,7 @@ using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
 using RestSharp.Contrib;
+using Segmentio;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -43,6 +46,8 @@ namespace Bloom.WebLibraryIntegration
 		public string ThumbnailUrl { get; private set; }
 		// Similarly for the book order file.
 		public string BookOrderUrl { get; private set; }
+
+		internal string BucketName {get { return _bucketName; }}
 
         public bool GetBookExists(string key)
         {
@@ -218,9 +223,9 @@ namespace Bloom.WebLibraryIntegration
 	            }
 				else if (fileName.EndsWith(BookTransfer.BookOrderExtension))
 				{
-					// Remember the url that can be used to download the book order. This seems to work but I wish
+					// Remember the url that can be used to download the book. This seems to work but I wish
 					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-					BookOrderUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+					BookOrderUrl = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
 				}
             }
 
@@ -261,6 +266,17 @@ namespace Bloom.WebLibraryIntegration
                 CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name));
             }
         }
+
+	    public string DownloadFile(string storageKeyOfFile)
+	    {
+		    var request = new GetObjectRequest() {BucketName = _bucketName, Key = storageKeyOfFile};
+			using (var response = _amazonS3.GetObject(request))
+			using (var stream = response.ResponseStream)
+			using (var reader = new StreamReader(stream, Encoding.UTF8))
+			{
+				return reader.ReadToEnd();
+			}
+	    }
 
         /// <summary>
         /// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.

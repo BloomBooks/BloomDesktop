@@ -41,6 +41,7 @@ namespace Bloom
                                               }).InstancePerLifetimeScope();
                 
                 builder.Register(c => LocalizationManager).SingleInstance();
+				builder.Register(c => new OrderList()).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{
@@ -62,6 +63,11 @@ namespace Bloom
 		    }
 
             public LocalizationManager LocalizationManager;
+
+			public OrderList OrderList
+			{
+				get { return _container.Resolve<OrderList>(); }
+			}
 
 		    public void Dispose()
 			{
