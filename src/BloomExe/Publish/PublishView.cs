@@ -12,7 +12,9 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
+using Palaso.IO;
 using Palaso.Reporting;
 
 
@@ -23,15 +25,21 @@ namespace Bloom.Publish
 		private readonly PublishModel _model;
 	    private readonly ComposablePartCatalog _extensionCatalog;
 	    private bool _activated;
+		private BloomLibraryPublishControl _libraryPublishControl;
+		private BookTransfer _bookTransferrer;
+		private LoginDialog _loginDialog;
 
 		public delegate PublishView Factory();//autofac uses this
 
         public PublishView(PublishModel model,
-            SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
         {
-				InitializeComponent();
- 				Controls.Remove(_saveButton);//our parent will retrieve this
-				Controls.Remove(_printButton);//our parent will retrieve this
+	        _bookTransferrer = bookTransferrer;
+	        _loginDialog = login;
+
+			InitializeComponent();
+ 			Controls.Remove(_saveButton);//our parent will retrieve this
+			Controls.Remove(_printButton);//our parent will retrieve this
 		
             if(this.DesignMode)
                 return;
@@ -49,7 +57,7 @@ namespace Bloom.Publish
 													{
 														Activate();
 													}
-													else if (c.To!=this && _makePdfBackgroundWorker.IsBusy)
+													else if (c.To!=this && IsMakingPdf)
 														_makePdfBackgroundWorker.CancelAsync();
 			                                  	});
 
@@ -70,7 +78,7 @@ namespace Bloom.Publish
 		private void Activate()
 		{
 			Logger.WriteEvent("Entered Publish Tab");
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 				return;
 
 			_activated = true;
@@ -97,7 +105,11 @@ namespace Bloom.Publish
 			MakeBooklet();
 		}
 
-		
+		internal bool IsMakingPdf
+		{
+			get { return _makePdfBackgroundWorker.IsBusy; }
+		}
+
 
 		public Control TopBarControl
     	{
@@ -105,7 +117,8 @@ namespace Bloom.Publish
     	}
 
     	void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-		{
+    	{
+    		_model.PdfGenerationSucceeded = false;
 			if(e.Result is Exception)
 			{
 				var error = e.Result as Exception;
@@ -121,10 +134,13 @@ namespace Bloom.Publish
 				{
 					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 				}
-				SetDisplayMode(PublishModel.DisplayModes.NoBook);
+				// We CAN upload even without a preview.
+				_model.DisplayMode = (_cloudRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.NoBook);
+				UpdateDisplay();
 				return;
 			}
-    		SetDisplayMode(PublishModel.DisplayModes.ShowPdf);
+			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
+			_model.DisplayMode = (_cloudRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
 			UpdateDisplay();
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
@@ -146,10 +162,13 @@ namespace Bloom.Publish
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
-			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
-			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
-			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet;
-			_showCropMarks.Checked = _model.ShowCropMarks;
+			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
+			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
+			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_cloudRadio.Checked = _model.UploadMode;
+			// No reason to update from model...we only change the model when the user changes the check box,
+			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
+			//_showCropMarks.Checked = _model.ShowCropMarks;
 
 
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
@@ -178,6 +197,12 @@ namespace Bloom.Publish
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
         {
+			if (displayMode != PublishModel.DisplayModes.Upload && _libraryPublishControl != null)
+			{
+				Controls.Remove(_libraryPublishControl);
+				_libraryPublishControl = null;
+				_adobeReaderControl.Visible = true;
+			}
             switch (displayMode)
             {
                 case PublishModel.DisplayModes.NoBook:
@@ -199,7 +224,23 @@ namespace Bloom.Publish
 						Cursor = Cursors.Default;
 						_printButton.Enabled = _adobeReaderControl.ShowPdf(_model.PdfFilePath);
 					}
-            		break;
+					break;
+				case PublishModel.DisplayModes.Upload:
+	            {
+		            _workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
+		            _saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
+		            _adobeReaderControl.Visible = false; // We will replace it with another control.
+					Cursor = Cursors.Default;
+					if (_libraryPublishControl == null)
+		            {
+			            _libraryPublishControl = new BloomLibraryPublishControl(this, _bookTransferrer, _loginDialog, _model.BookSelection.CurrentSelection);
+			            _libraryPublishControl.SetBounds(_adobeReaderControl.Left, _adobeReaderControl.Top,
+				            _adobeReaderControl.Width, _adobeReaderControl.Height);
+			            _libraryPublishControl.Anchor = _adobeReaderControl.Anchor;
+			            Controls.Add(_libraryPublishControl);
+		            }
+		            break;
+	            }
             }
         }
 
@@ -210,12 +251,27 @@ namespace Bloom.Publish
 				return;
 
         	var oldPortion = _model.BookletPortion;
+	        var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
 			SetModelFromButtons();
-			if (oldPortion == _model.BookletPortion)
-				return; // no changes detected
+	        if (oldPortion == _model.BookletPortion && oldCrop == _model.ShowCropMarks)
+	        {
+				// no changes detected
+		        if (_cloudRadio.Checked)
+		        {
+					_model.DisplayMode = PublishModel.DisplayModes.Upload;
+		        }
+				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
+				{
+					// no change because the PREVIOUS button was the cloud one. Need to restore the appropriate
+					// non-cloud display
+					_model.DisplayMode = _model.PdfGenerationSucceeded
+						? PublishModel.DisplayModes.ShowPdf
+						: PublishModel.DisplayModes.NoBook;
+				}
+		        return;
+	        }
 
-
-        	ControlsChanged();
+	        ControlsChanged();
         }
 
 		private void OnShowCropMarks_CheckedChanged(object sender, EventArgs e)
@@ -233,7 +289,7 @@ namespace Bloom.Publish
 
 		private void ControlsChanged()
 		{
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 			{
 				_makePdfBackgroundWorker.CancelAsync();
 			}
@@ -243,18 +299,27 @@ namespace Bloom.Publish
 
 		private void SetModelFromButtons()
 		{
-			if (_noBookletRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-			else if (_coverRadio.Checked)
+			if (_coverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-			else
+			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-
-			_model.ShowCropMarks = _showCropMarks.Checked;
+			else // no booklet radio, or cloud radio (We want to upload the all-pages version.)
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+			_model.UploadMode = _cloudRadio.Checked;
+			_model.ShowCropMarks = _showCropMarks.Checked && !_cloudRadio.Checked; // don't want crop-marks on upload PDF
 		}
+
+		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
     	public void MakeBooklet()
     	{
+			if (IsMakingPdf)
+			{
+				// Can't start again until this one finishes
+				return;
+			}
+    		_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+
     		SetDisplayMode(PublishModel.DisplayModes.Working);
     		_makePdfBackgroundWorker.RunWorkerAsync();
     	}

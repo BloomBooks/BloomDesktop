@@ -99,7 +99,6 @@ namespace Bloom
                     typeof(RelocatePageEvent),
                     typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
-					typeof(BloomParseClient),
                     typeof(EditingModel)}.Contains(t));
 				
 				
@@ -172,6 +171,13 @@ namespace Bloom
 						 return c.Resolve<SourceCollectionsList>();
 					 }).InstancePerLifetimeScope();
 
+				builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
+
+				// Enhance: may need some way to test a release build in the sandbox.
+				builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
+				builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
+				builder.RegisterType<LoginDialog>().AsSelf();
+
 				//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
 				//so we're doing this
@@ -196,8 +202,18 @@ namespace Bloom
 
 		}
 
+		internal static BloomS3Client CreateBloomS3Client()
+		{
+#if DEBUG
+			var bucket = "BloomLibraryBooks-Sandbox";
+#else
+			var bucket = "BloomLibraryBooks-Production";
+#endif
+			return new BloomS3Client(bucket);
+		}
 
-        /// <summary>
+
+		/// <summary>
         /// Give the locations of the bedrock files/folders that come with Bloom. These will have priority
         /// </summary>
         public static IEnumerable<string> GetFactoryFileLocations()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
@@ -17,8 +18,10 @@ namespace BloomTests.WebLibraryIntegration
         private string _workFolderPath;
 	    private BookTransfer _transfer;
 	    private BloomParseClient _parseClient;
+	    private OrderList _orders;
+		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 
-	    [SetUp]
+		[SetUp]
         public void Setup()
         {
             _workFolder = new TemporaryFolder("unittest");
@@ -31,7 +34,9 @@ namespace BloomTests.WebLibraryIntegration
 			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName));
+			_orders = new OrderList();
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _orders);
+			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
         }
 
         [TearDown]
@@ -79,16 +84,20 @@ namespace BloomTests.WebLibraryIntegration
 
 		    var s3Id = _transfer.UploadBook(originalBookFolder, notification =>notifications.Add(notification));
 
-			Assert.That(notifications.Count, Is.EqualTo(fileCount + 1)); // should get one per file, plus one for metadata
+			Assert.That(notifications.Count, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
 			Assert.That(notifications.Contains("Uploading book record"));
 			Assert.That(notifications.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
+			_downloadedBooks.Clear();
 			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
 
-			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount));
+			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
+
+			Assert.That(_downloadedBooks.Count, Is.EqualTo(1));
+			Assert.That(_downloadedBooks[0].FolderPath,Is.EqualTo(newBookFolder));
 			// Todo: verify that metadata was transferred to Parse.com
 			return new Tuple<string, string>(originalBookFolder, newBookFolder);
 	    }
@@ -161,6 +170,51 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse.com record, not added or deleted");
 			Assert.That(records[0].bookLineage.Value, Is.EqualTo("other"));
 	    }
+
+	    [Test]
+	    public void UploadBook_FillsInMetaData()
+	    {
+		    var bookFolder = MakeBook("My incomplete book", "", "", "data");
+			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
+
+			Login();
+			string s3Id = _transfer.UploadBook(bookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
+			var dest = _workFolderPath.CombineForPath("output");
+			Directory.CreateDirectory(dest);
+			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
+			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
+			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
+			Assert.That(metadata.UploadedBy, Is.EqualTo("unittest@example.com"), "should have set updatedBy to id of logged-in user");
+			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
+
+		    var record = _parseClient.GetSingleBookRecord(metadata.Id, _parseClient.Account);
+		    string thumbnail = record.thumbnail;
+			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
+			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
+
+		    string order = record.bookOrder;
+			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
+			Assert.That(order.StartsWith(BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "="), "order url should start with Bloom URL prefix");
+
+			Assert.That(File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")), "Should have created, uploaded and downloaded the book order");
+		}
+
+	    [Test]
+	    public void DownloadUrl_GetsDocument()
+	    {
+		    var id = Guid.NewGuid().ToString();
+		    var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
+			int fileCount = Directory.GetFiles(bookFolder).Length;
+			Login();
+			string s3Id = _transfer.UploadBook(bookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
+			var dest = _workFolderPath.CombineForPath("output");
+			Directory.CreateDirectory(dest);
+
+		    var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest);
+			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
+		}
 
 	    [Test]
 	    public void UploadBook_NotLoggedIn_Throws()
