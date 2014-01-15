@@ -908,8 +908,8 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <Target Name="AfterBuild">
-    <Copy SourceFiles="$(SolutionDir)/lib/libtidy-html5.so" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
-    <Copy SourceFiles="$(SolutionDir)/lib/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="../../lib/libtidy-html5.so" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="../../lib/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
 
   </Target>
 </Project>
