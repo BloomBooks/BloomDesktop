@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using Amazon;
+using Amazon.EC2.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
+using L10NSharp;
+using RestSharp.Contrib;
+using Segmentio;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -31,6 +37,17 @@ namespace Bloom.WebLibraryIntegration
 				KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
 			_transferUtility = new TransferUtility(_amazonS3);
 		}
+
+		/// <summary>
+		/// This is set during UploadBook if the book has a thumbnail.png file in the book's folder, to the URL
+		/// that will retrieve that file from S3.
+		/// It only contains useful information after UploadBook.
+		/// </summary>
+		public string ThumbnailUrl { get; private set; }
+		// Similarly for the book order file.
+		public string BookOrderUrl { get; private set; }
+
+		internal string BucketName {get { return _bucketName; }}
 
 		public bool GetBookExists(string key)
 		{
@@ -127,15 +144,29 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="pathToBloomBookDirectory"></param>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
 		{
+			ThumbnailUrl = null;
+			BookOrderUrl = null;
 			DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
 			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
-			//and at the same time introduce a wrapper with the unique key for this person+book
+			//and at the same time introduce a wrapper with the last part of the unique key for this person+book
+			string prefix = ""; // storageKey up to last slash (or empty)
+			string tempFolderName = storageKeyOfBookFolder; // storage key after last slash (or all of it)
 
-			var wrapperPath = Path.Combine(Path.GetTempPath(), storageKeyOfBookFolder);
+			// storageKeyOfBookFolder typically has a slash in it, email/id.
+			// We only want the id as the temp folder name.
+			// If there is anything before it, though, we want that as a prefix to make a parent 'folder' on parse.com.
+			int index = storageKeyOfBookFolder.LastIndexOf('/');
+			if (index >= 0)
+			{
+				prefix = storageKeyOfBookFolder.Substring(0, index + 1); // must include the slash
+				tempFolderName = storageKeyOfBookFolder.Substring(index + 1);
+			}
+
+			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
-			UploadDirectory(wrapperPath, notifier);
+			UploadDirectory(prefix, wrapperPath, notifier);
 
 			Directory.Delete(wrapperPath, true);
 		}
@@ -145,11 +176,6 @@ namespace Bloom.WebLibraryIntegration
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
 		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
 		/// </summary>
-		private void UploadDirectory(string directoryPath, Action<string> notifier = null)
-		{
-			UploadDirectory("", directoryPath, notifier);
-		}
-
 		private void UploadDirectory(string prefix, string directoryPath, Action<string> notifier = null)
 		{
 			if (!Directory.Exists(directoryPath))
@@ -162,17 +188,45 @@ namespace Bloom.WebLibraryIntegration
 
 			foreach (string file in Directory.GetFiles(directoryPath))
 			{
-				var request = new UploadPartRequest()
+				string fileName = Path.GetFileName(file);
+				var request = new TransferUtilityUploadRequest()
 				{
 					BucketName = _bucketName,
 					FilePath = file,
-					IsLastPart = true,
-					Key = prefix+ Path.GetFileName(file)
+					Key = prefix+ fileName
 				};
+				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
+				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
+				request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
+				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 				if (notifier != null)
-					notifier(string.Format("Uploading {0}", Path.GetFileName(file)));
-				_amazonS3.UploadPart(request);
+				{
+					string uploading = LocalizationManager.GetString("PublishWeb.Uploading","Uploading {0}");
+					notifier(string.Format(uploading, fileName));
+				}
+				try
+				{
+					_transferUtility.Upload(request);
+
+				}
+				catch (Exception e)
+				{
+					throw;
+				}
+				//var response =_amazonS3.UploadPart(request);
+				if (fileName == "thumbnail.png")
+				{
+					// Remember the url that can be used to download the thumbnail. This seems to work but I wish
+					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
+					ThumbnailUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+				}
+				else if (fileName.EndsWith(BookTransfer.BookOrderExtension))
+				{
+					// Remember the url that can be used to download the book. This seems to work but I wish
+					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
+					BookOrderUrl = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+				}
 			}
 
 			foreach (string subdir in Directory.GetDirectories(directoryPath))
@@ -210,6 +264,17 @@ namespace Bloom.WebLibraryIntegration
 			foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
 			{
 				CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name));
+			}
+		}
+
+		public string DownloadFile(string storageKeyOfFile)
+		{
+			var request = new GetObjectRequest() {BucketName = _bucketName, Key = storageKeyOfFile};
+			using (var response = _amazonS3.GetObject(request))
+			using (var stream = response.ResponseStream)
+			using (var reader = new StreamReader(stream, Encoding.UTF8))
+			{
+				return reader.ReadToEnd();
 			}
 		}
 

@@ -8,6 +8,7 @@ using System.Text;
 using Bloom.Collection;
 using Bloom.Properties;
 using Newtonsoft.Json;
+using Palaso.Extensions;
 
 namespace Bloom.Book
 {
@@ -189,17 +190,9 @@ namespace Bloom.Book
 			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
-		public string Json
-		{
-			get
-			{
-				return JsonConvert.SerializeObject(_metadata);
-			}
-		}
-
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, Json);
+			File.WriteAllText(MetaDataPath, _metadata.Json);
 		}
 
 		internal string MetaDataPath
@@ -234,6 +227,31 @@ namespace Bloom.Book
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
 		}
+
+		public static BookMetaData FromFolder(string bookFolderPath)
+		{
+			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
+		}
+
+		public static string MetaDataPath(string bookFolderPath)
+		{
+			return bookFolderPath.CombineForPath(BookInfo.MetaDataFileName);
+		}
+
+		public void WriteToFolder(string bookFolderPath)
+		{
+			File.WriteAllText(MetaDataPath(bookFolderPath), Json);
+		}
+
+		[JsonIgnore]
+		public string Json
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(this);
+			}
+		}
+
 		[JsonProperty("bookInstanceId")]
 		public string Id { get; set; }
 
@@ -257,11 +275,17 @@ namespace Bloom.Book
 		[JsonProperty("title")]
 		public string Title { get; set; }
 
-		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
-		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
-		// What we upload needs to be a functional URL (probably relative to our site root).
+		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
+		// containing the actual url where we can grab the thumbnail.
+		// Locally the thumbnail is always called just thumbnail.png.
 		[JsonProperty("thumbnail")]
 		public string Thumbnail { get; set; }
+
+		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
+		// containing the actual url where we can grab the book order file which when opened by Bloom causes it
+		// to download the book.
+		[JsonProperty("bookOrder")]
+		public string BookOrder { get; set; }
 
 		[JsonProperty("isbn")]
 		public string Isbn { get; set; }
@@ -273,6 +297,11 @@ namespace Bloom.Book
 		// As yet it is not used.
 		[JsonProperty("uploadedBy")]
 		public string UploadedBy { get; set; }
+
+		// This tells Bloom where the data files can be found.
+		// Strictly it is the first argument that needs to be passed to BookTransfer.DownloadBook in order to get the entire book data.
+		[JsonProperty("downloadSource")]
+		public string DownloadSource { get; set; }
 
 		// This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
 		// object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,

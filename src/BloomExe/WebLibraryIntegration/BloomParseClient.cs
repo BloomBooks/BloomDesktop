@@ -26,6 +26,10 @@ namespace Bloom.WebLibraryIntegration
 		public string ApiKey = KeyManager.ParseApiKey;
 		public string ApplicationKey = KeyManager.ParseApplicationKey;
 
+		public string UserId {get { return _userId; }}
+
+		public string Account { get; private set; }
+
 		public bool LoggedIn
 		{
 			get
@@ -111,6 +115,7 @@ namespace Bloom.WebLibraryIntegration
 		public bool LogIn(string account, string password)
 		{
 			_sessionToken = String.Empty;
+			Account = string.Empty;
 			var request = MakeGetRequest("login");
 			request.AddParameter("username", account);
 			request.AddParameter("password", password);
@@ -118,6 +123,7 @@ namespace Bloom.WebLibraryIntegration
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
 			_userId = dy.objectId;
+			Account = account;
 			return LoggedIn;
 		}
 

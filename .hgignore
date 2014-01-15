@@ -69,3 +69,5 @@ jasmine.d.ts
 connections.dll
 DistFiles/Bloom.chw
 DistFiles/Bloom.chm
+build\ChorusInstallerStuff\ChorusMergeModule.msm
+build\JohnsTestInstallerBuild.bat

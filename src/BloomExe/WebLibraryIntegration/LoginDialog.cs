@@ -32,13 +32,12 @@ namespace Bloom.WebLibraryIntegration
 			if (!string.IsNullOrEmpty(_emailBox.Text))
 			{
 				Settings.Default.WebUserId = _emailBox.Text;
+				Settings.Default.WebPassword = _passwordBox.Text; // Review: password is saved in clear text. Is this a security risk? How could we prevent it?
 				Settings.Default.Save();
 			}
 			if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
 			{
 				DialogResult = DialogResult.OK;
-				// Review: we COULD save the password too, and never have to show this dialog again.
-				// But how can we avoid having their password stored locally in cleartext?
 				Close();
 			}
 			else
@@ -48,10 +47,22 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		/// <summary>
+		/// This may be called by clients to log us in using the saved settings, if any.
+		/// </summary>
+		/// <returns></returns>
+		public bool LogIn()
+		{
+			if (string.IsNullOrEmpty(Settings.Default.WebUserId))
+				return false;
+			return _client.LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword);
+		}
+
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
 			_emailBox.Text = Settings.Default.WebUserId;
+			_passwordBox.Text = Settings.Default.WebPassword;
 		}
 	}
 }
