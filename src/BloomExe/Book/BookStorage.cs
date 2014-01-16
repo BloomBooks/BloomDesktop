@@ -777,7 +777,7 @@ namespace Bloom.Book
 
 		private string SanitizeNameForFileSystem(string name)
 		{
-			foreach(char c in Path.GetInvalidFileNameChars())
+			foreach(char c in Bloom.Platform.Utilities.Platform.GetInvalidOSIndependentFileNameChars())
 			{
 				name = name.Replace(c, ' ');
 			}
