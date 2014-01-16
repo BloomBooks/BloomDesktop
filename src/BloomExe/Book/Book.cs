@@ -869,7 +869,26 @@ namespace Bloom.Book
             _bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 		}
 
-
+		/// <summary>
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
+		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
+		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
+		/// for to identify the main content of the book?
+		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
+		/// language.
+		/// </summary>
+	    public IEnumerable<string> AllLanguages
+	    {
+		    get
+		    {
+			    return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				    .Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
+				    .Select(div => div.Attributes["lang"].Value)
+					.Where(lang => lang != "*") // Not a valid language, thoug we sometimes use it for special values
+				    .Distinct();
+		    }
+	    }
 
         private void AddCoverColor(HtmlDom dom, Color coverColor)
     	{
@@ -1503,6 +1522,7 @@ namespace Bloom.Book
             _bookData.SetLicenseMetdata(metadata);
 	        BookInfo.License = metadata.License.Token;
 	        BookInfo.LicenseNotes = metadata.License.RightsStatement;
+			BookInfo.Copyright = metadata.CopyrightNotice;
         }
 
         public void SetTitle(string name)

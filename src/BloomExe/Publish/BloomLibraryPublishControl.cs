@@ -12,6 +12,7 @@ using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Palaso.IO;
+using Palaso.UI.WindowsForms.ClearShare;
 
 namespace Bloom.Publish
 {
@@ -31,6 +32,24 @@ namespace Bloom.Publish
 			_loginDialog = login;
 			_book = book;
 			InitializeComponent();
+			_titleLabel.Text = book.BookInfo.Title; // Todo: fill in whatever we will, if initially empty
+
+			var metadata = book.GetLicenseMetadata();
+			// This is usually redundant, but might not be on old books where the license was set before the new
+			// editing code was written.
+			book.UpdateLicenseMetdata(metadata);
+			if (string.IsNullOrEmpty(metadata.License.RightsStatement))
+				_licenseNotesLabel.Text = metadata.License.GetDescription("en");
+			else
+				_licenseNotesLabel.Text = metadata.License.RightsStatement;
+			_licenseImageBox.Image = metadata.License.GetImage();
+			if (string.IsNullOrEmpty(metadata.License.GetDescription("en")))
+				_ccDescriptionButton.Visible = false;
+			_copyrightLabel.Text = book.BookInfo.Copyright;
+			_languagesLabel.Text = string.Join(", ", book.AllLanguages.ToArray());
+
+			_authorTextBox.Text = book.BookInfo.AuthorList;
+
 			_loginDialog.LogIn(); // See if saved credentials work.
 			if (bookTransferrer.LoggedIn)
 				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
@@ -39,6 +58,7 @@ namespace Bloom.Publish
 
 		private void UpdateDisplay()
 		{
+			// Enhance: should we disable, if critical metadata is missing? Or give a message when clicked?
 			_uploadButton.Enabled = _bookTransferrer.LoggedIn;
 		}
 
@@ -93,13 +113,20 @@ namespace Bloom.Publish
 				}
 				ScrollProgressToEnd();
 			};
-			worker.RunWorkerAsync(_book.FolderPath);
+			worker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
 		}
 
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
-			var bookFolder = (string)e.Argument;
+			var book = (Book.Book) e.Argument;
+			var bookFolder = book.FolderPath;
+			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
+			// These bits of data can't easily be set while saving the book because we save one page at a time
+			// and they apply to the book as a whole.
+			book.BookInfo.Languages = _book.AllLanguages.ToArray();
+			book.BookInfo.PageCount = _book.GetPages().Count();
+			book.BookInfo.Save();
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -142,6 +169,22 @@ namespace Bloom.Publish
 		private void _uploadedByTextBox_TextChanged(object sender, EventArgs e)
 		{
 			_bookTransferrer.UploadedBy = _uploadedByTextBox.Text;
+		}
+
+		private void _ccDescriptionButton_Click(object sender, EventArgs e)
+		{
+			var licenseInfo = _book.GetLicenseMetadata().License;
+			string description = licenseInfo.GetDescription("en");
+			if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(licenseInfo.RightsStatement))
+				description += Environment.NewLine + Environment.NewLine;
+			description += licenseInfo.RightsStatement;
+			MessageBox.Show(this, description, LocalizationManager.GetString("PublishWeb.LicenseDetails", "License Details"));
+		}
+
+		private void _authorTextBox_TextChanged(object sender, EventArgs e)
+		{
+			_book.BookInfo.AuthorList = _authorTextBox.Text;
+			_book.BookInfo.Save(); // Review: is this too often?
 		}
 	}
 }
