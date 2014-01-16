@@ -778,7 +778,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void Save_UpdatesMetadataIsbn()
+		public void Save_UpdatesMetadataIsbnAndPageCount()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -789,10 +789,8 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
-					<div class='bloom-page'>
-						<div class='bloom-page' id='guid3'>
-							<textarea lang='en' data-book='ISBN'>original</textarea>
-						</div>
+					<div class='bloom-page' id='guid3'>
+						<textarea lang='en' data-book='ISBN'>original</textarea>
 					</div>
 				</body></html>");
 
@@ -807,6 +805,92 @@ namespace BloomTests.Book
 			//isbnElt.InnerText = " ";
 			//book.Save();
 			//Assert.That(_metadata.volumeInfo.industryIdentifiers.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+						<textarea lang='en' data-book='topic'>original</textarea>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var topicElt = _bookDom.SelectSingleNode("//textarea");
+			topicElt.InnerText = "Animal stories";
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			// We'd like to check what happens when it is edited again.
+			// Problem is, the first save has created a BloomDataDiv which comes before the div we are modifying and
+			// has the old value. (This isn't a problem editing the real topic area because editing happens on a
+			// cut-down document that only has one page and thus no data-div.)
+			var datadiv = _bookDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+			datadiv.ParentNode.RemoveChild(datadiv);
+			topicElt.InnerText = "Science";
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
+
+		[Test]
+		public void AllLanguages_FindsBloomEditableElements()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Bloom ist ein Programm zum Erstellen von Sammlungen der Bucher. Es ist eine Hilfe zur Alphabetisierung.
+							</div>
+
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Bloom is a program for creating collections of books. It is an aid to literacy.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Whatever.
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
+								This is not in any known language
+							</div>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			var allLanguages = book.AllLanguages;
+			Assert.That(allLanguages, Has.Member("en"));
+			Assert.That(allLanguages, Has.Member("de"));
+			Assert.That(allLanguages, Has.Member("fr"));
+			Assert.That(allLanguages, Has.Member("es"));
+			Assert.That(allLanguages, Has.Member("xkal"));
+			Assert.That(allLanguages.Count(), Is.EqualTo(5));
 		}
 
 		[Test]

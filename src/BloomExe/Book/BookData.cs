@@ -141,6 +141,7 @@ namespace Bloom.Book
 
 			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 			UpdateIsbn();
+			UpdateTags();
 		}
 
 		private void UpdateIsbn()
@@ -154,6 +155,24 @@ namespace Bloom.Book
 			if (_dom.MetaData != null)
 			{
 				_dom.MetaData.Isbn = isbn;
+			}
+		}
+
+		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
+		// It's not clear what we will want to do when the topic changes and there is a UI for (possibly multiple) tags.
+		// Very likely we still want to add the new topic (if it is not already present).
+		// Should we still remove the old one?
+		private void UpdateTags()
+		{
+			NamedMutliLingualValue tagData;
+			string tag = null;
+			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
+			{
+				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+			}
+			if (_dom.MetaData != null)
+			{
+				_dom.MetaData.TagsList = tag;
 			}
 		}
 
