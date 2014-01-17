@@ -1,3 +1,6 @@
+## 1.0.25 - 18 Jan 2014
+Fix problem of folio books not using the most recent stylesheet.
+
 ## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
 * Fix height of green source text bubble on Just Text pages.
