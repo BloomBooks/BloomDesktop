@@ -7,6 +7,8 @@ using System.Xml.Xsl;
 using System.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
+using Palaso.IO;
+using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -459,5 +461,56 @@ namespace Bloom.Book
             var existingBodyClasses = body.GetAttribute("class");
             body.SetAttribute("class", existingBodyClasses.Replace("publishMode", "") + "publishMode");
         }
+
+	    public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)
+        {    
+            foreach (XmlElement linkNode in SafeSelectNodes("/html/head/link"))
+            {
+                var href = linkNode.GetAttribute("href");
+                if (href == null)
+                {
+                    continue;
+                }
+
+				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
+
+				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
+            	href = href.Replace("%5C", "/");
+
+
+                var fileName = Path.GetFileName(href);
+                if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
+                {
+                    var path = fileLocator.LocateOptionalFile(fileName);
+
+					//we want these stylesheets to come from the book folder
+                    if (string.IsNullOrEmpty(path)|| path.Contains("languageDisplay.css")) 
+                    {
+                        //look in the same directory as the book
+                        var local = Path.Combine(folderPath, fileName);
+                        if (File.Exists(local))
+                            path = local;
+                    }
+					//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
+					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
+					{
+						//look in the parent directory of the book
+						var pathInCollection = Path.Combine(Path.GetDirectoryName(folderPath), fileName);
+						if (File.Exists(pathInCollection))
+							path = pathInCollection;
+					}
+                    if (!string.IsNullOrEmpty(path))
+                    {
+						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
+						linkNode.SetAttribute("href", "file://" + path);
+                    }
+                    else
+                    {
+						throw new ApplicationException(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, folderPath));
+                    }
+                }
+            }
+        }
+
 	}
 }
