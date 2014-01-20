@@ -51,6 +51,7 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 
 		BookInfo MetaData { get; set; }
+		void UpdateStyleSheetLinkPaths(HtmlDom printingDom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -73,6 +74,7 @@ namespace Bloom.Book
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
 		private BookInfo _metaData;
 		public event EventHandler FolderPathChanged;
+
 
 		public BookInfo MetaData
 		{
@@ -742,56 +744,15 @@ namespace Bloom.Book
 //			return relativePath.Replace('/', Path.DirectorySeparatorChar);
 //		}
 
-		private void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
+		//TODO: Clean up this patch that is being done in emergency mode for a customer with a deadline
+		private  void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
 		{
-			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-
-				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
-
-				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
-				href = href.Replace("%5C", "/");
-
-
-				var fileName = Path.GetFileName(href);
-				if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
-				{
-					var path = fileLocator.LocateOptionalFile(fileName);
-
-					//we want these stylesheets to come from the book folder
-					if (string.IsNullOrEmpty(path)|| path.Contains("languageDisplay.css"))
-					{
-						//look in the same directory as the book
-						var local = Path.Combine(_folderPath, fileName);
-						if (File.Exists(local))
-							path = local;
-					}
-					//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
-					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
-					{
-						//look in the parent directory of the book
-						var pathInCollection = Path.Combine(Path.GetDirectoryName(_folderPath), fileName);
-						if (File.Exists(pathInCollection))
-							path = pathInCollection;
-					}
-					if (!string.IsNullOrEmpty(path))
-					{
-						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-						linkNode.SetAttribute("href", "file://" + path);
-					}
-					else
-					{
-						throw new ApplicationException(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
-					}
-				}
-			}
+			dom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, log);
 		}
-
+		public void UpdateStyleSheetLinkPaths(HtmlDom printingDom)
+		{
+			printingDom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, new NullProgress());
+		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.

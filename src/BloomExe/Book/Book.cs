@@ -1269,7 +1269,10 @@ namespace Bloom.Book
 			if (IsFolio)
 			{
 				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
+				_storage.UpdateStyleSheetLinkPaths(printingDom);
+				printingDom.SortStyleSheetLinks();
 			}
+
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
