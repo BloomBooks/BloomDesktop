@@ -39,8 +39,6 @@ namespace Bloom.Book
 			_dom.LoadXml(xhtml);
 		}
 
-		public BookInfo MetaData { get; internal set; }
-
 		public XmlElement Head
 		{
 			get { return XmlUtils.GetOrCreateElement(_dom, "html", "head"); }
@@ -70,8 +68,6 @@ namespace Bloom.Book
 					titleNode.InnerXml = "";
 					//and set the text again!
 					titleNode.InnerText = justTheText;
-					if (MetaData != null)
-						MetaData.Title = t;
 				}
 			}
 		}

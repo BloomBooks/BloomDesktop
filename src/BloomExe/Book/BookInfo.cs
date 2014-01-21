@@ -198,7 +198,7 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, _metadata.Json);
+			File.WriteAllText(MetaDataPath, MetaData.Json);
 		}
 
 		internal string MetaDataPath
@@ -210,21 +210,28 @@ namespace Bloom.Book
 
 		public string AuthorList
 		{
-			get { return _metadata.Authors == null ? "" : string.Join(", ", _metadata.Authors); }
+			get { return MetaData.Authors == null ? "" : string.Join(", ", MetaData.Authors); }
 			set
 			{
-				_metadata.Authors =
-					value.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
+				MetaData.Authors= SplitList(value);
 			}
+		}
+
+		string[] SplitList(string list)
+		{
+			if (list == null)
+			{
+				return new string[0];
+			}
+			return list.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
 		}
 
 		public string TagsList
 		{
-			get { return _metadata.Tags == null ? "" : string.Join(", ", _metadata.Tags); }
+			get { return MetaData.Tags == null ? "" : string.Join(", ", MetaData.Tags); }
 			set
 			{
-				_metadata.Tags =
-					value.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
+				MetaData.Tags = SplitList(value);
 			}
 		}
 
@@ -364,12 +371,14 @@ namespace Bloom.Book
 		[JsonProperty("copyright")]
 		public string Copyright { get; set; }
 
+		[JsonProperty("authors")]
 		public string[] Authors { get; set; }
 
 		/// <summary>
 		/// This is intended to be a list of strings, possibly from a restricted domain, indicating kinds of content
 		/// the book contains. Currently it only ever contains one member of the Topics list.
 		/// </summary>
+		[JsonProperty("tags")]
 		public string[] Tags { get; set; }
 
 		[JsonProperty("pageCount")]

@@ -62,7 +62,6 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 			_metadata = new BookInfo(_tempFolder.Path, true);
 			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
-			_bookDom.MetaData = _metadata; // a real storage would do this for us.
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
@@ -97,7 +96,6 @@ namespace BloomTests.Book
 
 		private Bloom.Book.Book CreateBook()
 		{
-			_bookDom.MetaData = _metadata; // many tests change _bookDom. A real storage would set the Dom's metadata.
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
@@ -767,7 +765,6 @@ namespace BloomTests.Book
 						</div>
 					</div>
 				</body></html>");
-			_bookDom.MetaData = _metadata; // a real storage would do this automatically.
 
 			var book = CreateBook();
 

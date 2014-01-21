@@ -478,7 +478,7 @@ namespace Bloom.Book
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				ImageUpdater.CompressImages(FolderPath, progress);
-				_storage.Save();
+				Save();
 			}
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
@@ -487,7 +487,7 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
 
-			_storage.Save();
+			Save();
 			if (_bookRefreshEvent != null)
 			{
 				_bookRefreshEvent.Raise(this);
@@ -1059,7 +1059,7 @@ namespace Bloom.Book
 			_pageSelection.SelectPage(newPage);
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
-			_storage.Save();
+			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
 
@@ -1084,7 +1084,7 @@ namespace Bloom.Book
 		   pageNode.ParentNode.RemoveChild(pageNode);
 
 		   _pageSelection.SelectPage(pageToShowNext);
-			_storage.Save();
+			Save();
 			if(_pageListChangedEvent !=null)
 				_pageListChangedEvent.Raise(null);
 
@@ -1137,7 +1137,7 @@ namespace Bloom.Book
 				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
 				try
 				{
-					_storage.Save();
+					Save();
 				}
 				catch (Exception error)
 				{
@@ -1230,7 +1230,7 @@ namespace Bloom.Book
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
 
-			_storage.Save();
+			Save();
 			InvokeContentsChanged(null);
 			return true;
 		}
@@ -1509,7 +1509,7 @@ namespace Bloom.Book
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
 			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,OurHtmlDom, metadata, progress);
-			_storage.Save();
+			Save();
 		}
 
 		public Metadata GetLicenseMetadata()
@@ -1548,7 +1548,7 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			_bookData.UpdateVariablesAndDataDivThroughDOM();//will update the title if needed
+			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 			_storage.Save();
 		}
