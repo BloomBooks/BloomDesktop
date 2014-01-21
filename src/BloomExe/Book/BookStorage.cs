@@ -578,7 +578,6 @@ namespace Bloom.Book
 				    _dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 			    }
 
-		    	_dom.MetaData = _metaData;
 			    //todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 			    //SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
