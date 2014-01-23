@@ -127,6 +127,13 @@ namespace Bloom.WebLibraryIntegration
 			return LoggedIn;
 		}
 
+		public void Logout()
+		{
+			_sessionToken = null;
+			Account = "";
+			_userId = "";
+		}
+
 		public IRestResponse CreateBookRecord(string metadataJson)
 		{
 			if (!LoggedIn)

@@ -197,7 +197,16 @@ namespace Bloom.WebLibraryIntegration
 				};
 				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
 				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
-				request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
+				// This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
+				// of BloomLibrary.
+				// I'm not sure whether there is still any reason to do it for other files.
+				// It was temporarily important for the BookOrder file when the Open In Bloom button just downloaded it.
+				// However, now the download link uses the bloom: prefix to get the URL passed directly to Bloom,
+				// it may not be needed for anything. Still, at least for the files a browser would not know how to
+				// open, it seems desirable to download them with their original names, if such a thing should ever happen.
+				// So I'm leaving the code in for now except in cases where we know we don't want it.
+				if (Path.GetExtension(file).ToLowerInvariant() != ".pdf")
+					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 				if (notifier != null)

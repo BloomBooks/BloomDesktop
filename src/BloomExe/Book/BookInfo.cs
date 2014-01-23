@@ -28,7 +28,7 @@ namespace Bloom.Book
 			get { return _metadata ?? (_metadata = new BookMetaData()); }
 		}
 
-		public BookInfo(string folderPath,bool isEditable)
+		public BookInfo(string folderPath, bool isEditable)
 		{
 			IsSuitableForVernacularLibrary = true; // default
 			FolderPath = folderPath;
@@ -155,6 +155,12 @@ namespace Bloom.Book
 			set { MetaData.LicenseNotes = value; }
 		}
 
+		public string Copyright
+		{
+			get { return MetaData.Copyright; }
+			set { MetaData.Copyright = value; }
+		}
+
 		public bool IsEditable { get; private set; }
 
 		public Book.BookType Type { get; set; }
@@ -187,12 +193,12 @@ namespace Bloom.Book
 
 		public static Color NextBookColor()
 		{
-			return CoverColors[_coverColorIndex++ % CoverColors.Length];
+			return CoverColors[_coverColorIndex++%CoverColors.Length];
 		}
 
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, _metadata.Json);
+			File.WriteAllText(MetaDataPath, MetaData.Json);
 		}
 
 		internal string MetaDataPath
@@ -201,6 +207,52 @@ namespace Bloom.Book
 		}
 
 		public const string MetaDataFileName = "meta.json";
+
+		public string Credits
+		{
+			get { return MetaData.Credits; }
+			set { MetaData.Credits = value; }
+		}
+
+		public string Summary
+		{
+			get { return MetaData.Summary; }
+			set { MetaData.Summary = value; }
+		}
+
+
+		string[] SplitList(string list)
+		{
+			if (list == null)
+			{
+				return new string[0];
+			}
+			return list.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
+		}
+
+		public string TagsList
+		{
+			get { return MetaData.Tags == null ? "" : string.Join(", ", MetaData.Tags); }
+			set
+			{
+				MetaData.Tags = SplitList(value);
+			}
+		}
+
+		public int PageCount
+		{
+			get { return MetaData.PageCount; }
+			set { MetaData.PageCount = value; }
+		}
+
+		/// <summary>
+		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
+		/// </summary>
+		public string[] Languages
+		{
+			get { return MetaData.Languages; }
+			set { MetaData.Languages = value; }
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -319,5 +371,30 @@ namespace Bloom.Book
 		// Review: do we need this, or just a field indicating whether there ARE additional notes, or just some modifier in license indicating that?
 		[JsonProperty("licenseNotes")]
 		public string LicenseNotes { get; set; }
+
+		[JsonProperty("copyright")]
+		public string Copyright { get; set; }
+
+		[JsonProperty("authors")]
+		public string[] Authors { get; set; }
+
+		[JsonProperty("credits")]
+		public string Credits { get; set; }
+
+		/// <summary>
+		/// This is intended to be a list of strings, possibly from a restricted domain, indicating kinds of content
+		/// the book contains. Currently it only ever contains one member of the Topics list.
+		/// </summary>
+		[JsonProperty("tags")]
+		public string[] Tags { get; set; }
+
+		[JsonProperty("pageCount")]
+		public int PageCount { get; set; }
+
+		[JsonProperty("languages")]
+		public string[] Languages { get; set; }
+
+		[JsonProperty("summary")]
+		public string Summary { get; set; }
 	}
 }
