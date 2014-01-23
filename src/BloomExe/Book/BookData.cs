@@ -92,9 +92,9 @@ namespace Bloom.Book
         }
 
 
-        public void UpdateVariablesAndDataDivThroughDOM()
+        public void UpdateVariablesAndDataDivThroughDOM(BookInfo info = null)
         {
-            UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild);
+            UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild, info);
         }
 
         
@@ -116,7 +116,7 @@ namespace Bloom.Book
         /// Create or update the data div with all the data-book values in the document
         /// </summary>
         /// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-        private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
+        private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom, BookInfo info = null)
         {
             Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
@@ -139,11 +139,25 @@ namespace Bloom.Book
             }
             Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
-			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
-	        UpdateIsbn();
+			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+			UpdateIsbn(info);
+			UpdateTags(info);
+	        UpdateCredits(info);
         }
 
-		private void UpdateIsbn()
+		private void UpdateCredits(BookInfo info)
+		{
+			NamedMutliLingualValue creditsData;
+			string credits = "";
+			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
+			{
+				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+			}
+			if (info != null)
+				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+		}
+
+		private void UpdateIsbn(BookInfo info)
 		{
 			NamedMutliLingualValue isbnData;
 			string isbn = null;
@@ -151,10 +165,25 @@ namespace Bloom.Book
 			{
 				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
 			}
-			if (_dom.MetaData != null)
+			if (info != null)
+				info.Isbn = isbn;
+		}
+
+		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
+		// It's not clear what we will want to do when the topic changes and there is a UI for (possibly multiple) tags.
+		// Very likely we still want to add the new topic (if it is not already present).
+		// Should we still remove the old one?
+		private void UpdateTags(BookInfo info)
+		{
+			NamedMutliLingualValue tagData;
+			string tag = null;
+			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
 			{
-				_dom.MetaData.Isbn = isbn;
+				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
+
+			if (info != null)
+				info.TagsList = tag;
 		}
 
         private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -704,7 +733,7 @@ namespace Bloom.Book
 #endif
         }
 
-        private void UpdateTitle()
+        private void UpdateTitle(BookInfo info = null)
         {
             NamedMutliLingualValue title;
 	        if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
@@ -718,6 +747,8 @@ namespace Bloom.Book
 	            }
 
 	            _dom.Title = t;
+	            if (info != null)
+		            info.Title = t;
 				//review: notice we're only changing the value in this dataset
 				this.Set("bookTitle", t,"en");
             }
@@ -725,7 +756,9 @@ namespace Bloom.Book
             {
 	            var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 	            _dom.Title = t;
-            }
+				if (info != null)
+					info.Title = t;
+			}
         }
 
 	    private string[] WritingSystemIdsToTry

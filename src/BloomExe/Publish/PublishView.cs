@@ -237,7 +237,9 @@ namespace Bloom.Publish
 			            _libraryPublishControl.SetBounds(_adobeReaderControl.Left, _adobeReaderControl.Top,
 				            _adobeReaderControl.Width, _adobeReaderControl.Height);
 			            _libraryPublishControl.Anchor = _adobeReaderControl.Anchor;
-			            Controls.Add(_libraryPublishControl);
+			            var saveBackColor = _libraryPublishControl.BackColor;
+			            Controls.Add(_libraryPublishControl); // somehow this changes the backcolor
+			            _libraryPublishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
 		            }
 		            break;
 	            }
