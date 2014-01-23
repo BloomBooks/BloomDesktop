@@ -208,14 +208,18 @@ namespace Bloom.Book
 
 		public const string MetaDataFileName = "meta.json";
 
-		public string AuthorList
+		public string Credits
 		{
-			get { return MetaData.Authors == null ? "" : string.Join(", ", MetaData.Authors); }
-			set
-			{
-				MetaData.Authors= SplitList(value);
-			}
+			get { return MetaData.Credits; }
+			set { MetaData.Credits = value; }
 		}
+
+		public string Summary
+		{
+			get { return MetaData.Summary; }
+			set { MetaData.Summary = value; }
+		}
+
 
 		string[] SplitList(string list)
 		{
@@ -374,6 +378,9 @@ namespace Bloom.Book
 		[JsonProperty("authors")]
 		public string[] Authors { get; set; }
 
+		[JsonProperty("credits")]
+		public string Credits { get; set; }
+
 		/// <summary>
 		/// This is intended to be a list of strings, possibly from a restricted domain, indicating kinds of content
 		/// the book contains. Currently it only ever contains one member of the Topics list.
@@ -386,5 +393,8 @@ namespace Bloom.Book
 
 		[JsonProperty("languages")]
 		public string[] Languages { get; set; }
+
+		[JsonProperty("summary")]
+		public string Summary { get; set; }
 	}
 }

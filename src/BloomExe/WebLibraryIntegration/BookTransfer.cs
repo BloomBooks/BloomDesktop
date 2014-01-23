@@ -99,6 +99,11 @@ namespace Bloom.WebLibraryIntegration
 			return _parseClient.LogIn(account, password);
 		}
 
+	    public void Logout()
+	    {
+		    _parseClient.Logout();
+	    }
+
 	    public bool LoggedIn
 	    {
 		    get { return _parseClient.LoggedIn; }
