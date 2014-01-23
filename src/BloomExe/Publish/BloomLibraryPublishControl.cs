@@ -25,6 +25,7 @@ namespace Bloom.Publish
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private Book.Book _book;
+		private string _originalLoginText;
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
 			_parentView = parentView;
@@ -48,11 +49,13 @@ namespace Bloom.Publish
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 			_languagesLabel.Text = string.Join(", ", book.AllLanguages.ToArray());
 
-			_authorTextBox.Text = book.BookInfo.AuthorList;
+			_creditsLabel.Text = book.BookInfo.Credits;
+			_summaryBox.Text = book.BookInfo.Summary;
 
 			_loginDialog.LogIn(); // See if saved credentials work.
 			if (bookTransferrer.LoggedIn)
 				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
+			_originalLoginText = _loginLink.Text;
 			UpdateDisplay();
 		}
 
@@ -60,19 +63,31 @@ namespace Bloom.Publish
 		{
 			// Enhance: should we disable, if critical metadata is missing? Or give a message when clicked?
 			_uploadButton.Enabled = _bookTransferrer.LoggedIn;
+			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishWeb.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
+			// Right-align the login link. (There ought to be a setting to make this happen, but I can't find it.)
+			_loginLink.Left = _progressBox.Right - _loginLink.Width;
 		}
 
-		private void _loginButton_Click(object sender, EventArgs e)
+		private void _loginLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
-			// which it will update with all the relevant information if login is successful.
-			_loginDialog.ShowDialog();
-			_uploadedByTextBox.Text = _bookTransferrer.UploadedBy;
+			if (_bookTransferrer.LoggedIn)
+			{
+				// This becomes a logout button
+				_bookTransferrer.Logout();
+			}
+			else
+			{
+				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
+				// which it will update with all the relevant information if login is successful.
+				_loginDialog.ShowDialog();
+				_uploadedByTextBox.Text = _bookTransferrer.UploadedBy;
+			}
 			UpdateDisplay();
 		}
 
 		private void _uploadButton_Click(object sender, EventArgs e)
 		{
+			ScrollControlIntoView(_progressBox);
 			var info = _book.BookInfo;
 			if (string.IsNullOrEmpty(info.Id))
 			{
@@ -181,10 +196,11 @@ namespace Bloom.Publish
 			MessageBox.Show(this, description, LocalizationManager.GetString("PublishWeb.LicenseDetails", "License Details"));
 		}
 
-		private void _authorTextBox_TextChanged(object sender, EventArgs e)
+		private void _summaryBox_TextChanged(object sender, EventArgs e)
 		{
-			_book.BookInfo.AuthorList = _authorTextBox.Text;
+			_book.BookInfo.Summary = _summaryBox.Text;
 			_book.BookInfo.Save(); // Review: is this too often?
+
 		}
 	}
 }

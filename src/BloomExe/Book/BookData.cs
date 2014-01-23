@@ -142,6 +142,19 @@ namespace Bloom.Book
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 			UpdateIsbn(info);
 			UpdateTags(info);
+			UpdateCredits(info);
+		}
+
+		private void UpdateCredits(BookInfo info)
+		{
+			NamedMutliLingualValue creditsData;
+			string credits = "";
+			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
+			{
+				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+			}
+			if (info != null)
+				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 		}
 
 		private void UpdateIsbn(BookInfo info)

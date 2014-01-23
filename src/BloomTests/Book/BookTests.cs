@@ -768,10 +768,37 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 
-			var isbnElt = _bookDom.SelectSingleNode("//textarea");
-			isbnElt.InnerText = "changed";
+			var titleElt = _bookDom.SelectSingleNode("//textarea");
+			titleElt.InnerText = "changed";
 			book.Save();
 			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataCreditsRemovingBreaks()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='originalAcknowledgments'>original</textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var acksElt = _bookDom.SelectSingleNode("//textarea");
+			acksElt.InnerXml = "changed\r\n<br />more changes";
+			book.Save();
+			Assert.That(_metadata.Credits, Is.EqualTo("changed\r\nmore changes"));
 		}
 
 		[Test]
