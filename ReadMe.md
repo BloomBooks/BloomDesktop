@@ -1,5 +1,8 @@
 Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
 
+# Registry settings
+
+One responsibilty of Bloom desktop is to handle url's starting with bloom:, such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you install Bloom. Developers who need this functionality can get it using the build/bloom link.reg file. YOU NEED TO EDIT THIS FILE FIRST. It contains a full path to Bloom.exe, and the first part of the path will depend on where you have put your working folder. After adjusting that, just double-click it to create the registry entries for handling bloom: urls.
 
 # Development Process
 
