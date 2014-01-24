@@ -71,18 +71,25 @@ namespace Bloom.WebLibraryIntegration
 		    return DownloadBook(metadata.DownloadSource, destPath);
 	    }
 
+	    public static string DownloadFolder
+	    {
+		    get
+		    {
+			    return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+				    .CombineForPath("SIL", "Bloom", "Collections", "DownloadedBooks");
+		    }
+	    }
+
 		private void HandleBloomBookOrder(string argument)
 		{
 			// If we are passed a bloom book order URL, download the corresponding book and open it.
-			if (argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix) &&
-					 !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+			if (argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix))
 			{
 				var link = new BloomLinkArgs(argument);
-				DownloadFromOrderUrl(link.OrderUrl, Path.GetDirectoryName(Settings.Default.MruProjects.Latest));
+				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
 			}
 			// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
-					 File.Exists(argument) && !string.IsNullOrEmpty(Settings.Default.MruProjects.Latest))
+			else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
 			{
 				HandleBookOrder(argument);
 			}
@@ -90,7 +97,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private void HandleBookOrder(string bookOrderPath)
 		{
-			HandleBookOrder(bookOrderPath, Settings.Default.MruProjects.Latest);
+			HandleBookOrder(bookOrderPath, DownloadFolder);
 		}
 
 
@@ -207,7 +214,7 @@ namespace Bloom.WebLibraryIntegration
 			var result = _s3Client.DownloadBook(s3BookId, dest);
 			if (BookDownLoaded != null)
 			{
-				var bookInfo = new BookInfo(result, true); // Review: could a downloaded book ever not be editable?
+				var bookInfo = new BookInfo(result, false); // A downloaded book is a template, so never editable.
 				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
 			}
 
