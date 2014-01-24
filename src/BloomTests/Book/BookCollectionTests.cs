@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Bloom;
 using Bloom.Book;
@@ -19,12 +20,12 @@ namespace BloomTests.Book
 		[SetUp]
 		public void Setup()
 		{
-			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
-			_folder  =new TemporaryFolder("BookCollectionTests");
+//        	Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
+//            _folder  =new TemporaryFolder("BookCollectionTests");
 //			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCss"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+//			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCss"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
 
-			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
+//            _collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
 		}
 
 		 Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
@@ -66,6 +67,53 @@ namespace BloomTests.Book
 			string path = _folder.Combine("alpha");
 			Directory.CreateDirectory(path);
 			File.WriteAllText(Path.Combine(path,"alpha.htm"), @"<html></html>");
+		}
+
+		[Test]
+		public void InsertBook_NotPresent_InsertsInCorrectOrder()
+		{
+			var info1 = new BookInfo("book1", true);
+			var info2 = new BookInfo("book2", true);
+			var info3 = new BookInfo("book10", true);
+			var info4 = new BookInfo("book20", true);
+			var infoNew = new BookInfo("book11", true);
+			var state = new List<BookInfo>(new[] {info1, info2, info3, info4});
+			var collection = new BookCollection(state);
+			collection.InsertBookInfo(infoNew);
+			Assert.That(state[3], Is.EqualTo(infoNew), "book info should be inserted between book10 and book20");
+
+			var infoLast = new BookInfo("book30", true);
+			collection.InsertBookInfo(infoLast);
+			Assert.That(state[5], Is.EqualTo(infoLast), "book info should be inserted at end");
+
+			var infoFirst = new BookInfo("abc", true);
+			collection.InsertBookInfo(infoFirst);
+			Assert.That(state[0], Is.EqualTo(infoFirst), "book info should be inserted at start");
+		}
+
+		[Test]
+		public void InsertBook_NotPresent_InsertsInEmptyList()
+		{
+			var infoNew = new BookInfo("book11", true);
+			var state = new List<BookInfo>();
+			var collection = new BookCollection(state);
+			collection.InsertBookInfo(infoNew);
+			Assert.That(state[0], Is.EqualTo(infoNew), "book info should be inserted between book10 and book20");
+		}
+
+		[Test]
+		public void InsertBook_Present_Replaces()
+		{
+			var info1 = new BookInfo("book1", true);
+			var info2 = new BookInfo("book2", true);
+			var info3 = new BookInfo("book10", true);
+			var info4 = new BookInfo("book20", true);
+			var infoNew = new BookInfo("book10", true);
+			var state = new List<BookInfo>(new[] { info1, info2, info3, info4 });
+			var collection = new BookCollection(state);
+			collection.InsertBookInfo(infoNew);
+			Assert.That(state[2], Is.EqualTo(infoNew), "book info should replace existing book");
+			Assert.That(state, Has.Count.EqualTo(4));
 		}
 	}
 }

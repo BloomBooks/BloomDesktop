@@ -43,6 +43,12 @@ namespace Bloom.Collection
 			AllowNewBooks = true;
 		}
 
+		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
+		{
+			// For some reason this constructor is used to create new collections. But I think a static method is much clearer.
+			new CollectionSettings(collectionInfo);
+		}
+
 		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{

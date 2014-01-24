@@ -14,6 +14,7 @@ using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Microsoft.Win32;
+using Palaso.Extensions;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -110,6 +111,26 @@ namespace Bloom
 					SetUpErrorHandling();
 
 					_applicationContainer = new ApplicationContainer();
+
+					// We need the download folder to exist if we are asked to download a book.
+					// We also want it to exist, to show the (planned) link that offers to launch the web site.
+					// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
+					// a downloaded book to the UI.
+					// So, we just make sure it exists here at startup.
+					string downloadFolder = BookTransfer.DownloadFolder;
+					if (!Directory.Exists(downloadFolder))
+					{
+						var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(Path.GetDirectoryName(downloadFolder), Path.GetFileName(downloadFolder));
+						var settings = new NewCollectionSettings()
+						{
+							Language1Iso639Code = "en",
+							Language1Name = "English",
+							IsSourceCollection = true,
+							PathToSettingsFile = pathToSettingsFile
+							// All other defaults are fine
+						};
+						CollectionSettings.CreateNewCollection(settings);
+					}
 
 					StartReceivingArgsFromOtherBloom();
 

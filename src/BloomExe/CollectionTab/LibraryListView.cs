@@ -152,14 +152,6 @@ namespace Bloom.CollectionTab
 					LoadPrimaryCollectionButtons();
 					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
 					_primaryCollectionFlow.Refresh();
-					// now we're all set to handle any pending book orders, especially one that may have been created
-					// at startup from a command line argument. We're also ready to receive any notifications of new books
-					// downloaded.
-					if (_bookTransferrer != null)
-					{
-						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
-						_bookTransferrer.HandleOrders();
-					}
 					break;
 
 				//here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
@@ -175,6 +167,14 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
+					// now we're all set to handle any pending book orders, especially one that may have been created
+					// at startup from a command line argument. We're also ready to receive any notifications of new books
+					// downloaded.
+					if (_bookTransferrer != null)
+					{
+						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
+						_bookTransferrer.HandleOrders();
+					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
@@ -452,14 +452,25 @@ namespace Bloom.CollectionTab
 			Invoke((Action) (() =>
 			{
 				if (!HaveButtonForBook(newBook))
-					AddOneBook(newBook, _primaryCollectionFlow); // Review: should we insert it somewhere else, maybe in order?
+				{
+					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
+					downloadCollection.InsertBookInfo(newBook);
+					// It's always worth reloading...maybe we didn't have a button before because it was not
+					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+					// other way...we want the button to have valid metadata for the book.
+					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+					LoadSourceCollectionButtons();
+				}
+				// This actually works...displays the book and offers to let you use it as a template...even if it
+				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
+				// whether this is desirable.
 				SelectBook(newBook);
 			}));
 		}
 
 		private bool HaveButtonForBook(BookInfo newBook)
 		{
-			foreach (var item in _primaryCollectionFlow.Controls)
+			foreach (var item in _sourceBooksFlow.Controls)
 			{
 				var button = item as Button;
 				if (button == null)
