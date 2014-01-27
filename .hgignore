@@ -57,7 +57,8 @@ Copy*.bat
 lib/wkhtmltopdf/*
 .nuget/NuGet.exe
 LibChorus.*
-build/Palaso.BuildTasks.dll
+build/Palaso.BuildTasks.dll*
 lib/failed update of AeroWizard Modified for dotnet 4 client/*
 *.userprefs
 lib/libtidy-html5.so
+Downloads/
