@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using Bloom.Book;
+using Bloom.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -129,6 +130,8 @@ namespace Bloom.WebLibraryIntegration
 
 	    public void Logout()
 	    {
+		    Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
+		    Settings.Default.WebPassword = "";
 		    _sessionToken = null;
 		    Account = "";
 		    _userId = "";
@@ -185,5 +188,23 @@ namespace Bloom.WebLibraryIntegration
 		    _sessionToken = null;
 		    _userId = null;
 	    }
-    }
+
+		internal void SendResetPassword(string account)
+		{
+			var request = MakePostRequest("requestPasswordReset");
+			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);
+			request.RequestFormat = DataFormat.Json;
+			_client.Execute(request);
+		}
+
+	    internal bool UserExists(string account)
+	    {
+		    var request = MakeGetRequest("users");
+			request.AddParameter("where", "{\"username\":\"" + account + "\"}");
+			var response = _client.Execute(request);
+			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			// Todo
+		    return dy.results.Count > 0;
+	    }
+	}
 }
