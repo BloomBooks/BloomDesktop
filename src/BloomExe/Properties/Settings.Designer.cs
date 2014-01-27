@@ -177,5 +177,17 @@ namespace Bloom.Properties {
                 this["WebPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool WebShowPassword {
+            get {
+                return ((bool)(this["WebShowPassword"]));
+            }
+            set {
+                this["WebShowPassword"] = value;
+            }
+        }
     }
 }

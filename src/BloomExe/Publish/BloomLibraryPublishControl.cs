@@ -66,6 +66,7 @@ namespace Bloom.Publish
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishWeb.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
 			// Right-align the login link. (There ought to be a setting to make this happen, but I can't find it.)
 			_loginLink.Left = _progressBox.Right - _loginLink.Width;
+			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
 		}
 
 		private void _loginLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -79,9 +80,15 @@ namespace Bloom.Publish
 			{
 				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
 				// which it will update with all the relevant information if login is successful.
-				_loginDialog.ShowDialog();
+				_loginDialog.ShowDialog(this);
 				_uploadedByTextBox.Text = _bookTransferrer.UploadedBy;
 			}
+			UpdateDisplay();
+		}
+
+		private void _signUpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			_loginDialog.SignUp(this);
 			UpdateDisplay();
 		}
 

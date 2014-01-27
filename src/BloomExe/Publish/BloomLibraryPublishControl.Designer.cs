@@ -52,6 +52,7 @@
 			this._creditsLabel = new System.Windows.Forms.Label();
 			this.label10 = new System.Windows.Forms.Label();
 			this._summaryBox = new System.Windows.Forms.TextBox();
+			this._signUpLink = new System.Windows.Forms.LinkLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._licenseImageBox)).BeginInit();
 			this.SuspendLayout();
@@ -367,11 +368,28 @@
 			this._summaryBox.TabIndex = 4;
 			this._summaryBox.TextChanged += new System.EventHandler(this._summaryBox_TextChanged);
 			// 
+			// _signUpLink
+			// 
+			this._signUpLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._signUpLink.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signUpLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishWeb.signupLink");
+			this._signUpLink.Location = new System.Drawing.Point(512, 615);
+			this._signUpLink.Name = "_signUpLink";
+			this._signUpLink.Size = new System.Drawing.Size(139, 13);
+			this._signUpLink.TabIndex = 21;
+			this._signUpLink.TabStop = true;
+			this._signUpLink.Text = "Sign up for BloomLibrary.org";
+			this._signUpLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			this._signUpLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signUpLink_LinkClicked);
+			// 
 			// BloomLibraryPublishControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoScroll = true;
+			this.Controls.Add(this._signUpLink);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this._summaryBox);
 			this.Controls.Add(this.label10);
@@ -432,5 +450,6 @@
 		private System.Windows.Forms.Label _creditsLabel;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.TextBox _summaryBox;
+		private System.Windows.Forms.LinkLabel _signUpLink;
 	}
 }
