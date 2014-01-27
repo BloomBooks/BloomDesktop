@@ -120,6 +120,8 @@ function Cleanup() {
     $("*[ariasecondary-describedby]").each(function() {
         $(this).removeAttr("ariasecondary-describedby");
     });
+    $("*.editTimeOnly").remove();
+    $("*.dragHandle").remove();
     $("*").removeAttr("data-easytabs");
 
     $("div.ui-resizable-handle").remove();
@@ -138,9 +140,8 @@ function Cleanup() {
     TrimTrailingLineBreaksInDivs(this);
     });
 
-    //don't know how these styles get in there... note, we do need to leave some styles related to position/width.
-    $('*').css('opacity', '');
-    $('*').css('overflow', '');
+  $('.bloom-imageContainer').css('opacity', '');//comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
+    $('.bloom-imageContainer').css('overflow', '');//review: also comes form myimgscale; is it a problem?
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
@@ -307,8 +308,7 @@ function MakeSourceTextDivForGroup(group) {
 
     //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
     $(divForBubble).each(function () {
-        //review is that 'z' class a typo?
-        $(this).prepend('<ul class="bloom-ui z"></ul>');
+        $(this).prepend('<ul class="editTimeOnly bloom-ui"></ul>');
         var list = $(this).find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
@@ -513,6 +513,7 @@ function GetLocalizedHint(whatToSay, targetElement) {
          $(this).remove()
      });
 
+//review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
      var license = $(img).attr('data-license');
      if (!license || license.length == 0) {
 
@@ -732,6 +733,9 @@ function ResizeUsingPercentages(e,ui){
          if (whatToSay == null)
              whatToSay = key; //just show the code
 
+         if (key = "*")
+             return; //seeing a "*" was confusing even to me
+
          //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
          if ($(this).width() < 100) {
              return;
@@ -924,6 +928,8 @@ function ResizeUsingPercentages(e,ui){
          SetupImageContainer(this);
      });
 
+
+     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
      jQuery(".bloom-draggable").mouseenter(function () {
          $(this).prepend("<button class='moveButton' title='Move'></button>");
          $(this).find(".moveButton").mousedown(function (e) {
@@ -1026,6 +1032,27 @@ function ResizeUsingPercentages(e,ui){
      //        }
      //    });
 
+     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
+     //This took *enormous* fussing in the css. TODO: copy what we learned there
+     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
+     $(".bloom-draggableLabel")
+         .draggable(
+         {
+             containment: "bloom-imageContainer"
+            ,handle: '.dragHandle'
+         })
+        .mouseenter(function () {
+         $(this).prepend(" <div class='dragHandle'></div>")
+         });
+
+        jQuery(".bloom-draggableLabel").mouseleave(function () {
+         $(this).find(".dragHandle").each(function () {
+             $(this).remove()
+         })});
+
+
+
+
 
      //add drag and resize ability where elements call for it
      //   $(".bloom-draggable").draggable({containment: "parent"});
@@ -1037,7 +1064,40 @@ function ResizeUsingPercentages(e,ui){
              })
          } //yes, this repositions *all* qtips on the page. Yuck.
      }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
+     //later note: using a real button just absorbs the click event. Other things work better
+     //http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
 
+
+     /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
+     Example:
+          <select name="Story Style" class="bloom-classSwitchingCombobox">
+              <option value="Fictional">Fiction</option>
+              <option value="Informative">Informative</option>
+      </select>
+      */
+     //First we select the initial value based on what class is currently set, or leave to the default if none of them
+     $(".bloom-classSwitchingCombobox").each(function(){
+         //look through the classes of the parent for any that match one of our combobox values
+         var i;
+         for(i=0; i< this.options.length;i++) {
+             var c = this.options[i].value;
+             if($(this).parent().hasClass(c)){
+                 $(this).val(c);
+                 break;
+             }
+         }
+     });
+     //And now we react to the user choosing a different value
+     $(".bloom-classSwitchingCombobox").change(function(){
+         //remove any of the values that might already be set
+         var i;
+        for(i=0; i< this.options.length;i++) {
+             var c = this.options[i].value;
+            $(this).parent().removeClass(c);
+         }
+         //add back in the one they just chose
+         $(this).parent().addClass(this.value);
+     });
 
      //only make things deletable if they have the deletable class *and* page customization is enabled
      $("DIV.bloom-page.bloom-enablePageCustomization DIV.bloom-deletable").each(function () {
@@ -1058,6 +1118,7 @@ function ResizeUsingPercentages(e,ui){
 
      SetOverlayForImagesWithoutMetadata();
 
+     //focus on the first editable field
 
      SetupShowingTopicChooserWhenTopicIsClicked();
 
