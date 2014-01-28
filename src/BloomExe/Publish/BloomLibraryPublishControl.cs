@@ -44,7 +44,7 @@ namespace Bloom.Publish
 			// This is usually redundant, but might not be on old books where the license was set before the new
 			// editing code was written.
 			book.UpdateLicenseMetdata(metadata);
-			if (string.IsNullOrEmpty(metadata.License.RightsStatement) && !(metadata.License is CreativeCommonsLicense))
+			if (string.IsNullOrEmpty(metadata.License.RightsStatement) && metadata.License is CreativeCommonsLicense)
 			{
 				// Don't do this for non-CC licences, since for them, if Rights is empty we want to display the "please fill this in" message.
 				_licenseNotesLabel.Text = metadata.License.GetDescription("en");
