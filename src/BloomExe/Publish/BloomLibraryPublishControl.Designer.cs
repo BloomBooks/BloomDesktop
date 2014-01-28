@@ -53,6 +53,9 @@
 			this.label10 = new System.Windows.Forms.Label();
 			this._summaryBox = new System.Windows.Forms.TextBox();
 			this._signUpLink = new System.Windows.Forms.LinkLabel();
+			this._optional1 = new System.Windows.Forms.Label();
+			this._optional2 = new System.Windows.Forms.Label();
+			this._pleaseSetUploadedByLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._licenseImageBox)).BeginInit();
 			this.SuspendLayout();
@@ -384,11 +387,53 @@
 			this._signUpLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._signUpLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signUpLink_LinkClicked);
 			// 
+			// _optional1
+			// 
+			this._optional1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._optional1.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._optional1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._optional1, null);
+			this._L10NSharpExtender.SetLocalizingId(this._optional1, "Common.Optional");
+			this._optional1.Location = new System.Drawing.Point(603, 84);
+			this._optional1.Name = "_optional1";
+			this._optional1.Size = new System.Drawing.Size(44, 13);
+			this._optional1.TabIndex = 22;
+			this._optional1.Text = "optional";
+			// 
+			// _optional2
+			// 
+			this._optional2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._optional2.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._optional2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._optional2, null);
+			this._L10NSharpExtender.SetLocalizingId(this._optional2, "Common.Optional");
+			this._optional2.Location = new System.Drawing.Point(603, 489);
+			this._optional2.Name = "_optional2";
+			this._optional2.Size = new System.Drawing.Size(44, 13);
+			this._optional2.TabIndex = 23;
+			this._optional2.Text = "optional";
+			// 
+			// _pleaseSetUploadedByLabel
+			// 
+			this._pleaseSetUploadedByLabel.AutoSize = true;
+			this._pleaseSetUploadedByLabel.ForeColor = System.Drawing.Color.Red;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._pleaseSetUploadedByLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._pleaseSetUploadedByLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._pleaseSetUploadedByLabel, "PublishWeb.PleaseSet");
+			this._pleaseSetUploadedByLabel.Location = new System.Drawing.Point(307, 587);
+			this._pleaseSetUploadedByLabel.Name = "_pleaseSetUploadedByLabel";
+			this._pleaseSetUploadedByLabel.Size = new System.Drawing.Size(136, 13);
+			this._pleaseSetUploadedByLabel.TabIndex = 24;
+			this._pleaseSetUploadedByLabel.Text = "Please provide an uploader";
+			// 
 			// BloomLibraryPublishControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoScroll = true;
+			this.Controls.Add(this._pleaseSetUploadedByLabel);
+			this.Controls.Add(this._optional2);
+			this.Controls.Add(this._optional1);
 			this.Controls.Add(this._signUpLink);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this._summaryBox);
@@ -451,5 +496,8 @@
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.TextBox _summaryBox;
 		private System.Windows.Forms.LinkLabel _signUpLink;
+		private System.Windows.Forms.Label _optional1;
+		private System.Windows.Forms.Label _optional2;
+		private System.Windows.Forms.Label _pleaseSetUploadedByLabel;
 	}
 }

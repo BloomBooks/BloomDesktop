@@ -26,6 +26,10 @@ namespace Bloom.Publish
 		private LoginDialog _loginDialog;
 		private Book.Book _book;
 		private string _originalLoginText;
+		private bool _okToUpload = true;
+
+		private string _pleaseSetThis = LocalizationManager.GetString("PublishWeb.PleaseSetThis",
+			"Please set this from the edit tab");
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
 			_parentView = parentView;
@@ -33,20 +37,25 @@ namespace Bloom.Publish
 			_loginDialog = login;
 			_book = book;
 			InitializeComponent();
-			_titleLabel.Text = book.BookInfo.Title; // Todo: fill in whatever we will, if initially empty
+			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
+			_titleLabel.Text = book.BookInfo.Title;
 
 			var metadata = book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new
 			// editing code was written.
 			book.UpdateLicenseMetdata(metadata);
-			if (string.IsNullOrEmpty(metadata.License.RightsStatement))
+			if (string.IsNullOrEmpty(metadata.License.RightsStatement) && !(metadata.License is CreativeCommonsLicense))
+			{
+				// Don't do this for non-CC licences, since for them, if Rights is empty we want to display the "please fill this in" message.
 				_licenseNotesLabel.Text = metadata.License.GetDescription("en");
+			}
 			else
 				_licenseNotesLabel.Text = metadata.License.RightsStatement;
 			_licenseImageBox.Image = metadata.License.GetImage();
 			if (string.IsNullOrEmpty(metadata.License.GetDescription("en")))
 				_ccDescriptionButton.Visible = false;
 			_copyrightLabel.Text = book.BookInfo.Copyright;
+
 			_languagesLabel.Text = string.Join(", ", book.AllLanguages.ToArray());
 
 			_creditsLabel.Text = book.BookInfo.Credits;
@@ -55,14 +64,54 @@ namespace Bloom.Publish
 			_loginDialog.LogIn(); // See if saved credentials work.
 			if (bookTransferrer.LoggedIn)
 				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
-			_originalLoginText = _loginLink.Text;
+			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
+			_optional2.Left = _summaryBox.Right - _optional2.Width;
+			RequireValue(_copyrightLabel);
+			RequireValue(_titleLabel);
+			RequireValue(_languagesLabel);
+			RequireValue(_licenseNotesLabel); // optional for CC license, but if so we display the description
+			// UploadedBy is also required, but this is handled in UpdateDisplay because it can change.
 			UpdateDisplay();
+		}
+
+		void RequireValue(Label item)
+		{
+			if (string.IsNullOrWhiteSpace(item.Text))
+			{
+				item.Text = _pleaseSetThis;
+				item.ForeColor = Color.Red;
+				_okToUpload = false;
+			}
+
 		}
 
 		private void UpdateDisplay()
 		{
-			// Enhance: should we disable, if critical metadata is missing? Or give a message when clicked?
-			_uploadButton.Enabled = _bookTransferrer.LoggedIn;
+			bool okToUpload = _okToUpload;
+			_pleaseSetUploadedByLabel.Visible = string.IsNullOrWhiteSpace(_uploadedByTextBox.Text);
+			okToUpload &= !_pleaseSetUploadedByLabel.Visible;
+			_uploadButton.Enabled = _bookTransferrer.LoggedIn && okToUpload;
+			if (_uploadButton.Enabled)
+			{
+				_progressBox.Text = "";
+				_progressBox.ForeColor = Color.FromKnownColor(KnownColor.WindowText);
+			}
+			else
+			{
+				_progressBox.ForeColor = Color.Red;
+				if (!okToUpload)
+				{
+					_progressBox.Text = LocalizationManager.GetString("PublishWeb.FieldsNeedAttention",
+						"One or more fields above need your attention before uploading");
+				}
+				if (!_bookTransferrer.LoggedIn)
+				{
+					if (_progressBox.Text != "")
+						_progressBox.Text += Environment.NewLine;
+					_progressBox.Text += LocalizationManager.GetString("PublishWeb.PleaseLogIn",
+						"Please log in to BloomLibrary.org (or sign up) before uploading");
+				}
+			}
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishWeb.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
 			// Right-align the login link. (There ought to be a setting to make this happen, but I can't find it.)
 			_loginLink.Left = _progressBox.Right - _loginLink.Width;
@@ -94,6 +143,7 @@ namespace Bloom.Publish
 
 		private void _uploadButton_Click(object sender, EventArgs e)
 		{
+			_uploadButton.Enabled = false; // can't start another until done.
 			ScrollControlIntoView(_progressBox);
 			var info = _book.BookInfo;
 			if (string.IsNullOrEmpty(info.Id))
@@ -134,6 +184,7 @@ namespace Bloom.Publish
 					_progressBox.Text += string.Format(congratsMessage, _book.Title);
 				}
 				ScrollProgressToEnd();
+				_uploadButton.Enabled = true; // Don't call UpdateDisplay, it will wipe out the progress messages.
 			};
 			worker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
@@ -191,6 +242,7 @@ namespace Bloom.Publish
 		private void _uploadedByTextBox_TextChanged(object sender, EventArgs e)
 		{
 			_bookTransferrer.UploadedBy = _uploadedByTextBox.Text;
+			UpdateDisplay(); // depends in part on whether this box is empty.
 		}
 
 		private void _ccDescriptionButton_Click(object sender, EventArgs e)
