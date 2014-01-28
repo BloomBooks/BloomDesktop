@@ -748,7 +748,7 @@ namespace Bloom.Book
 
 				_dom.Title = t;
 				if (info != null)
-					info.Title = t;
+					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 				//review: notice we're only changing the value in this dataset
 				this.Set("bookTitle", t,"en");
 			}
@@ -757,7 +757,7 @@ namespace Bloom.Book
 				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 				_dom.Title = t;
 				if (info != null)
-					info.Title = t;
+					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 			}
 		}
 
