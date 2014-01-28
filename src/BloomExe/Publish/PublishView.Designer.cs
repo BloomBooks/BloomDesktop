@@ -37,25 +37,25 @@
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
 			this._topBarPanel = new System.Windows.Forms.Panel();
+			this._saveButton = new System.Windows.Forms.Button();
+			this._printButton = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
 			this._cloudRadio = new System.Windows.Forms.RadioButton();
 			this._showCropMarks = new System.Windows.Forms.CheckBox();
-			this._saveButton = new System.Windows.Forms.Button();
-			this._printButton = new System.Windows.Forms.Button();
-            this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
-            this._contextMenuStrip.SuspendLayout();
+			this._contextMenuStrip.SuspendLayout();
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -72,7 +72,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
-			this._workingIndicator.Location = new System.Drawing.Point(103, 24);
+			this._workingIndicator.Location = new System.Drawing.Point(114, 24);
 			this._workingIndicator.Name = "_workingIndicator";
 			this._workingIndicator.Size = new System.Drawing.Size(714, 516);
 			this._workingIndicator.TabIndex = 8;
@@ -86,12 +86,54 @@
 			this._topBarPanel.Size = new System.Drawing.Size(327, 70);
 			this._topBarPanel.TabIndex = 14;
 			// 
+			// _saveButton
+			// 
+			this._saveButton.AutoSize = true;
+			this._saveButton.BackColor = System.Drawing.Color.Transparent;
+			this._saveButton.FlatAppearance.BorderSize = 0;
+			this._saveButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._saveButton.ForeColor = System.Drawing.Color.Black;
+			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
+			this._saveButton.Location = new System.Drawing.Point(139, 0);
+			this._saveButton.Name = "_saveButton";
+			this._saveButton.Size = new System.Drawing.Size(185, 71);
+			this._saveButton.TabIndex = 15;
+			this._saveButton.Text = "&Save PDF...";
+			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this._saveButton.UseVisualStyleBackColor = false;
+			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
+			// 
+			// _printButton
+			// 
+			this._printButton.AutoSize = true;
+			this._printButton.BackColor = System.Drawing.Color.Transparent;
+			this._printButton.FlatAppearance.BorderSize = 0;
+			this._printButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._printButton.ForeColor = System.Drawing.Color.Black;
+			this._printButton.Image = global::Bloom.Properties.Resources.print;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._printButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._printButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
+			this._printButton.Location = new System.Drawing.Point(0, 0);
+			this._printButton.Name = "_printButton";
+			this._printButton.Size = new System.Drawing.Size(160, 64);
+			this._printButton.TabIndex = 14;
+			this._printButton.Text = "&Print...";
+			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this._printButton.UseVisualStyleBackColor = false;
+			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
+			// 
 			// tableLayoutPanel1
 			// 
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
+			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
@@ -114,16 +156,16 @@
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
-            // _contextMenuStrip
+			// _contextMenuStrip
 			// 
-            this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem});
-            this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
-            this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
-            this._contextMenuStrip.Name = "_contextMenuStrip";
-            this._contextMenuStrip.Size = new System.Drawing.Size(434, 48);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
+			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
+			this._contextMenuStrip.Name = "_contextMenuStrip";
+			this._contextMenuStrip.Size = new System.Drawing.Size(434, 26);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -171,15 +213,6 @@
 			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
 			this._layoutChoices.Text = "Page Layout";
 			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
-			// 
-			// _L10NSharpExtender
-			// 
-			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// superToolTip1
-			// 
-			this.superToolTip1.FadingInterval = 10;
 			// 
 			// _bodyRadio
 			// 
@@ -264,7 +297,7 @@
 			this._cloudRadio.Text = "Upload to Bloom Library.org";
 			this._cloudRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._cloudRadio.UseVisualStyleBackColor = true;
-	        this._cloudRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			this._cloudRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// _showCropMarks
 			// 
@@ -283,47 +316,10 @@
 			this._showCropMarks.UseVisualStyleBackColor = true;
 			this._showCropMarks.CheckedChanged += new System.EventHandler(this.OnShowCropMarks_CheckedChanged);
 			// 
-			// _saveButton
+			// _L10NSharpExtender
 			// 
-			this._saveButton.AutoSize = true;
-			this._saveButton.BackColor = System.Drawing.Color.Transparent;
-			this._saveButton.FlatAppearance.BorderSize = 0;
-			this._saveButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._saveButton.ForeColor = System.Drawing.Color.Black;
-			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
-			this._saveButton.Location = new System.Drawing.Point(139, 0);
-			this._saveButton.Name = "_saveButton";
-			this._saveButton.Size = new System.Drawing.Size(185, 71);
-			this._saveButton.TabIndex = 15;
-			this._saveButton.Text = "&Save PDF...";
-			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._saveButton.UseVisualStyleBackColor = false;
-			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
-			// 
-			// _printButton
-			// 
-			this._printButton.AutoSize = true;
-			this._printButton.BackColor = System.Drawing.Color.Transparent;
-			this._printButton.FlatAppearance.BorderSize = 0;
-			this._printButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._printButton.ForeColor = System.Drawing.Color.Black;
-			this._printButton.Image = global::Bloom.Properties.Resources.print;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._printButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._printButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
-			this._printButton.Location = new System.Drawing.Point(0, 0);
-			this._printButton.Name = "_printButton";
-			this._printButton.Size = new System.Drawing.Size(160, 64);
-			this._printButton.TabIndex = 14;
-			this._printButton.Text = "&Print...";
-			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._printButton.UseVisualStyleBackColor = false;
-			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = null;
 			// 
 			// _adobeReaderControl
 			// 
@@ -334,15 +330,15 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._adobeReaderControl, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._adobeReaderControl, null);
 			this._L10NSharpExtender.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
-			this._adobeReaderControl.Location = new System.Drawing.Point(103, 3);
+			this._adobeReaderControl.Location = new System.Drawing.Point(114, 3);
 			this._adobeReaderControl.Name = "_adobeReaderControl";
-			this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
+			this._adobeReaderControl.Size = new System.Drawing.Size(716, 537);
 			this._adobeReaderControl.TabIndex = 16;
 			// 
-            // superToolTip1
-            // 
-            this.superToolTip1.FadingInterval = 10;
-            // 
+			// superToolTip1
+			// 
+			this.superToolTip1.FadingInterval = 10;
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -361,7 +357,7 @@
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
-            this._contextMenuStrip.ResumeLayout(false);
+			this._contextMenuStrip.ResumeLayout(false);
 			this._menusToolStrip.ResumeLayout(false);
 			this._menusToolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
