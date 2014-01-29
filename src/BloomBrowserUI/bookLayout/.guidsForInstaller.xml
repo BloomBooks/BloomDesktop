@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="BasePage.css" Guid="302ae377-82c2-4534-9b10-19957bdbfab4" />
+  <File Id="collection_styles_override_template.css" Guid="a5307829-0002-4251-b0b4-c0e26c523763" />
+  <File Id="languageDisplayTemplate.css" Guid="634e39d2-3124-4b89-9d88-073ad6850dc0" />
+  <File Id="BrowserUIDir.bookLayout.BasePage.css" Guid="c0ef78f0-660f-443b-bb2d-f1b06151a10f" />
+  <File Id="BrowserUIDir.bookLayout.collection_styles_override_template.css" Guid="6df97c88-45c1-4841-8708-e3e6f9b161d4" />
+  <File Id="BrowserUIDir.bookLayout.languageDisplayTemplate.css" Guid="e5ea2657-aab1-4d0f-9b8b-2b9753cc9551" />
+  <File Id="bookLayout.collection_styles_override_template.css" Guid="7c6c6248-688e-4b8d-a3c1-5060b429849d" />
+  <File Id="rowserUIDir.bookLayout.languageDisplayTemplate.css" Guid="b66b7346-d7e0-4859-a079-e0a0363ca021" />
+</InstallerMetadata>

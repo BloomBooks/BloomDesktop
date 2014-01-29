@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jquery_1.6.2.min.js" Guid="9569515f-15c3-4101-aec1-9fa47e89a373" />
+  <File Id="jquery_ui_1.8.16.custom.min.js" Guid="0bd8a1a2-284c-4ebb-88df-8375923a1e4e" />
+  <File Id="jquery.dform_0.1.4.min.js" Guid="75b6d65e-ef95-43b9-90b7-86f9b50f8a0d" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.js.jquery_1.6.2.min.js" Guid="094e4d35-c764-4df3-a050-8be18891515a" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.js.jquery_ui_1.8.16.custom.min.js" Guid="5638341a-269f-425c-962a-9042a0a7b4c7" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.js.jquery.dform_0.1.4.min.js" Guid="d39e7644-0b6c-4998-83a2-4524b5cb3e5a" />
+  <File Id="_.nonProductionStuff.widgets.js.jquery_1.6.2.min.js" Guid="ea6593e7-9d2f-4f6d-9901-7ca61111a173" />
+  <File Id="ionStuff.widgets.js.jquery_ui_1.8.16.custom.min.js" Guid="0881b503-45f0-4fb7-8483-3ee4c3bf333a" />
+  <File Id="oductionStuff.widgets.js.jquery.dform_0.1.4.min.js" Guid="43ff8b21-4369-483b-a22f-7d3fdd5f855c" />
+</InstallerMetadata>

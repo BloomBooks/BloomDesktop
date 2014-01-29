@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="karma.conf.js" Guid="ec469d5a-b229-441d-a7bd-d40dce1b41dd" />
+  <File Id="StyleEditorSpec.ts" Guid="2c624ddb-0b6b-4e8b-8178-c53788754069" />
+</InstallerMetadata>

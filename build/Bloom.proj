@@ -4,7 +4,6 @@
 		<Solution>Bloom VS2010.sln</Solution>
 		<ApplicationName>Bloom</ApplicationName>
 		<Configuration>Release</Configuration>
-		<LargeFilesDir>c:\builddownloads</LargeFilesDir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -25,7 +24,7 @@
 	<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="1.0.$(BuildCounter)">
+	<CreateProperty Value="1.1.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
 
@@ -47,7 +46,7 @@
   </Target>
 
 
-	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build;">
+	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build; DownloadDistFilesNeedForTests;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
@@ -143,39 +142,41 @@
 	  <!--what does this do?-->
 	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
 	</MakeWixForDirTree>
+
+	<!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
+	<MakeWixForDirTree
+			   DirectoryReferenceId="BrowserUIDir"
+			   ComponentGroupId="BrowserUIFiles"
+			   RootDirectory="$(RootDir)\src\BloomBrowserUI"
+			   OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
+			   IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
+			   MatchRegExPattern=".*"
+				>
+	</MakeWixForDirTree>
+
   </Target>
 
-  <Target Name="DownloadDistFiles">
-	<Message Text="Downloading Bloom.chm help file" Importance="high"  />
-	<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
-  </Target>
+	<Target Name="DownloadDistFilesNeedForTests">
+		<!-- this isn't really a dll, it's just a text file. We're just making some keys be un-findable via googling. Not a big risk even if they re used, though. -->
+		<WebDownload FileUri="https://dl.dropboxusercontent.com/u/14475494/connections.dll" FileName="$(RootDir)\DistFiles\connections.dll"></WebDownload>
+	</Target>
 
-  <!-- this approach to copying a directory is awkward, but documented  in the msdn documentation for copy.  -->
-  <ItemGroup>
-	<XulRunnerFiles Include="$(LargeFilesDir)\xulrunner-11.0.en-US.win32\xulrunner\**\*.*"/>
-	<!-- <XulRunnerFiles Include="C:\dev\teamcitybuilddownloads\xulrunner-8.0.en-US.win32\**\*.*"/>-->
-  </ItemGroup>
-
+	<Target Name="DownloadDistFiles">
+		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
+		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+	</Target>
 
   <Target Name="GetXulRunnerIntoLib">
-	<!--   <RemoveDir Directories="..\lib\xulrunner" />-->
-
+	<RemoveDir Directories="..\lib\xulrunner" />
 	<!-- we expect this has only one element, named "xulrunner"-->
-	<!-- always dies with errors in the unzipper
-		<Unzip ZipFileName="$(XulRunnerZipLocation)\xulrunner-8.0.en-US.win32.zip"
+		<Unzip ZipFileName="..\lib\xulrunner-11.0.en-US.win32.zip"
 		   TargetDirectory="..\lib\"/>
-		   -->
-
-	<Copy
-		SourceFiles="@(XulRunnerFiles)"
-		DestinationFiles="@(XulRunnerFiles->'..\lib\xulrunner\%(RecursiveDir)%(Filename)%(Extension)')"
-		/>
   </Target>
 
   <Target Name="GetWkhtmlToXIntoLib">
 	<RemoveDir
 		   Directories="..\lib\wkhtmltopdf" />
-	<Unzip ZipFileName="$(LargeFilesDir)\wkhtmltopdf-0.10.0_rc2.zip"
+	<Unzip ZipFileName="..\lib\wkhtmltopdf-0.10.0_rc2.zip"
 		   TargetDirectory="..\lib\"/>
   </Target>
 

@@ -19,6 +19,7 @@ using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
+using Image = System.Drawing.Image;
 
 namespace Bloom.Book
 {
@@ -35,7 +36,7 @@ namespace Bloom.Book
 		private readonly BookRefreshEvent _bookRefreshEvent;
 		private readonly IBookStorage _storage;
 		private List<IPage> _pagesCache;
-		private const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
+		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
 
@@ -63,6 +64,9 @@ namespace Bloom.Book
 
 			Guard.AgainstNull(storage,"storage");
 
+			// This allows the _storage to
+			storage.MetaData = info;
+
 			_storage = storage;
 
 			//this is a hack to keep these two in sync (in one direction)
@@ -87,7 +91,7 @@ namespace Bloom.Book
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
-			FixBookIdAndLineageIfNeeded(_storage.Dom);
+			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 		}
@@ -197,15 +201,15 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editTranslationMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"editOriginalMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
 			}
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
@@ -218,7 +222,7 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomBootstrap.js"));
+			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
 		}
 
 
@@ -235,7 +239,6 @@ namespace Bloom.Book
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
 			dom = _storage.MakeDomRelocatable(dom, _log);
-
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
@@ -259,14 +262,13 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFile(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 
 			pageDom.SortStyleSheetLinks();
 
 			AddCoverColor(pageDom, CoverColor);
-			AddPreviewJScript(pageDom);
-
+			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
@@ -319,7 +321,7 @@ namespace Bloom.Book
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFile(cssFileName));
+				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
 			}
 			dom.SortStyleSheetLinks();
 			return dom;
@@ -470,6 +472,7 @@ namespace Bloom.Book
 			AddCoverColor(previewDom, CoverColor);
 
 			AddPreviewJScript(previewDom);
+			previewDom.AddPublishClassToBody();
 			return previewDom;
 		}
 
@@ -482,9 +485,16 @@ namespace Bloom.Book
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				ImageUpdater.CompressImages(FolderPath, progress);
-				_storage.Save();
+				Save();
 			}
-			_storage.Save();
+
+			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
+														+ _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
+			{
+				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
+			}
+
+			Save();
 			if (_bookRefreshEvent != null)
 			{
 				_bookRefreshEvent.Raise(this);
@@ -495,7 +505,7 @@ namespace Bloom.Book
 		{
 			progress.WriteStatus("Gathering Data...");
 
-			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
@@ -512,6 +522,14 @@ namespace Bloom.Book
 			if(bookDOM == OurHtmlDom)//we already have a data for this
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
+
+				// I think we should only mess with tags if we are updating the book for real.
+				var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
+				if (File.Exists(oldTagsPath))
+				{
+					ConvertTagsToMetaData(oldTagsPath, BookInfo);
+					File.Delete(oldTagsPath);
+				}
 			}
 			else //used for making a preview dom
 			{
@@ -519,14 +537,37 @@ namespace Bloom.Book
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 
-			bookDOM.RenameMetaElement("bookLineage", "bloomBookLineage");
+			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+			// BookInfo will always have an ID, the constructor makes one even if there is no json file.
+			// To allow migration, pretend it has no ID if there is not yet a meta.json.
+			bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null), val => BookInfo.Id = val);
+
+			// Title should be replicated in json
+			//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
+			//    bookDOM.Title = Title;
+			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
+			// thus ensuring that if something is in the metadata we use it.
+			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
+			// If there is nothing there the default of true will survive.
+			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 		}
 
-		private static void FixBookIdAndLineageIfNeeded(HtmlDom bookDOM)
+		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
+			var oldTags = File.ReadAllText(oldTagsPath);
+			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
+			bookMetaData.IsFolio = oldTags.Contains("folio");
+			bookMetaData.IsExperimental = oldTags.Contains("experimental");
+		}
+
+		private void FixBookIdAndLineageIfNeeded()
+		{
+			HtmlDom bookDOM = _storage.Dom;
 //at version 0.9.71, we introduced this book lineage for real. At that point almost all books were from Basic book,
 			//so let's get further evidence by looking at the page source and then fix the lineage
-			if (bookDOM.GetMetaValue("bloomBookLineage", "") == "")
+			// However, if we have json lineage, it is normal not to have it in HTML metadata.
+			if (string.IsNullOrEmpty(BookInfo.BookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
 				if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
 				{
 					bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
@@ -542,6 +583,11 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// THe bloomBookId meta value
+		/// </summary>
+		public string ID { get { return _storage.Dom.GetMetaValue("bloomBookId", ""); } }
+
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
 			ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress());
@@ -553,7 +599,7 @@ namespace Bloom.Book
 
 			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
 
-			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("templatePages.htm"), false);
+			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("Basic Book.htm"), false);
 
 			progress.WriteStatus("Updating pages that were based on Basic Book...");
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
@@ -768,9 +814,7 @@ namespace Bloom.Book
 		/// </summary>
 		public bool IsSuitableForVernacularLibrary
 		{
-			get {
-				string metaValue = OurHtmlDom.GetMetaValue("SuitableForMakingVernacularBooks", "yes");
-				return metaValue == "yes" || metaValue == "definitely"; }//the 'template maker' says "no"
+			get { return BookInfo.IsSuitableForVernacularLibrary; }
 		}
 
 
@@ -792,9 +836,8 @@ namespace Bloom.Book
 		{
 			get
 			{
-				string metaValue = OurHtmlDom.GetMetaValue("SuitableForMakingShells", "no");
-				return metaValue == "yes" || metaValue == "definitely"; //the 'template maker' says "no|
-			}//we imaging a future "unlikely"
+				return BookInfo.IsSuitableForMakingShells;
+			}
 		}
 
 		/// <summary>
@@ -833,7 +876,26 @@ namespace Bloom.Book
 			_bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 		}
 
-
+		/// <summary>
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
+		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
+		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
+		/// for to identify the main content of the book?
+		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
+		/// language.
+		/// </summary>
+		public IEnumerable<string> AllLanguages
+		{
+			get
+			{
+				return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
+					.Select(div => div.Attributes["lang"].Value)
+					.Where(lang => lang != "*") // Not a valid language, thoug we sometimes use it for special values
+					.Distinct();
+			}
+		}
 
 		private void AddCoverColor(HtmlDom dom, Color coverColor)
 		{
@@ -859,8 +921,8 @@ namespace Bloom.Book
 		private void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.js"));
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFile("jquery.myimgscale.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
+//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.myimgscale.js"));
 //
 //			XmlElement script = dom.CreateElement("script");
 //			script.SetAttribute("type", "text/javascript");
@@ -872,7 +934,12 @@ namespace Bloom.Book
 //			})";
 //			header.AppendChild(script);
 
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFile("bloomPreviewBootstrap.js"));
+			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("bloomPreviewBootstrap.js");
+			if(string.IsNullOrEmpty(pathToJavascript))
+			{
+				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");
+			}
+			dom.AddJavascriptFile(pathToJavascript);
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -959,7 +1026,7 @@ namespace Bloom.Book
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
 		{
 			return new Page(this, pageNode, caption,
-//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.Id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
+//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
 //					//	(page => GetPageThumbNail()),
 						(page => FindPageDiv(page)));
 		}
@@ -999,7 +1066,7 @@ namespace Bloom.Book
 			_pageSelection.SelectPage(newPage);
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
-			_storage.Save();
+			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
 
@@ -1024,7 +1091,7 @@ namespace Bloom.Book
 		   pageNode.ParentNode.RemoveChild(pageNode);
 
 		   _pageSelection.SelectPage(pageToShowNext);
-			_storage.Save();
+			Save();
 			if(_pageListChangedEvent !=null)
 				_pageListChangedEvent.Raise(null);
 
@@ -1067,9 +1134,17 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
+				var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
+				if (customStyles != null)
+				{
+					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
+					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+				}
+				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
 				try
 				{
-					_storage.Save();
+					Save();
 				}
 				catch (Exception error)
 				{
@@ -1090,7 +1165,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 //        /// <summary>
 //        /// Gets the first element with the given tag & id, within the page-div with the given id.
 //        /// </summary>
@@ -1105,6 +1179,21 @@ namespace Bloom.Book
 //            return (XmlElement)matches[0];
 //        }
 
+		/// <summary>
+		/// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+		/// </summary>
+		private XmlElement GetOrCreateCustomStyleElementFromStorage()
+		{
+			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+			if (matches.Count > 0)
+				return (XmlElement) matches[0];
+
+			var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+			emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+			emptyCustomStylesElement.SetAttribute("type", "text/css");
+			OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
+			return emptyCustomStylesElement;
+		}
 
 		/// <summary>
 		/// Gets the first element with the given tag & id, within the page-div with the given id.
@@ -1148,7 +1237,7 @@ namespace Bloom.Book
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
 
-			_storage.Save();
+			Save();
 			InvokeContentsChanged(null);
 			return true;
 		}
@@ -1206,7 +1295,10 @@ namespace Bloom.Book
 			if (IsFolio)
 			{
 				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
+				_storage.UpdateStyleSheetLinkPaths(printingDom);
+				printingDom.SortStyleSheetLinks();
 			}
+
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
@@ -1319,7 +1411,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFile("languageDisplayTemplate.css"));
+			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 			if (File.Exists(path))
 				File.Delete(path);
@@ -1427,7 +1519,7 @@ namespace Bloom.Book
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
 			ImageUpdater.CopyImageMetadataToWholeBook(_storage.FolderPath,OurHtmlDom, metadata, progress);
-			_storage.Save();
+			Save();
 		}
 
 		public Metadata GetLicenseMetadata()
@@ -1438,6 +1530,9 @@ namespace Bloom.Book
 		public void UpdateLicenseMetdata(Metadata metadata)
 		{
 			_bookData.SetLicenseMetdata(metadata);
+			BookInfo.License = metadata.License.Token;
+			BookInfo.LicenseNotes = metadata.License.RightsStatement;
+			BookInfo.Copyright = metadata.CopyrightNotice;
 		}
 
 		public void SetTitle(string name)
@@ -1463,9 +1558,15 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			_bookData.UpdateVariablesAndDataDivThroughDOM();//will update the title if needed
+			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 			_storage.Save();
+		}
+
+		//TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
+		public string GetBookLineage()
+		{
+			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
 		}
 	}
 }

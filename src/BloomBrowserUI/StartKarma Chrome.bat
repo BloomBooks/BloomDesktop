@@ -1,0 +1,1 @@
+karma start --browsers Chrome

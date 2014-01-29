@@ -15,6 +15,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.TestUtilities;
+using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 
@@ -33,6 +34,7 @@ namespace BloomTests.Book
 		private TemporaryFolder _tempFolder;
 		private CollectionSettings _collectionSettings;
 		private HtmlDom _bookDom;
+		private BookInfo _metadata;
 
 		[SetUp]
 		public void Setup()
@@ -58,29 +60,31 @@ namespace BloomTests.Book
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
 			MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path,"original.png"));
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
-
+			_metadata = new BookInfo(_tempFolder.Path, true);
+			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
-			string root = FileLocator.GetDirectoryDistributedWithApplication("root");
+			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates");
-			_fileLocator.Setup(x => x.LocateFile("languageDisplayTemplate.css")).Returns(root.CombineForPath("languageDisplayTemplate.css"));
-			_fileLocator.Setup(x => x.LocateFile("previewMode.css")).Returns("../notareallocation/previewMode.css");
-			_fileLocator.Setup(x => x.LocateFile("editMode.css")).Returns("../notareallocation/editMode.css");
-			_fileLocator.Setup(x => x.LocateFile("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
-			_fileLocator.Setup(x => x.LocateFile("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
-			_fileLocator.Setup(x => x.LocateFile("basePage.css")).Returns("../notareallocation/basePage.css");
-			_fileLocator.Setup(x => x.LocateFile("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
-			_fileLocator.Setup(x => x.LocateFile("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60 });
+			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 });
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
 	  }
@@ -93,7 +97,7 @@ namespace BloomTests.Book
 		private Bloom.Book.Book CreateBook()
 		{
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-			return new Bloom.Book.Book(new BookInfo(_storage.Object.FolderPath,true), _storage.Object, _templateFinder.Object,
+			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
@@ -629,7 +633,347 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
 		}
 
+		[Test]
+		public void BringBookUpToDate_MovesMetaDataToJson()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bookLineage' content='old rubbish' />
+					<meta name='bloomBookLineage' content='first,second' />
+					<meta name='bloomBookId' content='MyId' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+						</div>
+					</div>
+				</body></html>");
 
+			var book = CreateBook();
+			book.BringBookUpToDate(new NullProgress());
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bookLineage']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 0);
+
+			Assert.That(_metadata.Id, Is.EqualTo("MyId"));
+			Assert.That(_metadata.BookLineage, Is.EqualTo("first,second"));
+			Assert.That(_metadata.Title, Is.EqualTo("my nice title"));
+			// Checking the defaults, when not specified in the metadata
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.False);
+			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.True);
+
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='SuitableForMakingShells' content='yes' />
+					<meta name='SuitableForMakingVernacularBooks' content='no' />
+					<meta name='bloomBookId' content='MyId' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			book = CreateBook();
+			book.BringBookUpToDate(new NullProgress());
+
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.True);
+			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.False);
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='pageTemplateSource' content='Basic Book' />
+					<meta name='bloomBookId' content='MyId' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.BookLineage = ""; // not sure if these could be left from another test
+			_metadata.Id = "";
+			var book = CreateBook();
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 1);
+			//Assert.That(_metadata.bloom.bookLineage, Is.EqualTo(Bloom.Book.Book.kIdOfBasicBook));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_OnBookThatHasJsonLineage_DoesNotSetLineage()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='pageTemplateSource' content='Basic Book' />
+					<meta name='bloomBookId' content='MyId' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.BookLineage = "something current";
+			_metadata.Id = "";
+			var book = CreateBook();
+
+			// 0 because it should NOT make the change.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
+			Assert.That(_metadata.BookLineage, Is.EqualTo("something current"));
+		}
+		[Test]
+		public void Save_UpdatesMetadataTitle()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='bookTitle'>original</textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var titleElt = _bookDom.SelectSingleNode("//textarea");
+			titleElt.InnerText = "changed";
+			book.Save();
+			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataCreditsRemovingBreaks()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='originalAcknowledgments'>original</textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var acksElt = _bookDom.SelectSingleNode("//textarea");
+			acksElt.InnerXml = "changed\r\n<br />more changes";
+			book.Save();
+			Assert.That(_metadata.Credits, Is.EqualTo("changed\r\nmore changes"));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataIsbnAndPageCount()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+						<textarea lang='en' data-book='ISBN'>original</textarea>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var isbnElt = _bookDom.SelectSingleNode("//textarea");
+			isbnElt.InnerText = "978-0-306-40615-7";
+			book.Save();
+			Assert.That(book.BookInfo.Isbn, Is.EqualTo("978-0-306-40615-7"));
+
+			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
+			//isbnElt.InnerText = " ";
+			//book.Save();
+			//Assert.That(_metadata.volumeInfo.industryIdentifiers.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Save_UpdatesMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+						<textarea lang='en' data-book='topic'>original</textarea>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var topicElt = _bookDom.SelectSingleNode("//textarea");
+			topicElt.InnerText = "Animal stories";
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			// We'd like to check what happens when it is edited again.
+			// Problem is, the first save has created a BloomDataDiv which comes before the div we are modifying and
+			// has the old value. (This isn't a problem editing the real topic area because editing happens on a
+			// cut-down document that only has one page and thus no data-div.)
+			var datadiv = _bookDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+			datadiv.ParentNode.RemoveChild(datadiv);
+			topicElt.InnerText = "Science";
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
+
+		[Test]
+		public void AllLanguages_FindsBloomEditableElements()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Bloom ist ein Programm zum Erstellen von Sammlungen der Bucher. Es ist eine Hilfe zur Alphabetisierung.
+							</div>
+
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Bloom is a program for creating collections of books. It is an aid to literacy.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Whatever.
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
+								This is not in any known language
+							</div>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			var allLanguages = book.AllLanguages;
+			Assert.That(allLanguages, Has.Member("en"));
+			Assert.That(allLanguages, Has.Member("de"));
+			Assert.That(allLanguages, Has.Member("fr"));
+			Assert.That(allLanguages, Has.Member("es"));
+			Assert.That(allLanguages, Has.Member("xkal"));
+			Assert.That(allLanguages.Count(), Is.EqualTo(5));
+		}
+
+		[Test]
+		public void UpdateLicenseMetdata_UpdatesJson()
+		{
+			var book = CreateBook();
+
+			// Creative Commons License
+			var licenseData = new Metadata();
+			licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
+			licenseData.License.RightsStatement = "Please acknowledge nicely";
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.License, Is.EqualTo("by-sa"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
+
+			// Custom License
+			licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.License, Is.EqualTo("custom"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Use it if you dare"));
+
+			// Null License (ask the user)
+			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
+
+			book.UpdateLicenseMetdata(licenseData);
+
+			Assert.That(_metadata.License, Is.EqualTo("ask"));
+			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_FixesBasicBookId()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<meta name='bloomBookId' content='" + Bloom.Book.Book.kIdOfBasicBook + @"' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+					</div>
+				</body></html>");
+
+			_metadata.Id = "";
+			var book = CreateBook();
+
+			// 0 indicates it should NOT match, that is, that it doesn't have the mistaken ID any more.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='" + Bloom.Book.Book.kIdOfBasicBook + "']", 0);
+			// but it should have SOME ID. Hopefully a new one, but that is hard to verify.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId']", 1);
+		}
 
 		[Test]
 		public void Constructor_HadNoTitleButDOMHasItInADataItem_TitleElementIsSet()

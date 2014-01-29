@@ -39,13 +39,13 @@ namespace Bloom.Publish
 		/// <param name="bookletPortion"></param>
 		/// <param name="doWorkEventArgs"> </param>
 		/// <param name="getIsLandscape"></param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion,  DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
 			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
-			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result!=null && doWorkEventArgs.Result is Exception))
+			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 				return;
 			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
 			{
@@ -59,14 +59,14 @@ namespace Bloom.Publish
 			var customSizes = new Dictionary<string, string>();
 			customSizes.Add("Halfletter", "--page-width 8.5 --page-height 5.5");
 			string pageSizeArguments;
-			if(!customSizes.TryGetValue(paperSizeName, out pageSizeArguments))
+			if (!customSizes.TryGetValue(paperSizeName, out pageSizeArguments))
 			{
 				pageSizeArguments = "--page-size " + paperSizeName; ; //this works too " --page-width 14.8cm --page-height 21cm"
 			}
 
 			//wkhtmltopdf chokes on stuff like chinese file names, even if we put the console code page to UTF 8 first (CHCP 65001)
 			//so now, we just deal in temp files
-			using(var tempInput = TempFile.WithExtension(".htm"))
+			using (var tempInput = TempFile.WithExtension(".htm"))
 			{
 				File.Delete(tempInput.Path);
 				var source = File.ReadAllText(inputHtmlPath);
@@ -94,9 +94,9 @@ namespace Bloom.Publish
 				string exePath = FindWkhtmlToPdf();
 
 				var arguments = string.Format(
-				//	"--no-background " + //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
-				//Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold,
-				//so that's ok.
+					//	"--no-background " + //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
+					//Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold,
+					//so that's ok.
 
 					" --print-media-type " +
 					pageSizeArguments +
@@ -105,7 +105,7 @@ namespace Bloom.Publish
 					" --debug-javascript " +
 #endif
 
-					"  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
+ "  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
 					"--disable-smart-shrinking --zoom {0} \"{1}\" \"{2}\"",
 					GetZoomBasedOnScreenDPISettings().ToString(),
 					Path.GetFileName(tempInput.Path), tempOutput.Path);
@@ -126,57 +126,47 @@ namespace Bloom.Publish
 
 					//this proves that the ui part here is working... it's something about the wkhtml2pdf that we're not getting the updates in real time...
 					//		dlg.ShowAndDoWork(progress => result = CommandLineRunner.Run("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
-					dlg.ShowAndDoWork((progress,args) =>
-										{
-											progress.WriteStatus("Making PDF...");
-											//this is a trick... since we are so far failing to get
-											//the progress out of wkhtml2pdf until it is done,
-											//we at least have this indicator which on win 7 does
-											//grow from 0 to the set percentage with some animation
+					dlg.ShowAndDoWork((progress, args) =>
+					{
+						progress.WriteStatus("Making PDF...");
+						//this is a trick... since we are so far failing to get
+						//the progress out of wkhtml2pdf until it is done,
+						//we at least have this indicator which on win 7 does
+						//grow from 0 to the set percentage with some animation
 
-											//nb: Later, on a 100page doc, I did get good progress at the end
-											progress.ProgressIndicator.PercentCompleted = 70;
-											result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
-																		   5*60, progress
-																		   , (s) =>
-																				{
-																					progress.WriteStatus(s);
+						//nb: Later, on a 100page doc, I did get good progress at the end
+						progress.ProgressIndicator.PercentCompleted = 70;
+						result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
+							5 * 60, progress
+							, (s) =>
+							{
+								progress.WriteStatus(s);
 
-																					try
-																					{
-																						//this will hopefully avoid the exception below (which we'll swallow anyhow)
-																						if (((BackgroundWorker) args.Argument).IsBusy)
-																						{
-																							//this wakes up the dialog, which then calls the Refresh() we need
-																							try
-																							{
-																								((BackgroundWorker)args.Argument).ReportProgress(100);
-																							}
-																							catch (Exception)
-																							{
-																								//else swallow; we've gotten this error:
-																								//"This operation has already had OperationCompleted called on it and further calls are illegal"
-																								#if DEBUG
-																								throw;
-																								#endif
-																							}
-																						}
-																						else
-																						{
-																							#if DEBUG
-																							Debug.Fail("Wanna look into this? Why is the process still reporting back?");
-																							#endif
-																						}
-																					}
-																					catch (Exception)
-																					{
+								try
+								{
+									//this will hopefully avoid the exception below (which we'll swallow anyhow)
+									if (((BackgroundWorker)args.Argument).IsBusy)
+									{
+										//this wakes up the dialog, which then calls the Refresh() we need
+										((BackgroundWorker)args.Argument).ReportProgress(100);
+									}
+									else
+									{
 #if DEBUG
-																						throw;
+										Debug.Fail("Wanna look into this? Why is the process still reporting back?");
 #endif
-																						//swallow an complaints about it already being completed (bl-233)
-																					}
-																				});
-										});
+									}
+								}
+								catch (InvalidOperationException error)
+								//"This operation has already had OperationCompleted called on it and further calls are illegal"
+								{
+#if DEBUG
+									Palaso.Reporting.ErrorReport.ReportNonFatalException(error);
+#endif
+									//if not in debug, swallow an complaints about it already being completed (bl-233)
+								}
+							});
+					});
 				}
 
 				//var progress = new CancellableNullProgress(doWorkEventArgs);
@@ -305,7 +295,7 @@ namespace Bloom.Publish
 				File.Move(pdfPath, incoming.Path);
 
 				LayoutMethod method;
-				switch(booketLayoutMethod)
+				switch (booketLayoutMethod)
 				{
 					case PublishModel.BookletLayoutMethod.NoBooklet:
 						method = new NullLayoutMethod();

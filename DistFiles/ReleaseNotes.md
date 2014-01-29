@@ -1,5 +1,25 @@
-## 1.0.24 - 1 Nov 2013
+﻿## 1.1.6 - 19 Dec 2013
+* for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
+* make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
+
+## 1.1.5 - 13 Dec 2013
+* You can now add additional usage limitation information to a Creative Commons license.
+* [Template Development] JADE is now the standard way to make custom templates
+* Fixed problem that prevented changing the collection name.
+
+## 1.1.1 - 1 Nov 2013
+* Fixed problem with picking the wrong version of xmatter stylesheets at runtime
+## 1.0.25 - 18 Jan 2014
+Fix problem of folio books not using the most recent stylesheet.
+
+## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
+* Fix height of green source text bubble on Just Text pages.
+* Fix bug tht would cause problems if you used a '&' in a copyright notice.
+* Add context menu item for getting stylesheet troubleshooting information to the clipboard.
+* Avoid collecting new strings for localization from non-developer machines.
+* Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
+	this to do different things when editing vs. publishing.
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab

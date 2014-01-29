@@ -33,4 +33,48 @@
   <File Id="placeHolder.png4" Guid="aa93c579-e3af-4512-bf2b-04cc67155d52" />
   <File Id="previewMode.css3" Guid="f7d5272e-6df9-4d40-ae4c-ac8e15e61ba4" />
   <File Id="thumbnail.png3" Guid="fe70cc63-6370-4290-b1b9-d877bf1cbc7a" />
+  <File Id="basePage.css6" Guid="326a9ca2-284b-4f56-b77f-6fb5e2989289" />
+  <File Id="languageDisplay.css5" Guid="fae0e47b-f716-4719-b92e-ed5fcab4bb2d" />
+  <File Id="placeHolder.png6" Guid="e990019b-da65-4dad-ab9a-8e1156bb169b" />
+  <File Id="previewMode.css6" Guid="6a548cf3-2c3b-4516-a43f-b5531911b18b" />
+  <File Id="thumbnail.png5" Guid="e54979a9-470d-4cd7-962a-750f22e23b9c" />
+  <File Id="Wall_Calendar.htm.bak" Guid="d0dc1d6d-116c-4f3e-a6fd-c2d8b4862a06" />
+  <File Id="basePage.css5" Guid="5a9efdc5-7479-4de0-890b-75d7e4e5eba3" />
+  <File Id="previewMode.css5" Guid="aeb23d69-a5b4-4d61-97a2-815b20b98595" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.basePage.css" Guid="92ea2929-e251-4994-a278-30939204af82" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.configuration.css" Guid="7d392250-845f-467c-b55e-5c7fb3975532" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.configuration.htm" Guid="5ba5b698-11d9-434d-b150-718413c7bcf2" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.configure.js" Guid="17cbb9a3-c5dd-4616-8b51-f8dc772be7fd" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.form2object.js" Guid="ec6d2b6e-39f1-41d0-8cc7-3e29c3bd1a14" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.jquery_1.6.4.js" Guid="6e4cc639-e998-4056-a77a-ed118f8ebea5" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.jquery.toObject.js" Guid="bf17d78b-4e69-4383-804e-c92b11341e28" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.js2form.js" Guid="b73d5aea-0745-4885-a6e1-3614ac722ee0" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.languageDisplay.css" Guid="e7a926a6-07c9-48bf-b64b-a9c0d158379d" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.mootools_core_1.4.1_full_nocompat.js" Guid="3450a364-954b-4d6d-aa07-06bda96be253" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.mootools_more_1.4.0.1.js" Guid="8c1de394-2850-492e-a075-c727ed084eb0" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.placeHolder.png" Guid="05f4f11d-2d85-45cc-b507-aa200689a698" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.previewMode.css" Guid="7cbb3e47-b11c-40ca-8462-7ce74525f7c0" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.thumbnail.png" Guid="5ed2a49f-4c24-4100-b6f5-15adc2faf923" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.underscore.js" Guid="e7c73061-2829-4b4f-be3c-27185144ed3f" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.Wall_Calendar.htm" Guid="ca84ed16-24b1-407e-92ab-8f1e7d3df097" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.Wall_Calendar.htm.bak" Guid="657a6298-093b-46e0-9156-dbb0204e6686" />
+  <File Id="ProgramDir.factoryCollections.Templates.Wall_Calendar.wallCalendar.css" Guid="2f7446a3-a9df-4467-aac4-c43f234c605c" />
+  <File Id="ryCollections.Templates.Wall_Calendar.basePage.css" Guid="178a8d23-0939-4f60-b3cf-fac851a62f97" />
+  <File Id="lections.Templates.Wall_Calendar.configuration.css" Guid="30698165-dc63-4a4b-80a4-3df4658d5a94" />
+  <File Id="lections.Templates.Wall_Calendar.configuration.htm" Guid="c9664f0e-865b-4d1e-9533-182d0fb9f6c1" />
+  <File Id="ryCollections.Templates.Wall_Calendar.configure.js" Guid="7c04904b-68c7-43fa-8ff2-37ada6463225" />
+  <File Id="Collections.Templates.Wall_Calendar.form2object.js" Guid="49e40de6-f668-4147-904e-b7675ffe579c" />
+  <File Id="ollections.Templates.Wall_Calendar.jquery_1.6.4.js" Guid="a9adfbfb-353b-4e7c-8f90-bc6088116bdc" />
+  <File Id="ections.Templates.Wall_Calendar.jquery.toObject.js" Guid="8647268a-9897-4e14-b897-af350163eb29" />
+  <File Id="toryCollections.Templates.Wall_Calendar.js2form.js" Guid="baa0bc1b-6d08-4bb3-a741-b9706e0b3a0c" />
+  <File Id="ctions.Templates.Wall_Calendar.languageDisplay.css" Guid="91224256-f709-432b-a436-656096663ce3" />
+  <File Id="Wall_Calendar.mootools_core_1.4.1_full_nocompat.js" Guid="957c9925-03a0-4765-9826-dc790d32355a" />
+  <File Id="s.Templates.Wall_Calendar.mootools_more_1.4.0.1.js" Guid="01cbe6c5-a2b7-4ad8-99bf-d8371efbc064" />
+  <File Id="ollections.Templates.Wall_Calendar.placeHolder.png" Guid="5e8e5a24-1db0-41dd-840d-1c88d09f2de0" />
+  <File Id="ollections.Templates.Wall_Calendar.previewMode.css" Guid="8bc94716-79af-43b0-9a5f-73380b52aebc" />
+  <File Id="yCollections.Templates.Wall_Calendar.thumbnail.png" Guid="63ea198d-de75-4f00-afef-7bbc9098951c" />
+  <File Id="yCollections.Templates.Wall_Calendar.underscore.js" Guid="33deafa3-3694-4a18-bb2c-a2f6e895aec1" />
+  <File Id="lections.Templates.Wall_Calendar.Wall_Calendar.htm" Guid="c6cb8b5e-801d-4071-8920-b56d606ebda5" />
+  <File Id="ions.Templates.Wall_Calendar.Wall_Calendar.htm.bak" Guid="7e31f7b4-0186-41b6-95f0-38588fd11386" />
+  <File Id="llections.Templates.Wall_Calendar.wallCalendar.css" Guid="10b6e444-e10d-4e0a-9afb-76dc39271321" />
 </InstallerMetadata>

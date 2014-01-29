@@ -41,6 +41,9 @@ namespace Bloom.Book
 		</div>
 	*/
 	/// This class must keep these in sync
+	/// There is also a file meta.json which contains data that is also kept online to aid in searching for books. Some of this must also be kept
+	/// in sync with data in the html, for example, metadata.volumeInfo.title should match (currently the English alternative of) the content of the
+	/// bloomDataDiv bookTitle div.
 	/// </remarks>
 	public class BookData
 	{
@@ -89,9 +92,9 @@ namespace Bloom.Book
 		}
 
 
-		public void UpdateVariablesAndDataDivThroughDOM()
+		public void UpdateVariablesAndDataDivThroughDOM(BookInfo info = null)
 		{
-			UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild);
+			UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild, info);
 		}
 
 
@@ -113,7 +116,7 @@ namespace Bloom.Book
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
 		/// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-		private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom)
+		private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom, BookInfo info = null)
 		{
 			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
@@ -128,8 +131,7 @@ namespace Bloom.Book
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
-
-			Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
+			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
@@ -137,8 +139,51 @@ namespace Bloom.Book
 			}
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
-			UpdateTitle();//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
+			UpdateIsbn(info);
+			UpdateTags(info);
+			UpdateCredits(info);
+		}
 
+		private void UpdateCredits(BookInfo info)
+		{
+			NamedMutliLingualValue creditsData;
+			string credits = "";
+			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
+			{
+				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+			}
+			if (info != null)
+				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+		}
+
+		private void UpdateIsbn(BookInfo info)
+		{
+			NamedMutliLingualValue isbnData;
+			string isbn = null;
+			if (_dataset.TextVariables.TryGetValue("ISBN", out isbnData))
+			{
+				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
+			}
+			if (info != null)
+				info.Isbn = isbn;
+		}
+
+		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
+		// It's not clear what we will want to do when the topic changes and there is a UI for (possibly multiple) tags.
+		// Very likely we still want to add the new topic (if it is not already present).
+		// Should we still remove the old one?
+		private void UpdateTags(BookInfo info)
+		{
+			NamedMutliLingualValue tagData;
+			string tag = null;
+			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
+			{
+				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+			}
+
+			if (info != null)
+				info.TagsList = tag;
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -177,9 +222,9 @@ namespace Bloom.Book
 					{
 						node.InnerXml = languageForm.Form;
 					}
-					Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
-									languageForm.Form);
-					Debug.WriteLine("now: " + _dataDiv.OuterXml);
+					//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
+					//				languageForm.Form);
+					//Debug.WriteLine("now: " + _dataDiv.OuterXml);
 				}
 			}
 		}
@@ -201,7 +246,6 @@ namespace Bloom.Book
 
 		public void Set(string key, string value, string lang)
 		{
-			lang = _dataset.DealiasWritingSystemId(lang);
 			_dataset.UpdateLanguageString(key, value, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
@@ -277,7 +321,7 @@ namespace Bloom.Book
 
 //            if (makeGeneric)
 //            {
-//                data.WritingSystemAliases.Add("V", collectionSettings.Language2Iso639Code);
+//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
 //                    //This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
 //                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
 //                    //review: maybe this should be, like 'xyz"
@@ -434,7 +478,7 @@ namespace Bloom.Book
 						else
 						{
 							string lang = node.GetOptionalStringAttribute("lang", "*");
-							if (data.WritingSystemAliases.ContainsKey(lang))
+							if (lang == "N1" || lang == "N2" || lang == "V")
 								lang = data.WritingSystemAliases[lang];
 
 							//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
@@ -612,7 +656,7 @@ namespace Bloom.Book
 			NamedMutliLingualValue d;
 			if (data.TextVariables.TryGetValue("copyright", out d))
 			{
-				metadata.CopyrightNotice = d.TextAlternatives.GetFirstAlternative();
+				metadata.CopyrightNotice = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 			}
 			string licenseUrl = "";
 			if (data.TextVariables.TryGetValue("licenseUrl", out d))
@@ -689,28 +733,39 @@ namespace Bloom.Book
 #endif
 		}
 
-		private void UpdateTitle()
+		private void UpdateTitle(BookInfo info = null)
 		{
 			NamedMutliLingualValue title;
-			string[] orderedListOfWritingSystemIds = new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
 				foreach (var dataItem in _dataset.TextVariables)
 				{
-					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds));
+					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
 				}
 
 				_dom.Title = t;
+				if (info != null)
+					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 				//review: notice we're only changing the value in this dataset
 				this.Set("bookTitle", t,"en");
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(orderedListOfWritingSystemIds);
+				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 				_dom.Title = t;
+				if (info != null)
+					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+			}
+		}
+
+		private string[] WritingSystemIdsToTry
+		{
+			get
+			{
+				return new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			}
 		}
 

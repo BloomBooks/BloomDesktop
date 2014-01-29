@@ -3,10 +3,10 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -24,17 +24,6 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:../../lib/xulrunner11" />
-        <Variable name="MOZ_LIBDIR" value="../../lib/xulrunner11" />
-        <Variable name="MONO_PATH" value="/usr/lib/cli/gdk-sharp-2.0/:/usr/lib/cli/gtk-sharp-2.0:/usr/lib/cli/atk-sharp-2.0:/usr/lib/cli/glib-sharp-2.0" />
-        <Variable name="LD_PRELOAD" value="./jemallocfix.so" />
-        <Variable name="DISPLAY" value=":1" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\release\</OutputPath>
@@ -50,11 +39,12 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Bloom</RootNamespace>
@@ -66,36 +56,86 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AeroWizard, Version=1.2.6.19328, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
+    </Reference>
+    <Reference Include="Analytics.NET, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Configuration">
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK">
+      <HintPath>..\..\packages\AWSSDK.2.0.2.0\lib\net35\AWSSDK.dll</HintPath>
+    </Reference>
+    <Reference Include="AxInterop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
+    </Reference>
     <Reference Include="Chorus">
-      <HintPath>..\..\..\chorus\output\DebugMono\Chorus.exe</HintPath>
+      <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
-      <HintPath>..\..\..\geckofx-11.0\Skybound.Gecko\bin\x86\Debug_Linux\geckofx-11.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Ionic.Zip.Reduced">
+    <Reference Include="Interop.AcroPDFLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Ionic.Zip.Reduced, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
+    <Reference Include="L10NSharp, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\L10NSharp.1.2.3\lib\net40-Client\L10NSharp.dll</HintPath>
+    </Reference>
     <Reference Include="LibChorus">
-      <HintPath>..\..\..\chorus\output\DebugMono\LibChorus.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Analytics.NET">
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
+    <Reference Include="NetSparkle.Net40">
+      <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="DesktopAnalytics">
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\output\Debug\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet">
-      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfDroplet.exe</HintPath>
+    <Reference Include="PalasoUIWindowsForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -113,34 +153,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\TidyManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac">
-      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da">
-      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="AxInterop.AcroPDFLib">
-      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.AcroPDFLib">
-      <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\..\pdfdroplet\output\Debug\PdfSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="L10NSharp">
-      <HintPath>..\..\..\l10nsharp\output\DebugMono\L10NSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Palaso">
-      <HintPath>..\..\..\palaso\output\DebugMono\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\..\palaso\output\DebugMono\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="AeroWizard">
-      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -201,12 +213,19 @@
     <Compile Include="MiscUI\TipDialog.designer.cs">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Platform\Platform.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Publish\BloomLibraryPublishControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\BloomLibraryPublishControl.Designer.cs">
+      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
+    <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
     <Compile Include="Registration\RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -318,6 +337,25 @@
     </Compile>
     <Compile Include="Wizard\WizardAdapterControl.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\BloomLinkArgs.cs" />
+    <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
+    <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
+    <Compile Include="WebLibraryIntegration\KeyManager.cs" />
+    <Compile Include="WebLibraryIntegration\LoginDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
+      <DependentUpon>LoginDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\OrderList.cs" />
+    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.Designer.cs">
+      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Workspace\FeedbackDialog.cs">
       <SubType>Form</SubType>
@@ -479,6 +517,9 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\BloomLibraryPublishControl.resx">
+      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -518,6 +559,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebLibraryIntegration\LoginDialog.resx">
+      <DependentUpon>LoginDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
+      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>
@@ -591,7 +638,9 @@
     </None>
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -863,7 +912,6 @@
     <None Include="Resources\thumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="README.jQuery.vsdoc.txt" />
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\sendreceiveToolbarButton.png" />
     <None Include="Resources\PackageFlat.png" />
@@ -886,6 +934,7 @@
     <None Include="Resources\SILInBlue100.png" />
     <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
+    <None Include="Resources\cloud.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
@@ -893,6 +942,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent  Condition="'$(OS)'=='Windows_NT'">
@@ -902,6 +952,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

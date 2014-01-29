@@ -26,7 +26,7 @@ namespace BloomTests.Chorus
 		{
 			using (var testRoot = new TemporaryFolder("bloom sr test"))
 			{
-				string path = Path.Combine(testRoot.FolderPath, "Abé Books");
+				string path = Path.Combine(testRoot.Path, "Abé Books");
 				Directory.CreateDirectory(path);
 
 				Assert.NotNull(HgRepository.CreateOrUseExisting(path, new ConsoleProgress()));

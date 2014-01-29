@@ -1,0 +1,47 @@
+/*Use this Cascading Stylesheet File to customize the font & base size used in books in this collection.
+
+You can learn about CSS from hundreds of books, or online, but the following may be enough.
+
+Otherwise, feel free to post your needs on the Bloom mailing list and someone will happily make you a custom collection.css file.
+
+Example: The following would set us up for a collection based on Thai-based language; this font is quite small, so we will also increase the base size from 10 point to 16 point:
+
+BODY
+{
+	font-family:"Angsana New";
+	font-size:16pt;
+}
+
+Note, that is a blunt instrument. It will apply to all the text, regardless of the langauge. That should be OK in many cases.
+
+If you ned to set the font for a particular language, do it like this:
+
+*[lang="en"]
+{
+	font-family:"Times New Roman";
+}
+
+Note: if you include the font-size declaration in the above rule, now *all* your English bits will be that size, which might not be what you want.
+
+So --sorry this is getting complicated-- you would have to have a more specific rule, like
+
+.coverTitle *[lang="en"]
+{
+	font-size: 20pt !important;
+}
+
+You can also set other CSS properties, like line-height. The following says "Any thai text should be single spaced".
+
+*[lang="th"]
+{
+	line-height: 1 !important;
+}
+
+Note: you can also add a file named "customBookStyles.css" in the book folder, to limit the effects of the rules to just that one book.
+
+Note: Bloom/web browsers will ignore everything inside these star-slash markers, so the real content starts below:
+*/
+
+BODY
+{
+}

@@ -98,7 +98,7 @@ namespace Bloom.Book
 					imgElement.RemoveAttribute("data-creator");
 					imgElement.RemoveAttribute("data-license");
 					Logger.WriteEvent("Book.UpdateImgMetdataAttributesToMatchImage()  Image " + path + " is missing");
-					Debug.Fail(" (Debug only) Image " + path + " is missing");
+					//Debug.Fail(" (Debug only) Image " + path + " is missing");
 					return;
 				}
 				using (var image = PalasoImage.FromFile(path))

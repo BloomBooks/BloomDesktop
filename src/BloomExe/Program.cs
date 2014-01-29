@@ -1,14 +1,20 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.WebLibraryIntegration;
+using Microsoft.Win32;
+using Palaso.Extensions;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -68,6 +74,13 @@ namespace Bloom
 					Settings.Default.Save();
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
+#if DEBUG
+				if (args.Length > 0)
+				{
+					// This allows us to debug things like  interpreting a URL.
+					MessageBox.Show("Attach debugger now");
+				}
+#endif
 
 #if DEBUG
 				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
@@ -83,36 +96,90 @@ namespace Bloom
 #endif
 
 				{
-				if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
-				{
-					using (var dlg = new BloomPackInstallDialog(args[0]))
+					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 					{
-						dlg.ShowDialog();
+						using (var dlg = new BloomPackInstallDialog(args[0]))
+						{
+							dlg.ShowDialog();
+						}
+						return;
 					}
-					return;
-				}
-#if !DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
-				if (!GrabMutexForBloom())
-					return;
+
+					if (SendArgsToOtherBloomInstance(args))
+						return;
+
+#if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
+					if (args.Length > 1)
+						Thread.Sleep(3000);//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
+
+#else
+					if (!GrabMutexForBloom())
+						return;
 #endif
 
 					OldVersionCheck();
-
-
 
 					SetUpErrorHandling();
 
 					_applicationContainer = new ApplicationContainer();
 
+					// We need the download folder to exist if we are asked to download a book.
+					// We also want it to exist, to show the (planned) link that offers to launch the web site.
+					// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
+					// a downloaded book to the UI.
+					// So, we just make sure it exists here at startup.
+					string downloadFolder = BookTransfer.DownloadFolder;
+					if (!Directory.Exists(downloadFolder))
+					{
+						var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(Path.GetDirectoryName(downloadFolder), Path.GetFileName(downloadFolder));
+						var settings = new NewCollectionSettings()
+						{
+							Language1Iso639Code = "en",
+							Language1Name = "English",
+							IsSourceCollection = true,
+							PathToSettingsFile = pathToSettingsFile
+							// All other defaults are fine
+						};
+						CollectionSettings.CreateNewCollection(settings);
+					}
+
+					StartReceivingArgsFromOtherBloom();
+
 					SetUpLocalization();
 					Logger.Init();
 
 
-
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloomcollection"))
+					if (args.Length == 1)
 					{
-						Settings.Default.MruProjects.AddNewPath(args[0]);
+						if (args[0].ToLower().EndsWith(".bloomcollection"))
+						{
+							Settings.Default.MruProjects.AddNewPath(args[0]);
+						}
+						else
+							HandleBloomBookOrder(args[0]);
 					}
+
+					if (args.Length > 0 && args[0] == "--rename")
+					{
+						try
+						{
+							var pathToNewCollection = CollectionSettings.RenameCollection(args[1], args[2]);
+							//MessageBox.Show("Your collection has been renamed.");
+							Settings.Default.MruProjects.AddNewPath(pathToNewCollection);
+						}
+						catch (ApplicationException error)
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+							Environment.Exit(-1);
+						}
+						catch (Exception error)
+						{
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
+							Environment.Exit(-1);
+						}
+
+					}
+
 					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
 					Settings.Default.Save();
@@ -129,6 +196,7 @@ namespace Bloom
 					try
 					{
 						Application.Run();
+						StopReceivingArgsFromOtherBloom();
 					}
 					catch (System.AccessViolationException nasty)
 					{
@@ -149,6 +217,110 @@ namespace Bloom
 			{
 				ReleaseMutexForBloom();
 			}
+		}
+
+		private static Thread _serverThread;
+		private static bool _shuttingDown;
+		/// <summary>
+		/// Start a server which can process requests from another instance of bloom
+		/// (typically started by initiating a download by navigating to a link starting with bloom://;
+		/// can also be by opening a bookorder file.)
+		/// </summary>
+		private static void StartReceivingArgsFromOtherBloom()
+		{
+			_serverThread = new Thread(ServerThreadAction);
+			_serverThread.Start();
+		}
+
+		private static void StopReceivingArgsFromOtherBloom()
+		{
+			if (_serverThread != null)
+			{
+				_shuttingDown = true;
+				// This will go to our own thread that is waiting for such a connection, allowing the WaitForConnection
+				// to unblock so the thread can terminate.
+				NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
+				try
+				{
+					pipeClient.Connect(100);
+				}
+				catch (TimeoutException)
+				{
+					return; // failed to send, maybe we got a real request during shutdown?
+				}
+				_serverThread.Join(1000); // If for some reason we can't clean up nicely, we'll exit anyway
+				_serverThread = null;
+			}
+		}
+
+		private const string ArgsPipeName = @"SendBloomArgs";
+
+		/// <summary>
+		/// The function executed by the server thread which listens for messages from other bloom instances.
+		/// Review: do we need to be able to handle many at once? What will happen if the user opens one order while we are handling another?
+		/// </summary>
+		/// <param name="data"></param>
+		private static void ServerThreadAction(object data)
+		{
+			for (;!_shuttingDown;)
+			{
+				NamedPipeServerStream pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
+				pipeServer.WaitForConnection();
+				if (_shuttingDown)
+					return; // We got the spurious message that allows us to unblock and exit
+				string argument = null;
+				try
+				{
+					int len = pipeServer.ReadByte()*256;
+					len += pipeServer.ReadByte();
+					byte[] inBuffer = new byte[len];
+					pipeServer.Read(inBuffer, 0, len);
+					argument = Encoding.UTF8.GetString(inBuffer);
+				}
+				catch (IOException e)
+				{
+					//Catch the IOException that is raised if the pipe is broken
+					// or disconnected.
+					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
+					// was trying to do doesn't happen.
+				}
+				HandleBloomBookOrder(argument);
+				pipeServer.Dispose();
+			}
+		}
+
+		private static void HandleBloomBookOrder(string argument)
+		{
+			_applicationContainer.OrderList.AddOrder(argument);
+		}
+
+		/// <summary>
+		/// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
+		/// </summary>
+		/// <param name="args"></param>
+		/// <returns>true if another instance is handling things and this one should exit</returns>
+		private static bool SendArgsToOtherBloomInstance(string[] args)
+		{
+			if (args.Length != 1)
+				return false; // We only try to send exactly one argument to another instance.
+			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
+			try
+			{
+				pipeClient.Connect(200);
+			}
+			catch (TimeoutException)
+			{
+				return false; // no other bloom running, go ahead and deal with request ourselves.
+			}
+			// Send the argument across the pipe to the other instance.
+			byte[] outBuffer = Encoding.UTF8.GetBytes(args[0]);
+			int len = outBuffer.Length;
+			pipeClient.WriteByte((byte)(len / 256));
+			pipeClient.WriteByte((byte)(len & 255));
+			pipeClient.Write(outBuffer, 0, len);
+			pipeClient.Flush();
+			pipeClient.Dispose();
+			return true; // Abort this instance.
 		}
 
 		private static void Startup(object sender, EventArgs e)
@@ -518,6 +690,18 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+
+				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
+				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
+				//faced with a bunch of string that made no sense to them, because they don't have those templates.
+				//So for now, we only soak up new strings if it's a developer, and hope that the Commit process will be enough for them to realize "oh no, I
+				//don't want to check that stuff in".
+
+#if DEBUG
+				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = true;
+#else
+				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = false;
+#endif
 
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,

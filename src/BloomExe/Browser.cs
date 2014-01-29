@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Palaso.IO;
@@ -236,9 +238,9 @@ namespace Bloom
 		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
 		{
-			if (e.CtrlKey && e.KeyChar == 'v')
+			const uint DOM_VK_INSERT = 0x2D;
+			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				Debug.WriteLine("Ctrl-v pressed.");
 				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
@@ -247,8 +249,6 @@ namespace Bloom
 				else if(_browser.CanPaste && Clipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-
-
 					PasteFilteredText();
 				}
 			}
@@ -256,12 +256,10 @@ namespace Bloom
 
 		private void PasteFilteredText()
 		{
-//filter whatever's on there down to just simple text.
-			//While it's tempting to allow formatted pasting, if you're making a shell, that's just
-			//kidding yourself; the translator won't get to have that formatting too.
+			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			//setting clears everything else:
 			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
-			Debug.WriteLine("Asking browser to paste:" + Clipboard.GetText());
 			_browser.Paste();
 		}
 
@@ -271,6 +269,26 @@ namespace Bloom
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
+
+			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+		}
+		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
+		{
+			//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
+			//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
+			//on a developer/ support-person computer.
+			var builder = new StringBuilder();
+
+			foreach (string label in ErrorReport.Properties.Keys)
+			{
+				 builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
+			}
+
+			builder.AppendLine();
+
+			builder.AppendLine(File.ReadAllText(_url));
+			Clipboard.SetText(builder.ToString());
+			MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
 		}
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
@@ -491,6 +509,32 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
+				var customStyleSheet = _browser.Document.StyleSheets.Where(s =>
+					{
+						var idNode = s.OwnerNode.Attributes["id"];
+						if (idNode == null)
+							return false;
+						return idNode.NodeValue == "customBookStyles";
+					}).FirstOrDefault();
+
+				if (customStyleSheet != null)
+				{
+					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+					 * rules don't show up inside of it. So
+					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = customStyleSheet.OwnerNode.OuterHtml;
+					 */
+					var styles = new StringBuilder();
+					styles.AppendLine("<style id='customStyles' type='text/css'>");
+					foreach (var cssRule in customStyleSheet.CssRules)
+					{
+						styles.AppendLine(cssRule.CssText);
+					}
+					styles.AppendLine("</style>");
+					Debug.WriteLine("*CustomStylesheet in browser:"+styles);
+					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+				}
+
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
 //				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 //				{
@@ -534,7 +578,7 @@ namespace Bloom
 		{
 			if (_url != "about:blank")
 			{
-				RunJavaScript("Cleanup()");
+		//		RunJavaScript("Cleanup()");
 					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
 				LoadPageDomFromBrowser();
 			}

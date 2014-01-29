@@ -14,4 +14,22 @@
   <File Id="A5Portrait.css" Guid="6ab540b6-6362-42bc-a53b-504f6bef5df3" />
   <File Id="BasePage.css6" Guid="9c5b42bb-d084-4644-a77c-ecebb28789f0" />
   <File Id="placeHolder.png6" Guid="184226e7-d442-4bfd-b163-eefb7fc52795" />
+  <File Id="BasePage.css8" Guid="1cb9d245-ab9a-40de-8d21-67fd5df7a2d6" />
+  <File Id="placeHolder.png7" Guid="265704ba-474c-4211-85f5-ff522dc2b1dc" />
+  <File Id="BasePage.css7" Guid="6a2b71fc-9e3e-4717-b46f-13f275319516" />
+  <File Id="editMode.css" Guid="b5158ad7-80a6-4458-ac5f-cd3beb1d3a73" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.a5_portrait_SIL_Philippines_xmatter.css" Guid="852eab1b-d65c-476d-bfba-3039bf5976e1" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.A5Portrait.css" Guid="78dac05d-39af-4cda-8eb2-b11b4f766b7e" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.BasePage.css" Guid="34765d38-9bb3-4cb4-91f0-61b7918a98e9" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.editMode.css" Guid="1574a25c-4c85-4652-ae49-9d116fb369fd" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.placeHolder.png" Guid="26f07d13-fefb-4340-a49a-a77562b91415" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.SIL_Logo_Black.png" Guid="fa4001e0-e45f-45f3-bcd5-eb13b45815a7" />
+  <File Id="ProgramDir.xMatter.SIL_Philippines_XMatter.SIL_Philippines_XMatter.htm" Guid="658ac33a-a676-4fff-b709-3e6c1851db12" />
+  <File Id="es_XMatter.a5_portrait_SIL_Philippines_xmatter.css" Guid="d43b2c8b-4113-4cea-83b9-35b1f53b9d4e" />
+  <File Id="Dir.xMatter.SIL_Philippines_XMatter.A5Portrait.css" Guid="4e113e4e-f702-4097-93bb-806aed8fa099" />
+  <File Id="amDir.xMatter.SIL_Philippines_XMatter.BasePage.css" Guid="e0403596-2701-48cb-8cbb-942e03afa632" />
+  <File Id="amDir.xMatter.SIL_Philippines_XMatter.editMode.css" Guid="1ef20d74-5103-4549-a611-fa8eaf6e472d" />
+  <File Id="ir.xMatter.SIL_Philippines_XMatter.placeHolder.png" Guid="4650b66e-62a7-43bb-b274-c6608ac848e7" />
+  <File Id="xMatter.SIL_Philippines_XMatter.SIL_Logo_Black.png" Guid="c4a605e8-ccc9-4c4c-87ee-26ce6f47df43" />
+  <File Id="IL_Philippines_XMatter.SIL_Philippines_XMatter.htm" Guid="b6d50101-00fc-4b8d-b22f-696e9f9152d3" />
 </InstallerMetadata>
