@@ -39,6 +39,10 @@ Acorns*
 _NCrunch*
 *.vsp
 build/xulrunner*
+build/Palaso.BuildTasks.dll
+packages/*.*
+copy*.*
+Copy*.bat
 *.orig
 *.ncrunchsolution
 Mercurial/
@@ -62,3 +66,11 @@ lib/failed update of AeroWizard Modified for dotnet 4 client/*
 *.userprefs
 lib/libtidy-html5.so
 Downloads/
+Bloom Q&A SIL Literacy Oct 2013.pdf
+Locked Sample Uganda RTI P1 Primer/
+jasmine.d.ts
+connections.dll
+DistFiles/Bloom.chw
+DistFiles/Bloom.chm
+build\ChorusInstallerStuff\ChorusMergeModule.msm
+build\JohnsTestInstallerBuild.bat

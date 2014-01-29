@@ -38,6 +38,9 @@ FIELDSET, A IMG
 {
 	border: 0;
 }
+/*Bloom uses labels to make bubbles*/
+.bloom-translationGroup label {display:none} 
+
 BODY
 {
 	font-size: 100%;
@@ -47,7 +50,7 @@ BODY
 BODY
 {
 	font-family: Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
@@ -63,64 +66,9 @@ DIV.ui-tooltip-content
 }
 .uibloomSourceTextsBubble .ui-tooltip-content
 {
-/*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+	/*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
 	min-height: 60px !important;
 }
-/*++++ Experimental Toolbox Stuff*/
-UL.toolbox
-{
-	height: 212px;
-	width: 207px;
-	margin-left: 31px;
-	margin-top: 15px;
-	background-color: transparent;
-}
-UL.toolbox LI
-{
-	display: inline-block;
-	width: 162px;
-}
-.toolbox
-{
-	z-index: 999;
-	background-color: #FFFFFF;
-	width: 100%;
-}
-.toolbox.bloom-translationGroup
-{
-	background-color: #F4F4F5;
-	color: #000000;
-	text-align: left;
-	height: 57px;
-}
-.bloom-translationGroup.heading1
-{
-	font-weight: bold;
-	text-align: center;
-	height: 34px;
-}
-.toolbox.bloom-translationGroup DIV
-{
-	display: block !important;
-	height: 100%;
-}
-.toolbox.bloom-translationGroup.heading1
-{
-	display: block !important;
-}
-.toolbox.bloom-imageContainer IMG
-{
-	width: 51%;
-	height: 77px;
-}
-.toolbox.bloom-imageContainer
-{
-	background-color: #F4F4F5;
-	color: #000000;
-	text-align: center;
-	height: 91px;
-}
-/*---- End Experimental Toolbox Stuff*/
 .bloom-imageContainer
 {
 	min-height: 50px;
@@ -129,7 +77,7 @@ UL.toolbox LI
 TEXTAREA, DIV.bloom-editable, TD
 {
 	resize: none;
-/*don't show those cute little resize controls in Firefox 4 and greater*/
+	/*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: hidden;
 	font-size: 143%;
 	line-height: 1.3;
@@ -141,7 +89,7 @@ DIV.bloom-page
 	display: block;
 	page-break-after: auto;
 	background-color: #FFFFFF;
-/*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
+	/*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
 so it just heads down off the page, messing things up.*/
 	overflow: hidden;

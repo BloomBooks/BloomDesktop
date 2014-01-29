@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 
 
@@ -32,7 +33,8 @@ namespace Bloom
 
                 
                 builder.Register(c => LocalizationManager).SingleInstance();
-     
+				builder.Register(c => new OrderList()).SingleInstance();
+
 				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
@@ -48,6 +50,11 @@ namespace Bloom
 			}
 
             public LocalizationManager LocalizationManager;
+
+			public OrderList OrderList
+			{
+				get { return _container.Resolve<OrderList>(); }
+			}
 
 			public void Dispose()
 			{

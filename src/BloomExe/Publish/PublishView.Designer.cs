@@ -40,21 +40,22 @@
 			this._saveButton = new System.Windows.Forms.Button();
 			this._printButton = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bodyRadio = new System.Windows.Forms.RadioButton();
 			this._coverRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletRadio = new System.Windows.Forms.RadioButton();
+			this._cloudRadio = new System.Windows.Forms.RadioButton();
 			this._showCropMarks = new System.Windows.Forms.CheckBox();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
 			this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+			this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
-			this.contextMenuStrip1.SuspendLayout();
+			this._contextMenuStrip.SuspendLayout();
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -71,7 +72,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
-			this._workingIndicator.Location = new System.Drawing.Point(103, 24);
+			this._workingIndicator.Location = new System.Drawing.Point(114, 24);
 			this._workingIndicator.Name = "_workingIndicator";
 			this._workingIndicator.Size = new System.Drawing.Size(714, 516);
 			this._workingIndicator.TabIndex = 8;
@@ -132,12 +133,13 @@
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.ContextMenuStrip = this.contextMenuStrip1;
+			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
 			this.tableLayoutPanel1.Controls.Add(this._noBookletRadio, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 4);
+			this.tableLayoutPanel1.Controls.Add(this._cloudRadio, 0, 4);
+			this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 5);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -148,19 +150,22 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(100, 540);
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 540);
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
-			// contextMenuStrip1
+			// _contextMenuStrip
 			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem});
-			this._L10NSharpExtender.SetLocalizableToolTip(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.contextMenuStrip1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.contextMenuStrip1, "contextMenuStrip1.contextMenuStrip1");
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(434, 48);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
+			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
+			this._contextMenuStrip.Name = "_contextMenuStrip";
+			this._contextMenuStrip.Size = new System.Drawing.Size(434, 26);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -191,7 +196,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
 			this._menusToolStrip.Location = new System.Drawing.Point(0, 0);
 			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(100, 47);
+			this._menusToolStrip.Size = new System.Drawing.Size(100, 24);
 			this._menusToolStrip.TabIndex = 13;
 			this._menusToolStrip.Text = "toolStrip1";
 			// 
@@ -215,9 +220,9 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bodyRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._bodyRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
-			this._bodyRadio.Location = new System.Drawing.Point(3, 50);
+			this._bodyRadio.Location = new System.Drawing.Point(3, 27);
 			this._bodyRadio.Name = "_bodyRadio";
-			this._bodyRadio.Size = new System.Drawing.Size(94, 106);
+			this._bodyRadio.Size = new System.Drawing.Size(94, 96);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
@@ -242,9 +247,9 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._coverRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._coverRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
-			this._coverRadio.Location = new System.Drawing.Point(3, 162);
+			this._coverRadio.Location = new System.Drawing.Point(3, 129);
 			this._coverRadio.Name = "_coverRadio";
-			this._coverRadio.Size = new System.Drawing.Size(94, 91);
+			this._coverRadio.Size = new System.Drawing.Size(94, 88);
 			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
@@ -268,15 +273,31 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._noBookletRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._noBookletRadio, "Instead of making a booklet, just make normal pages");
 			this._L10NSharpExtender.SetLocalizingId(this._noBookletRadio, "PublishTab.OnePagePerPaperRadio");
-			this._noBookletRadio.Location = new System.Drawing.Point(3, 259);
+			this._noBookletRadio.Location = new System.Drawing.Point(3, 223);
 			this._noBookletRadio.Name = "_noBookletRadio";
-			this._noBookletRadio.Size = new System.Drawing.Size(94, 108);
+			this._noBookletRadio.Size = new System.Drawing.Size(94, 97);
 			this._noBookletRadio.TabIndex = 10;
 			this._noBookletRadio.TabStop = true;
 			this._noBookletRadio.Text = "One page per piece of paper";
 			this._noBookletRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._noBookletRadio.UseVisualStyleBackColor = true;
 			this._noBookletRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _cloudRadio
+			// 
+			this._cloudRadio.Image = global::Bloom.Properties.Resources.cloud;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._cloudRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._cloudRadio, "Instead of making a booklet, just make normal pages");
+			this._L10NSharpExtender.SetLocalizingId(this._cloudRadio, "PublishTab.OnePagePerPaperRadio");
+			this._cloudRadio.Location = new System.Drawing.Point(3, 326);
+			this._cloudRadio.Name = "_cloudRadio";
+			this._cloudRadio.Size = new System.Drawing.Size(105, 65);
+			this._cloudRadio.TabIndex = 16;
+			this._cloudRadio.TabStop = true;
+			this._cloudRadio.Text = "Upload to Bloom Library.org";
+			this._cloudRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._cloudRadio.UseVisualStyleBackColor = true;
+			this._cloudRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// _showCropMarks
 			// 
@@ -285,8 +306,8 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showCropMarks, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showCropMarks, null);
 			this._L10NSharpExtender.SetLocalizingId(this._showCropMarks, "PublishTab.ShowCropMarks");
-			this._showCropMarks.Location = new System.Drawing.Point(3, 400);
-			this._showCropMarks.Margin = new System.Windows.Forms.Padding(3, 30, 3, 3);
+			this._showCropMarks.Location = new System.Drawing.Point(3, 409);
+			this._showCropMarks.Margin = new System.Windows.Forms.Padding(3, 15, 3, 3);
 			this._showCropMarks.Name = "_showCropMarks";
 			this._showCropMarks.Size = new System.Drawing.Size(80, 62);
 			this._showCropMarks.TabIndex = 15;
@@ -300,10 +321,6 @@
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
 			// 
-			// superToolTip1
-			// 
-			this.superToolTip1.FadingInterval = 10;
-			// 
 			// _adobeReaderControl
 			// 
 			this._adobeReaderControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -313,10 +330,14 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._adobeReaderControl, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._adobeReaderControl, null);
 			this._L10NSharpExtender.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
-			this._adobeReaderControl.Location = new System.Drawing.Point(103, 3);
+			this._adobeReaderControl.Location = new System.Drawing.Point(114, 3);
 			this._adobeReaderControl.Name = "_adobeReaderControl";
-			this._adobeReaderControl.Size = new System.Drawing.Size(727, 537);
+			this._adobeReaderControl.Size = new System.Drawing.Size(716, 537);
 			this._adobeReaderControl.TabIndex = 16;
+			// 
+			// superToolTip1
+			// 
+			this.superToolTip1.FadingInterval = 10;
 			// 
 			// PublishView
 			// 
@@ -336,7 +357,7 @@
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
-			this.contextMenuStrip1.ResumeLayout(false);
+			this._contextMenuStrip.ResumeLayout(false);
 			this._menusToolStrip.ResumeLayout(false);
 			this._menusToolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
@@ -356,7 +377,7 @@
 		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private AdobeReaderControl _adobeReaderControl;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
 		private System.Windows.Forms.RadioButton _noBookletRadio;
 		private System.Windows.Forms.RadioButton _coverRadio;
@@ -365,5 +386,6 @@
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
 		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip superToolTip1;
 		private System.Windows.Forms.CheckBox _showCropMarks;
+		private System.Windows.Forms.RadioButton _cloudRadio;
     }
 }

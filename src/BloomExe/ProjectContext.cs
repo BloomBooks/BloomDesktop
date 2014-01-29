@@ -13,6 +13,7 @@ using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.Properties;
 using Bloom.SendReceive;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
@@ -134,10 +135,10 @@ namespace Bloom
 
 				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>(), c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
+                builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 			    
-                const int kListViewIconHeightAndSize = 70;
-			    builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
+                const int kListViewIconHeightAndWidth = 70;
+                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth)).InstancePerLifetimeScope();
 
 			    builder.Register<LanguageSettings>(c =>
 			                                       	{
@@ -170,6 +171,13 @@ namespace Bloom
 						 return c.Resolve<SourceCollectionsList>();
 					 }).InstancePerLifetimeScope();
 
+				builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
+
+				// Enhance: may need some way to test a release build in the sandbox.
+				builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
+				builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
+				builder.RegisterType<LoginDialog>().AsSelf();
+
 				//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
 				//so we're doing this
@@ -193,31 +201,71 @@ namespace Bloom
 			});
 
 		}
-		private static IEnumerable<string> GetFileLocations()
+
+		internal static BloomS3Client CreateBloomS3Client()
 		{
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("root"));//hack to get the distfiles folder itself
-			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets"); 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter"); 
-			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
+#if DEBUG
+			var bucket = "BloomLibraryBooks-Sandbox";
+#else
+			var bucket = "BloomLibraryBooks-Production";
+#endif
+			return new BloomS3Client(bucket);
+		}
 
-			yield return templatesDir; 
 
-			foreach (var templateDir in Directory.GetDirectories(templatesDir))
-			{
-				yield return templateDir;
-			}
+		/// <summary>
+        /// Give the locations of the bedrock files/folders that come with Bloom. These will have priority
+        /// </summary>
+        public static IEnumerable<string> GetFactoryFileLocations()
+	    {
+	        //bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
 
-			yield return FactoryCollectionsDirectory;
-			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
+	        yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+	            //hack to get the distfiles folder itself
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
 
-			foreach (var dir in Directory.GetDirectories(samplesDir))
-			{
-				yield return dir;
-			}
-			 
-			//TODO: This is not going to cut it. The intent is to use the versino of a css from
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
+
+
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
+
+	        //yield return FileLocator.GetDirectoryDistributedWithApplication("widgets"); 
+
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+
+	        //yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter"); 
+	        var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
+
+	        yield return templatesDir;
+
+	        foreach (var templateDir in Directory.GetDirectories(templatesDir))
+	        {
+	            yield return templateDir;
+	        }
+
+	        yield return FactoryCollectionsDirectory;
+	    }
+
+        /// <summary>
+        /// Give the locations of files/folders that the user has installed (plus sample shells)
+        /// </summary>
+	    public static IEnumerable<string> GetFoundFileLocations()
+		{
+            var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
+            foreach (var dir in Directory.GetDirectories(samplesDir))
+            {
+                yield return dir;
+            }
+
+			//Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
 			//the template directory, to aid the template developer (he/she will want to make tweaks in the 
 			//original, not the copies with sample data). But this is very blunt; we're throwing in every
 			//template we can find; so the code which uses this big pot could easily link to the wrong thing

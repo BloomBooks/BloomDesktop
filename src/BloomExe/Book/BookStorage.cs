@@ -50,6 +50,9 @@ namespace Bloom.Book
         void UpdateBookFileAndFolderName(CollectionSettings settings);
     	IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
+
+		BookInfo MetaData { get; set; }
+        void UpdateStyleSheetLinkPaths(HtmlDom printingDom);
     }
 
     public class BookStorage : IBookStorage
@@ -59,9 +62,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// History of this number:
 		///		0.4 had version 0.4
-		///		0.8, 0.9 had version 0.8
+		///		0.8, 0.9, 1.0 had version 0.8
+		///		1.1 had version 1.1
 		/// </summary>
-    	private const string kBloomFormatVersion = "0.8";
+    	internal const string kBloomFormatVersion = "1.1";
 		private  string _folderPath;
         private IChangeableFileLocator _fileLocator;
     	private BookRenamedEvent _bookRenamedEvent;
@@ -69,15 +73,28 @@ namespace Bloom.Book
 	    private string ErrorMessages;
         private static bool _alreadyNotifiedAboutOneFailedCopy;
         private HtmlDom _dom; //never remove the readonly: this is shared by others
+	    private BookInfo _metaData;
 	    public event EventHandler FolderPathChanged;
-		
+ 
 
-	    public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
+		public BookInfo MetaData
+	    {
+		    get
+		    {
+				if (_metaData == null)
+					_metaData = new BookInfo(_folderPath, false);
+			    return _metaData;
+		    }
+		    set { _metaData = value; }
+	    }
+
+
+        public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
 	                       BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 	    {
 		    _folderPath = folderPath;
 
-			//we clone becuase we'll be customizing this for use by just this book
+	    	//we clone becuase we'll be customizing this for use by just this book
 		    _fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 		    _bookRenamedEvent = bookRenamedEvent;
 		    _collectionSettings = collectionSettings;
@@ -85,15 +102,15 @@ namespace Bloom.Book
 		    ExpensiveInitialization();
 	    }
 
+        //TODO: this is in conflict with the BookType on Book. Get rid of one of them (has trello card for v1.1)
 	    public Book.BookType BookType
 		{
 			get
 			{
 				var pathToHtml = PathToExistingHtml;
-				if (pathToHtml.EndsWith("templatePages.htm"))
+				//as of v1.1. this is bogus; previously all templates were supposed to be named "templatePages.htm", so you could tell.
+                if (pathToHtml.EndsWith("Basic Book.htm"))
 					return Book.BookType.Template;
-				if (pathToHtml.EndsWith("shellPages.htm"))
-					return Book.BookType.Shell;
 
 				//directory name matches htm name
 				//                if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
@@ -199,6 +216,7 @@ namespace Bloom.Book
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
+			MetaData.FormatVersion = kBloomFormatVersion;
 			string tempPath = SaveHtml(Dom);
 
 
@@ -221,6 +239,8 @@ namespace Bloom.Book
 				{ Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null); }
 
 			}
+
+			MetaData.Save();
 		}
 
 		private void AssertIsAlreadyInitialized()
@@ -349,7 +369,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <remarks>The image-replacement feature is perhaps a one-off for a project where the an advisor replaced the folders
+		/// <remarks>The image-replacement feature is perhaps a one-off for a project where an advisor replaced the folders
 		/// with a version that lacked most of the images (perhaps because dropbox copies small files first and didn't complete the sync)</remarks>
 		/// <param name="progress"></param>
 		/// <param name="pathToFolderOfReplacementImages">We'll find any matches in the entire folder, regardless of sub-folder name</param>
@@ -597,7 +617,15 @@ namespace Bloom.Book
 
 		private void UpdateIfNewer(string fileName, string factoryPath = "")
         {
-            string documentPath="notSet";
+		    if (!IsUserFolder)
+		    {
+		        if (fileName.ToLower().Contains("xmatter") && ! fileName.ToLower().StartsWith("factory-xmatter"))
+		        {
+		            return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
+		        }
+		    }
+
+		    string documentPath="notSet";
             try
             {
                 if(string.IsNullOrEmpty(factoryPath))
@@ -646,7 +674,15 @@ namespace Bloom.Book
             }
         }
 
-		// NB: this knows nothing of book-specific css's... even "basic book.css"
+        /// <summary>
+        /// user folder as opposed to our program installation folder or some template
+        /// </summary>
+        private bool IsUserFolder
+        {
+            get { return _folderPath.Contains(_collectionSettings.FolderPath); }
+        }
+
+        // NB: this knows nothing of book-specific css's... even "basic book.css"
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
@@ -708,58 +744,15 @@ namespace Bloom.Book
 //			return relativePath.Replace('/', Path.DirectorySeparatorChar);
 //		}
 
-        private void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
+        //TODO: Clean up this patch that is being done in emergency mode for a customer with a deadline
+        private  void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
         {
-            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-            {
-                var href = linkNode.GetAttribute("href");
-                if (href == null)
-                {
-                    continue;
-                }
-
-				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
-
-				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
-            	href = href.Replace("%5C", "/");
-				// This was in filename for "Basic Book.css" where the space should have been
-				href = href.Replace("%20", " ");
-
-
-                var fileName = Path.GetFileName(href);
-                if (!fileName.StartsWith("xx")) //I use xx  as a convenience to temporarily turn off stylesheets during development
-                {
-                    var path = fileLocator.LocateOptionalFile(fileName);
-
-					//we want these stylesheets to come from the book folder
-                    if (string.IsNullOrEmpty(path)|| path.Contains("languageDisplay.css")) 
-                    {
-                        //look in the same directory as the book
-                        var local = Path.Combine(_folderPath, fileName);
-                        if (File.Exists(local))
-                            path = local;
-                    }
-					//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
-					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
-					{
-						//look in the parent directory of the book
-						var pathInCollection = Path.Combine(Path.GetDirectoryName(_folderPath), fileName);
-						if (File.Exists(pathInCollection))
-							path = pathInCollection;
-					}
-                    if (!string.IsNullOrEmpty(path))
-                    {
-						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-						linkNode.SetAttribute("href", "file://" + path);
-                    }
-                    else
-                    {
-						throw new ApplicationException(string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName, _folderPath));
-                    }
-                }
-            }
+            dom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, log);
         }
-
+        public void UpdateStyleSheetLinkPaths(HtmlDom printingDom)
+        {
+            printingDom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, new NullProgress());
+        }
 
         //while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
         //we want to make sure it's ready to be opened in a browser.

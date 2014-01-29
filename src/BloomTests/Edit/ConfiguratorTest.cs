@@ -42,10 +42,15 @@ namespace BloomTests.Edit
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "root"),
+												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
+												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserui/bookLayout"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 			                               	});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), library.Object);
+
+            var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+
+            _starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
             _shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
             _libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 
@@ -227,7 +232,11 @@ namespace BloomTests.Edit
         {
             var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Wall Calendar");
             var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
-			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent(), new CollectionSettings());
+            var projectFolder = new TemporaryFolder("ConfiguratorTests_ProjectCollection");
+            //review
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+
+			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent(), collectionSettings);
             return bs;
         }
 

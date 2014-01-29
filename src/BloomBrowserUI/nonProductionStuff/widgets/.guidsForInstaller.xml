@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="pageThumbnailList.css" Guid="5ac05834-6880-4b12-8e09-a3c3cac8c89f" />
+  <File Id="pageThumbnailList.html" Guid="df819a23-2ef2-4484-9422-c7bc86bdd3ab" />
+  <File Id="pageThumbnailList.js" Guid="6f0d24b3-9c83-4dc1-8f00-127a04cebbf8" />
+  <File Id="settings.css" Guid="c1c4a272-482c-4598-802b-66d11ef46e51" />
+  <File Id="settings.htm" Guid="c0bf02bf-4dce-43e8-b6e6-7879777e72c2" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.pageThumbnailList.css" Guid="c24601fe-e0c0-44b4-bb5f-a29f4f7a719c" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.pageThumbnailList.html" Guid="30a2ee6d-ec28-458a-8eaf-67ddb717c917" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.pageThumbnailList.js" Guid="cfe1e1f6-2346-4b65-887d-cfa2c6b222d2" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.settings.css" Guid="19fdef31-4f6d-45ba-905e-9b407211d53e" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.settings.htm" Guid="a9d3d48e-3b06-4ecb-9320-d6409879d6b9" />
+  <File Id="r.nonProductionStuff.widgets.pageThumbnailList.css" Guid="ca400ad1-c032-4366-9319-fcf977b8713b" />
+  <File Id="_.nonProductionStuff.widgets.pageThumbnailList.html" Guid="ba6f45a3-47fd-424b-9448-df3a27d79a07" />
+  <File Id="ir.nonProductionStuff.widgets.pageThumbnailList.js" Guid="34309ed4-f167-4830-a424-53ceda9cf286" />
+  <File Id="owserUIDir.nonProductionStuff.widgets.settings.css" Guid="5b038d17-596e-4950-8f78-9dc67f139b76" />
+  <File Id="owserUIDir.nonProductionStuff.widgets.settings.htm" Guid="a27ffb2a-d71d-4527-8e67-ee96fe617f4f" />
+</InstallerMetadata>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -10,11 +10,16 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BloomTests</RootNamespace>
     <AssemblyName>BloomTests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,8 +56,6 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\Release\</OutputPath>
@@ -70,35 +73,75 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Configuration, Version=2.6.3.862, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="geckofx-11, Version=10.0.0.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
+    </Reference>
+    <Reference Include="LibChorus, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
+    </Reference>
+    <Reference Include="LibChorus.TestUtilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\LibChorus.TestUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
+    </Reference>
+    <Reference Include="Palaso.TestUtilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\Palaso.TestUtilities.dll</HintPath>
+    </Reference>
+    <Reference Include="PalasoUIWindowsForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=104.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Moq, Version=4.0.10827.0, Culture=neutral, PublicKeyToken=69f491c39445e920">
-      <HintPath>..\..\packages\Moq.4.0.10827\lib\NET35\Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="geckofx-11">
-      <HintPath>..\..\..\geckofx-11.0\Skybound.Gecko\bin\x86\Debug_Linux\geckofx-11.dll</HintPath>
-    </Reference>
-    <Reference Include="Palaso">
-      <HintPath>..\..\..\palaso\output\DebugMono\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="Palaso.TestUtilities">
-      <HintPath>..\..\..\palaso\output\DebugMono\Palaso.TestUtilities.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\..\palaso\output\DebugMono\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Book\BookCollectionTests.cs" />
+    <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
     <Compile Include="Book\BookTests.cs" />
     <Compile Include="Book\BookStorageTests.cs" />
@@ -110,6 +153,7 @@
     <Compile Include="Book\SizeAndOrientationTests.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
+    <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
     <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
@@ -122,11 +166,18 @@
     <Compile Include="OpenCreateDialogTests.cs" />
     <Compile Include="ToPalaso\MostRecentPathsTests.cs" />
     <Compile Include="ToPalaso\ProgresDialogTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
+    <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="LowResImageProcessing\ImageServerTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">
+      <Project>{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}</Project>
+      <Name>BloomChorusPlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj">
       <Project>{304D5612-167C-4725-AF27-B9F2BB788B57}</Project>
       <Name>BloomExe</Name>
@@ -140,8 +191,8 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -184,6 +184,14 @@ namespace Bloom
 					node.InnerText = " ";
 				}
 			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//style"))
+			{
+				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
+				{
+					node.InnerText = " ";
+				}
+			}
 		}
 
 		/// <summary>

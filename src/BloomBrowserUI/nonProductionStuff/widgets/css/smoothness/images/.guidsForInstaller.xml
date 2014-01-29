@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="ui_bg_flat_0_aaaaaa_40x100.png" Guid="7bd42e40-9c08-40ad-aa3d-0cce53de20ce" />
+  <File Id="ui_bg_flat_75_ffffff_40x100.png" Guid="144f1bb7-df2b-4417-9ddd-59cdc9928717" />
+  <File Id="ui_bg_glass_55_fbf9ee_1x400.png" Guid="e2cc8a1d-c90d-4292-acc4-02d72db5191f" />
+  <File Id="ui_bg_glass_65_ffffff_1x400.png" Guid="8e864747-e12f-441a-8383-b7a3aa349f51" />
+  <File Id="ui_bg_glass_75_dadada_1x400.png" Guid="ab83c1db-e773-46ae-bc8c-c0466bf6f1f8" />
+  <File Id="ui_bg_glass_75_e6e6e6_1x400.png" Guid="4536dfb7-5f6d-4f56-a010-cd64a44c198b" />
+  <File Id="ui_bg_glass_95_fef1ec_1x400.png" Guid="b5813e58-c4e5-4ba8-8acb-685d80d53d18" />
+  <File Id="ui_bg_highlight_soft_75_cccccc_1x100.png" Guid="58a38d76-901f-4316-a4ad-66dcc9a04fc4" />
+  <File Id="ui_icons_222222_256x240.png2" Guid="6e62ae13-0198-42a7-bff0-312cf57f8d48" />
+  <File Id="ui_icons_2e83ff_256x240.png" Guid="b5c8f6d4-1efb-4021-985b-3ee303d7356f" />
+  <File Id="ui_icons_454545_256x240.png" Guid="22eb5338-1469-4bb0-ba27-70e7676c70a0" />
+  <File Id="ui_icons_888888_256x240.png" Guid="69a8a138-19e8-472a-9e07-82073da6221e" />
+  <File Id="ui_icons_cd0a0a_256x240.png" Guid="80b732bd-6412-4ecc-a34e-66ce95d9876b" />
+  <File Id="ui_icons_222222_256x240.png1" Guid="8416081a-219e-4139-9f52-6322c2fb72e4" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_flat_0_aaaaaa_40x100.png" Guid="ffd775e3-570c-471e-aa6b-6cca75137a94" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_flat_75_ffffff_40x100.png" Guid="17a3695c-0ff1-4715-9f93-4e591b7afe3a" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_glass_55_fbf9ee_1x400.png" Guid="2481835f-ab1e-4d64-8ed3-19b3b57eb78d" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_glass_65_ffffff_1x400.png" Guid="fc0e6926-018f-4bc3-a3a3-9bc338d14e15" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_glass_75_dadada_1x400.png" Guid="fb99b95e-2063-48b1-88d7-1cc919d9c86b" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_glass_75_e6e6e6_1x400.png" Guid="ad6188df-da5e-4dd8-a177-1add5a2aaf13" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_glass_95_fef1ec_1x400.png" Guid="071d913c-44d6-4c03-81fa-a660f07e70ec" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_bg_highlight_soft_75_cccccc_1x100.png" Guid="36e626fe-672d-452d-a83b-90e3e14fc4c7" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_icons_222222_256x240.png" Guid="265acc0f-4eb6-4712-be23-36e1c53aa795" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_icons_2e83ff_256x240.png" Guid="6045ccbb-6b74-467e-b93e-0e574e3c8407" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_icons_454545_256x240.png" Guid="8f30da2b-6b08-4fc0-96df-65eb7670187e" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_icons_888888_256x240.png" Guid="f63bc790-f1d1-4345-b202-29ee23eab68f" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.images.ui_icons_cd0a0a_256x240.png" Guid="b877cb95-cce4-4871-8ead-4660a8e6ba69" />
+  <File Id="s.smoothness.images.ui_bg_flat_0_aaaaaa_40x100.png" Guid="e00f803f-5255-42c7-a9d3-af10c013ff4b" />
+  <File Id="_.smoothness.images.ui_bg_flat_75_ffffff_40x100.png" Guid="3891cb77-bf0a-4040-86a3-d18442cfea0b" />
+  <File Id="_.smoothness.images.ui_bg_glass_55_fbf9ee_1x400.png" Guid="8aae4409-5414-4982-b006-b20ebbd1ccdb" />
+  <File Id="_.smoothness.images.ui_bg_glass_65_ffffff_1x400.png" Guid="38432c84-e7a1-4ee0-a9be-7d5902bc62c9" />
+  <File Id="_.smoothness.images.ui_bg_glass_75_dadada_1x400.png" Guid="04bd950f-8bd2-4e7f-98ae-47b69d7dd9a7" />
+  <File Id="_.smoothness.images.ui_bg_glass_75_e6e6e6_1x400.png" Guid="62a750ac-c979-47f5-9f89-87e5680e45aa" />
+  <File Id="_.smoothness.images.ui_bg_glass_95_fef1ec_1x400.png" Guid="6e4c72ef-d72c-4cf6-9cde-680987d48846" />
+  <File Id="ss.images.ui_bg_highlight_soft_75_cccccc_1x100.png" Guid="2a847538-c497-446a-bfa3-95863958f230" />
+  <File Id="_.css.smoothness.images.ui_icons_222222_256x240.png" Guid="a62303b6-687e-4e38-8f50-1136f0210804" />
+  <File Id="_.css.smoothness.images.ui_icons_2e83ff_256x240.png" Guid="cc54aafd-e73d-45d3-95e7-783b988eb892" />
+  <File Id="_.css.smoothness.images.ui_icons_454545_256x240.png" Guid="817dc98e-6eb8-4f3d-8393-8d268412e790" />
+  <File Id="_.css.smoothness.images.ui_icons_888888_256x240.png" Guid="b2085d3e-606a-4417-a6fc-650c19d5204d" />
+  <File Id="_.css.smoothness.images.ui_icons_cd0a0a_256x240.png" Guid="0ee3b57f-2af7-4734-a167-2c63bc6d6867" />
+</InstallerMetadata>

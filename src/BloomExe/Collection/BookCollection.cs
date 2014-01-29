@@ -30,6 +30,12 @@ namespace Bloom.Collection
 		{
 		}
 
+		// For unit tests only.
+	    internal BookCollection(List<BookInfo> state)
+	    {
+		    _bookInfos = state;
+	    }
+
     	public BookCollection(string path, CollectionType collectionType, 
 			BookSelection bookSelection)
         {
@@ -127,6 +133,30 @@ namespace Bloom.Collection
 	    {
 			_bookInfos.Add(bookInfo);
 			NotifyCollectionChanged();
+	    }
+
+		/// <summary>
+		/// Insert a book into the appropriate place. If there is already a book with the same FolderPath, replace it.
+		/// </summary>
+		/// <param name="bookInfo"></param>
+	    public void InsertBookInfo(BookInfo bookInfo)
+	    {
+		    IComparer<string> comparer = new NaturalSortComparer<string>();
+		    for (int i = 0; i < _bookInfos.Count; i++)
+		    {
+			    var compare = comparer.Compare(_bookInfos[i].FolderPath, bookInfo.FolderPath);
+			    if (compare == 0)
+			    {
+				    _bookInfos[i] = bookInfo; // Replace
+				    return;
+			    }
+			    if (compare > 0)
+			    {
+				    _bookInfos.Insert(i, bookInfo);
+				    return;
+			    }
+		    }
+		    _bookInfos.Add(bookInfo);
 	    }
 
 	    private void AddBookInfo(string path)

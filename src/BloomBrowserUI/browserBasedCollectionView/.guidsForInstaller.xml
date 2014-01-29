@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="library.css" Guid="0826a2b7-2b61-424d-9531-e8533a166ce6" />
+  <File Id="library.htm" Guid="edf334f6-1c2b-4e63-a873-cee2834ea5e7" />
+  <File Id="library.js" Guid="6b0e198c-fc6a-4496-94d5-72d90f70e706" />
+  <File Id="BrowserUIDir.browserBasedCollectionView.library.css" Guid="9edc8dd5-7861-480b-9679-6cfc9e630b2d" />
+  <File Id="BrowserUIDir.browserBasedCollectionView.library.htm" Guid="f39a74d3-15d6-43f9-b1ac-dba110116230" />
+  <File Id="BrowserUIDir.browserBasedCollectionView.library.js" Guid="744a44d6-355d-41f5-9622-bf9988262c04" />
+  <File Id="rowserUIDir.browserBasedCollectionView.library.css" Guid="40713c50-101f-45a9-a4d1-959c2b030133" />
+  <File Id="rowserUIDir.browserBasedCollectionView.library.htm" Guid="cb17f60c-663e-44c5-9f65-01fc9477d025" />
+</InstallerMetadata>

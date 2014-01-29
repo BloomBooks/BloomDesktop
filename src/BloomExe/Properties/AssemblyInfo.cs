@@ -34,3 +34,5 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("0.9.999.0")]
 [assembly: AssemblyVersion("1.1.000.0")]
 [assembly: AssemblyFileVersion("1.1.000.0")]
+[assembly: InternalsVisibleTo("BloomTests")]
+

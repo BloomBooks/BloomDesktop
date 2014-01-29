@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="editMode.css" Guid="f59f09db-f55f-4d66-850a-5db1a88e0f1c" />
+  <File Id="editOriginalMode.css" Guid="7b239a50-c9ad-4741-9889-6e6db91cb02e" />
+  <File Id="editTranslationMode.css" Guid="e2044d9a-efec-4121-bc1e-8f3fb63f10e4" />
+  <File Id="BrowserUIDir.bookEdit.css.editMode.css" Guid="84f40556-630a-4966-b0c5-c2ddd4b8f002" />
+  <File Id="BrowserUIDir.bookEdit.css.editOriginalMode.css" Guid="05c3b6ea-2996-4eba-83c7-c071ec2884ae" />
+  <File Id="BrowserUIDir.bookEdit.css.editTranslationMode.css" Guid="0f8e6773-9bd8-4d53-b91c-8ca75f64d4dd" />
+</InstallerMetadata>

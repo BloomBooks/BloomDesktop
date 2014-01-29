@@ -14,78 +14,6 @@
         <seg>Abrir colecciones adicionales</seg>
       </tuv>
     </tu>
-    <tu tuid="2 letters">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>2 letters</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>2 Letras</seg>
-      </tuv>
-    </tu>
-    <tu tuid="2 syllables">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>2 syllables</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>2 sílabas</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 (decodable) words">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 (decodable) words</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 palabras (decodable)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 decodable words">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 decodable words</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 palabras descodificables</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 sentences">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 sentences</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 frases</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 sentences related to the picture">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 sentences related to the picture</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 frases relacionadas con la ilustración</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 thematic words divided into syllables">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 thematic words divided into syllables</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 palabras temáticas divididos en sílabas</seg>
-      </tuv>
-    </tu>
-    <tu tuid="3 thematic words whole">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>3 thematic words whole</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>3 palabras temáticas completas</seg>
-      </tuv>
-    </tu>
     <tu tuid="AboutDialog.AboutDialogWindowTitle">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -1268,24 +1196,6 @@
         <seg>B5Vertical OcultarNotasDeProducción</seg>
       </tuv>
     </tu>
-    <tu tuid="Letter/Word for the day">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Letter/Word for the day</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Letra/Palabra del día</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Letters/Words for the day">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Letters/Words for the day</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Letras/Palabras del día</seg>
-      </tuv>
-    </tu>
     <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
       <tuv xml:lang="en">
         <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
@@ -1635,60 +1545,6 @@
         <seg>Marcas de recorte</seg>
       </tuv>
     </tu>
-    <tu tuid="Story Part 1">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Story Part 1</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Parte 1 del historia</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Story Part 2">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Story Part 2</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Parte 2 del historia</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Subtheme copied from Day 2">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Subtheme copied from Day 2</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Subtema copiado del día 2</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Subtheme of the week">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Subtheme of the week</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Subtema de la semana</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Theme of the Week">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Theme of the Week</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Tema de la semana</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Theme of the week">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Theme of the week</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Tema de la semana</seg>
-      </tuv>
-    </tu>
     <tu tuid="Title">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1696,33 +1552,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Título</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Title of Story">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Title of Story</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Título de la historia</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Title of Story copied from Day 2">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Title of Story copied from Day 2</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Título del cuento copiado del día 2</seg>
-      </tuv>
-    </tu>
-    <tu tuid="To add another letter, go to the last letter and press Enter.">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>To add another letter, go to the last letter and press Enter.</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Para agregar otra carta, ir a la última letra y presiona Enter.</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Agriculture">

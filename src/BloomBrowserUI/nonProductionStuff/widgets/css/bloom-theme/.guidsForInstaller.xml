@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jquery_ui_1.8.16.custom.css1" Guid="91d6c5de-5b00-4a57-9f0d-b7fdf46a330b" />
+  <File Id="jquery_ui_1.8.16.custom.css" Guid="03fc4122-e8dc-4c89-ba72-ea3de5042da6" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.bloom_theme.jquery_ui_1.8.16.custom.css" Guid="bf88b40e-b789-451f-96f6-a2ab4b9680a0" />
+  <File Id="idgets.css.bloom_theme.jquery_ui_1.8.16.custom.css" Guid="62041ad3-1210-4d87-9f5b-83ef7ae91bc9" />
+</InstallerMetadata>
