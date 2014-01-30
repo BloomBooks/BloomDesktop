@@ -693,6 +693,10 @@ namespace Bloom.Book
             else
             {
                 metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                if (data.TextVariables.TryGetValue("licenseNotes", out d))
+                {
+                    metadata.License.RightsStatement = d.TextAlternatives.GetFirstAlternative();
+                }
             }
             return metadata;
         }
