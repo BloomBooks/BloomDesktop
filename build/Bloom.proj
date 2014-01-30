@@ -157,12 +157,16 @@
   </Target>
 
   	<Target Name="DownloadDistFilesNeedForTests">
-		<!-- this isn't really a dll, it's just a text file. We're just making some keys be un-findable via googling. Not a big risk even if they re used, though. -->
-		<WebDownload FileUri="https://dl.dropboxusercontent.com/u/14475494/connections.dll" FileName="$(RootDir)\DistFiles\connections.dll"></WebDownload>
 	</Target>
 	
 	<Target Name="DownloadDistFiles">
 		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
+		<!-- NB: some configurations on TeamCity may also get a version of this from 
+		the static dependencies configuration, for use with getDependencies.sh.
+		These are not necessarily redundant, since the static dependencies configuration
+		does not know when a new version of the help file is available, so it can get stale,
+		which is fine for developers, but not for our official builds.
+		-->
 		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
    
