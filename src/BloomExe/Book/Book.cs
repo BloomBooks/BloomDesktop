@@ -1206,7 +1206,9 @@ namespace Bloom.Book
 
 	        //whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
-			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath, false);
+
+            var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
+            BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf, false);
             
             switch (bookletPortion)
             {
