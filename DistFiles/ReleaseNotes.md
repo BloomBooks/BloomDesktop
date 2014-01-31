@@ -1,3 +1,6 @@
+## 1.0.28 - 31 Jan 2014
+* Move format version of Bloom 1.0 up to 1.1. and start rejecting books that are greater than that.
+
 ## 1.0.25 - 31 Jan 2014
 * Fix problem where unicode characters in project folder would make images not show up in PDF
 

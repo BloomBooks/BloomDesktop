@@ -357,13 +357,27 @@ namespace Bloom.Book
 
 		public bool CanPublish
 		{
-			get { return IsEditable && !HasFatalError; }
+			get
+			{
+				if (!BookInfo.IsEditable)
+					return false;
+				GetErrorsIfNotCheckedBefore();
+				return !HasFatalError;
+			}
 		}
 
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
 		/// </summary>
-		public bool IsEditable { get { return BookInfo.IsEditable; } }
+		public bool IsEditable {
+			get
+			{
+				if (!BookInfo.IsEditable)
+					return false;
+				GetErrorsIfNotCheckedBefore();
+				return !HasFatalError;
+			}
+		}
 
 
 

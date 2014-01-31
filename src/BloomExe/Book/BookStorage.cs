@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -60,8 +62,12 @@ namespace Bloom.Book
 		/// History of this number:
 		///		0.4 had version 0.4
 		///		0.8, 0.9 had version 0.8
-		/// </summary>
-		private const string kBloomFormatVersion = "0.8";
+		///     Bloom 1.0 went out with format version 0.8, but meanwhile compatible books were made (by hand) with "1.1."
+		///     We didn't notice because Bloom didn't actually check this number, it just produced it.
+		///     At that point, books with a newer format version (2.0) started becoming availalbe, so we patched Bloom 1.0
+		///     to reject those. At that point, we also changed Bloom 1.0's kBloomFormatVersion to 1.1 so that it would
+		///     not reject those format version 1.1 books.
+		private const string kBloomFormatVersion = "1.1";
 		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
@@ -183,9 +189,26 @@ namespace Bloom.Book
 			}
 		}
 
+		public static string GetMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom)
+		{
+			//var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
+
+			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
+			if (string.IsNullOrEmpty(versionString))
+				return "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
+
+			float versionFloat = 0;
+			if (!float.TryParse(versionString, out versionFloat))
+				return "This file claims a version number that isn't really a number: " + versionString;
+
+			if (versionFloat > float.Parse(kBloomFormatVersion))
+				return string.Format("This book or template was made with a newer version of Bloom. Download the latest version of Bloom from bloomlibrary.org (format {0} vs. {1})", versionString, kBloomFormatVersion);
+
+			return null;
+		}
+
 		public bool GetLooksOk()
 		{
-
 			return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessages);
 		}
 
@@ -343,6 +366,7 @@ namespace Bloom.Book
 			{
 				return "Could not find an html file to use.";
 			}
+
 
 			return ValidateBook(PathToExistingHtml);
 		}
@@ -502,6 +526,9 @@ namespace Bloom.Book
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
+			var msg= GetMessageIfVersionIsIncompatibleWithThisBloom(dom);
+			if (!string.IsNullOrEmpty(msg))
+				return msg;
 			return dom.ValidateBook(path);
 		}
 
@@ -539,9 +566,18 @@ namespace Bloom.Book
 			}
 			else
 			{
+				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
+				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
+
 				//Validating here was taking a 1/3 of the startup time
 				// eventually, we need to restructure so that this whole Storage isn't created until actually needed, then maybe this can come back
-				//			ErrorMessages = ValidateBook(PathToExistingHtml);
+				//ErrorMessages = ValidateBook(PathToExistingHtml);
+				// REVIEW: we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)...
+				// so maybe it would be ok to reinstate the above?
+
+				//For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
+				//I assume the following will never trigger (I also note that the dom isn't even loaded):
+
 
 				if (!string.IsNullOrEmpty(ErrorMessages))
 				{
@@ -554,12 +590,20 @@ namespace Bloom.Book
 						"{0}: There is a problem with the html structure of this book which will require expert help: {1}",
 						PathToExistingHtml, ErrorMessages);
 				}
+					//The following is a patch pushed out on the 25th build after 1.0 was released in order to give us a bit of backwards version protection (I should have done this originally and in a less kludgy fashion than I'm forced to do now)
 				else
 				{
-					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
-
-					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
-					_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
+					var incompatibleVersionMessage = GetMessageIfVersionIsIncompatibleWithThisBloom(Dom);
+					if (!string.IsNullOrWhiteSpace(incompatibleVersionMessage))
+					{
+						_dom.RawDom.LoadXml(
+							"<html><body style='background-color: white'><p/><p/><p/>" + WebUtility.HtmlEncode(incompatibleVersionMessage) + "</body></html>");
+						Logger.WriteEvent(PathToExistingHtml + " " + incompatibleVersionMessage);
+					}
+					else
+					{
+						Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
+					}
 				}
 
 				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
