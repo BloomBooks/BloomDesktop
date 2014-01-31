@@ -9,8 +9,11 @@
 
 ## 1.1.1 - 1 Nov 2013
 * Fixed problem with picking the wrong version of xmatter stylesheets at runtime
-## 1.0.25 - 18 Jan 2014
-Fix problem of folio books not using the most recent stylesheet.
+## 1.0.28 - 31 Jan 2014
+* Move format version of Bloom 1.0 up to 1.1. and start rejecting books that are greater than that.
+
+## 1.0.25 - 31 Jan 2014
+* Fix problem where unicode characters in project folder would make images not show up in PDF
 
 ## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
@@ -20,6 +23,7 @@ Fix problem of folio books not using the most recent stylesheet.
 * Avoid collecting new strings for localization from non-developer machines.
 * Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
 	this to do different things when editing vs. publishing.
+* Fix problem of folio books not using the most recent stylesheet.
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab
