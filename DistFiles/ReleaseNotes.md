@@ -1,5 +1,5 @@
-## 1.0.25 - 18 Jan 2014
-Fix problem of folio books not using the most recent stylesheet.
+## 1.0.25 - 31 Jan 2014
+* Fix problem where unicode characters in project folder would make images not show up in PDF
 
 ## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
@@ -9,6 +9,7 @@ Fix problem of folio books not using the most recent stylesheet.
 * Avoid collecting new strings for localization from non-developer machines.
 * Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
 	this to do different things when editing vs. publishing.
+* Fix problem of folio books not using the most recent stylesheet.
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab
