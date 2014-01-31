@@ -500,6 +500,20 @@ namespace Bloom.Edit
             if(dataObject==null)
                return null;
 
+            // the ContainsImage() returns false when copying an PNG from MS Word
+            // so here we explicitly ask for a PNG and see if we can convert it.
+            if (dataObject.GetDataPresent("PNG"))
+            {
+                var o = dataObject.GetData("PNG") as System.IO.Stream;
+                try
+                {
+                    return Image.FromStream(o);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
            //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
             if (dataObject.GetDataPresent(DataFormats.FileDrop))
             {
