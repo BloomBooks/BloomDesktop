@@ -70,7 +70,9 @@ namespace Bloom.Book
 		///     At that point, books with a newer format version (2.0) started becoming availalbe, so we patched Bloom 1.0
 		///     to reject those. At that point, we also changed Bloom 1.0's kBloomFormatVersion to 1.1 so that it would
 		///     not reject those format version 1.1 books.
-    	internal const string kBloomFormatVersion = "1.1";
+		///     For the next version of Bloom (expected to be called version 2, but unknown at the moment) we went with
+        ///     (coincidentally) kBloomFormatVersion = "2.0"
+    	internal const string kBloomFormatVersion = "2.0";
 		private  string _folderPath;
         private IChangeableFileLocator _fileLocator;
     	private BookRenamedEvent _bookRenamedEvent;
@@ -81,7 +83,6 @@ namespace Bloom.Book
 	    private BookInfo _metaData;
 	    public event EventHandler FolderPathChanged;
  
-
 		public BookInfo MetaData
 	    {
 		    get
