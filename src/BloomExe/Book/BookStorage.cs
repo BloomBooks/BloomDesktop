@@ -195,7 +195,7 @@ namespace Bloom.Book
 
             var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
             if (string.IsNullOrEmpty(versionString))
-                return "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
+                return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
 
             float versionFloat = 0;
             if (!float.TryParse(versionString, out versionFloat))
