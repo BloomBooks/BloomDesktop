@@ -363,6 +363,28 @@ namespace Bloom.Book
             return data;
         }
 
+		/// <summary>
+		/// Give the string the user expects to see as the name of a specified language.
+		/// This routine uses the user-specified name for the main project language.
+		/// For the other two project languages, it explicitly uses the appropriate collection settings
+		/// name for that language, though currently this gives the same result as the final default.
+		/// This will find a fairly readable name for the languages Palaso knows about
+		/// and fall back to the code itself if it can't find a name.
+		/// Most names are not yet localized.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+	    public string PrettyPrintLanguage(string code)
+		{
+			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1Name))
+				return _collectionSettings.Language1Name;
+			if (code == _collectionSettings.Language2Iso639Code)
+				return _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code);
+			if (code == _collectionSettings.Language3Iso639Code)
+				return _collectionSettings.GetLanguage3Name(_collectionSettings.Language2Iso639Code);
+			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
+		}
+
         /// <summary>
         /// walk throught the sourceDom, collecting up values from elements that have data-book or data-collection attributes.
         /// </summary>

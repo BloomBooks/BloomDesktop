@@ -151,6 +151,11 @@ namespace Bloom.Book
             }
         }
 
+	    public string PrettyPrintLanguage(string code)
+	    {
+		    return _bookData.PrettyPrintLanguage(code);
+	    }
+
 		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			try

@@ -56,7 +56,7 @@ namespace Bloom.Publish
 				_ccDescriptionButton.Visible = false;
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
-			_languagesLabel.Text = string.Join(", ", book.AllLanguages.ToArray());
+			_languagesLabel.Text = string.Join(", ", book.AllLanguages.Select(lang => _book.PrettyPrintLanguage(lang)).ToArray());
 
 			_creditsLabel.Text = book.BookInfo.Credits;
 			_summaryBox.Text = book.BookInfo.Summary;
