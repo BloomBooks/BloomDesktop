@@ -14,6 +14,7 @@
         <seg>Abrir colecciones adicionales</seg>
       </tuv>
     </tu>
+   
     <tu tuid="AboutDialog.AboutDialogWindowTitle">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -572,15 +573,6 @@
         <seg>Borrar</seg>
       </tuv>
     </tu>
-    <tu tuid="Description of desired picture">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Description of desired picture</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Descripción de la ilustración deseada</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
@@ -766,15 +758,6 @@
         <seg>9</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Alphabet</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Alfabeto</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -863,15 +846,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Dibujo &amp; Palabra</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Term Introduction Page">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Term Introduction Page</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Página de la introducción del término</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
@@ -1001,33 +975,7 @@
         <seg>Tres idiomas</seg>
       </tuv>
     </tu>
-    <tu tuid="English translations for illustrator">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>English translations for illustrator</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Traducciones de inglés para ilustrador</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Handwriting Patterns">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Handwriting Patterns</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Patrones de escritura a mano</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Handwriting Practice">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Handwriting Practice</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Práctica de escritura a mano</seg>
-      </tuv>
-    </tu>
+    
     <tu tuid="HelpMenu.Help Menu">
       <tuv xml:lang="en">
         <seg>Help</seg>
@@ -1185,15 +1133,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>B5Vertical</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LayoutChoices.B5Portrait HideProductionNotes">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>B5Portrait HideProductionNotes</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>B5Vertical OcultarNotasDeProducción</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
@@ -1455,15 +1394,6 @@
         <seg>¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utiliceEnviar/Recibir para compartir su trabajo con ellos.</seg>
       </tuv>
     </tu>
-    <tu tuid="Our Alphabet">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Our Alphabet</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Nuestro alfabeto</seg>
-      </tuv>
-    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -1722,15 +1652,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Tradición</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Traditional text">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Traditional text</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Texto tradicional</seg>
       </tuv>
     </tu>
     <tu tuid="WallCalendar.TitleOfSetupDialog">

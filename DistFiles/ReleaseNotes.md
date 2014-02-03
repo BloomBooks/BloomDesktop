@@ -9,6 +9,10 @@
 
 ## 1.1.1 - 1 Nov 2013
 * Fixed problem with picking the wrong version of xmatter stylesheets at runtime
+
+## 1.0.29 - 3 Feb 2014
+* Update French localization
+
 ## 1.0.28 - 31 Jan 2014
 * Move format version of Bloom 1.0 up to 1.1. and start rejecting books that are greater than that.
 
