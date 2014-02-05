@@ -24,6 +24,10 @@ namespace Bloom.WebLibraryIntegration
 	/// </summary>
 	public partial class LoginDialog : Form
 	{
+		private const string _bloomCouldNotSignUp = "Bloom could not connect to the server to complete your signup. Please check your network connection";
+		private const string _loginSignupconnectfailed = "Login.SignupConnectFailed";
+		private const string _signUpFailed = "Sign up failed";
+		private const string _loginSignupfailed = "Login.SignupFailed";
 		private BloomParseClient _client;
 		public LoginDialog(BloomParseClient client)
 		{
@@ -48,7 +52,20 @@ namespace Bloom.WebLibraryIntegration
 				DoSignUp();
 				return;
 			}
-			if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
+			bool logIn;
+			try
+			{
+				logIn = _client.LogIn(_emailBox.Text, _passwordBox.Text);
+			}
+			catch (Exception)
+			{
+				MessageBox.Show(this, LocalizationManager.GetString("Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection"),
+					LocalizationManager.GetString("Login.LoginFailed", "Login failed"),
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+				return;
+			}
+			if (logIn)
 			{
 				DialogResult = DialogResult.OK;
 				Close();
@@ -64,7 +81,20 @@ namespace Bloom.WebLibraryIntegration
 
 		private void DoSignUp()
 		{
-			if (_client.UserExists(_emailBox.Text))
+			bool userExists;
+			try
+			{
+				userExists = _client.UserExists(_emailBox.Text);
+			}
+			catch (Exception)
+			{
+				MessageBox.Show(this, LocalizationManager.GetString(_loginSignupconnectfailed, _bloomCouldNotSignUp),
+					LocalizationManager.GetString(_loginSignupfailed, _signUpFailed),
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+				return;
+			}
+			if (userExists)
 			{
 				if (
 					MessageBox.Show(this,
@@ -77,9 +107,20 @@ namespace Bloom.WebLibraryIntegration
 					return;
 				}
 			}
-			_client.CreateUser(_emailBox.Text, _passwordBox.Text);
-			if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
-				Close();
+			try
+			{
+				_client.CreateUser(_emailBox.Text, _passwordBox.Text);
+				if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
+					Close();
+
+			}
+			catch (Exception)
+			{
+				MessageBox.Show(this, LocalizationManager.GetString(_loginSignupconnectfailed, _bloomCouldNotSignUp),
+					LocalizationManager.GetString(_loginSignupfailed, _signUpFailed),
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+			}
 		}
 
 		private bool _doingSignup;
@@ -152,6 +193,9 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (HaveGoodEmail())
 			{
+				try
+				{
+
 				if (_client.UserExists(_emailBox.Text))
 				{
 					var msg = string.Format(
@@ -170,6 +214,14 @@ namespace Bloom.WebLibraryIntegration
 					{
 						SwitchToSignUp();
 					}
+				}
+				}
+				catch (Exception)
+				{
+					MessageBox.Show(this, LocalizationManager.GetString("Login.ResetConnectFailed", "Bloom could not connect to the server to reset your password. Please check your network connection"),
+						LocalizationManager.GetString("Login.ResetFailed", "Reset Password failed"),
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
 				}
 			}
 			else
