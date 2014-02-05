@@ -4,12 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.Properties;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Network;
+using Palaso.UI.WindowsForms.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -68,6 +70,7 @@ namespace Bloom.WebLibraryIntegration
 				throw new ArgumentException("URL is not within expected bucket");
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
 			var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+			_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; })); // downloading the metadata is considered step 1.
 			return DownloadBook(metadata.DownloadSource, destPath);
 		}
 
@@ -80,19 +83,55 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private ProgressDialog _progressDialog;
+
 		private void HandleBloomBookOrder(string argument)
 		{
-			// If we are passed a bloom book order URL, download the corresponding book and open it.
-			if (argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix))
+			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			if (mainWindow == null)
+				return; // We shouldn't be trying to handle orders while we don't have a main window open.
+			mainWindow.Invoke((Action)(() =>
 			{
-				var link = new BloomLinkArgs(argument);
-				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
-			}
-			// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
+				_progressDialog = new ProgressDialog();
+				_progressDialog.CanCancel = false; // one day we may allow this...
+				_progressDialog.Overview = LocalizationManager.GetString("PublishWeb.Downloading", "Downloading book");
+				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
+				if (IsUrlOrder(argument))
+				{
+					var link = new BloomLinkArgs(argument);
+					var indexOfSlash = link.OrderUrl.LastIndexOf('/');
+					var bookOrder = link.OrderUrl.Substring(indexOfSlash + 1);
+					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(bookOrder);
+				}
+				else
+				{
+					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
+				}
+				_progressDialog.Show(mainWindow);
+			}));
+			try
 			{
-				HandleBookOrder(argument);
+				// If we are passed a bloom book order URL, download the corresponding book and open it.
+				if (IsUrlOrder(argument))
+				{
+					var link = new BloomLinkArgs(argument);
+					DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+				}
+				// If we are passed a bloom book order, download the corresponding book and open it.
+				else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
+				{
+					HandleBookOrder(argument);
+				}
 			}
+			finally
+			{
+				_progressDialog.Invoke((Action) (() => _progressDialog.Dispose()));
+			}
+		}
+
+		private static bool IsUrlOrder(string argument)
+		{
+			return argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
 		}
 
 		private void HandleBookOrder(string bookOrderPath)
@@ -211,7 +250,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns></returns>
 		internal string DownloadBook(string s3BookId, string dest)
 		{
-			var result = _s3Client.DownloadBook(s3BookId, dest);
+			var result = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
 				var bookInfo = new BookInfo(result, false); // A downloaded book is a template, so never editable.
