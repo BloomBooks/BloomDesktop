@@ -61,7 +61,18 @@ namespace Bloom.Publish
 			_creditsLabel.Text = book.BookInfo.Credits;
 			_summaryBox.Text = book.BookInfo.Summary;
 
-			_loginDialog.LogIn(); // See if saved credentials work.
+			try
+			{
+				_loginDialog.LogIn(); // See if saved credentials work.
+			}
+			catch (Exception)
+			{
+				MessageBox.Show(this,
+					LocalizationManager.GetString("PublishWeb.LoginFailure",
+						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection"),
+					LocalizationManager.GetString("PublishWeb.LoginFailed", "Login Failed"),
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 			if (bookTransferrer.LoggedIn)
 				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
@@ -145,6 +156,7 @@ namespace Bloom.Publish
 		{
 			_uploadButton.Enabled = false; // can't start another until done.
 			ScrollControlIntoView(_progressBox);
+			_progressBox.Text = "";
 			var info = _book.BookInfo;
 			if (string.IsNullOrEmpty(info.Id))
 			{
@@ -178,8 +190,13 @@ namespace Bloom.Publish
 							_book.Title);
 					_progressBox.Text += completedEvent.Error;
 				}
-				else
+				else if (string.IsNullOrEmpty((string)completedEvent.Result))
 				{
+					// Something went wrong, typically already reported.
+					string sorryMessage = LocalizationManager.GetString("PublishWeb.Sorry", "Sorry, {0} was not successfully uploaded");
+					_progressBox.Text += string.Format(sorryMessage, _book.Title);
+				}
+				else {
 					string congratsMessage = LocalizationManager.GetString("PublishWeb.Congratulations","Congratulations, {0} is now on bloom library");
 					_progressBox.Text += string.Format(congratsMessage, _book.Title);
 				}
@@ -218,7 +235,7 @@ namespace Bloom.Publish
 					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
-			_bookTransferrer.UploadBook(bookFolder, AddNotification);
+			e.Result = _bookTransferrer.UploadBook(bookFolder, AddNotification);
 		}
 
 		private void AddNotification(string notification)

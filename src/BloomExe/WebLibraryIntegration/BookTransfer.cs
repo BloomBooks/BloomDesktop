@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Amazon.Runtime;
 using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.Properties;
@@ -69,10 +71,55 @@ namespace Bloom.WebLibraryIntegration
 			if (bucketStart == -1)
 				throw new ArgumentException("URL is not within expected bucket");
 		    var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
-			var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
-		    _progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; })); // downloading the metadata is considered step 1.
-		    return DownloadBook(metadata.DownloadSource, destPath);
+		    try
+		    {
+			    var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				if (_progressDialog != null)
+					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
+				    // downloading the metadata is considered step 1.
+			    return DownloadBook(metadata.DownloadSource, destPath);
+
+		    }
+			catch(WebException)
+			{
+				DisplayNetworkDownloadProblem();
+				return "";
+			}
+			catch (AmazonServiceException)
+		    {
+			    DisplayNetworkDownloadProblem();
+			    return "";
+		    }
+		    catch (Exception e)
+		    {
+			    ShellWindow.Invoke((Action) (() => MessageBox.Show(Form.ActiveForm,
+				    string.Format(LocalizationManager.GetString("PublishWeb.DownloadProblem",
+					    "There was a problem downloading your book. You may need to restart Bloom or get technical help. Here is the technical problem description: {0}"),
+					    e.Message),
+				    LocalizationManager.GetString("PublishWeb.DownloadFailed", "Download Failed"),
+				    MessageBoxButtons.OK, MessageBoxIcon.Error)));
+				return "";
+			    
+		    }
 	    }
+
+	    private static void DisplayNetworkDownloadProblem()
+	    {
+		    ShellWindow.Invoke((Action) (() => MessageBox.Show(Form.ActiveForm,
+			    LocalizationManager.GetString("PublishWeb.NotConnected",
+				    "There was a problem downloading your book. Please check your internet connection and try again."),
+			    LocalizationManager.GetString("PublishWeb.DownloadFailed", "Download Failed"),
+			    MessageBoxButtons.OK, MessageBoxIcon.Error)));
+	    }
+
+		private static void DisplayNetworkUploadProblem()
+		{
+			ShellWindow.Invoke((Action)(() => MessageBox.Show(Form.ActiveForm,
+				LocalizationManager.GetString("PublishWeb.NotConnected",
+					"There was a problem uploading your book. Please check your internet connection and try again."),
+				LocalizationManager.GetString("PublishWeb.UploadFailed", "Upload Failed"),
+				MessageBoxButtons.OK, MessageBoxIcon.Error)));
+		}
 
 	    public static string DownloadFolder
 	    {
@@ -87,7 +134,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private void HandleBloomBookOrder(string argument)
 		{
-			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			var mainWindow = ShellWindow;
 			if (mainWindow == null)
 				return; // We shouldn't be trying to handle orders while we don't have a main window open.
 			mainWindow.Invoke((Action)(() =>
@@ -128,6 +175,11 @@ namespace Bloom.WebLibraryIntegration
 				_progressDialog.Invoke((Action) (() => _progressDialog.Dispose()));
 			}
 		}
+
+	    private static Form ShellWindow
+	    {
+		    get { return Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell); }
+	    }
 
 	    private static bool IsUrlOrder(string argument)
 	    {
@@ -213,13 +265,38 @@ namespace Bloom.WebLibraryIntegration
 		    var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 			File.Copy(metadataPath, orderPath, true);
 
-			_s3Client.UploadBook(s3BookId, bookFolder, notifier);
-		    metadata.Thumbnail = _s3Client.ThumbnailUrl;
-		    metadata.BookOrder = _s3Client.BookOrderUrl;
-		    if (notifier != null)
-				notifier(LocalizationManager.GetString("PublishWeb.UploadingBook","Uploading book record"));
-			// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-			_parseClient.SetBookRecord(metadata.Json);
+		    try
+		    {
+				_s3Client.UploadBook(s3BookId, bookFolder, notifier);
+				metadata.Thumbnail = _s3Client.ThumbnailUrl;
+				metadata.BookOrder = _s3Client.BookOrderUrl;
+				if (notifier != null)
+					notifier(LocalizationManager.GetString("PublishWeb.UploadingBook", "Uploading book record"));
+				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
+				_parseClient.SetBookRecord(metadata.Json);
+
+		    }
+			catch (WebException)
+			{
+				DisplayNetworkUploadProblem();
+				return "";
+			}
+			catch (AmazonServiceException)
+			{
+				DisplayNetworkUploadProblem();
+				return "";
+			}
+			catch (Exception e)
+			{
+				ShellWindow.Invoke((Action)(() => MessageBox.Show(Form.ActiveForm,
+					string.Format(LocalizationManager.GetString("PublishWeb.UploadProblem",
+						"There was a problem uploading your book. You may need to restart Bloom or get technical help. Here is the technical problem description: {0}"),
+						e.Message),
+					LocalizationManager.GetString("PublishWeb.UploadFailed", "Upload Failed"),
+					MessageBoxButtons.OK, MessageBoxIcon.Error)));
+				return "";
+
+			}
 			return s3BookId;
 		}
 
