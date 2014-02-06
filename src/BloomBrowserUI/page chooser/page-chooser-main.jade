@@ -1,0 +1,48 @@
+doctype html
+// PageChooserMain - .jade file is the primary source; .html file is generated from .jade file
+
+include mixins/page-chooser-mixins
+
+- var pageTitle = 'Add Page...'
+html
+    head
+        meta(charset='UTF-8')
+        title Bloom Add Page Chooser Dialog
+        +stylesheet('page-chooser.css')
+        +script('../lib/jquery.js')
+        +script('../lib/jquery-ui.js')
+        +script('js/page-chooser.js')
+    body
+        #mainContainer
+            table
+                tr
+                    td#page-title=pageTitle
+                tr
+                    td
+                        table.twoColumnTable
+                            tr
+                                td.templatePageDisplay
+                                    table
+                                        tr
+                                            td
+                                                .templatesCaption Installed Templates
+                                        tr
+                                            td.outerCollectionContainer
+                                                //- This DIV element gets cloned for each collection
+                                                .collection
+                                                    .collectionCaption Default Pages
+                                                    .innerCollectionContainer
+                                                        //- This DIV element gets cloned for each page in the collection
+                                                        .templatePage
+                                                            .invisibleThumbCover
+                                                            iframe(src='').thumbnail
+                                                                p Your browser does not support iframes.
+                                                            .templatePageCaption Page Title
+                                td#singlePagePreview
+                                    #invisiblePreviewCover
+                                    #previewCaption
+                                    iframe(src='blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
+                                        p Your browser does not support iframes
+                                    #previewDescription
+            button#addPageButton Add This Page
+            button#testButton Test

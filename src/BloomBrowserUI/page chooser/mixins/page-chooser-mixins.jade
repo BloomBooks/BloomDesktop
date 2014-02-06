@@ -1,0 +1,14 @@
+//- Mixins for the Bloom Page Chooser dialog
+
+mixin script(javascriptfileName)
+    - requireOneArgument('script', arguments);
+    script(type='text/javascript', src=javascriptfileName)
+
+mixin stylesheet(fullName)
+    - requireOneArgument('stylesheet', arguments);
+    link(rel='stylesheet', href=fullName, type='text/css')
+
+//----- utility functions------------------------------
+- function requireOneArgument(functionName, args) {
+-    if(args.length != 1) throw "Usage Error: "+functionName+" requires 1 parameter.";
+- }
