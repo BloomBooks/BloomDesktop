@@ -65,7 +65,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._uploadButton, "PublishWeb.UploadButton");
-			this._uploadButton.Location = new System.Drawing.Point(46, 631);
+			this._uploadButton.Location = new System.Drawing.Point(46, 449);
 			this._uploadButton.Name = "_uploadButton";
 			this._uploadButton.Size = new System.Drawing.Size(101, 23);
 			this._uploadButton.TabIndex = 17;
@@ -80,7 +80,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "PublishWeb.UploadProgress");
-			this.label1.Location = new System.Drawing.Point(44, 666);
+			this.label1.Location = new System.Drawing.Point(44, 484);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(85, 13);
 			this.label1.TabIndex = 19;
@@ -94,7 +94,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishWeb.BloomLibraryPublishControl._progressBox");
-			this._progressBox.Location = new System.Drawing.Point(47, 682);
+			this._progressBox.Location = new System.Drawing.Point(47, 500);
 			this._progressBox.Multiline = true;
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -114,7 +114,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label2, "PublishWeb.UploadedBy");
-			this.label2.Location = new System.Drawing.Point(43, 568);
+			this.label2.Location = new System.Drawing.Point(43, 386);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(160, 13);
 			this.label2.TabIndex = 14;
@@ -125,7 +125,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadedByTextBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadedByTextBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._uploadedByTextBox, "PublishWeb.textBox1");
-			this._uploadedByTextBox.Location = new System.Drawing.Point(47, 584);
+			this._uploadedByTextBox.Location = new System.Drawing.Point(47, 402);
 			this._uploadedByTextBox.Name = "_uploadedByTextBox";
 			this._uploadedByTextBox.Size = new System.Drawing.Size(219, 20);
 			this._uploadedByTextBox.TabIndex = 15;
@@ -139,7 +139,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label3, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label3, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label3, "PublishWeb.Credits");
-			this.label3.Location = new System.Drawing.Point(43, 489);
+			this.label3.Location = new System.Drawing.Point(43, 307);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(46, 13);
 			this.label3.TabIndex = 12;
@@ -153,7 +153,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label4, "PublishWeb.Copyright");
-			this.label4.Location = new System.Drawing.Point(43, 392);
+			this.label4.Location = new System.Drawing.Point(43, 210);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(60, 13);
 			this.label4.TabIndex = 8;
@@ -167,7 +167,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label5, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label5, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label5, "PublishWeb.License");
-			this.label5.Location = new System.Drawing.Point(44, 312);
+			this.label5.Location = new System.Drawing.Point(44, 130);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(93, 13);
 			this.label5.TabIndex = 5;
@@ -178,7 +178,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._licenseImageBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._licenseImageBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._licenseImageBox, "PublishWeb.pictureBox1");
-			this._licenseImageBox.Location = new System.Drawing.Point(47, 338);
+			this._licenseImageBox.Location = new System.Drawing.Point(47, 156);
 			this._licenseImageBox.Name = "_licenseImageBox";
 			this._licenseImageBox.Size = new System.Drawing.Size(86, 33);
 			this._licenseImageBox.TabIndex = 12;
@@ -193,7 +193,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._licenseNotesLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._licenseNotesLabel, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._licenseNotesLabel, "PublishWeb.LicenseNotes");
-			this._licenseNotesLabel.Location = new System.Drawing.Point(173, 337);
+			this._licenseNotesLabel.Location = new System.Drawing.Point(173, 155);
 			this._licenseNotesLabel.Name = "_licenseNotesLabel";
 			this._licenseNotesLabel.Size = new System.Drawing.Size(438, 51);
 			this._licenseNotesLabel.TabIndex = 7;
@@ -221,7 +221,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label8, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label8, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label8, "PublishWeb.Step2");
-			this.label8.Location = new System.Drawing.Point(13, 615);
+			this.label8.Location = new System.Drawing.Point(13, 433);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(92, 13);
 			this.label8.TabIndex = 16;
@@ -235,7 +235,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._ccDescriptionButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._ccDescriptionButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._ccDescriptionButton, "PublishWeb.button1");
-			this._ccDescriptionButton.Location = new System.Drawing.Point(133, 333);
+			this._ccDescriptionButton.Location = new System.Drawing.Point(133, 151);
 			this._ccDescriptionButton.Name = "_ccDescriptionButton";
 			this._ccDescriptionButton.Size = new System.Drawing.Size(21, 24);
 			this._ccDescriptionButton.TabIndex = 6;
@@ -278,7 +278,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._copyrightLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._copyrightLabel, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._copyrightLabel, "PublishWeb.BloomLibraryPublishControl.label9");
-			this._copyrightLabel.Location = new System.Drawing.Point(44, 405);
+			this._copyrightLabel.Location = new System.Drawing.Point(44, 223);
 			this._copyrightLabel.Name = "_copyrightLabel";
 			this._copyrightLabel.Size = new System.Drawing.Size(51, 13);
 			this._copyrightLabel.TabIndex = 9;
@@ -292,7 +292,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label9, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label9, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label9, "PublishWeb.Languages");
-			this.label9.Location = new System.Drawing.Point(44, 438);
+			this.label9.Location = new System.Drawing.Point(44, 256);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(69, 13);
 			this.label9.TabIndex = 10;
@@ -306,7 +306,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._languagesLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._languagesLabel, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._languagesLabel, "PublishWeb.BloomLibraryPublishControl.label10");
-			this._languagesLabel.Location = new System.Drawing.Point(44, 451);
+			this._languagesLabel.Location = new System.Drawing.Point(44, 269);
 			this._languagesLabel.Name = "_languagesLabel";
 			this._languagesLabel.Size = new System.Drawing.Size(36, 13);
 			this._languagesLabel.TabIndex = 11;
@@ -319,7 +319,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._loginLink, "PublishWeb.loginLink");
-			this._loginLink.Location = new System.Drawing.Point(518, 641);
+			this._loginLink.Location = new System.Drawing.Point(518, 459);
 			this._loginLink.Name = "_loginLink";
 			this._loginLink.Size = new System.Drawing.Size(129, 13);
 			this._loginLink.TabIndex = 18;
@@ -337,7 +337,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._creditsLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._creditsLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._creditsLabel, "PublishWeb.label10");
-			this._creditsLabel.Location = new System.Drawing.Point(43, 502);
+			this._creditsLabel.Location = new System.Drawing.Point(43, 320);
 			this._creditsLabel.Name = "_creditsLabel";
 			this._creditsLabel.Size = new System.Drawing.Size(604, 56);
 			this._creditsLabel.TabIndex = 13;
@@ -365,9 +365,8 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._summaryBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._summaryBox, "PublishWeb.textBox1");
 			this._summaryBox.Location = new System.Drawing.Point(47, 100);
-			this._summaryBox.Multiline = true;
 			this._summaryBox.Name = "_summaryBox";
-			this._summaryBox.Size = new System.Drawing.Size(600, 197);
+			this._summaryBox.Size = new System.Drawing.Size(600, 20);
 			this._summaryBox.TabIndex = 4;
 			this._summaryBox.TextChanged += new System.EventHandler(this._summaryBox_TextChanged);
 			// 
@@ -378,7 +377,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._signUpLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishWeb.signupLink");
-			this._signUpLink.Location = new System.Drawing.Point(508, 615);
+			this._signUpLink.Location = new System.Drawing.Point(508, 433);
 			this._signUpLink.Name = "_signUpLink";
 			this._signUpLink.Size = new System.Drawing.Size(139, 13);
 			this._signUpLink.TabIndex = 21;
@@ -407,7 +406,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._optional2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._optional2, null);
 			this._L10NSharpExtender.SetLocalizingId(this._optional2, "Common.Optional");
-			this._optional2.Location = new System.Drawing.Point(603, 489);
+			this._optional2.Location = new System.Drawing.Point(603, 307);
 			this._optional2.Name = "_optional2";
 			this._optional2.Size = new System.Drawing.Size(44, 13);
 			this._optional2.TabIndex = 23;
@@ -420,7 +419,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._pleaseSetUploadedByLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._pleaseSetUploadedByLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._pleaseSetUploadedByLabel, "PublishWeb.PleaseSet");
-			this._pleaseSetUploadedByLabel.Location = new System.Drawing.Point(282, 587);
+			this._pleaseSetUploadedByLabel.Location = new System.Drawing.Point(282, 405);
 			this._pleaseSetUploadedByLabel.Name = "_pleaseSetUploadedByLabel";
 			this._pleaseSetUploadedByLabel.Size = new System.Drawing.Size(136, 13);
 			this._pleaseSetUploadedByLabel.TabIndex = 24;
@@ -462,7 +461,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "PublishWeb.BloomLibraryPublishControl.BloomLibraryPublishControl");
 			this.Name = "BloomLibraryPublishControl";
-			this.Size = new System.Drawing.Size(694, 879);
+			this.Size = new System.Drawing.Size(694, 693);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this._licenseImageBox)).EndInit();
 			this.ResumeLayout(false);
