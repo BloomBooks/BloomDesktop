@@ -1,0 +1,197 @@
+/*[fmt]1A90-1A0A-1*/
+/*page-chooser.css - rules for the Bloom Page Chooser dialog*/
+* {
+	position: relative;
+	margin: 0;
+	padding: 0;
+}
+BODY {
+	font-size: 100%;
+	font-family: sans-serif;
+	line-height: 1.5;
+}
+TABLE {
+	border: none;
+	margin: 0px;
+	padding: 0px;
+	border-spacing: 0;
+}
+#mainContainer {
+	border: 2px;
+	border-style: solid;
+	margin: 5px;
+	height: 721px;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+}
+#mainContainer > TABLE {
+	width: 100%;
+}
+#page-title {
+	font-size: medium;
+	font-weight: bold;
+	border-bottom: 2px solid;
+	padding-left: 5px;
+	padding-top: 2px;
+}
+.twoColumnTable {
+	width: 100%;
+}
+#singlePagePreview {
+	width: 385px;
+}
+#preview {
+	/*+placement:anchor-top-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	margin-top: 31px;
+	margin-right: -210px;
+	-moz-transform-origin: 0 0;
+	-moz-transform: scale(0.6);
+	-webkit-transform-origin: 0 0;
+	-webkit-transform: scale(0.6);
+	transform-origin: 0 0;
+	transform: scale(0.6);
+	height: 798px;
+	width: 571px;
+	overflow: hidden;
+	border: 2pt solid #008000;
+}
+#invisiblePreviewCover {
+	/*[disabled]border:2px dashed #008000;*/
+	z-index: 5;
+	/*+placement:anchor-top-right 1px 6px;*/
+	position: absolute;
+	right: 1px;
+	top: 6px;
+	height: 677px;
+	width: 374px;
+	background: url(transparent.gif);
+}
+#previewCaption {
+	font-weight: bold;
+	text-align: center;
+	height: 25px;
+	width: 326px;
+	/*+placement:float-left 30px -270px;*/
+	float: left;
+	position: relative;
+	left: 30px;
+	top: -270px;
+}
+#previewDescription {
+	/*+placement:shift 24px 241px;*/
+	position: relative;
+	left: 24px;
+	top: 241px;
+	width: 341px;
+	height: 134px;
+}
+#addPageButton {
+	background: #FFA500;
+	z-index: 10;
+	width: 135px;
+	height: 45px;
+	font-weight: bold;
+	/*+placement:anchor-bottom-right 6px 5px;*/
+	position: absolute;
+	right: 6px;
+	bottom: 5px;
+}
+.templatePageDisplay {
+	overflow-y: auto;
+	display: block;
+	height: 683px;
+}
+.templatePageDisplay TABLE {
+	width: 100%;
+}
+.templatesCaption {
+	overflow: hidden;
+	background: #E0E0E0;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 20px;
+	margin-top: 5px;
+	margin-left: 5px;
+}
+.outerCollectionContainer {
+	display: block;
+	/*[disabled]height:675px;*/
+}
+.collectionCaption {
+	font-weight: bold;
+	padding-left: 4px;
+	margin-left: 20px;
+	margin-top: 12px;
+	display: block;
+}
+.innerCollectionContainer {
+	margin: 5px 0px 0px 20px;
+}
+.templatePage {
+	margin: 5px 10px 5px 11px;
+	width: 104px;
+	height: 162px;
+	display: inline-block;
+	/*[disabled]border: 1px solid #63BC84;*/
+}
+.templatePage:hover {
+	background: #F4EAE3;
+}
+.templatePage.ui-selected {
+	background: #FFDCAC;
+	border:1px solid #000000;
+}
+.thumbnail {
+	overflow: hidden;
+	display: block;
+	margin-left: 10px;
+	margin-top: 4px;
+	margin-bottom: -672px;
+	background: inherit;
+	-moz-transform-origin: 2px 0;
+	-moz-transform: scale(0.14);
+	-webkit-transform-origin: 2px 0;
+	-webkit-transform: scale(0.14);
+	transform-origin: 2px 0;
+	transform: scale(0.14);
+	width: 575px;
+	height: 800px;
+	border: 8px solid #20318A;
+}
+.templatePageCaption {
+	font-weight: bold;
+	text-align: center;
+	height: 43px;
+	/*+placement:shift 0px -28px;*/
+	position: relative;
+	left: 0px;
+	top: -28px;
+	overflow: hidden;
+}
+.invisibleThumbCover {
+	/*[disabled]border:2px dashed #008000;*/
+	z-index: 5;
+	/*+placement:anchor-top-left 0px -3px;*/
+	position: absolute;
+	left: 0px;
+	top: -3px;
+	height: 166px;
+	width: 100px;
+	background: url(transparent.gif);
+}
+#testButton {
+	/*+placement:anchor-top-left 373px 2px;*/
+	position: absolute;
+	left: 373px;
+	top: 2px;
+	top: 1px;
+	background-color: #DA1B1B;
+	height: 24px;
+	width: 79px;
+	/*Re-enable the "display: none;" for production*/
+	/*[disabled]display:none;*/
+}

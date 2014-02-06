@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- PageChooserMain - .jade file is the primary source; .html file is generated from .jade file-->
+<html>
+  <head>
+	<meta charset="UTF-8">
+	<title>Bloom Add Page Chooser Dialog</title>
+	<link rel="stylesheet" href="page-chooser.css" type="text/css">
+	<script type="text/javascript" src="../lib/jquery.js"></script>
+	<script type="text/javascript" src="../lib/jquery-ui.js"></script>
+	<script type="text/javascript" src="js/page-chooser.js"></script>
+  </head>
+  <body>
+	<div id="mainContainer">
+	  <table>
+		<tr>
+		  <td id="page-title">Add Page...</td>
+		</tr>
+		<tr>
+		  <td>
+			<table class="twoColumnTable">
+			  <tr>
+				<td class="templatePageDisplay">
+				  <table>
+					<tr>
+					  <td>
+						<div class="templatesCaption">Installed Templates</div>
+					  </td>
+					</tr>
+					<tr>
+					  <td class="outerCollectionContainer">
+						<div class="collection">
+						  <div class="collectionCaption">Default Pages</div>
+						  <div class="innerCollectionContainer">
+							<div class="templatePage">
+							  <div class="invisibleThumbCover"></div>
+							  <iframe src="" class="thumbnail">
+								<p>Your browser does not support iframes.</p>
+							  </iframe>
+							  <div class="templatePageCaption">Page Title</div>
+							</div>
+						  </div>
+						</div>
+					  </td>
+					</tr>
+				  </table>
+				</td>
+				<td id="singlePagePreview">
+				  <div id="invisiblePreviewCover"></div>
+				  <div id="previewCaption"></div>
+				  <iframe src="blank-preview.htm" width="500" height="700" scrolling="no" frameborder="0" id="preview">
+					<p>Your browser does not support iframes</p>
+				  </iframe>
+				  <div id="previewDescription"></div>
+				</td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+	  </table>
+	  <button id="addPageButton">Add This Page</button>
+	  <button id="testButton">Test</button>
+	</div>
+  </body>
+</html>

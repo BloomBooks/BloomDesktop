@@ -1,0 +1,35 @@
+/*[fmt]1A90-1A0A-1*/
+/*blank-preview.css - rules for the blank preview page for the Bloom Page Chooser dialog*/
+* {
+	position: relative;
+	margin: 0;
+	padding: 0;
+}
+BODY {
+	font-size: 100%;
+	font-family: sans-serif;
+	line-height: 1.5;
+}
+#mainDiv {
+	border: 2px;
+	border-style: solid;
+	margin: 5px;
+	width: 14.8cm;
+	height: 21cm;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+}
+#innerBox {
+	height: 96px;
+	width: 266px;
+	/*+placement:margin-auto 0px 82px;*/
+	margin-left: auto;
+	margin-right: auto;
+	position: relative;
+	left: 0px;
+	top: 82px;
+	border: 2px dashed #808080;
+	text-align: center;
+	font-weight: bold;
+}
