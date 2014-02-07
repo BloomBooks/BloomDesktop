@@ -166,7 +166,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(File.Exists(newBookFolder.CombineForPath("two.css")), Is.True, "We should have added the new file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 			// Verify that metadata was overwritten, new record not created.
-		    var records = _parseClient.GetBookRecords("myId", "me");
+		    var records = _parseClient.GetBookRecords("myId");
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse.com record, not added or deleted");
 			Assert.That(records[0].bookLineage.Value, Is.EqualTo("other"));
 	    }
@@ -185,10 +185,10 @@ namespace BloomTests.WebLibraryIntegration
 			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
-			Assert.That(metadata.UploadedBy, Is.EqualTo("unittest@example.com"), "should have set updatedBy to id of logged-in user");
+			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
 			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
 
-		    var record = _parseClient.GetSingleBookRecord(metadata.Id, _parseClient.Account);
+		    var record = _parseClient.GetSingleBookRecord(metadata.Id);
 		    string thumbnail = record.thumbnail;
 			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
 			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
