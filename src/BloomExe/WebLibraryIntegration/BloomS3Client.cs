@@ -12,6 +12,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
+using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
 using Segmentio;
@@ -143,7 +144,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		/// <param name="pathToBloomBookDirectory"></param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress)
 		{
 			ThumbnailUrl = null;
 			BookOrderUrl = null;
@@ -167,7 +168,7 @@ namespace Bloom.WebLibraryIntegration
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
-			UploadDirectory(prefix, wrapperPath, notifier);
+			UploadDirectory(prefix, wrapperPath, progress);
 
 			Directory.Delete(wrapperPath, true);
 		}
@@ -177,7 +178,7 @@ namespace Bloom.WebLibraryIntegration
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
 		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
 		/// </summary>
-		private void UploadDirectory(string prefix, string directoryPath, Action<string> notifier = null)
+		private void UploadDirectory(string prefix, string directoryPath, IProgress progress)
 		{
 			if (!Directory.Exists(directoryPath))
 			{
@@ -210,11 +211,8 @@ namespace Bloom.WebLibraryIntegration
 					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
-				if (notifier != null)
-				{
-					string uploading = LocalizationManager.GetString("PublishWeb.Uploading","Uploading {0}");
-					notifier(string.Format(uploading, fileName));
-				}
+				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus","Uploading {0}"), fileName);
+
 				try
 				{
 					_transferUtility.Upload(request);
@@ -241,7 +239,7 @@ namespace Bloom.WebLibraryIntegration
 
 			foreach (string subdir in Directory.GetDirectories(directoryPath))
 			{
-				UploadDirectory(prefix, subdir, notifier);
+				UploadDirectory(prefix, subdir, progress);
 			}
 		}
 

@@ -287,14 +287,13 @@
 			// 
 			this._cloudRadio.Image = global::Bloom.Properties.Resources.cloud;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._cloudRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._cloudRadio, "Instead of making a booklet, just make normal pages");
-			this._L10NSharpExtender.SetLocalizingId(this._cloudRadio, "PublishTab.OnePagePerPaperRadio");
+			this._L10NSharpExtender.SetLocalizingId(this._cloudRadio, "PublishTab.ButtonThatShowsUploadForm");
 			this._cloudRadio.Location = new System.Drawing.Point(3, 326);
 			this._cloudRadio.Name = "_cloudRadio";
 			this._cloudRadio.Size = new System.Drawing.Size(105, 65);
 			this._cloudRadio.TabIndex = 16;
 			this._cloudRadio.TabStop = true;
-			this._cloudRadio.Text = "Upload to Bloom Library.org";
+			this._cloudRadio.Text = "Upload to BloomLibrary.org";
 			this._cloudRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._cloudRadio.UseVisualStyleBackColor = true;
 			this._cloudRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
