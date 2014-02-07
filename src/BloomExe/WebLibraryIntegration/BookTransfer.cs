@@ -9,10 +9,12 @@ using System.Windows.Forms;
 using Amazon.Runtime;
 using Autofac.Features.Metadata;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Network;
+using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 
 namespace Bloom.WebLibraryIntegration
@@ -80,45 +82,41 @@ namespace Bloom.WebLibraryIntegration
 			    return DownloadBook(metadata.DownloadSource, destPath);
 
 		    }
-			catch(WebException)
+			catch(WebException e)
 			{
-				DisplayNetworkDownloadProblem();
+				DisplayNetworkDownloadProblem(e);
 				return "";
 			}
-			catch (AmazonServiceException)
+			catch (AmazonServiceException e)
 		    {
-			    DisplayNetworkDownloadProblem();
+			    DisplayNetworkDownloadProblem(e);
 			    return "";
 		    }
 		    catch (Exception e)
 		    {
-			    ShellWindow.Invoke((Action) (() => MessageBox.Show(Form.ActiveForm,
-				    string.Format(LocalizationManager.GetString("PublishWeb.DownloadProblem",
-					    "There was a problem downloading your book. You may need to restart Bloom or get technical help. Here is the technical problem description: {0}"),
-					    e.Message),
-				    LocalizationManager.GetString("PublishWeb.DownloadFailed", "Download Failed"),
-				    MessageBoxButtons.OK, MessageBoxIcon.Error)));
-				return "";
-			    
+	        ShellWindow.Invoke((Action) (() => 
+	            Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+                LocalizationManager.GetString("Publish.Upload.DownloadProblem",
+		                "There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+		        return "";
 		    }
 	    }
 
-	    private static void DisplayNetworkDownloadProblem()
+	    private static void DisplayNetworkDownloadProblem(Exception e)
 	    {
-		    ShellWindow.Invoke((Action) (() => MessageBox.Show(Form.ActiveForm,
-			    LocalizationManager.GetString("PublishWeb.NotConnected",
-				    "There was a problem downloading your book. Please check your internet connection and try again."),
-			    LocalizationManager.GetString("PublishWeb.DownloadFailed", "Download Failed"),
-			    MessageBoxButtons.OK, MessageBoxIcon.Error)));
+	        ShellWindow.Invoke((Action) (() => 
+	            Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+                    LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
+	                    "There was a problem downloading your book."))));
+
 	    }
 
-		private static void DisplayNetworkUploadProblem()
+		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
 		{
-			ShellWindow.Invoke((Action)(() => MessageBox.Show(Form.ActiveForm,
-				LocalizationManager.GetString("PublishWeb.NotConnected",
-					"There was a problem uploading your book. Please check your internet connection and try again."),
-				LocalizationManager.GetString("PublishWeb.UploadFailed", "Upload Failed"),
-				MessageBoxButtons.OK, MessageBoxIcon.Error)));
+            progress.WriteError(LocalizationManager.GetString("Publish.Upload.GenericUploadProblemNotice",
+	            "There was a problem uploading your book."));
+            progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}")); 
+            progress.WriteVerbose(e.StackTrace);
 		}
 
 	    public static string DownloadFolder
@@ -141,7 +139,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				_progressDialog = new ProgressDialog();
 				_progressDialog.CanCancel = false; // one day we may allow this...
-				_progressDialog.Overview = LocalizationManager.GetString("PublishWeb.Downloading", "Downloading book");
+                _progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
 				if (IsUrlOrder(argument))
 				{
@@ -239,7 +237,7 @@ namespace Bloom.WebLibraryIntegration
 		    get { return _parseClient.UserId; }
 	    }
 
-	    public string UploadBook(string bookFolder, Action<String> notifier = null)
+	    public string UploadBook(string bookFolder, IProgress progress)
 		{
 			var metaDataText = MetaDataText(bookFolder);
 			var metadata = BookMetaData.FromString(metaDataText);
@@ -272,35 +270,31 @@ namespace Bloom.WebLibraryIntegration
 
 		    try
 		    {
-				_s3Client.UploadBook(s3BookId, bookFolder, notifier);
+				_s3Client.UploadBook(s3BookId, bookFolder, progress);
 				metadata.Thumbnail = _s3Client.ThumbnailUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
-				if (notifier != null)
-					notifier(LocalizationManager.GetString("PublishWeb.UploadingBook", "Uploading book record"));
+				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 				_parseClient.SetBookRecord(metadata.Json);
 
 		    }
-			catch (WebException)
+			catch (WebException e)
 			{
-				DisplayNetworkUploadProblem();
+                DisplayNetworkUploadProblem(e, progress);
 				return "";
 			}
-			catch (AmazonServiceException)
+			catch (AmazonServiceException e)
 			{
-				DisplayNetworkUploadProblem();
+                DisplayNetworkUploadProblem(e, progress);
 				return "";
 			}
 			catch (Exception e)
-			{
-				ShellWindow.Invoke((Action)(() => MessageBox.Show(Form.ActiveForm,
-					string.Format(LocalizationManager.GetString("PublishWeb.UploadProblem",
-						"There was a problem uploading your book. You may need to restart Bloom or get technical help. Here is the technical problem description: {0}"),
-						e.Message),
-					LocalizationManager.GetString("PublishWeb.UploadFailed", "Upload Failed"),
-					MessageBoxButtons.OK, MessageBoxIcon.Error)));
-				return "";
-
+			{			    
+			    progress.WriteError(LocalizationManager.GetString("Publish.Upload.UploadProblemNotice",
+                                "There was a problem uploading your book. You may need to restart Bloom or get technical help."));
+                progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}")); 
+                progress.WriteVerbose(e.StackTrace);
+			    return "";
 			}
 			return s3BookId;
 		}
