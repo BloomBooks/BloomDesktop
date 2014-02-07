@@ -126,7 +126,7 @@ namespace Bloom.WebLibraryIntegration
 			get
 			{
 				return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-					.CombineForPath("SIL", "Bloom", "Collections", "DownloadedBooks");
+					.CombineForPath(ProjectContext.GetInstalledCollectionsDirectory(), BookCollection.DownloadedBooksCollectionNameInEnglish);
 			}
 		}
 
