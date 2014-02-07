@@ -14,6 +14,8 @@ using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ImageToolbox;
+using Palaso.UI.WindowsForms.Widgets;
 
 namespace Bloom.CollectionTab
 {
@@ -259,7 +261,7 @@ namespace Bloom.CollectionTab
 				    var collectionHeader = new Label()
 					    {
 						    Text = collection.Name,
-						    Size = new Size(_sourceBooksFlow.Width - 20, 15),
+						    Size = new Size(_sourceBooksFlow.Width - 20, 20),
 						    ForeColor = Palette.TextAgainstDarkBackground,
 						    Padding = new Padding(10, 0, 0, 0)
 					    };
@@ -271,13 +273,13 @@ namespace Bloom.CollectionTab
 			    }
 		    }
 
-		    AddWhereIsTheRestLink();
+		    AddFinalLinks();
 		    _sourceBooksFlow.ResumeLayout();
 	    }
 
-	    private void AddWhereIsTheRestLink()
+	    private void AddFinalLinks()
 	    {
-		    if (_model.IsShellProject)
+	        if (_model.IsShellProject)
 		    {
 			    _missingBooksLink = new LinkLabel()
 				    {
@@ -333,7 +335,10 @@ namespace Bloom.CollectionTab
 		    }
 	    }
 
-		
+        void OnBloomLibrary_Click(object sender, EventArgs e)
+        {
+            Process.Start("http://dev.bloomlibrary.org");
+        }
 	    void OnMissingBooksLink_Click(object sender, EventArgs e)
         {
             if (_model.IsShellProject)
@@ -346,6 +351,10 @@ namespace Bloom.CollectionTab
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>True if the collection should be shown</returns>
         private bool LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
     	{
 			collection.CollectionChanged += OnCollectionChanged;
@@ -371,7 +380,33 @@ namespace Bloom.CollectionTab
     		        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+bookInfo.FolderPath);
     		    }
     		}
-    		return loadedAtLeastOneBook;
+            if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
+            {
+                if (!_model.IsShellProject) // eventually it might make sense from there too, but maybe we should then lead with a query that just gets templates? or
+                                            // maybe before we get to that, we'll be getting template pages from the "new page" dialog instead.
+                {
+                    var bloomLibrayLink = new LinkLabel()
+                    {
+                        Text =
+                            L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
+                                                                    "Get more source books at BloomLibrary.org",
+                                                                    "Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
+                        Width = 400,
+                        Margin = new Padding(17, 0, 0, 0),
+                        //TextAlign = ContentAlignment.TopCenter,
+                        LinkColor = Palette.TextAgainstDarkBackground
+                    };
+
+                    bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
+                    
+                    //flowLayoutPanel.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
+                    flowLayoutPanel.Controls.Add(bloomLibrayLink);
+                    //flowLayoutPanel.SetFlowBreak(bloomLibrayLink, true);
+
+                }
+                return true;
+            }
+            return loadedAtLeastOneBook;
     	}
 
     	private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
@@ -689,7 +724,7 @@ namespace Bloom.CollectionTab
 
 		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
 		{
-			Process.Start(ProjectContext.InstalledCollectionsDirectory);
+			Process.Start(ProjectContext.GetInstalledCollectionsDirectory());
 		}
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)

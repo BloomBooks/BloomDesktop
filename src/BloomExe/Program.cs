@@ -184,7 +184,7 @@ namespace Bloom
 
 			        try
 			        {
-				        Application.Run();
+				      Application.Run();
 				        StopReceivingArgsFromOtherBloom();
 			        }
 			        catch (System.AccessViolationException nasty)
@@ -248,12 +248,11 @@ namespace Bloom
 		/// The function executed by the server thread which listens for messages from other bloom instances.
 		/// Review: do we need to be able to handle many at once? What will happen if the user opens one order while we are handling another?
 		/// </summary>
-		/// <param name="data"></param>
-		private static void ServerThreadAction(object data)
+		private static void ServerThreadAction(object unused)
 		{
-			for (;!_shuttingDown;)
+			while(!_shuttingDown)
 			{
-				NamedPipeServerStream pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
+				var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
 				pipeServer.WaitForConnection();
 				if (_shuttingDown)
 					return; // We got the spurious message that allows us to unblock and exit
@@ -262,7 +261,7 @@ namespace Bloom
 				{
 					int len = pipeServer.ReadByte()*256;
 					len += pipeServer.ReadByte();
-					byte[] inBuffer = new byte[len];
+					var inBuffer = new byte[len];
 					pipeServer.Read(inBuffer, 0, len);
 					argument = Encoding.UTF8.GetString(inBuffer);
 				}

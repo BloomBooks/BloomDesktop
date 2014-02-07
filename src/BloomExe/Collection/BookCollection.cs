@@ -185,6 +185,8 @@ namespace Bloom.Collection
 	    {
 		    get { throw new NotImplementedException(); }
 		    set { throw new NotImplementedException(); }
-	    }	    
+	    }
+
+        public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
     }
 }
