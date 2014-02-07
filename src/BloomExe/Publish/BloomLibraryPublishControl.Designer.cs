@@ -33,8 +33,6 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this._progressBox = new System.Windows.Forms.TextBox();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.label2 = new System.Windows.Forms.Label();
-			this._uploadedByTextBox = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
@@ -55,7 +53,6 @@
 			this._signUpLink = new System.Windows.Forms.LinkLabel();
 			this._optional1 = new System.Windows.Forms.Label();
 			this._optional2 = new System.Windows.Forms.Label();
-			this._pleaseSetUploadedByLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._licenseImageBox)).BeginInit();
 			this.SuspendLayout();
@@ -65,7 +62,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._uploadButton, "PublishWeb.UploadButton");
-			this._uploadButton.Location = new System.Drawing.Point(46, 449);
+			this._uploadButton.Location = new System.Drawing.Point(46, 396);
 			this._uploadButton.Name = "_uploadButton";
 			this._uploadButton.Size = new System.Drawing.Size(101, 23);
 			this._uploadButton.TabIndex = 17;
@@ -80,7 +77,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "PublishWeb.UploadProgress");
-			this.label1.Location = new System.Drawing.Point(44, 484);
+			this.label1.Location = new System.Drawing.Point(44, 431);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(85, 13);
 			this.label1.TabIndex = 19;
@@ -94,7 +91,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishWeb.BloomLibraryPublishControl._progressBox");
-			this._progressBox.Location = new System.Drawing.Point(47, 500);
+			this._progressBox.Location = new System.Drawing.Point(47, 447);
 			this._progressBox.Multiline = true;
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -105,31 +102,6 @@
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "PublishWeb";
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label2.ForeColor = System.Drawing.SystemColors.ControlText;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "PublishWeb.UploadedBy");
-			this.label2.Location = new System.Drawing.Point(43, 386);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(160, 13);
-			this.label2.TabIndex = 14;
-			this.label2.Text = "Show book as uploaded by";
-			// 
-			// _uploadedByTextBox
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadedByTextBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._uploadedByTextBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._uploadedByTextBox, "PublishWeb.textBox1");
-			this._uploadedByTextBox.Location = new System.Drawing.Point(47, 402);
-			this._uploadedByTextBox.Name = "_uploadedByTextBox";
-			this._uploadedByTextBox.Size = new System.Drawing.Size(219, 20);
-			this._uploadedByTextBox.TabIndex = 15;
-			this._uploadedByTextBox.TextChanged += new System.EventHandler(this._uploadedByTextBox_TextChanged);
 			// 
 			// label3
 			// 
@@ -221,7 +193,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label8, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label8, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label8, "PublishWeb.Step2");
-			this.label8.Location = new System.Drawing.Point(13, 433);
+			this.label8.Location = new System.Drawing.Point(13, 380);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(92, 13);
 			this.label8.TabIndex = 16;
@@ -319,7 +291,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._loginLink, "PublishWeb.loginLink");
-			this._loginLink.Location = new System.Drawing.Point(518, 459);
+			this._loginLink.Location = new System.Drawing.Point(518, 406);
 			this._loginLink.Name = "_loginLink";
 			this._loginLink.Size = new System.Drawing.Size(129, 13);
 			this._loginLink.TabIndex = 18;
@@ -377,7 +349,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._signUpLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishWeb.signupLink");
-			this._signUpLink.Location = new System.Drawing.Point(508, 433);
+			this._signUpLink.Location = new System.Drawing.Point(508, 380);
 			this._signUpLink.Name = "_signUpLink";
 			this._signUpLink.Size = new System.Drawing.Size(139, 13);
 			this._signUpLink.TabIndex = 21;
@@ -412,25 +384,11 @@
 			this._optional2.TabIndex = 23;
 			this._optional2.Text = "optional";
 			// 
-			// _pleaseSetUploadedByLabel
-			// 
-			this._pleaseSetUploadedByLabel.AutoSize = true;
-			this._pleaseSetUploadedByLabel.ForeColor = System.Drawing.Color.Red;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._pleaseSetUploadedByLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._pleaseSetUploadedByLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._pleaseSetUploadedByLabel, "PublishWeb.PleaseSet");
-			this._pleaseSetUploadedByLabel.Location = new System.Drawing.Point(282, 405);
-			this._pleaseSetUploadedByLabel.Name = "_pleaseSetUploadedByLabel";
-			this._pleaseSetUploadedByLabel.Size = new System.Drawing.Size(136, 13);
-			this._pleaseSetUploadedByLabel.TabIndex = 24;
-			this._pleaseSetUploadedByLabel.Text = "Please provide an uploader";
-			// 
 			// BloomLibraryPublishControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoScroll = true;
-			this.Controls.Add(this._pleaseSetUploadedByLabel);
 			this.Controls.Add(this._optional2);
 			this.Controls.Add(this._optional1);
 			this.Controls.Add(this._signUpLink);
@@ -451,8 +409,6 @@
 			this.Controls.Add(this._licenseImageBox);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
-			this.Controls.Add(this._uploadedByTextBox);
-			this.Controls.Add(this.label2);
 			this.Controls.Add(this._progressBox);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this._uploadButton);
@@ -461,7 +417,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "PublishWeb.BloomLibraryPublishControl.BloomLibraryPublishControl");
 			this.Name = "BloomLibraryPublishControl";
-			this.Size = new System.Drawing.Size(694, 693);
+			this.Size = new System.Drawing.Size(694, 648);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this._licenseImageBox)).EndInit();
 			this.ResumeLayout(false);
@@ -475,8 +431,6 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox _progressBox;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.TextBox _uploadedByTextBox;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label label5;
@@ -497,6 +451,5 @@
 		private System.Windows.Forms.LinkLabel _signUpLink;
 		private System.Windows.Forms.Label _optional1;
 		private System.Windows.Forms.Label _optional2;
-		private System.Windows.Forms.Label _pleaseSetUploadedByLabel;
 	}
 }

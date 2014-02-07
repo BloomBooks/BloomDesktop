@@ -234,6 +234,11 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		public string UserId
+		{
+			get { return _parseClient.UserId; }
+		}
+
 		public string UploadBook(string bookFolder, Action<String> notifier = null)
 		{
 			var metaDataText = MetaDataText(bookFolder);
@@ -248,7 +253,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 			}
-			metadata.UploadedBy = UploadedBy;
+			metadata.SetUploader(UserId);
 			var s3BookId = S3BookId(metadata);
 			metadata.DownloadSource = s3BookId;
 			// Any updated ID at least needs to become a permanent part of the book.
@@ -347,7 +352,7 @@ namespace Bloom.WebLibraryIntegration
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
-			return _parseClient.GetSingleBookRecord(metadata.Id, metadata.UploadedBy) != null;
+			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
 		// Wait (up to three seconds) for data uploaded to become available.

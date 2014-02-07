@@ -73,8 +73,6 @@ namespace Bloom.Publish
 					LocalizationManager.GetString("PublishWeb.LoginFailed", "Login Failed"),
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
-			if (bookTransferrer.LoggedIn)
-				_uploadedByTextBox.Text = bookTransferrer.UploadedBy;
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			_optional2.Left = _summaryBox.Right - _optional2.Width;
 			RequireValue(_copyrightLabel);
@@ -99,8 +97,6 @@ namespace Bloom.Publish
 		private void UpdateDisplay()
 		{
 			bool okToUpload = _okToUpload;
-			_pleaseSetUploadedByLabel.Visible = string.IsNullOrWhiteSpace(_uploadedByTextBox.Text);
-			okToUpload &= !_pleaseSetUploadedByLabel.Visible;
 			_uploadButton.Enabled = _bookTransferrer.LoggedIn && okToUpload;
 			if (_uploadButton.Enabled)
 			{
@@ -141,7 +137,6 @@ namespace Bloom.Publish
 				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
 				// which it will update with all the relevant information if login is successful.
 				_loginDialog.ShowDialog(this);
-				_uploadedByTextBox.Text = _bookTransferrer.UploadedBy;
 			}
 			UpdateDisplay();
 		}
@@ -162,7 +157,7 @@ namespace Bloom.Publish
 			{
 				info.Id = Guid.NewGuid().ToString();
 			}
-			info.UploadedBy = Settings.Default.WebUserId;
+			info.Uploader = _bookTransferrer.UserId;
 			// Todo: try to make sure it has a thumbnail.
 			if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
 			{
@@ -254,12 +249,6 @@ namespace Bloom.Publish
 		{
 			_progressBox.SelectionStart = _progressBox.Text.Length;
 			_progressBox.ScrollToCaret();
-		}
-
-		private void _uploadedByTextBox_TextChanged(object sender, EventArgs e)
-		{
-			_bookTransferrer.UploadedBy = _uploadedByTextBox.Text;
-			UpdateDisplay(); // depends in part on whether this box is empty.
 		}
 
 		private void _ccDescriptionButton_Click(object sender, EventArgs e)
