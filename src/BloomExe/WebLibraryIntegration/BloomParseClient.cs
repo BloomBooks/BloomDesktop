@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using Bloom.Book;
 using Bloom.Properties;
 using Newtonsoft.Json;
@@ -156,8 +157,17 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakePostRequest("classes/books");
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = _client.Execute(request);
-			if(response.StatusCode!=HttpStatusCode.Created)
-				throw new ApplicationException(response.StatusDescription+" "+response.Content);
+			if (response.StatusCode != HttpStatusCode.Created)
+			{
+				var message = new StringBuilder();
+
+				message.AppendLine("Request.Json: " + metadataJson);
+				message.AppendLine("Response.Code: " + response.StatusCode);
+				message.AppendLine("Response.Uri: " + response.ResponseUri);
+				message.AppendLine("Response.Description: " + response.StatusDescription);
+				message.AppendLine("Response.Content: " + response.Content);
+				throw new ApplicationException(message.ToString());
+			}
 			return response;
 		}
 
