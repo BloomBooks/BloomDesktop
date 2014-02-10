@@ -98,7 +98,7 @@ namespace Bloom.Publish
 
 			//then we don't know if the pdf is out of date, so we assume it is, and don't show the prior pdf
 			_model.BookletPortion = PublishModel.BookletPortions.None;
-			_coverRadio.Checked = _bodyRadio.Checked = _noBookletRadio.Checked = false;
+			_coverRadio.Checked = _bodyRadio.Checked = _simplePDFRadio.Checked = false;
 
 			if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 			{
@@ -174,7 +174,7 @@ namespace Bloom.Publish
 
 			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
-			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_simplePDFRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
