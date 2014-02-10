@@ -8,6 +8,8 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
 using Palaso.Extensions;
+using Palaso.Progress;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -80,13 +82,16 @@ namespace BloomTests.WebLibraryIntegration
 			int fileCount = Directory.GetFiles(originalBookFolder).Length;
 
 			Login();
-			HashSet<string> notifications = new HashSet<string>();
+			//HashSet<string> notifications = new HashSet<string>();
 
-		    var s3Id = _transfer.UploadBook(originalBookFolder, notification =>notifications.Add(notification));
+		    var progress = new Palaso.Progress.StringBuilderProgress();
+		    var s3Id = _transfer.UploadBook(originalBookFolder,progress);
 
-			Assert.That(notifications.Count, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
-			Assert.That(notifications.Contains("Uploading book record"));
-			Assert.That(notifications.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
+		    var uploadMessages = progress.Text.Split(new string[] {"Uploading"}, StringSplitOptions.RemoveEmptyEntries);
+
+            Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
+			Assert.That(progress.Text.Contains("Uploading book record"));
+            Assert.That(progress.Text.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
@@ -107,7 +112,7 @@ namespace BloomTests.WebLibraryIntegration
 	    {
 			var someBookPath = MakeBook("local", Guid.NewGuid().ToString(), "someone", "test");
 			Login();
-			_transfer.UploadBook(someBookPath);
+            _transfer.UploadBook(someBookPath, new NullProgress());
 			Assert.That(_transfer.IsBookOnServer(someBookPath), Is.True);
 	    }
 
@@ -147,7 +152,7 @@ namespace BloomTests.WebLibraryIntegration
 			var newJson = jsonStart + ",\"bookLineage\":\"original\"}";
 			File.WriteAllText(jsonPath, newJson);
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+            string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			File.Delete(bookFolder.CombineForPath("one.css"));
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
 			File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
@@ -155,7 +160,7 @@ namespace BloomTests.WebLibraryIntegration
 			newJson = jsonStart + ",\"bookLineage\":\"other\"}";
 			File.WriteAllText(jsonPath, newJson);
 
-			_transfer.UploadBook(bookFolder);
+            _transfer.UploadBook(bookFolder, new NullProgress());
 
 		    var dest = _workFolderPath.CombineForPath("output");
 		    Directory.CreateDirectory(dest);
@@ -178,7 +183,7 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
 
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+            string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
@@ -207,7 +212,7 @@ namespace BloomTests.WebLibraryIntegration
 		    var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
 			int fileCount = Directory.GetFiles(bookFolder).Length;
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+            string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
