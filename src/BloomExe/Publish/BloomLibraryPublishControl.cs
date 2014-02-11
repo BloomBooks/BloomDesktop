@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Data;
 using System.IO;
@@ -27,6 +28,9 @@ namespace Bloom.Publish
 		private Book.Book _book;
 		private string _originalLoginText;
 		private bool _okToUpload = true;
+		private bool _usingNotesLabel = true;
+		private bool _usingNotesSuggestion = true;
+		private bool _usingCcControls = true;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("Publish.Upload.PleaseSetThis",
 			"Please set this from the edit tab");
@@ -47,16 +51,47 @@ namespace Bloom.Publish
 			// This is usually redundant, but might not be on old books where the license was set before the new
 			// editing code was written.
 			book.UpdateLicenseMetdata(metadata);
-			if (string.IsNullOrEmpty(metadata.License.RightsStatement) && metadata.License is CreativeCommonsLicense)
+			var license = metadata.License;
+			if (license == null || (license is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice)))
 			{
-				// Don't do this for non-CC licences, since for them, if Rights is empty we want to display the "please fill this in" message.
-				_licenseNotesLabel.Text = metadata.License.GetDescription("en");
+				// A null license and no copyright indicates they never even opened the ClearShare dialog to choose a license.
+				_usingCcControls = false;
+				_usingNotesLabel = false;
+				_licenseSuggestion.Text = _pleaseSetThis;
+				_okToUpload = false;
+			}
+			else if (license is CreativeCommonsLicense)
+			{
+				_creativeCommonsLink.Text = license.Token.ToUpperInvariant();
+				_usingNotesSuggestion = false;
+				if (string.IsNullOrWhiteSpace(license.RightsStatement))
+				{
+					_licenseNotesLabel.Hide();
+				}
+				else
+				{
+					_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
+				}
+			}
+			else if (license is NullLicense)
+			{
+				_usingCcControls = false;
+				_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions");
+				if (!string.IsNullOrWhiteSpace(license.RightsStatement))
+				{
+					_licenseNotesLabel.Text += Environment.NewLine + license.RightsStatement;
+				}
+				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
+
 			}
 			else
-				_licenseNotesLabel.Text = metadata.License.RightsStatement;
-			_licenseImageBox.Image = metadata.License.GetImage();
-			if (string.IsNullOrEmpty(metadata.License.GetDescription("en")))
-				_ccDescriptionButton.Visible = false;
+			{
+				// So far, this means it must be custom license (with non-blank rights...actually, currently, the palaso dialog will not allow a custom license with no rights statement).
+				_usingCcControls = false;
+				_licenseNotesLabel.Text = license.RightsStatement;
+				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
+			}
+
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
 			_languagesLabel.Text = string.Join(", ", book.AllLanguages.Select(lang => _book.PrettyPrintLanguage(lang)).ToArray());
@@ -78,9 +113,44 @@ namespace Bloom.Publish
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 			RequireValue(_languagesLabel);
-			RequireValue(_licenseNotesLabel); // optional for CC license, but if so we display the description
-			// UploadedBy is also required, but this is handled in UpdateDisplay because it can change.
-			UpdateDisplay();
+		}
+
+		protected override void OnSizeChanged(EventArgs e)
+		{
+			base.OnSizeChanged(e);
+			AdjustControlPlacement();
+		}
+
+		/// <summary>
+		/// Adjust things to look neat for the selected set of license controls and their content
+		/// </summary>
+		private void AdjustControlPlacement()
+		{
+			if (!_usingCcControls)
+				_ccPanel.Hide();
+			if (_usingNotesLabel)
+				AdjustLabelSize(_licenseNotesLabel);
+			else
+				_licenseNotesLabel.Hide();
+			if (_usingNotesSuggestion)
+				AdjustLabelSize(_licenseSuggestion);
+			else
+				_licenseSuggestion.Hide();
+			AdjustLabelSize(_creditsLabel);
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			UpdateDisplay(); // can't do in constructor, ProgressBox won't take messages until handle created.
+		}
+
+		// Make the label's size appropriate for showing its full contents (in the width currently assigned to the progress box).
+		void AdjustLabelSize(Label label)
+		{
+			label.Size = TextRenderer.MeasureText(label.Text, label.Font,
+				new Size(_progressBox.Width, int.MaxValue), TextFormatFlags.WordBreak);
+			label.Height += 2; // Just a slight gap between paragraphs.
 		}
 
 		void RequireValue(Label item)
@@ -98,25 +168,18 @@ namespace Bloom.Publish
 		{
 			bool okToUpload = _okToUpload;
 			_uploadButton.Enabled = _bookTransferrer.LoggedIn && okToUpload;
-			if (_uploadButton.Enabled)
+			_progressBox.Clear();
+			if (!_uploadButton.Enabled)
 			{
-				_progressBox.Text = "";
-				_progressBox.ForeColor = Color.FromKnownColor(KnownColor.WindowText);
-			}
-			else
-			{
-				_progressBox.ForeColor = Color.Red;
 				if (!okToUpload)
 				{
-					_progressBox.Text = LocalizationManager.GetString("Publish.Upload.FieldsNeedAttention",
-						"One or more fields above need your attention before uploading");
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.FieldsNeedAttention",
+						"One or more fields above need your attention before uploading"));
 				}
 				if (!_bookTransferrer.LoggedIn)
 				{
-					if (_progressBox.Text != "")
-						_progressBox.Text += Environment.NewLine;
-					_progressBox.Text += LocalizationManager.GetString("Publish.Upload.PleaseLogIn",
-						"Please log in to BloomLibrary.org (or sign up) before uploading");
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.PleaseLogIn",
+						"Please log in to BloomLibrary.org (or sign up) before uploading"));
 				}
 			}
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("Publish.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
@@ -226,21 +289,24 @@ namespace Bloom.Publish
 			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox);
 		}
 
-		private void _ccDescriptionButton_Click(object sender, EventArgs e)
-		{
-			var licenseInfo = _book.GetLicenseMetadata().License;
-			string description = licenseInfo.GetDescription("en");
-			if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(licenseInfo.RightsStatement))
-				description += Environment.NewLine + Environment.NewLine;
-			description += licenseInfo.RightsStatement;
-			MessageBox.Show(this, description, LocalizationManager.GetString("Publish.Upload.LicenseDetails", "License Details"));
-		}
-
 		private void _summaryBox_TextChanged(object sender, EventArgs e)
 		{
 			_book.BookInfo.Summary = _summaryBox.Text;
 			_book.BookInfo.Save(); // Review: is this too often?
 
+		}
+
+		private void _creativeCommonsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			var url = ((CreativeCommonsLicense) _book.GetLicenseMetadata().License).Url;
+			try
+			{
+				Process.Start(new ProcessStartInfo(url));
+			}
+			catch (Exception)
+			{
+				// Report a problem or just ignore it?
+			}
 		}
 	}
 }

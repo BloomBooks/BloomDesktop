@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using Bloom.Collection;
 using Palaso.Code;
@@ -686,11 +687,10 @@ namespace Bloom.Book
                 licenseUrl = d.TextAlternatives.GetFirstAlternative();
             }
 
-            //Enhance: have a place for notes (amendments to license). It's already in the frontmatter, under "licenseNotes"
             if (licenseUrl == null || licenseUrl.Trim() == "")
             {
                 //NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-                //custom licenses live in this field
+                //custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
                 if (data.TextVariables.TryGetValue("licenseNotes", out d))
                 {
                     string licenseNotes = d.TextAlternatives.GetFirstAlternative();
@@ -699,20 +699,11 @@ namespace Bloom.Book
                 }
                 else
                 {
-                    //how to detect a null license was chosen? We're using the fact that it has a description, but nothing else.
-                    if (data.TextVariables.TryGetValue("licenseDescription", out d))
-                    {
-                        metadata.License = new NullLicense(); //"contact the copyright owner
-                    }
-                    else
-                    {
-                        //looks like the first time. Nudge them with a nice default
-                        metadata.License = new CreativeCommonsLicense(true, true,
-                                                                      CreativeCommonsLicense.DerivativeRules.Derivatives);
-                    }
-                }
+                    // The only remaining current option is a NullLicense
+                    metadata.License = new NullLicense(); //"contact the copyright owner
+                 }
             }
-            else
+            else // there is a licenseUrl, which means it is a CC license
             {
                 metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
                 if (data.TextVariables.TryGetValue("licenseNotes", out d))
