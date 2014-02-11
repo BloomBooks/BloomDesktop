@@ -149,6 +149,11 @@ namespace Bloom.Edit
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
+				if (metadata.License is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+				{
+					//looks like the first time. Nudge them with a nice default license.
+					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+				}
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
