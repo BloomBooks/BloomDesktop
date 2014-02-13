@@ -680,29 +680,24 @@ function ResizeUsingPercentages(e,ui){
 
 
      //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
-     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
-     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
-     //
-     // Promising, including a pointer to paste event: http://stackoverflow.com/questions/2867479/limiting-number-of-characters-in-a-contenteditable-div?rq=1
-     //
-     //    jQuery("textarea").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
-     //    jQuery("div.bloom-editable").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
+     jQuery("textarea").on("keyup paste", function() {
+        var overflowing = this.scrollHeight > this.clientHeight;
+        if ($(this).hasClass('overflow') && !overflowing) {
+            $(this).removeClass('overflow');
+        }
+        else if (overflowing) {
+            $(this).addClass('overflow');
+        }
+    });
+    jQuery("div.bloom-editable").on("keyup paste", function() {
+        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
+        if ($(this).hasClass('overflow') && !overflowing) {
+            $(this).removeClass('overflow');
+        }
+        else if (overflowing) {
+            $(this).addClass('overflow');
+        }
+    });
 
 
      //--------------------------------
