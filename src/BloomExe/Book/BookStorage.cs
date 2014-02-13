@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -198,10 +199,10 @@ namespace Bloom.Book
                 return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
 
             float versionFloat = 0;
-            if (!float.TryParse(versionString, out versionFloat))
+            if (!float.TryParse(versionString,System.Globalization.NumberStyles.Any,CultureInfo.InvariantCulture,  out versionFloat))
                 return "This file claims a version number that isn't really a number: " + versionString;
 
-            if (versionFloat > float.Parse(kBloomFormatVersion))
+            if (versionFloat > float.Parse(kBloomFormatVersion,System.Globalization.NumberStyles.Any,CultureInfo.InvariantCulture))
                 return string.Format("This book or template was made with a newer version of Bloom. Download the latest version of Bloom from bloomlibrary.org (format {0} vs. {1})", versionString, kBloomFormatVersion);
 
             return null;

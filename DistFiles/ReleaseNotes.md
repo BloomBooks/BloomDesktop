@@ -1,3 +1,6 @@
+## 1.0.30 - 13 Feb 2014
+* Fix problem reading version numbers on French machines
+
 ## 1.0.29 - 3 Feb 2014
 * Update French localization
 
