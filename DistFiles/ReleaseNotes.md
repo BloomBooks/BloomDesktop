@@ -1,4 +1,7 @@
-﻿## 1.1.6 - 19 Dec 2013
+﻿## 1.1  12 Feb 2014
+Make textboxes red when there is more text in them than fits
+
+## 1.1.6 - 19 Dec 2013
 * for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
 * make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
 
