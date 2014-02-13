@@ -46,6 +46,7 @@ namespace Bloom.Publish
 
 		    _progressBox.ShowDetailsMenuItem = true;
 		    _progressBox.ShowCopyToClipboardMenuItem = true;
+			_progressBox.LinkClicked += _progressBox_LinkClicked;
 
 			var metadata = book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new
@@ -113,6 +114,11 @@ namespace Bloom.Publish
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 			RequireValue(_languagesLabel);
+		}
+
+		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
+		{
+			Process.Start(e.LinkText);
 		}
 
 		protected override void OnSizeChanged(EventArgs e)
@@ -249,14 +255,21 @@ namespace Bloom.Publish
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
-					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice","Congratulations, \"{0}\" is now available on BloomLibrary.org");
-					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title);
+					var prefix = "http://";
+#if DEBUG
+					prefix += "dev.";
+#endif
+					var url = prefix + "bloomlibrary.org/#/browse/detail/" + _parseId;
+					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
+					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 				}
 				_uploadButton.Enabled = true; // Don't call UpdateDisplay, it will wipe out the progress messages.
 			};
 			worker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
 		}
+
+		string _parseId;
 
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
@@ -288,7 +301,7 @@ namespace Bloom.Publish
 					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
-			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox);
+			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox, out _parseId);
 		}
 
 		void RebuildThumbnail(Book.Book book)

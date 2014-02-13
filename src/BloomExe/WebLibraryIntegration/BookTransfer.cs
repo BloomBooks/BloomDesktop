@@ -238,6 +238,12 @@ namespace Bloom.WebLibraryIntegration
 	    }
 
 	    public string UploadBook(string bookFolder, IProgress progress)
+	    {
+		    string parseId;
+		    return UploadBook(bookFolder, progress, out parseId);
+	    }
+
+		public string UploadBook(string bookFolder, IProgress progress, out string parseId)
 		{
 			var metaDataText = MetaDataText(bookFolder);
 			var metadata = BookMetaData.FromString(metaDataText);
@@ -267,7 +273,7 @@ namespace Bloom.WebLibraryIntegration
 		    var metadataPath = BookMetaData.MetaDataPath(bookFolder);
 		    var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 			File.Copy(metadataPath, orderPath, true);
-
+			parseId = "";
 		    try
 		    {
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
@@ -275,8 +281,10 @@ namespace Bloom.WebLibraryIntegration
 				metadata.BookOrder = _s3Client.BookOrderUrl;
 				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-				_parseClient.SetBookRecord(metadata.Json);
-
+				var response = _parseClient.SetBookRecord(metadata.Json);
+			    parseId = response.ResponseUri.LocalPath;
+			    int index = parseId.LastIndexOf('/');
+			    parseId = parseId.Substring(index + 1);
 		    }
 			catch (WebException e)
 			{
