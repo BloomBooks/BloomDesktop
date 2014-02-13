@@ -268,6 +268,8 @@ namespace Bloom.Publish
 			book.BookInfo.Languages = _book.AllLanguages.ToArray();
 			book.BookInfo.PageCount = _book.GetPages().Count();
 			book.BookInfo.Save();
+			_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
+			RebuildThumbnail(book);
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -287,6 +289,20 @@ namespace Bloom.Publish
 				}
 			}
 			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox);
+		}
+
+		void RebuildThumbnail(Book.Book book)
+		{
+			bool done = false;
+			string error = null;
+			book.RebuildThumbNailAsync((info, image) => done = true,
+				(info, ex) =>
+				{
+					done = true;
+					throw ex;
+				});
+			while (!done)
+				Thread.Sleep(100);
 		}
 
 		private void _summaryBox_TextChanged(object sender, EventArgs e)
