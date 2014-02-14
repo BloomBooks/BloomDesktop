@@ -67,6 +67,8 @@
 	</PropertyGroup>
 
 	<Target Name="CheckPrerequisites">
+		<TeamCityProgressMessage Text="NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
+			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
 		<!-- Raise an error if we're unable to locate nuget.exe  -->
 		<Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')" Text="Unable to locate '$(NuGetExePath)'" />
 		<!--
@@ -79,13 +81,13 @@
 
 	<Target Name="_DownloadNuGet" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')">
 		<DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="'$(OS)' == 'Windows_NT'" />
-		<Message Text="NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
-			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
 		<Exec Command="wget https://nuget.org/NuGet.exe" WorkingDirectory="$(NuGetToolsPath)"
 			Condition="'$(OS)' != 'Windows_NT'" />
 	</Target>
 
 	<Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
+		<TeamCityProgressMessage Text="RestorePackages: NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
+			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
 		<Exec Command="$(RestoreCommand)"
 			  Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
 
