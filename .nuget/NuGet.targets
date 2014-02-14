@@ -19,25 +19,14 @@
     <ItemGroup Condition=" '$(PackageSources)' == '' ">
         <!-- Package sources used to restore packages. By default, registered sources under %APPDATA%\NuGet\NuGet.Config will be used -->
         <!-- The official NuGet package source (https://nuget.org/api/v2/) will be excluded if package sources are specified and it does not appear in the list -->
+		<PackageSource Include="https://nuget.org/api/v2/" />
+		<PackageSource Include="http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/" />
+	</ItemGroup>
 
-            <PackageSource Include="https://nuget.org/api/v2/" />
-            <PackageSource Include="http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/" />
-        </ItemGroup>
-
-    <!--<PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">-->
     <PropertyGroup>
-        <!-- Windows specific commands -->
-        <NuGetToolsPath>$([System.IO.Path]::Combine($(SolutionDir), ".nuget"))</NuGetToolsPath>
-        <PackagesConfig>$([System.IO.Path]::Combine($(ProjectDir), "packages.config"))</PackagesConfig>
+        <NuGetToolsPath>$(MSBuildProjectDirectory)</NuGetToolsPath>
+        <PackagesConfig>$(ProjectDir)/packages.config</PackagesConfig>
     </PropertyGroup>
-
-        <!-- We need to launch nuget.exe with the mono command if we're not on windows -->
-<!--
-    <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
-        <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
-        <PackagesConfig>packages.config</PackagesConfig>
-    </PropertyGroup>
--->
 
     <PropertyGroup>
         <!-- NuGet command -->
@@ -87,6 +76,7 @@
     </Target>
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
+		<Message Text="PackagesConfig=$(PackagesConfig)"/>
         <Exec Command="$(RestoreCommand)"
               Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
 
