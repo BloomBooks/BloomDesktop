@@ -77,11 +77,12 @@
 		<MsBuild Targets="_DownloadNuGet" Projects="$(MSBuildThisFileFullPath)" Properties="Configuration=NOT_IMPORTANT;DownloadNuGetExe=$(DownloadNuGetExe)" />
 	</Target>
 
-	<Target Name="_DownloadNuGet">
-		<DownloadNuGet OutputFilename="$(NuGetExePath)"
-			Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)') AND '$(OS)' == 'Windows_NT'" />
+	<Target Name="_DownloadNuGet" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')">
+		<DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="'$(OS)' == 'Windows_NT'" />
+		<Message Text="NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
+			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
 		<Exec Command="wget https://nuget.org/NuGet.exe" WorkingDirectory="$(NuGetToolsPath)"
-			Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)') AND '$(OS)' != 'Windows_NT'" />
+			Condition="'$(OS)' != 'Windows_NT'" />
 	</Target>
 
 	<Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
