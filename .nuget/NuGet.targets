@@ -67,8 +67,6 @@
     </PropertyGroup>
 
     <Target Name="CheckPrerequisites">
-        <Message Text="NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
-			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
         <!-- Raise an error if we're unable to locate nuget.exe  -->
         <Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')" Text="Unable to locate '$(NuGetExePath)'" />
         <!--
@@ -86,8 +84,6 @@
     </Target>
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
-        <Message Text="RestorePackages: NuGetToolsPath=$(NuGetToolsPath); SolutionDir=$(SolutionDir), combined:
-			$([System.IO.Path]::Combine($(SolutionDir), '.nuget'))"/>
         <Exec Command="$(RestoreCommand)"
               Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
 
