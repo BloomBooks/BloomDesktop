@@ -25,7 +25,7 @@
 		</ItemGroup>
 
 	<!--<PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">-->
-	<PropertyGroup Condition=">
+	<PropertyGroup>
 		<!-- Windows specific commands -->
 		<NuGetToolsPath>$([System.IO.Path]::Combine($(SolutionDir), ".nuget"))</NuGetToolsPath>
 		<PackagesConfig>$([System.IO.Path]::Combine($(ProjectDir), "packages.config"))</PackagesConfig>
