@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom;
@@ -20,12 +21,10 @@ namespace BloomTests.Book
         [SetUp]
         public void Setup()
         {
-//        	Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
-//            _folder  =new TemporaryFolder("BookCollectionTests");
-//			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-//			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCss"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-
-//            _collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
+        	Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
+            _folder  =new TemporaryFolder("BookCollectionTests");
+            _fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] {}), ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations());
+            _collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
         }
 
          Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
@@ -40,7 +39,7 @@ namespace BloomTests.Book
              return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
          }
 
-		[Test, Ignore("fix me")]
+		[Test]
         public void DeleteBook_FirstBookInEditableCollection_RemovedFromCollection()
         {
             AddBook();
@@ -52,7 +51,9 @@ namespace BloomTests.Book
             Assert.IsFalse(Directory.Exists(bookFolder));
         }
 
-        [Test, Ignore("fix me")]
+
+
+        [Test]
         public void DeleteBook_FirstBookInEditableCollection_RaisesCollectionChangedEvent()
         {
             AddBook();

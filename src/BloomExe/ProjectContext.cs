@@ -219,12 +219,13 @@ namespace Bloom
         public static IEnumerable<string> GetFactoryFileLocations()
 	    {
 	        //bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
-	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI","bookLayout");
 
-	        yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
-	            //hack to get the distfiles folder itself
+            //hack to get the distfiles folder itself
+            yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+            yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
