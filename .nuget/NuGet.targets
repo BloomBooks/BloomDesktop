@@ -24,7 +24,7 @@
 	</ItemGroup>
 
     <PropertyGroup>
-        <NuGetToolsPath>$(MSBuildProjectDirectory)</NuGetToolsPath>
+        <NuGetToolsPath>$(MSBuildThisFileDirectory)</NuGetToolsPath>
         <PackagesConfig>$(ProjectDir)/packages.config</PackagesConfig>
     </PropertyGroup>
 
