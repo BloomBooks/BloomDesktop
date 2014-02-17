@@ -6,6 +6,12 @@
 		<Configuration>Release</Configuration>
 		<BUILD_NUMBER>1.0.1</BUILD_NUMBER>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+		<useNUnit-x86>true</useNUnit-x86>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(OS)'!='Windows_NT'">
+		<useNUnit-x86>false</useNUnit-x86>
+	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -13,7 +19,10 @@
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="DownloadFile" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)" />
+	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="NUnitTeamCity"
+		AssemblyFile="$(agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
+		Condition="'$(system_teamcity_version)' != ''"/>
 
 	<Target Name="Init">
 		<CpuArchitecture>
@@ -49,7 +58,15 @@
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
-		<NUnitTeamCity Assemblies="@(TestAssemblies)" ExcludeCategory="SkipOnTeamCity" NUnitVersion="NUnit-2.5.5" />
+		<NUnitTeamCity Assemblies="@(TestAssemblies)"
+			ExcludeCategory="SkipOnTeamCity"
+			NUnitVersion="NUnit-2.6.3"
+			Condition="'$(system_teamcity_version)' != ''"/>
+		<NUnit Assemblies="@(TestAssemblies)"
+			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
+			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			Force32Bit="$(useNUnit-x86)"
+			Condition="'$(system_teamcity_version)' == ''"/>
 	</Target>
 
 	<Target Name="DownloadDistFiles">
