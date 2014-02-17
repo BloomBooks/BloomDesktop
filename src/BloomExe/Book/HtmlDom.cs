@@ -45,7 +45,10 @@ namespace Bloom.Book
 		{
 			get { return XmlUtils.GetOrCreateElement(_dom, "html", "head"); }
 		}
-
+        public XmlElement Body
+        {
+            get { return XmlUtils.GetOrCreateElement(_dom, "html", "body"); }
+        }
 		public string Title
 		{
 			get
