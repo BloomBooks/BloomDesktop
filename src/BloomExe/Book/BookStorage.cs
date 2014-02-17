@@ -23,8 +23,6 @@ namespace Bloom.Book
 	/* The role of this class is simply to isolate the actual storage mechanism (e.g. file system)
 	 * to a single place.  All the other classes can then just pass around DOMs.
 	 */
-
-
 	public interface IBookStorage
 	{
 		//TODO Covert this most of this section to something like IBookDescriptor, which has enough display in a catalog, do some basic filtering, etc.
@@ -767,10 +765,9 @@ namespace Bloom.Book
 		}
 
 
-
 		private string SanitizeNameForFileSystem(string name)
 		{
-			foreach(char c in Bloom.Platform.Utilities.Platform.GetInvalidOSIndependentFileNameChars())
+			foreach(char c in PathUtilities.GetInvalidOSIndependentFileNameChars())
 			{
 				name = name.Replace(c, ' ');
 			}

@@ -60,7 +60,7 @@ namespace Bloom
 					return;
 #endif
 
-				if (Platform.Utilities.Platform.IsWindows)
+				if (Palaso.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
 				}

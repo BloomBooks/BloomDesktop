@@ -22,7 +22,7 @@ namespace Bloom.Wizard
 			FieldInfo parentFormField = typeof(AeroWizard.WizardControl).GetField("parentForm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 			parentFormField.SetValue(this, this.FindForm());
 
-			var form = this.FindForm();
+			//var form = this.FindForm();
 		}
 	}
 
@@ -32,7 +32,7 @@ namespace Bloom.Wizard
 
 		protected WinForms.WizardControl _winformsWizard;
 
-		internal static bool _useAeroWizard = Platform.Utilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
+		internal static bool _useAeroWizard = Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
 
 		#region Implemetaion specific logic
 		public void Setup()
