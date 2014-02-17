@@ -60,10 +60,10 @@
 
 	<Target Name="GetXulRunnerIntoLib" DependsOnTargets="Init">
 		<MakeDir Directories="$(RootDir)/Downloads"/>
-		<DownloadFile Address="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/11.0b8/runtimes/xulrunner-11.0b8.en-US.linux-$(arch).tar.bz2"
-			LocalFileName="$(RootDir)/Downloads/xulrunner-11.0b.tar.bz2"
-			Condition="!Exists('$(RootDir)/Downloads/xulrunner-11.0b.tar.bz2')"/>
-		<Exec Command="tar xfj $(RootDir)/Downloads/xulrunner-11.0b.tar.bz2"
+		<DownloadFile Address="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0b12/runtimes/xulrunner-14.0b12.en-US.linux-$(arch).tar.bz2"
+			LocalFileName="$(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"
+			Condition="!Exists('$(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2')"/>
+		<Exec Command="tar xfj $(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"
 			WorkingDirectory="$(RootDir)/lib"
 			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
 	</Target>

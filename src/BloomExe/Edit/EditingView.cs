@@ -372,7 +372,7 @@ namespace Bloom.Edit
         }
 
 
-    	private void RememberSourceTabChoice(GeckoElement target)
+		private void RememberSourceTabChoice(GeckoHtmlElement target)
     	{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
     		var start = 1+ target.OuterHtml.IndexOf("#");
@@ -521,24 +521,20 @@ namespace Bloom.Edit
         }
 
 
-        private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
+		private static GeckoHtmlElement GetImageNode(GeckoDomEventArgs ge)
     	{
-    		GeckoElement imageElement = null;
+			GeckoHtmlElement imageElement = null;
     		foreach (var n in ge.Target.Parent.ChildNodes)
     		{
-    			if (n is GeckoElement && ((GeckoElement) n).TagName.ToLower() == "img")
+				imageElement = n as GeckoHtmlElement;
+				if (imageElement != null && imageElement.TagName.ToLower() == "img")
     			{
-    				imageElement = (GeckoElement) n;
-    				break;
+					return imageElement;
     			}
     		}
 
-    		if (imageElement == null)
-    		{
-    			Debug.Fail("Could not find image element");
-    			return null;
-    		}
-    		return imageElement;
+			Debug.Fail("Could not find image element");
+			return null;
     	}
 
     	private void OnChangeImage(GeckoDomEventArgs ge)
