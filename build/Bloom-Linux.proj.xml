@@ -60,7 +60,7 @@
 		</CreateItem>
 		<NUnitTeamCity Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-2.6.3"
+			NUnitVersion="NUnit-2.6.2"
 			ContinueOnError="ErrorAndStop"
 			Condition="'$(system_teamcity_version)' != ''"/>
 		<NUnit Assemblies="@(TestAssemblies)"
