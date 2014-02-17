@@ -188,6 +188,6 @@
   </Target>
   -->
   <Target Name="AfterBuild">
-    <Copy SourceFiles="../../lib/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
   </Target>
 </Project>
