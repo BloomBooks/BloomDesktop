@@ -199,7 +199,6 @@
   </Target>
   -->
   <Target Name="AfterBuild">
-    <Copy SourceFiles="../../lib/libtidy-html5.so" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'"/>
     <Copy SourceFiles="../../lib/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'"/>
   </Target>
 </Project>

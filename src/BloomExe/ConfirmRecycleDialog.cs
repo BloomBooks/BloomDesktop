@@ -1,5 +1,8 @@
 using System;
 using System.Drawing;
+#if __MonoCS__
+using System.IO;
+#endif
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -83,7 +86,7 @@ namespace Bloom
         {
             try
             {
-#if MONO
+#if __MonoCS__
                // TODO: Find a way in Mono to send something to the recycle bin.
                 try
                 {
@@ -100,7 +103,7 @@ namespace Bloom
                     }
                 }
                 return true;
-                #else
+#else
 
                 //alternative using visual basic dll:  FileSystem.DeleteDirectory(item.FolderPath,UIOption.OnlyErrorDialogs), RecycleOption.SendToRecycleBin);
 
@@ -113,7 +116,7 @@ namespace Bloom
 
                 SHFileOperation(ref shf);
                 return !shf.fAnyOperationsAborted;
-                #endif
+#endif
 
             }
             catch (Exception exception)
@@ -123,7 +126,7 @@ namespace Bloom
             }
         }
 
-#if !MONO
+#if !__MonoCS__
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]
         public struct SHFILEOPSTRUCT
         {

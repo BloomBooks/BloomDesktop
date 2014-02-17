@@ -64,6 +64,7 @@
 			LocalFileName="$(RootDir)/Downloads/xulrunner-11.0b.tar.bz2"
 			Condition="!Exists('$(RootDir)/Downloads/xulrunner-11.0b.tar.bz2')"/>
 		<Exec Command="tar xfj $(RootDir)/Downloads/xulrunner-11.0b.tar.bz2"
-			WorkingDirectory="$(RootDir)/lib"/>
+			WorkingDirectory="$(RootDir)/lib"
+			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
 	</Target>
 </Project>
