@@ -59,6 +59,7 @@
 	</Target>
 
 	<Target Name="GetXulRunnerIntoLib" DependsOnTargets="Init">
+		<Message Text="Downloading XulRunner..." Importance="high" />
 		<MakeDir Directories="$(RootDir)/Downloads"/>
 		<DownloadFile Address="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0b12/runtimes/xulrunner-14.0b12.en-US.linux-$(arch).tar.bz2"
 			LocalFileName="$(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"

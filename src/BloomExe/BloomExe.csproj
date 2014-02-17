@@ -96,9 +96,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TidyManaged">
-      <HintPath>..\..\lib\TidyManaged.dll</HintPath>
-    </Reference>
     <Reference Include="AeroWizard">
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
@@ -132,14 +129,17 @@
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\lib\PdfSharp.dll</HintPath>
-    </Reference>
     <Reference Include="geckofx-core-14">
       <HintPath>..\..\lib\dotnet\geckofx-core-14.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Winforms-14">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms-14.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp">
+      <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="TidyManaged">
+      <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -946,6 +946,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <Target Name="AfterBuild">
-    <Copy SourceFiles="../../lib/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
   </Target>
 </Project>
