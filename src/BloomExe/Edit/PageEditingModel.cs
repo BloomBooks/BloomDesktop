@@ -17,7 +17,7 @@ namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, GeckoElement img, PalasoImage imageInfo, IProgress progress)
+		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);
@@ -172,7 +172,7 @@ namespace Bloom.Edit
 			return  new []{"jpg", "jpeg"}.Contains(Path.GetExtension(imageInfo.FileName).ToLower());
 		}
 
-		public void UpdateMetdataAttributesOnImgElement(GeckoElement img, PalasoImage imageInfo)
+		public void UpdateMetdataAttributesOnImgElement(GeckoHtmlElement img, PalasoImage imageInfo)
 		{
 			UpdateMetadataAttributesOnImage(img, imageInfo);
 

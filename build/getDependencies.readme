@@ -1,2 +1,2 @@
 To update dependencies, run:
-buildupdate.rb -root '$(dirname $0)/..' -f getDependencies-Linux.sh
+buildupdate.rb --root .. -f getDependencies-Linux.sh
