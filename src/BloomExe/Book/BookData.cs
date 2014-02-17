@@ -106,7 +106,7 @@ namespace Bloom.Book
 
 		public void SynchronizeDataItemsThroughoutDOM()
 		{
-			SynchronizeDataItemsFromContentsOfElement(_dom.RawDom.FirstChild);
+			SynchronizeDataItemsFromContentsOfElement(_dom.Body);
 		}
 
 		/// <summary>
