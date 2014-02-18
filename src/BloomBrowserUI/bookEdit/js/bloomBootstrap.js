@@ -20,6 +20,8 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.sizes.j
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.watermark.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'jquery.hotkeys.js"></script>');
+
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
 
