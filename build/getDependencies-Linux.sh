@@ -65,28 +65,34 @@ cd -
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt338
 # VCS: https://bitbucket.org/hatton/bloom-desktop [linux]
 # dependencies:
-# [0] build: chorus-precise64-master Continuous (bt323)
+# [0] build: bloom-1.1.-win32-static-dependencies (bt326)
+#     project: Bloom
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt326
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles"}
+# [1] build: chorus-precise64-master Continuous (bt323)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt323
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [1] build: palaso-precise64-master Continuous (bt322)
+# [2] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt322
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [master]
-# [2] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [3] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe*"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: http://hg.palaso.org/pdfdroplet [default]
-# [3] build: TidyManaged-master-precise64-continuous (bt351)
+# [4] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
@@ -95,10 +101,13 @@ cd -
 #     VCS: https://github.com/hatton/TidyManaged.git [master]
 
 # make sure output directories exist
+mkdir -p ../DistFiles
 mkdir -p ../lib/dotnet
 mkdir -p ../build/
 
 # download artifact dependencies
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe.mdb ../lib/dotnet/Chorus.exe.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
