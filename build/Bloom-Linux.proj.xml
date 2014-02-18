@@ -22,7 +22,7 @@
 	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnitTeamCity"
 		AssemblyFile="$(agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
-		Condition="'$(TEAMCITY_VERSION)' != ''"/>
+		Condition="'$(system_teamcity_version)' != ''"/>
 
 	<Target Name="Init">
 		<CpuArchitecture>
@@ -36,8 +36,7 @@
 			<Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
 		</Split>
 		<Message Text="BuildCounter: $(BuildCounter)" Importance="high" />
-		<!-- Note, after some thought, we've decided this is the best place to keep the
-			version number (not on TeamCity, not in the assemblies).     -->
+		<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
 		<CreateProperty Value="1.0.$(BuildCounter)">
 			<Output PropertyName="Version" TaskParameter="Value" />
 		</CreateProperty>
@@ -59,18 +58,21 @@
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
+		<!--
 		<NUnitTeamCity Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
 			NUnitVersion="NUnit-2.6.2"
 			ContinueOnError="ErrorAndStop"
-			Condition="'$(TEAMCITY_VERSION)' != ''"/>
+			Condition="'$(system_teamcity_version)' != ''"/>-->
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
-			ContinueOnError="ErrorAndStop"
-			Condition="'$(TEAMCITY_VERSION)' == ''"/>
+			ContinueOnError="ErrorAndStop"/>
+			<!--
+			Condition="'$(system_teamcity_version)' == ''"/>
+			-->
 	</Target>
 
 	<Target Name="DownloadDistFiles">
