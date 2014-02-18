@@ -20,9 +20,6 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="DownloadFile" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity"
-		AssemblyFile="$(agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
-		Condition="'$(system_teamcity_version)' != ''"/>
 
 	<Target Name="Init">
 		<CpuArchitecture>
@@ -58,21 +55,12 @@
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
-		<!--
-		<NUnitTeamCity Assemblies="@(TestAssemblies)"
-			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-2.6.2"
-			ContinueOnError="ErrorAndStop"
-			Condition="'$(system_teamcity_version)' != ''"/>-->
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
 			ContinueOnError="ErrorAndStop"/>
-			<!--
-			Condition="'$(system_teamcity_version)' == ''"/>
-			-->
 	</Target>
 
 	<Target Name="DownloadDistFiles">
