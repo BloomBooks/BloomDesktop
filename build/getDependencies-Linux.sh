@@ -70,7 +70,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt326
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles"}
+#     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
 # [1] build: chorus-precise64-master Continuous (bt323)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt323
@@ -102,12 +102,14 @@ cd -
 
 # make sure output directories exist
 mkdir -p ../DistFiles
-mkdir -p ../lib/dotnet
 mkdir -p ../build/
+mkdir -p ../lib/dotnet
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe.mdb ../lib/dotnet/Chorus.exe.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe

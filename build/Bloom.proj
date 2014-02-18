@@ -7,10 +7,8 @@
 		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.1.1</BUILD_NUMBER>
 		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
 		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 	</PropertyGroup>
-
-	<Import Condition="'$(OS)'=='Windows_NT'"
-		Project="$(MSBuildExtensionsPath)/MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -19,6 +17,8 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="DownloadFile" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+
+	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets" />
 
 	<Target Name="Init">
 		<CpuArchitecture>
