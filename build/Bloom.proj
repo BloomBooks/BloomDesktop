@@ -63,9 +63,6 @@
 			ContinueOnError="ErrorAndStop"/>
 	</Target>
 
-	<Target Name="GetDependencies"
-		DependsOnTargets="GetXulRunnerIntoLibWin;GetXulRunnerIntoLibLinux"/>
-
 	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
 		<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
@@ -120,8 +117,7 @@
 		<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
 	</Target>
 
-	<Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles"
-		Condition="'$(OS)'=='Windows_NT'">
+	<Target Name="MakeWixForDistFiles" Condition="'$(OS)'=='Windows_NT'">
 		<MakeDir Directories="$(RootDir)\output\installer" ContinueOnError="true" />
 		<MakeWixForDirTree DirectoryReferenceId="ProgramDir" ComponentGroupId="DistFiles"
 			RootDirectory="$(RootDir)\DistFiles"
@@ -146,19 +142,8 @@
 		</MakeWixForDirTree>
 	</Target>
 
-	<Target Name="DownloadDistFilesNeedForTests">
-		<!-- this isn't really a dll, it's just a text file. We're just making some keys be
-			un-findable via googling. Not a big risk even if they re used, though. -->
-		<DownloadFile Address="https://dl.dropboxusercontent.com/u/14475494/connections.dll"
-			FileName="$(RootDir)/DistFiles/connections.dll">
-		</DownloadFile>
-	</Target>
-
-	<Target Name="DownloadDistFiles">
-		<Message Text="Downloading Bloom.chm help file" Importance="high" />
-		<DownloadFile Address="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1"
-			LocalFileName="$(RootDir)/DistFiles/Bloom.chm"/>
-	</Target>
+	<Target Name="GetDependencies"
+		DependsOnTargets="GetWkthmlToPdfIntoLib;GetXulRunnerIntoLibWin;GetXulRunnerIntoLibLinux"/>
 
 	<Target Name="GetXulRunnerIntoLibWin" Condition="'$(OS)'=='Windows_NT'">
 		<Message Text="Downloading XulRunner..." Importance="high" />
@@ -180,5 +165,11 @@
 		<Exec Command="tar xfj $(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"
 			WorkingDirectory="$(RootDir)/lib"
 			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
+	</Target>
+
+	<Target Name="GetWkthmlToPdfIntoLib" Condition="'$(OS)'=='Windows_NT'">
+		<RemoveDir Directories="$(RootDir)/lib/wkhtmltopdf" />
+		<Unzip ZipFileName="$(RootDir)/lib/wkhtmltopdf-0.10.0_rc2.zip"
+			TargetDirectory="$(RootDir)/lib/"/>
 	</Target>
 </Project>
