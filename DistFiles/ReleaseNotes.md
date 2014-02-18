@@ -1,4 +1,11 @@
-﻿## 1.1  12 Feb 2014
+﻿## 1.1  18 Feb 2014
+New experimental keyboard shortcuts:
+Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
+
+F7=Heading1, F8=Heading2.
+
+
+## 1.1  12 Feb 2014
 Make textboxes red when there is more text in them than fits
 
 ## 1.1.6 - 19 Dec 2013
