@@ -40,6 +40,7 @@ _NCrunch*
 *.vsp
 build/xulrunner*
 build/Palaso.BuildTasks.dll
+build/MSBuild.*
 packages/*.*
 copy*.*
 Copy*.bat

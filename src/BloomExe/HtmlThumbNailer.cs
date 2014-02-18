@@ -378,8 +378,8 @@ namespace Bloom
 				graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
 				//leave out the grey boarder which is in the browser, and zoom in some
-				int skipMarginH = 0;// 30; //
-				int skipMarginV = 0;
+				skipMarginH = 0;// 30; //
+				skipMarginV = 0;
 				graphics.DrawImage(bmp, destRect, skipMarginH, skipMarginV,
 						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
 						GraphicsUnit.Pixel, WhiteToBackground);
