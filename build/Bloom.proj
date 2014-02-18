@@ -59,8 +59,7 @@
 			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
-			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
-			ContinueOnError="ErrorAndStop"/>
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
 	</Target>
 
 	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
