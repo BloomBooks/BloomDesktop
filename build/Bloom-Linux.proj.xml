@@ -58,17 +58,21 @@
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
+		<!--
 		<NUnitTeamCity Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
 			NUnitVersion="NUnit-2.6.2"
 			ContinueOnError="ErrorAndStop"
-			Condition="'$(system_teamcity_version)' != ''"/>
+			Condition="'$(system_teamcity_version)' != ''"/>-->
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
-			ContinueOnError="ErrorAndStop"
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
+			ContinueOnError="ErrorAndStop"/>
+			<!--
 			Condition="'$(system_teamcity_version)' == ''"/>
+			-->
 	</Target>
 
 	<Target Name="DownloadDistFiles">
