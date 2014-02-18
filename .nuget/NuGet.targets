@@ -25,7 +25,8 @@
 
 	<PropertyGroup>
 		<NuGetToolsPath>$(MSBuildThisFileDirectory)</NuGetToolsPath>
-		<PackagesConfig>$(ProjectDir)/packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(OS)'=='Windows_NT'">$(ProjectDir)\packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(OS)'!='Windows_NT'">$(ProjectDir)/packages.config</PackagesConfig>
 	</PropertyGroup>
 
 	<PropertyGroup>
