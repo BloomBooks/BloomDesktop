@@ -679,32 +679,69 @@ function ResizeUsingPercentages(e,ui){
      });
 
 
-     //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
-     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
-     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
-     //
-     // Promising, including a pointer to paste event: http://stackoverflow.com/questions/2867479/limiting-number-of-characters-in-a-contenteditable-div?rq=1
-     //
-     //    jQuery("textarea").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
-     //    jQuery("div.bloom-editable").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
+     //when a div is overfull, add the overflow class so that it gets a red background or something
+    jQuery("div.bloom-editable").on("keyup paste", function() {
+        var overflowing = this.scrollHeight > this.clientHeight; //this.scrollHeight > $(this).maxSize().height;
+        if ($(this).hasClass('overflow') && !overflowing) {
+            $(this).removeClass('overflow');
+        }
+        else if (overflowing) {
+            $(this).addClass('overflow');
+        }
+    });
 
+     //Convert Standard Format Markers in the pasted text to html spans
+    jQuery("div.bloom-editable").on("paste", function (e) {
+        if (!e.originalEvent.clipboardData)
+            return;
 
+        var s = e.originalEvent.clipboardData.getData('text/plain');
+        if (s==null || s =='')
+            return;
+
+        var re = new RegExp('\\\\v\\s(\\d+)', 'g');
+        var matches = re.exec(s);
+        if (matches == null) {
+            //just let it paste
+        }
+        else {
+            e.preventDefault();
+            var x =s.replace(re, "<span class='superscript'>$1</span>");
+            document.execCommand("insertHtml", false, x);
+            //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
+        }
+    });
+
+     //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain. 
+     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
+    jQuery("div.bloom-editable").on('keydown', null, 'F6', function (e) {
+        var selection = document.getSelection();
+        if (selection != null && selection != '') {
+                //NB: by using exeCommand, we get undo-ability
+                document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
+            }
+    });
+    jQuery("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+
+    jQuery("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+//    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+shift+c', function (e) {
+//        e.preventDefault();
+//        document.execCommand("justifyCenter", false, null);
+//    });
+
+     //there doesn't appear to be a good simple way to clear out formatting
+    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
+        e.preventDefault();
+        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
+        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
+        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
+    });
      //--------------------------------
      //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 

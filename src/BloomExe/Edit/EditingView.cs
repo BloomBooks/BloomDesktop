@@ -149,6 +149,11 @@ namespace Bloom.Edit
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
+				if (metadata.License is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+				{
+					//looks like the first time. Nudge them with a nice default license.
+					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+				}
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
@@ -499,6 +504,20 @@ namespace Bloom.Edit
             var dataObject = Clipboard.GetDataObject();
             if(dataObject==null)
                return null;
+
+            // the ContainsImage() returns false when copying an PNG from MS Word
+            // so here we explicitly ask for a PNG and see if we can convert it.
+            if (dataObject.GetDataPresent("PNG"))
+            {
+                var o = dataObject.GetData("PNG") as System.IO.Stream;
+                try
+                {
+                    return Image.FromStream(o);
+                }
+                catch (Exception)
+                {
+                }
+            }
 
            //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
             if (dataObject.GetDataPresent(DataFormats.FileDrop))

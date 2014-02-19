@@ -1,4 +1,14 @@
-﻿## 1.1.6 - 19 Dec 2013
+﻿## 1.1.574 18 Feb 2014
+New experimental keyboard shortcuts:
+Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
+F7=Heading1, F8=Heading2.
+Pasting text with \v 123 will give you a superscript 123.
+
+
+## 1.1  12 Feb 2014
+Make textboxes red when there is more text in them than fits
+
+## 1.1.6 - 19 Dec 2013
 * for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
 * make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
 
@@ -9,8 +19,15 @@
 
 ## 1.1.1 - 1 Nov 2013
 * Fixed problem with picking the wrong version of xmatter stylesheets at runtime
-## 1.0.25 - 18 Jan 2014
-Fix problem of folio books not using the most recent stylesheet. 
+
+## 1.0.29 - 3 Feb 2014
+* Update French localization
+
+## 1.0.28 - 31 Jan 2014
+* Move format version of Bloom 1.0 up to 1.1. and start rejecting books that are greater than that.
+
+## 1.0.25 - 31 Jan 2014
+* Fix problem where unicode characters in project folder would make images not show up in PDF
 
 ## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
@@ -20,6 +37,7 @@ Fix problem of folio books not using the most recent stylesheet.
 * Avoid collecting new strings for localization from non-developer machines.
 * Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
 	this to do different things when editing vs. publishing.
+* Fix problem of folio books not using the most recent stylesheet. 
 
 ## 1.0.19 - 1 Nov 2013
 * Fix Documentation Link from Collection Tab

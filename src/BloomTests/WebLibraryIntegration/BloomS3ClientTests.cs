@@ -4,6 +4,7 @@ using System.Linq;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
+using Palaso.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -44,7 +45,7 @@ namespace BloomTests.WebLibraryIntegration
         private string UploadBook(string path)
         {
             string storageKeyOfBookFolder = Guid.NewGuid().ToString();
-            _client.UploadBook(storageKeyOfBookFolder, path);
+            _client.UploadBook(storageKeyOfBookFolder, path, new NullProgress());
             return storageKeyOfBookFolder;
         }
 
@@ -72,7 +73,7 @@ namespace BloomTests.WebLibraryIntegration
             string storageKeyOfBookFolder = Guid.NewGuid().ToString();
             using (var f = new TemporaryFolder(_workFolder,"emptyFolder"))
             {
-                _client.UploadBook(storageKeyOfBookFolder, f.FolderPath);
+                _client.UploadBook(storageKeyOfBookFolder, f.FolderPath, new NullProgress());
             }
         }
 

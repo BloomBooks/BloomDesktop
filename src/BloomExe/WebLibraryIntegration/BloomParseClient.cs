@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using Bloom.Book;
 using Bloom.Properties;
 using Newtonsoft.Json;
@@ -85,25 +86,37 @@ namespace Bloom.WebLibraryIntegration
             return dy.count;
         }
 
-        public IRestResponse GetBookRecords(string query)
+        public IRestResponse GetBookRecordsByQuery(string query)
         {
             var request = MakeGetRequest("classes/books");
             request.AddParameter("where",query, ParameterType.QueryString);
             return _client.Execute(request);
         }
 
-        public dynamic GetSingleBookRecord(string id, string uploader)
+        public dynamic GetSingleBookRecord(string id)
         {
-            var json = GetBookRecords(id, uploader);
+            var json = GetBookRecords(id);
 	        if (json == null || json.Count < 1)
 		        return null;
 
             return json[0];
         }
 
-	    internal dynamic GetBookRecords(string id, string uploader)
+		/// <summary>
+		/// The string that needs to be embedded in json, either to query for books uploaded by this user,
+		/// or to specify that a book is. (But see the code in BookMetaData which is also involved in upload.)
+		/// </summary>
+	    public string UploaderJsonString
 	    {
-			var response = GetBookRecords("{\"bookInstanceId\":\"" + id + "\",\"uploadedBy\":\"" + uploader + "\"}");
+		    get
+		    {
+			    return "\"uploader\":{\"__type\":\"Pointer\",\"className\":\"_User\",\"objectId\":\"" + UserId + "\"}";
+		    }
+	    }
+
+	    internal dynamic GetBookRecords(string id)
+	    {
+			var response = GetBookRecordsByQuery("{\"bookInstanceId\":\"" + id + "\"," + UploaderJsonString + "}");
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
@@ -144,8 +157,17 @@ namespace Bloom.WebLibraryIntegration
             var request = MakePostRequest("classes/books");
             request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
             var response = _client.Execute(request);
-            if(response.StatusCode!=HttpStatusCode.Created)
-                throw new ApplicationException(response.StatusDescription+" "+response.Content);
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                var message = new StringBuilder();
+
+                message.AppendLine("Request.Json: " + metadataJson);
+                message.AppendLine("Response.Code: " + response.StatusCode);
+                message.AppendLine("Response.Uri: " + response.ResponseUri); 
+                message.AppendLine("Response.Description: " + response.StatusDescription);
+                message.AppendLine("Response.Content: " + response.Content);
+                throw new ApplicationException(message.ToString());
+            }
             return response;
         }
 
@@ -154,7 +176,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException();
 			var metadata = BookMetaData.FromString(metadataJson);
-			var book = GetSingleBookRecord(metadata.Id, metadata.UploadedBy);
+			var book = GetSingleBookRecord(metadata.Id);
 			if (book == null)
 				return CreateBookRecord(metadataJson);
 

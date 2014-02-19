@@ -612,6 +612,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\KindOfCollectionControl.resx">
       <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionChoosing\OpenCreateCloneControl.resx">
       <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
@@ -922,6 +923,7 @@
     <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
     <None Include="Resources\cloud.png" />
+    <None Include="Resources\upload.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

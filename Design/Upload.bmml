@@ -1,4 +1,4 @@
-<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1632" measuredH="1135" mockupW="1632" mockupH="1135">
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1966" measuredH="1135" mockupW="1966" mockupH="1135">
   <controls>
     <control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="120" y="146" w="845" h="625" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
       <controlProperties>
@@ -301,13 +301,13 @@
         <text>optional</text>
       </controlProperties>
     </control>
-    <control controlID="73" controlTypeID="com.balsamiq.mockups::Label" x="1308" y="429" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="48" locked="false" isInGroup="-1">
+    <control controlID="73" controlTypeID="com.balsamiq.mockups::Label" x="1502" y="3" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="48" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <text>Usage/License</text>
       </controlProperties>
     </control>
-    <control controlID="76" controlTypeID="__group__" x="1308" y="451" w="191" h="21" measuredW="191" measuredH="21" zOrder="49" locked="false" isInGroup="-1">
+    <control controlID="76" controlTypeID="__group__" x="1502" y="25" w="191" h="21" measuredW="191" measuredH="21" zOrder="49" locked="false" isInGroup="-1">
       <groupChildrenDescriptors>
         <control controlID="0" controlTypeID="com.balsamiq.mockups::Label" x="0" y="0" w="-1" h="-1" measuredW="191" measuredH="21" zOrder="0" locked="false" isInGroup="76">
           <controlProperties>
@@ -332,6 +332,91 @@
           </controlProperties>
         </control>
       </groupChildrenDescriptors>
+    </control>
+    <control controlID="83" controlTypeID="com.balsamiq.mockups::Label" x="1509" y="307" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="56" locked="false" isInGroup="-1">
+      <controlProperties>
+        <bold>true</bold>
+        <text>Usage/License</text>
+      </controlProperties>
+    </control>
+    <control controlID="89" controlTypeID="com.balsamiq.mockups::Label" x="1506" y="61" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="52" locked="false" isInGroup="-1">
+      <controlProperties>
+        <bold>true</bold>
+        <text>Usage/License</text>
+      </controlProperties>
+    </control>
+    <control controlID="90" controlTypeID="__group__" x="1506" y="83" w="196" h="21" measuredW="196" measuredH="21" zOrder="53" locked="false" isInGroup="-1">
+      <groupChildrenDescriptors>
+        <control controlID="0" controlTypeID="com.balsamiq.mockups::Label" x="0" y="0" w="-1" h="-1" measuredW="112" measuredH="21" zOrder="0" locked="false" isInGroup="90">
+          <controlProperties>
+            <text>Creative%20Commons</text>
+          </controlProperties>
+        </control>
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::Link" x="120" y="2" w="-1" h="-1" measuredW="76" measuredH="19" zOrder="1" locked="false" isInGroup="90">
+          <controlProperties>
+            <text>%20%28CC-BY-NC%29</text>
+          </controlProperties>
+        </control>
+      </groupChildrenDescriptors>
+    </control>
+    <control controlID="91" controlTypeID="com.balsamiq.mockups::Label" x="1508" y="206" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="54" locked="false" isInGroup="-1">
+      <controlProperties>
+        <bold>true</bold>
+        <text>Usage/License</text>
+      </controlProperties>
+    </control>
+    <control controlID="94" controlTypeID="com.balsamiq.mockups::Label" x="1508" y="228" w="-1" h="-1" measuredW="422" measuredH="21" zOrder="55" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>All%20Rights%20Reserved%20%28Contact%20the%20Copyright%20holder%20for%20any%20permissions%29</text>
+      </controlProperties>
+    </control>
+    <control controlID="97" controlTypeID="com.balsamiq.mockups::Label" x="1508" y="333" w="-1" h="-1" measuredW="217" measuredH="21" zOrder="57" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>This%20is%20the%20text%20of%20my%20custom%20license</text>
+      </controlProperties>
+    </control>
+    <control controlID="98" controlTypeID="com.balsamiq.mockups::Link" x="1725" y="564" w="-1" h="-1" measuredW="76" measuredH="19" zOrder="58" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>%20%28CC-BY-NC%29</text>
+      </controlProperties>
+    </control>
+    <control controlID="99" controlTypeID="com.balsamiq.mockups::Paragraph" x="1509" y="357" w="457" h="80" measuredW="200" measuredH="80" zOrder="59" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>13576743</color>
+        <text>Suggestion%3A%20Creative%20Commons%20Licenses%20make%20it%20much%20easier%20for%20others%20to%20use%20your%20book%2Ceven%20if%20they%20aren%27t%20fluent%20in%20the%20language%20of%20your%20custom%20license.</text>
+      </controlProperties>
+    </control>
+    <control controlID="100" controlTypeID="com.balsamiq.mockups::Paragraph" x="1509" y="249" w="457" h="52" measuredW="200" measuredH="80" zOrder="60" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>13576743</color>
+        <text>Suggestion%3A%20Assigning%20a%20Creative%20Commons%20Licenses%20makes%20it%20easy%20for%20you%20to%20clearly%20grant%20certain%20permissions%20to%20everyone.</text>
+      </controlProperties>
+    </control>
+    <control controlID="102" controlTypeID="com.balsamiq.mockups::Label" x="1507" y="118" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="61" locked="false" isInGroup="-1">
+      <controlProperties>
+        <bold>true</bold>
+        <text>Usage/License</text>
+      </controlProperties>
+    </control>
+    <control controlID="103" controlTypeID="__group__" x="1507" y="140" w="196" h="21" measuredW="196" measuredH="21" zOrder="62" locked="false" isInGroup="-1">
+      <groupChildrenDescriptors>
+        <control controlID="0" controlTypeID="com.balsamiq.mockups::Label" x="0" y="0" w="-1" h="-1" measuredW="112" measuredH="21" zOrder="0" locked="false" isInGroup="103">
+          <controlProperties>
+            <text>Creative%20Commons</text>
+          </controlProperties>
+        </control>
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::Link" x="120" y="2" w="-1" h="-1" measuredW="76" measuredH="19" zOrder="1" locked="false" isInGroup="103">
+          <controlProperties>
+            <text>%20%28CC-BY-NC%29</text>
+          </controlProperties>
+        </control>
+      </groupChildrenDescriptors>
+    </control>
+    <control controlID="104" controlTypeID="com.balsamiq.mockups::Paragraph" x="1508" y="163" w="457" h="38" measuredW="200" measuredH="80" zOrder="63" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>0</color>
+        <text>Additional%20Requests%3A%20The%20contents%20of%20what%20I%20typed%20into%20the%20additional%20requests%20box.</text>
+      </controlProperties>
     </control>
   </controls>
 </mockup>

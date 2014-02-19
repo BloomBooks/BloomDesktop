@@ -48,7 +48,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "LoginDialog.Email");
-			this.label1.Location = new System.Drawing.Point(29, 9);
+			this.label1.Location = new System.Drawing.Point(15, 15);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(73, 13);
 			this.label1.TabIndex = 0;
@@ -60,9 +60,9 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._emailBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._emailBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._emailBox, "LoginDialog.LoginDialog._emailBox");
-			this._emailBox.Location = new System.Drawing.Point(32, 25);
+			this._emailBox.Location = new System.Drawing.Point(18, 31);
 			this._emailBox.Name = "_emailBox";
-			this._emailBox.Size = new System.Drawing.Size(233, 20);
+			this._emailBox.Size = new System.Drawing.Size(247, 20);
 			this._emailBox.TabIndex = 1;
 			this._emailBox.TextChanged += new System.EventHandler(this._emailBox_TextChanged);
 			// 
@@ -72,7 +72,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label2, "LoginDialog.Password");
-			this.label2.Location = new System.Drawing.Point(29, 60);
+			this.label2.Location = new System.Drawing.Point(15, 58);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(53, 13);
 			this.label2.TabIndex = 2;
@@ -84,22 +84,23 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._passwordBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._passwordBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._passwordBox, "LoginDialog.LoginDialog._passwordBox");
-			this._passwordBox.Location = new System.Drawing.Point(32, 76);
+			this._passwordBox.Location = new System.Drawing.Point(18, 74);
 			this._passwordBox.Name = "_passwordBox";
-			this._passwordBox.Size = new System.Drawing.Size(233, 20);
+			this._passwordBox.Size = new System.Drawing.Size(247, 20);
 			this._passwordBox.TabIndex = 3;
 			this._passwordBox.TextChanged += new System.EventHandler(this._passwordBox_TextChanged);
 			// 
 			// _loginButton
 			// 
+			this._loginButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._loginButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._loginButton, "LoginDialog.LoginButton");
-			this._loginButton.Location = new System.Drawing.Point(32, 148);
+			this._loginButton.Location = new System.Drawing.Point(109, 148);
 			this._loginButton.Name = "_loginButton";
 			this._loginButton.Size = new System.Drawing.Size(75, 23);
 			this._loginButton.TabIndex = 6;
-			this._loginButton.Text = "Login";
+			this._loginButton.Text = "&Login";
 			this._loginButton.UseVisualStyleBackColor = true;
 			this._loginButton.Click += new System.EventHandler(this.Login);
 			// 
@@ -113,7 +114,7 @@
 			this._cancelButton.Name = "_cancelButton";
 			this._cancelButton.Size = new System.Drawing.Size(75, 23);
 			this._cancelButton.TabIndex = 7;
-			this._cancelButton.Text = "Cancel";
+			this._cancelButton.Text = "&Cancel";
 			this._cancelButton.UseVisualStyleBackColor = true;
 			// 
 			// _L10NSharpExtender
@@ -127,12 +128,12 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._forgotLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._forgotLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._forgotLabel, "LoginDialog.ForgotPassword");
-			this._forgotLabel.Location = new System.Drawing.Point(225, 108);
+			this._forgotLabel.Location = new System.Drawing.Point(180, 106);
 			this._forgotLabel.Name = "_forgotLabel";
-			this._forgotLabel.Size = new System.Drawing.Size(40, 13);
+			this._forgotLabel.Size = new System.Drawing.Size(86, 13);
 			this._forgotLabel.TabIndex = 5;
 			this._forgotLabel.TabStop = true;
-			this._forgotLabel.Text = "I forgot";
+			this._forgotLabel.Text = "Forgot Password";
 			this._forgotLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._forgotLabel_LinkClicked);
 			// 
 			// _borderLabel
@@ -141,9 +142,9 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._borderLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._borderLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._borderLabel, "LoginDialog.label3");
-			this._borderLabel.Location = new System.Drawing.Point(31, 24);
+			this._borderLabel.Location = new System.Drawing.Point(17, 30);
 			this._borderLabel.Name = "_borderLabel";
-			this._borderLabel.Size = new System.Drawing.Size(235, 22);
+			this._borderLabel.Size = new System.Drawing.Size(249, 22);
 			this._borderLabel.TabIndex = 7;
 			this._borderLabel.Text = "label3";
 			// 
@@ -155,11 +156,11 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showPasswordCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showPasswordCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._showPasswordCheckBox, "LoginDialog.showPassword");
-			this._showPasswordCheckBox.Location = new System.Drawing.Point(34, 107);
+			this._showPasswordCheckBox.Location = new System.Drawing.Point(20, 105);
 			this._showPasswordCheckBox.Name = "_showPasswordCheckBox";
 			this._showPasswordCheckBox.Size = new System.Drawing.Size(102, 17);
 			this._showPasswordCheckBox.TabIndex = 4;
-			this._showPasswordCheckBox.Text = "Show Password";
+			this._showPasswordCheckBox.Text = "&Show Password";
 			this._showPasswordCheckBox.UseVisualStyleBackColor = true;
 			this._showPasswordCheckBox.CheckedChanged += new System.EventHandler(this._showPasswordCheckBox_CheckedChanged);
 			// 
@@ -183,8 +184,10 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "LoginDialog.WindowTitle");
+			this.MaximizeBox = false;
+			this.MinimizeBox = false;
 			this.Name = "LoginDialog";
-			this.Text = "Login to Bloom Web service";
+			this.Text = "Log in to BloomLibrary.org";
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();

@@ -929,7 +929,7 @@ namespace BloomTests.Book
 
 			book.UpdateLicenseMetdata(licenseData);
 
-			Assert.That(_metadata.License, Is.EqualTo("by-sa"));
+			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
 
 			// Custom License

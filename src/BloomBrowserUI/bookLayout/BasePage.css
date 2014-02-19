@@ -248,3 +248,14 @@ LABEL.bubble, LABEL.placeholder
 {
 	display: none;
 }
+.superscript
+{
+	vertical-align: super;
+	font-size: 80%;
+}
+H1
+{
+	font-weight: bold !important;
+	font-size: 120%;
+	color: #1C27D2;
+}

@@ -488,6 +488,36 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/body/div/div[@lang='es']", 0);
         }
 
+		[Test]
+		public void PrettyPrintLanguage_DoesNotModifyUnknownCodes()
+		{
+			var htmlDom = new HtmlDom();
+			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged" };
+			var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("xyz"), Is.EqualTo("xyz"));
+		}
+
+	    [Test]
+	    public void PrettyPrintLanguage_AdjustsLang1()
+	    {
+			var htmlDom = new HtmlDom();
+		    var settingsettings = new CollectionSettings() {Language1Iso639Code = "pdc", Language1Name = "German, Kludged"};
+		    var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("pdc"), Is.EqualTo("German, Kludged"));
+	    }
+
+		[Test]
+		public void PrettyPrintLanguage_AdjustsKnownLanguages()
+		{
+			var htmlDom = new HtmlDom();
+			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "de", Language3Iso639Code = "fr"};
+			var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
+			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
+		}
+
         #region Metadata
         [Test]
         public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()

@@ -14,7 +14,7 @@
 mixin metadata-standard
 	meta(charset='UTF-8')
 	meta(name='Generator', content='Bloom')
-	meta(name='BloomFormatVersion', content='0.8')
+	meta(name='BloomFormatVersion', content='2.0')
 
 mixin stylesheets(nameOfTemplateSpecificCSS)
 	+stylesheet('basePage.css')
@@ -99,6 +99,14 @@ mixin grid(rows, columns)
 					td
 						+field
 
+mixin gridxy(columns, rows)
+	- requireTwoArguments("grid", arguments);
+	table.bloomGrid(attributes)
+		- for (var r = 0; r < rows; r++)
+			tr
+				- for(var c = 0; c < columns; c++)
+					td
+						+field
 //- ------------------------------------------------
 //- Mixins for Repetition
 //- ------------------------------------------------

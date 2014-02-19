@@ -162,7 +162,7 @@ namespace Bloom
 				builder.Register<SourceCollectionsList>(c =>
 					 {
 						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
+						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() };
 						 return l;
 					 }).InstancePerLifetimeScope();
 
@@ -219,12 +219,13 @@ namespace Bloom
         public static IEnumerable<string> GetFactoryFileLocations()
 	    {
 	        //bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
-	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout");
+	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI","bookLayout");
 
-	        yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
-	            //hack to get the distfiles folder itself
+            //hack to get the distfiles folder itself
+            yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+            yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
@@ -273,9 +274,9 @@ namespace Bloom
 			//template on the machine ("superprimer1/superprimer.css" and "superprimer2/superprimer.css").
 			//Tangentially related is the problem of a stylesheet of a template changing and messing up
 			//a users's existing just-fine document. We have to somehow address that, too.
-			if (Directory.Exists(InstalledCollectionsDirectory))
+			if (Directory.Exists(GetInstalledCollectionsDirectory()))
 			{
-				foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
+				foreach (var dir in Directory.GetDirectories(GetInstalledCollectionsDirectory()))
 				{
 					yield return dir;
 
@@ -287,7 +288,7 @@ namespace Bloom
                 }
 
 				// add those directories from collections which are just pointed to by shortcuts
-				foreach (var shortcut in Directory.GetFiles(InstalledCollectionsDirectory, "*.lnk", SearchOption.TopDirectoryOnly))
+				foreach (var shortcut in Directory.GetFiles(GetInstalledCollectionsDirectory(), "*.lnk", SearchOption.TopDirectoryOnly))
 				{
 					var collectionDirectory = ResolveShortcut.Resolve(shortcut);
 					if (Directory.Exists(collectionDirectory))
@@ -316,17 +317,15 @@ namespace Bloom
 			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}
 
-        public static string InstalledCollectionsDirectory
+        public static string GetInstalledCollectionsDirectory()
 		{
-            get
-            {
-				//we want this path of directories sitting there, waiting for the user
-            	var d = GetBloomAppDataFolder();
-            	var collections = d.CombineForPath("Collections");
-				if (!Directory.Exists(collections))
-					Directory.CreateDirectory(collections);
-            	return collections;
-            }
+			//we want this path of directories sitting there, waiting for the user
+            var d = GetBloomAppDataFolder();
+            var collections = d.CombineForPath("Collections");
+				
+            if (!Directory.Exists(collections))
+				Directory.CreateDirectory(collections);
+            return collections;
 		}
 
 		public static string XMatterAppDataFolder
@@ -384,12 +383,12 @@ namespace Bloom
 		/// </summary>
 		private void AddShortCutInComputersBloomCollections(string vernacularCollectionDirectory)
 		{
-			if (!Directory.Exists(ProjectContext.InstalledCollectionsDirectory))
+			if (!Directory.Exists(ProjectContext.GetInstalledCollectionsDirectory()))
 				return;//well, that would be a bug, I suppose...
 
 			try
 			{
-				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.InstalledCollectionsDirectory);
+				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.GetInstalledCollectionsDirectory());
 			}
 			catch (ApplicationException e)
 			{
