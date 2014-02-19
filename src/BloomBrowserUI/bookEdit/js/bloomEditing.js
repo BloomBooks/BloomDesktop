@@ -691,18 +691,26 @@ function ResizeUsingPercentages(e,ui){
     });
 
      //Convert Standard Format Markers in the pasted text to html spans
-    jQuery("div.bloom-editable").on("paste", function () {
-        var s = $(this).html();
-        var pattern = '\\([a-z])\s([0-9]+)';
-        var re = new RegExp(pattern, 'g');
-        $(this).html(s.replace(re, "<span class='sfm_$1'>$2</span>"));
+    jQuery("div.bloom-editable").on("paste", function (e) {
+        var s = e.originalEvent.clipboardData.getData('text/plain');
+        var re = new RegExp('\\\\v\\s(\\d+)', 'g');
+        var matches = re.exec(s);
+        if (matches == null) {
+            //just let it paste
+        }
+        else {
+            e.preventDefault();
+            var x =s.replace(re, "<span class='superscript'>$1</span>");
+            document.execCommand("insertHtml", false, x);
+            //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
+        }
     });
 
      //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain. 
      //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
     jQuery("div.bloom-editable").on('keydown', null, 'F6', function (e) {
-        var SelRange = document.getSelection();
-            if (SelRange != null && SelRange != '') {
+        var selection = document.getSelection();
+        if (selection != null && selection != '') {
                 //NB: by using exeCommand, we get undo-ability
                 document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
             }
