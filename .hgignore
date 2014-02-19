@@ -60,6 +60,7 @@ lib/dotnet/Chorus*.*
 DistFiles/exiftool.exe
 Copy*.bat
 lib/wkhtmltopdf/*
+lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
