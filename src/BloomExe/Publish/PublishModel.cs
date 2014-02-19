@@ -32,7 +32,7 @@ namespace Bloom.Publish
 
 		public enum DisplayModes
 		{
-			NoBook,
+			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
 			Upload
@@ -40,6 +40,7 @@ namespace Bloom.Publish
 
 		public enum BookletPortions
 		{
+			None,
 			AllPagesNoBooklet,
 			BookletCover,
 			BookletPages,//include front and back matter that isn't coverstock
@@ -71,7 +72,7 @@ namespace Bloom.Publish
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletPortion = BookletPortions.BookletPages;
+			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
 		public PublishView View { get; set; }
@@ -117,7 +118,7 @@ namespace Bloom.Publish
 				//we can't safely do any ui-related work from this thread, like putting up a dialog
 				doWorkEventArgs.Result = e;
 				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
-				//                SetDisplayMode(DisplayModes.NoBook);
+				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
 		}
@@ -166,7 +167,7 @@ namespace Bloom.Publish
 			return path;
 		}
 
-		DisplayModes _currentDisplayMode = DisplayModes.NoBook;
+		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
 		internal DisplayModes DisplayMode
 		{
 			get
@@ -240,6 +241,9 @@ namespace Bloom.Publish
 					var portion = "";
 					switch (BookletPortion)
 					{
+						case BookletPortions.None:
+							Debug.Fail("Save should not be enabled");
+							return;
 						case BookletPortions.AllPagesNoBooklet:
 							portion = "Pages";
 							break;

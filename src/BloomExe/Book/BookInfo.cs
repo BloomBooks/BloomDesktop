@@ -121,14 +121,6 @@ namespace Bloom.Book
 			set { MetaData.BookLineage = value; }
 		}
 
-		// Todo: this needs to be set to some suitable person/organization, possibly based on our parse.com login, when something is actually uploaed.
-		// As yet it is not used.
-		public string UploadedBy
-		{
-			get { return MetaData.UploadedBy; }
-			set { MetaData.UploadedBy = value; }
-		}
-
 		// This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
 		// object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,
 		// ask the copyright holder for permission to use) 'custom' (rights presumably specified in licenseNotes)
@@ -253,6 +245,24 @@ namespace Bloom.Book
 			get { return MetaData.Languages; }
 			set { MetaData.Languages = value; }
 		}
+
+		/// <summary>
+		/// The Parse.com object ID of the person who uploaded the book.
+		/// </summary>
+		public string Uploader
+		{
+			get
+			{
+				if (MetaData.Uploader == null)
+					return "";
+				return MetaData.Uploader.ObjectId;
+			}
+
+			set
+			{
+				MetaData.SetUploader(value);
+			}
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -345,11 +355,6 @@ namespace Bloom.Book
 		[JsonProperty("bookLineage")]
 		public string BookLineage { get; set; }
 
-		// Todo: this needs to be set to some suitable person/organization, possibly based on our parse.com login, when something is actually uploaed.
-		// As yet it is not used.
-		[JsonProperty("uploadedBy")]
-		public string UploadedBy { get; set; }
-
 		// This tells Bloom where the data files can be found.
 		// Strictly it is the first argument that needs to be passed to BookTransfer.DownloadBook in order to get the entire book data.
 		[JsonProperty("downloadSource")]
@@ -396,5 +401,37 @@ namespace Bloom.Book
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
+
+		public void SetUploader(string id)
+		{
+			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
+			// to an object in another table: in this case the special table of users.
+			if (Uploader == null)
+				Uploader = new Pointer() { Type = "Pointer", ClassName = "_User" };
+			Uploader.ObjectId = id;
+		}
+
+		/// <summary>
+		/// The Parse.com ID of the person who uploaded the book.
+		/// This is stored in a special way that parse.com requires for cross-table pointers.
+		/// </summary>
+		[JsonProperty("uploader")]
+		public Pointer Uploader { get; set; }
+	}
+
+	/// <summary>
+	/// This is the required structure for a parse.com pointer to an object in another table.
+	/// </summary>
+	public class Pointer
+	{
+
+		[JsonProperty("__type")]
+		public string Type { get; set; }
+
+		[JsonProperty("className")]
+		public string ClassName { get; set; }
+
+		[JsonProperty("objectId")]
+		public string ObjectId { get; set; }
 	}
 }

@@ -158,6 +158,11 @@ namespace Bloom.Book
 			}
 		}
 
+		public string PrettyPrintLanguage(string code)
+		{
+			return _bookData.PrettyPrintLanguage(code);
+		}
+
 		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			try
@@ -367,13 +372,27 @@ namespace Bloom.Book
 
 		public bool CanPublish
 		{
-			get { return IsEditable && !HasFatalError; }
+			get
+			{
+				if (!BookInfo.IsEditable)
+					return false;
+				GetErrorsIfNotCheckedBefore();
+				return !HasFatalError;
+			}
 		}
 
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
 		/// </summary>
-		public bool IsEditable { get { return BookInfo.IsEditable; } }
+		public bool IsEditable {
+			get
+			{
+				if (!BookInfo.IsEditable)
+					return false;
+				GetErrorsIfNotCheckedBefore();
+				return !HasFatalError;
+			}
+		}
 
 
 
@@ -1302,7 +1321,9 @@ namespace Bloom.Book
 
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
-			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath, false);
+
+			var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
+			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf, false);
 
 			switch (bookletPortion)
 			{

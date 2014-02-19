@@ -2,14 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
+using Amazon.Runtime;
 using Autofac.Features.Metadata;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Network;
+using Palaso.Progress;
+using Palaso.UI.WindowsForms.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -67,8 +73,50 @@ namespace Bloom.WebLibraryIntegration
 			if (bucketStart == -1)
 				throw new ArgumentException("URL is not within expected bucket");
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
-			var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
-			return DownloadBook(metadata.DownloadSource, destPath);
+			try
+			{
+				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				if (_progressDialog != null)
+					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
+					// downloading the metadata is considered step 1.
+				return DownloadBook(metadata.DownloadSource, destPath);
+
+			}
+			catch(WebException e)
+			{
+				DisplayNetworkDownloadProblem(e);
+				return "";
+			}
+			catch (AmazonServiceException e)
+			{
+				DisplayNetworkDownloadProblem(e);
+				return "";
+			}
+			catch (Exception e)
+			{
+			ShellWindow.Invoke((Action) (() =>
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				LocalizationManager.GetString("Publish.Upload.DownloadProblem",
+						"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				return "";
+			}
+		}
+
+		private static void DisplayNetworkDownloadProblem(Exception e)
+		{
+			ShellWindow.Invoke((Action) (() =>
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
+						"There was a problem downloading your book."))));
+
+		}
+
+		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
+		{
+			progress.WriteError(LocalizationManager.GetString("Publish.Upload.GenericUploadProblemNotice",
+				"There was a problem uploading your book."));
+			progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}"));
+			progress.WriteVerbose(e.StackTrace);
 		}
 
 		public static string DownloadFolder
@@ -76,23 +124,64 @@ namespace Bloom.WebLibraryIntegration
 			get
 			{
 				return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-					.CombineForPath("SIL", "Bloom", "Collections", "DownloadedBooks");
+					.CombineForPath(ProjectContext.GetInstalledCollectionsDirectory(), BookCollection.DownloadedBooksCollectionNameInEnglish);
 			}
 		}
 
+		private ProgressDialog _progressDialog;
+
 		private void HandleBloomBookOrder(string argument)
 		{
-			// If we are passed a bloom book order URL, download the corresponding book and open it.
-			if (argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix))
+			var mainWindow = ShellWindow;
+			if (mainWindow == null)
+				return; // We shouldn't be trying to handle orders while we don't have a main window open.
+			mainWindow.Invoke((Action)(() =>
 			{
-				var link = new BloomLinkArgs(argument);
-				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
-			}
-			// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
+				_progressDialog = new ProgressDialog();
+				_progressDialog.CanCancel = false; // one day we may allow this...
+				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
+				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
+				if (IsUrlOrder(argument))
+				{
+					var link = new BloomLinkArgs(argument);
+					var indexOfSlash = link.OrderUrl.LastIndexOf('/');
+					var bookOrder = link.OrderUrl.Substring(indexOfSlash + 1);
+					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(bookOrder);
+				}
+				else
+				{
+					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
+				}
+				_progressDialog.Show(mainWindow);
+			}));
+			try
 			{
-				HandleBookOrder(argument);
+				// If we are passed a bloom book order URL, download the corresponding book and open it.
+				if (IsUrlOrder(argument))
+				{
+					var link = new BloomLinkArgs(argument);
+					DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+				}
+				// If we are passed a bloom book order, download the corresponding book and open it.
+				else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
+				{
+					HandleBookOrder(argument);
+				}
 			}
+			finally
+			{
+				_progressDialog.Invoke((Action) (() => _progressDialog.Dispose()));
+			}
+		}
+
+		private static Form ShellWindow
+		{
+			get { return Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell); }
+		}
+
+		private static bool IsUrlOrder(string argument)
+		{
+			return argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
 		}
 
 		private void HandleBookOrder(string bookOrderPath)
@@ -143,7 +232,18 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public string UploadBook(string bookFolder, Action<String> notifier = null)
+		public string UserId
+		{
+			get { return _parseClient.UserId; }
+		}
+
+		public string UploadBook(string bookFolder, IProgress progress)
+		{
+			string parseId;
+			return UploadBook(bookFolder, progress, out parseId);
+		}
+
+		public string UploadBook(string bookFolder, IProgress progress, out string parseId)
 		{
 			var metaDataText = MetaDataText(bookFolder);
 			var metadata = BookMetaData.FromString(metaDataText);
@@ -157,7 +257,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
 			}
-			metadata.UploadedBy = UploadedBy;
+			metadata.SetUploader(UserId);
 			var s3BookId = S3BookId(metadata);
 			metadata.DownloadSource = s3BookId;
 			// Any updated ID at least needs to become a permanent part of the book.
@@ -173,14 +273,37 @@ namespace Bloom.WebLibraryIntegration
 			var metadataPath = BookMetaData.MetaDataPath(bookFolder);
 			var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 			File.Copy(metadataPath, orderPath, true);
-
-			_s3Client.UploadBook(s3BookId, bookFolder, notifier);
-			metadata.Thumbnail = _s3Client.ThumbnailUrl;
-			metadata.BookOrder = _s3Client.BookOrderUrl;
-			if (notifier != null)
-				notifier(LocalizationManager.GetString("PublishWeb.UploadingBook","Uploading book record"));
-			// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-			_parseClient.SetBookRecord(metadata.Json);
+			parseId = "";
+			try
+			{
+				_s3Client.UploadBook(s3BookId, bookFolder, progress);
+				metadata.Thumbnail = _s3Client.ThumbnailUrl;
+				metadata.BookOrder = _s3Client.BookOrderUrl;
+				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
+				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
+				var response = _parseClient.SetBookRecord(metadata.Json);
+				parseId = response.ResponseUri.LocalPath;
+				int index = parseId.LastIndexOf('/');
+				parseId = parseId.Substring(index + 1);
+			}
+			catch (WebException e)
+			{
+				DisplayNetworkUploadProblem(e, progress);
+				return "";
+			}
+			catch (AmazonServiceException e)
+			{
+				DisplayNetworkUploadProblem(e, progress);
+				return "";
+			}
+			catch (Exception e)
+			{
+				progress.WriteError(LocalizationManager.GetString("Publish.Upload.UploadProblemNotice",
+								"There was a problem uploading your book. You may need to restart Bloom or get technical help."));
+				progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}"));
+				progress.WriteVerbose(e.StackTrace);
+				return "";
+			}
 			return s3BookId;
 		}
 
@@ -211,7 +334,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns></returns>
 		internal string DownloadBook(string s3BookId, string dest)
 		{
-			var result = _s3Client.DownloadBook(s3BookId, dest);
+			var result = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
 				var bookInfo = new BookInfo(result, false); // A downloaded book is a template, so never editable.
@@ -231,7 +354,7 @@ namespace Bloom.WebLibraryIntegration
 		public bool IsBookOnServer(string bookPath)
 		{
 			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
-			return _parseClient.GetSingleBookRecord(metadata.Id, metadata.UploadedBy) != null;
+			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
 		// Wait (up to three seconds) for data uploaded to become available.

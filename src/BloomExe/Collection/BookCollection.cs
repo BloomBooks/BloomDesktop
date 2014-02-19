@@ -55,7 +55,7 @@ namespace Bloom.Collection
 			string path = Path.Combine(_path, "customCollectionStyles.css");
 			if(File.Exists(path))
 				return;
-			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("root","collection styles override template.css"),path);
+			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI","bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
@@ -186,5 +186,7 @@ namespace Bloom.Collection
 			get { throw new NotImplementedException(); }
 			set { throw new NotImplementedException(); }
 		}
+
+		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
 	}
 }

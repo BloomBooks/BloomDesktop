@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.8.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.108.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.2.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">1.0.29.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -114,6 +114,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="AboutDialog.AboutDialogWindowTitle">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About Bloom</seg>
 	  </tuv>
@@ -524,10 +525,26 @@
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
 	  <tuv xml:lang="en">
-		<seg>Do Checks and Updates of All Books</seg>
+		<seg>Do Updates of All Books</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Vérifier et mettre à jour tous les livres</seg>
+		<seg>Mettre à jour tous les livres</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+	  <tuv xml:lang="en">
+		<seg>Do Checks of All Books</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Vérifier tous les livres</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.CollectionMenu.rescueMissingImages">
+	  <tuv xml:lang="en">
+		<seg>Rescue Missing Images...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Récupérer des images manquantes...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.showHistory">
@@ -1314,6 +1331,14 @@
 		<seg>Documentation</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.registrationMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Registration</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Inscription</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.releaseNotesMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Release Notes...</seg>
@@ -1702,10 +1727,10 @@
 	</tu>
 	<tu tuid="PublishTab.CoverOnlyRadio">
 	  <tuv xml:lang="en">
-		<seg>Cover Page</seg>
+		<seg>Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Page de titre</seg>
+		<seg>Couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.OnPagePerPaperRadio">
@@ -1766,24 +1791,6 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Envoyer/recevoir</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="The Sub-Theme">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>The Sub-Theme</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Le sous-thème</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Theme">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Theme</seg>
-	  </tuv>
-	  <tuv xml:lang="fr">
-		<seg>Le thème</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Agriculture">

@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.1.8.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">0.9.108.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.2.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">1.0.29.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+	<tu tuid="AboutDialog.AboutDialogWindowTitle">
+	  <tuv xml:lang="en">
+		<seg>About</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>À propos de</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Common.CancelButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
@@ -428,7 +436,7 @@
 	</tu>
 	<tu tuid="SettingsProtection.LauncherButtonLabel">
 	  <tuv xml:lang="en">
-		<seg>Settings...</seg>
+		<seg>Settings Protection...</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Configuration...</seg>

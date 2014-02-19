@@ -12,6 +12,8 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
+using Palaso.Progress;
+using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
 using Segmentio;
 
@@ -142,7 +144,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		/// <param name="pathToBloomBookDirectory"></param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, Action<string> notifier = null)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress)
 		{
 			ThumbnailUrl = null;
 			BookOrderUrl = null;
@@ -166,7 +168,7 @@ namespace Bloom.WebLibraryIntegration
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
-			UploadDirectory(prefix, wrapperPath, notifier);
+			UploadDirectory(prefix, wrapperPath, progress);
 
 			Directory.Delete(wrapperPath, true);
 		}
@@ -176,7 +178,7 @@ namespace Bloom.WebLibraryIntegration
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
 		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
 		/// </summary>
-		private void UploadDirectory(string prefix, string directoryPath, Action<string> notifier = null)
+		private void UploadDirectory(string prefix, string directoryPath, IProgress progress)
 		{
 			if (!Directory.Exists(directoryPath))
 			{
@@ -209,11 +211,8 @@ namespace Bloom.WebLibraryIntegration
 					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
-				if (notifier != null)
-				{
-					string uploading = LocalizationManager.GetString("PublishWeb.Uploading","Uploading {0}");
-					notifier(string.Format(uploading, fileName));
-				}
+				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus","Uploading {0}"), fileName);
+
 				try
 				{
 					_transferUtility.Upload(request);
@@ -240,7 +239,7 @@ namespace Bloom.WebLibraryIntegration
 
 			foreach (string subdir in Directory.GetDirectories(directoryPath))
 			{
-				UploadDirectory(prefix, subdir, notifier);
+				UploadDirectory(prefix, subdir, progress);
 			}
 		}
 
@@ -291,22 +290,9 @@ namespace Bloom.WebLibraryIntegration
 		/// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
-		public string DownloadBook(string storageKeyOfBookFolder, string pathToDestinationParentDirectory)
+		public string DownloadBook(string storageKeyOfBookFolder, string pathToDestinationParentDirectory, ProgressDialog downloadProgress = null)
 		{
 			//TODO tell it not to download pdfs. Those are just in there for previewing purposes, we don't need to get them now that we're getting the real thing
-
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName,
-				Delimiter = kDirectoryDelimeterForS3,
-				Prefix = storageKeyOfBookFolder
-			});
-
-			foreach (var s3Object in matchingFilesResponse.S3Objects)
-			{
-				_amazonS3.BeginGetObject(new GetObjectRequest() {BucketName = _bucketName, Key = s3Object.Key},
-					OnDownloadCallback, s3Object);
-			}
 
 			//review: should we instead save to a newly created folder so that we don't have to worry about the
 			//other folder existing already? Todo: add a test for that first.
@@ -317,10 +303,40 @@ namespace Bloom.WebLibraryIntegration
 			using (var tempDestination =
 					new TemporaryFolder("BloomDownloadStaging " + storageKeyOfBookFolder + " " + Guid.NewGuid()))
 			{
-				var token = _transferUtility.BeginDownloadDirectory(_bucketName, storageKeyOfBookFolder,
-					tempDestination.FolderPath, OnDownloadProgress, storageKeyOfBookFolder);
-
-				_transferUtility.EndDownloadDirectory(token);
+				var request = new TransferUtilityDownloadDirectoryRequest()
+				{
+					BucketName = _bucketName,
+					S3Directory = storageKeyOfBookFolder,
+					LocalDirectory = tempDestination.FolderPath
+				};
+				int downloaded = 0;
+				int initialProgress = 0;
+				if (downloadProgress != null)
+				{
+					downloadProgress.Invoke((Action)(() =>
+					{
+						downloadProgress.Progress++; // count getting set up as one step.
+						initialProgress = downloadProgress.Progress; // might be one more step done, downloading order
+					}));
+				}
+				int total = 14; // arbitrary (typical minimum files in project)
+				request.DownloadedDirectoryProgressEvent += delegate(object sender, DownloadDirectoryProgressArgs args)
+				{
+					int progressMax = initialProgress + args.TotalNumberOfFiles;
+					int currentProgress = initialProgress + args.NumberOfFilesDownloaded;
+					if (downloadProgress != null && (progressMax != total || currentProgress != downloaded))
+					{
+						total = progressMax;
+						downloaded = currentProgress;
+						// We only want to invoke if something really changed.
+						downloadProgress.Invoke((Action)(() =>
+						{
+							downloadProgress.ProgressRangeMaximum = progressMax; // probably only changes the first time
+							downloadProgress.Progress = currentProgress;
+						}));
+					}
+				};
+				_transferUtility.DownloadDirectory(request);
 
 				//look inside the wrapper that we got
 
@@ -350,17 +366,6 @@ namespace Bloom.WebLibraryIntegration
 				}
 				return destinationPath;
 			}
-		}
-
-		private void OnDownloadCallback(IAsyncResult ar)
-		{
-
-		}
-
-
-		private void OnDownloadProgress(IAsyncResult ar)
-		{
-
 		}
 
 		public void Dispose()

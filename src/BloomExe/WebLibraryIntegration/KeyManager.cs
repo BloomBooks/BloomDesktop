@@ -40,10 +40,17 @@ namespace Bloom.WebLibraryIntegration
 			var lines = File.ReadAllLines(connectionsPath);
 			S3AccessKey = lines[0];
 			S3SecretAccessKey = lines[1];
+#if DEBUG
+			// Lines 4 & 5 should be the keys for the BloomLibrarySandbox
+			ParseApiKey = lines[4];
+			ParseApplicationKey = lines[5];
+#else
+			// Lines 2 & 3 should be the keys for the real BloomLibrary
 			ParseApiKey = lines[2];
 			ParseApplicationKey = lines[3];
-			ParseUnitTestApiKey = lines[4];
-			ParseUnitTextApplicationKey = lines[5];
+#endif
+			ParseUnitTestApiKey = lines[6];
+			ParseUnitTextApplicationKey = lines[7];
 		}
 	}
 }

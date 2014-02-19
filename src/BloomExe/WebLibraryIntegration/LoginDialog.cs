@@ -48,28 +48,60 @@ namespace Bloom.WebLibraryIntegration
 				DoSignUp();
 				return;
 			}
-			if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
+			bool logIn;
+			try
+			{
+				logIn = _client.LogIn(_emailBox.Text, _passwordBox.Text);
+			}
+			catch (Exception)
+			{
+				MessageBox.Show(this, LocalizationManager.GetString("Publish.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection"),
+					LocalizationManager.GetString("Publish.Upload.Login.LoginFailed", "Login failed"),
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+				return;
+			}
+			if (logIn)
 			{
 				DialogResult = DialogResult.OK;
 				Close();
 			}
 			else
 			{
-				MessageBox.Show(this, LocalizationManager.GetString("Login.PasswordMismatch", "Password and user ID did not match"),
-					LocalizationManager.GetString("Login.LoginFailed", "Login failed"),
+				MessageBox.Show(this, LocalizationManager.GetString("Publish.Upload.Login.PasswordMismatch", "Password and user ID did not match"),
+					LocalizationManager.GetString("Publish.Upload.Login.LoginFailed", "Login failed"),
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 			}
 		}
 
+		private string LoginOrSignupConnectionFailedString
+		{
+			get
+			{
+				return L10NSharp.LocalizationManager.GetString("Publish.Upload.Login.LoginOrSignupConnectionFailed",
+					"Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.");
+			}
+		}
+
 		private void DoSignUp()
 		{
-			if (_client.UserExists(_emailBox.Text))
+			bool userExists;
+			try
+			{
+				userExists = _client.UserExists(_emailBox.Text);
+			}
+			catch (Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				return;
+			}
+			if (userExists)
 			{
 				if (
 					MessageBox.Show(this,
-						LocalizationManager.GetString("Login.AlreadyHaveAccount", "We already have an account with this address.  Would you like to login?"),
-						LocalizationManager.GetString("Login.AccountExists", "Account Exists"),
+						LocalizationManager.GetString("Publish.Upload.Login.AlreadyHaveAccount", "We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?"),
+						LocalizationManager.GetString("Publish.Upload.Login.AccountAlreadyExists", "Account Already Exists"),
 						MessageBoxButtons.YesNo)
 						== DialogResult.Yes)
 				{
@@ -77,9 +109,17 @@ namespace Bloom.WebLibraryIntegration
 					return;
 				}
 			}
-			_client.CreateUser(_emailBox.Text, _passwordBox.Text);
-			if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
-				Close();
+			try
+			{
+				_client.CreateUser(_emailBox.Text, _passwordBox.Text);
+				if (_client.LogIn(_emailBox.Text, _passwordBox.Text))
+					Close();
+
+			}
+			catch (Exception e)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+			}
 		}
 
 		private bool _doingSignup;
@@ -105,8 +145,8 @@ namespace Bloom.WebLibraryIntegration
 		private void SwitchToSignUp()
 		{
 			_forgotLabel.Visible = false;
-			this.Text = LocalizationManager.GetString("Login.Signup", "Sign up for Bloom Library.");
-			_loginButton.Text = LocalizationManager.GetString("Login.Signup", "Sign up");
+			this.Text = LocalizationManager.GetString("Publish.Upload.Login.Signup", "Sign up for Bloom Library.");
+			_loginButton.Text = LocalizationManager.GetString("Publish.Upload.Login.Signup", "Sign up");
 			_doingSignup = true;
 		}
 
@@ -152,30 +192,41 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (HaveGoodEmail())
 			{
+				try
+				{
+
 				if (_client.UserExists(_emailBox.Text))
 				{
 					var msg = string.Format(
-						LocalizationManager.GetString("Login.SendingResetPassword",
+						LocalizationManager.GetString("Publish.Upload.Login.SendingResetPassword",
 							"We are sending an email to {0} with instructions for how to reset your password"), _emailBox.Text);
-					MessageBox.Show(this, msg, LocalizationManager.GetString("Login.ResetPassword", "Resetting Password"));
+					MessageBox.Show(this, msg, LocalizationManager.GetString("Publish.Upload.Login.ResetPassword", "Resetting Password"));
 					_client.SendResetPassword(_emailBox.Text);
 				}
 				else
 				{
-					if (MessageBox.Show(this, LocalizationManager.GetString("Login.NoRecordOfUser",
+					if (MessageBox.Show(this, LocalizationManager.GetString("Publish.Upload.Login.NoRecordOfUser",
 						"We don't have a user on record with that email. Would you like to sign up?"),
-						LocalizationManager.GetString("Login.UnknownUser", "Unknown user"),
+						LocalizationManager.GetString("Publish.Upload.Login.UnknownUser", "Unknown user"),
 						MessageBoxButtons.YesNo)
 						== DialogResult.Yes)
 					{
 						SwitchToSignUp();
 					}
 				}
+				}
+				catch (Exception)
+				{
+					MessageBox.Show(this, LocalizationManager.GetString("Publish.Upload.Login.ResetConnectFailed", "Bloom could not connect to the server to reset your password. Please check your network connection"),
+						LocalizationManager.GetString("Publish.Upload.Login.ResetFailed", "Reset Password failed"),
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+				}
 			}
 			else
 			{
-				var msg = LocalizationManager.GetString("Login.PleaseProvideEmail", "Please enter a valid email address. We will send an email to this address so you can reset your password.");
-				MessageBox.Show(this, msg, LocalizationManager.GetString("Login.Need Email", "Email Needed"));
+				var msg = LocalizationManager.GetString("Publish.Upload.Login.PleaseProvideEmail", "Please enter a valid email address. We will send an email to this address so you can reset your password.");
+				MessageBox.Show(this, msg, LocalizationManager.GetString("Publish.Upload.Login.Need Email", "Email Needed"));
 			}
 		}
 

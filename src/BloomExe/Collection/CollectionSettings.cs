@@ -134,15 +134,7 @@ namespace Bloom.Collection
 				//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 				//So, we'd rather have GetBestLanguageMatch()
 
-
-				//profiling showed we were spending a lot of time looking this up, hence the cache
-				if (!_isoToLangNameDictionary.ContainsKey(Language2Iso639Code))
-				{
-					_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
-				}
-
-				return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[Language2Iso639Code], inLanguage);
-
+				return GetLanguageName(Language2Iso639Code, inLanguage);
 			}
 			catch (Exception)
 			{
@@ -151,6 +143,28 @@ namespace Bloom.Collection
 				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
 				return "L2-Unknown-" + Language2Iso639Code;
 			}
+		}
+
+		/// <summary>
+		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
+		/// If the language code is unknown, return it unchanged.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="inLanguage"></param>
+		/// <returns></returns>
+		public string GetLanguageName(string code, string inLanguage)
+		{
+			//profiling showed we were spending a lot of time looking this up, hence the cache
+			if (!_isoToLangNameDictionary.ContainsKey(code))
+			{
+				var match = _lookupIsoCode.GetExactLanguageMatch(code);
+				if (match == null)
+					_isoToLangNameDictionary[code] = code; // best name we can come up with is the code itself
+				else
+					_isoToLangNameDictionary.Add(code, match.Name);
+			}
+
+			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
 		}
 
 		private string GetLanguageNameInUILangIfPossible(string name, string codeOfDesiredLanguage)
@@ -169,12 +183,7 @@ namespace Bloom.Collection
 				if (string.IsNullOrEmpty(Language3Iso639Code))
 					return string.Empty;
 
-				//profiling showed we were spending a lot of time looking this up, hence the cache
-				if (!_isoToLangNameDictionary.ContainsKey(Language3Iso639Code))
-				{
-					_isoToLangNameDictionary.Add(Language3Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
-				}
-				return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[Language3Iso639Code],inLanguage);
+				return GetLanguageName(Language3Iso639Code, inLanguage);
 			}
 			catch (Exception)
 			{
