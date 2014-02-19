@@ -250,8 +250,6 @@ function AddToolbox(){
 }
 
 
-
-
 function AddExperimentalNotice(element) {
     $(element).qtipSecondary({
         content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
@@ -596,7 +594,6 @@ function GetLocalizedHint(whatToSay, targetElement) {
                 }
              }
          });
-
      }
  }
 
@@ -620,6 +617,21 @@ function ResizeUsingPercentages(e,ui){
     }
     $(ui.element).removeData('hadPreviouslyBeenRelocated');
  }
+
+// When a div is overfull,
+// we add the overflow class and it gets a red background or something
+function AddOverflowHandler() {
+    $("div.bloom-editable").on("keyup paste", function() {
+        var overflowing = this.scrollHeight > this.clientHeight;
+        //var overflow2 = $(this).scrollHeight > (this).height();
+        if ($(this).hasClass('overflow') && !overflowing) {
+            $(this).removeClass('overflow');
+        }
+        else if (overflowing) {
+            $(this).addClass('overflow');
+        }
+    });
+}
 
  //---------------------------------------------------------------------------------
 
@@ -678,17 +690,9 @@ function ResizeUsingPercentages(e,ui){
          $(this).append(contentElements);
      });
 
-
-     //when a div is overfull, add the overflow class so that it gets a red background or something
-    jQuery("div.bloom-editable").on("keyup paste", function() {
-        var overflowing = this.scrollHeight > this.clientHeight; //this.scrollHeight > $(this).maxSize().height;
-        if ($(this).hasClass('overflow') && !overflowing) {
-            $(this).removeClass('overflow');
-        }
-        else if (overflowing) {
-            $(this).addClass('overflow');
-        }
-    });
+    // Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    AddOverflowHandler();
 
      //Convert Standard Format Markers in the pasted text to html spans
     jQuery("div.bloom-editable").on("paste", function (e) {
@@ -714,19 +718,19 @@ function ResizeUsingPercentages(e,ui){
 
      //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain. 
      //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    jQuery("div.bloom-editable").on('keydown', null, 'F6', function (e) {
+    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
         var selection = document.getSelection();
         if (selection != null && selection != '') {
                 //NB: by using exeCommand, we get undo-ability
                 document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
             }
     });
-    jQuery("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H1");
     });
 
-    jQuery("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H2");
     });
