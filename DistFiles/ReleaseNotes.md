@@ -1,8 +1,8 @@
-﻿## 1.1  18 Feb 2014
+﻿## 1.1.574 18 Feb 2014
 New experimental keyboard shortcuts:
 Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
-
 F7=Heading1, F8=Heading2.
+Pasting text with \v 123 will give you a superscript 123.
 
 
 ## 1.1  12 Feb 2014
