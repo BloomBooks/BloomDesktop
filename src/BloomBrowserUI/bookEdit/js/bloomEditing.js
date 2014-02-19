@@ -692,7 +692,13 @@ function ResizeUsingPercentages(e,ui){
 
      //Convert Standard Format Markers in the pasted text to html spans
     jQuery("div.bloom-editable").on("paste", function (e) {
+        if (!e.originalEvent.clipboardData)
+            return;
+
         var s = e.originalEvent.clipboardData.getData('text/plain');
+        if (s==null || s =='')
+            return;
+
         var re = new RegExp('\\\\v\\s(\\d+)', 'g');
         var matches = re.exec(s);
         if (matches == null) {
