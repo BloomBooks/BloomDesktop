@@ -13,6 +13,7 @@ var RunTest = function(index, value) {
         name = nameAttr;
     console.log('Beginning test # '+ index + ' ' + name);
     var overflowing = $(value).IsOverflowing();
+    console.log("Overflow: " + overflowing);
     expect(overflowing).toBe($(value).hasClass('expectToOverflow'));
 };
 
@@ -23,6 +24,7 @@ describe("Overflow Tests", function () {
     it("Check test page for overflows", function() {
         loadFixtures('OverflowTestPage.htm');
         expect($('#jasmine-fixtures')).toBeTruthy();
-        $(".testTarget").RunTests();
+        console.log("Commencing Overflow tests...");
+        $(".myTest").RunTests();
     });
 });

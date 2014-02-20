@@ -1,0 +1,7 @@
+mixin testTarget
+    .myTest(attributes)
+        block
+
+mixin standardField
+    +testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+        block
