@@ -37,17 +37,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>..\..\output\debug\</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\release\</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Palaso">
-      <HintPath>..\..\..\Bloom-CollectionGenerator\lib\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\..\Bloom-CollectionGenerator\lib\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -58,6 +56,12 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Palaso">
+      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
+    </Reference>
+    <Reference Include="PalasoUIWindowsForms">
+      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -85,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj">
-      <Project>{304d5612-167c-4725-af27-b9f2bb788b57}</Project>
+      <Project>{304D5612-167C-4725-AF27-B9F2BB788B57}</Project>
       <Name>BloomExe</Name>
     </ProjectReference>
   </ItemGroup>
