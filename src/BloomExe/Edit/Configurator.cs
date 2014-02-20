@@ -225,13 +225,11 @@ namespace Bloom.Edit
 			string libraryData = GetLibraryData();
 			var local = GetInnerjson(LocalData);
 			var library = GetInnerjson(libraryData);
-			if(!string.IsNullOrEmpty(libraryData))
-				return "{"+local+", "+ library+"}";
-			else
-			{
-				return LocalData;
-			}
+			if (!string.IsNullOrEmpty(library))
+				return "{" + local + ", " + library + "}";
+			return LocalData;
 		}
+
 		private string GetInnerjson(string json)
 		{
 

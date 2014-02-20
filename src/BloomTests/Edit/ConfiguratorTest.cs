@@ -38,14 +38,14 @@ namespace BloomTests.Edit
 
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
-											{
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
-												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserui/bookLayout"),
-												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
-											});
+			{
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+				FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
+				FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout"),
+				FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
+			});
 
 			var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));

@@ -52,9 +52,11 @@ namespace Bloom
 				//on my build machine, I really like to have the dir labelled with the version.
 				//but it's a hassle to update all the other parts (installer, build machine) with this number,
 				//so we only use it if we don't find the unnumbered alternative.
-				if(!Directory.Exists(xulRunnerPath))
+				if (!Directory.Exists(xulRunnerPath))
+				{
 					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-												 Path.Combine("lib", "xulrunner11"));
+						Path.Combine("lib", "xulrunner14"));
+				}
 
 				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
 				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
