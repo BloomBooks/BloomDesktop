@@ -167,9 +167,9 @@
 	</Target>
 
 	<Target Name="GetWkthmlToPdfIntoLib" Condition="'$(OS)'=='Windows_NT'">
-		<RemoveDir Directories="$(RootDir)/lib/wkhtmltopdf" />
+		<RemoveDir Directories="$(RootDir)/DistFiles/wkhtmltopdf" />
 		<Unzip ZipFileName="$(RootDir)/lib/wkhtmltopdf-0.10.0_rc2.zip"
-			TargetDirectory="$(RootDir)/lib/"/>
+			TargetDirectory="$(RootDir)/DistFiles/"/>
 	</Target>
 
 	<Target Name="DownloadDistFiles">

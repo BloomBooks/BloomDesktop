@@ -230,19 +230,7 @@ namespace Bloom.Publish
 
 		private string FindWkhtmlToPdf()
 		{
-			var exePath = Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, "wkhtmltopdf");
-			exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-			if (!File.Exists(exePath))
-			{
-				//if this is a programmer, it should be in the lib directory
-				exePath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, Path.Combine("lib", "wkhtmltopdf"));
-				exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-				if (!File.Exists(exePath))
-				{
-					throw new ApplicationException("Could not find a file that should have been installed with Bloom: " + exePath);
-				}
-			}
-			return exePath;
+			return FileLocator.LocateExecutable("wkhtmltopdf", "wkhtmltopdf.exe");
 		}
 
 		/// <summary>
