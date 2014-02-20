@@ -36,16 +36,16 @@ namespace BloomTests.Edit
 			library.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
 			library.SetupGet(x => x.XMatterPackName).Returns("Factory"); 
 
-            ErrorReport.IsOkToInteractWithUser = false;
-            _fileLocator = new FileLocator(new string[]
-			                               	{
-			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
-												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserui/bookLayout"),
-												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
-			                               	});
+			ErrorReport.IsOkToInteractWithUser = false;
+			_fileLocator = new FileLocator(new string[]
+			{
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
+				FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+				FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
+				FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout"),
+				FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
+			});
 
             var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
