@@ -613,7 +613,8 @@ function ResizeUsingPercentages(e,ui){
 
 // Actual testable determination of overflow or not
 jQuery.fn.IsOverflowing = function(){
-    var overflowing = this.scrollHeight > this.clientHeight;
+    var element = $(this)[0];
+    var overflowing = element.scrollHeight > element.clientHeight;
     //var overflow2 = $(this).scrollHeight > (this).height();
     return overflowing;
 };

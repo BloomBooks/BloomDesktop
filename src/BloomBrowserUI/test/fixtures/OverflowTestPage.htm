@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <!-- Tests of overflow feature in Bloom that puts a red background in a field if there's too much content-->
-<head></head>
+<head>
+  <link rel="stylesheet" href="basePage.css" type="text/css">
+</head>
 <body>
-  <!-- This one should pass-->
-  <div name="Test1name" class="testTarget"></div>
-  <!-- This one should not pass-->
-  <div name="Test2name" class="testTarget expectToOverflow"></div>
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test bloom-editable with no styles doesn't overflow">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test bloom-editable with styles should not overflow" style="font-family:Andika;line-height:1.1">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test bloom-editable with styles should overflow" style="font-family:Andika;font-size:large;height:25px;">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test bloom-editable with styles should overflow" style="font-size:large;height:25px;">Test text
+  </div>
 </body>
