@@ -167,14 +167,14 @@
 	</Target>
 
 	<Target Name="GetWkthmlToPdfIntoLib" Condition="'$(OS)'=='Windows_NT'">
-		<RemoveDir Directories="$(RootDir)/lib/wkhtmltopdf" />
+		<RemoveDir Directories="$(RootDir)/DistFiles/wkhtmltopdf" />
 		<Unzip ZipFileName="$(RootDir)/lib/wkhtmltopdf-0.10.0_rc2.zip"
-			TargetDirectory="$(RootDir)/lib/"/>
+			TargetDirectory="$(RootDir)/DistFiles/"/>
 	</Target>
 
 	<Target Name="DownloadDistFiles">
 		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
-		<!-- NB: some configurations on TeamCity may also get a version of this from 
+		<!-- NB: some configurations on TeamCity may also get a version of this from
 		the static dependencies configuration, for use with getDependencies.sh.
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
