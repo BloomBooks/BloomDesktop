@@ -1,7 +1,11 @@
 doctype html
+
 // Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
 include ../../../../DistFiles/jade/bloom-foundation-mixins
 
 head
 body
-	.testTarget.expectToPass
+	// This one should pass
+	.testTarget(name='Test1name')
+	// This one should not pass
+	.testTarget.expectToOverflow(name='Test2name')

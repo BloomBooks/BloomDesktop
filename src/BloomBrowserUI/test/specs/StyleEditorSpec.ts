@@ -1,4 +1,4 @@
-/// <reference path="../js/StyleEditor.ts" />
+/// <reference path="../../js/StyleEditor.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../Scripts\typings\jasmine/jasmine.d.ts"/>
 
