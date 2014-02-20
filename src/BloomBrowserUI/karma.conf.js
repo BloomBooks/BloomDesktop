@@ -12,16 +12,16 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            // as long as the test filename ends with Spec.js, it will be included in the test run
-            '**/*Spec.js',
             'lib/jquery-1.10.1.js',
             //enhance: if we just say *.js, we get lots of errors as various library js files are all dumped in.
             //But this way here, of specifying each one we're actually testing, is obviously flawed too.
             //One idea would be to have TypeScript compiler name files such that we auto-include all the typescript-created js files,
             //under the assumption that anything we want to test will be written with typescript (at least eventually)
-            '**/js/StyleEditor.js',
             '**/js/bloomBootstrap.js',
-            '**/js/bloomEditing.js'
+            '**/js/bloomEditing.js',
+            '**/js/StyleEditor.js',
+            // as long as the test filename is in the test folder, it will be included in the test run
+            '**/test/*.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
