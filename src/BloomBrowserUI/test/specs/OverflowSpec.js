@@ -16,10 +16,15 @@ var RunTest = function(index, value) {
     var overflowing = testHtml.IsOverflowing();
     var testExpectation = testHtml.hasClass('expectToOverflow');
     if(consoleDef) {
+        console.log('  scrollH: ' + testHtml[0].scrollHeight + ' clientH: ' + testHtml[0].clientHeight);
         var styleAttr = testHtml.attr("style");
         if(typeof styleAttr === 'undefined')
             styleAttr = 'No styles';
-        console.log('   Style: ' + styleAttr);
+        console.log('   Test Style: ' + styleAttr);
+        var cs = window.getComputedStyle(testHtml[0], null);
+        var lineH = cs.getPropertyValue('line-height');
+        var fontS = cs.getPropertyValue('font-size');
+        console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS);
         console.warn('     Overflow: ' + overflowing);
     }
     expect(overflowing).toBe(testExpectation);
