@@ -1,20 +1,28 @@
 "use strict";
 
+var consoleDef = false;
+
 jQuery.fn.RunTests = function() {
     $.each(this, RunTest);
 };
 
 var RunTest = function(index, value) {
-    var nameAttr = $(value).attr("name");
-    var name;
+    var testHtml = $(value);
+    var nameAttr = testHtml.attr("name");
     if(typeof nameAttr === 'undefined')
-        name = '***** This test needs a name! *****';
-    else
-        name = nameAttr;
-    console.log('Beginning test # '+ index + ' ' + name);
-    var overflowing = $(value).IsOverflowing();
-    console.log("Overflow: " + overflowing);
-    expect(overflowing).toBe($(value).hasClass('expectToOverflow'));
+        nameAttr = '***** This test needs a name! *****';
+    if(consoleDef)
+        console.log('\nBeginning test # '+ index + ' ' + nameAttr);
+    var overflowing = testHtml.IsOverflowing();
+    var testExpectation = testHtml.hasClass('expectToOverflow');
+    if(consoleDef) {
+        var styleAttr = testHtml.attr("style");
+        if(typeof styleAttr === 'undefined')
+            styleAttr = 'No styles';
+        console.log('   Style: ' + styleAttr);
+        console.warn('     Overflow: ' + overflowing);
+    }
+    expect(overflowing).toBe(testExpectation);
 };
 
 // Uses jasmine-query-1.3.1.js
@@ -24,7 +32,10 @@ describe("Overflow Tests", function () {
     it("Check test page for overflows", function() {
         loadFixtures('OverflowTestPage.htm');
         expect($('#jasmine-fixtures')).toBeTruthy();
-        console.log("Commencing Overflow tests...");
+        if(window.console && window.console.log) {
+            consoleDef = true;
+            console.log('Commencing Overflow tests...');
+        }
         $(".myTest").RunTests();
     });
 });
