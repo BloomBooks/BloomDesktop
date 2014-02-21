@@ -4,12 +4,18 @@
   <link rel="stylesheet" href="basePage.css" type="text/css">
 </head>
 <body>
-  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test bloom-editable with no styles doesn't overflow">Test text
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Default font bloom-editable with no styles doesn't overflow">Test text
   </div>
-  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test bloom-editable with styles should not overflow" style="font-family:Andika;line-height:1.1">Test text
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with line-height 1.1 should not overflow" style="font-family:Andika;line-height:1.1">Test text
   </div>
-  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test bloom-editable with styles should overflow" style="font-family:Andika;font-size:large;height:25px;">Test text
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with line-height 1.5 should not overflow" style="font-family:Andika;line-height:1.5">Test text
   </div>
-  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test bloom-editable with styles should overflow" style="font-size:large;height:25px;">Test text
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with line-height 1.6 should not overflow" style="font-family:Andika;line-height:1.6">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Andika bloom-editable with large text and small height should overflow" style="font-family:Andika;font-size:large;height:25px;">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Default font bloom-editable with large text and small height should overflow" style="font-size:large;height:25px;">Test text
+  </div>
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with no other styles should not overflow" style="font-family:Andika;">Test text
   </div>
 </body>

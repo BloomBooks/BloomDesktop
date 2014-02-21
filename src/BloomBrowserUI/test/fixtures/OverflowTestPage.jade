@@ -1,19 +1,36 @@
 doctype html
 
 // Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
-include ../../../../DistFiles/jade/bloom-foundation-mixins
-include overflowMixins
+mixin stylesheet(fullName)
+    link(rel='stylesheet', href=fullName, type='text/css')
+
+mixin testTarget
+    .myTest(attributes)
+        block
+
+mixin standardField
+    +testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+        block
 
 head
     +stylesheet('basePage.css')
 body
-    +standardField(name="Test bloom-editable with no styles doesn't overflow") Test text
+    +standardField(name="Default font bloom-editable with no styles doesn't overflow") Test text
 
     -var styles="font-family:Andika;line-height:1.1";
-    +standardField(name="Test bloom-editable with styles should not overflow", style=styles) Test text
+    +standardField(name="Andika bloom-editable with line-height 1.1 should not overflow", style=styles) Test text
+
+    -var styles="font-family:Andika;line-height:1.5";
+    +standardField(name="Andika bloom-editable with line-height 1.5 should not overflow", style=styles) Test text
+
+    -var styles="font-family:Andika;line-height:1.6";
+    +standardField(name="Andika bloom-editable with line-height 1.6 should not overflow", style=styles) Test text
 
     -var styles="font-family:Andika;font-size:large;height:25px;";
-    +standardField(name="Test bloom-editable with styles should overflow", style=styles).expectToOverflow Test text
+    +standardField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
     -var styles="font-size:large;height:25px;";
-    +standardField(name="Test bloom-editable with styles should overflow", style=styles).expectToOverflow Test text
+    +standardField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
+
+    -var styles="font-family:Andika;";
+    +standardField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test text
