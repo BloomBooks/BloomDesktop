@@ -1,10 +1,7 @@
 using System;
 using System.Drawing;
-#if __MonoCS__
-using System.IO;
-#endif
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Palaso.IO;
 
 namespace Bloom
 {
@@ -86,38 +83,7 @@ namespace Bloom
         {
             try
             {
-#if __MonoCS__
-               // TODO: Find a way in Mono to send something to the recycle bin.
-                try
-                {
-                    File.Delete(path);
-                }
-                catch
-                {
-                    try
-                    {
-                        Directory.Delete(path);
-                    }
-                    catch
-                    {
-                    }
-                }
-                return true;
-#else
-
-                //alternative using visual basic dll:  FileSystem.DeleteDirectory(item.FolderPath,UIOption.OnlyErrorDialogs), RecycleOption.SendToRecycleBin);
-
-                //moves it to the recyle bin
-                var shf = new SHFILEOPSTRUCT();
-                shf.wFunc = FO_DELETE;
-                shf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
-                string pathWith2Nulls = path + "\0\0";
-                shf.pFrom = pathWith2Nulls;
-
-                SHFileOperation(ref shf);
-                return !shf.fAnyOperationsAborted;
-#endif
-
+				return PathUtilities.DeleteToRecycleBin(path);
             }
             catch (Exception exception)
             {
@@ -125,30 +91,5 @@ namespace Bloom
                 return false;
             }
         }
-
-#if !__MonoCS__
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]
-        public struct SHFILEOPSTRUCT
-        {
-            public IntPtr hwnd;
-            [MarshalAs(UnmanagedType.U4)]
-            public int wFunc;
-            public string pFrom;
-            public string pTo;
-            public short fFlags;
-            [MarshalAs(UnmanagedType.Bool)]
-            public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            public string lpszProgressTitle;
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        public static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
-
-        public const int FO_DELETE = 3;
-        public const int FOF_ALLOWUNDO = 0x40;
-        public const int FOF_NOCONFIRMATION = 0x10; // Don't prompt the user
-        public const int FOF_SIMPLEPROGRESS = 0x0100;
-#endif
-    }
+	}
 }
