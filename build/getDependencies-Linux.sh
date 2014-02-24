@@ -76,7 +76,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt323
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet"}
+#     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet", "geckofix.so"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
 # [2] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
@@ -126,6 +126,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/geckofx-core-14.dll ../lib/dotnet/geckofx-core-14.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/geckofx-core-14.dll.config ../lib/dotnet/geckofx-core-14.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/geckofix.so ../lib/dotnet/geckofix.so
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
