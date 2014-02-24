@@ -70,7 +70,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt326
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"wk*.zip"=>"lib", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.pdb"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
+#     paths: {"wk*.zip"=>"lib", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.pdb"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
 # [1] build: chorus-win32-master Continuous (bt2)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt2
@@ -119,6 +119,7 @@ mkdir -p ../lib/dotnet
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../lib/wkhtmltopdf-0.10.0_rc2.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.pdb ../build/MSBuild.Community.Tasks.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
