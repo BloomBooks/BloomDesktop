@@ -1,9 +1,10 @@
 doctype html
 
 // Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
-mixin stylesheet(fullName)
-	link(rel='stylesheet', href=fullName, type='text/css')
-
+//- Turns out the thing that made Story Primer always overflow was "overflow: visible" in the css
+//- It always seemed to have scrollHeight = clientHeight + 2
+//- NB: Could this have been the thin gray border of a focused entry box?
+//- As a consequence, the overflow test will be "var overflow = scrollHeight > clientHeight + 2;
 mixin testTarget
 	.myTest(attributes)
 		block
@@ -13,24 +14,42 @@ mixin standardField
 		block
 
 head
-	+stylesheet('basePage.css')
 body
+	// Test#0
 	+standardField(name="Default font bloom-editable with no styles doesn't overflow") Test text
 
+	// Test#1
 	-var styles="font-family:Andika;line-height:1.1";
 	+standardField(name="Andika bloom-editable with line-height 1.1 should not overflow", style=styles) Test text
 
+	// Test#2
 	-var styles="font-family:Andika;line-height:1.5";
 	+standardField(name="Andika bloom-editable with line-height 1.5 should not overflow", style=styles) Test text
 
+	// Test#3
 	-var styles="font-family:Andika;line-height:1.6";
 	+standardField(name="Andika bloom-editable with line-height 1.6 should not overflow", style=styles) Test text
 
+	// Test#4
 	-var styles="font-family:Andika;font-size:large;height:25px;";
 	+standardField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
+	// Test#5
 	-var styles="font-size:large;height:25px;";
 	+standardField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
+	// Test#6
+	-var styles="font-family:Andika !important;font-size:20pt !important;line-height:1.6 !important;";
+	+standardField(name="Andika bloom-editable with 20pt text and line-height 1.6 should not overflow", style=styles) Test text
+
+	// Test#7
 	-var styles="font-family:Andika;";
 	+standardField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test text
+
+	// Test#8
+	-var styles="font-family:Andika;height=50px";
+	+standardField(name="Andika bloom-editable with fixed height should not overflow", style=styles) Test text
+
+	// Test#9
+	-var styles="font-family:Andika;padding: 2px;";
+	+standardField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test text
