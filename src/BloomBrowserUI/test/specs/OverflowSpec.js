@@ -17,6 +17,7 @@ var RunTest = function(index, value) {
     var testExpectation = testHtml.hasClass('expectToOverflow');
     if(consoleDef) {
         console.log('  scrollH: ' + testHtml[0].scrollHeight + ' clientH: ' + testHtml[0].clientHeight);
+        console.log('    Height: ' + testHtml.height());
         var styleAttr = testHtml.attr("style");
         if(typeof styleAttr === 'undefined')
             styleAttr = 'No styles';
@@ -24,8 +25,10 @@ var RunTest = function(index, value) {
         var cs = window.getComputedStyle(testHtml[0], null);
         var lineH = cs.getPropertyValue('line-height');
         var fontS = cs.getPropertyValue('font-size');
-        console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS);
-        console.warn('     Overflow: ' + overflowing);
+        var font = cs.getPropertyValue('font-family');
+        var padding = cs.getPropertyValue('padding');
+        console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
+        console.warn('     Overflow: ' + overflowing + ' font: ' + font);
     }
     expect(overflowing).toBe(testExpectation);
 };
