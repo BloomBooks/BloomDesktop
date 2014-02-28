@@ -614,9 +614,17 @@ function ResizeUsingPercentages(e,ui){
 // Actual testable determination of overflow or not
 jQuery.fn.IsOverflowing = function(){
     var element = $(this)[0];
-    // If css has "overflow: visible;", scrollHeight seems to always be 2 greater than clientHeight.
-    // This may well be because of the thin grey border on a focused input box.
-    return element.scrollHeight > element.clientHeight + 2;
+    // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
+    var marginBoxParent = $(element).parents('.marginBox');
+    var parentBottom;
+    if(marginBoxParent && marginBoxParent.length > 0)
+        parentBottom = $(marginBoxParent[0]).offset().top + $(marginBoxParent[0]).outerHeight(true);
+    else
+        parentBottom = 999999;
+    var elemBottom = $(element).offset().top + $(element).outerHeight(true);
+    // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
+    // This is because of the thin grey border on a focused input box.
+    return element.scrollHeight > element.clientHeight + 2 || elemBottom > parentBottom;
 };
 
 // When a div is overfull,
