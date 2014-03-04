@@ -431,8 +431,7 @@ namespace Bloom.Book
                 if(TypeOverrideForUnitTests != BookType.Unknown)
                     return TypeOverrideForUnitTests;
 
-                return IsEditable ? BookType.Publication : BookType.Template; //TODO
-                //return _storage.BookType;
+                return IsEditable ? BookType.Publication : BookType.Template; //TODO there are other types...should there be some way they can they happen?
             }
         }
 
@@ -1572,7 +1571,8 @@ namespace Bloom.Book
 
 		public void Save()
 	    {
-		    _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
+			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
+			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 		    _storage.Save();
 	    }

@@ -45,7 +45,6 @@ namespace BloomTests.Book
             _storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
             _storage.SetupGet(x => x.Key).Returns("testkey");
             _storage.SetupGet(x => x.FileName).Returns("testTitle");
-            _storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
     	    _storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(()=>
     	                                                                                      {
     	                                                                                          return
