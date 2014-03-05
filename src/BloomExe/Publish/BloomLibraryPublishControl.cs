@@ -286,16 +286,11 @@ namespace Bloom.Publish
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
-			// copy the current preview to the book folder so it gets uploaded.
+			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
 			if (!FileUtils.IsFileLocked(uploadPdfPath))
 			{
-				// If we're in the process of making it, finish.
-				if (_parentView.IsMakingPdf)
-				{
-					_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingPdf", "Making PDF Preview..."));
-					while (_parentView.IsMakingPdf)
-						Thread.Sleep(100);
-				}
+				_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingPdf", "Making PDF Preview..."));
+				_parentView.MakePublishPreview();
 				if (File.Exists(_parentView.PdfPreviewPath))
 				{
 					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
