@@ -178,7 +178,7 @@ namespace Bloom.Publish
 			{
 				_currentDisplayMode = value;
 				if (View != null)
-					View.SetDisplayMode(value);
+					View.Invoke((Action) (() => View.SetDisplayMode(value)));
 			}
 		}
 
