@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Properties;
+using Bloom.Publish;
 using L10NSharp;
 using Palaso.Code;
 
@@ -25,6 +27,7 @@ namespace Bloom.WebLibraryIntegration
 	public partial class LoginDialog : Form
 	{
 		private BloomParseClient _client;
+		private int _originalHeight;
 		public LoginDialog(BloomParseClient client)
 		{
 			Require.That(client != null);
@@ -33,6 +36,8 @@ namespace Bloom.WebLibraryIntegration
 			_showPasswordCheckBox.Checked = Settings.Default.WebShowPassword;
 			oldText = this.Text;
 			oldLogin = _loginButton.Text;
+			_originalHeight = Height;
+			ShowTermsOfUse(false);
 		}
 
 		private void Login(object sender, EventArgs e)
@@ -148,6 +153,7 @@ namespace Bloom.WebLibraryIntegration
 			this.Text = LocalizationManager.GetString("Publish.Upload.Login.Signup", "Sign up for Bloom Library.");
 			_loginButton.Text = LocalizationManager.GetString("Publish.Upload.Login.Signup", "Sign up");
 			_doingSignup = true;
+			ShowTermsOfUse(true);
 		}
 
 		private void RestoreToLogin()
@@ -156,6 +162,14 @@ namespace Bloom.WebLibraryIntegration
 			this.Text = oldText;
 			_loginButton.Text = oldLogin;
 			_forgotLabel.Visible = true;
+			ShowTermsOfUse(false);
+		}
+
+		private void ShowTermsOfUse(bool show)
+		{
+			Height = show ? _originalHeight : _termsOfUseLabel.Top - 2 + (Height - ClientRectangle.Height);
+			_termsOfUseLabel.Visible = show;
+			_showTermsOfUse.Visible = show;
 		}
 
 		protected override void OnClosed(EventArgs e)
@@ -264,6 +278,11 @@ namespace Bloom.WebLibraryIntegration
 			Settings.Default.WebShowPassword = _showPasswordCheckBox.Checked;
 			Settings.Default.Save();
 			_passwordBox.UseSystemPasswordChar = !_showPasswordCheckBox.Checked;
+		}
+
+		private void _showTermsOfUse_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			Process.Start(BloomLibraryPublishControl.BloomLibraryUrlPrefix + "/terms");
 		}
 	}
 }

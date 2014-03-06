@@ -189,8 +189,6 @@ namespace Bloom.Publish
 				}
 			}
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("Publish.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
-			// Right-align the login link. (There ought to be a setting to make this happen, but I can't find it.)
-			_loginLink.Left = _progressBox.Right - _loginLink.Width;
 			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
 		}
 
@@ -208,6 +206,11 @@ namespace Bloom.Publish
 				_loginDialog.ShowDialog(this);
 			}
 			UpdateDisplay();
+		}
+
+		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			Process.Start(BloomLibraryUrlPrefix + "/terms");
 		}
 
 		private void _signUpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -255,11 +258,7 @@ namespace Bloom.Publish
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
-					var prefix = "http://";
-#if DEBUG
-					prefix += "dev.";
-#endif
-					var url = prefix + "bloomlibrary.org/#/browse/detail/" + _parseId;
+					var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
 					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
 					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 				}
@@ -267,6 +266,18 @@ namespace Bloom.Publish
 			};
 			worker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
+		}
+
+		public static string BloomLibraryUrlPrefix
+		{
+			get
+			{
+				var prefix = "http://";
+#if DEBUG
+				prefix += "dev.";
+#endif
+				return prefix + "bloomlibrary.org/#";
+			}
 		}
 
 		string _parseId;
