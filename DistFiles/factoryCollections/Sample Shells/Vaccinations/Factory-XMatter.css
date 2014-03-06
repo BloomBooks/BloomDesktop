@@ -227,6 +227,7 @@ DIV.ISBNContainer .bloom-editable
 	width: 4.3cm !important;
 	display: inline-block;
 	vertical-align: text-top;
+	max-height: 2.5em;
 }
 .ISBNContainer SPAN
 {
