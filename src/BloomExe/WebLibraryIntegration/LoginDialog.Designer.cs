@@ -39,6 +39,8 @@
 			this._forgotLabel = new System.Windows.Forms.LinkLabel();
 			this._borderLabel = new System.Windows.Forms.Label();
 			this._showPasswordCheckBox = new System.Windows.Forms.CheckBox();
+			this._termsOfUseLabel = new System.Windows.Forms.Label();
+			this._showTermsOfUse = new System.Windows.Forms.LinkLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -164,13 +166,40 @@
 			this._showPasswordCheckBox.UseVisualStyleBackColor = true;
 			this._showPasswordCheckBox.CheckedChanged += new System.EventHandler(this._showPasswordCheckBox_CheckedChanged);
 			// 
+			// _termsOfUseLabel
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._termsOfUseLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._termsOfUseLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._termsOfUseLabel, "LoginDialog.AgreeToTerms");
+			this._termsOfUseLabel.Location = new System.Drawing.Point(22, 185);
+			this._termsOfUseLabel.Name = "_termsOfUseLabel";
+			this._termsOfUseLabel.Size = new System.Drawing.Size(244, 34);
+			this._termsOfUseLabel.TabIndex = 9;
+			this._termsOfUseLabel.Text = "By creating an account, you agree to the Bloom Library\'s Terms of Use";
+			// 
+			// _showTermsOfUse
+			// 
+			this._showTermsOfUse.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._showTermsOfUse, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._showTermsOfUse, null);
+			this._L10NSharpExtender.SetLocalizingId(this._showTermsOfUse, "LoginDialog.ShowTerms");
+			this._showTermsOfUse.Location = new System.Drawing.Point(165, 222);
+			this._showTermsOfUse.Name = "_showTermsOfUse";
+			this._showTermsOfUse.Size = new System.Drawing.Size(100, 13);
+			this._showTermsOfUse.TabIndex = 10;
+			this._showTermsOfUse.TabStop = true;
+			this._showTermsOfUse.Text = "Show Terms of Use";
+			this._showTermsOfUse.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._showTermsOfUse_LinkClicked);
+			// 
 			// LoginDialog
 			// 
 			this.AcceptButton = this._loginButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
-			this.ClientSize = new System.Drawing.Size(284, 183);
+			this.ClientSize = new System.Drawing.Size(284, 243);
+			this.Controls.Add(this._showTermsOfUse);
+			this.Controls.Add(this._termsOfUseLabel);
 			this.Controls.Add(this._showPasswordCheckBox);
 			this.Controls.Add(this._forgotLabel);
 			this.Controls.Add(this._cancelButton);
@@ -206,5 +235,7 @@
 		private System.Windows.Forms.LinkLabel _forgotLabel;
 		private System.Windows.Forms.Label _borderLabel;
 		private System.Windows.Forms.CheckBox _showPasswordCheckBox;
+		private System.Windows.Forms.Label _termsOfUseLabel;
+		private System.Windows.Forms.LinkLabel _showTermsOfUse;
 	}
 }

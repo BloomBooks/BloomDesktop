@@ -46,6 +46,7 @@ namespace Bloom.Publish
 			this.label9 = new System.Windows.Forms.Label();
 			this._languagesLabel = new System.Windows.Forms.Label();
 			this._loginLink = new System.Windows.Forms.LinkLabel();
+			this._termsLink = new System.Windows.Forms.LinkLabel();
 			this._creditsLabel = new System.Windows.Forms.Label();
 			this._summaryBox = new System.Windows.Forms.TextBox();
 			this._signUpLink = new System.Windows.Forms.LinkLabel();
@@ -54,12 +55,14 @@ namespace Bloom.Publish
 			this._creativeCommonsLink = new System.Windows.Forms.LinkLabel();
 			this._licenseNotesLabel = new System.Windows.Forms.Label();
 			this.label10 = new System.Windows.Forms.Label();
+			this.label11 = new System.Windows.Forms.Label();
 			this._optional1 = new System.Windows.Forms.Label();
 			this._progressBox = new Palaso.UI.WindowsForms.Progress.LogBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.panel3 = new System.Windows.Forms.Panel();
+			this.panel4 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -67,6 +70,7 @@ namespace Bloom.Publish
 			this.panel1a.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.panel3.SuspendLayout();
+			this.panel4.SuspendLayout();
 			this._ccPanel.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.SuspendLayout();
@@ -263,7 +267,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._languagesLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._languagesLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._languagesLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._languagesLabel, "Publish.Upload.BloomLibraryPublishControl.label10");
+			this._L10NSharpExtender.SetLocalizingId(this._languagesLabel, "");
 			this._languagesLabel.Location = new System.Drawing.Point(3, 260);
 			this._languagesLabel.Name = "_languagesLabel";
 			this._languagesLabel.Size = new System.Drawing.Size(604, 13);
@@ -286,6 +290,22 @@ namespace Bloom.Publish
 			this._loginLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._loginLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._loginLink_LinkClicked);
 			// 
+			// _termsLink
+			// 
+			this._termsLink.AutoSize = true;
+			this._termsLink.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._termsLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._termsLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this._termsLink, "Publish.Upload.TermsLink");
+			this._termsLink.Location = new System.Drawing.Point(475, 0);
+			this._termsLink.Name = "_termsLink";
+			this._termsLink.Size = new System.Drawing.Size(129, 13);
+			this._termsLink.TabIndex = 19;
+			this._termsLink.TabStop = true;
+			this._termsLink.Text = "Show Terms of Use";
+			this._termsLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			this._termsLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._termsLink_LinkClicked);
+			// 
 			// _creditsLabel
 			// 
 			this._creditsLabel.AutoEllipsis = true;
@@ -293,7 +313,7 @@ namespace Bloom.Publish
 			this._creditsLabel.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._creditsLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._creditsLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._creditsLabel, "Publish.Upload.label10");
+			this._L10NSharpExtender.SetLocalizingId(this._creditsLabel, "Publish.Upload.Credits");
 			this._creditsLabel.Location = new System.Drawing.Point(3, 300);
 			this._creditsLabel.Name = "_creditsLabel";
 			this._creditsLabel.Size = new System.Drawing.Size(604, 20);
@@ -399,6 +419,22 @@ namespace Bloom.Publish
 			this.label10.Size = new System.Drawing.Size(57, 13);
 			this.label10.TabIndex = 3;
 			this.label10.Text = "Summary";
+
+			// 
+			// label11
+			// 
+			this.label11.AutoSize = true;
+			this.label11.Dock = System.Windows.Forms.DockStyle.Left;
+			this.label11.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label11.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label11, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label11, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label11, "Publish.Upload.Gaurantee");
+			this.label11.Location = new System.Drawing.Point(0, 0);
+			this.label11.Name = "label11";
+			this.label11.Size = new System.Drawing.Size(57, 13);
+			this.label11.TabIndex = 3;
+			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes";
 			// 
 			// _optional1
 			// 
@@ -435,11 +471,12 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.Controls.Add(this.panel1a, 0, 22);
 			this.tableLayoutPanel1.Controls.Add(this.panel2, 0, 23);
-			this.tableLayoutPanel1.Controls.Add(this._progressBox, 0, 25);
+			this.tableLayoutPanel1.Controls.Add(this.panel4, 0, 24);
+			this.tableLayoutPanel1.Controls.Add(this._progressBox, 0, 26);
 			this.tableLayoutPanel1.Controls.Add(this.panel3, 0, 19);
 			this.tableLayoutPanel1.Controls.Add(this._ccPanel, 0, 9);
 			this.tableLayoutPanel1.Controls.Add(this._creditsLabel, 0, 20);
-			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 24);
+			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 25);
 			this.tableLayoutPanel1.Controls.Add(this._licenseSuggestion, 0, 11);
 			this.tableLayoutPanel1.Controls.Add(this._licenseNotesLabel, 0, 10);
 			this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 5);
@@ -454,7 +491,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this._labelAfterLicense, 0, 13);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(43, 18);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 26;
+			this.tableLayoutPanel1.RowCount = 27;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -477,6 +514,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -513,6 +551,17 @@ namespace Bloom.Publish
 			this.panel3.Name = "panel3";
 			this.panel3.Size = new System.Drawing.Size(604, 13);
 			this.panel3.TabIndex = 28;
+			// 
+			// panel4
+			// 
+			this.panel4.Controls.Add(this.label11);
+			this.panel4.Controls.Add(this._termsLink);
+			this.panel4.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			this.panel4.Location = new System.Drawing.Point(0, 0);
+			this.panel4.Name = "panel4";
+			this.panel4.Size = new System.Drawing.Size(604, 18);
+			this.panel4.TabIndex = 29;
+
 			// 
 			// _ccPanel
 			// 
@@ -555,6 +604,8 @@ namespace Bloom.Publish
 			this.panel2.PerformLayout();
 			this.panel3.ResumeLayout(false);
 			this.panel3.PerformLayout();
+			this.panel4.ResumeLayout(false);
+			this.panel4.PerformLayout();
 			this._ccPanel.ResumeLayout(false);
 			this._ccPanel.PerformLayout();
 			this.panel1.ResumeLayout(false);
@@ -597,5 +648,9 @@ namespace Bloom.Publish
 		private Palaso.UI.WindowsForms.Progress.LogBox _progressBox;
 		private System.Windows.Forms.Panel panel1a;
 		private System.Windows.Forms.Panel panel2;
+		private System.Windows.Forms.Label label11;
+		private System.Windows.Forms.LinkLabel _termsLink;
+		private System.Windows.Forms.Panel panel4;
+
 	}
 }
