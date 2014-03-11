@@ -1,8 +1,8 @@
-/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
-#bloom-supportedPageConfigurations
-{
-	content: "A5Landscape";
-}
+/*These tell Bloom what choices to give the use as far as Page, Orientation, & Layout options:
+STARTLAYOUTS
+{"layouts":     ["A5Landscape"]  }
+ENDLAYOUTS
+*/
 /*Top with Picture and a little text*/
 .calendarMonthTop .bloom-imageContainer
 {
