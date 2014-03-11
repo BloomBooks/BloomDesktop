@@ -1,0 +1,69 @@
+doctype html
+
+// Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
+//- Turns out the thing that made Story Primer always overflow was "overflow: visible" in the css
+//- It always seemed to have scrollHeight = clientHeight + 2
+//- NB: Could this have been the thin gray border of a focused entry box?
+//- As a consequence, the overflow test will be "var overflow = scrollHeight > clientHeight + 2;
+mixin testTarget
+	.myTest(attributes)
+		block
+
+mixin standardTestField
+	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+		block
+
+mixin standardTranslationGroup
+	.bloom-translationGroup
+		.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+			block
+
+head
+body
+	// Test#0
+	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test text
+
+	// Test#1
+	-var styles="font-family:Andika;font-size:large;height:25px;";
+	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
+
+	// Test#2
+	-var styles="font-size:20pt;height:28px;overflow:visible";
+	+standardTestField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
+
+	// Test#3
+	-var styles="font-family:Andika;";
+	+standardTestField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test text
+
+	// Test#4
+	-var styles="font-family:Andika;height=50px";
+	+standardTestField(name="Andika bloom-editable with fixed height should not overflow", style=styles) Test text
+
+	// Test#5
+	-var styles="font-family:Andika;padding: 2px;";
+	+standardTestField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test text
+
+	// Test#6
+	-var margins="width:25em;height:45px";
+	-var styles="font-family:Andika;font-size:20pt";
+	.marginBox(style=margins)
+		.bloom-translationGroup
+			+standardTestField(name="Test that expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
+
+	// Test#7
+	.marginBox(style=margins)
+		.bloom-translationGroup
+			+standardTestField(name="Test that not expanding vertically past margins does not overflow", style=styles) Just enough text.
+
+	// Test#8
+	-margins = "width:25em;height:90px";
+	.marginBox(style=margins)
+		+standardTranslationGroup(style=styles) Just enough text.
+		.bloom-translationGroup
+			+standardTestField(name="Test that multiple translation groups don't necessarily overflow", style=styles) Just enough text.
+
+	// Test#9
+	.marginBox(style=margins)
+		+standardTranslationGroup(style=styles) Just enough text.
+		.bloom-translationGroup
+			+standardTestField(name="Test that multiple translation groups expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
