@@ -120,21 +120,10 @@ namespace Bloom.Book
 
         private static Layout EnsureLayoutIsAmongValidChoices(HtmlDom dom, Layout layout, IFileLocator fileLocator)
         {
-            try
-            {
-                var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator);
-                if (layoutChoices.Any() && !layoutChoices.Contains(layout))
-                    layout = layoutChoices.First();
-            }
-            catch (ApplicationException e)
-            {
-                if (e.Message.StartsWith("Could not locate"))
-                {
-                    return layout;
-                }
-                throw;
-            }
-            return layout;
+            var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator);
+            if (layoutChoices.Any(l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName))
+                return layout;
+            return layoutChoices.Any() ?  layoutChoices.First() : layout;
         }
 
 		/// <summary>
