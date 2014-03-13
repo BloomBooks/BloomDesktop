@@ -624,7 +624,11 @@ jQuery.fn.IsOverflowing = function(){
     var elemBottom = $(element).offset().top + $(element).outerHeight(true);
     // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
     // This is because of the thin grey border on a focused input box.
-    return element.scrollHeight > element.clientHeight + 2 || elemBottom > parentBottom;
+    // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
+    // so we'll apply the same 'fudge' factor to both comparisons.
+    var focusedBorderFudgeFactor = 2;
+    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor ||
+        elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
 // When a div is overfull,
