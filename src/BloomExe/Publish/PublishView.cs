@@ -151,8 +151,11 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
-			_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
-			Invoke((Action) (UpdateDisplay));
+			if (IsHandleCreated) // May not be when bulk uploading
+			{
+				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
+				Invoke((Action) (UpdateDisplay));
+			}
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
 				MakeBooklet();
@@ -414,7 +417,10 @@ namespace Bloom.Publish
 			_makePdfBackgroundWorker.RunWorkerAsync();
 			// We normally generate PDFs in the background, but this routine should not return until we actually have one.
 			while (IsMakingPdf)
+			{
 				Thread.Sleep(100);
+				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
+			}
 		}
 	}
 }

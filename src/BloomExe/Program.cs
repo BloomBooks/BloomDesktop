@@ -112,6 +112,19 @@ namespace Bloom
 
 					_applicationContainer = new ApplicationContainer();
 
+					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
+					{
+						// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
+						// - User must log in before running this
+						// - For best results each bloom book needs to be part of a collection in its parent folder
+						// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+						SetUpLocalization();
+						Browser.SetUpXulRunner();
+						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(), new OrderList());
+						transfer.UploadFolder(args[1], _applicationContainer);
+						return;
+					}
+
 					// We need the download folder to exist if we are asked to download a book.
 					// We also want it to exist, to show the (planned) link that offers to launch the web site.
 					// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
