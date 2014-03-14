@@ -285,43 +285,8 @@ namespace Bloom.Publish
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var bookFolder = book.FolderPath;
-			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
-			// These bits of data can't easily be set while saving the book because we save one page at a time
-			// and they apply to the book as a whole.
-			book.BookInfo.Languages = _book.AllLanguages.ToArray();
-			book.BookInfo.PageCount = _book.GetPages().Count();
-			book.BookInfo.Save();
-			_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book);
-			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
-			// If there is not already a locked preview in the book folder
-			// (which we take to mean the user has created a customized one that he prefers),
-			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileUtils.IsFileLocked(uploadPdfPath))
-			{
-                _progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingPdf", "Making PDF Preview..."));
-				_parentView.MakePublishPreview();
-				if (File.Exists(_parentView.PdfPreviewPath))
-				{
-					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
-				}
-			}
-			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox, out _parseId);
-		}
-
-		void RebuildThumbnail(Book.Book book)
-		{
-			bool done = false;
-			string error = null;
-			book.RebuildThumbNailAsync((info, image) => done = true,
-				(info, ex) =>
-				{
-					done = true;
-					throw ex;
-				});
-			while (!done)
-				Thread.Sleep(100);
+			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, out _parseId);
+			e.Result = result;
 		}
 
 		private void _summaryBox_TextChanged(object sender, EventArgs e)

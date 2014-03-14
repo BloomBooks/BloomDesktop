@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -541,7 +542,10 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					File.Delete(oldTagsPath);
 				}
-            }
+				// get any license info into the json
+				var metadata = GetLicenseMetadata();
+				UpdateLicenseMetdata(metadata);
+			}
             else //used for making a preview dom
             {
                 var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
@@ -1582,5 +1586,14 @@ namespace Bloom.Book
         {
             return OurHtmlDom.GetMetaValue("bloomBookLineage","");
         }
-    }
+
+		/// <summary>
+		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
+		/// </summary>
+		/// <param name="invokeTarget">A control created on the UI thread.</param>
+		internal void MakeThumbnailerAdvance(Control invokeTarget)
+		{
+			_thumbnailProvider.Advance(invokeTarget);
+		}
+	}
 }

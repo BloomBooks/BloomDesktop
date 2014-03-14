@@ -35,8 +35,11 @@ namespace Bloom
 		private ImageServer _imageServer;
 		public Form ProjectWindow { get; private set; }
 
+		public string SettingsPath { get; private set; }
+
         public ProjectContext(string projectSettingsPath, IContainer parentContainer)
         {
+	        SettingsPath = projectSettingsPath;
             BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -348,6 +351,10 @@ namespace Bloom
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
 
+		internal BookServer BookServer
+		{
+			get { return _scope.Resolve<BookServer>(); }
+		}
 
 		public static string GetBloomAppDataFolder()
 		{
