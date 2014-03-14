@@ -49,7 +49,6 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
-    <TypeScriptCompile Include="bookEdit\test\StyleEditorSpec.ts" />
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\BasePage.css" />
     <Content Include="bookLayout\collection styles override template.css" />
@@ -178,7 +177,12 @@
     <Content Include="nonProductionStuff\widgets\pageThumbnailList\pageThumbnailList.js" />
     <Content Include="nonProductionStuff\widgets\settings.css" />
     <Content Include="nonProductionStuff\widgets\settings.htm" />
-    <Content Include="Scripts\typings\jasmine\jasmine.d.ts" />
+    <Content Include="test\.guidsForInstaller.xml" />
+    <Content Include="test\fixtures\basePage.css" />
+    <Content Include="test\fixtures\OverflowTestPage.htm" />
+    <Content Include="test\lib\jasmine-query-1.3.1.js" />
+    <Content Include="test\specs\OverflowSpec.js" />
+    <Content Include="test\specs\StyleEditorSpec.js" />
     <Content Include="themes\bloom-jqueryui-theme\.guidsForInstaller.xml" />
     <Content Include="themes\bloom-jqueryui-theme\images\.guidsForInstaller.xml" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-bg_flat_30_cccccc_40x100.png" />
@@ -196,6 +200,7 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
+    <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bookEdit\img\imageMetaDataButton.svg" />

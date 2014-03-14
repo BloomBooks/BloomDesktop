@@ -612,7 +612,8 @@ function ResizeUsingPercentages(e,ui){
 }
 
 // Actual testable determination of overflow or not
-jQuery.fn.IsOverflowing = function(){
+jQuery.fn.IsOverflowing = function () {
+    console.log('Entering overflow detection handler...');
     var element = $(this)[0];
     // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
     var marginBoxParent = $(element).parents('.marginBox');
