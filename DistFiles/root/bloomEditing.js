@@ -565,7 +565,19 @@ function ResizeUsingPercentages(e,ui){
          $(this).append(contentElements);
      });
 
+  $("div.bloom-editable").bind('keypress', 'ctrl+b', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "strong");
+  });
 
+  $("div.bloom-editable").bind('keypress', 'ctrl+u', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "underline");
+  });
+  $("div.bloom-editable").bind('keypress', 'ctrl+i', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "emphasis");
+  });
      //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
      //NB: we would like to run this even when there is a mouse paste, but currently don't know how
      //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
