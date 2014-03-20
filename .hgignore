@@ -59,3 +59,14 @@ lib/wkhtmltopdf/*
 LibChorus.*
 build/Palaso.BuildTasks.dll
 lib/failed update of AeroWizard Modified for dotnet 4 client/*
+lib/dotnet/icuuc40.dll
+lib/dotnet/icuin40.dll
+lib/dotnet/icudt40.dll
+lib/dotnet/icu.net.dll
+lib/dotnet/geckofx-11.dll
+lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
+lib/dotnet/SIL.Archiving.dll
+lib/dotnet/PdfSharp.dll
+lib/dotnet/PdfDroplet.exe
+lib/dotnet/L10NSharp.dll
+build/ChorusInstallerStuff/ChorusMergeModule.msm
