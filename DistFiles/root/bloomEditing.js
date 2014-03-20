@@ -565,18 +565,25 @@ function ResizeUsingPercentages(e,ui){
          $(this).append(contentElements);
      });
 
-  $("div.bloom-editable").bind('keypress', 'ctrl+b', function (e) {
+  $("div.bloom-editable").bind('keydown', 'ctrl+b', function (e) {
         e.preventDefault();
-        document.execCommand("formatBlock", false, "strong");
+        //document.execCommand("formatBlock", false, "strong");
+    document.execCommand("bold", false, null);
   });
 
-  $("div.bloom-editable").bind('keypress', 'ctrl+u', function (e) {
+  $("div.bloom-editable").bind('keydown', 'ctrl+u', function (e) {
         e.preventDefault();
-        document.execCommand("formatBlock", false, "underline");
+        document.execCommand("underline", false, null);
   });
-  $("div.bloom-editable").bind('keypress', 'ctrl+i', function (e) {
+  $("div.bloom-editable").bind('keydown', 'ctrl+i', function (e) {
         e.preventDefault();
-        document.execCommand("formatBlock", false, "emphasis");
+        document.execCommand("italic", false, null);
+  });
+
+  //nb: it wasn't possible to catch *keypress* for ctrl+space
+  $("div.bloom-editable").bind('keydown', 'ctrl+space', function (e) {
+    e.preventDefault();
+        document.execCommand("RemoveFormat", false, null);
   });
      //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
      //NB: we would like to run this even when there is a mouse paste, but currently don't know how

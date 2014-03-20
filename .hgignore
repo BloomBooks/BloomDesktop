@@ -70,3 +70,6 @@ lib/dotnet/PdfSharp.dll
 lib/dotnet/PdfDroplet.exe
 lib/dotnet/L10NSharp.dll
 build/ChorusInstallerStuff/ChorusMergeModule.msm
+lib/wkhtmltopdf*.*
+DistFiles/connections.dll
+DistFiles/Bloom.chm
