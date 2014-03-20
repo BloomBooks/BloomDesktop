@@ -1,45 +1,47 @@
 doctype html
-include ../../../bloom-with-jade-mixins
+include ../../../jade/bloom-foundation-mixins
+
+mixin topic(langCode, topic)
+	div(data-book='topic', lang=langCode)=topic
+
+-var cca='Creative Commons Attribution'
+-var ccaLink='http://creativecommons.org/licenses/by/3.0/'
 
 html
 	head
 		meta(charset='UTF-8')
 		title Calendar
-		+cssLink('wallCalendar')
+		+stylesheet('wallCalendar.css')
 		meta(name='bloomBookId', content='056B6F11-4A6C-4942-B2BC-8861E62B03B3')
 		meta(name='canChangeOriginalAcknowledgments', content='false')
 		meta(name='Generator', content='Bloom Version 0.8.49 (apparent build date: 8/18/2012)  (Debug version)')
 		meta(name='defaultBookletLayout', content='Calendar')
 		meta(name='experimental', content='true')
-		+scriptLink('jquery-1.6.4')
-		+scriptLink('mootools-core-1.4.1-full-nocompat')
-		+scriptLink('mootools-more-1.4.0.1')
-		+scriptLink('configure')
-		+cssLink('languageDisplay')
-		+cssLink('previewMode')
-		+cssLink('basePage')
+		+script('jquery-1.6.4.js')
+		+script('mootools-core-1.4.1-full-nocompat.js')
+		+script('mootools-more-1.4.0.1.js')
+		+script('configure.js')
+		+stylesheet('languageDisplay.css')
+		+stylesheet('previewMode.css')
+		+stylesheet('basePage.css')
 	body
 		#bloomDataDiv
 			div(data-book='coverImage') placeholder.png
-			+bloom-title('en', 'Wall Calendar')
-			+bloom-title('tpi', 'Kalenda')
-			+bloom-title('id', 'Kalender')
-			+bloom-topic('en', 'Calendar')
+			+bookVariable-title('en', 'Wall Calendar')
+			+bookVariable-title('tpi', 'Kalenda')
+			+bookVariable-title('id', 'Kalender')
+			+topic('en', 'Calendar')
 			div(data-book='originalAcknowledgments', lang='*') Template creation: Bruce Cox &amp; John Hatton (SIL International)
 			.bloom-content1(data-book='license')
-				+bloom-CCHyperlink
+				a(rel='license', href=ccaLink)=cca
 			.bloom-content1(data-book='copyright') Copyright SIL International 2011
-		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape(data-page='required',
-				id='3e049bff-797f-4a17-9c06-064955ae73cc')
+		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required')
 			.marginBox
 				.bloom-imageContainer.bloom-content1(style='opacity: 1; overflow: hidden;')
-					img(style='width: 432px; height: 425px; margin-left: 181px; margin-top: 0px;',
-							class='calendarTopPagePicture', src='placeHolder.png', alt='Could not load the image',
-							height='425', width='432')
-				+bloom-translation-group(class='calendarBelowBigPictureText')
-					{some nice text for the month}
-		.bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape(data-page='required',
-				id='553165c2-be6c-4cf2-885e-d8f3159170fe')
+					+image.calendarTopPagePicture(style='width: 432px; height: 425px; margin-left: 181px; margin-top: 0px;', height='425', width='432')
+				+field.calendarBelowBigPictureText
+					label.placeholder some nice text for the month
+		.bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#553165c2-be6c-4cf2-885e-d8f3159170fe(data-page='required')
 			.marginBox
 				p(class='centered calendarBottomPageHeader') January 2099
 				table
