@@ -12,6 +12,7 @@ document.write('<script type="text/javascript" src="' +dir+ 'jquery.hashchange.m
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.qtip.js"></script>');
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.qtipSecondary.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + dir + 'jquery.qtip.css"></script>');
+document.write('<script type="text/javascript" src="' + dir + 'jquery.hotkeys.js"></script>');
 
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.sizes.js"></script>');
 document.write('<script type="text/javascript" src="' +dir+ 'jquery.watermark.js"></script>');

@@ -1,3 +1,7 @@
+﻿## 1.2.1 - 20 Mar 2014
+* Now supports Ctrl+b (bold), ctrl+u (underline), and ctrl+i (emphasis/italics)
+
+
 ## 1.0.30 - 13 Feb 2014
 * Fix problem reading version numbers on French machines
 
