@@ -1,6 +1,6 @@
 #!/bin/bash
 # server=build.palaso.org
-# build_type=bt78
+# build_type=bt370
 # root_dir=..
 # $Id: fddd609c79cf98392f7892a4a56d48a466d329de $
 
@@ -57,75 +57,81 @@ copy_wget() {
 
 
 # *** Results ***
-# build: Bloom-1.0-Publish (bt78)
+# build: Bloom-1.2-Publish (bt370)
 # project: Bloom
-# URL: http://build.palaso.org/viewType.html?buildTypeId=bt78
-# VCS: https://bitbucket.org/hatton/bloom-desktop [Version1.0]
+# URL: http://build.palaso.org/viewType.html?buildTypeId=bt370
+# VCS: https://bitbucket.org/hatton/bloom-desktop [Version1.2]
 # dependencies:
-# [0] build: chorus-win32-Bloom1.0 (bt221)
+# [0] build: bloom-1.2.-win32-static-dependencies (bt371)
+#     project: Bloom
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt371
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"wk*.zip"=>"lib", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles"}
+# [1] build: chorus-win32-Bloom1.0 (bt221)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt221
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/chorus []
-# [1] build: chorus-win32-Bloom1.0 (bt221)
+# [2] build: chorus-win32-Bloom1.0 (bt221)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt221
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"ChorusMergeModule.msm"=>"build/ChorusInstallerStuff"}
 #     VCS: https://github.com/sillsdev/chorus []
-# [2] build: chorus-win32-Bloom1.0 (bt221)
+# [3] build: chorus-win32-Bloom1.0 (bt221)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt221
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Microsoft_VC90_CRT_x86.msm"=>"build/ChorusInstallerStuff"}
 #     VCS: https://github.com/sillsdev/chorus []
-# [3] build: chorus-win32-Bloom1.0 (bt221)
+# [4] build: chorus-win32-Bloom1.0 (bt221)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt221
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build/ChorusInstallerStuff"}
 #     VCS: https://github.com/sillsdev/chorus []
-# [4] build: chorus-win32-Bloom1.0 (bt221)
+# [5] build: chorus-win32-Bloom1.0 (bt221)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt221
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Vulcan.Uczniowie.HelpProvider.dll"=>"output/release"}
 #     VCS: https://github.com/sillsdev/chorus []
-# [5] build: geckofx-11 Continuous (bt143)
+# [6] build: geckofx-11 Continuous (bt143)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt143
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.dll"=>"lib/dotnet"}
 #     VCS: https://bitbucket.org/hatton/geckofx-11.0 [default]
-# [6] build: palaso-win32-BloomV1.0 Continuous (bt319)
+# [7] build: palaso-win32-BloomV1.0 Continuous (bt319)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt319
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Palaso.BuildTasks.dll"=>"build/"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [BloomV1.0]
-# [7] build: palaso-win32-BloomV1.0 Continuous (bt319)
+# [8] build: palaso-win32-BloomV1.0 Continuous (bt319)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt319
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"exiftool/*.*"=>"DistFiles"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [BloomV1.0]
-# [8] build: palaso-win32-BloomV1.0 Continuous (bt319)
+# [9] build: palaso-win32-BloomV1.0 Continuous (bt319)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt319
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [BloomV1.0]
-# [9] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
@@ -134,13 +140,17 @@ copy_wget() {
 #     VCS: http://hg.palaso.org/pdfdroplet [default]
 
 # make sure output directories exist
+mkdir -p ../lib
+mkdir -p ../DistFiles
 mkdir -p ../lib/dotnet
 mkdir -p ../build/ChorusInstallerStuff
 mkdir -p ../output/release
 mkdir -p ../build/
-mkdir -p ../DistFiles
 
 # download artifact dependencies
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt371/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../lib/wkhtmltopdf-0.10.0_rc2.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt371/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt371/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt221/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt221/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt221/latest.lastSuccessful/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
