@@ -76,7 +76,7 @@ namespace BloomTests.Book
 			File.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			storage.Save();
 			return storage;
 		}
@@ -100,7 +100,7 @@ namespace BloomTests.Book
 			File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
-			var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			storage.Save();
 			return storage;
 		}

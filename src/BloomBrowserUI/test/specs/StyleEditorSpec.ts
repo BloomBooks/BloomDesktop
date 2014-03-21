@@ -1,6 +1,6 @@
-/// <reference path="../../js/StyleEditor.ts" />
+/// <reference path="../../bookEdit/js/StyleEditor.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../Scripts\typings\jasmine/jasmine.d.ts"/>
+/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 
 /*
 /// <reference path="../../lib/jquery-1.9.1.js"/>
@@ -23,9 +23,9 @@ function MakeBigger() {
 }
 
 function MakeBigger2(target:string) {
-	var target = $(document).find(target);
+	var jQueryTarget = $(document).find(target);
 	var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-	editor.MakeBigger(<HTMLElement><any>target);
+	editor.MakeBigger(<HTMLElement><any>jQueryTarget);
 }
 
 function GetCustomStyleSheet(): CSSStyleSheet {

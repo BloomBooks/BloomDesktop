@@ -1,6 +1,6 @@
-/// <reference path="../js/StyleEditor.ts" />
+/// <reference path="../../bookEdit/js/StyleEditor.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../Scripts\typings\jasmine/jasmine.d.ts"/>
+/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 /*
 /// <reference path="../../lib/jquery-1.9.1.js"/>
 */
@@ -19,9 +19,9 @@ function MakeBigger() {
 }
 
 function MakeBigger2(target) {
-    var target = $(document).find(target);
+    var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-    editor.MakeBigger(target);
+    editor.MakeBigger(jQueryTarget);
 }
 
 function GetCustomStyleSheet() {
@@ -37,7 +37,7 @@ function GetFontSize() {
 }
 
 function GetRuleForFooStyle() {
-    var x = (GetCustomStyleSheet()).cssRules;
+    var x = GetCustomStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('foo-style') > -1) {
@@ -48,7 +48,7 @@ function GetRuleForFooStyle() {
 }
 
 function GetRuleForDefaultStyle() {
-    var x = (GetCustomStyleSheet()).cssRules;
+    var x = GetCustomStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('default-style') > -1) {
