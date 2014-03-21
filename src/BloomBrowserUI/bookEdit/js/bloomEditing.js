@@ -636,6 +636,9 @@ jQuery.fn.IsOverflowing = function () {
 function AddOverflowHandler() {
     $("div.bloom-editable").on("keyup paste", function (e) {
         var $this = $(this);
+        // Give the browser time to get the pasted text into the DOM first, before testing for overflow
+        // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+        //        At first I was concerned that this might slow typing, but it doesn't seem to.
         setTimeout(function () {
             if ($this.IsOverflowing())
                 $this.addClass('overflow');
@@ -643,7 +646,7 @@ function AddOverflowHandler() {
                 if ($this.hasClass('overflow'))
                     $this.removeClass('overflow');
             }
-        }, 100); // Make sure the paste has actually completed first
+        }, 100); // 100 milliseconds
         e.stopPropagation();
     });
 }
