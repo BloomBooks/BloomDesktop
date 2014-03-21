@@ -612,7 +612,7 @@ function ResizeUsingPercentages(e,ui){
 }
 
 // Actual testable determination of overflow or not
-jQuery.fn.IsOverflowing = function(){
+jQuery.fn.IsOverflowing = function () {
     var element = $(this)[0];
     // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
     var marginBoxParent = $(element).parents('.marginBox');
@@ -624,19 +624,30 @@ jQuery.fn.IsOverflowing = function(){
     var elemBottom = $(element).offset().top + $(element).outerHeight(true);
     // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
     // This is because of the thin grey border on a focused input box.
-    return element.scrollHeight > element.clientHeight + 2 || elemBottom > parentBottom;
+    // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
+    // so we'll apply the same 'fudge' factor to both comparisons.
+    var focusedBorderFudgeFactor = 2;
+    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor ||
+        elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
 // When a div is overfull,
 // we add the overflow class and it gets a red background or something
 function AddOverflowHandler() {
-    $("div.bloom-editable").on("keyup paste", function() {
-        if ($(this).IsOverflowing())
-            $(this).addClass('overflow');
-        else {
-            if ($(this).hasClass('overflow'))
-                $(this).removeClass('overflow');
-        }
+    $("div.bloom-editable").on("keyup paste", function (e) {
+        var $this = $(this);
+        // Give the browser time to get the pasted text into the DOM first, before testing for overflow
+        // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+        //        At first I was concerned that this might slow typing, but it doesn't seem to.
+        setTimeout(function () {
+            if ($this.IsOverflowing())
+                $this.addClass('overflow');
+            else {
+                if ($this.hasClass('overflow'))
+                    $this.removeClass('overflow');
+            }
+        }, 100); // 100 milliseconds
+        e.stopPropagation();
     });
 }
 
@@ -697,12 +708,8 @@ jQuery(document).ready(function () {
         $(this).append(contentElements);
     });
 
-    // Add overflow event handlers so that when a div is overfull,
-    // we add the overflow class and it gets a red background or something
-    AddOverflowHandler();
-
     //Convert Standard Format Markers in the pasted text to html spans
-    jQuery("div.bloom-editable").on("paste", function (e) {
+    $("div.bloom-editable").on("paste", function (e) {
         if (!e.originalEvent.clipboardData)
             return;
 
@@ -722,6 +729,10 @@ jQuery(document).ready(function () {
             //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
         }
     });
+
+    // Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    AddOverflowHandler();
 
     //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much

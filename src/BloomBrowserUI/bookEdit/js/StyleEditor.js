@@ -55,17 +55,17 @@ var StyleEditor = (function () {
         if (!styleName)
             return;
         var rule = this.GetOrCreateRuleForStyle(styleName);
-        var sizeString = (rule).style.fontSize;
+        var sizeString = rule.style.fontSize;
         if (!sizeString)
             sizeString = $(target).css("font-size");
         var units = sizeString.substr(sizeString.length - 2, 2);
-        sizeString = (parseInt(sizeString) + change).toString();
+        sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
         rule.style.setProperty("font-size", sizeString + units, "important");
     };
 
     StyleEditor.prototype.GetOrCreateCustomStyleSheet = function () {
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if ((document.styleSheets[i]).ownerNode.id == "customBookStyleElement")
+            if (document.styleSheets[i].ownerNode.id == "customBookStyleElement")
                 return document.styleSheets[i];
         }
 
@@ -80,14 +80,14 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.GetOrCreateRuleForStyle = function (styleName) {
         var styleSheet = this.GetOrCreateCustomStyleSheet();
-        var x = (styleSheet).cssRules;
+        var x = styleSheet.cssRules;
 
         for (var i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf(styleName) > -1) {
                 return x[i];
             }
         }
-        (styleSheet).insertRule('.' + styleName + ' {}', 0);
+        styleSheet.insertRule('.' + styleName + ' {}', 0);
 
         return x[0];
     };
