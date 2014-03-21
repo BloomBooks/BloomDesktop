@@ -23,9 +23,9 @@ function MakeBigger() {
 }
 
 function MakeBigger2(target:string) {
-	var jqTarget = $(document).find(target);
+	var jQueryTarget = $(document).find(target);
 	var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-	editor.MakeBigger(<HTMLElement><any>jqTarget);
+	editor.MakeBigger(<HTMLElement><any>jQueryTarget);
 }
 
 function GetCustomStyleSheet(): CSSStyleSheet {
