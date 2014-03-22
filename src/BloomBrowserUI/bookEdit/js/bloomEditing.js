@@ -627,14 +627,33 @@ jQuery.fn.IsOverflowing = function () {
     // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
     // so we'll apply the same 'fudge' factor to both comparisons.
     var focusedBorderFudgeFactor = 2;
-    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor ||
-        elemBottom > parentBottom + focusedBorderFudgeFactor;
+	
+	 //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
+	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it 
+	 //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
+	 //element.
+	 var growFromCenterVerticalFudgeFactor =0;
+	 if($(element).data('firefoxheight')){
+		growFromCenterVerticalFudgeFactor = 2;
+	 }
+	 
+	 //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
+	 //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
+	 // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
+	 var shortBoxFudgeFactor = 4;
+	 
+	//console.log('s='+element.scrollHeight+' c='+element.clientHeight);
+		
+	 return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
+			 element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+		 elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
 // When a div is overfull,
 // we add the overflow class and it gets a red background or something
 function AddOverflowHandler() {
-    $("div.bloom-editable").on("keyup paste", function (e) {
+	//NB: for some historical reason in March 2014 the calendar still uses textareas
+    $("div.bloom-editable, textarea").on("keyup paste", function (e) {
         var $this = $(this);
         // Give the browser time to get the pasted text into the DOM first, before testing for overflow
         // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
