@@ -1,4 +1,7 @@
-﻿## 1.2.1 - 20 Mar 2014
+﻿## 1.2.4 - 22 Mar 2014
+* Boxes now turn red when text overflow is detected.
+
+## 1.2.1 - 20 Mar 2014
 * Now supports Ctrl+b (bold), ctrl+u (underline), and ctrl+i (emphasis/italics)
 
 

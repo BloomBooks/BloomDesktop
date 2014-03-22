@@ -10,7 +10,7 @@ $.fn.CenterVerticallyInParent = function() {
         //See bloomPreview.SetMaxHeightForHtmlToPDFBug()
         $(this).children().each(function(){
             var h= $(this).height();
-            $(this).attr('data-firefoxHeight', h);
+            $(this).attr('data-firefoxheight', h);
         });
     });
 };
@@ -565,6 +565,10 @@ function ResizeUsingPercentages(e,ui){
          $(this).append(contentElements);
      });
 
+	// Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    AddOverflowHandler();
+	
 	$("div.bloom-editable").bind('keydown', 'ctrl+b', function (e) {
         e.preventDefault();
         //document.execCommand("formatBlock", false, "strong");
@@ -585,30 +589,67 @@ function ResizeUsingPercentages(e,ui){
 		e.preventDefault();
         document.execCommand("RemoveFormat", false, null);
 	});
-     //when a textarea or div is overfull, add the overflow class so that it gets a red background or something
-     //NB: we would like to run this even when there is a mouse paste, but currently don't know how
-     //to get that event. You'd think change() would do it, but it doesn't. http://stackoverflow.com/questions/3035633/jquery-change-not-working-incase-of-dynamic-value-change
-     //
-     // Promising, including a pointer to paste event: http://stackoverflow.com/questions/2867479/limiting-number-of-characters-in-a-contenteditable-div?rq=1
-     //
-     //    jQuery("textarea").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
-     //    jQuery("div.bloom-editable").keypress(function() {
-     //        var overflowing = this.scrollHeight > this.clientHeight || this.scrollHieght > $(this).maxSize().height;
-     //        if ($(this).hasClass('overflow') && !overflowing) {
-     //            $(this).removeClass('overflow');
-     //        }
-     //        else if (overflowing) {
-     //            $(this).addClass('overflow');
-     //        }
-     //    });
+
+	
+	// Actual testable determination of overflow or not
+	jQuery.fn.IsOverflowing = function () {
+		var element = $(this)[0];
+		// We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
+		var marginBoxParent = $(element).parents('.marginBox');
+		var parentBottom;
+		if(marginBoxParent && marginBoxParent.length > 0)
+			parentBottom = $(marginBoxParent[0]).offset().top + $(marginBoxParent[0]).outerHeight(true);
+		else
+			parentBottom = 999999;
+		var elemBottom = $(element).offset().top + $(element).outerHeight(true);
+		// If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
+		// This is because of the thin grey border on a focused input box.
+		// In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
+		// so we'll apply the same 'fudge' factor to both comparisons.
+		 var focusedBorderFudgeFactor = 2;
+		 
+		 //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
+		 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it 
+		 //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
+		 //element.
+		 var growFromCenterVerticalFudgeFactor =0;
+		 if($(element).data('firefoxheight')){
+			growFromCenterVerticalFudgeFactor = 2;
+		 }
+		 
+	 //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
+	 //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
+	 // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
+	 var shortBoxFudgeFactor = 4;
+		 
+		//console.log('s='+element.scrollHeight+' c='+element.clientHeight);
+			
+		 return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
+				 element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+			 elemBottom > parentBottom + focusedBorderFudgeFactor;
+	};
+
+	// When a div is overfull,
+	// we add the overflow class and it gets a red background or something
+	function AddOverflowHandler() {
+		//NB: for some historical reason in March 2014 the calendar still uses textareas
+		$("div.bloom-editable, textarea").bind("keyup paste", function (e) {
+			var $this = $(this);
+			// Give the browser time to get the pasted text into the DOM first, before testing for overflow
+			// GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
+			//        At first I was concerned that this might slow typing, but it doesn't seem to.
+			setTimeout(function () {
+				if ($this.IsOverflowing())
+					$this.addClass('overflow');
+				else {
+					if ($this.hasClass('overflow'))
+						$this.removeClass('overflow');
+				}
+			}, 100); // 100 milliseconds
+			e.stopPropagation();
+		});
+	}
+
 
 
      //--------------------------------
