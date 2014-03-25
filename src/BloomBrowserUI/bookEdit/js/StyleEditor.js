@@ -61,20 +61,25 @@ var StyleEditor = (function () {
         var units = sizeString.substr(sizeString.length - 2, 2);
         sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
         rule.style.setProperty("font-size", sizeString + units, "important");
+        // alert("New size rule: " + rule.cssText);
     };
 
     StyleEditor.prototype.GetOrCreateCustomStyleSheet = function () {
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if (document.styleSheets[i].ownerNode.id == "customBookStyleElement")
+            if (document.styleSheets[i].ownerNode.id == "customStyles") {
+                // alert("Found customStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
                 return document.styleSheets[i];
+            }
         }
 
-        //alert("Will make customBookStyles Sheet:" + document.head.outerHTML);
+        // alert("Will make customStyles Sheet:" + document.head.outerHTML);
         var newSheet = document.createElement('style');
-        newSheet.id = "customBookStyleElement";
-        document.getElementsByTagName('head')[0].appendChild(newSheet);
-        newSheet.title = "customBookStyleElement";
+        newSheet.id = "customStyles";
+        document.getElementsByTagName("head")[0].appendChild(newSheet);
+        newSheet.title = "customStyles";
+        newSheet.type = "text/css";
 
+        // alert("newSheet: " + document.head.innerHTML);
         return newSheet;
     };
 
