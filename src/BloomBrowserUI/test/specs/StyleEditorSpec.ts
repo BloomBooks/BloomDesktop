@@ -30,7 +30,7 @@ function MakeBigger2(target:string) {
 
 function GetCustomStyleSheet(): CSSStyleSheet {
     for (var i = 0; i < document.styleSheets.length; i++) {
-        if (document.styleSheets[i].title == "customBookStyleElement")
+        if (document.styleSheets[i].title == "customStyle")
            return <CSSStyleSheet>(document.styleSheets[i]);
     }
 } 
@@ -76,7 +76,7 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
 describe("StyleEditor", function () {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(function () {
-        $('#customBookStyleElement').remove();
+        $('#customStyle').remove();
         $('body').html('');
     });
 
