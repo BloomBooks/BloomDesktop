@@ -1357,7 +1357,7 @@ namespace Bloom.Book
 				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "customStyles" from children, it'll ignore them (they woul conflict with each other)
+				//NB: at this point this code can't hand the "customStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
 				var customStyleSheets = new List<string>();
 				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
