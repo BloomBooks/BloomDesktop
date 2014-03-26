@@ -1149,14 +1149,14 @@ namespace Bloom.Book
 	            page.InnerXml = divElement.InnerXml;
 
                  _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
-				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
-	            var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
-				if (customStyles != null)
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "userModifiedStyles". Here we copy that over to the book DOM.
+                 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@id='userModifiedStyles']");
+				if (userModifiedStyles != null)
 				{
-					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
-					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
+					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				//Debug.WriteLine("CustomStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
+				//Debug.WriteLine("User Modified Styles:   " + GetOrCreateUserModifiedStyleElementFromStorage().OuterXml);
                 try
                 {
                     Save();
@@ -1195,19 +1195,19 @@ namespace Bloom.Book
 //        }
 
 	    /// <summary>
-	    /// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+	    /// The <style id='userModifiedStyles'/> element is where we keep our user-modifiable style information
 	    /// </summary>
-	    private XmlElement GetOrCreateCustomStyleElementFromStorage()
+	    private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 	    {
-		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customStyles']");
+		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='userModifiedStyles']");
 		    if (matches.Count > 0)
 			    return (XmlElement) matches[0];
 
-		    var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-		    emptyCustomStylesElement.SetAttribute("id", "customStyles");
-		    emptyCustomStylesElement.SetAttribute("type", "text/css");
-		    OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
-		    return emptyCustomStylesElement;
+		    var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+		    emptyUserModifiedStylesElement.SetAttribute("id", "userModifiedStyles");
+		    emptyUserModifiedStylesElement.SetAttribute("type", "text/css");
+		    OurHtmlDom.Head.AppendChild(emptyUserModifiedStylesElement);
+		    return emptyUserModifiedStylesElement;
 	    }
 
 	    /// <summary>
@@ -1357,14 +1357,14 @@ namespace Bloom.Book
 			    var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "customStyles" from children, it'll ignore them (they would conflict with each other)
+				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-				var customStyleSheets = new List<string>();
+				var userModifiedStyleSheets = new List<string>();
 				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
 				{
-					if (!customStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
+					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
-						customStyleSheets.Add(sheetName);
+						userModifiedStyleSheets.Add(sheetName);
 						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
 					}
 				}

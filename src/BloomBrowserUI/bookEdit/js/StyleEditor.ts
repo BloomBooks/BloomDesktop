@@ -15,7 +15,7 @@ class StyleEditor {
 //            $(doc).find("head").append(s);
 //            this.styleElement = $(doc).find('.styleEditorStuff')[0];
         //        } 
-        var sheet = this.GetOrCreateCustomStyleSheet();
+        var sheet = this.GetOrCreateUserModifiedStyleSheet();
     }
 
     static GetStyleClassFromElement(target: HTMLElement) {
@@ -70,20 +70,20 @@ class StyleEditor {
         // alert("New size rule: " + rule.cssText);
     }
 
-    GetOrCreateCustomStyleSheet(): StyleSheet {
+    GetOrCreateUserModifiedStyleSheet(): StyleSheet {
         //note, this currently just makes an element in the document, not a separate file
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if ((<any>document.styleSheets[i]).ownerNode.id == "customStyles") {
-                // alert("Found customStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
+            if ((<any>document.styleSheets[i]).ownerNode.id == "userModifiedStyles") {
+                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
                 return document.styleSheets[i];
             }
         }
-        // alert("Will make customStyles Sheet:" + document.head.outerHTML);
+        // alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
 
         var newSheet = document.createElement('style');
-        newSheet.id = "customStyles";
+        newSheet.id = "userModifiedStyles";
         document.getElementsByTagName("head")[0].appendChild(newSheet);
-        newSheet.title = "customStyles";
+        newSheet.title = "userModifiedStyles";
         newSheet.type = "text/css";
         // alert("newSheet: " + document.head.innerHTML);
 
@@ -91,7 +91,7 @@ class StyleEditor {
     }
 
     GetOrCreateRuleForStyle(styleName: string): CSSStyleRule {
-        var styleSheet = this.GetOrCreateCustomStyleSheet();
+        var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x: CSSRuleList = (<any>styleSheet).cssRules;
 
         for (var i = 0; i < x.length; i++) {
