@@ -72,7 +72,7 @@ function HasRuleMatchingThisSelector(selector) {
 describe("StyleEditor", function () {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(function () {
-        $('#customStyle').remove();
+        $('#customStyles').remove();
         $('body').html('');
     });
 
@@ -124,7 +124,6 @@ describe("StyleEditor", function () {
     });
 
     it("MakeBigger can add a new rule without removing other rules", function () {
-        //$('head').append("<style id='customBookStyleElement' type='text/css'>.default-style {	text-align: left;}</style>")
         $('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='default-style'></div>");
         MakeBigger2('#testTarget2');
         MakeBigger();
