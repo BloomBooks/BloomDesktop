@@ -512,7 +512,7 @@ namespace Bloom
 						var idNode = s.OwnerNode.Attributes["id"];
 						if (idNode == null)
 							return false;
-						return idNode.NodeValue == "customBookStyles";
+						return idNode.NodeValue == "customStyles";
 					}).FirstOrDefault();
 
 				if (customStyleSheet != null)
@@ -523,7 +523,7 @@ namespace Bloom
 					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = customStyleSheet.OwnerNode.OuterHtml;
 					 */
 					var styles = new StringBuilder();
-					styles.AppendLine("<style id='customStyles' type='text/css'>");
+					styles.AppendLine("<style id='customStyles' title='customStyles' type='text/css'>");
 					foreach (var cssRule in customStyleSheet.CssRules)
 					{
 						styles.AppendLine(cssRule.CssText);

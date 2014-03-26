@@ -1156,7 +1156,7 @@ namespace Bloom.Book
 					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
 					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
 				}
-				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
+				//Debug.WriteLine("CustomStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
 				try
 				{
 					Save();
@@ -1199,12 +1199,12 @@ namespace Bloom.Book
 		/// </summary>
 		private XmlElement GetOrCreateCustomStyleElementFromStorage()
 		{
-			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customStyles']");
 			if (matches.Count > 0)
 				return (XmlElement) matches[0];
 
 			var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-			emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
+			emptyCustomStylesElement.SetAttribute("id", "customStyles");
 			emptyCustomStylesElement.SetAttribute("type", "text/css");
 			OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
 			return emptyCustomStylesElement;
@@ -1357,7 +1357,7 @@ namespace Bloom.Book
 				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "customBookStyles" from children, it'll ignore them (they woul conflict with each other)
+				//NB: at this point this code can't hand the "customStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
 				var customStyleSheets = new List<string>();
 				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())

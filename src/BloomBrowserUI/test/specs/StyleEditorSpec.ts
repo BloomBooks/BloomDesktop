@@ -30,7 +30,7 @@ function MakeBigger2(target:string) {
 
 function GetCustomStyleSheet(): CSSStyleSheet {
 	for (var i = 0; i < document.styleSheets.length; i++) {
-		if (document.styleSheets[i].title == "customBookStyleElement")
+		if (document.styleSheets[i].title == "customStyles")
 		   return <CSSStyleSheet>(document.styleSheets[i]);
 	}
 }
@@ -76,22 +76,22 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
 describe("StyleEditor", function () {
 	// most perplexingly, jasmine doesn't reset the dom between tests
 	beforeEach(function () {
-		$('#customBookStyleElement').remove();
+		$('#customStyles').remove();
 		$('body').html('');
 	});
 
-	it("constructor does not make a customBookStyleElement style if one already exists", function () {
+	it("constructor does not make a customStyles style if one already exists", function () {
 		var editor1 = new StyleEditor("");
 		var editor2 = new StyleEditor("");
 		var count = 0;
 		for (var i = 0; i < document.styleSheets.length; i++) {
-			if (document.styleSheets[i].title == "customBookStyleElement")
+			if (document.styleSheets[i].title == "customStyles")
 				++count;
 		}
 		expect(count).toEqual(1);
 	});
 
-	it("constructor adds a stylesheet with title customBookStyleElement", function () {
+	it("constructor adds a stylesheet with title customStyles", function () {
 		var editor = new StyleEditor("");
 		expect(GetCustomStyleSheet()).not.toBeNull();
 	});
@@ -128,8 +128,6 @@ describe("StyleEditor", function () {
 	});
 
 	it("MakeBigger can add a new rule without removing other rules", function () {
-		//$('head').append("<style id='customBookStyleElement' type='text/css'>.default-style {	text-align: left;}</style>")
-
 		$('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='default-style'></div>");
 		MakeBigger2('#testTarget2');
 		MakeBigger();
