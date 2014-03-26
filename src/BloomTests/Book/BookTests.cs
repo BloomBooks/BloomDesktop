@@ -18,6 +18,7 @@ using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
+using System;
 
 namespace BloomTests.Book
 {
@@ -68,7 +69,7 @@ namespace BloomTests.Book
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
-			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates"); 
+			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","Templates"); 
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
             _fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
@@ -796,9 +797,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var acksElt = _bookDom.SelectSingleNode("//textarea");
-			acksElt.InnerXml = "changed\r\n<br />more changes";
+			acksElt.InnerXml = "changed" + Environment.NewLine + "<br />more changes";
 			book.Save();
-			Assert.That(_metadata.Credits, Is.EqualTo("changed\r\nmore changes"));
+			Assert.That(_metadata.Credits, Is.EqualTo("changed" + Environment.NewLine + "more changes"));
 		}
 
 		[Test]
