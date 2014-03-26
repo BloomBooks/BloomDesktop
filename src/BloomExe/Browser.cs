@@ -507,29 +507,29 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var customStyleSheet = _browser.Document.StyleSheets.Where(s =>
+				var userModifiedStyleSheet = _browser.Document.StyleSheets.Where(s =>
 					{
 						var idNode = s.OwnerNode.Attributes["id"];
 						if (idNode == null)
 							return false;
-						return idNode.NodeValue == "customStyles";
+						return idNode.NodeValue == "userModifiedStyles";
 					}).FirstOrDefault();
 
-				if (customStyleSheet != null)
+				if (userModifiedStyleSheet != null)
 				{
 					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
 					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
 					 * rules don't show up inside of it. So
-					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = customStyleSheet.OwnerNode.OuterHtml;
+					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
 					 */
 					var styles = new StringBuilder();
-					styles.AppendLine("<style id='customStyles' title='customStyles' type='text/css'>");
-					foreach (var cssRule in customStyleSheet.CssRules)
+					styles.AppendLine("<style id='userModifiedStyles' title='userModifiedStyles' type='text/css'>");
+					foreach (var cssRule in userModifiedStyleSheet.CssRules)
 					{
 						styles.AppendLine(cssRule.CssText);
 					}
 					styles.AppendLine("</style>");
-					Debug.WriteLine("*CustomStylesheet in browser:"+styles);
+					Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
 					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 				}
 
