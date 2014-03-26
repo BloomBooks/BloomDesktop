@@ -10,7 +10,7 @@
 //    var target = $(document).find('.fooStyle');
 //    var editor = new StyleEditor(<HTMLElement><any>document);
 //    editor.MakeBigger(<HTMLElement><any>target);
-//    return (<HTMLElement>GetCustomStyleSheet().ownerNode).outerHTML;
+//    return (<HTMLElement>GetUserModifiedStyleSheet().ownerNode).outerHTML;
 //}
 function MakeBigger() {
     var target = $(document).find('#testTarget');
@@ -24,9 +24,9 @@ function MakeBigger2(target) {
     editor.MakeBigger(jQueryTarget);
 }
 
-function GetCustomStyleSheet() {
+function GetUserModifiedStyleSheet() {
     for (var i = 0; i < document.styleSheets.length; i++) {
-        if (document.styleSheets[i].title == "customStyles")
+        if (document.styleSheets[i].title == "userModifiedStyles")
             return (document.styleSheets[i]);
     }
 }
@@ -37,7 +37,7 @@ function GetFontSize() {
 }
 
 function GetRuleForFooStyle() {
-    var x = GetCustomStyleSheet().cssRules;
+    var x = GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('foo-style') > -1) {
@@ -48,7 +48,7 @@ function GetRuleForFooStyle() {
 }
 
 function GetRuleForDefaultStyle() {
-    var x = GetCustomStyleSheet().cssRules;
+    var x = GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('default-style') > -1) {
@@ -59,7 +59,7 @@ function GetRuleForDefaultStyle() {
 }
 
 function HasRuleMatchingThisSelector(selector) {
-    var x = GetCustomStyleSheet().cssRules;
+    var x = GetUserModifiedStyleSheet().cssRules;
     var count = 0;
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
@@ -72,24 +72,24 @@ function HasRuleMatchingThisSelector(selector) {
 describe("StyleEditor", function () {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(function () {
-        $('#customStyles').remove();
+        $('#userModifiedStyles').remove();
         $('body').html('');
     });
 
-    it("constructor does not make a customStyles style if one already exists", function () {
+    it("constructor does not make a userModifiedStyles style if one already exists", function () {
         var editor1 = new StyleEditor("");
         var editor2 = new StyleEditor("");
         var count = 0;
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if (document.styleSheets[i].title == "customStyles")
+            if (document.styleSheets[i].title == "userModifiedStyles")
                 ++count;
         }
         expect(count).toEqual(1);
     });
 
-    it("constructor adds a stylesheet with title customStyles", function () {
+    it("constructor adds a stylesheet with title userModifiedStyles", function () {
         var editor = new StyleEditor("");
-        expect(GetCustomStyleSheet()).not.toBeNull();
+        expect(GetUserModifiedStyleSheet()).not.toBeNull();
     });
 
     it("MakeBigger creates a style for the correct class if it is missing", function () {
@@ -135,7 +135,7 @@ describe("StyleEditor", function () {
         MakeBigger();
         MakeBigger();
         MakeBigger();
-        var x = GetCustomStyleSheet().cssRules;
+        var x = GetUserModifiedStyleSheet().cssRules;
 
         var count = 0;
         for (var i = 0; i < x.length; i++) {
@@ -149,7 +149,7 @@ describe("StyleEditor", function () {
     it("When the element has an @lang, MakeBigger adds rules that only affect the given language", function () {
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
         MakeBigger2('#testTarget');
-        var x = GetCustomStyleSheet().cssRules;
+        var x = GetUserModifiedStyleSheet().cssRules;
 
         var count = 0;
         for (var i = 0; i < x.length; i++) {
