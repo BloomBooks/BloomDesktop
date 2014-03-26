@@ -766,7 +766,8 @@ namespace Bloom
 				_applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
-										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+										   "SIL/Bloom",
+										   Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
 
 				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
 				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
@@ -784,7 +785,8 @@ namespace Bloom
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
-										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
+											"SIL/Bloom",
+											Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
 
   /*                var l10nSystem = L10NSystem.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
 					l10nSystem.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
