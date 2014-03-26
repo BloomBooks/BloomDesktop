@@ -10,7 +10,7 @@ var StyleEditor = (function () {
         //            $(doc).find("head").append(s);
         //            this.styleElement = $(doc).find('.styleEditorStuff')[0];
         //        }
-        var sheet = this.GetOrCreateCustomStyleSheet();
+        var sheet = this.GetOrCreateUserModifiedStyleSheet();
     }
     StyleEditor.GetStyleClassFromElement = function (target) {
         var c = $(target).attr("class");
@@ -64,19 +64,19 @@ var StyleEditor = (function () {
         // alert("New size rule: " + rule.cssText);
     };
 
-    StyleEditor.prototype.GetOrCreateCustomStyleSheet = function () {
+    StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if (document.styleSheets[i].ownerNode.id == "customStyles") {
-                // alert("Found customStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
+            if (document.styleSheets[i].ownerNode.id == "userModifiedStyles") {
+                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
                 return document.styleSheets[i];
             }
         }
 
-        // alert("Will make customStyles Sheet:" + document.head.outerHTML);
+        // alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
         var newSheet = document.createElement('style');
-        newSheet.id = "customStyles";
+        newSheet.id = "userModifiedStyles";
         document.getElementsByTagName("head")[0].appendChild(newSheet);
-        newSheet.title = "customStyles";
+        newSheet.title = "userModifiedStyles";
         newSheet.type = "text/css";
 
         // alert("newSheet: " + document.head.innerHTML);
@@ -84,7 +84,7 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.GetOrCreateRuleForStyle = function (styleName) {
-        var styleSheet = this.GetOrCreateCustomStyleSheet();
+        var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x = styleSheet.cssRules;
 
         for (var i = 0; i < x.length; i++) {
