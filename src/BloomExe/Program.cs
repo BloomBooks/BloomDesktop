@@ -110,6 +110,8 @@ namespace Bloom
 
 			        SetUpErrorHandling();
 
+					EnsureThisInstanceIsRegisteredForBloomUrls();
+
 			        _applicationContainer = new ApplicationContainer();
 
 					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
@@ -220,6 +222,45 @@ namespace Bloom
 				ReleaseMutexForBloom();
 			}
         }
+
+		/// <summary>
+		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
+		/// Todo Linux: no idea what has to happen to register a url handler...probably not this, though.
+		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
+		/// </summary>
+		private static void EnsureThisInstanceIsRegisteredForBloomUrls()
+		{
+			if (AlreadyRegistered(Registry.ClassesRoot))
+				return;
+			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+			var key = root.CreateSubKey(@"bloom\shell\open\command");
+			key.SetValue("", DesiredBloomCommand);
+
+			key = root.CreateSubKey("bloom");
+			key.SetValue("", "BLOOM:URL Protocol");
+			key.SetValue("URL Protocol", "");
+		}
+
+		private static bool AlreadyRegistered(RegistryKey root)
+		{
+			var key = root.OpenSubKey(@"bloom\shell\open\command");
+			if (key == null)
+				return false;
+			var wanted = DesiredBloomCommand;
+			if (wanted != (key.GetValue("") as string).ToLowerInvariant())
+				return false;
+			key = root.OpenSubKey("bloom");
+			if (key.GetValue("") as string != "BLOOM:URL Protocol")
+				return false;
+			if (key.GetValue("URL Protocol") as string != "")
+				return false;
+			return true;
+		}
+
+		private static string DesiredBloomCommand
+		{
+			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
+		}
 
 		private static Thread _serverThread;
 		private static bool _shuttingDown;
