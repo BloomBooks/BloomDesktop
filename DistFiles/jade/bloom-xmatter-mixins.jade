@@ -48,15 +48,16 @@ mixin field-ISBN
 
 mixin field-acknowledgments-localizedVersion
 	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
-	//- TODO: why both versionAcknowledgments && inside-cover-version-aknowledgments-style?
-	+editable("N1").versionAcknowledgments.inside-cover-version-aknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	//- Why both versionAcknowledgments && inside-cover-version-acknowledgments-style?
+	//-   versionAcknowledgments governs placement on the page, inside-cover-version-acknowledgments-style is a
+	//-   holding place for user style adjustments (like font-size)
+	+editable("N1").versionAcknowledgments.inside-cover-version-acknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
-		label.placeholder Original (or Shell) Acknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledgments-style(data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
@@ -97,8 +98,8 @@ mixin factoryStandard-outsideFrontCover
 		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 		//- light of jade it is overly complicated.
 
-		+field-prototypeDeclaredExplicity.coverTitle-style
-			+editable(kLanguageForPrototypeOnly).bookTitle(data-book='bookTitle')
+		+field-prototypeDeclaredExplicity
+			+editable(kLanguageForPrototypeOnly).bookTitle.coverTitle-style(data-book='bookTitle')
 				label.bubble Book title in {lang}
 
 		.bloom-imageContainer
@@ -120,15 +121,14 @@ mixin factoryStandard-creditsInsideFrontCover
 		+field-acknowledgments-originalVersion
 		+block-licenseAndCopyright#versoLicenseAndCopyright
 		+field-ISBN
-		+field-acknowledgments-localizedVersion.inside-cover-version-aknowledgments-style.versionAcknowledgments
+		+field-acknowledgments-localizedVersion
 
 mixin factoryStandard-titlePage
 	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titePageTitleBlock
 			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly)(data-book='bookTitle')
-
+			+editable(kLanguageForPrototypeOnly).title-page-bookTitle-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
