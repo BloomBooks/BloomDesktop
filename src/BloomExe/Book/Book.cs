@@ -1381,9 +1381,6 @@ namespace Bloom.Book
 		    }
 	    }
 
-
-
-
 	    private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
 		{
 			var lastPage = 
@@ -1411,8 +1408,6 @@ namespace Bloom.Book
             return _storage.PathToExistingHtml;
         }
 
-    
-
     	public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
     	{
 			//NB: all we support at the moment is specifying "Calendar"
@@ -1437,7 +1432,6 @@ namespace Bloom.Book
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
     	}
-
 
 		/// <summary>
 		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
