@@ -902,6 +902,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
 								This is not in any known language
 							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='z'>
+								We use z for some special purpose, seems to occur in every book, don't want it.
+							</div>
 						</div>
 					</div>
 				</body></html>");
