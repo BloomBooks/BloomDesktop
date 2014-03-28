@@ -30,7 +30,7 @@ namespace Bloom.WebLibraryIntegration
 		public const string kDirectoryDelimeterForS3 = "/";
 		public const string UnitTestBucketName = "BloomLibraryBooks-UnitTests";
 		public const string SandboxBucketName = "BloomLibraryBooks-Sandbox";
-		public const string ProductionBucketName = "BloomLibraryBooks-Production";
+		public const string ProductionBucketName = "BloomLibraryBooks";
 
 		public BloomS3Client(string bucketName)
 		{
