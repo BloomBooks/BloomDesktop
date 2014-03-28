@@ -104,7 +104,7 @@ TD P
 	left: -34px;
 	top: -7px;
 }
-/*Sinc this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
+/*Since this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
 .marginBox
 {
 	margin-left: 0.3cm !important;
