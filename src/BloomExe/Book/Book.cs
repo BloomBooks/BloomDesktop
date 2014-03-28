@@ -907,7 +907,7 @@ namespace Bloom.Book
 			    return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 				    .Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				    .Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*") // Not a valid language, thoug we sometimes use it for special values
+					.Where(lang => lang != "*" && lang != "z") // Not valid languages, though we sometimes use them for special purposes
 				    .Distinct();
 		    }
 	    }
