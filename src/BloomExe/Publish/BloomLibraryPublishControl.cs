@@ -239,6 +239,16 @@ namespace Bloom.Publish
 			}
 			info.Uploader = _bookTransferrer.UserId;
 
+		    if (!_bookTransferrer.IsThisVersionAllowedToUpload())
+		    {
+		        MessageBox.Show(this,
+		            LocalizationManager.GetString("Publish.Upload.OldVersion",
+		                "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
+		            LocalizationManager.GetString("Publish.Upload.UploadNotAllowed", "Upload Not Allowed"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Stop);
+		        return;
+		    }
+
 			// Todo: try to make sure it has a thumbnail.
 			if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
 			{

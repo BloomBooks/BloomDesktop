@@ -569,5 +569,10 @@ namespace Bloom.WebLibraryIntegration
 				book.MakeThumbnailerAdvance(invokeTarget);
 			}
 		}
+
+        internal bool IsThisVersionAllowedToUpload()
+        {
+            return _parseClient.IsThisVersionAllowedToUpload();
+        }
     }
 }
