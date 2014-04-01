@@ -5,11 +5,11 @@ mixin topic(langCode, topic)
     div(data-book='topic', lang=langCode)=topic
 
 //- generates a translationGroup with any classes on the internal div
-mixin field-attributesOnChild
-    - requireZeroArguments('field-attributesOnChild', arguments)
-    .bloom-translationGroup
+mixin field-classOnChild(internalClass)
+    - requireOneArgument('field-classOnChild', arguments)
+    .bloom-translationGroup(attributes=attributes)
         block
-        +editable(kLanguageForPrototypeOnly)(attributes=attributes)
+        +editable(kLanguageForPrototypeOnly)(class=internalClass)
 
 -var cca='Creative Commons Attribution'
 -var ccaLink='http://creativecommons.org/licenses/by/3.0/'
@@ -46,7 +46,7 @@ html
             .marginBox
                 .bloom-imageContainer.bloom-content1(style='opacity: 1; overflow: hidden;')
                     +image.calendarTopPagePicture(style='width: 432px; height: 425px; margin-left: 181px; margin-top: 0px;', height='425', width='432')
-                +field-attributesOnChild.calendarBelowBigPictureText.calendarPictureCaption-style
+                +field-classOnChild('calendarPictureCaption-style').calendarBelowBigPictureText
                     label.placeholder some nice text for the month
         .bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#553165c2-be6c-4cf2-885e-d8f3159170fe(data-page='required')
             .marginBox
