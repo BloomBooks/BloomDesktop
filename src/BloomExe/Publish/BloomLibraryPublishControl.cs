@@ -114,6 +114,14 @@ namespace Bloom.Publish
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 			RequireValue(_languagesLabel);
+
+			if (BookTransfer.UseSandbox)
+			{
+				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
+				_uploadButton.Text = LocalizationManager.GetString("Publish.Upload.UploadSandbox","Upload Book (to Sandbox)"); 
+				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
+				_uploadButton.Width += neededWidth - oldTextWidth;
+			}
 		}
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
@@ -273,9 +281,10 @@ namespace Bloom.Publish
 			get
 			{
 				var prefix = "http://";
-#if DEBUG
-				prefix += "dev.";
-#endif
+				if (BookTransfer.UseSandbox)
+					prefix += "dev.";
+				else
+					prefix += "books.";
 				return prefix + "bloomlibrary.org/#";
 			}
 		}
