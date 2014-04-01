@@ -53,6 +53,22 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		public static bool UseSandbox
+		{
+			get
+			{
+#if DEBUG
+				return true;
+#else
+				var temp = Environment.GetEnvironmentVariable("BloomSandbox");
+				if (string.IsNullOrWhiteSpace(temp))
+					return false;
+				temp = temp.ToLowerInvariant();
+				return temp == "yes" || temp == "true" || temp == "y" || temp == "t";
+#endif
+			}
+		}
+
 		void _OrderAdded(object sender, EventArgs e)
 		{
 			HandleOrders();
@@ -288,6 +304,12 @@ namespace Bloom.WebLibraryIntegration
 			    parseId = response.ResponseUri.LocalPath;
 			    int index = parseId.LastIndexOf('/');
 			    parseId = parseId.Substring(index + 1);
+				if (parseId == "books")
+				{
+					// For NEW books the response URL is useless...need to do a new query to get the ID.
+					var json = _parseClient.GetSingleBookRecord(metadata.Id);
+					parseId = json.objectId.Value;
+				}
 		    }
 			catch (WebException e)
 			{
@@ -547,5 +569,10 @@ namespace Bloom.WebLibraryIntegration
 				book.MakeThumbnailerAdvance(invokeTarget);
 			}
 		}
+
+        internal bool IsThisVersionAllowedToUpload()
+        {
+            return _parseClient.IsThisVersionAllowedToUpload();
+        }
     }
 }
