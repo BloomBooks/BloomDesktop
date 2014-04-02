@@ -4,6 +4,19 @@ include ../../../jade/bloom-foundation-mixins
 mixin topic(langCode, topic)
 	div(data-book='topic', lang=langCode)=topic
 
+//- generates a translationGroup with any classes on the internal div
+mixin field-classOnChild(internalClass)
+	- requireOneArgument('field-classOnChild', arguments)
+	.bloom-translationGroup(attributes=attributes)
+		block
+		+editable(kLanguageForPrototypeOnly)(class=internalClass)
+
+mixin image-largePage
+	- requireZeroArguments('image', arguments);
+	.bloom-imageContainer(style="opacity: 1; overflow: hidden;")
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
+		block
+
 -var cca='Creative Commons Attribution'
 -var ccaLink='http://creativecommons.org/licenses/by/3.0/'
 
@@ -37,9 +50,8 @@ html
 			.bloom-content1(data-book='copyright') Copyright SIL International 2011
 		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required')
 			.marginBox
-				.bloom-imageContainer.bloom-content1(style='opacity: 1; overflow: hidden;')
-					+image.calendarTopPagePicture(style='width: 432px; height: 425px; margin-left: 181px; margin-top: 0px;', height='425', width='432')
-				+field.calendarBelowBigPictureText
+				+image-largePage
+				+field-classOnChild('calendarPictureCaption-style').calendarBelowBigPictureText
 					label.placeholder some nice text for the month
 		.bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#553165c2-be6c-4cf2-885e-d8f3159170fe(data-page='required')
 			.marginBox

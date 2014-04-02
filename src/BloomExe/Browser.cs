@@ -456,21 +456,17 @@ namespace Bloom
 			if (_pageDom == null)
 				return;
 
-#if DEBUG
+			// As of august 2012 textareas only occur in the Calendar
 			if (_pageDom.SelectNodes("//textarea").Count > 0)
-				Debug.Fail("Oh, a chance to test bluring textarea's!");
-#endif
-			//as of august 2012 textareas only occur in the Calendar
-	//		if (_pageDom.SelectNodes("//textarea").Count >0)
 			{
 				//This approach was to force an onblur so that we can get at the actual user-edited value.
 				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
 				//_browser.WebBrowserFocus.Deactivate();
 				//_browser.WebBrowserFocus.Activate();
 
-				//now, we just do the blur directly.
+				// Now, we just do the blur directly.
 				var activeElement = _browser.Window.Document.ActiveElement;
-				if(activeElement!=null)
+				if (activeElement != null)
 					activeElement.Blur();
 			}
 
