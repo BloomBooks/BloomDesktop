@@ -505,10 +505,10 @@ namespace Bloom
 
 				var userModifiedStyleSheet = _browser.Document.StyleSheets.Where(s =>
 					{
-						var idNode = s.OwnerNode.Attributes["id"];
-						if (idNode == null)
+						var titleNode = s.OwnerNode.Attributes["title"];
+						if (titleNode == null)
 							return false;
-						return idNode.NodeValue == "userModifiedStyles";
+						return titleNode.NodeValue == "userModifiedStyles";
 					}).FirstOrDefault();
 
 				if (userModifiedStyleSheet != null)
@@ -519,7 +519,7 @@ namespace Bloom
 					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
 					 */
 					var styles = new StringBuilder();
-					styles.AppendLine("<style id='userModifiedStyles' title='userModifiedStyles' type='text/css'>");
+					styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
 					foreach (var cssRule in userModifiedStyleSheet.CssRules)
 					{
 						styles.AppendLine(cssRule.CssText);

@@ -73,15 +73,14 @@ class StyleEditor {
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
         //note, this currently just makes an element in the document, not a separate file
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if ((<any>document.styleSheets[i]).ownerNode.id == "userModifiedStyles") {
-                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
-                return document.styleSheets[i];
+            if ((<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title == "userModifiedStyles") {
+                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
+                return <StyleSheet><any>document.styleSheets[i];
             }
         }
         // alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
 
         var newSheet = document.createElement('style');
-        newSheet.id = "userModifiedStyles";
         document.getElementsByTagName("head")[0].appendChild(newSheet);
         newSheet.title = "userModifiedStyles";
         newSheet.type = "text/css";

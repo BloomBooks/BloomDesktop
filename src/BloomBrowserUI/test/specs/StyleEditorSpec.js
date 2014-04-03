@@ -29,6 +29,7 @@ function GetUserModifiedStyleSheet() {
         if (document.styleSheets[i].title == "userModifiedStyles")
             return (document.styleSheets[i]);
     }
+    return new CSSStyleSheet();
 }
 
 function GetFontSize() {
