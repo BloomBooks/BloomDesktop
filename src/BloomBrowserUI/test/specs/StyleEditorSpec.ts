@@ -33,6 +33,7 @@ function GetUserModifiedStyleSheet(): CSSStyleSheet {
         if (document.styleSheets[i].title == "userModifiedStyles")
            return <CSSStyleSheet>(document.styleSheets[i]);
     }
+    return new CSSStyleSheet();
 } 
 
 function GetFontSize(): number {
@@ -40,8 +41,13 @@ function GetFontSize(): number {
    return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
 
+function GetFontSizeByLang(lang: string): number {
+    var sizeString = $('.foo-style[lang="'+lang+'"]').css("font-size");
+    return parseInt(sizeString.substr(0, sizeString.length - 2));
+}
+
 function GetRuleForFooStyle(): CSSRule {
-    var x: CSSRuleList = (<any>GetUserModifiedStyleSheet()).cssRules;
+    var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('foo-style') > -1){
@@ -52,7 +58,7 @@ function GetRuleForFooStyle(): CSSRule {
 }
 
 function GetRuleForDefaultStyle(): CSSRule {
-    var x: CSSRuleList = (<any>GetUserModifiedStyleSheet()).cssRules;
+    var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('default-style') > -1) {
@@ -70,13 +76,13 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
             ++count;
         }
     }
-    return count > 1;
+    return count > 0;
 }
 
 describe("StyleEditor", function () {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(function () {
-        $('#userModifiedStyles').remove();
+        $('style[title="userModifiedStyles"]').remove();
         $('body').html('');
     });
 
@@ -157,7 +163,7 @@ describe("StyleEditor", function () {
 
         var count = 0;
         for (var i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf("foo-style[lang='xyz']") > -1) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
         }
@@ -166,9 +172,25 @@ describe("StyleEditor", function () {
 
     it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", function () {
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
-        MakeBigger2('#testTarget');
+        MakeBigger2('#testTarget2');
         
-        expect(HasRuleMatchingThisSelector("foo-style:not([lang])")).toBe(true);
+        expect(HasRuleMatchingThisSelector("default-style:not([lang])")).toBe(true);
+    });
+
+    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", function () {
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        MakeBigger2('#testTarget');
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeByLang('xyz')).toBe(10);
     });
 });
 

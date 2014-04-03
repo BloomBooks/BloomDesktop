@@ -1149,8 +1149,8 @@ namespace Bloom.Book
 	            page.InnerXml = divElement.InnerXml;
 
                  _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
-				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "userModifiedStyles". Here we copy that over to the book DOM.
-                 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@id='userModifiedStyles']");
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
+                 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
@@ -1195,16 +1195,16 @@ namespace Bloom.Book
 //        }
 
 	    /// <summary>
-	    /// The <style id='userModifiedStyles'/> element is where we keep our user-modifiable style information
+	    /// The <style title='userModifiedStyles'/> element is where we keep our user-modifiable style information
 	    /// </summary>
 	    private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 	    {
-		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='userModifiedStyles']");
+		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
 		    if (matches.Count > 0)
 			    return (XmlElement) matches[0];
 
 		    var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-		    emptyUserModifiedStylesElement.SetAttribute("id", "userModifiedStyles");
+		    emptyUserModifiedStylesElement.SetAttribute("title", "userModifiedStyles");
 		    emptyUserModifiedStylesElement.SetAttribute("type", "text/css");
 		    OurHtmlDom.Head.AppendChild(emptyUserModifiedStylesElement);
 		    return emptyUserModifiedStylesElement;

@@ -9,12 +9,6 @@ class StyleEditor {
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
 
-//        this.styleElement = <HTMLElement><any>($(doc).find(".styleEditorStuff").first()); //the <any> here is to turn off the typscript process erro
-//        if (!this.styleElement) {
-//            var s = $('<style id="documentStyles" class="styleEditorStuff" type="text/css"></style>');
-//            $(doc).find("head").append(s);
-//            this.styleElement = $(doc).find('.styleEditorStuff')[0];
-        //        } 
         var sheet = this.GetOrCreateUserModifiedStyleSheet();
     }
 
@@ -56,11 +50,19 @@ class StyleEditor {
         return styleName;
     }
 
+    static GetLangValueOrNull(target: HTMLElement): string {
+        var langAttr = $(target).attr("lang");
+        if(!langAttr)
+            return null;
+        return langAttr.valueOf().toString();
+    }
+
     ChangeSize(target: HTMLElement, change: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
-        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName);
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
         var sizeString: string = (<any>rule).style.fontSize;
         if (!sizeString)
             sizeString = $(target).css("font-size");
@@ -73,15 +75,14 @@ class StyleEditor {
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
         //note, this currently just makes an element in the document, not a separate file
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if ((<any>document.styleSheets[i]).ownerNode.id == "userModifiedStyles") {
-                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + document.styleSheets[i].title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
-                return document.styleSheets[i];
+            if ((<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title == "userModifiedStyles") {
+                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
+                return <StyleSheet><any>document.styleSheets[i];
             }
         }
         // alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
 
         var newSheet = document.createElement('style');
-        newSheet.id = "userModifiedStyles";
         document.getElementsByTagName("head")[0].appendChild(newSheet);
         newSheet.title = "userModifiedStyles";
         newSheet.type = "text/css";
@@ -90,18 +91,23 @@ class StyleEditor {
         return <StyleSheet><any>newSheet;
     }
 
-    GetOrCreateRuleForStyle(styleName: string): CSSStyleRule {
+    GetOrCreateRuleForStyle(styleName: string, langAttrValue: string): CSSStyleRule {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x: CSSRuleList = (<any>styleSheet).cssRules;
+        var styleAndLang = styleName;
+        if(langAttrValue && langAttrValue.length > 0)
+            styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
+        else
+            styleAndLang = styleName + ":not([lang])";
 
         for (var i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf(styleName) > -1) {
+            if (x[i].cssText.indexOf(styleAndLang) > -1) {
                 return <CSSStyleRule> x[i];
             }
         }
-        (<any>styleSheet).insertRule('.'+styleName+' {}', 0)
+        (<CSSStyleSheet>styleSheet).insertRule('.'+styleAndLang + "{ }", x.length);
 
-        return <CSSStyleRule> x[0];      //new guy is first
+        return <CSSStyleRule> x[x.length - 1];      //new guy is last
     }
 
 
@@ -128,8 +134,9 @@ class StyleEditor {
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui" title="Change text size. Affects all similar boxes in this document"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
- 
-        $('#formatButton').toolbar({
+
+        var formatButton = $('#formatButton');
+        formatButton.toolbar({
             content: '#format-toolbar',
             //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
             position: 'left',
@@ -137,7 +144,7 @@ class StyleEditor {
         });
 
         var editor = this;
-        $('#formatButton').on("toolbarItemClick", function (event, whichButton) {
+        formatButton.on("toolbarItemClick", function (event, whichButton) {
             if (whichButton.id == "smaller") {
                 editor.MakeSmaller(targetBox);
             }
