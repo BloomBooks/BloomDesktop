@@ -37,6 +37,11 @@ function GetFontSize() {
     return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
 
+function GetFontSizeByLang(lang) {
+    var sizeString = $('.foo-style[lang="' + lang + '"]').css("font-size");
+    return parseInt(sizeString.substr(0, sizeString.length - 2));
+}
+
 function GetRuleForFooStyle() {
     var x = GetUserModifiedStyleSheet().cssRules;
 
@@ -166,6 +171,22 @@ describe("StyleEditor", function () {
         MakeBigger2('#testTarget2');
 
         expect(HasRuleMatchingThisSelector("default-style:not([lang])")).toBe(true);
+    });
+
+    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", function () {
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        MakeBigger2('#testTarget');
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeByLang('xyz')).toBe(10);
     });
 });
 //# sourceMappingURL=StyleEditorSpec.js.map

@@ -89,7 +89,7 @@ var StyleEditor = (function () {
         var x = styleSheet.cssRules;
         var styleAndLang = styleName;
         if (langAttrValue && langAttrValue.length > 0)
-            styleAndLang = styleName + "[lang='" + langAttrValue + "']";
+            styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
         else
             styleAndLang = styleName + ":not([lang])";
 
@@ -98,7 +98,7 @@ var StyleEditor = (function () {
                 return x[i];
             }
         }
-        styleSheet.addRule('.' + styleAndLang);
+        styleSheet.insertRule('.' + styleAndLang + "{ }", x.length);
 
         return x[x.length - 1];
     };
@@ -123,7 +123,8 @@ var StyleEditor = (function () {
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui" title="Change text size. Affects all similar boxes in this document"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
-        $('#formatButton').toolbar({
+        var formatButton = $('#formatButton');
+        formatButton.toolbar({
             content: '#format-toolbar',
             //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
             position: 'left',
@@ -131,7 +132,7 @@ var StyleEditor = (function () {
         });
 
         var editor = this;
-        $('#formatButton').on("toolbarItemClick", function (event, whichButton) {
+        formatButton.on("toolbarItemClick", function (event, whichButton) {
             if (whichButton.id == "smaller") {
                 editor.MakeSmaller(targetBox);
             }
