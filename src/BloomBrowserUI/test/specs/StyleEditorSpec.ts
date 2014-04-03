@@ -42,7 +42,7 @@ function GetFontSize(): number {
 }
 
 function GetRuleForFooStyle(): CSSRule {
-    var x: CSSRuleList = (<any>GetUserModifiedStyleSheet()).cssRules;
+    var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('foo-style') > -1){
@@ -53,7 +53,7 @@ function GetRuleForFooStyle(): CSSRule {
 }
 
 function GetRuleForDefaultStyle(): CSSRule {
-    var x: CSSRuleList = (<any>GetUserModifiedStyleSheet()).cssRules;
+    var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('default-style') > -1) {
@@ -71,13 +71,13 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
             ++count;
         }
     }
-    return count > 1;
+    return count > 0;
 }
 
 describe("StyleEditor", function () {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(function () {
-        $('#userModifiedStyles').remove();
+        $('style[title="userModifiedStyles"]').remove();
         $('body').html('');
     });
 
@@ -158,7 +158,7 @@ describe("StyleEditor", function () {
 
         var count = 0;
         for (var i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf("foo-style[lang='xyz']") > -1) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
         }
@@ -167,9 +167,9 @@ describe("StyleEditor", function () {
 
     it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", function () {
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
-        MakeBigger2('#testTarget');
+        MakeBigger2('#testTarget2');
         
-        expect(HasRuleMatchingThisSelector("foo-style:not([lang])")).toBe(true);
+        expect(HasRuleMatchingThisSelector("default-style:not([lang])")).toBe(true);
     });
 });
 

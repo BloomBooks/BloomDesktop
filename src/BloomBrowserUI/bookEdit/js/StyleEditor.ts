@@ -9,12 +9,6 @@ class StyleEditor {
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
 
-//        this.styleElement = <HTMLElement><any>($(doc).find(".styleEditorStuff").first()); //the <any> here is to turn off the typscript process erro
-//        if (!this.styleElement) {
-//            var s = $('<style id="documentStyles" class="styleEditorStuff" type="text/css"></style>');
-//            $(doc).find("head").append(s);
-//            this.styleElement = $(doc).find('.styleEditorStuff')[0];
-        //        } 
         var sheet = this.GetOrCreateUserModifiedStyleSheet();
     }
 
@@ -56,11 +50,19 @@ class StyleEditor {
         return styleName;
     }
 
+    static GetLangValueOrNull(target: HTMLElement): string {
+        var langAttr = $(target).attr("lang");
+        if(!langAttr)
+            return null;
+        return langAttr.valueOf().toString();
+    }
+
     ChangeSize(target: HTMLElement, change: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
-        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName);
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
         var sizeString: string = (<any>rule).style.fontSize;
         if (!sizeString)
             sizeString = $(target).css("font-size");
@@ -89,18 +91,23 @@ class StyleEditor {
         return <StyleSheet><any>newSheet;
     }
 
-    GetOrCreateRuleForStyle(styleName: string): CSSStyleRule {
+    GetOrCreateRuleForStyle(styleName: string, langAttrValue: string): CSSStyleRule {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x: CSSRuleList = (<any>styleSheet).cssRules;
+        var styleAndLang = styleName;
+        if(langAttrValue && langAttrValue.length > 0)
+            styleAndLang = styleName + "[lang='" + langAttrValue + "']";
+        else
+            styleAndLang = styleName + ":not([lang])";
 
         for (var i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf(styleName) > -1) {
+            if (x[i].cssText.indexOf(styleAndLang) > -1) {
                 return <CSSStyleRule> x[i];
             }
         }
-        (<any>styleSheet).insertRule('.'+styleName+' {}', 0)
+        (<CSSStyleSheet>styleSheet).addRule('.'+styleAndLang);
 
-        return <CSSStyleRule> x[0];      //new guy is first
+        return <CSSStyleRule> x[x.length - 1];      //new guy is last
     }
 
 
