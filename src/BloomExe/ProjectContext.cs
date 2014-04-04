@@ -57,7 +57,7 @@ namespace Bloom
 			{
 				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
+				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
 			else
@@ -141,7 +141,7 @@ namespace Bloom
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
 				const int kListViewIconHeightAndWidth = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth)).InstancePerLifetimeScope();
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{
@@ -351,6 +351,7 @@ namespace Bloom
 			get { return _scope.Resolve<BookServer>(); }
 		}
 
+
 		public static string GetBloomAppDataFolder()
 		{
 			var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
@@ -404,5 +405,10 @@ namespace Bloom
 
 		}
 
+	}
+
+	public class MonitorTarget
+	{
+		//doesn't need any guts, just use for dependency injection
 	}
 }

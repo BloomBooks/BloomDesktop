@@ -26,6 +26,7 @@ namespace Bloom
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
 		private readonly int _widthInPixels =70;
 		private readonly int _heightInPixels = 70;
+		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
 		private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
@@ -38,10 +39,11 @@ namespace Bloom
 
 		private bool _disposed;
 
-		public HtmlThumbNailer(int widthInPixels,int heightInPixels)
+		public HtmlThumbNailer(int widthInPixels, int heightInPixels, MonitorTarget monitorObjectForBrowserNavigation)
 		{
 			_widthInPixels = widthInPixels;
 			_heightInPixels = heightInPixels;
+			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
 			Application.Idle += new EventHandler(Application_Idle);
 		}
 
@@ -49,16 +51,28 @@ namespace Bloom
 		{
 			if (_orders.Count > 0)
 			{
-				ThumbnailOrder thumbnailOrder = _orders.Dequeue();
-				try
+				if (Monitor.TryEnter(_monitorObjectForBrowserNavigation))
+					//don't try to work with the browser while other processes are doing it to... maybe can remove this when we clear out any Application.DoEvents() that our current old version of Geckofx is forcing us to use because of unreliable end-of-navigation detection
 				{
-					ProcessOrder(thumbnailOrder);
-				}
-				catch (Exception error)
-				{
-					//putting up a green box here, because, say, the page was messed up, is bad manners
-					Logger.WriteEvent("HtmlThumbNailer reported exception:{0}",error.Message);
-					thumbnailOrder.ErrorCallback(error);
+					try
+					{
+						ThumbnailOrder thumbnailOrder = _orders.Dequeue();
+						try
+						{
+							ProcessOrder(thumbnailOrder);
+						}
+						catch (Exception error)
+						{
+							//putting up a green box here, because, say, the page was messed up, is bad manners
+							Logger.WriteEvent("HtmlThumbNailer reported exception:{0}", error.Message);
+							thumbnailOrder.ErrorCallback(error);
+						}
+					}
+					finally
+					{
+						// Ensure that the lock is released.
+						Monitor.Exit(_monitorObjectForBrowserNavigation);
+					}
 				}
 			}
 		}
