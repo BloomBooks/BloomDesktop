@@ -159,7 +159,7 @@ namespace Bloom.Wizard
 				{
 					foreach (WizardAdapterPage page in _pages)
 					{
-						page.WinFormPage.Controls.AddRange(page.Controls.Cast<Control>().ToArray());
+						page.WinFormPage.AddControls(page.Controls.Cast<Control>().ToArray());
 
 						_winformsWizard.Pages.Add(page.WinFormPage);
 					}
