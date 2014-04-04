@@ -14,12 +14,34 @@ namespace Bloom.Wizard.WinForms
         internal event System.EventHandler<EventArgs> AllowNextChanged;
 
         bool _allowNext;
-
+		Label TitelLabel;
+		Panel PagePanel;
 
         public WizardPage()
         {
             AllowNext = true;
             BackColor = Color.White;
+
+			var titelPanel = new Panel {
+				Padding = new Padding(10),
+				AutoSize = true,
+				Dock = DockStyle.Top,
+			};
+			TitelLabel = new Label {
+				Padding = new Padding(10),
+				AutoSize = true,
+				Font = new Font(new FontFamily("Arial"), 14),
+				Dock = DockStyle.Top,
+				ForeColor = Color.SteelBlue
+			};
+			titelPanel.Controls.Add(TitelLabel);
+			PagePanel = new Panel {
+				Padding = new Padding(10),
+				AutoSize = true,
+				Dock = DockStyle.Fill
+			};
+			Controls.Add(PagePanel);
+			Controls.Add(titelPanel);
         }
 
         public bool Suppress
@@ -57,6 +79,25 @@ namespace Bloom.Wizard.WinForms
                 Initialize(this, new WizardPageInitEventArgs());
         }
 
+		public override string Text
+		{
+			get { return base.Text; }
+			set
+			{
+				base.Text = value;
+				TitelLabel.Text = value;
+			}
+		}
+
+		public void AddControls(Control[] controls)
+		{
+			if (controls.Length == 1)
+			{
+				controls[0].Dock = DockStyle.Fill;
+				controls[0].AutoSize = true;
+			}
+			PagePanel.Controls.AddRange(controls);
+		}
     }
 
     // TODO: move to own file
