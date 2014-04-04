@@ -40,7 +40,7 @@ class StyleEditor {
 			// Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
 			var pageLineage = $(parentPage).attr('data-pagelineage');
 			if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-				styleName = "default-style";
+				styleName = "normal-style";
 				$(target).addClass(styleName);
 			}
 			else {
@@ -70,6 +70,19 @@ class StyleEditor {
 		sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
 		rule.style.setProperty("font-size", sizeString + units, "important");
 		// alert("New size rule: " + rule.cssText);
+	}
+
+	ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
+		var styleName = StyleEditor.GetStyleNameForElement(target);
+		if (!styleName)
+			return;
+		if (newSize < 6) // Review: Is this a reasonable 'sanity' check?
+			return;
+		var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+		var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+		var units = "pt";
+		var sizeString: string = newSize.toString();
+		rule.style.setProperty("font-size", sizeString + units, "important");
 	}
 
 	GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -107,7 +120,7 @@ class StyleEditor {
 		}
 		(<CSSStyleSheet>styleSheet).insertRule('.'+styleAndLang + "{ }", x.length);
 
-		return <CSSStyleRule> x[x.length - 1];      //new guy is last
+		return <CSSStyleRule> x[x.length - 1]; //new guy is last
 	}
 
 

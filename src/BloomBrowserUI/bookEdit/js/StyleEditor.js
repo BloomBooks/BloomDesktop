@@ -35,7 +35,7 @@ var StyleEditor = (function () {
             // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
             var pageLineage = $(parentPage).attr('data-pagelineage');
             if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-                styleName = "default-style";
+                styleName = "normal-style";
                 $(target).addClass(styleName);
             } else {
                 return null;
@@ -64,6 +64,19 @@ var StyleEditor = (function () {
         sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
         rule.style.setProperty("font-size", sizeString + units, "important");
         // alert("New size rule: " + rule.cssText);
+    };
+
+    StyleEditor.prototype.ChangeSizeAbsolute = function (target, newSize) {
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName)
+            return;
+        if (newSize < 6)
+            return;
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+        var units = "pt";
+        var sizeString = newSize.toString();
+        rule.style.setProperty("font-size", sizeString + units, "important");
     };
 
     StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
