@@ -72,10 +72,8 @@ mixin field-prototypeDeclaredExplicity
 
 //- deprecated. Starting with version 1.1, we've changed how placeholders are handled
 mixin field-version1(placeholder)
-	+field(data-placeholder=placeholder,attributes)
-		+editable(kLanguageForPrototypeOnly)(data-placeholder=placeholder)
-
-
+	+field-withSampleText(data-placeholder=placeholder,attributes)
+		block
 
 //- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
 //-	.roundedBorder
