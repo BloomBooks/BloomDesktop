@@ -97,7 +97,6 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         style: {
             classes: theClasses
         }
-        //            ,adjust:{screen:true, resize:true}
     });
 }
 
