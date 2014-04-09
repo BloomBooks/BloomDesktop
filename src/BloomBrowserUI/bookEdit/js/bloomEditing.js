@@ -30,6 +30,23 @@ function TrimTrailingLineBreaksInDivs(node) {
     }
 }
 
+function CanChangeBookLicense() {
+
+    // First, need to look in .bloomCollection file for <IsSourceCollection> value
+    // if 'true', return true.
+
+    // meta[@name='lockedDownAsShell' and @content='true'], if exists, return false
+    var lockedAsShell = $(document).find('meta[name="lockedDownAsShell"]');
+    if (lockedAsShell.length > 0 && lockedAsShell.attr('content') == 'true')
+        return false;
+    // meta[@name='canChangeLicense'] and @content='false'], if exists, return false
+    var canChange = $(document).find('meta[name="canChangeLicense"]');
+    if (canChange.length > 0 && canChange.attr('content') == 'false')
+        return false;
+
+    // Otherwise return true
+    return true;
+}
 
 //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
 function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
@@ -70,6 +87,8 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
 
     var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
     if (functionCall) {
+        if (functionCall == 'bookMetadataEditor' && !CanChangeBookLicense())
+            return;
         shouldShowAlways = true;
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
         hideEvents = false;
@@ -520,7 +539,6 @@ function UpdateOverlay(container, img) {
     }
 }
 
-
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 // TODO: internationalize
@@ -531,9 +549,7 @@ function SetAlternateTextOnImages(element) {
     else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
-
 }
-
 
 function SetupResizableElement(element) {
     $(element).mouseenter(
