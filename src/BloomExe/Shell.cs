@@ -107,8 +107,9 @@ namespace Bloom
         {
             var asm = Assembly.GetExecutingAssembly();
             var ver = asm.GetName().Version;
-            var file = asm.CodeBase.Replace("file:", string.Empty);
-            file = file.TrimStart('/');
+			var file = asm.CodeBase.Replace("file://", string.Empty);
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				file = file.TrimStart('/');
             var fi = new FileInfo(file);
 
             return string.Format("{0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
