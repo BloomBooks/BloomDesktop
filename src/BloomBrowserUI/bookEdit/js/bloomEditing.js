@@ -34,6 +34,9 @@ function CanChangeBookLicense() {
 
     // First, need to look in .bloomCollection file for <IsSourceCollection> value
     // if 'true', return true.
+    var isSource = GetSettings().isSourceCollection;
+    if (isSource && isSource == 'True') // comes out as capitalized string, if it's there
+        return true;
 
     // meta[@name='lockedDownAsShell' and @content='true'], if exists, return false
     var lockedAsShell = $(document).find('meta[name="lockedDownAsShell"]');
