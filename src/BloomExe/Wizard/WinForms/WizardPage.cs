@@ -93,8 +93,8 @@ namespace Bloom.Wizard.WinForms
 		{
 			if (controls.Length == 1)
 			{
-				controls[0].Dock = DockStyle.Fill;
 				controls[0].AutoSize = true;
+				controls[0].Dock = DockStyle.Fill;
 			}
 			PagePanel.Controls.AddRange(controls);
 		}

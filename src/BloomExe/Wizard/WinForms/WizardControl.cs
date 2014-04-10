@@ -154,8 +154,8 @@ namespace Bloom.Wizard.WinForms
 			_currentPageIndex = pageNumber;
 			_currentShownPage = Pages[pageNumber];
 			_currentShownPage.InvokeInitializeEvent();
-			_contentPanel.Controls.Add(_currentShownPage);
 			_currentShownPage.Dock = DockStyle.Fill;
+			_contentPanel.Controls.Add(_currentShownPage);
 			_backButton.Enabled = pageNumber != 0;
 			_nextAndFinishedButton.Enabled = _currentShownPage.AllowNext;
 			_currentShownPage.AllowNextChanged -= _currentShownPage_AllowNextChanged;
