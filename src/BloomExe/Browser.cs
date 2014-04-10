@@ -17,6 +17,7 @@ using Palaso.Xml;
 using Gecko;
 using Gecko.DOM;
 using TempFile = BloomTemp.TempFile;
+using Palaso.UI.WindowsForms.HtmlBrowser;
 
 namespace Bloom
 {
@@ -38,7 +39,7 @@ namespace Bloom
 	    private bool _disposed;
 	    public event EventHandler OnBrowserClick;
 
-		
+		// TODO: refactor to use same initialization code as Palaso
         public static void SetUpXulRunner()
         {
             string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
@@ -69,7 +70,23 @@ namespace Bloom
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
             	SetDllDirectory(xulRunnerPath);
 
-            Gecko.Xpcom.Initialize(xulRunnerPath);
+			if (!Xpcom.IsInitialized)
+			{
+				Gecko.Xpcom.Initialize(xulRunnerPath);
+				Application.ApplicationExit += OnApplicationExit;
+			}
+
+			// What browser to use for Palaso dialogs
+			XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
+        }
+
+		private static void OnApplicationExit (object sender, EventArgs e)
+        {
+			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
+			// otherwise the app might not exit properly.
+			if (Xpcom.IsInitialized)
+				Xpcom.Shutdown();
+			Application.ApplicationExit -= OnApplicationExit;
         }
 
         public Browser()
