@@ -24,6 +24,12 @@ function MakeBigger2(target) {
     editor.MakeBigger(jQueryTarget);
 }
 
+function ChangeSizeAbsolute(target, newSize) {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    editor.ChangeSizeAbsolute(jQueryTarget, newSize);
+}
+
 function GetUserModifiedStyleSheet() {
     for (var i = 0; i < document.styleSheets.length; i++) {
         if (document.styleSheets[i].title == "userModifiedStyles")
@@ -37,9 +43,19 @@ function GetFontSize() {
     return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
 
-function GetFontSizeByLang(lang) {
-    var sizeString = $('.foo-style[lang="' + lang + '"]').css("font-size");
-    return parseInt(sizeString.substr(0, sizeString.length - 2));
+function GetFontSizeRuleByLang(lang) {
+    var rule = GetRuleMatchingSelector('.foo-style[lang="' + lang + '"]');
+    return ParseRuleForFontSize(rule.cssText);
+}
+
+function ParseRuleForFontSize(ruleText) {
+    var ruleString = 'font-size: ';
+    var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
+    var endPoint = ruleText.indexOf(' !important');
+    if (beginPoint < 1 || endPoint < beginPoint)
+        return null;
+    var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
+    return parseInt(sizeString);
 }
 
 function GetRuleForFooStyle() {
@@ -53,11 +69,22 @@ function GetRuleForFooStyle() {
     return null;
 }
 
-function GetRuleForDefaultStyle() {
+function GetRuleForNormalStyle() {
     var x = GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
-        if (x[i].cssText.indexOf('default-style') > -1) {
+        if (x[i].cssText.indexOf('normal-style') > -1) {
+            return x[i];
+        }
+    }
+    return null;
+}
+
+function GetRuleMatchingSelector(selector) {
+    var x = GetUserModifiedStyleSheet().cssRules;
+    var count = 0;
+    for (var i = 0; i < x.length; i++) {
+        if (x[i].cssText.indexOf(selector) > -1) {
             return x[i];
         }
     }
@@ -119,21 +146,21 @@ describe("StyleEditor", function () {
     it("MakeBigger does nothing if no x-style classes, and ancestor is not a known old-format basic-book page", function () {
         $('body').append("<div class='bloom-page' data-pagelineage='123-blah-blah'><div id='testTarget'>i don't want to get bigger</div></div>");
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).toBeNull();
+        expect(GetRuleForNormalStyle()).toBeNull();
     });
 
     // Handle books created with the original (0.9) version of "Basic Book", which lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-    it("MakeBigger adds default-style if there are no x-style classes, but ancestor is a known old-format basic-book page", function () {
+    it("MakeBigger adds normal-style if there are no x-style classes, but ancestor is a known old-format basic-book page", function () {
         $('body').append("<div  class='bloom-page'  data-pagelineage='5dcd48df-blah-blah'><div id='testTarget'>i want to get bigger</div></div>");
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).not.toBeNull();
+        expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
     it("MakeBigger can add a new rule without removing other rules", function () {
-        $('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='default-style'></div>");
+        $('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget2');
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).not.toBeNull();
+        expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
     it("MakeBigger doesn't make a duplicate style if there is already one there", function () {
@@ -153,7 +180,7 @@ describe("StyleEditor", function () {
     });
 
     it("When the element has an @lang, MakeBigger adds rules that only affect the given language", function () {
-        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget');
         var x = GetUserModifiedStyleSheet().cssRules;
 
@@ -167,15 +194,15 @@ describe("StyleEditor", function () {
     });
 
     it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", function () {
-        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget2');
 
-        expect(HasRuleMatchingThisSelector("default-style:not([lang])")).toBe(true);
+        expect(HasRuleMatchingThisSelector("normal-style:not([lang])")).toBe(true);
     });
 
     it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", function () {
         $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
-        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget');
         var x = GetUserModifiedStyleSheet().cssRules;
 
@@ -186,7 +213,46 @@ describe("StyleEditor", function () {
             }
         }
         expect(count).toBe(1);
-        expect(GetFontSizeByLang('xyz')).toBe(10);
+        expect(GetFontSizeRuleByLang('xyz')).toBe(10);
+    });
+
+    it("When the element does not have @lang, ChangeSizeAbsolute adds rules that apply only when there is no @lang", function () {
+        $('body').append("<div id='testTarget' class='foo-style'></div><div id='testTarget2' class='normal-style' lang='xyz'></div>");
+        ChangeSizeAbsolute('#testTarget', 20);
+
+        expect(HasRuleMatchingThisSelector("foo-style:not([lang])")).toBe(true);
+        expect(ParseRuleForFontSize(GetRuleForFooStyle().cssText)).toBe(20);
+    });
+
+    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", function () {
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+        ChangeSizeAbsolute('#testTarget', 20);
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeRuleByLang('xyz')).toBe(20);
+    });
+
+    it("When the element has an @lang, but no existing rule, ChangeSizeAbsolute adds rules that only affect the given language", function () {
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+        ChangeSizeAbsolute('#testTarget', 20);
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeRuleByLang('xyz')).toBe(20);
     });
 });
 //# sourceMappingURL=StyleEditorSpec.js.map

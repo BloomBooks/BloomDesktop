@@ -40,7 +40,7 @@ class StyleEditor {
             // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
             var pageLineage = $(parentPage).attr('data-pagelineage');
             if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-                styleName = "default-style";
+                styleName = "normal-style";
                 $(target).addClass(styleName);
             }
             else {
@@ -70,6 +70,23 @@ class StyleEditor {
         sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
         rule.style.setProperty("font-size", sizeString + units, "important");
         // alert("New size rule: " + rule.cssText);
+    }
+
+    ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
+        var styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
+        if (!styleName) {
+            alert('ChangeSizeAbsolute called on an element with invalid style class.');
+            return;
+        }
+        if (newSize < 6) { // newSize is expected to come from a combobox entry by the user someday
+            alert('ChangeSizeAbsolute called with too small a point size.');
+            return;
+        }
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+        var units = "pt";
+        var sizeString: string = newSize.toString();
+        rule.style.setProperty("font-size", sizeString + units, "important");
     }
 
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -107,12 +124,33 @@ class StyleEditor {
         }
         (<CSSStyleSheet>styleSheet).insertRule('.'+styleAndLang + "{ }", x.length);
 
-        return <CSSStyleRule> x[x.length - 1];      //new guy is last
+        return <CSSStyleRule> x[x.length - 1]; //new guy is last
+    }
+
+    ConvertPxToPt(pxSize: number): number {
+        var tempDiv = document.createElement('div');
+        tempDiv.style.width='1000pt';
+        document.body.appendChild(tempDiv);
+        var ratio = 1000/tempDiv.clientWidth;
+        document.body.removeChild(tempDiv);
+        tempDiv = null;
+        return pxSize*ratio;
+    }
+
+    GetToolTip(targetBox: HTMLElement, styleName: string): string {
+        styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+        var box = $(targetBox);
+        var sizeString = box.css('font-size'); // always returns computed size in pixels
+        var pxSize = parseInt(sizeString); // strip off units and parse
+        var ptSize = Math.round(this.ConvertPxToPt(pxSize));
+        var lang = box.attr('lang');
+        return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
     }
 
 
     AttachToBox(targetBox: HTMLElement) {
-        if (!StyleEditor.GetStyleNameForElement(targetBox))
+        var styleName = StyleEditor.GetStyleNameForElement(targetBox);
+        if (!styleName)
             return;
 
         if (this._previousBox!=null)
@@ -130,12 +168,12 @@ class StyleEditor {
         //            $(targetBox).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
         $(targetBox).after('<div id="format-toolbar" class="bloom-ui" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a></div>');
 
-
+        var toolTip = this.GetToolTip(targetBox, styleName);
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
-        $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui" title="Change text size. Affects all similar boxes in this document"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
-
+        $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
+        formatButton.attr('title', toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
             //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
@@ -153,10 +191,6 @@ class StyleEditor {
             }
         });
       }
-
-    DetachFromBox(element) {
-      //  StyleEditor.CleanupElement(element);
-    }
 
     static CleanupElement(element) {
         //NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent
