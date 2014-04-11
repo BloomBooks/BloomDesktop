@@ -122,7 +122,7 @@ namespace Bloom.Book
 
 			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
-			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
+			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, Layout.A5Portrait, _fileLocator);
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.

@@ -110,7 +110,22 @@ namespace Bloom
 
 					SetUpErrorHandling();
 
+					EnsureThisInstanceIsRegisteredForBloomUrls();
+
 					_applicationContainer = new ApplicationContainer();
+
+					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
+					{
+						// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
+						// - User must log in before running this
+						// - For best results each bloom book needs to be part of a collection in its parent folder
+						// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+						SetUpLocalization();
+						Browser.SetUpXulRunner();
+						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(), new OrderList());
+						transfer.UploadFolder(args[1], _applicationContainer);
+						return;
+					}
 
 					// We need the download folder to exist if we are asked to download a book.
 					// We also want it to exist, to show the (planned) link that offers to launch the web site.
@@ -206,6 +221,45 @@ namespace Bloom
 			{
 				ReleaseMutexForBloom();
 			}
+		}
+
+		/// <summary>
+		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
+		/// Todo Linux: no idea what has to happen to register a url handler...probably not this, though.
+		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
+		/// </summary>
+		private static void EnsureThisInstanceIsRegisteredForBloomUrls()
+		{
+			if (AlreadyRegistered(Registry.ClassesRoot))
+				return;
+			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+			var key = root.CreateSubKey(@"bloom\shell\open\command");
+			key.SetValue("", DesiredBloomCommand);
+
+			key = root.CreateSubKey("bloom");
+			key.SetValue("", "BLOOM:URL Protocol");
+			key.SetValue("URL Protocol", "");
+		}
+
+		private static bool AlreadyRegistered(RegistryKey root)
+		{
+			var key = root.OpenSubKey(@"bloom\shell\open\command");
+			if (key == null)
+				return false;
+			var wanted = DesiredBloomCommand;
+			if (wanted != (key.GetValue("") as string).ToLowerInvariant())
+				return false;
+			key = root.OpenSubKey("bloom");
+			if (key.GetValue("") as string != "BLOOM:URL Protocol")
+				return false;
+			if (key.GetValue("URL Protocol") as string != "")
+				return false;
+			return true;
+		}
+
+		private static string DesiredBloomCommand
+		{
+			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
 		}
 
 		private static Thread _serverThread;
@@ -712,7 +766,8 @@ namespace Bloom
 				_applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
-										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+										   "SIL/Bloom",
+										   Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
 
 				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
 				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
@@ -730,7 +785,8 @@ namespace Bloom
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
-										   Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
+											"SIL/Bloom",
+											Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
 
   /*                var l10nSystem = L10NSystem.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
 					l10nSystem.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);

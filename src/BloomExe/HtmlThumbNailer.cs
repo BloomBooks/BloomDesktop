@@ -476,10 +476,26 @@ namespace Bloom
 			_orders.Clear();
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
-				browser.Value.Navigated -= _browser_Navigated;
-				browser.Value.Dispose();
+				browser.Value.Invoke((Action) (() =>
+				{
+					browser.Value.Navigated -= _browser_Navigated;
+					browser.Value.Dispose();
+				}));
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
+		}
+
+		/// <summary>
+		/// This is a trick that processes waiting for thumbnails can use in situations where
+		/// Application.Idle is not being invoked. Such uses must pass a non-null control
+		/// created in the thread where Application_Idle should be invoked (i.e., the UI thread)
+		/// </summary>
+		internal void Advance(Control invokeTarget)
+		{
+			if (_orders.Count == 0)
+				return;
+			if (invokeTarget != null)
+				invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
 		}
 	}
 

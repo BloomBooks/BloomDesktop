@@ -35,8 +35,11 @@ namespace Bloom
 		private ImageServer _imageServer;
 		public Form ProjectWindow { get; private set; }
 
+		public string SettingsPath { get; private set; }
+
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
+			SettingsPath = projectSettingsPath;
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -204,12 +207,7 @@ namespace Bloom
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{
-#if DEBUG
-			var bucket = "BloomLibraryBooks-Sandbox";
-#else
-			var bucket = "BloomLibraryBooks-Production";
-#endif
-			return new BloomS3Client(bucket);
+			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
 		}
 
 
@@ -348,6 +346,10 @@ namespace Bloom
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
 
+		internal BookServer BookServer
+		{
+			get { return _scope.Resolve<BookServer>(); }
+		}
 
 		public static string GetBloomAppDataFolder()
 		{

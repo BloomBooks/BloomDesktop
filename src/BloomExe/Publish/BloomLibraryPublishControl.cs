@@ -114,6 +114,14 @@ namespace Bloom.Publish
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 			RequireValue(_languagesLabel);
+
+			if (BookTransfer.UseSandbox)
+			{
+				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
+				_uploadButton.Text = LocalizationManager.GetString("Publish.Upload.UploadSandbox","Upload Book (to Sandbox)");
+				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
+				_uploadButton.Width += neededWidth - oldTextWidth;
+			}
 		}
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
@@ -189,8 +197,6 @@ namespace Bloom.Publish
 				}
 			}
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("Publish.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
-			// Right-align the login link. (There ought to be a setting to make this happen, but I can't find it.)
-			_loginLink.Left = _progressBox.Right - _loginLink.Width;
 			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
 		}
 
@@ -210,6 +216,11 @@ namespace Bloom.Publish
 			UpdateDisplay();
 		}
 
+		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			Process.Start(BloomLibraryUrlPrefix + "/terms");
+		}
+
 		private void _signUpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_loginDialog.SignUp(this);
@@ -227,6 +238,16 @@ namespace Bloom.Publish
 				info.Id = Guid.NewGuid().ToString();
 			}
 			info.Uploader = _bookTransferrer.UserId;
+
+			if (!_bookTransferrer.IsThisVersionAllowedToUpload())
+			{
+				MessageBox.Show(this,
+					LocalizationManager.GetString("Publish.Upload.OldVersion",
+						"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
+					LocalizationManager.GetString("Publish.Upload.UploadNotAllowed", "Upload Not Allowed"),
+					MessageBoxButtons.OK, MessageBoxIcon.Stop);
+				return;
+			}
 
 			// Todo: try to make sure it has a thumbnail.
 			if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
@@ -255,11 +276,7 @@ namespace Bloom.Publish
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
-					var prefix = "http://";
-#if DEBUG
-					prefix += "dev.";
-#endif
-					var url = prefix + "bloomlibrary.org/#/browse/detail/" + _parseId;
+					var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
 					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
 					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 				}
@@ -269,48 +286,26 @@ namespace Bloom.Publish
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
 		}
 
+		public static string BloomLibraryUrlPrefix
+		{
+			get
+			{
+				var prefix = "http://";
+				if (BookTransfer.UseSandbox)
+					prefix += "dev.";
+				else
+					prefix += "books.";
+				return prefix + "bloomlibrary.org/#";
+			}
+		}
+
 		string _parseId;
 
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var bookFolder = book.FolderPath;
-			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
-			// These bits of data can't easily be set while saving the book because we save one page at a time
-			// and they apply to the book as a whole.
-			book.BookInfo.Languages = _book.AllLanguages.ToArray();
-			book.BookInfo.PageCount = _book.GetPages().Count();
-			book.BookInfo.Save();
-			_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book);
-			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
-			// If there is not already a locked preview in the book folder
-			// (which we take to mean the user has created a customized one that he prefers),
-			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileUtils.IsFileLocked(uploadPdfPath))
-			{
-				_progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingPdf", "Making PDF Preview..."));
-				_parentView.MakePublishPreview();
-				if (File.Exists(_parentView.PdfPreviewPath))
-				{
-					File.Copy(_parentView.PdfPreviewPath, uploadPdfPath, true);
-				}
-			}
-			e.Result = _bookTransferrer.UploadBook(bookFolder, _progressBox, out _parseId);
-		}
-
-		void RebuildThumbnail(Book.Book book)
-		{
-			bool done = false;
-			string error = null;
-			book.RebuildThumbNailAsync((info, image) => done = true,
-				(info, ex) =>
-				{
-					done = true;
-					throw ex;
-				});
-			while (!done)
-				Thread.Sleep(100);
+			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, out _parseId);
+			e.Result = result;
 		}
 
 		private void _summaryBox_TextChanged(object sender, EventArgs e)

@@ -1,24 +1,24 @@
 /*Cover Page*/
 .A5Portrait.bloom-frontMatter DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 189.4mm;
 	/*[disabled]border:1px solid #000000;*/
 }
 .B5Portrait.bloom-frontMatter DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 220mm;
 	/*[disabled]border:1px solid #000000;*/
 }
 .bloom-frontMatter.A4Landscape DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;
 }
 .A4Portrait DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 269.3mm;
 }
 /*....Title*/
@@ -227,7 +227,7 @@ DIV.ISBNContainer .bloom-editable
 	width: 4.3cm !important;
 	display: inline-block;
 	vertical-align: text-top;
-	max-height: 2.5em;
+	max-height: 1.8em;
 }
 .ISBNContainer SPAN
 {
@@ -404,7 +404,7 @@ DIV.titlePage DIV.langName.bloom-contentNational1
 }
 DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
-/*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+	/*Ideally, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
 }
 DIV.languageLocation
@@ -429,8 +429,9 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
-	font-size: 10pt !important;
+	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
+	Had to take out the !important, though, to get user font-size to work on the verso page*/
+	font-size: 10pt;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
