@@ -68,10 +68,14 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.ChangeSizeAbsolute = function (target, newSize) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
-        if (!styleName)
+        if (!styleName) {
+            alert('Method should only be called on an element with a -style class.');
             return;
-        if (newSize < 6)
+        }
+        if (newSize < 6) {
+            alert('Do we really want smaller than 6pt font?');
             return;
+        }
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
         var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
         var units = "pt";
