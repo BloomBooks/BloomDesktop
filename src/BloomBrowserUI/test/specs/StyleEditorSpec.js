@@ -49,11 +49,12 @@ function GetFontSizeRuleByLang(lang) {
 }
 
 function ParseRuleForFontSize(ruleText) {
-    var beginPoint = ruleText.indexOf('font-size:');
+    var ruleString = 'font-size: ';
+    var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
     var endPoint = ruleText.indexOf(' !important');
-    if (beginPoint < 1 || endPoint < 2)
+    if (beginPoint < 1 || endPoint < beginPoint)
         return null;
-    var sizeString = ruleText.substr(beginPoint + 11, endPoint - (beginPoint + 13));
+    var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
     return parseInt(sizeString);
 }
 
@@ -68,7 +69,7 @@ function GetRuleForFooStyle() {
     return null;
 }
 
-function GetRuleForDefaultStyle() {
+function GetRuleForNormalStyle() {
     var x = GetUserModifiedStyleSheet().cssRules;
 
     for (var i = 0; i < x.length; i++) {
@@ -145,21 +146,21 @@ describe("StyleEditor", function () {
     it("MakeBigger does nothing if no x-style classes, and ancestor is not a known old-format basic-book page", function () {
         $('body').append("<div class='bloom-page' data-pagelineage='123-blah-blah'><div id='testTarget'>i don't want to get bigger</div></div>");
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).toBeNull();
+        expect(GetRuleForNormalStyle()).toBeNull();
     });
 
     // Handle books created with the original (0.9) version of "Basic Book", which lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
     it("MakeBigger adds normal-style if there are no x-style classes, but ancestor is a known old-format basic-book page", function () {
         $('body').append("<div  class='bloom-page'  data-pagelineage='5dcd48df-blah-blah'><div id='testTarget'>i want to get bigger</div></div>");
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).not.toBeNull();
+        expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
     it("MakeBigger can add a new rule without removing other rules", function () {
         $('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget2');
         MakeBigger();
-        expect(GetRuleForDefaultStyle()).not.toBeNull();
+        expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
     it("MakeBigger doesn't make a duplicate style if there is already one there", function () {
