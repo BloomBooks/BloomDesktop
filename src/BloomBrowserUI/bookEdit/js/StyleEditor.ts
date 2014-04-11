@@ -75,11 +75,11 @@ class StyleEditor {
     ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
         if (!styleName) {
-            alert('Method should only be called on an element with a -style class.');
+            alert('ChangeSizeAbsolute called on an element with invalid style class.');
             return;
         }
         if (newSize < 6) { // newSize is expected to come from a combobox entry by the user someday
-            alert('Do we really want smaller than 6pt font?');
+            alert('ChangeSizeAbsolute called with too small a point size.');
             return;
         }
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);

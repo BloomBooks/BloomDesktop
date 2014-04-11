@@ -69,11 +69,11 @@ var StyleEditor = (function () {
     StyleEditor.prototype.ChangeSizeAbsolute = function (target, newSize) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
-            alert('Method should only be called on an element with a -style class.');
+            alert('ChangeSizeAbsolute called on an element with invalid style class.');
             return;
         }
         if (newSize < 6) {
-            alert('Do we really want smaller than 6pt font?');
+            alert('ChangeSizeAbsolute called with too small a point size.');
             return;
         }
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
