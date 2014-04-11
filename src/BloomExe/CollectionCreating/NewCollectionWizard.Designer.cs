@@ -97,7 +97,7 @@ namespace Bloom.CollectionCreating
 			this._vernacularLanguagePage.NextPage = this._languageLocationPage;
 			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
 			this._vernacularLanguagePage.TabIndex = 1;
-			this._vernacularLanguagePage.Text = "Choose the Main Language For This Collection";
+			this._vernacularLanguagePage.Text = "Choose the Vernacular / Local Language For This Collection";
 			// 
 			// _languageLocationPage
 			// 

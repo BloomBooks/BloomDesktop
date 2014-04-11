@@ -377,10 +377,9 @@ DIV.marginBox
 	width: 18px;
 	height: 21px !important;
 	overflow: hidden;
-	/*+placement:displace 3px -6.1;*/
+	/*+placement:displace 3px -18px;*/
 	position: absolute;
 	margin-left: 3px;
-	margin-top: -6.1;
 	margin-top: -18px;
 	/*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
 	font-size: 10pt;

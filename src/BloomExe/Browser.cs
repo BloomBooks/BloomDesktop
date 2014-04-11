@@ -456,23 +456,19 @@ namespace Bloom
 			if (_pageDom == null)
                 return;
 
-#if DEBUG
-			if (_pageDom.SelectNodes("//textarea").Count > 0)
-				Debug.Fail("Oh, a chance to test bluring textarea's!");
-#endif
-			//as of august 2012 textareas only occur in the Calendar
-	//		if (_pageDom.SelectNodes("//textarea").Count >0)
-			{
-				//This approach was to force an onblur so that we can get at the actual user-edited value.
-				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
-				//_browser.WebBrowserFocus.Deactivate();
-				//_browser.WebBrowserFocus.Activate();
+			// As of august 2012 textareas only occur in the Calendar
+            if (_pageDom.SelectNodes("//textarea").Count > 0)
+            {
+                //This approach was to force an onblur so that we can get at the actual user-edited value.
+                //This caused problems, with Bloom itself (the Shell) not knowing that it is active.
+                //_browser.WebBrowserFocus.Deactivate();
+                //_browser.WebBrowserFocus.Activate();
 
-				//now, we just do the blur directly. 
-				var activeElement = _browser.Window.Document.ActiveElement;
-				if(activeElement!=null)
-					activeElement.Blur();
-			}
+                // Now, we just do the blur directly. 
+                var activeElement = _browser.Window.Document.ActiveElement;
+                if (activeElement != null)
+                    activeElement.Blur();
+            }
 
     		var body = _browser.Document.GetElementsByTagName("body");
 			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
@@ -507,29 +503,29 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var customStyleSheet = _browser.Document.StyleSheets.Where(s =>
+				var userModifiedStyleSheet = _browser.Document.StyleSheets.Where(s =>
 					{
-						var idNode = s.OwnerNode.Attributes["id"];
-						if (idNode == null)
+						var titleNode = s.OwnerNode.Attributes["title"];
+						if (titleNode == null)
 							return false;
-						return idNode.NodeValue == "customBookStyles";
+						return titleNode.NodeValue == "userModifiedStyles";
 					}).FirstOrDefault();
 
-				if (customStyleSheet != null)
+				if (userModifiedStyleSheet != null)
 				{
 					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
 					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
 					 * rules don't show up inside of it. So
-					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = customStyleSheet.OwnerNode.OuterHtml;
+					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
 					 */
 					var styles = new StringBuilder();
-					styles.AppendLine("<style id='customStyles' type='text/css'>");
-					foreach (var cssRule in customStyleSheet.CssRules)
+					styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+					foreach (var cssRule in userModifiedStyleSheet.CssRules)
 					{
 						styles.AppendLine(cssRule.CssText);
 					}
 					styles.AppendLine("</style>");
-					Debug.WriteLine("*CustomStylesheet in browser:"+styles);
+					Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
 					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 				}
 

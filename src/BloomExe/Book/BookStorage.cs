@@ -693,7 +693,7 @@ namespace Bloom.Book
                     return;//don't keep bugging them
                 _alreadyNotifiedAboutOneFailedCopy = true;
                 Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-                    "Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", factoryPath,documentPath);
+                    "Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
             }
         }
 
