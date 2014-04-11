@@ -73,11 +73,15 @@ class StyleEditor {
 	}
 
 	ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
-		var styleName = StyleEditor.GetStyleNameForElement(target);
-		if (!styleName)
+		var styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
+		if (!styleName) {
+			alert('Method should only be called on an element with a -style class.');
 			return;
-		if (newSize < 6) // Review: Is this a reasonable 'sanity' check?
+		}
+		if (newSize < 6) { // newSize is expected to come from a combobox entry by the user someday
+			alert('Do we really want smaller than 6pt font?');
 			return;
+		}
 		var langAttrValue = StyleEditor.GetLangValueOrNull(target);
 		var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
 		var units = "pt";
