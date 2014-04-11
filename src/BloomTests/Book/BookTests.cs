@@ -824,7 +824,6 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(book.BookInfo.Isbn, Is.EqualTo("978-0-306-40615-7"));
 
-			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			isbnElt = dom.SelectSingleNode("//textarea");
 			isbnElt.InnerText = " ";
