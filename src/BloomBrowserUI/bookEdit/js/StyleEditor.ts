@@ -136,8 +136,8 @@ class StyleEditor {
 	GetToolTip(targetBox: HTMLElement, styleName: string): string {
 		styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
 		var box = $(targetBox);
-		var sizeString = box.css('font-size');
-		var pxSize = parseInt(sizeString.substr(0, sizeString.length - 2)); // strip off 'px' and parse
+		var sizeString = box.css('font-size'); // always returns computed size in pixels
+		var pxSize = parseInt(sizeString); // strip off units and parse
 		var ptSize = Math.round(this.ConvertPxToPt(pxSize));
 		var lang = box.attr('lang');
 		return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
