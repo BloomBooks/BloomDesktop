@@ -583,7 +583,7 @@ namespace Bloom.Book
 			catch (Exception error)
 			{
 				throw new ApplicationException(
-					"Error in MakeAllFieldsOfElementTypeConsistent(," + elementName + "). RawDom was:\r\n" +
+					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
 		}
