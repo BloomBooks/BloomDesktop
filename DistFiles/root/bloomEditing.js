@@ -224,8 +224,8 @@ function MakeSourceTextDivForGroup(group) {
                 selectorOfDefaultTab="li:#"+iso;
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-            if (shellEditingMode || !shouldShowOnPage) {
-                $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+            if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+                $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
             }
         });
     });
