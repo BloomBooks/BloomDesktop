@@ -17,6 +17,7 @@ using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
+using Palaso.Xml;
 
 namespace Bloom.Edit
 {
@@ -175,9 +176,9 @@ namespace Bloom.Edit
 						}
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is emtpy
-						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
-						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
+						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
+						string rights = dlg.Metadata.License.RightsStatement == null ? string.Empty : XmlUtils.MakeSafeXml(dlg.Metadata.License.RightsStatement).Replace("'", "\\'");
+                        string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
 							string.Format(
