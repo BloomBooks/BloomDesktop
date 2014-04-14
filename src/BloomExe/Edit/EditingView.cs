@@ -156,6 +156,9 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
+                // Review: This seems rather kludgy. Is there a better way?
+                metadata.License.RightsStatement = metadata.License.RightsStatement.Replace("&amp;", "&");
+
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
