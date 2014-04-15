@@ -156,8 +156,7 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-                // Review: This seems rather kludgy. Is there a better way?
-                metadata.License.RightsStatement = metadata.License.RightsStatement.Replace("&amp;", "&");
+                MakeRightsStatementSafeForUser(metadata);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
@@ -180,7 +179,7 @@ namespace Bloom.Edit
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						string rights = dlg.Metadata.License.RightsStatement == null ? string.Empty : XmlUtils.MakeSafeXml(dlg.Metadata.License.RightsStatement).Replace("'", "\\'");
+                        var rights = MakeRightsStatementSafeForXml(dlg);
                         string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
@@ -209,6 +208,21 @@ namespace Bloom.Edit
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
     	}
+
+        private string MakeRightsStatementSafeForXml(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
+        {
+            var rights = dlg.Metadata.License.RightsStatement;
+            dlg.Metadata.License.RightsStatement = rights == null ? string.Empty : XmlUtils.MakeSafeXml(rights).Replace("'", "\\'");
+            return rights;
+        }
+
+        private void MakeRightsStatementSafeForUser(Metadata metadata)
+        {
+            // Review: This seems rather kludgy. Is there a better way?
+            var rightsStatement = metadata.License.RightsStatement;
+            if (rightsStatement != null)
+                metadata.License.RightsStatement = rightsStatement.Replace("&amp;", "&");
+        }
 
         private void SetupThumnailLists()
         {
