@@ -60,9 +60,10 @@ namespace Bloom.Publish
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookServer _bookServer;
-		private string _lastDirectory;
+	    private readonly HtmlThumbNailer _htmlThumbNailer;
+	    private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -71,7 +72,8 @@ namespace Bloom.Publish
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+		    _htmlThumbNailer = htmlThumbNailer;
+		    bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
@@ -355,8 +357,7 @@ namespace Bloom.Publish
 
 	    public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
 	    {
-            var thumbnailer = new HtmlThumbNailer(width, height);//enhance some way to cache this
-	        thumbnailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+            _htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
 	    }
 
 	    public IEnumerable<ToolStripItem> GetExtensionMenuItems()

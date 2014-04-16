@@ -327,20 +327,31 @@ namespace Bloom.CollectionTab
 
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
-			var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
+		    try
+		    {
+		        var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
 
-			TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
-			
-			if (_bookSelection != null)
-			{
-				_bookSelection.SelectBook(newBook);
-			}
-			//enhance: would be nice to know if this is a new shell
-			if (sourceBook.IsShellOrTemplate)
-			{
-				Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
-			}
-			_editBookCommand.Raise(newBook);
+
+		        TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+
+		        if (_bookSelection != null)
+		        {
+		            _bookSelection.SelectBook(newBook);
+		        }
+		        //enhance: would be nice to know if this is a new shell
+		        if (sourceBook.IsShellOrTemplate)
+		        {
+		            Analytics.Track("Create Book",
+		                new Dictionary<string, string>() {{"Category", sourceBook.CategoryForUsageReporting}});
+		        }
+		        _editBookCommand.Raise(newBook);
+		    }
+		    catch (Exception e)
+		    {
+		        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+		            "Bloom ran into an error while creating that book. (Sorry!)");
+		    }
+
 		}
 
 	    public Book.Book GetBookFromBookInfo(BookInfo bookInfo)

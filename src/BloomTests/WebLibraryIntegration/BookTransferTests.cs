@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Autofac.Features.Metadata;
+using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
@@ -37,7 +38,7 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_orders = new OrderList();
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _orders);
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new HtmlThumbNailer(30,30,new MonitorTarget()),  _orders);
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
         }
 
