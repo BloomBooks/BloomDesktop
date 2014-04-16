@@ -18,6 +18,7 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
 using Palaso.Xml;
+using System.Net;
 
 namespace Bloom.Edit
 {
@@ -156,10 +157,10 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-                MakeRightsStatementSafeForUser(metadata);
+                var decodedMetadata = MakeRightsStatementSafeForUser(metadata);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -211,17 +212,18 @@ namespace Bloom.Edit
 
         private string MakeRightsStatementSafeForXml(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
         {
-            var rights = dlg.Metadata.License.RightsStatement;
-            dlg.Metadata.License.RightsStatement = rights == null ? string.Empty : XmlUtils.MakeSafeXml(rights).Replace("'", "\\'");
+            var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
+            dlg.Metadata.License.RightsStatement = rights ?? string.Empty;
             return rights;
         }
 
-        private void MakeRightsStatementSafeForUser(Metadata metadata)
+        private Metadata MakeRightsStatementSafeForUser(Metadata metadata)
         {
-            // Review: This seems rather kludgy. Is there a better way?
-            var rightsStatement = metadata.License.RightsStatement;
-            if (rightsStatement != null)
-                metadata.License.RightsStatement = rightsStatement.Replace("&amp;", "&");
+            // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
+            var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
+            var safeMetadata = metadata.DeepCopy();
+            safeMetadata.License.RightsStatement = rightsStatement;
+            return safeMetadata;
         }
 
         private void SetupThumnailLists()
