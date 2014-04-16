@@ -23,6 +23,15 @@ class StyleEditor {
                 return classes[i];
             }
         }
+        // For awhile between v1 and v2 we used 'coverTitle' in Factory-XMatter
+        // In case this is one of those books, we'll replace it with 'coverTitle-style'
+        var coverTitleClass = 'coverTitle';
+        if ($(target).hasClass(coverTitleClass)) {
+            $(target).removeClass(coverTitleClass);
+            var newStyleName = 'coverTitle-style';
+            $(target).addClass(newStyleName);
+            return newStyleName;
+        }
         return null;
     }
 
