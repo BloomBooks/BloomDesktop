@@ -83,7 +83,7 @@ namespace BloomTests.Book
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 });
+            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60, new MonitorTarget() });
             _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
       }
@@ -824,10 +824,12 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(book.BookInfo.Isbn, Is.EqualTo("978-0-306-40615-7"));
 
-			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
-			//isbnElt.InnerText = " ";
-			//book.Save();
-			//Assert.That(_metadata.volumeInfo.industryIdentifiers.Length, Is.EqualTo(0));
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+			isbnElt = dom.SelectSingleNode("//textarea");
+			isbnElt.InnerText = " ";
+			book.SavePage(dom);
+			book.Save();
+			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
 
 		[Test]

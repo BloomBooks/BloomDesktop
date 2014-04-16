@@ -528,6 +528,10 @@ DIV.textWholePage DIV.bloom-translationGroup DIV
 	bottom: 0px;
 	height: 7.1cm;
 }
+.pictureAndWordPage.A4Landscape DIV.bloom-imageContainer
+{
+	height: 55%;
+}
 .pictureAndWordPage .bloom-content1
 {
 	font-size: 400%;

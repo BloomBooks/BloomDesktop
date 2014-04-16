@@ -104,6 +104,7 @@ namespace Bloom.Book
             }
 
             d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
+            d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
 
             d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"));
 
