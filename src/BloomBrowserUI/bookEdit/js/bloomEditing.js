@@ -1229,7 +1229,6 @@ function SetCopyrightAndLicense(data) {
     $("DIV[data-book='copyright']").text(data.copyright);
     $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
     $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    // Review: Is there a cleaner way to do this? It's essentially the  reverse of XmlUtils.MakeSafeXml()
     $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
     var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
     if (data.licenseImage.length == 0) {
