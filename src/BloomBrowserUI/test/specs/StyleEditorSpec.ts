@@ -84,6 +84,17 @@ function GetRuleForNormalStyle(): CSSRule {
 	return null;
 }
 
+function GetRuleForCoverTitleStyle(): CSSRule {
+	var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
+
+	for (var i = 0; i < x.length; i++) {
+		if (x[i].cssText.indexOf('coverTitle-style') > -1) {
+			return x[i];
+		}
+	}
+	return null;
+}
+
 function GetRuleMatchingSelector(selector: string): CSSRule {
 	var x = GetUserModifiedStyleSheet().cssRules;
 	var count = 0;
@@ -264,5 +275,12 @@ describe("StyleEditor", function () {
 		MakeBigger2('#testTarget2');
 
 		expect(GetRuleForNormalStyle()).not.toBeNull();
+	});
+
+	it("If a 'coverTitle' slips through, make it 'coverTitle-style'", function () {
+		$('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>");
+		MakeBigger2('#testTarget2');
+
+		expect(GetRuleForCoverTitleStyle()).not.toBeNull();
 	});
 });
