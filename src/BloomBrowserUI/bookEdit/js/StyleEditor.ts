@@ -47,6 +47,13 @@ class StyleEditor {
 				return null;
 			}
 		}
+		// For awhile between v1 and v2 we used 'default-style' in Basic Book
+		// In case this is one of those books, we'll replace it with 'normal-style'
+		if (styleName == 'default-style') {
+			$(target).removeClass(styleName);
+			styleName = 'normal-style';
+			$(target).addClass(styleName);
+		}
 		return styleName;
 	}
 

@@ -258,4 +258,11 @@ describe("StyleEditor", function () {
 		expect(count).toBe(1);
 		expect(GetFontSizeRuleByLang('xyz')).toBe(20);
 	});
+
+	it("If a 'default-style' slips through, make it 'normal-style'", function () {
+		$('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+		MakeBigger2('#testTarget2');
+
+		expect(GetRuleForNormalStyle()).not.toBeNull();
+	});
 });
