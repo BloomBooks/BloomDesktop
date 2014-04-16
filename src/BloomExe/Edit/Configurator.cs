@@ -119,13 +119,15 @@ namespace Bloom.Edit
 			File.Move(temp.Path, bookPath);
 
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-			//NB: this check only makes sense for the calendar. If/when we use this for something else, this
+			//NB: this check only makes sense for the calendar, which is the only template we've create that
+			// uses this class, and there are no other templates on the drawing board that would use it.
+			// If/when we use this for something else, this
 			//won't work. But by then, we should be using a version of geckofx that can reliably tell us
 			//when it is done with the previous navigation.
 			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
 			{
 				Logger.WriteMinorEvent(File.ReadAllText(bookPath)); //this will come to us if they report it
-				throw new ApplicationException("Malformed Calendar");
+				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
 			}
 
 			//NB: we *want* exceptions thrown from the above to make it out.
@@ -134,36 +136,40 @@ namespace Bloom.Edit
 		private void NavigateAndWait(GeckoWebBrowser browser, string url)
 		{
 			Cursor.Current = Cursors.WaitCursor;
-
-			//browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-			/* in geckofx14, this never fires (perhaps it does for docs, but not javascript?):
+			try
+			{
+				//browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+				/* in geckofx14, this never fires (perhaps it does for docs, but not javascript?):
 				browser.DocumentCompleted -= browser_DocumentNavigated;
 				browser.DocumentCompleted += browser_DocumentNavigated;
 			 */
 
-			browser.Navigated -= browser_DocumentNavigated;
-			browser.Navigated += browser_DocumentNavigated;
+				browser.Navigated -= browser_DocumentNavigated;
+				browser.Navigated += browser_DocumentNavigated;
 
-			browser.Navigate(url);
+				browser.Navigate(url);
 
-			//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
-			//this could be simplified when we upgrade
-			DateTime giveUpTime = DateTime.Now.AddSeconds(2);
-			while (DateTime.Now < giveUpTime && browser.Tag==null)
-			{
-				Application.DoEvents();
+				//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
+				//this could be simplified when we upgrade
+				DateTime giveUpTime = DateTime.Now.AddSeconds(2);
+				while (DateTime.Now < giveUpTime && browser.Tag == null)
+				{
+					Application.DoEvents();
+				}
+				if (browser.Tag == null)
+					throw new ApplicationException("Timed out waiting for browser to configure book");
+
+				//the above doesn't really ensure that the javascript is done. Wait another few seconds.
+				DateTime minimumTimeToWait = DateTime.Now.AddSeconds(4);
+				while (DateTime.Now < minimumTimeToWait)
+				{
+					Application.DoEvents();
+				}
 			}
-			if(browser.Tag==null)
-				throw new ApplicationException("Timed out waiting for browser to configure book");
-
-			//the above doesn't really ensure that the javascript is done. Wait another few seconds.
-			DateTime minimumTimeToWait = DateTime.Now.AddSeconds(4);
-			while (DateTime.Now < minimumTimeToWait)
+			finally
 			{
-				Application.DoEvents();
+				Cursor.Current = Cursors.Default;
 			}
-
-			Cursor.Current = Cursors.Default;
 		}
 
 		void browser_DocumentNavigated(object sender, EventArgs e)
