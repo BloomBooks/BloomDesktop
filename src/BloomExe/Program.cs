@@ -122,7 +122,7 @@ namespace Bloom
 						// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
 						SetUpLocalization();
 						Browser.SetUpXulRunner();
-						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(), new OrderList());
+						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(), _applicationContainer.HtmlThumbnailer, new OrderList());
 						transfer.UploadFolder(args[1], _applicationContainer);
 						return;
 					}

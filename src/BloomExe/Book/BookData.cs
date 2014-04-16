@@ -110,7 +110,8 @@ namespace Bloom.Book
 
 		public void SynchronizeDataItemsThroughoutDOM()
 		{
-			SynchronizeDataItemsFromContentsOfElement(_dom.Body);
+			var itemsToDelete = new HashSet<Tuple<string, string>>();
+			SynchronizeDataItemsFromContentsOfElement(_dom.Body, itemsToDelete);
 		}
 
 		/// <summary>
@@ -121,7 +122,8 @@ namespace Bloom.Book
 		{
 			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
-			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom);
+			var itemsToDelete = new HashSet<Tuple<string, string>>();
+			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
 			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
@@ -138,6 +140,8 @@ namespace Bloom.Book
 				if (!v.Value.IsCollectionValue)
 					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
 			}
+			foreach (var tuple in itemsToDelete)
+				UpdateSingleTextVariableThrougoutDom(tuple.Item1, tuple.Item2, "");
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
@@ -167,7 +171,7 @@ namespace Bloom.Book
 				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
 			}
 			if (info != null)
-				info.Isbn = isbn;
+				info.Isbn = isbn ?? "";
 		}
 
 		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
@@ -197,36 +201,41 @@ namespace Bloom.Book
 			}
 			foreach (LanguageForm languageForm in multiText.Forms)
 			{
-				XmlNode node =
-					_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
-														   languageForm.WritingSystemId));
+				string writingSystemId = languageForm.WritingSystemId;
+				UpdateSingleTextVariableThrougoutDom(key, writingSystemId, languageForm.Form);
+			}
+		}
 
-				_dataset.UpdateLanguageString(key, languageForm.Form, languageForm.WritingSystemId, false);
+		private void UpdateSingleTextVariableThrougoutDom(string key, string writingSystemId, string form)
+		{
+			XmlNode node =
+				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
+					writingSystemId));
 
-				if (null == node)
+			_dataset.UpdateLanguageString(key, form, writingSystemId, false);
+
+			if (null == node)
+			{
+				if (!string.IsNullOrEmpty(form))
 				{
-					if (!string.IsNullOrEmpty(languageForm.Form))
-					{
-						Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
-										languageForm.Form);
-						Debug.WriteLine("nop: " + _dataDiv.OuterXml);
-						AddDataDivBookVariable(key, languageForm.WritingSystemId, languageForm.Form);
-					}
+					Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
+					Debug.WriteLine("nop: " + _dataDiv.OuterXml);
+					AddDataDivBookVariable(key, writingSystemId, form);
+				}
+			}
+			else
+			{
+				if (string.IsNullOrEmpty(form)) //a null value removes the entry entirely
+				{
+					node.ParentNode.RemoveChild(node);
 				}
 				else
 				{
-					if (string.IsNullOrEmpty(languageForm.Form)) //a null value removes the entry entirely
-					{
-						node.ParentNode.RemoveChild(node);
-					}
-					else
-					{
-						node.InnerXml = languageForm.Form;
-					}
-					//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
-					//				languageForm.Form);
-					//Debug.WriteLine("now: " + _dataDiv.OuterXml);
+					node.InnerXml = form;
 				}
+				//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
+				//				languageForm.Form);
+				//Debug.WriteLine("now: " + _dataDiv.OuterXml);
 			}
 		}
 
@@ -298,16 +307,16 @@ namespace Bloom.Book
 		/// are, for library variables, saved in a separate file.
 		/// </summary>
 		/// <param name="elementToReadFrom"> </param>
-		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom)
+		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
 			DataSet data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
-			GatherDataItemsFromXElement(data, elementToReadFrom);
+			GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
 //            SendDataToDebugConsole(data);
-			UpdateDomFromDataSet(data, "*", _dom.RawDom);
+			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			UpdateTitle();
 			return data;
@@ -389,8 +398,9 @@ namespace Bloom.Book
 		/// <summary>
 		/// walk throught the sourceDom, collecting up values from elements that have data-book or data-collection attributes.
 		/// </summary>
-		private void GatherDataItemsFromXElement(DataSet data, XmlNode sourceElement
-			/* can be the whole sourceDom or just a page */)
+		private void GatherDataItemsFromXElement(DataSet data,
+			XmlNode sourceElement, // can be the whole sourceDom or just a page
+			HashSet<Tuple<string, string>> itemsToDelete = null) // records key, lang pairs for which we found an empty element in the source.
 		{
 			string elementName = "*";
 			try
@@ -422,12 +432,18 @@ namespace Bloom.Book
 						//becuase it's going to show up between <div> tags.  E.g. "Land & Water.png" as the cover page used to kill us.
 						value = WebUtility.HtmlEncode(WebUtility.HtmlDecode(value));
 					}
-					if (!String.IsNullOrEmpty(value) && !value.StartsWith("{"))
+					string lang = node.GetOptionalStringAttribute("lang", "*");
+					if (lang == "") //the above doesn't stop a "" from getting through
+						lang = "*";
+					if (string.IsNullOrEmpty(value))
+					{
+						// This is a value we may want to delete
+						if (itemsToDelete != null)
+							itemsToDelete.Add(Tuple.Create(key, lang));
+					}
+					else if (!value.StartsWith("{"))
 						//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
-						string lang = node.GetOptionalStringAttribute("lang", "*");
-						if (lang == "") //the above doesn't stop a "" from getting through
-							lang = "*";
 						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" ||
 							 node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
 							(lang == "V" || lang == "N1" || lang == "N2"))
@@ -464,7 +480,7 @@ namespace Bloom.Book
 		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
-		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom)
+		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
 			try
 			{
@@ -477,74 +493,88 @@ namespace Bloom.Book
 					if (key == String.Empty)
 					{
 						key = node.GetAttribute("data-collection").Trim();
-						if(key==string.Empty)
+						if (key == string.Empty)
 						{
 							key = node.GetAttribute("data-library").Trim();
-								//"library" is the old name for what is now "collection"
+							//"library" is the old name for what is now "collection"
 						}
 					}
 
-					if (!String.IsNullOrEmpty(key) && data.TextVariables.ContainsKey(key))
+					if (!String.IsNullOrEmpty(key))
 					{
-						if (node.Name.ToLower() == "img")
+						if (data.TextVariables.ContainsKey(key))
 						{
-							string imageName =
-								WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
-							string oldImageName = WebUtility.HtmlDecode(node.GetAttribute("src"));
-							node.SetAttribute("src", imageName);
-							if (oldImageName != imageName)
+							if (node.Name.ToLower() == "img")
 							{
-								Guard.AgainstNull(_updateImgNode, "_updateImgNode");
-								_updateImgNode(node);
+								string imageName =
+									WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+								string oldImageName = WebUtility.HtmlDecode(node.GetAttribute("src"));
+								node.SetAttribute("src", imageName);
+								if (oldImageName != imageName)
+								{
+									Guard.AgainstNull(_updateImgNode, "_updateImgNode");
+									_updateImgNode(node);
+								}
+							}
+							else
+							{
+								string lang = node.GetOptionalStringAttribute("lang", "*");
+								if (lang == "N1" || lang == "N2" || lang == "V")
+									lang = data.WritingSystemAliases[lang];
+
+								//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
+								//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
+								//							{
+								//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
+								//								targetDom.RemoveChild(node);
+								//							}
+								//							else
+								if (!String.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
+								{
+									//Ideally, we have this string, in this desired language.
+									string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
+
+									//But if not, maybe we should copy one in from another national language
+									if (string.IsNullOrEmpty(s))
+										s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
+
+									//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
+									//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
+									//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
+									//was giving "", which we then used to remove our nice values.
+									//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
+									//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
+									//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
+									if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
+										continue;
+
+									//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
+									if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
+										s ==
+										data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
+										{
+											data.
+												WritingSystemAliases
+												["N1"]
+											, "*"
+										}))
+									{
+										s = ""; //don't show it in N2, since it's the same as N1
+									}
+									node.InnerXml = s;
+									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+								}
 							}
 						}
-						else
+						else if (node.Name.ToLower() != "img")
 						{
+							// See whether we need to delete something
 							string lang = node.GetOptionalStringAttribute("lang", "*");
 							if (lang == "N1" || lang == "N2" || lang == "V")
 								lang = data.WritingSystemAliases[lang];
-
-							//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
-							//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
-							//							{
-							//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
-							//								targetDom.RemoveChild(node);
-							//							}
-							//							else
-							if (!String.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
+							if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 							{
-								//Ideally, we have this string, in this desired language.
-								string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new []{lang, "*"});
-
-								//But if not, maybe we should copy one in from another national language
-								if(string.IsNullOrEmpty(s))
-									s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
-
-								//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
-								//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
-								//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
-								//was giving "", which we then used to remove our nice values.
-								//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
-								//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
-								//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-								if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
-									continue;
-
-								//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-								if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
-									s ==
-									data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
-																										  {
-																											  data.
-																												  WritingSystemAliases
-																												  ["N1"]
-																											  , "*"
-																										  }))
-								{
-									s = ""; //don't show it in N2, since it's the same as N1
-								}
-								node.InnerXml = s;
-								//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+								node.InnerXml = ""; // a later process may remove node altogether.
 							}
 						}
 					}
@@ -630,7 +660,8 @@ namespace Bloom.Book
 		public void SetLicenseMetdata(Metadata metadata)
 		{
 			var data = new DataSet();
-			GatherDataItemsFromXElement(data,  _dom.RawDom);
+			var itemsToDelete = new HashSet<Tuple<string, string>>();
+			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
 
 			string copyright = metadata.CopyrightNotice;
 			data.UpdateLanguageString("copyright", copyright, "*", false);
@@ -648,7 +679,7 @@ namespace Bloom.Book
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
 
 
-			UpdateDomFromDataSet(data, "*", _dom.RawDom);
+			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			//UpdateDomFromDataSet() is not able to remove items yet, so we do it explicity
 

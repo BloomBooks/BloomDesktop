@@ -31,6 +31,7 @@ namespace Bloom.WebLibraryIntegration
 	{
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
+		private readonly HtmlThumbNailer _htmlThumbnailer;
 		// A list of 'orders' to download books. These may be urls or (this may be obsolete) paths to book order files.
 		// One order is created when a url or book order is found as the single command line argument.
 		// It gets processed by an initial call to HandleOrders in LibraryListView.ManageButtonsAtIdleTime
@@ -42,10 +43,11 @@ namespace Bloom.WebLibraryIntegration
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, OrderList orders)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, OrderList orders)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
+			_htmlThumbnailer = htmlThumbnailer;
 			_orders = orders;
 			if (_orders != null)
 			{
@@ -502,7 +504,7 @@ namespace Bloom.WebLibraryIntegration
 						bookSelection);
 					currentEditableCollectionSelection.SelectCollection(collection);
 				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _htmlThumbnailer);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), this, null);
 				string dummy;
