@@ -28,7 +28,6 @@ namespace Bloom.Book
     public interface IBookStorage
     {
 		//TODO Covert this most of this section to something like IBookDescriptor, which has enough display in a catalog, do some basic filtering, etc.
-        Book.BookType BookType { get; }
         string Key { get; }
         string FileName { get; }
         string FolderPath { get; }
@@ -106,25 +105,6 @@ namespace Bloom.Book
 
 		    ExpensiveInitialization();
 	    }
-
-        //TODO: this is in conflict with the BookType on Book. Get rid of one of them (has trello card for v1.1)
-	    public Book.BookType BookType
-		{
-			get
-			{
-				var pathToHtml = PathToExistingHtml;
-				//as of v1.1. this is bogus; previously all templates were supposed to be named "templatePages.htm", so you could tell.
-                if (pathToHtml.EndsWith("Basic Book.htm"))
-					return Book.BookType.Template;
-
-				//directory name matches htm name
-				//                if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
-				//                {
-				//                    return Book.BookType.Publication;
-				//                }
-				return Book.BookType.Publication;
-			}
-		}
 
 		public string PathToExistingHtml
 		{
@@ -231,7 +211,6 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
-			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
 			if (null != Assembly.GetEntryAssembly()) // null during unit tests
 			{
@@ -713,7 +692,7 @@ namespace Bloom.Book
                     return;//don't keep bugging them
                 _alreadyNotifiedAboutOneFailedCopy = true;
                 Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-                    "Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", factoryPath,documentPath);
+                    "Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
             }
         }
 

@@ -38,19 +38,26 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var connectionsPath = FileLocator.GetFileDistributedWithApplication("connections.dll");
 			var lines = File.ReadAllLines(connectionsPath);
-			S3AccessKey = lines[0];
-			S3SecretAccessKey = lines[1];
-#if DEBUG
-			// Lines 4 & 5 should be the keys for the BloomLibrarySandbox
-			ParseApiKey = lines[4];
-			ParseApplicationKey = lines[5];
-#else
-			// Lines 2 & 3 should be the keys for the real BloomLibrary
-			ParseApiKey = lines[2];
-			ParseApplicationKey = lines[3];
-#endif
-			ParseUnitTestApiKey = lines[6];
-			ParseUnitTextApplicationKey = lines[7];
+			if (BookTransfer.UseSandbox)
+			{
+				// These lines contain the S3 keys for the 'uploaderDev' user, who has permission to use the BloomLibraryBooks-Sandbox bucket.
+				S3AccessKey = lines[2];
+				S3SecretAccessKey = lines[3];
+				// These lines contain the Parse.com keys for the 'application' silbloomlibrarysandbox
+				ParseApiKey = lines[6];
+				ParseApplicationKey = lines[7];
+			}
+			else
+			{
+				// These lines contain the S3 keys for the 'uploader' user, who has permission to use the BloomLibraryBooks bucket.
+				S3AccessKey = lines[0];
+				S3SecretAccessKey = lines[1];
+				// These lines contain the Parse.com keys for the 'application' silbloomlibrary
+				ParseApiKey = lines[4];
+				ParseApplicationKey = lines[5];
+			}
+			ParseUnitTestApiKey = lines[8];
+			ParseUnitTextApplicationKey = lines[9];
 		}
 	}
 }

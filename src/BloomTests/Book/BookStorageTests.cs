@@ -76,7 +76,7 @@ namespace BloomTests.Book
             File.WriteAllText(_bookPath, html);
             var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
-            var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+            var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
             storage.Save();
             return storage;
         }
@@ -100,7 +100,7 @@ namespace BloomTests.Book
             File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
             var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
-            var storage = new BookStorage(_folder.FolderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+            var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
             storage.Save();
             return storage;
         }
@@ -179,7 +179,7 @@ namespace BloomTests.Book
 			var collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
 				collectionSettings,
-				new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+                new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60, new MonitorTarget() }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 
 			book.BringBookUpToDate(new NullProgress());
 

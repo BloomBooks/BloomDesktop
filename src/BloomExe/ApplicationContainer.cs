@@ -41,6 +41,10 @@ namespace Bloom
 				}
 				builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
 
+                //this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
+                //HtmlThumbnailer & ConfigurationDialog, at least, use this.
+                builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
+
 				_container = builder.Build();
 			}
 
@@ -49,12 +53,14 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-            public LocalizationManager LocalizationManager;
+			public LocalizationManager LocalizationManager;
 
 			public OrderList OrderList
 			{
 				get { return _container.Resolve<OrderList>(); }
 			}
+
+			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
 			public void Dispose()
 			{

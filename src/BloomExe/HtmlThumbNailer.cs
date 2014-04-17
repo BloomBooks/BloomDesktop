@@ -25,7 +25,8 @@ namespace Bloom
     {
         Dictionary<string, Image> _images = new Dictionary<string, Image>();
         private readonly int _widthInPixels =70;
-        private readonly int _heightInPixels = 70; 
+        private readonly int _heightInPixels = 70;
+        private readonly MonitorTarget _monitorObjectForBrowserNavigation;
         private Color _backgroundColorOfResult;
         private bool _browserHandleCreated;
     	private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
@@ -38,29 +39,42 @@ namespace Bloom
 
     	private bool _disposed;
 
-    	public HtmlThumbNailer(int widthInPixels,int heightInPixels)
+        public HtmlThumbNailer(int widthInPixels, int heightInPixels, MonitorTarget monitorObjectForBrowserNavigation)
         {
             _widthInPixels = widthInPixels;
     	    _heightInPixels = heightInPixels;
-			Application.Idle += new EventHandler(Application_Idle);
+    	    _monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
+    	    Application.Idle += new EventHandler(Application_Idle);
         }
 
 		void Application_Idle(object sender, EventArgs e)
 		{
-			if (_orders.Count > 0)
-			{
-				ThumbnailOrder thumbnailOrder = _orders.Dequeue();
-				try
-				{
-					ProcessOrder(thumbnailOrder);
-				}
-				catch (Exception error)
-				{
-					//putting up a green box here, because, say, the page was messed up, is bad manners
-					Logger.WriteEvent("HtmlThumbNailer reported exception:{0}",error.Message);
-					thumbnailOrder.ErrorCallback(error);
-				}
-			}
+		    if (_orders.Count > 0)
+		    {
+                if (Monitor.TryEnter(_monitorObjectForBrowserNavigation))
+		            //don't try to work with the browser while other processes are doing it to... maybe can remove this when we clear out any Application.DoEvents() that our current old version of Geckofx is forcing us to use because of unreliable end-of-navigation detection
+		        {
+		            try
+		            {
+                        ThumbnailOrder thumbnailOrder = _orders.Dequeue();
+		                try
+		                {
+		                    ProcessOrder(thumbnailOrder);
+		                }
+		                catch (Exception error)
+		                {
+		                    //putting up a green box here, because, say, the page was messed up, is bad manners
+		                    Logger.WriteEvent("HtmlThumbNailer reported exception:{0}", error.Message);
+		                    thumbnailOrder.ErrorCallback(error);
+		                }
+		            }
+		            finally
+		            {
+		                // Ensure that the lock is released.
+                        Monitor.Exit(_monitorObjectForBrowserNavigation);
+		            }
+		        }
+		    }
 		}
 
 		public void RemoveFromCache(string key)
@@ -467,12 +481,28 @@ namespace Bloom
 			_orders.Clear();
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
-				browser.Value.Navigated -= _browser_Navigated;
-				browser.Value.Dispose();
+				browser.Value.Invoke((Action) (() =>
+				{
+					browser.Value.Navigated -= _browser_Navigated;
+					browser.Value.Dispose();
+				}));
 			}
     		_browserCacheForDifferentPaperSizes.Clear();
     	}
-    }
+
+		/// <summary>
+		/// This is a trick that processes waiting for thumbnails can use in situations where
+		/// Application.Idle is not being invoked. Such uses must pass a non-null control
+		/// created in the thread where Application_Idle should be invoked (i.e., the UI thread)
+		/// </summary>
+		internal void Advance(Control invokeTarget)
+		{
+			if (_orders.Count == 0)
+				return;
+			if (invokeTarget != null)
+				invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
+		}
+	}
 
 	public class ThumbnailOrder
 	{
