@@ -227,7 +227,8 @@ namespace Bloom.Book
 				var badFilePath = PathToExistingHtml + ".bad";
 				File.Copy(tempPath, badFilePath, true);
 				//hack so we can package this for palaso reporting
-				errors += "\r\n\r\n\r\nContents:\r\n\r\n" + File.ReadAllText(badFilePath);
+				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
+					File.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
@@ -237,8 +238,7 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-				{ Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null); }
-
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null);
 			}
 
 			MetaData.Save();
@@ -603,7 +603,7 @@ namespace Bloom.Book
 		            }
 		        }
 
-		        //todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
+				//TODO: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 			    //SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
 			    //UpdateStyleSheetLinkPaths(fileLocator);
