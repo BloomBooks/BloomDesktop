@@ -17,7 +17,6 @@ using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using Palaso.Xml;
 using System.Net;
 
 namespace Bloom.Edit
@@ -157,7 +156,7 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-				var decodedMetadata = MakeRightsStatementSafeForUser(metadata);
+				var decodedMetadata = GetMetadataCloneWithHtmlDecodedRights(metadata);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
@@ -180,7 +179,8 @@ namespace Bloom.Edit
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						var rights = MakeRightsStatementSafeForXml(dlg);
+						var rights = GetHtmlEncodedRights(dlg);
+						dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
@@ -210,14 +210,13 @@ namespace Bloom.Edit
 			}
 		}
 
-		private string MakeRightsStatementSafeForXml(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
+		private string GetHtmlEncodedRights(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
 		{
 			var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
-			dlg.Metadata.License.RightsStatement = rights ?? string.Empty;
-			return rights;
+			return rights ?? string.Empty;
 		}
 
-		private Metadata MakeRightsStatementSafeForUser(Metadata metadata)
+		private Metadata GetMetadataCloneWithHtmlDecodedRights(Metadata metadata)
 		{
 			// HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
 			var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
