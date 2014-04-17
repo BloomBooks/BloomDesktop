@@ -88,10 +88,15 @@ namespace BloomTests.Book
             _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
       }
+
 		[TearDown]
 		public void TearDown()
 		{
-			_testFolder.Dispose();
+			if (_testFolder != null)
+			{
+				_testFolder.Dispose();
+				_testFolder = null;
+			}
 		}
 
     	private Bloom.Book.Book CreateBook()
