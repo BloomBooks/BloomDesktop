@@ -236,10 +236,24 @@ namespace Bloom
 
 		/// <summary>
 		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
-		/// Todo Linux: no idea what has to happen to register a url handler...probably not this, though.
+		/// TODO-Linux: no idea what has to happen to register a url handler...probably not this, though.
 		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
 		/// </summary>
 		private static void EnsureThisInstanceIsRegisteredForBloomUrls()
+		{
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				// TODO-Linux: no idea what has to happen to register a url handler...probably not this, though.
+				// See also where these registry entries are made by the wix installer (file Installer.wxs).
+				return;
+			}
+			EnsureThisInstanceIsRegisteredForBloomUrls_Windows();
+		}
+
+		/// <summary>
+		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
+		/// </summary>
+		private static void EnsureThisInstanceIsRegisteredForBloomUrls_Windows()
 		{
 			if (AlreadyRegistered(Registry.ClassesRoot))
 				return;
