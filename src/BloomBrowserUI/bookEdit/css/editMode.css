@@ -489,7 +489,13 @@ UL.toolbox LI
 	z-index: 20000;
 }
 /*Simulate the html5 placeholder attribute which is not available on divs*/
-[contentEditable=true]:empty:before
+/* The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
+https://bugzilla.mozilla.org/show_bug.cgi?id=997749, namely that when the user clicks in an element which
+has a :before rule applied and which already has focus, weird things happen and typing is suppressed.
+When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
+so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
+even when the div is focused (as long as it is empty). */
+[contentEditable=true]:empty:not(:focus):before
 {
 	content: attr(data-placeholder);
 	color: #DDDBDB;
