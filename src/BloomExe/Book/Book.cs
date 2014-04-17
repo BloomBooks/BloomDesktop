@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -438,8 +439,7 @@ namespace Bloom.Book
 				if(TypeOverrideForUnitTests != BookType.Unknown)
 					return TypeOverrideForUnitTests;
 
-				return IsEditable ? BookType.Publication : BookType.Template; //TODO
-				//return _storage.BookType;
+				return IsEditable ? BookType.Publication : BookType.Template; //TODO there are other types...should there be some way they can they happen?
 			}
 		}
 
@@ -549,6 +549,9 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					File.Delete(oldTagsPath);
 				}
+				// get any license info into the json
+				var metadata = GetLicenseMetadata();
+				UpdateLicenseMetdata(metadata);
 			}
 			else //used for making a preview dom
 			{
@@ -911,7 +914,7 @@ namespace Bloom.Book
 				return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 					.Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*") // Not a valid language, thoug we sometimes use it for special values
+					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 					.Distinct();
 			}
 		}
@@ -1153,14 +1156,14 @@ namespace Bloom.Book
 				page.InnerXml = divElement.InnerXml;
 
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
-				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
-				var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
-				if (customStyles != null)
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
+				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
+				if (userModifiedStyles != null)
 				{
-					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
-					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
+					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
+				//Debug.WriteLine("User Modified Styles:   " + GetOrCreateUserModifiedStyleElementFromStorage().OuterXml);
 				try
 				{
 					Save();
@@ -1199,19 +1202,19 @@ namespace Bloom.Book
 //        }
 
 		/// <summary>
-		/// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+		/// The <style title='userModifiedStyles'/> element is where we keep our user-modifiable style information
 		/// </summary>
-		private XmlElement GetOrCreateCustomStyleElementFromStorage()
+		private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 		{
-			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
 			if (matches.Count > 0)
 				return (XmlElement) matches[0];
 
-			var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-			emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
-			emptyCustomStylesElement.SetAttribute("type", "text/css");
-			OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
-			return emptyCustomStylesElement;
+			var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+			emptyUserModifiedStylesElement.SetAttribute("title", "userModifiedStyles");
+			emptyUserModifiedStylesElement.SetAttribute("type", "text/css");
+			OurHtmlDom.Head.AppendChild(emptyUserModifiedStylesElement);
+			return emptyUserModifiedStylesElement;
 		}
 
 		/// <summary>
@@ -1361,14 +1364,14 @@ namespace Bloom.Book
 				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "customBookStyles" from children, it'll ignore them (they woul conflict with each other)
+				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-				var customStyleSheets = new List<string>();
+				var userModifiedStyleSheets = new List<string>();
 				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
 				{
-					if (!customStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
+					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
-						customStyleSheets.Add(sheetName);
+						userModifiedStyleSheets.Add(sheetName);
 						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
 					}
 				}
@@ -1384,9 +1387,6 @@ namespace Bloom.Book
 				}
 			}
 		}
-
-
-
 
 		private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
 		{
@@ -1415,8 +1415,6 @@ namespace Bloom.Book
 			return _storage.PathToExistingHtml;
 		}
 
-
-
 		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
 		{
 			//NB: all we support at the moment is specifying "Calendar"
@@ -1441,7 +1439,6 @@ namespace Bloom.Book
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
 		}
-
 
 		/// <summary>
 		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
@@ -1579,6 +1576,7 @@ namespace Bloom.Book
 
 		public void Save()
 		{
+			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 			_storage.Save();
@@ -1588,6 +1586,15 @@ namespace Bloom.Book
 		public string GetBookLineage()
 		{
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
+		}
+
+		/// <summary>
+		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
+		/// </summary>
+		/// <param name="invokeTarget">A control created on the UI thread.</param>
+		internal void MakeThumbnailerAdvance(Control invokeTarget)
+		{
+			_thumbnailProvider.Advance(invokeTarget);
 		}
 	}
 }

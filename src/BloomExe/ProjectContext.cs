@@ -35,8 +35,11 @@ namespace Bloom
 		private ImageServer _imageServer;
 		public Form ProjectWindow { get; private set; }
 
+		public string SettingsPath { get; private set; }
+
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
+			SettingsPath = projectSettingsPath;
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -54,7 +57,7 @@ namespace Bloom
 			{
 				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
+				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
 				_bloomServer.Start();
 			}
 			else
@@ -138,7 +141,7 @@ namespace Bloom
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
 				const int kListViewIconHeightAndWidth = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth)).InstancePerLifetimeScope();
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{
@@ -204,12 +207,7 @@ namespace Bloom
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{
-#if DEBUG
-			var bucket = "BloomLibraryBooks-Sandbox";
-#else
-			var bucket = "BloomLibraryBooks-Production";
-#endif
-			return new BloomS3Client(bucket);
+			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
 		}
 
 
@@ -348,6 +346,11 @@ namespace Bloom
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
 
+		internal BookServer BookServer
+		{
+			get { return _scope.Resolve<BookServer>(); }
+		}
+
 
 		public static string GetBloomAppDataFolder()
 		{
@@ -402,5 +405,11 @@ namespace Bloom
 
 		}
 
+	}
+
+	public class MonitorTarget
+	{
+		//doesn't need any guts, just use for dependency injection
+		//Dependecy injection gives us a single instance app-wide, and that single instance is the thing we monitor to achieve mutex on browser navigation
 	}
 }

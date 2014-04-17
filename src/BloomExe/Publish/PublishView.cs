@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Primitives;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
@@ -150,8 +151,11 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
-			_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
-			UpdateDisplay();
+			if (IsHandleCreated) // May not be when bulk uploading
+			{
+				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
+				Invoke((Action) (UpdateDisplay));
+			}
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
 				MakeBooklet();
@@ -347,6 +351,16 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+			if (_uploadRadio.Checked)
+			{
+				// We aren't going to display it, so don't bother generating it unless the user actually uploads.
+				// Unfortunately, the completion of the generation process is normally responsible for putting us into
+				// the right display mode for what we generated (or failed to), after this routine puts us into the
+				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
+				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
+				SetDisplayMode(PublishModel.DisplayModes.Upload);
+				return;
+			}
 
 			SetDisplayMode(PublishModel.DisplayModes.Working);
 			_makePdfBackgroundWorker.RunWorkerAsync();
@@ -383,6 +397,30 @@ namespace Bloom.Publish
 		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
 		{
 
+		}
+
+		/// <summary>
+		/// Make the preview required for publishing the book.
+		/// </summary>
+		internal void MakePublishPreview()
+		{
+			if (IsMakingPdf)
+			{
+				// Can't start another until current attempt finishes.
+				_makePdfBackgroundWorker.CancelAsync();
+				while (IsMakingPdf)
+					Thread.Sleep(100);
+			}
+			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
+			_model.ShowCropMarks = false; // don't want in online preview
+			_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
+			_makePdfBackgroundWorker.RunWorkerAsync();
+			// We normally generate PDFs in the background, but this routine should not return until we actually have one.
+			while (IsMakingPdf)
+			{
+				Thread.Sleep(100);
+				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
+			}
 		}
 	}
 }

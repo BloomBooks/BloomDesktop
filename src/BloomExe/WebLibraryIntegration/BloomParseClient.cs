@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using Newtonsoft.Json;
@@ -227,6 +228,24 @@ namespace Bloom.WebLibraryIntegration
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			// Todo
 			return dy.results.Count > 0;
+		}
+
+		internal bool IsThisVersionAllowedToUpload()
+		{
+			var request = MakeGetRequest("classes/version");
+			var response = _client.Execute(request);
+			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			var row = dy.results[0];
+			string versionString = row.minDesktopVersion;
+			var parts = versionString.Split('.');
+			var requiredMajorVersion = int.Parse(parts[0]);
+			var requiredMinorVersion = int.Parse(parts[1]);
+			parts = Application.ProductVersion.Split('.');
+			var ourMajorVersion = int.Parse(parts[0]);
+			var ourMinorVersion = int.Parse(parts[1]);
+			if (ourMajorVersion == requiredMajorVersion)
+				return ourMinorVersion >= requiredMinorVersion;
+			return ourMajorVersion >= requiredMajorVersion;
 		}
 	}
 }

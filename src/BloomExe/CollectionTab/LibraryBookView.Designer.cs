@@ -51,9 +51,9 @@
             this._addToCollectionButton.Name = "_addToCollectionButton";
             this._addToCollectionButton.Size = new System.Drawing.Size(250, 42);
             this._addToCollectionButton.TabIndex = 0;
-            this._addToCollectionButton.Text = "Make a book using this template";
+            this._addToCollectionButton.Text = "Make a book using this source";
             this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.toolTip1.SetToolTip(this._addToCollectionButton, "Create a book in my language using this template");
+            this.toolTip1.SetToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
             this._addToCollectionButton.UseVisualStyleBackColor = false;
             this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
             this._addToCollectionButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);

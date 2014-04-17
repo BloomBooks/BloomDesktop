@@ -227,6 +227,7 @@ DIV.ISBNContainer .bloom-editable
 	width: 4.3cm !important;
 	display: inline-block;
 	vertical-align: text-top;
+	max-height: 1.8em;
 }
 .ISBNContainer SPAN
 {
@@ -259,7 +260,7 @@ DIV.coverBottomBookTopic DIV
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
-	/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
+/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
 	/*[disabled]+placement:anchor-top-right 0px 0px;*/
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational2
@@ -272,7 +273,7 @@ DIV.coverBottomLangName DIV
 	display: inline;
 	font-size: 110% !important;
 	/*[disabled]vertical-align:bottom;*/
-	/*This placement is to get vertical alignment with the topic*/
+/*This placement is to get vertical alignment with the topic*/
 	/*+placement:anchor-top-left 0px 4px;*/
 	position: absolute;
 	left: 0px;
@@ -403,7 +404,7 @@ DIV.titlePage DIV.langName.bloom-contentNational1
 }
 DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
-	/*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+	/*Ideally, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
 }
 DIV.languageLocation
@@ -428,8 +429,9 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
-	font-size: 10pt !important;
+	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
+	Had to take out the !important, though, to get user font-size to work on the verso page*/
+	font-size: 10pt;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
@@ -487,12 +489,12 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left -4px 193px;*/
+	/*+placement:anchor-top-left 0px 56px;*/
 	position: absolute;
-	left: -4px;
-	top: 193px;
+	left: 0px;
+	top: 56px;
 	width: 100%;
-	height: 51px;
+	height: 29px;
 }
 DIV.copyright
 {
