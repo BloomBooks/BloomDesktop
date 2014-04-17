@@ -7,26 +7,24 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
 using Gecko;
 using Gecko.DOM;
-using TempFile = BloomTemp.TempFile;
+using Gecko.Events;
+using Palaso.IO;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.HtmlBrowser;
+using Palaso.Xml;
+using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
 	public partial class Browser : UserControl
 	{
-		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SetDllDirectory(string lpPathName);
-
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
 		private string _url;
@@ -39,48 +37,59 @@ namespace Bloom
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 
+		private static int XulRunnerVersion
+		{
+			get
+			{
+				var geckofx = Assembly.GetAssembly(typeof(GeckoWebBrowser));
+				if (geckofx == null)
+					return 0;
+
+				var versionAttribute = geckofx.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), true)
+					.FirstOrDefault() as AssemblyFileVersionAttribute;
+				return versionAttribute == null ? 0 : new Version(versionAttribute.Version).Major;
+			}
+		}
+
 		// TODO: refactor to use same initialization code as Palaso
 		public static void SetUpXulRunner()
 		{
-			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (Xpcom.IsInitialized)
+				return;
+
+			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
 			if (!Directory.Exists(xulRunnerPath))
 			{
-
-				//if this is a programmer, go look in the lib directory
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-											 Path.Combine("lib", "xulrunner"));
-
-				//on my build machine, I really like to have the dir labelled with the version.
-				//but it's a hassle to update all the other parts (installer, build machine) with this number,
-				//so we only use it if we don't find the unnumbered alternative.
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
 				if (!Directory.Exists(xulRunnerPath))
 				{
+					//if this is a programmer, go look in the lib directory
 					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-						Path.Combine("lib", "xulrunner14"));
+						Path.Combine("lib", "xulrunner"));
+
+					//on my build machine, I really like to have the dir labelled with the version.
+					//but it's a hassle to update all the other parts (installer, build machine) with this number,
+					//so we only use it if we don't find the unnumbered alternative.
+					if (!Directory.Exists(xulRunnerPath))
+					{
+						xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
+					}
+
+					if (!Directory.Exists(xulRunnerPath))
+					{
+						throw new ConfigurationException(
+							"Can't find the directory where xulrunner (version {0}) is installed",
+							XulRunnerVersion);
+					}
 				}
-
-				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
-				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
-				//	build/build.win.proj: change the zip file to match the new name
-
-
 			}
 
-			//Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				SetDllDirectory(xulRunnerPath);
-
-			if (!Xpcom.IsInitialized)
-			{
-				Gecko.Xpcom.Initialize(xulRunnerPath);
-				Application.ApplicationExit += OnApplicationExit;
-			}
-
-			// What browser to use for Palaso dialogs
-			XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
+			Xpcom.Initialize(xulRunnerPath);
+			Application.ApplicationExit += OnApplicationExit;
 		}
 
-		private static void OnApplicationExit (object sender, EventArgs e)
+		private static void OnApplicationExit(object sender, EventArgs e)
 		{
 			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
 			// otherwise the app might not exit properly.
@@ -255,7 +264,7 @@ namespace Bloom
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
+		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 			const uint DOM_VK_INSERT = 0x2D;
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
@@ -330,7 +339,7 @@ namespace Bloom
 
 
 
-		void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -496,7 +505,7 @@ namespace Bloom
 			}
 
 			var body = _browser.Document.GetElementsByTagName("body");
-			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+			if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
 				return;
 
 			var content = body[0].InnerHtml;
@@ -528,13 +537,12 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var customStyleSheet = _browser.Document.StyleSheets.Where(s =>
-					{
-						var idNode = s.OwnerNode.Attributes["id"];
-						if (idNode == null)
-							return false;
-						return idNode.NodeValue == "customBookStyles";
-					}).FirstOrDefault();
+				var customStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s => {
+					var idNode = s.OwnerNode.GetSingleElement("@id");
+					if (idNode == null)
+						return false;
+					return idNode.NodeValue == "customBookStyles";
+				});
 
 				if (customStyleSheet != null)
 				{
