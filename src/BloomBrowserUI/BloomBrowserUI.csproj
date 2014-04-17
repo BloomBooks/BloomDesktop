@@ -50,7 +50,6 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
     <Content Include="bookLayout\.guidsForInstaller.xml" />
-    <Content Include="bookLayout\BasePage.css" />
     <Content Include="bookLayout\collection styles override template.css" />
     <Content Include="bookLayout\languageDisplayTemplate.css" />
     <Content Include="bookPreview\css\.guidsForInstaller.xml" />
@@ -201,6 +200,7 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
+    <Content Include="bookLayout\basePage.css" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bookEdit\img\imageMetaDataButton.svg" />
