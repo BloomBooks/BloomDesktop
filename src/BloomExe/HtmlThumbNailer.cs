@@ -206,9 +206,10 @@ namespace Bloom
                                 throw new ApplicationException(
                                     "Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
                             }
-                            var docImage = browser.GetBitmap((uint) browser.Width, (uint) browser.Height);
+							var docImage = new Bitmap(browser.Width, browser.Height);
+							browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
 
-                            Logger.WriteMinorEvent("	HtmlThumNailer: finished GetBitmap(");
+							Logger.WriteMinorEvent("	HtmlThumbNailer: finished GetBitmap(");
 #if DEBUG
                             //							docImage.Save(@"c:\dev\temp\zzzz.bmp");
 #endif
@@ -223,7 +224,7 @@ namespace Bloom
 #if DEBUG
                             Debug.Fail(error.Message);
 #endif
-                            Logger.WriteEvent("HtmlThumNailer got " + error.Message);
+							Logger.WriteEvent("HtmlThumbNailer got " + error.Message);
                             Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
                             foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
                             {

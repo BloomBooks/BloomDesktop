@@ -39,9 +39,14 @@ namespace Bloom.CollectionTab
 			_makeBloomPackButton.Visible = model.IsShellProject;
             _sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
-			_sendReceiveButton.Click+=new EventHandler((x,y)=>sendReceiveCommand.Raise(this));
-        	_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
-        	;
+			if (sendReceiveCommand != null)
+			{
+				_sendReceiveButton.Click += (x, y) => sendReceiveCommand.Raise(this);
+				_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
+			}
+			else
+				_sendReceiveButton.Enabled = false;
+
 			selectedTabChangedEvent.Subscribe(c=>
 												{
 													if (c.To == this)

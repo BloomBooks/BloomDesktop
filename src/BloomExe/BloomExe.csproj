@@ -126,12 +126,6 @@
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
-    <Reference Include="geckofx-core-14">
-      <HintPath>..\..\lib\dotnet\geckofx-core-14.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Winforms-14">
-      <HintPath>..\..\lib\dotnet\Geckofx-Winforms-14.dll</HintPath>
-    </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
@@ -140,6 +134,12 @@
     </Reference>
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Core">
+      <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms">
+      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -648,6 +648,16 @@
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
+    <None Include="..\..\lib\dotnet\Geckofx-Core.dll.config">
+      <Link>Geckofx-Core.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </None>
+    <None Include="..\..\lib\dotnet\libgeckofix.so" Condition="'$(OS)'=='Unix'">
+      <Link>libgeckofix.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />
@@ -939,6 +949,5 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   -->
   <Target Name="AfterBuild">
     <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
-    <Copy SourceFiles="../../lib/dotnet/geckofx-core-14.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
   </Target>
 </Project>
