@@ -535,7 +535,7 @@ namespace Bloom
 
 				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
 					{
-						var titleNode = s.OwnerNode..GetSingleElement("@title");
+						var titleNode = s.OwnerNode.GetSingleElement("@title");
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
