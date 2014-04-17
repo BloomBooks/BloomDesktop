@@ -209,8 +209,8 @@ function AddToolbox(){
         var heading1CenteredWidget = '<div class="heading1-style centered widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 1 Centered</div></div>';
         var heading2LeftWidget = '<div class="heading2-style widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 2, Left</div></div>';
         var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
-        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeholder.png"></div>';
-        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeholder.png"></div>';
+        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
+        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
 
         var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
 
