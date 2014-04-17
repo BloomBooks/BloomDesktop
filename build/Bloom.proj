@@ -57,29 +57,56 @@
 	</Target>
 
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
-
+	<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
+	
+	
+	<!-- 1) we customize and upload a version of DownloadPointers, named after our Label (RELEASE or BETA), and upload it. 
+			That file is then iframe'd in to a download page somewhere.
+			
+		 2) we customize and just save a version of appcast.xml, which is used by our crude in-app downloader/updater
+	-->
+  
     <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
     <Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
-           DestinationFolder ="$(RootDir)\output\installer"/>
-        <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
            DestinationFolder ="$(RootDir)\output\installer"/>
 		   
     <!-- replace some parts of the file with the version number & date -->
     
-    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-                 DatePlaceholder='RELEASE_RELEASE_DATE'
-                Regex='RELEASE_VERSION_NUMBER'
+      <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+                 DatePlaceholder='RELEASE_DATE'
+                Regex='CHANNEL_LABEL'
+                 ReplacementText ="$(Label)" />
+
+	 <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+                 DatePlaceholder='RELEASE_DATE'
+                Regex='VERSION_NUMBER'
                  ReplacementText ="$(Version)" />
 				  
-	<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml   (note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
+		
+	<!--- also copy this appcast.xml file, which is used by the in-app update downloader -->
+    <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
+           DestinationFolder ="$(RootDir)\output\installer"/>
+		   
+	<!-- This appcast file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
 		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  ).
-		Enhance: Have this build script generate a path containing that url (or multiple ones, one per channel (alpha,beta,release). Do that before the installer runs so the file goes out with the app. Finally, 
-		have app (which must know the url for the appcast.xml) read a file and give it to Sparkle -->
+	-->
+		
+	<!-- Note: The issue of channels is worked out yet. For one thing, this current approach doesn't have some common appcast.xml that multiple TeamCity configurations can be updating.
+			Instead, each configuration is maintaining its own appcast.xml, and the installers that came from a config only know to check that one config. So RELEASE versions only
+			find out about new RELEASE versions from the same configuration, not about betas, not about new Releases from some new configuration.
+			
+		For another, a strict "Channel" approach is overly simplistic; you don't actually want to be stuck with a beta if a release just came out. What we'd want is more of a "tolerance"
+		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).  I think we will get something like
+		that with this approach; your "channel" is actually the TC configuration, so you can conceivably go from alpha to beta to release. -->
+	
 	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-                 DatePlaceholder='RELEASE_VERSION_NUMBER'
-                Regex='RELEASE_VERSION_NUMBER'
+                 DatePlaceholder='VERSION_NUMBER'
+                Regex='VERSION_NUMBER'
                  ReplacementText ="$(Version)" />
-    
+    	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
+                 DatePlaceholder='VERSION_NUMBER'
+                Regex='TEAMCITY_CONFIGURATION'
+                 ReplacementText ="$(BuildConfigurationID)" />
     <!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
                    DatePlaceholder='DEV_RELEASE_DATE'
                   Regex='DEV_VERSION_NUMBER'
@@ -87,8 +114,12 @@
     
     <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
      
-    <Message Text="Attempting rsync of DownloadPointers.htm" Importance="high"/>
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' /> 
+    <Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
+	
+	<!-- Note, at the end of this command line we're appending the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
+	-->
+	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers_$(Label).htm' /> 
   </Target>
   
 
