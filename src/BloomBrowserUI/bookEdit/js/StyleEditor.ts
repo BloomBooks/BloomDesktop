@@ -42,18 +42,34 @@ class StyleEditor {
 		this.ChangeSize(target, -2);
 	}
 
+	static MigratePreStyleBook(target: HTMLElement): string {
+		var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
+		// Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
+		var pageLineage = $(parentPage).attr('data-pagelineage');
+		if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
+			var styleName: string = "normal-style";
+			$(target).addClass(styleName);
+			return styleName;
+		}
+		return null;
+	}
+
 	static GetStyleNameForElement(target: HTMLElement): string {
-		var styleName = this.GetStyleClassFromElement(target);
+		var styleName: string = this.GetStyleClassFromElement(target);
 		if (!styleName) {
-			var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
-			// Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-			var pageLineage = $(parentPage).attr('data-pagelineage');
-			if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-				styleName = "normal-style";
-				$(target).addClass(styleName);
+			// The style name is probably on the parent translationGroup element
+			var parentGroup: HTMLDivElement = <HTMLDivElement><any> ($(target).parent(".bloom-translationGroup")[0]);
+			if (parentGroup) {
+				styleName = this.GetStyleClassFromElement(parentGroup);
+				if (styleName)
+					$(target).addClass(styleName); // add style to bloom-editable div
+				else {
+					return this.MigratePreStyleBook(target);
+				}
 			}
 			else {
-				return null;
+				// No .bloom-translationGroup? Unlikely...
+				return this.MigratePreStyleBook(target);
 			}
 		}
 		// For awhile between v1 and v2 we used 'default-style' in Basic Book
