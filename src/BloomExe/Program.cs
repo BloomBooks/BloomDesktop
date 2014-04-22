@@ -331,28 +331,29 @@ namespace Bloom
 		{
 			while(!_shuttingDown)
 			{
-				var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
-				pipeServer.WaitForConnection();
-				if (_shuttingDown)
-					return; // We got the spurious message that allows us to unblock and exit
-				string argument = null;
-				try
+				using (var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In))
 				{
-					int len = pipeServer.ReadByte()*256;
-					len += pipeServer.ReadByte();
-					var inBuffer = new byte[len];
-					pipeServer.Read(inBuffer, 0, len);
-					argument = Encoding.UTF8.GetString(inBuffer);
+					pipeServer.WaitForConnection();
+					if (_shuttingDown)
+						return; // We got the spurious message that allows us to unblock and exit
+					string argument = null;
+					try
+					{
+						int len = pipeServer.ReadByte() * 256;
+						len += pipeServer.ReadByte();
+						var inBuffer = new byte[len];
+						pipeServer.Read(inBuffer, 0, len);
+						argument = Encoding.UTF8.GetString(inBuffer);
+					}
+					catch (IOException e)
+					{
+						//Catch the IOException that is raised if the pipe is broken
+						// or disconnected.
+						// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
+						// was trying to do doesn't happen.
+					}
+					HandleBloomBookOrder(argument);
 				}
-				catch (IOException e)
-				{
-					//Catch the IOException that is raised if the pipe is broken
-					// or disconnected.
-					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
-					// was trying to do doesn't happen.
-				}
-				HandleBloomBookOrder(argument);
-				pipeServer.Dispose();
 			}
 		}
 
