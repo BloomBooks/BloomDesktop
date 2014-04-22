@@ -82,7 +82,11 @@ var StyleEditor = (function () {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return;
         rule.style.setProperty("font-size", sizeString + units, "important");
+
         // alert("New size rule: " + rule.cssText);
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        $('#formatButton').attr('title', toolTip);
     };
 
     StyleEditor.prototype.GetCalculatedFontSizeInPoints = function (target) {
@@ -105,6 +109,10 @@ var StyleEditor = (function () {
         var units = "pt";
         var sizeString = newSize.toString();
         rule.style.setProperty("font-size", sizeString + units, "important");
+
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        $('#formatButton').attr('title', toolTip);
     };
 
     StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
