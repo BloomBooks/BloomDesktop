@@ -201,6 +201,13 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\EditControlsModel.cs" />
+    <Compile Include="Edit\EditControlsView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\EditControlsView.Designer.cs">
+      <DependentUpon>EditControlsView.cs</DependentUpon>
+    </Compile>
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>

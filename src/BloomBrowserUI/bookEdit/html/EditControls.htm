@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Content of the EditControls view (far right pane in book edit)</title>
+    <link rel="stylesheet" href="../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css">
+    <script src="../../lib/jquery-1.10.1.js"></script>
+    <script src="../../lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script>
+        $(function() {
+            $( "#accordion" ).accordion();
+        });
+    </script>
+    <style>
+        body.rootClass {background-color:#404040; color: white; font-size:x-small}
+        td.section {margin-top:20px}
+        td.section {padding-top: 20px}
+        span.scroll-button {color: white; float: left}
+        span.stageLine {float: left}
+        td.acceptable {color: green}
+        td.unacceptable {color: red}
+        table.statistics {}
+        td.statistics-label {padding-right: 5px}
+        td.statistics-max {padding-right: 3px; text-align: center}
+        td.statistics-actual {padding-right: 3px; text-align: center}
+        div.ui-accordion {padding-left: 0px; padding-right: 0px}
+        div.ui-accordion-content {padding-left: 3px !important; padding-right: 0px !important}
+        span.setup {font-size: xx-small; margin-left: 10px}
+        div.section {padding-top: 20px;color:lightskyblue}
+        div,table.clear {clear: both}
+        div.tableHolder {overflow: auto; max-height: 300px}
+        img.sortIcon {height:12px; width:12px}
+        div.sortBlock {margin-left: 15px; display: inline;border:solid;border-color: white;border-width: 1px; padding-top: 1px}
+        div.rightBorder {border: solid; border-color: white; border-width: 0; border-right-width:1px}
+        img.sortIconSelected {background:grey}
+        div.sortItem {display:inline}
+        span.ofStage {font-size:xx-small}
+        span.disabledIcon {visibility:hidden;}
+    </style>
+</head>
+<body class="rootClass">
+    <div id="accordion">
+        <h3>Decodable Reader Tool</h3>
+        <div>
+            <div class="stageLine">
+                <span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decStage"></span>
+                <span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage"> of <span id="numberOfStages">2</span></span></span>
+                <span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incStage"></span>
+                <span class ="setup stageLine"><a href="" id="setUpStages">Set up Stages</a></span>
+            </div>
+            <div class="section clear">
+                Words in this stage
+                <div class="sortBlock">
+                    <div class="sortItem rightBorder"><img class="sortIcon sortIconSelected" src="AlphaSortIcon.png" alt="alphabetic" title="Sort alphabetically" id="sortAlphabetic"></div>
+                    <div class="sortItem rightBorder"><img class="sortIcon" src="LengthSortIcon.png" alt="length" title="Sort by word length" id="sortLength"></div>
+                    <div class="sortItem"><img class="sortIcon" src="FrequenceySortIcon.png" alt="frequency" title="Sort by frequency" id="sortFrequency"></div>
+                </div>
+            </div>
+            <div class="tableHolder">
+                <table class="wordList" id="wordList">
+
+                </table>
+            </div>
+        </div>
+
+        <h3>Leveled Reader Tool</h3>
+        <div>
+            <div class="stageLine">
+                <span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decLevel"></span>
+                <span class="stageLabel stageLine">Level <span id="levelNumber">1</span></span>
+                <span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel"></span>
+            </div>
+            <table class="statistics clear">
+                <tr><td class="section">Word counts</td></tr>
+                <tr><td>This Page</td></tr>
+                <tr>
+                    <td class="statistics-label"></td>
+                    <td class="statistics-max">Max</td>
+                    <td class="statistics-actual">Actual</td>
+                </tr>
+                <tr>
+                    <td class="statistics-label">per page</td>
+                    <td class="statistics-max" id="maxWordsPerPage">15</td>
+                    <td class="statistics-actual" id="actualWordsPerPage">13</td>
+                </tr>
+                <tr>
+                    <td class="statistics-label">per sentence</td>
+                    <td class="statistics-max" id="maxWordsPerSentence">5</td>
+                    <td class="statistics-actual" id="actualWordsPerSentence">7</td>
+                </tr>
+
+                <tr><td  class="section">This Book</td></tr>
+                <tr>
+                    <td class="statistics-label"></td>
+                    <td class="statistics-max">Max</td>
+                    <td class="statistics-actual">Actual</td>
+                </tr>
+                <tr>
+                    <td class="statistics-label">total</td>
+                    <td class="statistics-max" id="maxWordCount"></td>
+                    <td class="statistics-actual" id="actualWordCount">83</td>
+                </tr>
+                <td class="statistics-label">per page</td>
+                <td class="statistics-max" id="maxWordsPerPageBook">15</td>
+                <td class="statistics-actual" id="actualWordsPerPageBook">14</td>
+                <tr>
+                    <td class="statistics-label">unique</td>
+                    <td class="statistics-max" id="maxUniqueWords">20</td>
+                    <td class="statistics-actual" id="actualUniqueWords">22</td>
+                </tr>
+            </table>
+            <div class="section">Keep in mind</div>
+            <ul>
+                <li><a href="http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract">Predictability</a></li>
+                <li><a href="http://pracresources.pbworks.com/f/PatternAndSequence.pdf">Pattern and recognition</a></li>
+                <li><a href="http://www.rif.org/us/literacy-resources/articles/getting-the-most-out-of-picture-books.htm">Illustration support</a></li>
+                <li><a href="http://books.google.com/books?id=ugWzGuZSd60C&pg=PA40&lpg=PA40&dq=literacy+concept+load&source=bl&ots=yRKQYrx2PW&sig=hdP5gw6s1a8reC6pa70eb6OEuSM&hl=en&sa=X&ei=J0RVU8mvE8Kz2gXU_YFw&ved=0CC0Q6AEwAA#v=onepage&q=literacy%20concept%20load&f=false">Concept load</a></li>
+                <li><a href="http://books.google.com/books?id=BBTwHStpbigC&pg=PA58&dq=literacy+topic+familiarity&hl=en&sa=X&ei=X0RVU6vsKOLS2AW69YGIBw&ved=0CEIQ6AEwAg#v=onepage&q=literacy%20topic%20familiarity&f=false">Topic familiarity</a></li>
+            </ul>
+            <a href="http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/">How to make a great leveled reader</a>
+        </div>
+
+
+        <h3>Page Elements</h3>
+        <div>
+            <div class="tool">Text Block</div>
+            <div class="tool">Image</div>
+        </div>
+    </div>
+</body>
+</html>
