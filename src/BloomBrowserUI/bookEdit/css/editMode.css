@@ -53,7 +53,8 @@ To handling the mis-match.*/
 .ui-languageToolTip
 {
 	background-color: transparent !important;
-	color: #DFDFDF !important;
+    /* Same grey color as pageLabel */
+    color: rgba(0, 0, 0, 0.2) !important;
 	border-color: transparent !important;
 }
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
@@ -264,16 +265,6 @@ TEXTAREA.province
 {
 	background-color: #C30606 !important;
 }
-/*for use with qtip, showing what language each textarea is in
-.ui-tooltipbloomLang
-{
-}
-.ui-tooltipbloomLang .ui-tooltip-titlebar
-{
-background-color: red;
-color: #FFFFFF;
-border: 0 dashed transparent;
-}*/
 .fieldInfo-qtip .ui-tooltip-content
 {
 	border: 0 solid #A03C50;
@@ -488,13 +479,13 @@ UL.toolbox LI
 {
 	z-index: 20000;
 }
-/*Simulate the html5 placeholder attribute which is not available on divs*/
-/* The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
+/*Simulate the html5 placeholder attribute which is not available on divs
+The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
 https://bugzilla.mozilla.org/show_bug.cgi?id=997749, namely that when the user clicks in an element which
 has a :before rule applied and which already has focus, weird things happen and typing is suppressed.
 When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
 so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
-even when the div is focused (as long as it is empty). */
+even when the div is focused (as long as it is empty).*/
 [contentEditable=true]:empty:not(:focus):before
 {
 	content: attr(data-placeholder);
