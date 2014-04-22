@@ -38,18 +38,34 @@ var StyleEditor = (function () {
         this.ChangeSize(target, -2);
     };
 
+    StyleEditor.MigratePreStyleBook = function (target) {
+        var parentPage = ($(target).closest(".bloom-page")[0]);
+
+        // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
+        var pageLineage = $(parentPage).attr('data-pagelineage');
+        if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
+            var styleName = "normal-style";
+            $(target).addClass(styleName);
+            return styleName;
+        }
+        return null;
+    };
+
     StyleEditor.GetStyleNameForElement = function (target) {
         var styleName = this.GetStyleClassFromElement(target);
         if (!styleName) {
-            var parentPage = ($(target).closest(".bloom-page")[0]);
-
-            // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-            var pageLineage = $(parentPage).attr('data-pagelineage');
-            if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-                styleName = "normal-style";
-                $(target).addClass(styleName);
+            // The style name is probably on the parent translationGroup element
+            var parentGroup = ($(target).parent(".bloom-translationGroup")[0]);
+            if (parentGroup) {
+                styleName = this.GetStyleClassFromElement(parentGroup);
+                if (styleName)
+                    $(target).addClass(styleName); // add style to bloom-editable div
+                else {
+                    return this.MigratePreStyleBook(target);
+                }
             } else {
-                return null;
+                // No .bloom-translationGroup? Unlikely...
+                return this.MigratePreStyleBook(target);
             }
         }
 
