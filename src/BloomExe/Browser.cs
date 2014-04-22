@@ -543,20 +543,28 @@ namespace Bloom
 
 				if (userModifiedStyleSheet != null)
 				{
-					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
-					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
-					 * rules don't show up inside of it. So
-					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
-					 */
-					var styles = new StringBuilder();
-					styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-					foreach (var cssRule in userModifiedStyleSheet.CssRules)
+					try
 					{
-						styles.AppendLine(cssRule.CssText);
+						/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+						 * rules don't show up inside of it. So
+						 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+						 */
+						var styles = new StringBuilder();
+						styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+						foreach (var cssRule in userModifiedStyleSheet.CssRules)
+						{
+							styles.AppendLine(cssRule.CssText);
+						}
+						styles.AppendLine("</style>");
+						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
+						_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 					}
-					styles.AppendLine("</style>");
-					Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
-					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+					catch (COMException)
+					{
+						// Trying to access the CssRules might throw an exception if there are
+						// no rules. If so, just ignore.
+					}
 				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen 
@@ -572,11 +580,11 @@ namespace Bloom
 			}
 			catch(Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (invalid incoming html).\r\n\r\n+{0}", e);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (invalid incoming html).{1}{1}+{0}",
+					e, Environment.NewLine);
 				return;
 			}
-
-			
 
 			try
 			{ 
@@ -585,7 +593,9 @@ namespace Bloom
 			catch (Exception e)
 			{
 				var exceptionWithHtmlContents = new Exception(content);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (validating page).\r\n\r\n+{0}", e.Message);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
+					e.Message, Environment.NewLine);
 			}
 
 		}
