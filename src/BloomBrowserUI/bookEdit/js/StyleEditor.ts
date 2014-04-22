@@ -87,6 +87,9 @@ class StyleEditor {
 			return; // too small, quietly don't do it!
 		rule.style.setProperty("font-size", sizeString + units, "important");
 		// alert("New size rule: " + rule.cssText);
+		// Now update tooltip
+		var toolTip = this.GetToolTip(target, styleName);
+		$('#formatButton').attr('title', toolTip);
 	}
 
 	GetCalculatedFontSizeInPoints(target: HTMLElement): number {
@@ -109,6 +112,9 @@ class StyleEditor {
 		var units = "pt";
 		var sizeString: string = newSize.toString();
 		rule.style.setProperty("font-size", sizeString + units, "important");
+		// Now update tooltip
+		var toolTip = this.GetToolTip(target, styleName);
+		$('#formatButton').attr('title', toolTip);
 	}
 
 	GetOrCreateUserModifiedStyleSheet(): StyleSheet {
