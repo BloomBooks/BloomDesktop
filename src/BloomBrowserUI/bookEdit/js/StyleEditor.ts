@@ -5,6 +5,7 @@ class StyleEditor {
 
 	private _previousBox: Element;
 	private _supportFilesRoot: string;
+	private MIN_FONT_SIZE: number = 7;
 
 	constructor(supportFilesRoot: string) {
 		this._supportFilesRoot = supportFilesRoot;
@@ -77,15 +78,20 @@ class StyleEditor {
 		var styleName = StyleEditor.GetStyleNameForElement(target);
 		if (!styleName)
 			return;
+		var fontSize = this.GetCalculatedFontSizeInPoints(target);
 		var langAttrValue = StyleEditor.GetLangValueOrNull(target);
 		var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
-		var sizeString: string = (<any>rule).style.fontSize;
-		if (!sizeString)
-			sizeString = $(target).css("font-size");
-		var units = sizeString.substr(sizeString.length - 2, 2);
-		sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
+		var units = 'pt';
+		var sizeString = (fontSize + change).toString();
+		if (parseInt(sizeString) < this.MIN_FONT_SIZE)
+			return; // too small, quietly don't do it!
 		rule.style.setProperty("font-size", sizeString + units, "important");
 		// alert("New size rule: " + rule.cssText);
+	}
+
+	GetCalculatedFontSizeInPoints(target: HTMLElement): number {
+		var sizeInPx = $(target).css('font-size');
+		return this.ConvertPxToPt(parseInt(sizeInPx));
 	}
 
 	ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
@@ -94,7 +100,7 @@ class StyleEditor {
 			alert('ChangeSizeAbsolute called on an element with invalid style class.');
 			return;
 		}
-		if (newSize < 6) { // newSize is expected to come from a combobox entry by the user someday
+		if (newSize < this.MIN_FONT_SIZE) { // newSize is expected to come from a combobox entry by the user someday
 			alert('ChangeSizeAbsolute called with too small a point size.');
 			return;
 		}
@@ -150,7 +156,7 @@ class StyleEditor {
 		var ratio = 1000/tempDiv.clientWidth;
 		document.body.removeChild(tempDiv);
 		tempDiv = null;
-		return pxSize*ratio;
+		return Math.round(pxSize*ratio);
 	}
 
 	GetToolTip(targetBox: HTMLElement, styleName: string): string {
@@ -158,7 +164,7 @@ class StyleEditor {
 		var box = $(targetBox);
 		var sizeString = box.css('font-size'); // always returns computed size in pixels
 		var pxSize = parseInt(sizeString); // strip off units and parse
-		var ptSize = Math.round(this.ConvertPxToPt(pxSize));
+		var ptSize = this.ConvertPxToPt(pxSize);
 		var lang = box.attr('lang');
 		return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
 	}
