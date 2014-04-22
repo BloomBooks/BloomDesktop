@@ -2,6 +2,7 @@
 /// <reference path="toolbar/toolbar.d.ts"/>
 var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
+        this.MIN_FONT_SIZE = 7;
         this._supportFilesRoot = supportFilesRoot;
 
         var sheet = this.GetOrCreateUserModifiedStyleSheet();
@@ -73,15 +74,20 @@ var StyleEditor = (function () {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
+        var fontSize = this.GetCalculatedFontSizeInPoints(target);
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
         var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
-        var sizeString = rule.style.fontSize;
-        if (!sizeString)
-            sizeString = $(target).css("font-size");
-        var units = sizeString.substr(sizeString.length - 2, 2);
-        sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
+        var units = 'pt';
+        var sizeString = (fontSize + change).toString();
+        if (parseInt(sizeString) < this.MIN_FONT_SIZE)
+            return;
         rule.style.setProperty("font-size", sizeString + units, "important");
         // alert("New size rule: " + rule.cssText);
+    };
+
+    StyleEditor.prototype.GetCalculatedFontSizeInPoints = function (target) {
+        var sizeInPx = $(target).css('font-size');
+        return this.ConvertPxToPt(parseInt(sizeInPx));
     };
 
     StyleEditor.prototype.ChangeSizeAbsolute = function (target, newSize) {
@@ -90,7 +96,7 @@ var StyleEditor = (function () {
             alert('ChangeSizeAbsolute called on an element with invalid style class.');
             return;
         }
-        if (newSize < 6) {
+        if (newSize < this.MIN_FONT_SIZE) {
             alert('ChangeSizeAbsolute called with too small a point size.');
             return;
         }
@@ -145,7 +151,7 @@ var StyleEditor = (function () {
         var ratio = 1000 / tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         tempDiv = null;
-        return pxSize * ratio;
+        return Math.round(pxSize * ratio);
     };
 
     StyleEditor.prototype.GetToolTip = function (targetBox, styleName) {
@@ -153,7 +159,7 @@ var StyleEditor = (function () {
         var box = $(targetBox);
         var sizeString = box.css('font-size');
         var pxSize = parseInt(sizeString);
-        var ptSize = Math.round(this.ConvertPxToPt(pxSize));
+        var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
         return "Changes the text size for all boxes carrying the style \'" + styleName + "\' and language \'" + lang + "\'.\nCurrent size is " + ptSize + "pt.";
     };
