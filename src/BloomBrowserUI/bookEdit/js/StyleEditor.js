@@ -86,7 +86,7 @@ var StyleEditor = (function () {
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        $('#formatButton').attr('title', toolTip);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
     StyleEditor.prototype.GetCalculatedFontSizeInPoints = function (target) {
@@ -112,7 +112,7 @@ var StyleEditor = (function () {
 
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        $('#formatButton').attr('title', toolTip);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
     StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
@@ -172,6 +172,16 @@ var StyleEditor = (function () {
         return "Changes the text size for all boxes carrying the style \'" + styleName + "\' and language \'" + lang + "\'.\nCurrent size is " + ptSize + "pt.";
     };
 
+    StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
+        element.qtip({
+            content: toolTip,
+            show: {
+                event: 'click mouseenter'
+            },
+            hide: 'focusout'
+        });
+    };
+
     StyleEditor.prototype.AttachToBox = function (targetBox) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -194,7 +204,7 @@ var StyleEditor = (function () {
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        formatButton.attr('title', toolTip);
+        this.AddQtipToElement(formatButton, toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
             //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!

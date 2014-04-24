@@ -89,7 +89,7 @@ class StyleEditor {
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        $('#formatButton').attr('title', toolTip);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     }
 
     GetCalculatedFontSizeInPoints(target: HTMLElement): number {
@@ -114,7 +114,7 @@ class StyleEditor {
         rule.style.setProperty("font-size", sizeString + units, "important");
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        $('#formatButton').attr('title', toolTip);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     }
 
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -175,6 +175,15 @@ class StyleEditor {
         return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
     }
 
+    AddQtipToElement(element: JQuery, toolTip: string) {
+        element.qtip( {
+            content: toolTip,
+            show: {
+                event: 'click mouseenter'
+            },
+            hide: 'focusout'
+        });
+    }
 
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
@@ -201,7 +210,7 @@ class StyleEditor {
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        formatButton.attr('title', toolTip);
+        this.AddQtipToElement(formatButton, toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
             //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
@@ -218,7 +227,7 @@ class StyleEditor {
                 editor.MakeBigger(targetBox);
             }
         });
-      }
+    }
 
     static CleanupElement(element) {
         //NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent
