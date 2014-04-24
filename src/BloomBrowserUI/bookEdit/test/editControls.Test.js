@@ -4,8 +4,18 @@ describe("Bloom Edit Controls tests", function() {
     api.addStageWithWords("A", "bob fob");
     api.addStageWithWords("3", "big wig fig rig");
 
-    api.addLevel(new Level("D"));
-    api.addLevel(new Level("E"));
+    var levelD = new Level("D");
+    levelD.maxWordsPerBook = 17;
+    levelD.maxWordsPerSentence = 3;
+    levelD.maxUniqueWordsPerBook = 10;
+    levelD.maxWordsPerPage = 4;
+    api.addLevel(levelD);
+    var levelE = new Level("E");
+    // maxWordsPerBook is deliberately left at default, 0.
+    levelE.maxWordsPerSentence = 5;
+    levelE.maxUniqueWordsPerBook = 12;
+    levelE.maxWordsPerPage = 6;
+    api.addLevel(levelE);
     api.addLevel(new Level("F"));
 
     var model;
@@ -235,5 +245,25 @@ describe("Bloom Edit Controls tests", function() {
     it ("updates stage label on init", function() {
         model.postNavigationInit();
         expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1A");
+    });
+
+    it("sets level max values on init", function() {
+        model.postNavigationInit();
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "4");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "4");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "17");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "3");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "10");
+        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("");
+    });
+
+    it("updates max values when level changes", function() {
+        model.incrementLevel();
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "6");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
+        expect(model.updateElementContent).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "5");
+        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "12");
+        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("disabledLimit");
     });
 });
