@@ -50,6 +50,7 @@ EditControlsModel.prototype.setLevelNumber = function(val) {
     this.levelNumber = val;
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
     this.enableLevelButtons();
+    this.updateLevelLimits();
 };
 
 EditControlsModel.prototype.sortByLength = function() {
@@ -89,6 +90,7 @@ EditControlsModel.prototype.postNavigationInit = function() {
     this.updateStageLabel();
     this.enableStageButtons();
     this.enableLevelButtons();
+    this.updateLevelLimits();
 };
 
 EditControlsModel.prototype.updateNumberOfStages = function() {
@@ -111,7 +113,7 @@ EditControlsModel.prototype.updateDisabledStatus = function(eltId, isDisabled) {
 EditControlsModel.prototype.setPresenceOfClass = function(eltId, isWanted, className) {
     var old = this.getElementAttribute(eltId, "class");
     if (isWanted && old.indexOf(className) < 0) {
-        this.setElementAttribute(eltId, "class", old + " " + className);
+        this.setElementAttribute(eltId, "class", old + (old.length ? " " : "") + className);
     }
     else if (!isWanted && old.indexOf(className) >= 0) {
         this.setElementAttribute(eltId, "class", old.replace(className, "").replace("  ", " ").trim());
@@ -121,6 +123,27 @@ EditControlsModel.prototype.setPresenceOfClass = function(eltId, isWanted, class
 EditControlsModel.prototype.enableLevelButtons = function() {
     this.updateDisabledStatus("decLevel", this.levelNumber <= 1);
     this.updateDisabledStatus("incLevel", this.levelNumber >= this.synphony.getLevels().length);
+};
+
+EditControlsModel.prototype.updateLevelLimits = function() {
+    var level = this.synphony.getLevels()[this.levelNumber - 1];
+    this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
+    this.updateLevelLimit("maxWordsPerPageBook", level.getMaxWordsPerPage());
+    this.updateLevelLimit("maxWordsPerSentence", level.getMaxWordsPerSentence());
+    this.updateLevelLimit("maxWordsPerBook", level.getMaxWordsPerBook());
+    this.updateLevelLimit("maxUniqueWordsPerBook", level.getMaxUniqueWordsPerBook());
+};
+
+EditControlsModel.prototype.updateLevelLimit = function(id, limit) {
+    if (limit != 0) {
+        this.updateElementContent(id, limit.toString());
+    }
+    this.updateDisabledLimit(id, limit == 0);
+};
+
+var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
+EditControlsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
+    this.setPresenceOfClass(eltId, isDisabled, disabledLimitClass);
 };
 
 EditControlsModel.prototype.updateWordList = function() {
@@ -238,10 +261,10 @@ if (typeof($) == "function") {
     synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
     synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
     synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
-    synphony.addLevel(new Level("1"));
-    synphony.addLevel(new Level("2"));
-    synphony.addLevel(new Level("3"));
-    synphony.addLevel(new Level("4"));
+    synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
+    synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
+    synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
+    synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     model.postNavigationInit();
 }
 else {
