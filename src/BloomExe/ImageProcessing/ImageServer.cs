@@ -42,36 +42,45 @@ namespace Bloom.ImageProcessing
 			_stop = new ManualResetEvent(false);
 		}
 
-		public void StartWithSetupIfNeeded()
+		private bool StartWithExceptionHandling(out Exception error)
 		{
-			Exception error=null;
-
-			bool didStart = false;
+			error = null;
 			try
 			{
-				didStart = TryStart();
+				return TryStart();
 			}
 			catch (Exception e)
 			{
 				error = e;
+				return false;
 			}
+		}
+
+		public void StartWithSetupIfNeeded()
+		{
+			Exception error = null;
+
+			bool didStart = StartWithExceptionHandling(out error);
 			if (didStart)
 				return;
 
-			AddUrlAccessControlEntry();
-			try
+			// REVIEW Linux: do we need something similar on Linux?
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
-				didStart = TryStart();
-			}
-			catch (Exception e)
-			{
-				error = e;
+				AddUrlAccessControlEntry();
+				didStart = StartWithExceptionHandling(out error);
 			}
 
 			if(!didStart)
 			{
 				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
-				ErrorReport.NotifyUserOfProblem(e, "What Happened\r\nBloom could not start its image server, which keeps hi-res images from chewing up memory. You will still be able to work, but Bloom will take more memory, and hi-res images may not always show.\r\n\r\nWhat caused this?\r\nProbably Bloom does not know how to get your specific Windows operating system to allow its image server to run. \r\n\r\n What can you do?\r\nClick 'Details' and report the problem to the developers.");
+				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
+					"Bloom could not start its image server, which keeps hi-res images from chewing up memory. You will still be able to work, but Bloom will take more memory, and hi-res images may not always show.{0}{0}" +
+					"What caused this?{0}" +
+					"Probably Bloom does not know how to get your specific {1} operating system to allow its image server to run.{0}{0}" +
+					"What can you do?{0}" +
+					"Click 'Details' and report the problem to the developers.", Environment.NewLine,
+					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
 		}
 
@@ -119,13 +128,13 @@ namespace Bloom.ImageProcessing
 
 
 		/// <summary>
-		/// TODO: Note: doing this at runtim isn't as good as doing it in the installer, because we have no way of
+		/// TODO: Note: doing this at runtime isn't as good as doing it in the installer, because we have no way of
 		/// removing these entries on uninstall (but the installer does).
 		/// </summary>
 		private static void AddUrlAccessControlEntry()
 		{
 			MessageBox.Show(
-				"We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.\r\n\r\nAfter you click 'OK', you may be asked to authorize this step.",
+				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
 				"Almost there!", MessageBoxButtons.OK);
 
 			var startInfo = new System.Diagnostics.ProcessStartInfo();
