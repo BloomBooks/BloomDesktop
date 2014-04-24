@@ -207,7 +207,6 @@ var StyleEditor = (function () {
         this.AddQtipToElement(formatButton, toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
-            //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
             position: 'left',
             hideOnClick: false
         });
@@ -220,6 +219,7 @@ var StyleEditor = (function () {
             if (whichButton.id == "bigger") {
                 editor.MakeBigger(targetBox);
             }
+            formatButton.trigger('click'); // This re-displays the qtip with the new value.
         });
     };
 
