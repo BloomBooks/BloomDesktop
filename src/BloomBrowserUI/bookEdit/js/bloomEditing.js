@@ -86,7 +86,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
     var shouldShowAlways = true;
-    var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+    var hideEvents = shouldShowAlways ? null : 'focusout mouseleave';
 
     var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
     if (functionCall) {
@@ -94,12 +94,12 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
             return;
         shouldShowAlways = true;
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-        hideEvents = false;
+        hideEvents = false; // Don't specify a hide event...
     }
 
     if (onFocusOnly) {
         shouldShowAlways = false;
-        hideEvents = 'unfocus mouseleave';
+        hideEvents = 'focusout mouseleave';
     }
 
     whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
@@ -108,14 +108,14 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         content: whatToSay,
         position: pos,
         show: {
-            event: " focusin mouseenter",
+            event: 'focusin mouseenter',
             ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
         }
-       , tip: { corner: "left center" }
+       , tip: { corner: 'left center' }
        , hide: {
            event: hideEvents
        },
-        adjust: { method: "flip none" },
+        adjust: { method: 'flip none' },
         style: {
             classes: theClasses
         }
@@ -361,13 +361,14 @@ function MakeSourceTextDivForGroup(group) {
 
         //todo: really, this should detect some made-up style, so thatwe can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
-            showEvents = " focusin ";
-            hideEvents = ' focusout ';
+            showEvents = 'focusin';
+            hideEvents = 'focusout';
             shouldShowAlways = false;
         }
       $(this).qtip({
-          position: { at: 'right center',
-              my: 'left center',
+          position: {
+                my: 'left center',
+                at: 'right center',
               adjust: {
                   x: 10,
                   y: 0
@@ -385,8 +386,11 @@ function MakeSourceTextDivForGroup(group) {
               }
           },
           style: {
-              //doesn't work: tip:{ size: {height: 50, width:50}             },
-              //doesn't work: tip:{ size: {x: 50, y:50}             },
+                tip: {
+                    corner: true,
+                    width: 10,
+                    height: 10
+                },
               classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
           },
           hide: hideEvents
@@ -1039,7 +1043,7 @@ jQuery(document).ready(function () {
                 content: whatToSay,
                 position: pos,
                 show: {
-                    event: " focusin mouseenter"
+                    event: 'focusin mouseenter'
                 },
                 style: {
                     classes: theClasses
