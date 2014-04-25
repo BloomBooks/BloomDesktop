@@ -1,0 +1,10 @@
+# The "live" version of this file lives at bloom.palaso.org/downloads. To make a change to it, go to ftp://admin@palaso.org@ftp.palaso.org/bloom/htdocs/downloads/BloomInstaller.0.9.102.msi
+# This is a kind of dispatch table that allows us to control which version we recommend to people, based on what they are running now.
+# the format is min,max,url
+0.0.0,1.1.999, http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml
+# 1.2 was released just to SHRP
+1.2.0, 1.2.999,http://build.palaso.org/guestAuth/repository/download/bt370/.lastSuccessful/appcast.xml
+# 2.0 is now in beta
+2.0.0,2.0.999,http://build.palaso.org/guestAuth/repository/download/bt392/.lastSuccessful/appcast.xml
+# 3.0 is now in development
+3.0.0,3.0.999,http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml
