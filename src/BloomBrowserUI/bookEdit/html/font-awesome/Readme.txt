@@ -5,3 +5,5 @@ Since we're using them in very simple ways, I was able to delete a lot of other 
 
 The font is still a complete one. Since we're only using 4 characters from it, in principle it should be possible to make a smaller file.
 My first attempt (using fontello, http://fontello.com/) did not work, even though I attempted to give the characters the same names and code points as font-awesome expects, and even gave the font file the same name. I just got boxes.
+
+Note that this folder MUST be located within the folder that contains EditControls.htm. FireFox 'same origin' rules prevent loading the font otherwise, and you get boxes instead of icons (with no obvious explanation).
