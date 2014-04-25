@@ -335,6 +335,7 @@
     <Compile Include="ImageProcessing\ImageServer.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BloomLinkArgs.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />

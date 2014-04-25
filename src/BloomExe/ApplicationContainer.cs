@@ -8,6 +8,7 @@ using System.Linq;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using NetSparkle;
+using Palaso.Reporting;
 
 
 namespace Bloom
@@ -33,12 +34,23 @@ namespace Bloom
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 				builder.Register<Sparkle>(c =>
-											  {
-												  var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
-												  s.CustomInstallerArguments = "/qb";
-												  s.DoLaunchAfterUpdate = false;
-												  return s;
-											  }).InstancePerLifetimeScope();
+				{
+					string url;
+					try
+					{
+						var updateTable = new UpdateVersionTable();
+						url = updateTable.GetAppcastUrl();
+					}
+					catch (Exception)
+					{
+						url = "";
+						Logger.WriteEvent("Could not retrieve UpdateVersionTable from the internet");
+					}
+					var s =new Sparkle(url,Resources.Bloom);
+					s.CustomInstallerArguments = "/qb";
+					s.DoLaunchAfterUpdate = false;
+					return s;
+				}).InstancePerLifetimeScope();
 
 				builder.Register(c => LocalizationManager).SingleInstance();
 				builder.Register(c => new OrderList()).SingleInstance();
