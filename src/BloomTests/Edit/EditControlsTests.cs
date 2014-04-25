@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Bloom.Collection;
 using Bloom.Edit;
 using Gecko;
 using NUnit.Framework;
@@ -44,6 +45,11 @@ namespace BloomTests.Edit
     public class ModelStub : EditControlsModel
     {
         public List<Tuple<string, string>> ElementsUpdated = new List<Tuple<string, string>>();
+
+        public ModelStub(CollectionSettings settings) : base(settings)
+        {
+        }
+
         internal override void UpdateElementContent(string id, string val)
         {
             ElementsUpdated.Add(Tuple.Create(id, val));
