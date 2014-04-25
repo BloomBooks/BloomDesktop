@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Collection;
 
 namespace Bloom.Edit
 {
@@ -11,8 +12,11 @@ namespace Bloom.Edit
 	{
 		public delegate EditControlsView Factory();//autofac uses this
 
-		public EditControlsModel()
+		private CollectionSettings _collectionSettings;
+
+		public EditControlsModel(CollectionSettings settings)
 		{
+			_collectionSettings = settings;
 			// Enhance JohnT: eventually we probably persist somewhere what stage or level they are at?
 
 		}
@@ -123,7 +127,32 @@ namespace Bloom.Edit
 
 		internal void PostNavigationInitialize()
 		{
-			// Nothing to do yet...
+			// Backslashes don't seem to make it through whatever encoding/decoding process happens between here and the JavaScript.
+			// Fortunately regular slashes are fine on both platforms.
+			var path = _collectionSettings.DecodableLevelPathName.Replace('\\', '/');
+#if DEBUG
+			var fakeIt = "true";
+#else
+			var fakeIt = "false";
+#endif
+			RunJavaScript("initialize(\"" + path + "\", " + fakeIt + ")");
+		}
+
+		public void RunJavaScript(string script)
+		{
+			//NB: someday, look at jsdIDebuggerService, which has an Eval
+
+			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,
+
+
+			View.Browser.Navigate("javascript:void(" + script + ")");
+			// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
+			//var filter = new TestMessageFilter();
+			//Application.AddMessageFilter(filter);
+			Application.DoEvents();
+
+
+			//NB: Navigating and Navigated events are never raised. I'm going under the assumption for now that the script blocks
 		}
 	}
 }

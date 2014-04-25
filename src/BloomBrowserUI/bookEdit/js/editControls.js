@@ -213,6 +213,10 @@ EditControlsModel.prototype.setSynphony = function(val) {
     this.synphony = val;
 };
 
+EditControlsModel.prototype.getSynphony = function() {
+    return this.synphony;
+};
+
 // This group of functions uses jquery (if loaded) to update the real model.
 // Unit testing should spy or otherwise replace these functions, since $ will not be usefully defined.
 EditControlsModel.prototype.updateElementContent = function(id, val) {
@@ -258,14 +262,7 @@ if (typeof($) == "function") {
     // Todo PhilH: replace this fake synphony with something real.
     var synphony = new SynphonyApi();
     model.setSynphony(synphony);
-    synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
-    synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
-    synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
-    synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
-    synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
-    synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
-    synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
-    model.postNavigationInit();
+    initialize("", true);
 }
 else {
     // running tests...or someone forgot to install jquery first
@@ -273,3 +270,22 @@ else {
         alert("you should have loaded jquery first or blocked this call with spyOn");
     }
 }
+
+// The function that the C# code calls to hook everything up.
+// pathname should be the standard file that stores the Synphony settings for the collection.
+// (Note that it may not exist.) For debugging and demo purposes we generate some fake data if fakeIt is true
+// and the attempt to load the file does not produce anything.
+function initialize(pathname, fakeIt) {
+    var synphony = model.getSynphony();
+    synphony.loadFile(pathname);
+    if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
+        synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
+        synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
+        synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
+        synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
+        synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
+        synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
+        synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
+    }
+    model.postNavigationInit();
+};
