@@ -14,7 +14,7 @@ mixin field-classOnChild(internalClass)
 mixin image-largePage
 	- requireZeroArguments('image', arguments);
 	.bloom-imageContainer(style="opacity: 1; overflow: hidden;")
-		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
 		block
 
 -var cca='Creative Commons Attribution'
@@ -51,7 +51,7 @@ html
 		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required')
 			.marginBox
 				+image-largePage
-				+field-classOnChild('calendarImageCaption-style').calendarBelowBigPictureText
+				+field-classOnChild('calendarPictureCaption-style').calendarBelowBigPictureText
 					label.placeholder some nice text for the month
 		.bloom-page.calendarMonthBottom.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#553165c2-be6c-4cf2-885e-d8f3159170fe(data-page='required')
 			.marginBox
