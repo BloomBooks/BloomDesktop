@@ -11,6 +11,7 @@
             $( "#accordion" ).accordion();
         });
     </script>
+    <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
     <style>
         body.rootClass {background-color:#404040; color: white; font-size:x-small}
         td.section {margin-top:20px}
@@ -29,11 +30,10 @@
         div.section {padding-top: 20px;color:lightskyblue}
         div,table.clear {clear: both}
         div.tableHolder {overflow: auto; max-height: 300px}
-        img.sortIcon {height:12px; width:12px}
-        div.sortBlock {margin-left: 15px; display: inline;border:solid;border-color: white;border-width: 1px; padding-top: 1px}
+        div.sortBlock {margin-left: 15px; display: inline-block;border:solid;border-color: white;border-width: 1px}
         div.rightBorder {border: solid; border-color: white; border-width: 0; border-right-width:1px}
-        img.sortIconSelected {background:grey}
-        div.sortItem {display:inline}
+        div.sortIconSelected {background:grey}
+        div.sortItem {display:inline-block;color:white; padding: 2px 3px}
         span.ofStage {font-size:xx-small}
         span.disabledIcon {visibility:hidden;}
         td.disabledLimit {visibility:hidden;}
@@ -52,9 +52,8 @@
             <div class="section clear">
                 Words in this stage
                 <div class="sortBlock">
-                    <div class="sortItem rightBorder"><img class="sortIcon sortIconSelected" src="AlphaSortIcon.png" alt="alphabetic" title="Sort alphabetically" id="sortAlphabetic"></div>
-                    <div class="sortItem rightBorder"><img class="sortIcon" src="LengthSortIcon.png" alt="length" title="Sort by word length" id="sortLength"></div>
-                    <div class="sortItem"><img class="sortIcon" src="FrequenceySortIcon.png" alt="frequency" title="Sort by frequency" id="sortFrequency"></div>
+                    <!--careful! these divs are inline...space between them is significant-->
+                    <div class="sortItem rightBorder sortIconSelected" id="sortAlphabetic"><i class="fa fa-sort-alpha-asc" title="Sort alphabetically"></i></div><div class="sortItem rightBorder" id="sortLength"><i class="fa fa-sort-amount-asc" title="Sort by word length"></i></div><div class="sortItem" id="sortFrequency"><i class="fa fa-long-arrow-up" title="Sort by frequency" ></i><i class="fa fa-facebook" title="Sort by frequency" id="sortFrequency2"></i></div>
                 </div>
             </div>
             <div class="tableHolder">
