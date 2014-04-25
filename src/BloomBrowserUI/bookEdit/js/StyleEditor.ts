@@ -181,7 +181,10 @@ class StyleEditor {
             show: {
                 event: 'click mouseenter'
             },
-            hide: 'focusout'
+            hide: {
+                event: 'unfocus', // qtip-only event that hides tooltip when anything other than the tooltip is clicked
+                inactive: 3000, // hides if tooltip is inactive for 3sec
+            }
         });
     }
 

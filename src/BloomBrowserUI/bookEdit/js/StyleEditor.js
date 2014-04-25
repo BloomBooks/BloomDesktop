@@ -178,7 +178,10 @@ var StyleEditor = (function () {
             show: {
                 event: 'click mouseenter'
             },
-            hide: 'focusout'
+            hide: {
+                event: 'unfocus',
+                inactive: 3000
+            }
         });
     };
 
