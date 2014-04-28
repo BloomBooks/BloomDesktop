@@ -103,7 +103,7 @@ namespace Bloom.CollectionTab
 					try
 				    {
 						_model.ExportInDesignXml(dlg.FileName);
-#if !MONO
+#if !__MonoCS__
 						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
 #endif
 						Analytics.Track("Exported XML For InDesign");

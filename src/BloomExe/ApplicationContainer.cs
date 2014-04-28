@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
@@ -7,7 +7,6 @@ using Bloom.ToPalaso;
 using System.Linq;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using NetSparkle;
 
 
 namespace Bloom
@@ -32,13 +31,6 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
-                builder.Register<Sparkle>(c =>
-                                              {
-                                                  var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
-	                                              s.CustomInstallerArguments = "/qb";
-	                                              s.DoLaunchAfterUpdate = false;
-                                                  return s;
-                                              }).InstancePerLifetimeScope();
                 
                 builder.Register(c => LocalizationManager).SingleInstance();
 				builder.Register(c => new OrderList()).SingleInstance();
@@ -61,21 +53,16 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-		    public Sparkle ApplicationUpdator
-		    {
-                get { return _container.Resolve<Sparkle>(); }
-		    }
-
-            public LocalizationManager LocalizationManager;
+			public LocalizationManager LocalizationManager;
 
 			public OrderList OrderList
 			{
 				get { return _container.Resolve<OrderList>(); }
 			}
 
-		    public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
+			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
-		    public void Dispose()
+			public void Dispose()
 			{
 				_container.Dispose();
 				_container = null;

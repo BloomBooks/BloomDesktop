@@ -55,7 +55,7 @@ namespace Bloom.Edit
         /// <param name="val"></param>
         internal virtual void UpdateElementContent(string id, string val)
         {
-            View.Browser.DomDocument.GetElementById(id).InnerHtml = val;
+            //View.Browser.DomDocument.GetElementById(id).InnerHtml = val;
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Bloom.Edit
         /// <returns></returns>
         internal virtual string GetElementContent(string id)
         {
-            return View.Browser.DomDocument.GetElementById(id).InnerHtml;
+            return ""; //View.Browser.DomDocument.GetElementById(id).InnerHtml;
         }
 
         /// <summary>

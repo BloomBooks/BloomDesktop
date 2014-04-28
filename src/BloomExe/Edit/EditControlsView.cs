@@ -80,9 +80,9 @@ namespace Bloom.Edit
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="geckoDomEventArgs"></param>
-        private void BrowserOnDomClick(object sender, GeckoDomEventArgs geckoDomEventArgs)
+        private void BrowserOnDomClick(object sender, DomEventArgs geckoDomEventArgs)
         {
-            var element = geckoDomEventArgs.Target;
+            var element = geckoDomEventArgs.Target.CastToGeckoElement();
             var idAttr = element.Attributes["id"];
             if (idAttr != null)
             {

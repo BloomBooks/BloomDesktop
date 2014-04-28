@@ -1,199 +1,187 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
+		<RootDir>$(MSBuildProjectDirectory)/..</RootDir>
 		<Solution>Bloom VS2010.sln</Solution>
 		<ApplicationName>Bloom</ApplicationName>
 		<Configuration>Release</Configuration>
+		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.1.1</BUILD_NUMBER>
+		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
+		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="CpuArchitecture" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
-	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-  <UsingTask AssemblyFile="C:\Program Files (x86)\MSBuild\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll" TaskName="MsBuild.Community.Tasks.WebDownload" />
+	<UsingTask TaskName="DownloadFile" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 
-  <Target Name="VersionNumbers">
-    <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
+	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets" />
 
-    <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
-      <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
-    </Split>
+	<Target Name="Init">
+		<CpuArchitecture>
+			<Output TaskParameter="Value" PropertyName="arch"/>
+		</CpuArchitecture>
+	</Target>
 
-    <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
+	<Target Name="VersionNumbers">
+		<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high" />
+		<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
+			<Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
+		</Split>
+		<Message Text="BuildCounter: $(BuildCounter)" Importance="high" />
+		<!-- Note, after some thought, we've decided this is the best place to keep the
+			version number (not on TeamCity, not in the assemblies). -->
+		<CreateProperty Value="2.0.$(BuildCounter)">
+			<Output PropertyName="Version" TaskParameter="Value" />
+		</CreateProperty>
+		<Message Text="Version: $(Version)" Importance="high" />
+	</Target>
 
-    <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-    <CreateProperty Value="2.0.$(BuildCounter)">
-      <Output PropertyName="Version" TaskParameter="Value"/>
-    </CreateProperty>
-   
-    <Message Text="Version: $(Version)" Importance="high"/>
-  </Target>
+	<ItemGroup>
+		<AssemblyInfoFiles Include="$(RootDir)/src/**/AssemblyInfo.cs" />
+	</ItemGroup>
+	<Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
+		<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+	</Target>
 
-  <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
-    <ItemGroup>
-      <AssemblyInfoFiles Include="$(RootDir)/src/**/assemblyinfo.cs"/>
-    </ItemGroup>
-    <StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
-  </Target>
-  
-  <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
-    
-    <MSBuild Projects="$(RootDir)/$(Solution)"
-             Targets="Rebuild"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
+	<Target Name="Build" DependsOnTargets="SetAssemblyVersion; Init">
+		<MSBuild Projects="$(RootDir)/$(Solution)" Targets="Rebuild" Properties="Configuration=$(Configuration)" />
+	</Target>
 
-
-	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build; DownloadDistFilesNeedForTests;">
+	<Target Name="Test" DependsOnTargets="GetDependencies; Build;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
-		<NUnitTeamCity
-			Assemblies="@(TestAssemblies)" 
-			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-2.5.5" />
+		<NUnit Assemblies="@(TestAssemblies)"
+			ToolPath="$(RootDir)/packages/NUnit.Runners.2.6.3/tools"
+			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			Force32Bit="$(useNUnit-x86)"
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
 	</Target>
 
-  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
-
-    <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-    <Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
-           DestinationFolder ="$(RootDir)\output\installer"/>
-        <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
-           DestinationFolder ="$(RootDir)\output\installer"/>
-		   
-    <!-- replace some parts of the file with the version number & date -->
-    
-    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-                 DatePlaceholder='RELEASE_RELEASE_DATE'
-                Regex='RELEASE_VERSION_NUMBER'
-                 ReplacementText ="$(Version)" />
-				  
-	<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml   (note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
-		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  ).
-		Enhance: Have this build script generate a path containing that url (or multiple ones, one per channel (alpha,beta,release). Do that before the installer runs so the file goes out with the app. Finally, 
-		have app (which must know the url for the appcast.xml) read a file and give it to Sparkle -->
-	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-                 DatePlaceholder='RELEASE_VERSION_NUMBER'
-                Regex='RELEASE_VERSION_NUMBER'
-                 ReplacementText ="$(Version)" />
-    
-    <!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-                   DatePlaceholder='DEV_RELEASE_DATE'
-                  Regex='DEV_VERSION_NUMBER'
-                   ReplacementText ="$(Version)" />-->
-    
-    <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
-     
-    <Message Text="Attempting rsync of DownloadPointers.htm" Importance="high"/>
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' /> 
-  </Target>
-  
-
-
-  <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
-    <Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
-
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' /> 
-
-    <CallTarget Targets ='MakeDownloadPointers'/>
-  </Target>
-
-   
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; GetWkhtmlToXIntoLib; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
-
- 
-    <!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
-		changing of the script, but I haven't figured that out. -->
-    
-    <FileUpdate File="$(RootDir)\src\Installer\Installer.wxs" Regex='Property_ProductVersion = ".*"'
-                ReplacementText ="Property_ProductVersion = &quot;$(Version)&quot;" />
-
-
-    <Message Text="Making Installer Version: $(Version)" Importance="high"  />
-
-    <MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
-
-    <!-- remove an existing one with the same name, if necessary -->
-    <Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
-
-    <Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
-          DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
-          />
-
-    <!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
-    <Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
-
-  </Target>
-
-  
-  <Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles">
-    <MakeDir Directories ="$(RootDir)\output\installer" ContinueOnError ="true"/>
-    
-    <MakeWixForDirTree
-                DirectoryReferenceId="ProgramDir"
-            		ComponentGroupId="DistFiles"
-				        RootDirectory="$(RootDir)\DistFiles"
-                OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
-                MatchRegExPattern=".*"
-				>
-      <!--what does this do?-->
-      <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-    </MakeWixForDirTree>
-
-    <!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
-    <MakeWixForDirTree
-               DirectoryReferenceId="BrowserUIDir"
-               ComponentGroupId="BrowserUIFiles"
-               RootDirectory="$(RootDir)\src\BloomBrowserUI"
-               OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
-               IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
-               MatchRegExPattern=".*"
-				>
-    </MakeWixForDirTree>
-    
-  </Target>
-
-  	<Target Name="DownloadDistFilesNeedForTests">
+	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
+		Condition="'$(OS)'=='Windows_NT'">
+		<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
+		<Copy SourceFiles="$(RootDir)\src\Installer\DownloadPointers.htm"
+			DestinationFolder="$(RootDir)\output\installer" />
+		<Copy SourceFiles="$(RootDir)\src\Installer\appcast.xml"
+			DestinationFolder="$(RootDir)\output\installer" />
+		<!-- replace some parts of the file with the version number & date -->
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+			DatePlaceholder="RELEASE_RELEASE_DATE" Regex="RELEASE_VERSION_NUMBER"
+			ReplacementText="$(Version)" />
+		<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml
+			(note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
+			but I haven't seen how to get at that value programmatically. TC docs just tell you
+			to look at the URL in the browser :-/  ).
+			Enhance: Have this build script generate a path containing that url (or multiple ones,
+			one per channel (alpha,beta,release). Do that before the installer runs so the file
+			goes out with the app. Finally, have app (which must know the url for the
+			appcast.xml) read a file and give it to Sparkle -->
+		<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
+			DatePlaceholder="RELEASE_VERSION_NUMBER" Regex="RELEASE_VERSION_NUMBER"
+			ReplacementText="$(Version)" />
+		<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
+		<Message Text="Attempting rsync of DownloadPointers.htm" Importance="high" />
+		<Exec Command="&quot;c:\program files\cwRsync\bin\rsync.exe&quot; -vz -p --chmod=ug+rw,o+r -e&quot;\&quot;c:\program files\cwRsync\bin\ssh\&quot; -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob&quot;  &quot;../output/installer/DownloadPointers.htm&quot; bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm" />
 	</Target>
-	
+
+	<Target Name="Upload" DependsOnTargets="VersionNumbers; Installer"
+		Condition="'$(OS)'=='Windows_NT'">
+		<Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high" />
+		<Exec Command="&quot;c:\program files\cwRsync\bin\rsync.exe&quot; -vz -p --chmod=ug+rw,o+r -e&quot;\&quot;c:\program files\cwRsync\bin\ssh\&quot; -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob&quot;  &quot;../output/installer/BloomInstaller.$(Version).msi&quot; bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi" />
+		<CallTarget Targets="MakeDownloadPointers" />
+	</Target>
+
+	<Target Name="Installer"
+		DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build"
+		Condition="'$(OS)'=='Windows_NT'">
+		<!-- set the version number in the installer configuration program.  Perhaps there's a
+			way to just send in the variables rather than this brute-force
+			changing of the script, but I haven't figured that out. -->
+		<FileUpdate File="$(RootDir)\src\Installer\Installer.wxs"
+			Regex="Property_ProductVersion = &quot;.*&quot;"
+			ReplacementText="Property_ProductVersion = &quot;$(Version)&quot;" />
+		<Message Text="Making Installer Version: $(Version)" Importance="high" />
+		<MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj" />
+		<!-- remove an existing one with the same name, if necessary -->
+		<Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
+			TreatErrorsAsWarnings="false" />
+		<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
+			DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" />
+		<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
+		<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
+	</Target>
+
+	<Target Name="MakeWixForDistFiles" Condition="'$(OS)'=='Windows_NT'">
+		<MakeDir Directories="$(RootDir)\output\installer" ContinueOnError="true" />
+		<MakeWixForDirTree DirectoryReferenceId="ProgramDir" ComponentGroupId="DistFiles"
+			RootDirectory="$(RootDir)\DistFiles"
+			OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
+			MatchRegExPattern=".*">
+				<!--what does this do?-->
+				<Output TaskParameter="OutputFilePath" ItemName="Compile" />
+		</MakeWixForDirTree>
+		<!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
+		<MakeWixForDirTree DirectoryReferenceId="BrowserUIDir" ComponentGroupId="BrowserUIFiles"
+			RootDirectory="$(RootDir)\src\BloomBrowserUI"
+			OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
+			IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
+			MatchRegExPattern=".*">
+		</MakeWixForDirTree>
+	</Target>
+
+	<Target Name="MakeWixForXulRunner" DependsOnTargets="GetXulRunnerIntoLib">
+		<MakeWixForDirTree DirectoryReferenceId="XulRunnerDir" ComponentGroupId="XulRunner" RootDirectory="..\lib\xulrunner" OutputFilePath="..\output\installer\GeneratedXulRunner.wxs" MatchRegExPattern=".*">
+			<!--what does this do?-->
+			<Output TaskParameter="OutputFilePath" ItemName="Compile" />
+		</MakeWixForDirTree>
+	</Target>
+
+	<Target Name="GetDependencies"
+		DependsOnTargets="GetWkthmlToPdfIntoLib;GetXulRunnerIntoLibWin;GetXulRunnerIntoLibLinux;DownloadDistFiles"/>
+
+	<Target Name="GetXulRunnerIntoLibWin" Condition="'$(OS)'=='Windows_NT'">
+		<Message Text="Downloading XulRunner..." Importance="high" />
+		<MakeDir Directories="$(RootDir)/Downloads"/>
+		<DownloadFile Address="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0b12/runtimes/xulrunner-14.0b12.en-US.win32.zip"
+			LocalFileName="$(RootDir)/Downloads/xulrunner-14.0b12.en-US.win32.zip"
+			Condition="!Exists('$(RootDir)/Downloads/xulrunner-14.0b12.en-US.win32.zip')"/>
+		<Unzip ZipFileName="$(RootDir)/Downloads/xulrunner-14.0b12.en-US.win32.zip"
+			TargetDirectory="$(RootDir)/lib/"
+			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
+	</Target>
+
+	<Target Name="GetXulRunnerIntoLibLinux" DependsOnTargets="Init" Condition="'$(OS)'!='Windows_NT'">
+		<Message Text="Downloading XulRunner..." Importance="high" />
+		<MakeDir Directories="$(RootDir)/Downloads"/>
+		<DownloadFile Address="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0b12/runtimes/xulrunner-14.0b12.en-US.linux-$(arch).tar.bz2"
+			LocalFileName="$(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"
+			Condition="!Exists('$(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2')"/>
+		<Exec Command="tar xfj $(RootDir)/Downloads/xulrunner-14.0b12.tar.bz2"
+			WorkingDirectory="$(RootDir)/lib"
+			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
+	</Target>
+
+	<Target Name="GetWkthmlToPdfIntoLib" Condition="'$(OS)'=='Windows_NT'">
+		<RemoveDir Directories="$(RootDir)/DistFiles/wkhtmltopdf" />
+		<Unzip ZipFileName="$(RootDir)/lib/wkhtmltopdf-0.10.0_rc2.zip"
+			TargetDirectory="$(RootDir)/DistFiles/"/>
+	</Target>
+
 	<Target Name="DownloadDistFiles">
 		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
-		<!-- NB: some configurations on TeamCity may also get a version of this from 
+		<!-- NB: some configurations on TeamCity may also get a version of this from
 		the static dependencies configuration, for use with getDependencies.sh.
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
 		which is fine for developers, but not for our official builds.
 		-->
-		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<DownloadFile
+			Address="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1"
+			LocalFileName="$(RootDir)/DistFiles/Bloom.chm"/>
 	</Target>
-   
-  <Target Name="GetXulRunnerIntoLib">
-    <RemoveDir Directories="..\lib\xulrunner" />    
-    <!-- we expect this has only one element, named "xulrunner"-->
-        <Unzip ZipFileName="..\lib\xulrunner-11.0.en-US.win32.zip"
-           TargetDirectory="..\lib\"/>
-  </Target>
-
-  <Target Name="GetWkhtmlToXIntoLib">
-    <RemoveDir
-           Directories="..\lib\wkhtmltopdf" />
-    <Unzip ZipFileName="..\lib\wkhtmltopdf-0.10.0_rc2.zip"
-           TargetDirectory="..\lib\"/>
-  </Target>
-  
-  <Target Name="MakeWixForXulRunner" DependsOnTargets="GetXulRunnerIntoLib">
-    <MakeWixForDirTree
-                DirectoryReferenceId="XulRunnerDir"
-            		ComponentGroupId="XulRunner"
-				        RootDirectory="..\lib\xulrunner"
-                OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
-                MatchRegExPattern=".*"
-				>
-      <!--what does this do?-->
-      <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-    </MakeWixForDirTree>
-  </Target>
 </Project>

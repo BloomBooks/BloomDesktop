@@ -191,7 +191,7 @@ namespace BloomTests
 
         private XmlNode GetNode(string xpath)
         {
-#if MONO
+#if __MonoCS__
             // Currently the method XmlNodeExtensions.GetPrefixedPath doesn't allow for / in a literal string
             return NodeOrDom.SelectSingleNode(xpath);
 #else
