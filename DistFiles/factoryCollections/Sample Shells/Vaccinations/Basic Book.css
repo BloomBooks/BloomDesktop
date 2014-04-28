@@ -400,13 +400,11 @@ DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
 	left: 1px;
 	top: 365px;
 }
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-imageContainer
+DIV.imageInMiddle DIV.bloom-imageContainer
 {
-	/*+placement:anchor-top-left 31px 311px;*/
-	position: absolute !important;
-	left: 31px !important;
-	top: 311px !important;
-	height: 152px;
+	width: 100%;
+	height: 30%;
+	margin-top: 30px;
 }
 DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer
 {
@@ -474,12 +472,6 @@ DIV.imageWholePage DIV.bloom-imageContainer
 {
 	width: 100%;
 	height: 100%;
-}
-DIV.imageInMiddle DIV.bloom-imageContainer
-{
-	width: 100%;
-	height: 30%;
-	margin-top: 30px;
 }
 .textWholePage TEXTAREA
 {
