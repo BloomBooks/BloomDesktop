@@ -493,7 +493,7 @@ DIV.imageWholePage IMG
 	vertical-align: middle;
 /*doesn't work*/
 	max-height: 18.6cm;
-	max-width: 12.2cm;
+	/*[disabled]max-width: 12.2cm;*/
 }
 DIV.imageWholePage TD
 {
