@@ -329,23 +329,24 @@ namespace Bloom.Edit
 
 		private void _browser1_OnBrowserClick(object sender, EventArgs e)
 		{
-			var ge = e as GeckoDomEventArgs;
-			if (ge.Target == null)
+			var ge = e as DomEventArgs;
+			if (ge == null || ge.Target == null)
 				return;//I've seen this happen
 
-			if (ge.Target.ClassName.Contains("sourceTextTab"))
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			if (target.ClassName.Contains("sourceTextTab"))
 			{
-				RememberSourceTabChoice(ge.Target);
+				RememberSourceTabChoice(target);
 				return;
 			}
-			if (ge.Target.ClassName.Contains("changeImageButton"))
+			if (target.ClassName.Contains("changeImageButton"))
 				OnChangeImage(ge);
-			if (ge.Target.ClassName.Contains("pasteImageButton"))
+			if (target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
-			if (ge.Target.ClassName.Contains("editMetadataButton"))
+			if (target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
 
-			var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
+			var anchor = target as Gecko.DOM.GeckoAnchorElement;
 			if(anchor!=null && anchor.Href!="" && anchor.Href!="#")
 			{
 				if(anchor.Href.Contains("bookMetadataEditor"))
@@ -384,7 +385,7 @@ namespace Bloom.Edit
 		}
 
 
-		private void RememberSourceTabChoice(GeckoElement target)
+		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
 			var start = 1+ target.OuterHtml.IndexOf("#");
@@ -393,7 +394,7 @@ namespace Bloom.Edit
 		}
 
 
-		private void OnEditImageMetdata(GeckoDomEventArgs ge)
+		private void OnEditImageMetdata(DomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
@@ -443,7 +444,7 @@ namespace Bloom.Edit
 			//doesn't work: _browser1.WebBrowser.Reload();
 		}
 
-		private void OnPasteImage(GeckoDomEventArgs ge)
+		private void OnPasteImage(DomEventArgs ge)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -463,7 +464,8 @@ namespace Bloom.Edit
 					return;
 				}
 
-				if (ge.Target.ClassName.Contains("licenseImage"))
+				var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+				if (target.ClassName.Contains("licenseImage"))
 					return;
 
 				var imageElement = GetImageNode(ge);
@@ -547,27 +549,24 @@ namespace Bloom.Edit
 		}
 
 
-		private static GeckoElement GetImageNode(GeckoDomEventArgs ge)
+		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
-			GeckoElement imageElement = null;
-			foreach (var n in ge.Target.Parent.ChildNodes)
+			GeckoHtmlElement imageElement = null;
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			foreach (var n in target.Parent.ChildNodes)
 			{
-				if (n is GeckoElement && ((GeckoElement) n).TagName.ToLower() == "img")
+				imageElement = n as GeckoHtmlElement;
+				if (imageElement != null && imageElement.TagName.ToLower() == "img")
 				{
-					imageElement = (GeckoElement) n;
-					break;
+					return imageElement;
 				}
 			}
 
-			if (imageElement == null)
-			{
-				Debug.Fail("Could not find image element");
-				return null;
-			}
-			return imageElement;
+			Debug.Fail("Could not find image element");
+			return null;
 		}
 
-		private void OnChangeImage(GeckoDomEventArgs ge)
+		private void OnChangeImage(DomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
@@ -584,7 +583,8 @@ namespace Bloom.Edit
 					return;
 				}
 			}
-			if (ge.Target.ClassName.Contains("licenseImage"))
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			if (target.ClassName.Contains("licenseImage"))
 				return;
 
 			Cursor = Cursors.WaitCursor;

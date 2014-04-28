@@ -31,15 +31,15 @@ namespace Bloom.CollectionCreating
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewCollectionWizard));
-			this.wizardControl1 = new AeroWizard.WizardControl();
-			this._welcomePage = new AeroWizard.WizardPage();
-			this._kindOfCollectionPage = new AeroWizard.WizardPage();
-			this._vernacularLanguagePage = new AeroWizard.WizardPage();
-			this._languageLocationPage = new AeroWizard.WizardPage();
-			this._finishPage = new AeroWizard.WizardPage();
+			this.wizardControl1 = new Bloom.Wizard.WizardAdapterControl();
+            this._welcomePage = new Bloom.Wizard.WizardAdapterPage();
+            this._kindOfCollectionPage = new Bloom.Wizard.WizardAdapterPage();
+            this._vernacularLanguagePage = new Bloom.Wizard.WizardAdapterPage();
+            this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
+            this._finishPage = new Bloom.Wizard.WizardAdapterPage();
 			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._collectionNamePage = new AeroWizard.WizardPage();
-			this._collectionNameProblemPage = new AeroWizard.WizardPage();
+            this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
+            this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new Bloom.HtmlLabel();
 			this.kindOfCollectionControl1 = new Bloom.CollectionCreating.KindOfCollectionControl();
 			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
@@ -116,7 +116,7 @@ namespace Bloom.CollectionCreating
 			this._finishPage.Size = new System.Drawing.Size(637, 310);
 			this._finishPage.TabIndex = 3;
 			this._finishPage.Text = "Ready To Create New Collection";
-			this._finishPage.Initialize += new System.EventHandler<AeroWizard.WizardPageInitEventArgs>(this._finishPage_Initialize);
+			this._finishPage.Initialize += this._finishPage_Initialize;
 			// 
 			// betterLabel1
 			// 
@@ -125,7 +125,7 @@ namespace Bloom.CollectionCreating
 			this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.betterLabel1.Enabled = false;
 			this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.betterLabel1.Location = new System.Drawing.Point(3, 3);
+			this.betterLabel1.Location = new System.Drawing.Point(120, 60);
 			this.betterLabel1.Multiline = true;
 			this.betterLabel1.Name = "betterLabel1";
 			this.betterLabel1.ReadOnly = true;
@@ -193,7 +193,7 @@ namespace Bloom.CollectionCreating
 			this._collectionNameControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._collectionNameControl.Location = new System.Drawing.Point(0, 0);
+			this._collectionNameControl.Location = new System.Drawing.Point(120, 60);
 			this._collectionNameControl.Name = "_collectionNameControl";
 			this._collectionNameControl.Size = new System.Drawing.Size(619, 307);
 			this._collectionNameControl.TabIndex = 0;
@@ -202,6 +202,7 @@ namespace Bloom.CollectionCreating
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.ClientSize = new System.Drawing.Size(759, 464);
 			this.ControlBox = false;
 			this.Controls.Add(this.wizardControl1);
@@ -225,19 +226,19 @@ namespace Bloom.CollectionCreating
 
 		#endregion
 
-		private AeroWizard.WizardControl wizardControl1;
-		private AeroWizard.WizardPage _kindOfCollectionPage;
+        private Bloom.Wizard.WizardAdapterControl wizardControl1;
+        private Bloom.Wizard.WizardAdapterPage _kindOfCollectionPage;
 		private KindOfCollectionControl kindOfCollectionControl1;
-		private AeroWizard.WizardPage _vernacularLanguagePage;
+        private Bloom.Wizard.WizardAdapterPage _vernacularLanguagePage;
 		private LanguageIdControl _vernacularLanguageIdControl;
-		private AeroWizard.WizardPage _collectionNamePage;
+        private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
 		private CollectionNameControl _collectionNameControl;
-		private AeroWizard.WizardPage _finishPage;
-		private AeroWizard.WizardPage _collectionNameProblemPage;
-		private AeroWizard.WizardPage _languageLocationPage;
+        private Bloom.Wizard.WizardAdapterPage _finishPage;
+        private Bloom.Wizard.WizardAdapterPage _collectionNameProblemPage;
+        private Bloom.Wizard.WizardAdapterPage _languageLocationPage;
 		private LanguageLocationControl _languageLocationControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
-		private AeroWizard.WizardPage _welcomePage;
+        private Bloom.Wizard.WizardAdapterPage _welcomePage;
 		private HtmlLabel _welcomeHtml;
 	}
 }

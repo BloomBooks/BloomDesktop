@@ -110,12 +110,16 @@ namespace Bloom.Book
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
-			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
-			//	for shells, we'll still have pages.
+			// NB: For a new book based on a page template, I think this should remove *everything*,
+			// because the rest is in the xmatter.
+			// For shells, we'll still have pages.
+
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
+				initialPageDivs.Count > 0;
+				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
-				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
+				initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);

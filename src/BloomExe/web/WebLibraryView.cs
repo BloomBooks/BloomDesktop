@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Gecko;
@@ -29,6 +28,7 @@ namespace Bloom.Library
 		{
 			if(Visible)
 			{
+				UsageReporter.SendNavigationNotice("Library");
 			}
 		}
 

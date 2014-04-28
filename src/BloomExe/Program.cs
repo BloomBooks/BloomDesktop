@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -20,6 +20,7 @@ using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
+using Skybound.Gecko;
 using System.Linq;
 
 namespace Bloom
@@ -54,6 +55,15 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
+#if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
+				if (!GrabMutexForBloom())
+					return;
+#endif
+
+				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				{
+					OldVersionCheck();
+				}
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
 				{
@@ -84,6 +94,7 @@ namespace Bloom
 				using (new Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
 
 #endif
+
 				{
 					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 					{
@@ -225,10 +236,24 @@ namespace Bloom
 
 		/// <summary>
 		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
-		/// Todo Linux: no idea what has to happen to register a url handler...probably not this, though.
+		/// TODO-Linux: no idea what has to happen to register a url handler...probably not this, though.
 		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
 		/// </summary>
 		private static void EnsureThisInstanceIsRegisteredForBloomUrls()
+		{
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				// TODO-Linux: no idea what has to happen to register a url handler...probably not this, though.
+				// See also where these registry entries are made by the wix installer (file Installer.wxs).
+				return;
+			}
+			EnsureThisInstanceIsRegisteredForBloomUrls_Windows();
+		}
+
+		/// <summary>
+		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
+		/// </summary>
+		private static void EnsureThisInstanceIsRegisteredForBloomUrls_Windows()
 		{
 			if (AlreadyRegistered(Registry.ClassesRoot))
 				return;
@@ -306,28 +331,29 @@ namespace Bloom
 		{
 			while(!_shuttingDown)
 			{
-				var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
-				pipeServer.WaitForConnection();
-				if (_shuttingDown)
-					return; // We got the spurious message that allows us to unblock and exit
-				string argument = null;
-				try
+				using (var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In))
 				{
-					int len = pipeServer.ReadByte()*256;
-					len += pipeServer.ReadByte();
-					var inBuffer = new byte[len];
-					pipeServer.Read(inBuffer, 0, len);
-					argument = Encoding.UTF8.GetString(inBuffer);
+					pipeServer.WaitForConnection();
+					if (_shuttingDown)
+						return; // We got the spurious message that allows us to unblock and exit
+					string argument = null;
+					try
+					{
+						int len = pipeServer.ReadByte() * 256;
+						len += pipeServer.ReadByte();
+						var inBuffer = new byte[len];
+						pipeServer.Read(inBuffer, 0, len);
+						argument = Encoding.UTF8.GetString(inBuffer);
+					}
+					catch (IOException e)
+					{
+						//Catch the IOException that is raised if the pipe is broken
+						// or disconnected.
+						// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
+						// was trying to do doesn't happen.
+					}
+					HandleBloomBookOrder(argument);
 				}
-				catch (IOException e)
-				{
-					//Catch the IOException that is raised if the pipe is broken
-					// or disconnected.
-					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
-					// was trying to do doesn't happen.
-				}
-				HandleBloomBookOrder(argument);
-				pipeServer.Dispose();
 			}
 		}
 
@@ -581,8 +607,6 @@ namespace Bloom
 		{
 			Debug.Assert(_projectContext == null);
 
-			CheckAndWarnAboutVirtualStore();
-
 			try
 			{
 				//NB: initially, you could have multiple blooms, if they were different projects.
@@ -611,35 +635,6 @@ namespace Bloom
 			}
 
 			return false;
-		}
-
-		//The windows "VirtualStore" is teh source of some really hard to figure out behavior:
-		//The symptom is, getting different results in the installed version, *unless you change the name of the Bloom folder in Program Files*.
-		//Then look at C:\Users\User\AppData\Local\VirtualStore\Program Files (x86)\Bloom and you'll find some old files.
-		private static void CheckAndWarnAboutVirtualStore()
-		{
-			var programFilesName = Path.GetFileName(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles));
-			var virtualStore = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
-								 "VirtualStore");
-			var ourVirtualStore = Path.Combine(virtualStore, programFilesName);
-			ourVirtualStore = Path.Combine(ourVirtualStore, "Bloom");
-
-			if (Directory.Exists(ourVirtualStore))
-			{
-#if DEBUG
-				Debug.Fail("You have a shadow copy of some Bloom files at " + ourVirtualStore + " that has crept in via running the installed version. Find what caused it and stamp it out!");
-#endif
-				try
-				{
-					Directory.Delete(ourVirtualStore, true);
-				}
-				catch (Exception error)
-				{
-					ErrorReport.NotifyUserOfProblem("Bloom could not remove the Virtual Store shadow of Bloom at " + ourVirtualStore +
-													". This can cause some stylesheets to fall out of date.");
-					Analytics.ReportException(error);
-				}
-			}
 		}
 
 		private static void HandleProjectWindowActivated(object sender, EventArgs e)
@@ -739,10 +734,6 @@ namespace Bloom
 			else if (((Shell)sender).UserWantsToOpeReopenProject)
 			{
 				Application.Idle +=new EventHandler(ReopenProject);
-			}
-			else if (((Shell)sender).QuitForVersionUpdate)
-			{
-				Application.Exit();
 			}
 			else
 			{

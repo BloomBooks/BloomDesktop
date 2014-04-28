@@ -39,6 +39,7 @@ namespace BloomTests.Edit
 
 	public class MockView : IEditControlsView
 	{
+		//public GeckoWebBrowser Browser { get; private set; }
 		public GeckoWebBrowser Browser { get; private set; }
 	}
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+#if !__MonoCS__
 using IWshRuntimeLibrary;
+#endif
 using File = System.IO.File;
 
 namespace Bloom.Collection
@@ -9,6 +11,7 @@ namespace Bloom.Collection
 	{
 		public static void CreateDirectoryShortcut(string targetPath, string whereToPutItPath)
 		{
+#if !__MonoCS__
 			var name = Path.GetFileName(targetPath);
 			var WshShell = new WshShellClass();
 			string linkPath = Path.Combine(whereToPutItPath, name) + ".lnk";
@@ -31,6 +34,9 @@ namespace Bloom.Collection
 				throw error;
 			}
 			shortcut.Save();
+#else
+			throw new NotImplementedException();
+#endif
 		}
 	}
 }
