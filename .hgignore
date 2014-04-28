@@ -71,3 +71,4 @@ DistFiles/Bloom.chw
 DistFiles/Bloom.chm
 build\ChorusInstallerStuff\ChorusMergeModule.msm
 build\JohnsTestInstallerBuild.bat
+src/BloomBrowserUI/bookEdit/js/libsynphony/
