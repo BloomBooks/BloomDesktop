@@ -103,6 +103,9 @@ class StyleEditor {
 			return; // too small, quietly don't do it!
 		rule.style.setProperty("font-size", sizeString + units, "important");
 		// alert("New size rule: " + rule.cssText);
+		// Now update tooltip
+		var toolTip = this.GetToolTip(target, styleName);
+		this.AddQtipToElement($('#formatButton'), toolTip);
 	}
 
 	GetCalculatedFontSizeInPoints(target: HTMLElement): number {
@@ -125,6 +128,9 @@ class StyleEditor {
 		var units = "pt";
 		var sizeString: string = newSize.toString();
 		rule.style.setProperty("font-size", sizeString + units, "important");
+		// Now update tooltip
+		var toolTip = this.GetToolTip(target, styleName);
+		this.AddQtipToElement($('#formatButton'), toolTip);
 	}
 
 	GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -185,6 +191,18 @@ class StyleEditor {
 		return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
 	}
 
+	AddQtipToElement(element: JQuery, toolTip: string) {
+		element.qtip( {
+			content: toolTip,
+			show: {
+				event: 'click mouseenter'
+			},
+			hide: {
+				event: 'unfocus', // qtip-only event that hides tooltip when anything other than the tooltip is clicked
+				inactive: 3000, // hides if tooltip is inactive for 3sec
+			}
+		});
+	}
 
 	AttachToBox(targetBox: HTMLElement) {
 		var styleName = StyleEditor.GetStyleNameForElement(targetBox);
@@ -211,10 +229,9 @@ class StyleEditor {
 		var t = bottom + "px";
 		$(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
 		var formatButton = $('#formatButton');
-		formatButton.attr('title', toolTip);
+		this.AddQtipToElement(formatButton, toolTip);
 		formatButton.toolbar({
 			content: '#format-toolbar',
-			//position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
 			position: 'left',
 			hideOnClick: false
 		});
@@ -227,8 +244,9 @@ class StyleEditor {
 			if (whichButton.id == "bigger") {
 				editor.MakeBigger(targetBox);
 			}
+			formatButton.trigger('click'); // This re-displays the qtip with the new value.
 		});
-	  }
+	}
 
 	static CleanupElement(element) {
 		//NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent

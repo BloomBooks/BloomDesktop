@@ -86,7 +86,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
     var shouldShowAlways = true;
-    var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+    var hideEvents = shouldShowAlways ? null : 'focusout mouseleave';
 
     var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
     if (functionCall) {
@@ -94,12 +94,12 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
             return;
         shouldShowAlways = true;
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-        hideEvents = false;
+        hideEvents = false; // Don't specify a hide event...
     }
 
     if (onFocusOnly) {
         shouldShowAlways = false;
-        hideEvents = 'unfocus mouseleave';
+        hideEvents = 'focusout mouseleave';
     }
 
     whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
@@ -108,14 +108,14 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         content: whatToSay,
         position: pos,
         show: {
-            event: " focusin mouseenter",
+            event: 'focusin mouseenter',
             ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
         }
-       , tip: { corner: "left center" }
+       , tip: { corner: 'left center' }
        , hide: {
            event: hideEvents
        },
-        adjust: { method: "flip none" },
+        adjust: { method: 'flip none' },
         style: {
             classes: theClasses
         }
@@ -225,35 +225,6 @@ function AddToolbox(){
                 }
             });
         });
-
-        /*
-        $(this).qtip({
-            content: "<h3>Toolbox</h3><ul class='toolbox'><li>" + heading1Box + "</li><li>" + translationBox + "</li><li>" + imageBox + "</li></ul>",
-            show: { ready: true },
-            hide: false,
-            position: {
-                at: 'right center',
-                my: 'left center'
-            },
-            events: {
-                render: function(event, api) {
-                    $(this).find('.toolbox').draggable({
-                        //note: this is just used for drawing what you drag around..
-                             //it isn't what the droppable is actually given
-                        helper: function(event) {
-                            var tearOff = $(this).clone() //.removeClass('toolbox');//by removing this, we show it with the actual size it will be when dropped
-                            return tearOff;
-                        }
-                    });
-                }
-            },
-            style: {
-                width: 200,
-                height: 300,
-                classes: 'ui-tooltip-dark',
-                tip: { corner: false }
-            }
-        });*/
         $(this).qtipSecondary({
             content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>",
             show: { ready: true },
@@ -390,13 +361,14 @@ function MakeSourceTextDivForGroup(group) {
 
         //todo: really, this should detect some made-up style, so thatwe can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
-            showEvents = " focusin ";
-            hideEvents = ' focusout ';
+            showEvents = 'focusin';
+            hideEvents = 'focusout';
             shouldShowAlways = false;
         }
       $(this).qtip({
-          position: { at: 'right center',
-              my: 'left center',
+          position: {
+                my: 'left center',
+                at: 'right center',
               adjust: {
                   x: 10,
                   y: 0
@@ -414,8 +386,11 @@ function MakeSourceTextDivForGroup(group) {
               }
           },
           style: {
-              //doesn't work: tip:{ size: {height: 50, width:50}             },
-              //doesn't work: tip:{ size: {x: 50, y:50}             },
+                tip: {
+                    corner: true,
+                    width: 10,
+                    height: 10
+                },
               classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
           },
           hide: hideEvents
@@ -1068,7 +1043,7 @@ jQuery(document).ready(function () {
                 content: whatToSay,
                 position: pos,
                 show: {
-                    event: " focusin mouseenter"
+                    event: 'focusin mouseenter'
                 },
                 style: {
                     classes: theClasses
