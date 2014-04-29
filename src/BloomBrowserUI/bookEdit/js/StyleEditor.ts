@@ -1,6 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
+interface qtipInterface extends JQuery {
+    qtip(options: any): JQuery;
+}
+
 class StyleEditor {
 
     private _previousBox: Element;
@@ -192,14 +196,14 @@ class StyleEditor {
     }
 
     AddQtipToElement(element: JQuery, toolTip: string) {
-        element.qtip( {
+        (<qtipInterface>element).qtip( {
             content: toolTip,
             show: {
                 event: 'click mouseenter'
             },
             hide: {
                 event: 'unfocus', // qtip-only event that hides tooltip when anything other than the tooltip is clicked
-                inactive: 3000, // hides if tooltip is inactive for 3sec
+                inactive: 3000 // hides if tooltip is inactive for 3sec
             }
         });
     }

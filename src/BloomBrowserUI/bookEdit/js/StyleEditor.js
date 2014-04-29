@@ -1,5 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
+
 var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
         this.MIN_FONT_SIZE = 7;
