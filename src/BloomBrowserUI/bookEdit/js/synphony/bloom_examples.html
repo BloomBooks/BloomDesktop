@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Bloom Function Examples</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript" src="underscore_min_152.js"></script>
+		<script type="text/javascript" src="xregexp-all-min.js"></script>
+		<script type="text/javascript" src="jquery-1.10.1.js"></script>
+		<script type="text/javascript" src="jquery.text-markup.js"></script>
+		<script type="text/javascript" src="synphony_lib.js"></script>
+		<script type="text/javascript" src="bloom_xregexp_categories.js"></script>
+		<script type="text/javascript" src="bloom_lib.js"></script>
+		<script type="text/javascript" src="tok_pisin_lang_data.js"></script>
+		<script type="text/javascript">
+
+			function getSentences(sourceId) {
+
+				var paragraph = document.getElementById(sourceId).value;
+				var fragments = stringToSentences(paragraph);
+				var returnVal = '';
+
+				for (var i = 0; i < fragments.length; i++) {
+
+					var fragment = fragments[i];
+
+					// is this space between sentences?
+					if (fragment.isSpace)
+						returnVal += fragment.text;
+					else
+						returnVal += '<span class="sentence">' + fragment.text + '</span>';
+				}
+				return returnVal;
+			}
+
+			function getSentenceWords(sourceId) {
+
+				var paragraph = document.getElementById(sourceId).value;
+				var fragments = stringToSentences(paragraph);
+				var returnVal = '';
+				var totalWords = 0;
+
+				for (var i = 0; i < fragments.length; i++) {
+
+					var fragment = fragments[i];
+
+					// is this space between sentences?
+					if (fragment.isSentence) {
+						var wordCount = fragment.wordCount();
+						totalWords += wordCount;
+						returnVal += 'Word Count = ' + wordCount + ': ';
+						var words = fragment.words;
+						for (var j = 0; j < words.length; j++) {
+							returnVal += ' <span class="word">' + words[j] + '</span>';
+						}
+						returnVal += '<br />';
+					}
+				}
+				returnVal += "Total Word Count = " + totalWords;
+				return returnVal;
+			}
+
+			function getAllWords(sourceId) {
+
+				var paragraph = document.getElementById(sourceId).value;
+				var words = getWordsFromHtmlString(paragraph);
+				var returnVal = '';
+				var totalWords = 0;
+
+				for (var i = 0; i < words.length; i++) {
+
+					returnVal += ' <span class="word">' + words[i] + '</span>';
+					totalWords++;
+				}
+
+				returnVal += "<br />Total Word Count = " + totalWords;
+				return returnVal;
+			}
+
+			function getUniqueWords(sourceId) {
+
+				var paragraph = document.getElementById(sourceId).value;
+				var words = getUniqueWordsFromHtmlString(paragraph);
+				var returnVal = '';
+				var totalWords = 0;
+
+				for (var i = 0; i < words.length; i++) {
+
+					returnVal += ' <span class="word">' + words[i] + '</span>';
+					totalWords++;
+				}
+
+				returnVal += "<br />Unique Word Count = " + totalWords;
+				return returnVal;
+			}
+
+			function getWordList() {
+
+				// split lists of letters into arrays
+				var regex = /, |,| /g;
+				var focusLetters = document.getElementById('focusLetters').value.split(regex);
+				var previousLetters = document.getElementById('previousLetters').value.split(regex);
+
+				// get list of all known letters, including those being taught at the stage
+				var knownGPCs = _.union(focusLetters, previousLetters);
+
+				// I'm not sure what the group means. There is only	1 group in the Tok Pisin sample data
+				var selectedGroups = [];
+				selectedGroups.push(document.getElementById('vocabGroup').value);
+
+				// The sample data does not use this feature
+				var selectedPartsOfSpeech = [];
+
+				var allowUpperCase = document.getElementById('allowUpperCase').checked;
+				var numOfSyllables = document.getElementById('numOfSyllables').value;
+
+				// If TRUE, only words composed exclusively of the letters in knownGPCs will be returned.
+				// If FALSE, all words returned will contain at least 1 letter from knownGPCs.
+				var restrictToKnownGPCs = document.getElementById('restrictToTaught').checked;
+
+				// get the list of words, as an array of WordObject objects
+				var list = selectGPCWordsWithArrayCompare(focusLetters, knownGPCs, restrictToKnownGPCs, allowUpperCase, numOfSyllables, selectedGroups, selectedPartsOfSpeech);
+
+				// the 'Name' property of a WordObject is the word
+				var words = _.pluck(list, 'Name');
+
+				var returnVal = '';
+				var x = 0;
+				for (var i = 0; i < words.length; i++) {
+
+					x++;
+					if (x === 1)
+						returnVal += ' <span class="wavy-red">' + words[i] + '</span>';
+					else if (x === 2)
+						returnVal += ' <span class="wavy-green">' + words[i] + '</span>';
+					else {
+						returnVal += ' <span class="wavy-blue">' + words[i] + '</span>';
+						x = 0;
+					}
+				}
+				return returnVal;
+			}
+
+			function checkReadingLevel() {
+
+				return $('#levelTest1').checkLeveledReader({maxWordsPerSentence: document.getElementById('numOfWords').value});
+			}
+		</script>
+		<style type="text/css">
+			.sentence { color: #ff0000; background-color: #9fffa3 }
+			.word { color: #9fffa3; background-color: #ff0000 }
+			.wavy-red { -moz-text-decoration-line: underline; -moz-text-decoration-style: wavy; -moz-text-decoration-color: red; }
+			.wavy-green { -moz-text-decoration-line: line-through; -moz-text-decoration-style: wavy; -moz-text-decoration-color: green; }
+			.wavy-blue { -moz-text-decoration-line: overline; -moz-text-decoration-style: wavy; -moz-text-decoration-color: blue; }
+			.sentence-too-long { -moz-text-decoration-line: underline; -moz-text-decoration-style: wavy; -moz-text-decoration-color: #660066; }
+			h3 { margin: 0 0 6px; }
+		</style>
+	</head>
+	<body style="margin: 0">
+		<h1 align="center">Should be run in Firefox</h1>
+		<div style="display: block; width: 90%; margin: 6px auto;">
+			<div style="display: block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Text to Test</h3>
+					<textarea id="sourceText" style="width: 98%; height: 140px;">This is sentence 1. "This is 'sentence 2.'" "this is sentence.3."
+This is the 4th sentence! Is this the
+5th sentence? Is "this" "sentence 6?"</textarea>
+				</div>
+			</div>
+			<div style="display: block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Split text into sentences and wrap in span</h3>
+					<div id="returnVal1"></div>
+					<p><input type="button" value="Split into Sentences" onclick="document.getElementById('returnVal1').innerHTML = getSentences('sourceText');" /></p>
+				</div>
+			</div>
+			<div style="display: inline-block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Split sentence into words</h3>
+					<div id="returnVal2"></div>
+					<p><input type="button" value="Split into Words" onclick="document.getElementById('returnVal2').innerHTML = getSentenceWords('sourceText');" /></p>
+				</div>
+			</div>
+			<div style="display: inline-block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Get Total Word Count</h3>
+					<div id="returnVal3"></div>
+					<p><input type="button" value="Total Word Count" onclick="document.getElementById('returnVal3').innerHTML = getAllWords('sourceText');" /></p>
+				</div>
+			</div>
+			<div style="display: inline-block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Get Unique Word Count</h3>
+					<div id="returnVal4"></div>
+					<p><input type="button" value="Total Word Count" onclick="document.getElementById('returnVal4').innerHTML = getUniqueWords('sourceText');" /></p>
+				</div>
+			</div>
+			<div style="display: block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Decodable Reader Settings</h3>
+					<label for="focusLetters">Letters for this stage</label><input type="text" id="focusLetters" value="m, i" />&nbsp;&nbsp;(All words will contain at least one of these letters.)<br />
+					<label for="previousLetters">Letters for previous stages</label><input type="text" id="previousLetters" value="a, s, t, u, n" /><br />
+					<label for="numOfSyllables">Max Number of Syllables</label><select id="numOfSyllables"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>&nbsp;&nbsp;
+					<label for="vocabGroup">Vocabulary Group</label><select id="vocabGroup"><option>group1</option></select><br />
+					<label for="allowUpperCase">Allow Upper Case</label><input type="checkbox" id="allowUpperCase" />&nbsp;&nbsp;
+					<label for="restrictToTaught">Restrict to Taught Letters</label><input type="checkbox" id="restrictToTaught" />
+				</div>
+			</div>
+			<div style="display: inline-block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Get Decodable Word List (also wavy line test)</h3>
+					<div id="returnVal5"></div>
+					<p><input type="button" value="Get Word List" onclick="document.getElementById('returnVal5').innerHTML = getWordList();" /></p>
+				</div>
+			</div>
+			<div style="display: block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Leveled Reader Settings</h3>
+					<label for="numOfWords"><span class="sentence-too-long">Max Number of Words</span></label>&nbsp;<select id="numOfWords"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>&nbsp;&nbsp;
+				</div>
+			</div>
+			<div style="display: inline-block; border: thin solid gray; width: 100%">
+				<div style="padding: 6px;">
+					<h3>Check Reading Level</h3>
+					<div id="levelTest1">This <span style="background-color: #0F88FF">is</span> sentence 1. "This is 'sentence 2' and it is<br />much longer." this is sentence.3.</div>
+					<p><input type="button" value="Check Reading Level" onclick="checkReadingLevel();" /></p>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

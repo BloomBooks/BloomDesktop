@@ -302,6 +302,15 @@ namespace Bloom.Collection
 
 		public virtual string CollectionName { get; protected set; }
 
+		/// <summary>
+		/// The file (currently at a fixed location in every settings folder) where we store any settings
+		/// related to Decodable and Leveled Readers.
+		/// </summary>
+		public string DecodableLevelPathName
+		{
+			get { return Path.GetDirectoryName(SettingsFilePath) + "DecodableLevelData.json"; }
+		}
+
 		[XmlIgnore]
 		public string FolderPath
 		{

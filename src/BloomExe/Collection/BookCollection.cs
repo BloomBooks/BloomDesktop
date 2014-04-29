@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Bloom.Book;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Collection
 {
@@ -69,7 +70,7 @@ namespace Bloom.Collection
 
 		public void DeleteBook(Book.BookInfo bookInfo)
 		{
-			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
+			var didDelete = ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
 			if (!didDelete)
 				return;
 
