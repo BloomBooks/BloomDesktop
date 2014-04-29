@@ -95,7 +95,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 {
 	width: 100%;
 	height: 45% !important;
-/*above so buttons show*/
+	/*above so buttons show*/
 	z-index: 1000;
 }
 /*Note, to make bottomAlign work takes these 2 rules: one on the container (translationgroup) and another on the element*/
@@ -181,9 +181,9 @@ DIV.imageOnTop DIV.bloom-imageContainer
 .imageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup
 {
 	width: 100%;
-/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+	/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
 	/*[disabled]position:relative;*/
-/*So instead, we're settling for starting the text part of the way down*/
+	/*So instead, we're settling for starting the text part of the way down*/
 	position: relative !important;
 	display: block !important;
 	/*+placement:anchor-top-left 0px 30%;*/
@@ -349,7 +349,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 	position: relative;
 	left: 0px;
 	top: 33%;
-/*this margin is to separate us from content2 a bit*/
+	/*this margin is to separate us from content2 a bit*/
 	margin-top: 12px;
 }
 /*Image In Middle*/
@@ -481,12 +481,12 @@ DIV.imageWholePage DIV.bloom-imageContainer
 DIV.imageWholePage IMG
 {
 	display: table-cell;
-/*doesn't work*/
+	/*doesn't work*/
 	vertical-align: middle;
-/*doesn't work*/
+	/*doesn't work*/
 	max-height: 18.6cm;
-/* marginBox takes care of this */
-	/*[disabled]max-width: 12.2cm;*/
+	/*marginBox takes care of this*/
+	/*[disabled]max-width:12.2cm;*/
 }
 DIV.imageWholePage TD
 {
@@ -521,7 +521,15 @@ DIV.textWholePage DIV.bloom-translationGroup DIV
 	bottom: 0px;
 	height: 7.1cm;
 }
-.pictureAndWordPage.A4Landscape DIV.bloom-imageContainer
+.pictureAndWordPage.A5Portrait .bloom-imageContainer
+{
+	max-height: 62%;
+}
+.pictureAndWordPage.A4Portrait .bloom-imageContainer
+{
+	max-height: 74%;
+}
+.pictureAndWordPage.A4Landscape .bloom-imageContainer
 {
 	height: 55%;
 }
