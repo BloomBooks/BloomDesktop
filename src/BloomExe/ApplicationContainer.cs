@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
@@ -51,6 +51,7 @@ namespace Bloom
                     s.DoLaunchAfterUpdate = false;
                     return s;
                 }).InstancePerLifetimeScope();
+
                 
                 builder.Register(c => LocalizationManager).SingleInstance();
 				builder.Register(c => new OrderList()).SingleInstance();
@@ -73,21 +74,16 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-		    public Sparkle ApplicationUpdator
-		    {
-                get { return _container.Resolve<Sparkle>(); }
-		    }
-
-            public LocalizationManager LocalizationManager;
+			public LocalizationManager LocalizationManager;
 
 			public OrderList OrderList
 			{
 				get { return _container.Resolve<OrderList>(); }
 			}
 
-		    public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
+			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
-		    public void Dispose()
+			public void Dispose()
 			{
 				_container.Dispose();
 				_container = null;

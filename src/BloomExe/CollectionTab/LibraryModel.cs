@@ -19,6 +19,7 @@ using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -134,7 +135,7 @@ namespace Bloom.CollectionTab
             {
             	var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (Bloom.ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
                 {
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
                     _bookSelection.SelectBook(null);

@@ -7,25 +7,24 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
 using Gecko;
 using Gecko.DOM;
+using Gecko.Events;
+using Palaso.IO;
+using Palaso.Reporting;
+//using Palaso.UI.WindowsForms.HtmlBrowser;
+using Palaso.Xml;
 using TempFile = BloomTemp.TempFile;
 
 namespace Bloom
 {
 	public partial class Browser : UserControl
     {
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetDllDirectory(string lpPathName);
-		
         protected GeckoWebBrowser _browser;
         bool _browserIsReadyToNavigate;
         private string _url;
@@ -38,35 +37,66 @@ namespace Bloom
 	    private bool _disposed;
 	    public event EventHandler OnBrowserClick;
 
-		
-        public static void SetUpXulRunner()
-        {
-            string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-            if (!Directory.Exists(xulRunnerPath))
-            {
+		private static int XulRunnerVersion
+		{
+			get
+			{
+				var geckofx = Assembly.GetAssembly(typeof(GeckoWebBrowser));
+				if (geckofx == null)
+					return 0;
 
-                //if this is a programmer, go look in the lib directory
-                xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-                                             Path.Combine("lib", "xulrunner"));
+				var versionAttribute = geckofx.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), true)
+					.FirstOrDefault() as AssemblyFileVersionAttribute;
+				return versionAttribute == null ? 0 : new Version(versionAttribute.Version).Major;
+			}
+		}
 
-				//on my build machine, I really like to have the dir labelled with the version.
-				//but it's a hassle to update all the other parts (installer, build machine) with this number,
-				//so we only use it if we don't find the unnumbered alternative.
-				if(!Directory.Exists(xulRunnerPath))
+		// TODO: refactor to use same initialization code as Palaso
+		public static void SetUpXulRunner()
+		{
+			if (Xpcom.IsInitialized)
+				return;
+
+			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
+			if (!Directory.Exists(xulRunnerPath))
+			{
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+				if (!Directory.Exists(xulRunnerPath))
+				{
+					//if this is a programmer, go look in the lib directory
 					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-												 Path.Combine("lib", "xulrunner11"));
+						Path.Combine("lib", "xulrunner"));
 
-				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
-				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
-				//	build/build.win.proj: change the zip file to match the new name
+					//on my build machine, I really like to have the dir labelled with the version.
+					//but it's a hassle to update all the other parts (installer, build machine) with this number,
+					//so we only use it if we don't find the unnumbered alternative.
+					if (!Directory.Exists(xulRunnerPath))
+					{
+						xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
+							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
+					}
 
+					if (!Directory.Exists(xulRunnerPath))
+					{
+						throw new ConfigurationException(
+							"Can't find the directory where xulrunner (version {0}) is installed",
+							XulRunnerVersion);
+					}
+				}
+			}
 
-            }
-            //Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-            SetDllDirectory(xulRunnerPath);
+			Xpcom.Initialize(xulRunnerPath);
+			Application.ApplicationExit += OnApplicationExit;
+		}
 
-            Gecko.Xpcom.Initialize(xulRunnerPath);
-        }
+		private static void OnApplicationExit(object sender, EventArgs e)
+		{
+			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
+			// otherwise the app might not exit properly.
+			if (Xpcom.IsInitialized)
+				Xpcom.Shutdown();
+			Application.ApplicationExit -= OnApplicationExit;
+		}
 
         public Browser()
         {
@@ -234,7 +264,7 @@ namespace Bloom
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void OnDomKeyPress(object sender, GeckoDomKeyEventArgs e)
+		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 		    const uint DOM_VK_INSERT = 0x2D;
             if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
@@ -309,7 +339,7 @@ namespace Bloom
 
 
 
-        void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+        void OnBrowser_DomClick(object sender, DomEventArgs e)
         {
           //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
             //it loses its focus.
@@ -435,7 +465,7 @@ namespace Bloom
             if (_url!=null)
             {
                 _browser.Visible = true;
-                _browser.Navigate(_url);
+				_browser.Navigate(_url);
 			}
         }
 
@@ -471,7 +501,7 @@ namespace Bloom
             }
 
     		var body = _browser.Document.GetElementsByTagName("body");
-			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+			if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
 				return;
 
 			var content = body[0].InnerHtml;
@@ -503,30 +533,38 @@ namespace Bloom
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var userModifiedStyleSheet = _browser.Document.StyleSheets.Where(s =>
+				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
 					{
-						var titleNode = s.OwnerNode.Attributes["title"];
+						var titleNode = s.OwnerNode.GetSingleElement("@title");
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
-					}).FirstOrDefault();
+					});
 
 				if (userModifiedStyleSheet != null)
 				{
-					/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
-					 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
-					 * rules don't show up inside of it. So
-					 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
-					 */
-					var styles = new StringBuilder();
-					styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-					foreach (var cssRule in userModifiedStyleSheet.CssRules)
+					try
 					{
-						styles.AppendLine(cssRule.CssText);
+						/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+						 * rules don't show up inside of it. So
+						 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+						 */
+						var styles = new StringBuilder();
+						styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+						foreach (var cssRule in userModifiedStyleSheet.CssRules)
+						{
+							styles.AppendLine(cssRule.CssText);
+						}
+						styles.AppendLine("</style>");
+						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
+						_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 					}
-					styles.AppendLine("</style>");
-					Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
-					_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+					catch (COMException)
+					{
+						// Trying to access the CssRules might throw an exception if there are
+						// no rules. If so, just ignore.
+					}
 				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen 
@@ -542,11 +580,11 @@ namespace Bloom
 			}
 			catch(Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (invalid incoming html).\r\n\r\n+{0}", e);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (invalid incoming html).{1}{1}+{0}",
+					e, Environment.NewLine);
 				return;
 			}
-
-			
 
 			try
 			{ 
@@ -555,7 +593,9 @@ namespace Bloom
 			catch (Exception e)
 			{
 				var exceptionWithHtmlContents = new Exception(content);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (validating page).\r\n\r\n+{0}", e.Message);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
+					e.Message, Environment.NewLine);
 			}
 
 		}
