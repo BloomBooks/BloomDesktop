@@ -172,24 +172,8 @@
 		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
 
-  <!-- Review: are GetWkhtmlToXIntoLib & GetXulRunnerIntoLib needed anymore? We now use Teamcity and static-dependencies configurations. The Build grabs the zips and unzips them in the right place.
 
-  <Target Name="GetXulRunnerIntoLib">
-	<RemoveDir Directories="..\lib\xulrunner" />
-		<Unzip ZipFileName="..\lib\xulrunner-11.0.en-US.win32.zip"
-		   TargetDirectory="..\lib\"/>
-  </Target>
-
-
-  <Target Name="GetWkhtmlToXIntoLib">
-	<RemoveDir
-		   Directories="..\lib\wkhtmltopdf" />
-	<Unzip ZipFileName="..\lib\wkhtmltopdf-0.10.0_rc2.zip"
-		   TargetDirectory="..\lib\"/>
-  </Target>
-  -->
-
-  <Target Name="MakeWixForXulRunner" DependsOnTargets="GetXulRunnerIntoLib">
+  <Target Name="MakeWixForXulRunner">
 	<MakeWixForDirTree
 				DirectoryReferenceId="XulRunnerDir"
 					ComponentGroupId="XulRunner"
