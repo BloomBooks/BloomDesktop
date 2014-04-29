@@ -109,6 +109,13 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: http://hg.palaso.org/pdfdroplet [default]
+# [6] build: TidyManaged-master-win32-continuous (bt349)
+#     project: TidyManaged
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt349
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"*.*"=>"lib/dotnet"}
+#     VCS: https://github.com/hatton/TidyManaged.git [master]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -187,6 +194,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/icuuc40.dll ../lib/dotnet/icuuc40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/libtidy.dll ../lib/dotnet/libtidy.dll
 # extract downloaded zip files
 unzip -uqo ../lib/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
 unzip -uqo ../lib/dotnet/geckofx.zip -d ../lib/dotnet
