@@ -104,7 +104,7 @@
   </Target>
 
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; GetWkhtmlToXIntoLib; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers;  MakeWixForDistFiles; MakeWixForXulRunner; Build ">
 
 
 	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
