@@ -74,7 +74,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"wkhtmltopdf-0.10.0_rc2.zip!**"=>"lib", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "geckofx.zip!**"=>"lib/dotnet"}
+#     paths: {"wkhtmltopdf-0.10.0_rc2.zip!**"=>"lib", "geckofx.zip!**"=>"lib/dotnet", "optipng-0.7.5-win32.zip!**"=>"DistFiles", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles"}
 # [1] build: LibSynphony (bt394)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
@@ -128,9 +128,10 @@ mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../lib/wkhtmltopdf-0.10.0_rc2.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../lib/dotnet/geckofx.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng-0.7.5-win32.zip ../DistFiles/optipng-0.7.5-win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../lib/dotnet/geckofx.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_lib.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_xregexp_categories.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_xregexp_categories.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/jquery.text-markup.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/jquery.text-markup.js
@@ -200,5 +201,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 # extract downloaded zip files
 unzip -uqo ../lib/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
 unzip -uqo ../lib/dotnet/geckofx.zip -d ../lib/dotnet
+unzip -uqo ../DistFiles/optipng-0.7.5-win32.zip -d ../DistFiles
 unzip -uqo ../lib/xulrunner-22.0.en-US.win32.zip -d ../lib
 # End of script
