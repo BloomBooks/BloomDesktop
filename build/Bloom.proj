@@ -50,8 +50,8 @@
 	<Target Name="Build" DependsOnTargets="SetAssemblyVersion; Init">
 		<MSBuild Projects="$(RootDir)/$(Solution)" Targets="Rebuild" Properties="Configuration=$(Configuration)" />
   </Target>
-
-	<Target Name="Test" DependsOnTargets="GetDependencies; Build;">
+  
+  <Target Name="Test" DependsOnTargets="Build; DownloadDistFilesNeedForTests;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
@@ -165,7 +165,7 @@
 			WorkingDirectory="$(RootDir)/lib"
 			Condition="!Exists('$(RootDir)/lib/xulrunner')"/>
 	</Target>
-
+	
 	<Target Name="GetWkthmlToPdfIntoLib" Condition="'$(OS)'=='Windows_NT'">
 		<RemoveDir Directories="$(RootDir)/DistFiles/wkhtmltopdf" />
 		<Unzip ZipFileName="$(RootDir)/lib/wkhtmltopdf-0.10.0_rc2.zip"
@@ -183,5 +183,6 @@
 		<DownloadFile
 			Address="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1"
 			LocalFileName="$(RootDir)/DistFiles/Bloom.chm"/>
+
   </Target>
 </Project>
