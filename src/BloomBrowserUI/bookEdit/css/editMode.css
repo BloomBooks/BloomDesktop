@@ -500,3 +500,6 @@ even when the div is focused (as long as it is empty). */
 	content: attr(data-placeholder);
 	color: #DDDBDB;
 }
+
+/* This block handles marking elements that violate decodable book and leveled reader constraints */
+span.sentence-too-long {background-color: pink}
