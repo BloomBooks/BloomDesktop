@@ -208,6 +208,33 @@ EditControlsModel.prototype.updateWordList = function() {
     this.updateElementContent("wordList", result);
 };
 
+EditControlsModel.prototype.lostFocus = function(element) {
+    var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
+    $(".bloom-editable").checkLeveledReader(options);
+    this.updateMaxWordsPerSentenceOnPage();
+};
+
+EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
+    return this.synphony.getLevels()[this.levelNumber - 1].getMaxWordsPerSentence();
+};
+
+EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
+    var max = 0;
+    $(".bloom-editable").each(function(index) {
+        var fragments = stringToSentences(this.innerHTML);
+        for (var i = 0; i < fragments.length; i++) {
+            max = Math.max(max, fragments[i].wordCount());
+        }
+    });
+    $("#actualWordsPerSentence").html(max.toString());
+    var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
+    // The two styles here must match ones defined in EditControls.htm or its stylesheet.
+    // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
+    // instead of tooLarge). That will mess things up going from the longer to the shorter.
+    this.setPresenceOfClass("actualWordsPerSentence", acceptable, "acceptable");
+    this.setPresenceOfClass("actualWordsPerSentence", !acceptable, "tooLarge");
+};
+
 // Should be called early on, before other init.
 EditControlsModel.prototype.setSynphony = function(val) {
     this.synphony = val;
@@ -263,6 +290,10 @@ if (typeof($) == "function") {
     var synphony = new SynphonyApi();
     model.setSynphony(synphony);
     initialize("", true);
+    // invoke function when a bloom-editable element loses focus
+    $(".bloom-editable").focusout(function() {
+        model.lostFocus(this); // This is the element that just lost focus.
+    });
 }
 else {
     // running tests...or someone forgot to install jquery first
