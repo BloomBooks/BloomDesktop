@@ -667,6 +667,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
     </None>
+    <Compile Include="web\IRequestInfo.cs" />
+    <Compile Include="web\RequestInfo.cs" />
+    <Compile Include="web\PretendRequestInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />
