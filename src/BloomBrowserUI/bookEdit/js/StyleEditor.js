@@ -190,6 +190,8 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
+        if (element.length == 0)
+            return;
         element.qtip({
             content: toolTip,
             show: {
