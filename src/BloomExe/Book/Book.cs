@@ -321,6 +321,11 @@ namespace Bloom.Book
 			}
 		}
 
+		internal IFileLocator GetFileLocator()
+		{
+			return _storage.GetFileLocator();
+		}
+
 		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);

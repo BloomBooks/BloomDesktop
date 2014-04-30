@@ -11,120 +11,123 @@
 			$( "#accordion" ).accordion();
 		});
 	</script>
-	<link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css">
-	<style>
-		body.rootClass {background-color:#404040; color: white; font-size:x-small}
-		td.section {margin-top:20px}
-		td.section {padding-top: 20px}
-		span.scroll-button {color: white; float: left}
-		span.stageLine {float: left}
-		td.acceptable {color: green}
-		td.unacceptable {color: red}
-		table.statistics {}
-		td.statistics-label {padding-right: 5px}
-		td.statistics-max {padding-right: 3px; text-align: center}
-		td.statistics-actual {padding-right: 3px; text-align: center}
-		div.ui-accordion {padding-left: 0px; padding-right: 0px}
-		div.ui-accordion-content {padding-left: 3px !important; padding-right: 0px !important}
-		span.setup {font-size: xx-small; margin-left: 10px}
-		div.section {padding-top: 20px;color:lightskyblue}
-		div,table.clear {clear: both}
-		div.tableHolder {overflow: auto; max-height: 300px}
-		div.sortBlock {margin-left: 15px; display: inline-block;border:solid;border-color: white;border-width: 1px}
-		div.rightBorder {border: solid; border-color: white; border-width: 0; border-right-width:1px}
-		div.sortIconSelected {background:grey}
-		div.sortItem {display:inline-block;color:white; padding: 2px 3px}
-		span.ofStage {font-size:xx-small}
-		span.disabledIcon {visibility:hidden;}
-		td.disabledLimit {visibility:hidden;}
-	</style>
+	<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
 </head>
-<body class="rootClass">
-	<div id="accordion">
-		<h3>Decodable Reader Tool</h3>
-		<div>
-			<div class="stageLine">
-				<span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decStage"></span>
-				<span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage"> of <span id="numberOfStages">2</span></span></span>
-				<span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incStage"></span>
-				<span class ="setup stageLine"><a href="" id="setUpStages">Set up Stages</a></span>
-			</div>
-			<div class="section clear">
-				Words in this stage
-				<div class="sortBlock">
-					<!--careful! these divs are inline...space between them is significant-->
-					<div class="sortItem rightBorder sortIconSelected" id="sortAlphabetic"><i class="fa fa-sort-alpha-asc" title="Sort alphabetically"></i></div><div class="sortItem rightBorder" id="sortLength"><i class="fa fa-sort-amount-asc" title="Sort by word length"></i></div><div class="sortItem" id="sortFrequency"><i class="fa fa-long-arrow-up" title="Sort by frequency" ></i><i class="fa fa-facebook" title="Sort by frequency" id="sortFrequency2"></i></div>
+<body>
+	<div class="editControlsRoot">
+		<style>
+			div.editControlsRoot {background-color:#404040; color: white; font-size:x-small;
+				position:fixed; top: 0; bottom: 0; right: 0;width: 200px;}
+			td.section {margin-top:20px}
+			td.section {padding-top: 20px}
+			span.scroll-button {color: white; float: left}
+			span.stageLine {float: left}
+			td.acceptable {color: green}
+			td.unacceptable {color: red}
+			table.statistics {}
+			td.statistics-label {padding-right: 5px}
+			td.statistics-max {padding-right: 3px; text-align: center}
+			td.statistics-actual {padding-right: 3px; text-align: center}
+			div.ui-accordion {padding-left: 0px; padding-right: 0px}
+			div.ui-accordion-content {padding-left: 3px !important; padding-right: 0px !important}
+			span.setup {font-size: xx-small; margin-left: 10px}
+			div.section {padding-top: 20px;color:lightskyblue}
+			div.clear,table.clear {clear: both}
+			div.tableHolder {overflow: auto; max-height: 300px}
+			div.sortBlock {margin-left: 15px; display: inline-block;border:solid;border-color: white;border-width: 1px}
+			div.rightBorder {border: solid; border-color: white; border-width: 0; border-right-width:1px}
+			div.sortIconSelected {background:grey}
+			div.sortItem {display:inline-block;color:white; padding: 2px 3px}
+			span.ofStage {font-size:xx-small}
+			span.disabledIcon {visibility:hidden;}
+			td.disabledLimit {visibility:hidden;}
+		</style>
+		<div id="accordion">
+			<h3>Decodable Reader Tool</h3>
+			<div>
+				<div class="stageLine">
+					<span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decStage"></span>
+					<span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage"> of <span id="numberOfStages">2</span></span></span>
+					<span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incStage"></span>
+					<span class ="setup stageLine"><a href="" id="setUpStages">Set up Stages</a></span>
+				</div>
+				<div class="section clear">
+					Words in this stage
+					<div class="sortBlock">
+						<!--careful! these divs are inline...space between them is significant-->
+						<div class="sortItem rightBorder sortIconSelected" id="sortAlphabetic"><i class="fa fa-sort-alpha-asc" title="Sort alphabetically"></i></div><div class="sortItem rightBorder" id="sortLength"><i class="fa fa-sort-amount-asc" title="Sort by word length"></i></div><div class="sortItem" id="sortFrequency"><i class="fa fa-long-arrow-up" title="Sort by frequency" ></i><i class="fa fa-facebook" title="Sort by frequency" id="sortFrequency2"></i></div>
+					</div>
+				</div>
+				<div class="tableHolder">
+					<table class="wordList" id="wordList">
+
+					</table>
 				</div>
 			</div>
-			<div class="tableHolder">
-				<table class="wordList" id="wordList">
 
-				</table>
-			</div>
-		</div>
+			<h3>Leveled Reader Tool</h3>
+			<div>
+				<div class="stageLine">
+					<span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decLevel"></span>
+					<span class="stageLabel stageLine">Level <span id="levelNumber">1</span></span>
+					<span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel"></span>
+				</div>
+				<table class="statistics clear">
+					<tr><td class="section">Word counts</td></tr>
+					<tr><td>This Page</td></tr>
+					<tr>
+						<td class="statistics-label"></td>
+						<td class="statistics-max">Max</td>
+						<td class="statistics-actual">Actual</td>
+					</tr>
+					<tr>
+						<td class="statistics-label">per page</td>
+						<td class="statistics-max" id="maxWordsPerPage">15</td>
+						<td class="statistics-actual" id="actualWordsPerPage">13</td>
+					</tr>
+					<tr>
+						<td class="statistics-label">per sentence</td>
+						<td class="statistics-max" id="maxWordsPerSentence">5</td>
+						<td class="statistics-actual" id="actualWordsPerSentence">7</td>
+					</tr>
 
-		<h3>Leveled Reader Tool</h3>
-		<div>
-			<div class="stageLine">
-				<span class="scroll-button ui-icon ui-icon-triangle-1-w" id="decLevel"></span>
-				<span class="stageLabel stageLine">Level <span id="levelNumber">1</span></span>
-				<span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel"></span>
-			</div>
-			<table class="statistics clear">
-				<tr><td class="section">Word counts</td></tr>
-				<tr><td>This Page</td></tr>
-				<tr>
-					<td class="statistics-label"></td>
-					<td class="statistics-max">Max</td>
-					<td class="statistics-actual">Actual</td>
-				</tr>
-				<tr>
+					<tr><td  class="section">This Book</td></tr>
+					<tr>
+						<td class="statistics-label"></td>
+						<td class="statistics-max">Max</td>
+						<td class="statistics-actual">Actual</td>
+					</tr>
+					<tr>
+						<td class="statistics-label">total</td>
+						<td class="statistics-max" id="maxWordsPerBook"></td>
+						<td class="statistics-actual" id="actualWordCount">83</td>
+					</tr>
 					<td class="statistics-label">per page</td>
-					<td class="statistics-max" id="maxWordsPerPage">15</td>
-					<td class="statistics-actual" id="actualWordsPerPage">13</td>
-				</tr>
-				<tr>
-					<td class="statistics-label">per sentence</td>
-					<td class="statistics-max" id="maxWordsPerSentence">5</td>
-					<td class="statistics-actual" id="actualWordsPerSentence">7</td>
-				</tr>
-
-				<tr><td  class="section">This Book</td></tr>
-				<tr>
-					<td class="statistics-label"></td>
-					<td class="statistics-max">Max</td>
-					<td class="statistics-actual">Actual</td>
-				</tr>
-				<tr>
-					<td class="statistics-label">total</td>
-					<td class="statistics-max" id="maxWordsPerBook"></td>
-					<td class="statistics-actual" id="actualWordCount">83</td>
-				</tr>
-				<td class="statistics-label">per page</td>
-				<td class="statistics-max" id="maxWordsPerPageBook">15</td>
-				<td class="statistics-actual" id="actualWordsPerPageBook">14</td>
-				<tr>
-					<td class="statistics-label">unique</td>
-					<td class="statistics-max" id="maxUniqueWordsPerBook">20</td>
-					<td class="statistics-actual" id="actualUniqueWords">22</td>
-				</tr>
-			</table>
-			<div class="section">Keep in mind</div>
-			<ul>
-				<li><a href="http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract">Predictability</a></li>
-				<li><a href="http://pracresources.pbworks.com/f/PatternAndSequence.pdf">Pattern and recognition</a></li>
-				<li><a href="http://www.rif.org/us/literacy-resources/articles/getting-the-most-out-of-picture-books.htm">Illustration support</a></li>
-				<li><a href="http://books.google.com/books?id=ugWzGuZSd60C&pg=PA40&lpg=PA40&dq=literacy+concept+load&source=bl&ots=yRKQYrx2PW&sig=hdP5gw6s1a8reC6pa70eb6OEuSM&hl=en&sa=X&ei=J0RVU8mvE8Kz2gXU_YFw&ved=0CC0Q6AEwAA#v=onepage&q=literacy%20concept%20load&f=false">Concept load</a></li>
-				<li><a href="http://books.google.com/books?id=BBTwHStpbigC&pg=PA58&dq=literacy+topic+familiarity&hl=en&sa=X&ei=X0RVU6vsKOLS2AW69YGIBw&ved=0CEIQ6AEwAg#v=onepage&q=literacy%20topic%20familiarity&f=false">Topic familiarity</a></li>
-			</ul>
-			<a href="http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/">How to make a great leveled reader</a>
-		</div>
+					<td class="statistics-max" id="maxWordsPerPageBook">15</td>
+					<td class="statistics-actual" id="actualWordsPerPageBook">14</td>
+					<tr>
+						<td class="statistics-label">unique</td>
+						<td class="statistics-max" id="maxUniqueWordsPerBook">20</td>
+						<td class="statistics-actual" id="actualUniqueWords">22</td>
+					</tr>
+				</table>
+				<div class="section">Keep in mind</div>
+				<ul>
+					<li><a href="http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract">Predictability</a></li>
+					<li><a href="http://pracresources.pbworks.com/f/PatternAndSequence.pdf">Pattern and recognition</a></li>
+					<li><a href="http://www.rif.org/us/literacy-resources/articles/getting-the-most-out-of-picture-books.htm">Illustration support</a></li>
+					<li><a href="http://books.google.com/books?id=ugWzGuZSd60C&pg=PA40&lpg=PA40&dq=literacy+concept+load&source=bl&ots=yRKQYrx2PW&sig=hdP5gw6s1a8reC6pa70eb6OEuSM&hl=en&sa=X&ei=J0RVU8mvE8Kz2gXU_YFw&ved=0CC0Q6AEwAA#v=onepage&q=literacy%20concept%20load&f=false">Concept load</a></li>
+					<li><a href="http://books.google.com/books?id=BBTwHStpbigC&pg=PA58&dq=literacy+topic+familiarity&hl=en&sa=X&ei=X0RVU6vsKOLS2AW69YGIBw&ved=0CEIQ6AEwAg#v=onepage&q=literacy%20topic%20familiarity&f=false">Topic familiarity</a></li>
+				</ul>
+				<a href="http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/">How to make a great leveled reader</a>
+			</div>
 
 
-		<h3>Page Elements</h3>
-		<div>
-			<div class="tool">Text Block</div>
-			<div class="tool">Image</div>
+			<h3>Page Elements</h3>
+			<div>
+				<div class="tool">Text Block</div>
+				<div class="tool">Image</div>
+			</div>
 		</div>
 	</div>
 	<script src="../js/synphonyApi.js"></script>

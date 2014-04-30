@@ -152,10 +152,20 @@ namespace Bloom.Book
 
 		public void AddJavascriptFile(string pathToJavascript)
 		{
+			Head.AppendChild(MakeJavascriptElement(pathToJavascript));
+		}
+
+		private XmlElement MakeJavascriptElement(string pathToJavascript)
+		{
 			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
 			element.SetAttribute("type", "text/javascript");
 			element.SetAttribute("src", "file://" + pathToJavascript);
-			Head.AppendChild(element);
+			return element;
+		}
+
+		public void AddJavascriptFileToBody(string pathToJavascript)
+		{
+			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
 
