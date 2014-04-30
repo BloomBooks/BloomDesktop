@@ -1,7 +1,9 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
+
 var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
+        this.MIN_FONT_SIZE = 7;
         this._supportFilesRoot = supportFilesRoot;
 
         var sheet = this.GetOrCreateUserModifiedStyleSheet();
@@ -37,18 +39,34 @@ var StyleEditor = (function () {
         this.ChangeSize(target, -2);
     };
 
+    StyleEditor.MigratePreStyleBook = function (target) {
+        var parentPage = ($(target).closest(".bloom-page")[0]);
+
+        // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
+        var pageLineage = $(parentPage).attr('data-pagelineage');
+        if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
+            var styleName = "normal-style";
+            $(target).addClass(styleName);
+            return styleName;
+        }
+        return null;
+    };
+
     StyleEditor.GetStyleNameForElement = function (target) {
         var styleName = this.GetStyleClassFromElement(target);
         if (!styleName) {
-            var parentPage = ($(target).closest(".bloom-page")[0]);
-
-            // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-            var pageLineage = $(parentPage).attr('data-pagelineage');
-            if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-                styleName = "normal-style";
-                $(target).addClass(styleName);
+            // The style name is probably on the parent translationGroup element
+            var parentGroup = ($(target).parent(".bloom-translationGroup")[0]);
+            if (parentGroup) {
+                styleName = this.GetStyleClassFromElement(parentGroup);
+                if (styleName)
+                    $(target).addClass(styleName); // add style to bloom-editable div
+                else {
+                    return this.MigratePreStyleBook(target);
+                }
             } else {
-                return null;
+                // No .bloom-translationGroup? Unlikely...
+                return this.MigratePreStyleBook(target);
             }
         }
 
@@ -73,15 +91,24 @@ var StyleEditor = (function () {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
+        var fontSize = this.GetCalculatedFontSizeInPoints(target);
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
         var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
-        var sizeString = rule.style.fontSize;
-        if (!sizeString)
-            sizeString = $(target).css("font-size");
-        var units = sizeString.substr(sizeString.length - 2, 2);
-        sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
+        var units = 'pt';
+        var sizeString = (fontSize + change).toString();
+        if (parseInt(sizeString) < this.MIN_FONT_SIZE)
+            return;
         rule.style.setProperty("font-size", sizeString + units, "important");
+
         // alert("New size rule: " + rule.cssText);
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        this.AddQtipToElement($('#formatButton'), toolTip);
+    };
+
+    StyleEditor.prototype.GetCalculatedFontSizeInPoints = function (target) {
+        var sizeInPx = $(target).css('font-size');
+        return this.ConvertPxToPt(parseInt(sizeInPx));
     };
 
     StyleEditor.prototype.ChangeSizeAbsolute = function (target, newSize) {
@@ -90,7 +117,7 @@ var StyleEditor = (function () {
             alert('ChangeSizeAbsolute called on an element with invalid style class.');
             return;
         }
-        if (newSize < 6) {
+        if (newSize < this.MIN_FONT_SIZE) {
             alert('ChangeSizeAbsolute called with too small a point size.');
             return;
         }
@@ -99,6 +126,10 @@ var StyleEditor = (function () {
         var units = "pt";
         var sizeString = newSize.toString();
         rule.style.setProperty("font-size", sizeString + units, "important");
+
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
     StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
@@ -145,7 +176,7 @@ var StyleEditor = (function () {
         var ratio = 1000 / tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         tempDiv = null;
-        return pxSize * ratio;
+        return Math.round(pxSize * ratio);
     };
 
     StyleEditor.prototype.GetToolTip = function (targetBox, styleName) {
@@ -153,9 +184,24 @@ var StyleEditor = (function () {
         var box = $(targetBox);
         var sizeString = box.css('font-size');
         var pxSize = parseInt(sizeString);
-        var ptSize = Math.round(this.ConvertPxToPt(pxSize));
+        var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
         return "Changes the text size for all boxes carrying the style \'" + styleName + "\' and language \'" + lang + "\'.\nCurrent size is " + ptSize + "pt.";
+    };
+
+    StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
+        if (element.length == 0)
+            return;
+        element.qtip({
+            content: toolTip,
+            show: {
+                event: 'click mouseenter'
+            },
+            hide: {
+                event: 'unfocus',
+                inactive: 3000
+            }
+        });
     };
 
     StyleEditor.prototype.AttachToBox = function (targetBox) {
@@ -180,10 +226,9 @@ var StyleEditor = (function () {
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        formatButton.attr('title', toolTip);
+        this.AddQtipToElement(formatButton, toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
-            //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
             position: 'left',
             hideOnClick: false
         });
@@ -196,6 +241,7 @@ var StyleEditor = (function () {
             if (whichButton.id == "bigger") {
                 editor.MakeBigger(targetBox);
             }
+            formatButton.trigger('click'); // This re-displays the qtip with the new value.
         });
     };
 
