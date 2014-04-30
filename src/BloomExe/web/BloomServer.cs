@@ -1,7 +1,8 @@
-﻿using System;
+﻿// Copyright (c) 2014 SIL International
+// This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -195,137 +196,6 @@ namespace Bloom.web
 	}
 
 
-	public interface IRequestInfo
-		{
-			string LocalPathWithoutQuery { get; }
-			string ContentType { set; }
-			void WriteCompleteOutput(string s);
-			void ReplyWithImage(string path);
-		void WriteError(int errorCode);
-		}
-
-		/// <summary>
-		/// this makes it easier to test without actually going throught he http listener
-		/// </summary>
-		public class RequestInfo : IRequestInfo
-		{
-			private readonly HttpListenerContext _actualContext;
-
-			public string LocalPathWithoutQuery
-			{
-				get { return _actualContext.Request.Url.LocalPath; }
-			}
-
-			public string ContentType
-			{
-				set { _actualContext.Response.ContentType = value; }
-			}
-
-			public RequestInfo(HttpListenerContext actualContext)
-			{
-				_actualContext = actualContext;
-			}
-
-			public void WriteCompleteOutput(string s)
-			{
-				WriteOutput(s, _actualContext.Response);
-			}
-
-			private static void WriteOutput(string responseString, HttpListenerResponse response)
-			{
-				byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-
-				response.ContentLength64 += buffer.Length;
-				Stream output = response.OutputStream;
-				output.Write(buffer, 0, buffer.Length);
-				output.Close();
-			}
-
-			public void ReplyWithImage(string path)
-			{
-				var isJPEG = !path.EndsWith(".png");
-
-				_actualContext.Response.ContentType = isJPEG ? "image/png" : "image/jpeg";
-
-				//problems around here? See: http://www.west-wind.com/weblog/posts/2006/Oct/19/Common-Problems-with-rendering-Bitmaps-into-ASPNET-OutputStream
-				using (var image = Image.FromFile(path))
-				{
-					//				var output = _actualContext.Response.OutputStream;
-					//				img.Save(output, Path.GetExtension(path)==".jpg"? ImageFormat.Jpeg : ImageFormat.Png);
-					//				output.Close();
-
-					//On Vista an XP, I would get a "generic GDI+ error" when I saved the image I just loaded.
-					//The workaround (see about link) is to make a copy and stream that
-
-					using (Bitmap workAroundCopy = new Bitmap(image))
-					{
-						if (isJPEG)
-						{
-							workAroundCopy.Save(_actualContext.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-							_actualContext.Response.Close();
-						}
-						else //PNG's reportedly need this further special treatment:
-						{
-							using (MemoryStream ms = new MemoryStream())
-							{
-								workAroundCopy.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-								ms.WriteTo(_actualContext.Response.OutputStream);
-								_actualContext.Response.Close();
-							}
-						}
-					}
-				}
-
-				//_actualContext.Response.Close();
-			}
-
-			public void WriteError(int errorCode)
-			{
-				_actualContext.Response.StatusCode = errorCode;
-				_actualContext.Response.StatusDescription = "File not found";
-				_actualContext.Response.Close();
-			}
-		}
-
-		public class PretendRequestInfo : IRequestInfo
-		{
-			public string ReplyContents;
-			public string ReplyImagePath;
-			//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
-			public long StatusCode;
-
-			public PretendRequestInfo(string url)
-			{
-				LocalPathWithoutQuery = url.Replace("http://localhost:8089", "");
-			}
-
-			public string LocalPathWithoutQuery { get; set; }
-
-			public string ContentType { get; set; }
-
-			/// <summary>
-			/// wrap so that it is easily consumed by our standard xml unit test stuff, which can't handled fragments
-			/// </summary>
-			public string ReplyContentsAsXml
-			{
-				get { return "<root>" + ReplyContents + "</root>"; }
-			}
-
-			public void WriteCompleteOutput(string s)
-			{
-				ReplyContents = s;
-			}
-
-			public void ReplyWithImage(string path)
-			{
-				ReplyImagePath = path;
-			}
-
-			public void WriteError(int errorCode)
-			{
-				StatusCode = errorCode;
-			}
-		}
 
 
 }
