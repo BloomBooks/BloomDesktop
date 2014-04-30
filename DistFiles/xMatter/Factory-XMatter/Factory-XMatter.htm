@@ -19,15 +19,14 @@
 			<label class="bubble">Book title in {lang}</label>
 		  </div>
 		</div>
-		<div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/></div>
+		<div class="bloom-imageContainer"><img src="placeholder.png" data-book="coverImage"/></div>
 		<div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits cover-credits-style" data-book="smallCoverCredits">
 		  <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
 		</div>
 		<div class="coverBottomLangName">
 		  <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
 		</div>
-		<div class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
-		  <label data-functionOnHintClick="ShowTopicChooser()" class="bubble">Click to choose topic</label>
+		<div data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
 		  <div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
 		</div>
 	  </div>
