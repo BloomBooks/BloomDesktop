@@ -196,6 +196,8 @@ class StyleEditor {
     }
 
     AddQtipToElement(element: JQuery, toolTip: string) {
+        if (element.length == 0)
+            return;
         (<qtipInterface>element).qtip( {
             content: toolTip,
             show: {
