@@ -170,12 +170,14 @@ namespace BloomTemp
 			// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
 			// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
 			// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
-			// There are probably more elements than these two which may not be empty. However we can't just use [^ ]* in place of title|div
+            // Also, embedded controls (like EditControls.htm) now pass through this xml-to-html conversion, and this file contains
+            // several more kinds of empty element, some of which have attributes.
+			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
         	string xhtml = File.ReadAllText(temp.Path);
-        	var re = new Regex("<(title|div) />");
-        	xhtml = re.Replace(xhtml, "<$1></$1>");
+        	var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+        	xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + xhtml);
 

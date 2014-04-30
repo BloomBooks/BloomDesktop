@@ -36,18 +36,18 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
     	private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
     	private bool _visible;
-        private EditControlsView _editControlsView;
+        //private EditControlsView _editControlsView;
 
     	public delegate EditingView Factory();//autofac uses this
 
         
-        public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView, EditControlsView editControlsView,
+        public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView, //EditControlsView editControlsView,
             CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand)
         {
             _model = model;
             _pageListView = pageListView;
             _templatePagesView = templatePagesView;
-            _editControlsView = editControlsView;
+            //_editControlsView = editControlsView;
             _cutCommand = cutCommand;
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
@@ -213,7 +213,7 @@ namespace Bloom.Edit
             _pageListView.Dock=DockStyle.Fill;
             _pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             // Setting the _editControlsView.BackColor here seems a logical thing to do, but I can't make the HTML control actually use it.
-            _editControlsView.BackColor = _templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
+            //_editControlsView.BackColor = _templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
             _splitContainer1.Panel1.Controls.Add(_pageListView);
 
             _templatePagesView.Dock = DockStyle.Fill;
@@ -231,15 +231,15 @@ namespace Bloom.Edit
 			{
 				_splitContainer2.Panel2Collapsed = false;
                 _splitContainer2.Panel2.Controls.Add(_templatePagesView);
-                _editControlsView.Dock = DockStyle.Right;
+                //_editControlsView.Dock = DockStyle.Right;
             }
 			else
 			{
-				//_splitContainer2.Panel2Collapsed = true;
-                _editControlsView.Dock = DockStyle.Fill;
+				_splitContainer2.Panel2Collapsed = true;
+                //_editControlsView.Dock = DockStyle.Fill;
 			}
             // Enhance: _editControlsView may get its own splitter.
-            _splitContainer2.Panel2.Controls.Add(_editControlsView);
+            //_splitContainer2.Panel2.Controls.Add(_editControlsView);
         }
 
        void VisibleNowAddSlowContents(object sender, EventArgs e)

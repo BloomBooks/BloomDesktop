@@ -152,11 +152,21 @@ namespace Bloom.Book
 
 		public void AddJavascriptFile(string pathToJavascript)
 		{
-			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
-			element.SetAttribute("type", "text/javascript");
-			element.SetAttribute("src", "file://" + pathToJavascript);
-			Head.AppendChild(element);
+		    Head.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
+
+	    private XmlElement MakeJavascriptElement(string pathToJavascript)
+	    {
+	        XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
+	        element.SetAttribute("type", "text/javascript");
+	        element.SetAttribute("src", "file://" + pathToJavascript);
+	        return element;
+	    }
+
+	    public void AddJavascriptFileToBody(string pathToJavascript)
+        {
+            Body.AppendChild(MakeJavascriptElement(pathToJavascript));
+        }
 
 
 		public void RemoveModeStyleSheets()

@@ -124,7 +124,7 @@
             this._splitContainer2.Panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(63)))), ((int)(((byte)(64)))));
             this._splitContainer2.Panel2.Controls.Add(this._splitTemplateAndSource);
             this._splitContainer2.Size = new System.Drawing.Size(940, 561);
-            this._splitContainer2.SplitterDistance = 535;
+            this._splitContainer2.SplitterDistance = 785;
             this._splitContainer2.SplitterWidth = 10;
             this._splitContainer2.TabIndex = 0;
             this._splitContainer2.TabStop = false;

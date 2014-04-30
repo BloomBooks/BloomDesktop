@@ -39,7 +39,9 @@ namespace Bloom
 		{
 			var dom = new XmlDocument();
 			//hack. tidy deletes <span data-libray='somethingImportant'></span>
+            // and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
 			content = content.Replace("></span>", ">REMOVEME</span>");
+            content = content.Replace("></i>", ">REMOVEME</i>");
 
 
 

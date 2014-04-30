@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
+using Chorus.notes;
 using DesktopAnalytics;
+using IWshRuntimeLibrary;
+using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -394,7 +399,107 @@ namespace Bloom.Edit
     	public HtmlDom GetXmlDocumentForCurrentPage()
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-            return _domForCurrentPage;
+
+    	    AddEditControlsToPage();
+
+    	    return _domForCurrentPage;
+        }
+
+        /// <summary>
+        /// Mangle the page to add a div which floats on the right and contains various editing controls
+        /// (currently the decodable/leveled reader ones).
+        /// This involves
+        ///   - Moving the body of the current page into a new division, and changing stylesheet links
+        ///     to @import statements in a new scoped div. This insulates the EditControls from the main page stylesheet.
+        ///     (Note: should we ever use a non-gecko browser, e.g. for Macintosh, be aware that scoped style is not yet
+        ///     supported by most of them, and a different solution may be needed.)
+        ///   - Appending the contents of the body of EditControls.htm to the body of the page
+        ///   - Appending (most of) the header of EditControls.htm to the header of the page
+        ///   - Adding the JavaScript and css file references needed by the EditControls in the appropriate places
+        ///   - Copying some font-awesome files to a subdirectory of the temp folder, since FireFox won't let us load them from elsewhere
+        /// </summary>
+        private void AddEditControlsToPage()
+        {
+            MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
+
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
+            var domForEditControls = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+            AppendAllChildren(domForEditControls.DocumentElement.LastChild, _domForCurrentPage.Body);
+            // looking at the EditControls.htm file and the generated html for the page, you would think we need the following three lines.
+            // However, the generated html loads bloomBootstrap.js, and this loads all three files.
+            //_domForCurrentPage.AddStyleSheet(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"));
+            //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-1.10.1.js"));
+            //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-ui-1.10.3.custom.min.js"));
+            AppendAllChildren(domForEditControls.DocumentElement.FirstChild, _domForCurrentPage.Head);
+            _domForCurrentPage.AddJavascriptFileToBody(
+                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
+            _domForCurrentPage.AddJavascriptFileToBody(
+                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"editControls.js")); // must be last
+
+            // It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
+            // live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
+            // (We haven't made the temp file yet; but it will be in the system temp folder.)
+            var pathToFontAwesomeStyles =
+                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
+            var requiredLocationOfFontAwesomeStyles = Path.GetTempPath() + "/" + "font-awesome/css/font-awesome.min.css";
+            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
+            System.IO.File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
+            var pathToFontAwesomeFont = Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)) +
+                                        "/fonts/fontawesome-webfont.woff";
+            var requiredLocationOfFontAwesomeFont =
+                Path.GetDirectoryName(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles)) +
+                "/fonts/fontawesome-webfont.woff";
+            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
+            System.IO.File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
+            _domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
+        }
+
+        /// <summary>
+        /// Move everything in the body into a new div, which begins with a style scoped element.
+        /// Replace stylesheet links in the head with importing those styles into the style element.
+        /// </summary>
+        /// <param name="_domForCurrentPage"></param>
+        private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
+        {
+            var body = domForCurrentPage.Body;
+            var head = domForCurrentPage.Head;
+            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
+            var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
+            var newDiv = body.OwnerDocument.CreateElement("div");
+            newDiv.SetAttribute("style", "float:left");
+            body.AppendChild(newDiv);
+            var scope = body.OwnerDocument.CreateElement("style");
+            newDiv.AppendChild(scope);
+            scope.SetAttribute("scoped", "scoped");
+            foreach (var style in stylesToMove)
+            {
+                var source = style.Attributes["href"].Value;
+                var import = body.OwnerDocument.CreateTextNode("@import \"" + source.Replace("\\", "/") + "\";\n");
+                scope.AppendChild(import);
+                head.RemoveChild(style);
+            }
+            foreach (var child in childrenToMove)
+                newDiv.AppendChild(child);
+        }
+
+        void AppendAllChildren(XmlNode source, XmlNode dest)
+        {
+            // Not sure, but the ToArray MIGHT be needed because AppendChild MIGHT remove the node from the source
+            // which MIGHT interfere with iterating over them.
+            foreach (var node in source.ChildNodes.Cast<XmlNode>().ToArray())
+            {
+                // It's nice if the independent HMTL file we are copying can have its own title, but we don't want to duplicate that into
+                // our page document, which already has its own.
+                if (node.Name == "title")
+                    continue;
+                // It's no good copying file references; they may be useful for independent testing of the control source,
+                // but the relative paths won't work. Any needed scripts must be re-included.
+                if (node.Name == "script" && node.Attributes != null && node.Attributes["src"] != null)
+                    continue;
+                if (node.Name == "link" && node.Attributes != null && node.Attributes["rel"] != null)
+                    continue; // likewise stylesheets must be inserted
+                dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
+            }
         }
 
         public void SaveNow()
