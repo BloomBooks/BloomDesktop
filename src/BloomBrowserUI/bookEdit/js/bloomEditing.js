@@ -256,6 +256,20 @@ function AddExperimentalNotice(element) {
     });
 }
 
+function GetStyleClassFromElement(element) {
+    var c = $(element).attr("class");
+    if (!c)
+        c = "";
+    var classes = c.split(' ');
+
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('-style') > 0) {
+            return classes[i];
+        }
+    }
+    return null;
+}
+
  //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
 
@@ -267,6 +281,11 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr("readonly", "readonly");
         $(this).removeClass('bloom-editable');
         $(this).attr("contenteditable", "false");
+        // If we change font size, that should NOT affect the source text bubbles
+        var styleClass = GetStyleClassFromElement(this);
+        if (styleClass)
+            $(this).removeClass(styleClass);
+        $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
     $(divForBubble).removeClass(); //remove them all
@@ -340,7 +359,7 @@ function MakeSourceTextDivForGroup(group) {
         $(divForBubble).easytabs({
             animate: false,
             defaultTab: selectorOfDefaultTab
-        })
+        });
 //        $(divForBubble).bind('easytabs:after', function(event, tab, panel, settings){
 //            alert(panel.selector)
 //        });
@@ -353,13 +372,13 @@ function MakeSourceTextDivForGroup(group) {
 
     // turn that tab thing into a bubble, and attach it to the original div ("group")
   $(group).each(function () {
-      var targetHeight = $(this).height();
+      // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
       showEvents = false;
       hideEvents = false;
       shouldShowAlways = true;
 
-        //todo: really, this should detect some made-up style, so thatwe can control this behavior via the stylesheet
+        //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
             showEvents = 'focusin';
             hideEvents = 'focusout';
@@ -367,8 +386,8 @@ function MakeSourceTextDivForGroup(group) {
         }
       $(this).qtip({
           position: {
-                my: 'left center',
-                at: 'right center',
+                my: 'left top',
+                at: 'right top',
               adjust: {
                   x: 10,
                   y: 0
@@ -380,11 +399,11 @@ function MakeSourceTextDivForGroup(group) {
               event: showEvents,
               ready: shouldShowAlways
           },
-          events: {
-              render: function (event, api) {
-                  api.elements.content.height(targetHeight);
-              }
-          },
+          //events: {
+          //    render: function (event, api) {
+          //        api.elements.content.height(targetHeight);
+          //    }
+          //},
           style: {
                 tip: {
                     corner: true,
