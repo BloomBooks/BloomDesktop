@@ -220,18 +220,25 @@ namespace Bloom
 								throw new ApplicationException(
 									"Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 							}
-							var docImage = new Bitmap(browser.Width, browser.Height);
-							browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
+//							When we were using geckofx11, we used this approach, which stopped working when we moved to geckofx22:
+//                            var docImage = new Bitmap(browser.Width, browser.Height);
+//							browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
 
-							Logger.WriteMinorEvent("	HtmlThumbNailer: finished GetBitmap(");
+							var creator = new ImageCreator(browser);
+							byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
+							using (Image fullsizeImage = Image.FromStream(new System.IO.MemoryStream(imageBytes)))
+							{
+
+								Logger.WriteMinorEvent("	HtmlThumbNailer: finished GetBitmap(");
 #if DEBUG
-							//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
+								//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
 #endif
-							if (_disposed)
-								return;
-							pendingThumbnail = MakeThumbNail(docImage, _widthInPixels, _heightInPixels,
-															 Color.Transparent,
-															 order.DrawBorderDashed);
+								if (_disposed)
+									return;
+								pendingThumbnail = MakeThumbNail(fullsizeImage, _widthInPixels, _heightInPixels,
+									Color.Transparent,
+									order.DrawBorderDashed);
+							}
 						}
 						catch (Exception error)
 						{
