@@ -164,12 +164,11 @@ namespace Bloom
 
 						browser.Navigate(temp.Path);
 
-						var minimumTime = DateTime.Now.AddSeconds(1);
+						var minimumTime = DateTime.Now.AddSeconds(0); //was 1 second, with geckofx11. For geckofx22, we're trying out no minumum time. Will need testing on slow machines to get confidence.
 						var stopTime = DateTime.Now.AddSeconds(5);
 						while (!_disposed && (DateTime.Now < minimumTime || !order.Done || browser.Document.ActiveElement == null) && DateTime.Now < stopTime)
 						{
 							Application.DoEvents(); //TODO: avoid this
-							//Thread.Sleep(100);
 						}
 						if (_disposed)
 							return;
@@ -220,19 +219,22 @@ namespace Bloom
 								throw new ApplicationException(
 									"Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 							}
-//							When we were using geckofx11, we used this approach, which stopped working when we moved to geckofx22:
-//                            var docImage = new Bitmap(browser.Width, browser.Height);
-//							browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
+/*							When we were using geckofx11, we used this approach, which stopped working when we moved to geckofx22:
+							var docImage = new Bitmap(browser.Width, browser.Height);
+							browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
+							if (_disposed)
+								return;
+							pendingThumbnail = MakeThumbNail(fullsizeImage, _widthInPixels, _heightInPixels,
+								Color.Transparent,
+								order.DrawBorderDashed);
+ */
 
-							var creator = new ImageCreator(browser);
+						   var creator = new ImageCreator(browser);
 							byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
-							using (Image fullsizeImage = Image.FromStream(new System.IO.MemoryStream(imageBytes)))
-							{
 
-								Logger.WriteMinorEvent("	HtmlThumbNailer: finished GetBitmap(");
-#if DEBUG
-								//							docImage.Save(@"c:\dev\temp\zzzz.bmp");
-#endif
+							using(var stream = new System.IO.MemoryStream(imageBytes))
+							using (Image fullsizeImage = Image.FromStream(stream))
+							{
 								if (_disposed)
 									return;
 								pendingThumbnail = MakeThumbNail(fullsizeImage, _widthInPixels, _heightInPixels,
