@@ -650,23 +650,29 @@ namespace Bloom
             head.AppendChild(script);
         }
 
-        public void RunJavaScript(string script)
+        public string RunJavaScript(string script)
         {
-			//NB: someday, look at jsdIDebuggerService, which has an Eval
+            using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
+            {
+                string result;
+                context.EvaluateScript(script, out result);
+                return result;
+           } 	
+        }
 
-			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,  
+        HashSet<string> _knownEvents = new HashSet<string>();
 
- 
-        	WebBrowser.Navigate("javascript:void(" +script+")");
-        	// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
-        	//var filter = new TestMessageFilter();
-        	//Application.AddMessageFilter(filter);
-				Application.DoEvents(); 
-
-
-        	//NB: Navigating and Navigated events are never raised. I'm going under the assumption for now that the script blocks    	
-       }
-
+        /// <summary>
+        /// Only the first call per browser per event name takes effect.
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="action"></param>
+        public void AddMessageEventListener(string eventName, Action<string> action)
+        {
+            if (_knownEvents.Contains(eventName))
+                return; // This browser already knows what to do about this; hopefully we don't have a conflict.
+	        _browser.AddMessageEventListener(eventName, action);
+	    }
 
 
         /* snippets
