@@ -53,8 +53,8 @@ To handling the mis-match.*/
 .ui-languageToolTip
 {
 	background-color: transparent !important;
-    /* Same grey color as pageLabel */
-    color: rgba(0, 0, 0, 0.2) !important;
+	/*Same grey color as pageLabel*/
+	color: rgba(0, 0, 0, 0.2) !important;
 	border-color: transparent !important;
 }
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
@@ -491,6 +491,10 @@ even when the div is focused (as long as it is empty).*/
 	content: attr(data-placeholder);
 	color: #DDDBDB;
 }
-
-/* This block handles marking elements that violate decodable book and leveled reader constraints */
-span.sentence-too-long {background-color: pink}
+/*This block handles marking elements that violate decodable book and leveled reader constraints*/
+SPAN.sentence-too-long
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: orange;
+}
