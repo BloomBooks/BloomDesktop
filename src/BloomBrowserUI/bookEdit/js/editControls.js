@@ -283,8 +283,17 @@ if (typeof($) == "function") {
     $("#sortFrequency").click(function () {
         model.sortByFrequency();
     });
-    $("#setUpStages").click(function () {
-        alert("setup!");
+    $("#setUpStages").click(function (clickEvent) {
+        clickEvent.preventDefault(); // don't try to follow nonexistent href
+        // Todo: this just demonstrates how to save the new settings file if needed.
+        // We really want to launch a dialog and allow editing the settings.
+        event = document.createEvent('MessageEvent');
+        var origin = window.location.protocol + '//' + window.location.host;
+        // I don't know what all the other parameters mean, but the first is the name of the event the
+        // C# is listening for, and must be exactly the string here. The fourth is the new content
+        // of the file.
+        event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, 'file content', origin, 1234, window, null);
+        document.dispatchEvent (event);
     });
     // Todo PhilH: replace this fake synphony with something real.
     var synphony = new SynphonyApi();

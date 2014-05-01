@@ -406,6 +406,33 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
+		/// View calls this once the main document has completed loading
+		/// </summary>
+		internal void DocumentCompleted()
+		{
+			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
+			var path = _collectionSettings.DecodableLevelPathName;
+			var decodableLeveledSettings = "";
+			if (System.IO.File.Exists(path))
+				decodableLeveledSettings = System.IO.File.ReadAllText(path, Encoding.UTF8);
+			// We need to escape backslashes and quotes so the whole content arrives intact.
+			// Backslash first so the ones we insert for quotes don't get further escaped.
+			var input = decodableLeveledSettings.Replace("\\", "\\\\").Replace("\"", "\\\"");
+#if DEBUG
+			var fakeIt = "true";
+#else
+			var fakeIt = "false";
+#endif
+			_view.RunJavaScript("initialize(\"" + input + "\", " + fakeIt + ")");
+		}
+
+		private void SaveDecodableLevelSettings(string content)
+		{
+			var path = _collectionSettings.DecodableLevelPathName;
+			System.IO.File.WriteAllText(path, content, Encoding.UTF8);
+		}
+
+		/// <summary>
 		/// Mangle the page to add a div which floats on the right and contains various editing controls
 		/// (currently the decodable/leveled reader ones).
 		/// This involves
