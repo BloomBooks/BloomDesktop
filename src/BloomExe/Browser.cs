@@ -210,7 +210,7 @@ namespace Bloom
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
-			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
+			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
 			var errorsToHide = new List<string>();
@@ -535,7 +535,7 @@ namespace Bloom
 
 				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
 					{
-						var titleNode = s.OwnerNode.GetSingleElement("@title");
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
@@ -703,7 +703,7 @@ namespace Bloom
 				var div = _browser.Document.ActiveElement;
 				if (div != null)
 				{
-					div = div.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
+					div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
 					if (div != null)
 					{
 						if (div.ScrollWidth > _browser.Width)

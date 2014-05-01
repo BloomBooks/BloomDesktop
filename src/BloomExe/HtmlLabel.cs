@@ -61,7 +61,7 @@ namespace Bloom
 				return;
 
 			HTML = _html;//in the likely case that there's html waiting to be shown
-			_browser.DomClick += new EventHandler<DomEventArgs>(OnBrowser_DomClick);
+			_browser.DomClick += new EventHandler<DomMouseEventArgs>(OnBrowser_DomClick);
 
 		}
 

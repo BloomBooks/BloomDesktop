@@ -14,6 +14,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
+using Gecko.Utils;
 using Palaso.Code;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -194,15 +195,15 @@ namespace Bloom
 							   at Bloom.HtmlThumbNailer.ProcessOrder(ThumbnailOrder order) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 167
 							   at Bloom.HtmlThumbNailer.Application_Idle(Object sender, EventArgs e) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 53
 						 */
-						var div = browser.Document.ActiveElement.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
+						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault();
 						if (div == null)
 						{
 							Logger.WriteEvent("HtmlThumNailer:  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath);
 							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
 						}
 
-						browser.Height = div.ClientHeight;
-						browser.Width = div.ClientWidth;
+						browser.Height = ((GeckoElement)div).ClientHeight;
+						browser.Width = ((GeckoElement)div).ClientWidth;
 
 						try
 						{
