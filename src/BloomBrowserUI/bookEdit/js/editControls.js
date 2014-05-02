@@ -31,7 +31,12 @@ EditControlsModel.prototype.setStageNumber = function(val) {
 };
 
 EditControlsModel.prototype.updateStageLabel = function() {
-    this.updateElementContent("stageNumber", this.synphony.getStages()[this.stageNumber - 1].getName());
+    var stages = this.synphony.getStages();
+    if (stages.length <= 0) {
+        this.updateElementContent("stageNumber", "");
+        return;
+    }
+    this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
 }
 
 EditControlsModel.prototype.incrementLevel = function() {
@@ -82,9 +87,9 @@ EditControlsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
     this.setPresenceOfClass(eltId, isSelected, sortIconSelectedClass);
 };
 
-// Should be called when the browser has loaded the page.
+// Should be called when the browser has loaded the page, and when the user has changed configuration.
 // It updates various things in the UI to be consistent with the state of things in the model.
-EditControlsModel.prototype.postNavigationInit = function() {
+EditControlsModel.prototype.updateControlContents = function() {
     this.updateWordList();
     this.updateNumberOfStages();
     this.updateStageLabel();
@@ -127,6 +132,9 @@ EditControlsModel.prototype.enableLevelButtons = function() {
 
 EditControlsModel.prototype.updateLevelLimits = function() {
     var level = this.synphony.getLevels()[this.levelNumber - 1];
+    if (!level) {
+        level = new Level("");
+    }
     this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerPageBook", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerSentence", level.getMaxWordsPerSentence());
@@ -147,8 +155,12 @@ EditControlsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
 };
 
 EditControlsModel.prototype.updateWordList = function() {
-    var stage = this.synphony.getStages()[this.stageNumber - 1];
-    var words = stage.getWords();
+    var stages = this.synphony.getStages();
+    var words = [];
+    if (stages.length > 0) {
+        var stage = stages[this.stageNumber - 1];
+        words = stage.getWords();
+    }
     // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
     switch(this.sort) {
@@ -215,7 +227,11 @@ EditControlsModel.prototype.lostFocus = function(element) {
 };
 
 EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
-    return this.synphony.getLevels()[this.levelNumber - 1].getMaxWordsPerSentence();
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 9999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerSentence();
 };
 
 EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
@@ -279,15 +295,11 @@ if (typeof($) == "function") {
     });
     $("#setUpStages").click(function (clickEvent) {
         clickEvent.preventDefault(); // don't try to follow nonexistent href
-        // Todo: this just demonstrates how to save the new settings file if needed.
-        // We really want to launch a dialog and allow editing the settings.
-        event = document.createEvent('MessageEvent');
-        var origin = window.location.protocol + '//' + window.location.host;
-        // I don't know what all the other parameters mean, but the first is the name of the event the
-        // C# is listening for, and must be exactly the string here. The fourth is the new content
-        // of the file.
-        event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, 'file content', origin, 1234, window, null);
-        document.dispatchEvent (event);
+       model.getSynphony().showConfigDialog(function() {
+           model.updateControlContents();
+           // Todo: update the doc content also, if relevant limits changed
+           // Todo: update model.levelNumber, if it is now out of range.
+       })
     });
     // Todo PhilH: replace this fake synphony with something real.
     var synphony = new SynphonyApi();
@@ -321,5 +333,5 @@ function initialize(pathname, fakeIt) {
         synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
         synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     }
-    model.postNavigationInit();
+    model.updateControlContents();
 };
