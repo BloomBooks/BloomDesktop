@@ -417,13 +417,14 @@ namespace Bloom.Edit
                 decodableLeveledSettings = System.IO.File.ReadAllText(path, Encoding.UTF8);
             // We need to escape backslashes and quotes so the whole content arrives intact.
             // Backslash first so the ones we insert for quotes don't get further escaped.
-            var input = decodableLeveledSettings.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            // Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
+            var input = decodableLeveledSettings.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n");
 #if DEBUG
             var fakeIt = "true";
 #else
             var fakeIt = "false";
 #endif
-            _view.RunJavaScript("initialize(\"" + input + "\", " + fakeIt + ")");
+            _view.RunJavaScript("if (typeof(initialize) == \"function\") {initialize(\"" + input + "\", " + fakeIt + ");}");
         }
 
         private void SaveDecodableLevelSettings(string content)
@@ -500,6 +501,8 @@ namespace Bloom.Edit
             var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
             var newDiv = body.OwnerDocument.CreateElement("div");
             newDiv.SetAttribute("style", "float:left");
+            // Varoius things in JavaScript land that want to add things using the styles add them to this element instead of body.
+            newDiv.SetAttribute("id", "mainPageScope");
             body.AppendChild(newDiv);
             var scope = body.OwnerDocument.CreateElement("style");
             newDiv.AppendChild(scope);
