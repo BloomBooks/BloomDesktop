@@ -113,8 +113,3 @@ DIV.ui-sourceTextsForBubble UL
 {
 	background: none;
 }
-/* Get accordion Tool panel to always be full-height */
-#accordion
-{
-	height: 100%;
-}
