@@ -672,6 +672,7 @@ namespace Bloom
 			if (_knownEvents.Contains(eventName))
 				return; // This browser already knows what to do about this; hopefully we don't have a conflict.
 			_browser.AddMessageEventListener(eventName, action);
+			_knownEvents.Add(eventName);
 		}
 
 
