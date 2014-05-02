@@ -219,13 +219,7 @@ EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
 };
 
 EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
-    var max = 0;
-    $(".bloom-editable").each(function(index) {
-        var fragments = stringToSentences(this.innerHTML);
-        for (var i = 0; i < fragments.length; i++) {
-            max = Math.max(max, fragments[i].wordCount());
-        }
-    });
+    var max = $(".bloom-editable").getMaxSentenceLength();
     $("#actualWordsPerSentence").html(max.toString());
     var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
     // The two styles here must match ones defined in EditControls.htm or its stylesheet.
