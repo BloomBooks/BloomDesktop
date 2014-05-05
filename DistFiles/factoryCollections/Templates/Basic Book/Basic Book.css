@@ -208,7 +208,6 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	display: table;
 }
 .imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable.bloom-content1
 {
@@ -237,7 +236,6 @@ DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	display: table;
 }
 DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
 {
