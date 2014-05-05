@@ -108,6 +108,11 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	vertical-align: bottom;
 	display: table-cell;
 }
+/*Increase font size if it looks like a big book*/
+.A4Landscape .bloom-editable
+{
+	font-size: 500%;
+}
 /*------A4L Side-by-side common*/
 .imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
