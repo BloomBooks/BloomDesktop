@@ -933,8 +933,8 @@ namespace Bloom.Book
             colorStyle.SetAttribute("type","text/css");
             colorStyle.InnerXml = @"<!--
 
-                DIV.coverColor  TEXTAREA	{		background-color: colorValue;	}
-                DIV.bloom-page.coverColor	{		background-color: colorValue;	}
+                DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
+                DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
                 -->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
             var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
