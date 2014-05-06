@@ -314,13 +314,13 @@ DIV.titlePage
 	display: block;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titlePageTitleBlock DIV.bloom-contentNational2
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
 	height: 35px;
 	text-align: center;
 	width: 419px;
 }
-DIV#titlePageTitleBlock DIV.bloom-contentNational1
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
 	height: 35px;
 	text-align: center;
@@ -334,7 +334,7 @@ DIV#titlePageTitleBlock DIV.bloom-contentNational1
 }
 /*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
 It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
-DIV#titlePageTitleBlock DIV.bloom-content1
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock DIV.bloom-content1
 {
 	font-size: 150%;
 	height: 111px;
@@ -415,7 +415,7 @@ DIV.languageLocation
 	top: 50px;
 	width: 407px;
 }
-DIV#titlePageTitleBlock
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock
 {
 	width: inherit;
 }
