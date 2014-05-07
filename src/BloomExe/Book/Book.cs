@@ -217,6 +217,7 @@ namespace Bloom.Book
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
 			}
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css"));
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			AddCoverColor(pageDom, CoverColor);
@@ -932,8 +933,8 @@ namespace Bloom.Book
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"<!--
 
-				DIV.coverColor  TEXTAREA	{		background-color: colorValue;	}
-				DIV.bloom-page.coverColor	{		background-color: colorValue;	}
+				DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
+				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
 				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
@@ -1271,7 +1272,7 @@ namespace Bloom.Book
 
 		private XmlNodeList GetPageElements()
 		{
-			return OurHtmlDom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
+			return OurHtmlDom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]");
 		}
 
 		private bool CanRelocatePageAsRequested(int indexOfItemAfterRelocation)
@@ -1382,7 +1383,7 @@ namespace Bloom.Book
 				}
 				printingDom.SortStyleSheetLinks();
 
-				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 				{
 					XmlElement importedPage = (XmlElement) printingDom.RawDom.ImportNode(pageDiv, true);
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
@@ -1396,11 +1397,11 @@ namespace Bloom.Book
 		private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
 		{
 			var lastPage =
-				   printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
+				   printingDom.RawDom.SelectSingleNode("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
 			if(lastPage==null)
 			{
 				//currently nothing but front and back matter
-				var lastFrontMatter= printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class,'bloom-frontMatter')][last()]") as XmlElement;
+				var lastFrontMatter= printingDom.RawDom.SelectSingleNode("/html/body//div[contains(@class,'bloom-frontMatter')][last()]") as XmlElement;
 				if(lastFrontMatter ==null)
 					throw new ApplicationException("GetLastPageForInsertingNewContent() found no content pages nor frontmatter");
 				return lastFrontMatter;
