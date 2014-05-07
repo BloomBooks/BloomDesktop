@@ -391,7 +391,7 @@ namespace Bloom.Publish
 ////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 ////            HtmlDom.AddPublishClassToBody(dom);
 ////
-////	        foreach (var pageDom in dom.SelectNodes("/html/body/div[contains(@class,'bloom-page')]"))
+////	        foreach (var pageDom in dom.SelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
 ////	        {
 ////	            yield return pageDom;
 ////	        }
