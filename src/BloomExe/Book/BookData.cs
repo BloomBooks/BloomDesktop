@@ -365,7 +365,7 @@ namespace Bloom.Book
 
 				if (!String.IsNullOrEmpty(collectionSettings.Country))
 				{
-					location += "<br/>" + collectionSettings.Country;
+					location += collectionSettings.Country;
 				}
 
 				data.UpdateGenericLanguageString("languageLocation", location, true);
