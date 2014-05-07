@@ -1,0 +1,35 @@
+include ../../../jade/bloom-foundation-mixins
+
+//- items marked with 'bloom-leadingElement' will be on the left page of a side-by-side layout
+mixin image-leading
+	+image(class='bloom-leadingElement', attributes)
+
+//- items marked with 'bloom-trailingElement' will be on the right page of a side-by-side layout
+mixin field-trailing
+	//- REVIEW: is default-style needed? Can it be just omitted from the template?
+	+field(class='bloom-trailingElement default-style', attributes)
+
+doctype html
+html
+	head
+		+metadata-standard()
+		meta(name='defaultNameForDerivedBooks', content='My Big Book')
+		//- TODO remove this when we move to json metadata
+		meta(name='SuitableForMakingShells', content='yes')
+
+		meta(name='bloomBookId', content='8B8C1838-64E3-4989-93AB-251F960907FC')
+		meta(name="xmatter", content="BigBook")
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Big Book')
+		title 'Big Book'
+		+stylesheets('Big Book.css')
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Big Book')
+			+bookVariable-title('tpi', 'Bikpela Buk')
+
+		+page-choice('Just an Image').imageWholePage#AF708725-E961-44AA-9149-ADF66084A04F
+			+image-leading
+
+		+page-choice('Just Text').textWholePage#D9A55EB6-43A8-4C6A-8891-2C1CDD95772C
+			+field-trailing.bloom-centerVertically
