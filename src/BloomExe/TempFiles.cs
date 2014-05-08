@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Palaso.IO;
 
 namespace BloomTemp
 {
@@ -57,98 +58,8 @@ namespace BloomTemp
 
 	}
 
-	public class TempFile : IDisposable
+	public static class TempFileUtils
 	{
-		protected string _path;
-
-		public TempFile()
-		{
-			_path = System.IO.Path.GetTempFileName();
-		}
-
-		internal TempFile(bool dontMakeMeAFile)
-		{
-		}
-
-
-
-		public TempFile(TemporaryFolder parentFolder)
-		{
-			if (parentFolder != null)
-			{
-				_path = parentFolder.GetPathForNewTempFile(true);
-			}
-			else
-			{
-				_path = System.IO.Path.GetTempFileName();
-			}
-
-		}
-
-
-		public TempFile(string contents)
-			: this()
-		{
-			File.WriteAllText(_path, contents);
-		}
-
-		public TempFile(string[] contentLines)
-			: this()
-		{
-			File.WriteAllLines(_path, contentLines);
-		}
-
-		public string Path
-		{
-			get { return _path; }
-		}
-		public void Dispose()
-		{
-			File.Delete(_path);
-		}
-
-
-		//        public static TempFile TrackExisting(string path)
-		//        {
-		//            return new TempFile(path, false);
-		//        }
-		public static TempFile CopyOf(string pathToExistingFile)
-		{
-			TempFile t = new TempFile();
-			File.Copy(pathToExistingFile, t.Path, true);
-			return t;
-		}
-
-		private TempFile(string existingPath, bool dummy)
-		{
-			_path = existingPath;
-		}
-
-		public static TempFile TrackExisting(string path)
-		{
-			return new TempFile(path, false);
-		}
-
-		public static TempFile CreateAndGetPathButDontMakeTheFile()
-		{
-			TempFile t = new TempFile();
-			File.Delete(t.Path);
-			return t;
-		}
-
-		public static TempFile CreateXmlFileWithContents(string fileName, TemporaryFolder folder, string xmlBody)
-		{
-			string path = folder.Combine(fileName);
-			using (XmlWriter x = XmlWriter.Create(path))
-			{
-				x.WriteStartDocument();
-				x.WriteRaw(xmlBody);
-			}
-			return new TempFile(path, true);
-		}
-
-
-
 		public static TempFile CreateHtm5FromXml(XmlNode dom)
 		{
 			var temp = TempFile.TrackExisting(GetHtmlTempPath());
@@ -177,7 +88,7 @@ namespace BloomTemp
 			var re = new Regex("<(title|div) />");
 			xhtml = re.Replace(xhtml, "<$1></$1>");
 			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + xhtml);
+			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
 
 			return temp;
 		}
@@ -187,7 +98,7 @@ namespace BloomTemp
 			string x,y;
 			do
 			{
-				x = System.IO.Path.GetTempFileName();
+				x = Path.GetTempFileName();
 				y = x + ".htm";
 			} while (File.Exists(y));
 			File.Move(x,y);
@@ -195,6 +106,9 @@ namespace BloomTemp
 		}
 	}
 
+	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means
+	// refactoring some Palaso code and moving TemporaryFolder from Palaso.TestUtilities into
+	// Palaso.IO
 	public class TemporaryFolder : IDisposable
 	{
 		private string _path;
@@ -348,8 +262,5 @@ namespace BloomTemp
 			}
 		}
 	}
-
-
-
 
 }
