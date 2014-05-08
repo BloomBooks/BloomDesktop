@@ -900,17 +900,18 @@ jQuery(document).ready(function () {
     }
 
     //Add little language tags
-    $("div.bloom-editable:visible").each(function () {
+    $(".bloom-editable:visible").each(function () {
         var key = $(this).attr("lang");
-        var dictionary = GetDictionary();
-        var whatToSay = dictionary[key];
-        if (whatToSay == null)
-            whatToSay = key; //just show the code
-
         if (key == "*")
             return; //seeing a "*" was confusing even to me
 
-        //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
+        var dictionary = GetDictionary();
+        var whatToSay = dictionary[key];
+        if (whatToSay.length == 0 || whatToSay === undefined)
+            whatToSay = key; //just show the code
+
+        // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+        // with each other, leading to flashing back and forth
         if ($(this).width() < 100) {
             return;
         }
@@ -974,20 +975,22 @@ jQuery(document).ready(function () {
         MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
     });
 
-    //<label class='bubble'> inside a div.bloom-translationGroup to gives a hint bubble outside each of
-    // the fields, with some template-filing and localization for each.
-    // Note that Version 1.0, we didn't have this <label> ability but we had @data-hint.
-    //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
-    //behaviors through classes
-    $("*.bloom-translationGroup > label.bubble").each(function () {
+    // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
+    // the fields, with some template-filling and localization for each.
+    // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
+    // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
+    // behaviors through classes
+    $(".bloom-translationGroup > label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
         //attach the bubble, separately, to every field inside the group
-        labelElement.parent().find("div").each(function () {
+        labelElement.parent().find("div:visible").each(function () {
             var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-            MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
+                MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
         });
     });
 
@@ -995,6 +998,8 @@ jQuery(document).ready(function () {
         var labelElement = $(this);
         var imageContainer = $(this).parent();
         var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
         MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
     });
@@ -1036,6 +1041,9 @@ jQuery(document).ready(function () {
         if (whatToSay.startsWith("*")) {
             whatToSay = whatToSay.substring(1, 1000);
         }
+
+        if (whatToSay.length == 0 || $(this).css('display') == 'none')
+            return;
 
         MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
     });
