@@ -672,6 +672,14 @@
     <Compile Include="web\ServerBase.cs" />
     <Compile Include="web\WebClientWithTimeout.cs" />
     <Compile Include="web\EnhancedImageServer.cs" />
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll.config" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />
