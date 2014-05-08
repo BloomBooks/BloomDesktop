@@ -495,7 +495,7 @@ function CreditsAreRelevantForImage(img) {
     return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
 }
 
-//While the actual metada is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
+//While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 function SetOverlayForImagesWithoutMetadata() {
     $(".bloom-imageContainer").each(function () {
@@ -508,7 +508,7 @@ function SetOverlayForImagesWithoutMetadata() {
         UpdateOverlay(container, img);
 
         //and if the bloom program changes these values (i.e. the user changes them using bloom), I
-        //haven't figured out a way (appart from polling) to know that. So for now I'm using a hack
+        //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
         //where Bloom calls click() on the image when it wants an update, and we detect that here.
         $(img).click(function () {
             UpdateOverlay(container, img);
@@ -684,10 +684,169 @@ function AddOverflowHandler() {
     });
 }
 
-//function SetCopyrightAndLicense(data) {
-//    $('*[data-book="copyright"]').each(function(){
-//        $(this).text(data.copyright);}
-//    )
+// Add various editing key handlers
+function AddEditKeyHandlers() {
+    //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
+    //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
+    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
+        var selection = document.getSelection();
+        if (selection != null && selection != '') {
+            //NB: by using exeCommand, we get undo-ability
+            document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
+        }
+    });
+    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+
+    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+
+    //there doesn't appear to be a good simple way to clear out formatting
+    $("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
+        e.preventDefault();
+        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
+        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
+        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
+    });
+
+}
+
+// Add little language tags
+function AddLanguageTags() {
+    $(".bloom-editable:visible").each(function () {
+        // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+        // with each other, leading to flashing back and forth
+        if ($(this).width() < 100) {
+            return;
+        }
+
+        var key = $(this).attr("lang");
+        if (key == "*")
+            return; //seeing a "*" was confusing even to me
+
+        // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+        // first usage (for instance) was turning off language tags for a whole page
+        if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
+            return;
+        }
+
+        var dictionary = GetDictionary();
+        var whatToSay = dictionary[key];
+        if (whatToSay.length == 0 || whatToSay === undefined)
+            whatToSay = key; //just show the code
+
+        //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
+        //then reappear
+
+        var shouldShowAlways = true; // "mouseleave unfocus";
+        var hideEvents = false; // "mouseover focusin";
+
+        //             shouldShowAlways = false;
+        //           hideEvents = 'unfocus mouseleave';
+
+        $(this).qtip({
+            content: whatToSay,
+
+            position: {
+                my: 'top right',
+                at: 'bottom right',
+                adjust: { y: -30 }
+            },
+            show: { ready: shouldShowAlways },
+            hide: {
+                event: hideEvents
+            },
+            style: {
+                classes: 'ui-languageToolTip',
+                tip: {
+                    border :0
+                }
+            }
+        });
+        // doing this makes it impossible to reposition them
+        // .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+    });
+}
+
+// Add (yellow) hint bubbles from (usually) label.bubble elements
+function AddHintBubbles() {
+    //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
+    //bloom-translationGroup (those should have a single <label> for the whole group).
+    //Notice that the <label> inside an editable div is in a precarious position, it could get
+    //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
+    //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
+    //so it is preferred when making new templates by hand.
+    $(".bloom-editable:visible label.bubble").each(function () {
+        var labelElement = $(this);
+        var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+        var enclosingEditableDiv = labelElement.parent();
+        enclosingEditableDiv.attr('data-hint', labelElement.text());
+        labelElement.remove();
+
+        //attach the bubble, this editable only, then remove it
+        MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
+    });
+
+    // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
+    // the fields, with some template-filling and localization for each.
+    // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
+    // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
+    // behaviors through classes
+    $(".bloom-translationGroup > label.bubble").each(function () {
+        var labelElement = $(this);
+        var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+        //attach the bubble, separately, to every visible field inside the group
+        labelElement.parent().find("div:visible").each(function () {
+            var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+            MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
+        });
+    });
+
+    $("*.bloom-imageContainer > label.bubble").each(function () {
+        var labelElement = $(this);
+        var imageContainer = $(this).parent();
+        var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+        MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
+    });
+
+    //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
+    //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
+    //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
+    $("*[data-hint]").each(function () {
+        var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+        if (!whatToSay || whatToSay.length == 0)
+            return;
+
+        //make hints that start with a * only show when the field has focus
+        var showOnFocusOnly = whatToSay.startsWith("*");
+
+        if (whatToSay.startsWith("*")) {
+            whatToSay = whatToSay.substring(1, 1000);
+        }
+
+        if (whatToSay.length == 0 || $(this).css('display') == 'none')
+            return;
+
+        MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
+    });
+}
+
+// This function is called directly from EditingView.OnShowBookMetadataEditor()
 function SetCopyrightAndLicense(data) {
     //nb: for textarea, we need val(). But for div, it would be text()
     $("DIV[data-book='copyright']").text(data.copyright);
@@ -792,7 +951,7 @@ function ShowTopicChooser() {
 // ---------------------------------------------------------------------------------
 // document ready function
 // ---------------------------------------------------------------------------------
-jQuery(document).ready(function () {
+$(document).ready(function () {
     if($.fn.qtip)
         $.fn.qtip.zindex = 15000;
     //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
@@ -807,7 +966,7 @@ jQuery(document).ready(function () {
     AddToolbox();
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
-    jQuery("textarea").blur(function () {
+    $("textarea").blur(function () {
         this.innerHTML = this.value;
     });
 
@@ -856,32 +1015,8 @@ jQuery(document).ready(function () {
     // we add the overflow class and it gets a red background or something
     AddOverflowHandler();
 
-    //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
-    //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
-        var selection = document.getSelection();
-        if (selection != null && selection != '') {
-            //NB: by using exeCommand, we get undo-ability
-            document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
-        }
-    });
-    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
-        e.preventDefault();
-        document.execCommand("formatBlock", false, "H1");
-    });
+    AddEditKeyHandlers();
 
-    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
-        e.preventDefault();
-        document.execCommand("formatBlock", false, "H2");
-    });
-
-    //there doesn't appear to be a good simple way to clear out formatting
-    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
-        e.preventDefault();
-        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
-        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
-        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
-    });
     //--------------------------------
     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 
@@ -899,110 +1034,9 @@ jQuery(document).ready(function () {
         };
     }
 
-    //Add little language tags
-    $(".bloom-editable:visible").each(function () {
-        var key = $(this).attr("lang");
-        if (key == "*")
-            return; //seeing a "*" was confusing even to me
+    AddLanguageTags();
 
-        var dictionary = GetDictionary();
-        var whatToSay = dictionary[key];
-        if (whatToSay.length == 0 || whatToSay === undefined)
-            whatToSay = key; //just show the code
-
-        // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
-        // with each other, leading to flashing back and forth
-        if ($(this).width() < 100) {
-            return;
-        }
-
-        // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-        // first usage (for instance) was turning off language tags for a whole page
-        if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
-            return;
-        }
-
-        //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
-        //then reappear
-
-        var shouldShowAlways = true; // "mouseleave unfocus";
-        var hideEvents = false; // "mouseover focusin";
-
-        //             shouldShowAlways = false;
-        //           hideEvents = 'unfocus mouseleave';
-
-        $(this).qtip({
-            content: whatToSay,
-
-            position: {
-                my: 'top right',
-                at: 'bottom right',
-                adjust: { y: -25 }
-            },
-            show: { ready: shouldShowAlways },
-            hide: {
-                event: hideEvents
-            },
-            style: {
-                classes: 'ui-languageToolTip',
-                tip: {
-                  border :0
-                }
-            }
-        });
-        // doing this makes it impossible to reposition them
-        // .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
-    });
-
-    //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
-    //bloom-translationGroup (those should have a single <label> for the whole group).
-    //Notice that the <label> inside an editable div is in a precarious position, it could get
-    //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
-    //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
-    //so it is preferred when making new templates by hand.
-    $(".bloom-editable label.bubble").each(function () {
-        var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
-            return;
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-
-        var enclosingEditableDiv = labelElement.parent();
-        enclosingEditableDiv.attr('data-hint', labelElement.text());
-        labelElement.remove();
-
-        //attach the bubble, this editable only, then remove it
-        MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
-    });
-
-    // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
-    // the fields, with some template-filling and localization for each.
-    // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
-    // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
-    // behaviors through classes
-    $(".bloom-translationGroup > label.bubble").each(function () {
-        var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
-            return;
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-
-        //attach the bubble, separately, to every field inside the group
-        labelElement.parent().find("div:visible").each(function () {
-            var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-                MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
-        });
-    });
-
-    $("*.bloom-imageContainer > label.bubble").each(function () {
-        var labelElement = $(this);
-        var imageContainer = $(this).parent();
-        var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
-            return;
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-        MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
-    });
+    AddHintBubbles();
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
@@ -1010,9 +1044,9 @@ jQuery(document).ready(function () {
     //Now, what's going on here is that we also support
     //<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
     //behavior on each of the fields inside the group .
-    //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
+    //Using <label> instead of the attribute makes the html much easier to read, write, and add additional
     //behaviors through classes.
-    //So the job of this bit here is to take the label.bubble and create the data-placeholders.
+    //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
     $("*.bloom-translationGroup > label.placeholder").each(function () {
 
         var labelText = $(this).text();
@@ -1025,27 +1059,6 @@ jQuery(document).ready(function () {
             $(this).attr('data-placeholder', labelText);
             //next, it's up to CSS to draw the placeholder when the field is empty.
         });
-    });
-
-    //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
-    //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
-    //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
-    $("*[data-hint]").each(function () {
-        var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-        if (!whatToSay || whatToSay.length == 0)
-            return;
-
-        //make hints that start with a * only show when the field has focus
-        var showOnFocusOnly = whatToSay.startsWith("*");
-
-        if (whatToSay.startsWith("*")) {
-            whatToSay = whatToSay.substring(1, 1000);
-        }
-
-        if (whatToSay.length == 0 || $(this).css('display') == 'none')
-            return;
-
-        MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
     });
 
     $.fn.hasAttr = function (name) {
@@ -1224,8 +1237,9 @@ jQuery(document).ready(function () {
 
     SetupShowingTopicChooserWhenTopicIsClicked();
 
-    //copy source texts out to their own div, where we can make a bubble with tabs out of them
-    //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
+    // and then we couldn't translate the book.
     $("*.bloom-translationGroup").each(function () {
         if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
