@@ -33,17 +33,29 @@ namespace Bloom.web
 
 		public void WriteCompleteOutput(string s)
 		{
-			WriteOutput(s, _actualContext.Response);
+			WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
 		}
 
-		private static void WriteOutput(string responseString, HttpListenerResponse response)
+		private static void WriteOutput(byte[] buffer, HttpListenerResponse response)
 		{
-			byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-
 			response.ContentLength64 += buffer.Length;
 			Stream output = response.OutputStream;
 			output.Write(buffer, 0, buffer.Length);
 			output.Close();
+		}
+
+		public void ReplyWithFileContent(string path)
+		{
+			var buffer = new byte[1024*512]; //512KB
+			using ( var fs = File.OpenRead(path))
+			{
+				_actualContext.Response.ContentLength64 = fs.Length;
+				int read;
+				while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+					_actualContext.Response.OutputStream.Write(buffer, 0, read); 
+			}
+
+			_actualContext.Response.OutputStream.Close();
 		}
 
 		public void ReplyWithImage(string path)

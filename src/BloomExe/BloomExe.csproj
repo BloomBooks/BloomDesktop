@@ -670,6 +670,8 @@
     <Compile Include="web\IRequestInfo.cs" />
     <Compile Include="web\RequestInfo.cs" />
     <Compile Include="web\PretendRequestInfo.cs" />
+    <Compile Include="web\ServerBase.cs" />
+    <Compile Include="web\WebClientWithTimeout.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />

@@ -1,5 +1,6 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+using System;
 
 namespace Bloom.web
 {
@@ -30,6 +31,11 @@ namespace Bloom.web
 		public void WriteCompleteOutput(string s)
 		{
 			ReplyContents = s;
+		}
+
+		public void ReplyWithFileContent(string path)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void ReplyWithImage(string path)
