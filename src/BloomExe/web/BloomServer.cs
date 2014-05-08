@@ -15,14 +15,12 @@ using Palaso.Reporting;
 namespace Bloom.web
 {
 	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
-
-	public class BloomServer : IDisposable
+	public class BloomServer : ServerBase
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookCollection _booksInProjectLibrary;
 		private readonly SourceCollectionsList _sourceCollectionsesList;
 		private readonly HtmlThumbNailer _thumbNailer;
-		private HttpListener _listener;
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
@@ -33,44 +31,18 @@ namespace Bloom.web
 			_thumbNailer = thumbNailer;
 		}
 
-		public void Start()
-		{
-			_listener = new HttpListener();
-			_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-			_listener.Prefixes.Add("http://localhost:8089/bloom/");
-			//nb: had trouble with 8080. Remember to enable this with (windows 7 up): netsh http add urlacl url=http://localhost:8089/bloom user=everyone
-			_listener.Start();
-			_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
-		}
-
-
-		private void GetContextCallback(IAsyncResult ar)
-		{
-			if (_listener == null || !_listener.IsListening)
-				return; //strangely, this callback is fired when we close downn the listener
-
-			try
-			{
-				HttpListenerContext context = _listener.EndGetContext(ar);
-				HttpListenerRequest request = context.Request;
-				MakeReply(new RequestInfo(context));
-				_listener.BeginGetContext(new AsyncCallback(GetContextCallback), _listener);
-			}
-			catch (Exception error)
-			{
-				Logger.WriteEvent(error.Message);
-#if DEBUG
-				throw;
-#endif
-			}
-		}
-
 		/// <summary>
 		/// This is designed to be easily unit testable by not taking actual HttpContext, but doing everything through this IRequestInfo object
 		/// </summary>
 		/// <param name="info"></param>
-		public void MakeReply(IRequestInfo info)
+		internal override void MakeReply(IRequestInfo info)
 		{
+			if(info.LocalPathWithoutQuery.EndsWith("testconnection"))
+			{
+				info.WriteCompleteOutput("OK");
+				return;
+			}
+
 			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
@@ -95,7 +67,7 @@ namespace Bloom.web
 					info.ReplyWithImage(r);
 				}
 			}
-			else if (r.EndsWith(".png"))
+			else if (r.EndsWith(".png") && r.Contains("thumbnail"))
 			{
 				info.ContentType = "image/png";
 
@@ -121,11 +93,12 @@ namespace Bloom.web
 			}
 			else
 			{
+				info.ContentType = GetContentType(Path.GetExtension(r));
 				string path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", r);
 
 
 				//request.QueryString.GetValues()
-				info.WriteCompleteOutput(File.ReadAllText(path));
+				info.ReplyWithFileContent(path);
 			}
 		}
 
@@ -174,15 +147,6 @@ namespace Bloom.web
 			return reply.ToString();
 		}
 
-		public void Dispose()
-		{
-			if (_listener != null)
-			{
-				_listener.Close();
-			}
-			_listener = null;
-		}
-
 		private static int CompareBookCollections(BookCollection x, BookCollection y)
 		{
 			if (x.Name == y.Name)
@@ -194,8 +158,4 @@ namespace Bloom.web
 			return 0;
 		}
 	}
-
-
-
-
 }
