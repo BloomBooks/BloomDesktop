@@ -7,6 +7,7 @@ using Bloom.web;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Reporting;
+using Bloom.Properties;
 
 namespace Bloom.ImageProcessing
 {
@@ -29,10 +30,12 @@ namespace Bloom.ImageProcessing
 	public class ImageServer : ServerBase
 	{
 		private LowResImageCache _cache;
+		private bool _useCache;
 
 		public ImageServer(LowResImageCache cache)
 		{
 			_cache = cache;
+			_useCache = Settings.Default.ImageHandler != "off";
 		}
 
 		protected override void Dispose(bool fDisposing)
@@ -62,41 +65,29 @@ namespace Bloom.ImageProcessing
 			return didStart;
 		}
 
-		/// <summary>
-		/// This is designed to be easily unit testable by not taking actual HttpContext, but doing everything through this IRequestInfo object
-		/// </summary>
-		/// <param name="info"></param>
-		internal override void MakeReply(IRequestInfo info)
+		protected override bool ProcessRequest(IRequestInfo info)
 		{
-			if(info.LocalPathWithoutQuery.EndsWith("testconnection"))
-			{
-				info.WriteCompleteOutput("OK");
-				return;
-			}
+			if (base.ProcessRequest(info))
+				return true;
 
-			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
-			r = r.Replace("%3A", ":");
-			r = r.Replace("%20", " ");
-			r = r.Replace("%27", "'");
+			if (!_useCache)
+				return false;
+
+			var r = GetLocalPathWithoutQuery(info);
 			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
 			{
 				info.ContentType = r.EndsWith(".png") ? "image/png" : "image/jpeg";
-
 				r = r.Replace("thumbnail", "");
 				//if (r.Contains("thumb"))
 				{
 					if (File.Exists(r))
 					{
 						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
-					}
-					else
-					{
-						Logger.WriteEvent("**ImageServer: File Missing: "+r);
-						info.WriteError(404);
+						return true;
 					}
 				}
-
 			}
+			return false;
 		}
 	}
 }

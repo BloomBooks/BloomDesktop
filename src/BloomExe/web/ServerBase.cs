@@ -225,7 +225,38 @@ namespace Bloom.web
 		/// This is designed to be easily unit testable by not taking actual HttpContext, but doing everything through this IRequestInfo object
 		/// </summary>
 		/// <param name="info"></param>
-		internal abstract void MakeReply(IRequestInfo info);
+		internal virtual void MakeReply(IRequestInfo info)
+		{
+			if (!ProcessRequest(info))
+			{
+				ReportMissingFile(info);
+			}
+		}
+
+		protected static string GetLocalPathWithoutQuery(IRequestInfo info)
+		{
+			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
+			r = r.Replace("%3A", ":");
+			r = r.Replace("%20", " ");
+			r = r.Replace("%27", "'");
+			return r;
+		}
+
+		protected void ReportMissingFile(IRequestInfo info)
+		{
+			Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, GetLocalPathWithoutQuery(info));
+			info.WriteError(404);
+		}
+
+		protected virtual bool ProcessRequest(IRequestInfo info)
+		{
+			if (info.LocalPathWithoutQuery.EndsWith("testconnection"))
+			{
+				info.WriteCompleteOutput("OK");
+				return true;
+			}
+			return false;
+		}
 
 		public static string PathEndingInSlash
 		{

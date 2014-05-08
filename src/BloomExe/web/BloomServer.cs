@@ -15,6 +15,8 @@ using Palaso.Reporting;
 namespace Bloom.web
 {
 	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
+
+	// REVIEW: This class doesn't seem to be intented yet for production use
 	public class BloomServer : ServerBase
 	{
 		private readonly CollectionSettings _collectionSettings;
@@ -31,17 +33,10 @@ namespace Bloom.web
 			_thumbNailer = thumbNailer;
 		}
 
-		/// <summary>
-		/// This is designed to be easily unit testable by not taking actual HttpContext, but doing everything through this IRequestInfo object
-		/// </summary>
-		/// <param name="info"></param>
-		internal override void MakeReply(IRequestInfo info)
+		protected override bool ProcessRequest(IRequestInfo info)
 		{
-			if(info.LocalPathWithoutQuery.EndsWith("testconnection"))
-			{
-				info.WriteCompleteOutput("OK");
-				return;
-			}
+			if (base.ProcessRequest(info))
+				return true;
 
 			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
 			r = r.Replace("library/", "");
@@ -100,6 +95,7 @@ namespace Bloom.web
 				//request.QueryString.GetValues()
 				info.ReplyWithFileContent(path);
 			}
+			return true;
 		}
 
 		private void GetStoreBooks(IRequestInfo info)
