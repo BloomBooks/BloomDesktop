@@ -19,7 +19,7 @@ using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.HtmlBrowser;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
+using BloomTemp;
 
 namespace Bloom
 {
@@ -424,7 +424,7 @@ namespace Bloom
 				body.SetAttribute("style", GetZoomCSS(scale));
 			}
         	XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-        	SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
+			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
             UpdateDisplay();
         }

@@ -11,6 +11,7 @@ using Bloom.Book;
 using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
+using Palaso.IO;
 
 
 namespace Bloom
