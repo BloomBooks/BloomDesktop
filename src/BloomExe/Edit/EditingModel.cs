@@ -530,6 +530,8 @@ namespace Bloom.Edit
 			foreach (var style in stylesToMove)
 			{
 				var source = style.Attributes["href"].Value;
+				if (source.Contains("editPaneGlobal"))
+					continue; // Leave this one at the global level, it contains things that should NOT be scoped.
 
 				if (!source.StartsWith("file"))
 				{
