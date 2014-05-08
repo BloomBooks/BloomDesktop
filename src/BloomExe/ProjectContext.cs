@@ -31,8 +31,7 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private BloomServer _bloomServer;
-		private ImageServer _imageServer;
+		private ServerBase _httpServer;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -55,19 +54,16 @@ namespace Bloom
 
 			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
 			{
+				// REVIEW: This seems to be used only for testing purposes
 				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-                _bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-				_bloomServer.Start();
+				_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+				_httpServer.StartWithSetupIfNeeded();
 			}
 			else
 			{
-				if (Settings.Default.ImageHandler != "off")
-				{
-					_imageServer = _scope.Resolve<ImageServer>();
-
-					_imageServer.StartWithSetupIfNeeded();
-				}
+				_httpServer = _scope.Resolve<EnhancedImageServer>();
+				_httpServer.StartWithSetupIfNeeded();
 			}
         }
 
@@ -371,12 +367,9 @@ namespace Bloom
 			_scope.Dispose();
 			_scope = null; 
 			
-			if (_bloomServer != null)
-				_bloomServer.Dispose();
-			_bloomServer = null;
-			if (_imageServer!=null)
-				_imageServer.Dispose();
-			_imageServer = null;
+			if (_httpServer != null)
+				_httpServer.Dispose();
+			_httpServer = null;
 		}
 
 		/// <summary>

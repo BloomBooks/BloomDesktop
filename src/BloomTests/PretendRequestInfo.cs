@@ -35,7 +35,7 @@ namespace Bloom.web
 
 		public void ReplyWithFileContent(string path)
 		{
-			throw new NotImplementedException();
+			ReplyImagePath = path;
 		}
 
 		public void ReplyWithImage(string path)
