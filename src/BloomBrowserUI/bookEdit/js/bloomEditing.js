@@ -684,8 +684,114 @@ function AddOverflowHandler() {
     });
 }
 
-//---------------------------------------------------------------------------------
+//function SetCopyrightAndLicense(data) {
+//    $('*[data-book="copyright"]').each(function(){
+//        $(this).text(data.copyright);}
+//    )
+function SetCopyrightAndLicense(data) {
+    //nb: for textarea, we need val(). But for div, it would be text()
+    $("DIV[data-book='copyright']").text(data.copyright);
+    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
+    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
+    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
+    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
+    if (data.licenseImage.length == 0) {
+        licenseImageValue = ""; //don't wan the date on there
+        $("IMG[data-book='licenseImage']").attr('alt', '');
+    }
 
+    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
+    SetBookCopyrightAndLicenseButtonVisibility();
+}
+
+function DecodeHtml(encodedString) {
+    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
+}
+
+function SetBookCopyrightAndLicenseButtonVisibility() {
+    var shouldShowButton = !($("DIV.copyright").text());
+    $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
+}
+
+function FindOrCreateTopicDialogDiv() {
+    var dialogContents = $("body").find("div#topicChooser");
+    if (!dialogContents.length) {
+        //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
+        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
+
+        var topics = JSON.parse(GetSettings().topics);
+        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
+
+        dialogContents.append("<ol id='topics'></ol>");
+        for (i in topics) {
+            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
+        }
+
+        $("#topics").selectable();
+
+        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
+        $("#topics").selectable({
+            unselected: function() {
+                $(":not(.ui-selected)", this).each(function() {
+                    $(this).removeClass('ui-state-highlight');
+                });
+            },
+            selected: function() {
+                $(".ui-selected", this).each(function() {
+                    $(this).addClass('ui-state-highlight');
+                });
+            }
+        });
+        $("#topics li").hover(
+            function() {
+                $(this).addClass('ui-state-hover');
+            },
+            function() {
+                $(this).removeClass('ui-state-hover');
+            });
+    }
+    return dialogContents;
+}
+
+//note, the normal way is for the user to click the link on the qtip.
+//But clicking on the exiting topic may be natural too, and this prevents
+//them from editing it by hand.
+function SetupShowingTopicChooserWhenTopicIsClicked() {
+    $("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        ShowTopicChooser();
+    });
+}
+
+// This is called directly from Bloom via RunJavaScript()
+function ShowTopicChooser() {
+    var dialogContents = FindOrCreateTopicDialogDiv();
+    var dlg = $(dialogContents).dialog({
+        autoOpen: "true",
+        modal: "true",
+        //zIndex removed in newer jquery, now we get it in the css
+        buttons: {
+            "OK": function () {
+                var t = $("ol#topics li.ui-selected");
+                if (t.length) {
+                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
+                }
+                $(this).dialog("close");
+            }
+        }
+    });
+
+    //make a double click on an item close the dialog
+    dlg.find("li").dblclick(function () {
+        var x = dlg.dialog("option", "buttons");
+        x['OK'].apply(dlg);
+    });
+}
+
+// ---------------------------------------------------------------------------------
+// document ready function
+// ---------------------------------------------------------------------------------
 jQuery(document).ready(function () {
     if($.fn.qtip)
         $.fn.qtip.zindex = 15000;
@@ -706,23 +812,6 @@ jQuery(document).ready(function () {
     });
 
     SetBookCopyrightAndLicenseButtonVisibility();
-
-    /*
-    //when a textarea gets focus, send Bloom a dictionary of all the translations found within
-    //the same parent element
-    jQuery("textarea, div.bloom-editable").focus(function () {
-    event = document.createEvent('MessageEvent');
-    var origin = window.location.protocol + '//' + window.location.host;
-    var obj = {};
-    $(this).parent().find("textarea, div.bloom-editable").each(function () {
-    obj[$(this).attr("lang")] = $(this).text();
-    })
-    var json = obj; //.get();
-    json = JSON.stringify(json);
-    event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
-    document.dispatchEvent(event);
-    });
-    */
 
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(".bloom-translationGroup").each(function () {
@@ -785,10 +874,6 @@ jQuery(document).ready(function () {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H2");
     });
-//    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+shift+c', function (e) {
-//        e.preventDefault();
-//        document.execCommand("justifyCenter", false, null);
-//    });
 
     //there doesn't appear to be a good simple way to clear out formatting
     jQuery("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
@@ -864,19 +949,9 @@ jQuery(document).ready(function () {
                 }
             }
         });
-        // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+        // doing this makes it impossible to reposition them
+        // .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
     });
-
-    // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
-    // say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
-    //    $("*[title]").each(function() {
-    //        $(this).qtip({ position: {
-    //                at: 'right bottom', //I like this, but it doesn't reposition well -->at: 'right center',
-    //                my: 'top left', //I like this, but it doesn't reposition well-->  my: 'left center',
-    //                viewport: $(window)
-    //            },
-    //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
-    //    });
 
     //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
     //bloom-translationGroup (those should have a single <label> for the whole group).
@@ -884,9 +959,11 @@ jQuery(document).ready(function () {
     //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
     //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
     //so it is preferred when making new templates by hand.
-    $("*.bloom-editable label.bubble").each(function () {
+    $(".bloom-editable label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
+        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+            return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
         var enclosingEditableDiv = labelElement.parent();
@@ -971,37 +1048,6 @@ jQuery(document).ready(function () {
         return (typeof attr !== 'undefined' && attr !== false);
     };
 
-    //Show data on fields
-    /* disabled to see if we can do fine without it
-    $("*[data-book], *[data-library], *[lang]").each(function() {
-
-    var data = " ";
-    if ($(this).hasAttr("data-book")) {
-    data = $(this).attr("data-book");
-    }
-    if ($(this).hasAttr("data-library")) {
-    data = $(this).attr("data-library");
-    }
-    $(this).qtipSecondary({
-    content: {text: $(this).attr("lang") + "<br>" + data}, //, title: { text:  $(this).attr("lang")}},
-
-    position: {
-    my: 'top right',
-    at: 'top left'
-    },
-    //                  show: {
-    //                                  event: false, // Don't specify a show event...
-    //                                  ready: true // ... but show the tooltip when ready
-    //                              },
-    //                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
-    style: {'default': false,
-    tip: {corner: false,border: false},
-    classes: 'fieldInfo-qtip'
-    }
-    });
-    });
-    */
-
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
@@ -1043,7 +1089,6 @@ jQuery(document).ready(function () {
         }
     });
 
-
     // If the user moves over something they can't edit, show a tooltip explaining why not
     $('*[data-hint]').each(function () {
 
@@ -1084,26 +1129,6 @@ jQuery(document).ready(function () {
             $(this).attr("contentEditable", "true");
         }
     });
-
-    // this is gone because of a memory violation bug in geckofx 11 with messaging. Now we just notice the click from within c#
-    //    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
-    // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-    //    $('div.bloom-metaData').each(function() {
-    //        if ($(this).css('cursor') == 'pointer') {
-    //            $(this).click(function() {
-    //                event = document.createEvent('MessageEvent');
-    //                var origin = window.location.protocol + '//' + window.location.host;
-    //                var obj = {};
-    //                $(this).find("*[data-book]").each(function() {
-    //                    obj[$(this).attr("data-book")] = $(this).text();
-    //                })
-    //                var json = obj; //.get();
-    //                json = JSON.stringify(json);
-    //                event.initMessageEvent('divClicked', true, true, json, origin, "", window, null);
-    //                document.dispatchEvent(event);
-    //            })
-    //        }
-    //    });
 
     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
     //This took *enormous* fussing in the css. TODO: copy what we learned there
@@ -1234,108 +1259,3 @@ jQuery(document).ready(function () {
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
 });
-
-//function SetCopyrightAndLicense(data) {
-//    $('*[data-book="copyright"]').each(function(){
-//        $(this).text(data.copyright);}
-//    )
-function SetCopyrightAndLicense(data) {
-    //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(data.copyright);
-    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
-    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
-    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
-    if (data.licenseImage.length == 0) {
-        licenseImageValue = ""; //don't wan the date on there
-        $("IMG[data-book='licenseImage']").attr('alt', '');
-    }
-
-    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
-    SetBookCopyrightAndLicenseButtonVisibility();
-}
-
-function DecodeHtml(encodedString) {
-    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
-}
-
-function SetBookCopyrightAndLicenseButtonVisibility() {
-    var shouldShowButton = !($("DIV.copyright").text());
-    $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
-}
-
-function FindOrCreateTopicDialogDiv() {
-    var dialogContents = $("body").find("div#topicChooser");
-    if (!dialogContents.length) {
-        //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
-        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
-
-        var topics = JSON.parse(GetSettings().topics);
-        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
-
-        dialogContents.append("<ol id='topics'></ol>");
-        for (i in topics) {
-            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
-        }
-
-        $("#topics").selectable();
-
-        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
-        $("#topics").selectable({
-            unselected: function() {
-                $(":not(.ui-selected)", this).each(function() {
-                    $(this).removeClass('ui-state-highlight');
-                });
-            },
-            selected: function() {
-                $(".ui-selected", this).each(function() {
-                    $(this).addClass('ui-state-highlight');
-                });
-            }
-        });
-        $("#topics li").hover(
-        function() {
-            $(this).addClass('ui-state-hover');
-        },
-        function() {
-            $(this).removeClass('ui-state-hover');
-        });
-    }
-    return dialogContents;
-}
-
-//note, the normal way is for the user to click the link on the qtip.
-//But clicking on the exiting topic may be natural too, and this prevents
-//them from editing it by hand.
-function SetupShowingTopicChooserWhenTopicIsClicked() {
-    $("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        ShowTopicChooser();
-    });
-}
-
-// This is called directly from Bloom via RunJavaScript()
-function ShowTopicChooser() {
-    var dialogContents = FindOrCreateTopicDialogDiv();
-    var dlg = $(dialogContents).dialog({
-        autoOpen: "true",
-        modal: "true",
-        //zIndex removed in newer jquery, now we get it in the css
-        buttons: {
-            "OK": function () {
-                var t = $("ol#topics li.ui-selected");
-                if (t.length) {
-                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
-                }
-                $(this).dialog("close");
-            }
-        }
-    });
-
-    //make a double click on an item close the dialog
-    dlg.find("li").dblclick(function () {
-        var x = dlg.dialog("option", "buttons");
-        x['OK'].apply(dlg);
-    });
-}
