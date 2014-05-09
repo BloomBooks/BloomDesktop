@@ -56,12 +56,13 @@
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
-            this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+			this._browser = new Gecko.GeckoWebBrowser();
             this._workingIndicator.SuspendLayout();
             this._topBarPanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this._contextMenuStrip.SuspendLayout();
             this._menusToolStrip.SuspendLayout();
+			this._browser.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -371,20 +372,18 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(108, 1);
             this.label1.TabIndex = 17;
-            // 
-            // _adobeReaderControl
-            // 
-            this._adobeReaderControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._adobeReaderControl.BackColor = System.Drawing.Color.White;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._adobeReaderControl, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._adobeReaderControl, null);
-            this._L10NSharpExtender.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
-            this._adobeReaderControl.Location = new System.Drawing.Point(114, 3);
-            this._adobeReaderControl.Name = "_adobeReaderControl";
-            this._adobeReaderControl.Size = new System.Drawing.Size(716, 537);
-            this._adobeReaderControl.TabIndex = 16;
+            //
+            // _browser
+            //
+            this._browser.BackColor = System.Drawing.Color.White;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
+            this._L10NSharpExtender.SetLocalizingId(this._browser, "GeckoWebBrowser.GeckoWebBrowser");
+            this._browser.Location = new System.Drawing.Point(114, 3);
+            this._browser.Name = "_browser";
+            this._browser.Size = new System.Drawing.Size(716, 537);
+            this._browser.TabIndex = 16;
+            this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
             // 
             // PublishView
             // 
@@ -393,12 +392,13 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this._workingIndicator);
-            this.Controls.Add(this._adobeReaderControl);
+            this.Controls.Add(this._browser);
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
             this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
             this.Name = "PublishView";
             this.Size = new System.Drawing.Size(833, 540);
+            this._browser.ResumeLayout();
             this._workingIndicator.ResumeLayout(false);
             this._topBarPanel.ResumeLayout(false);
             this._topBarPanel.PerformLayout();
@@ -423,7 +423,7 @@
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private AdobeReaderControl _adobeReaderControl;
+		private Gecko.GeckoWebBrowser _browser;
 		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
 		private System.Windows.Forms.RadioButton _simplePDFRadio;
