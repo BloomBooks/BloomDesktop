@@ -77,3 +77,5 @@ build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 lib/dotnet/
 TestResult.xml
+DistFiles/pdf/
+src/BloomBrowserUI/bookEdit/js/libsynphony/
