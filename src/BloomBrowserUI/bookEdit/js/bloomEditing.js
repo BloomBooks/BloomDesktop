@@ -86,7 +86,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
     var shouldShowAlways = true;
-    var hideEvents = shouldShowAlways ? null : 'focusout mouseleave';
+    var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
     var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
     if (functionCall) {
@@ -783,7 +783,7 @@ function AddHintBubbles() {
     $(".bloom-editable:visible label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+        if (!whatToSay || whatToSay.length == 0)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
@@ -803,13 +803,12 @@ function AddHintBubbles() {
     $(".bloom-translationGroup > label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+        if (!whatToSay || whatToSay.length == 0)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
         //attach the bubble, separately, to every visible field inside the group
-        labelElement.parent().find("div:visible").each(function () {
-            var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+        labelElement.parent().find("div.bloom-editable:visible").each(function () {
             MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
         });
     });
@@ -818,7 +817,7 @@ function AddHintBubbles() {
         var labelElement = $(this);
         var imageContainer = $(this).parent();
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0 || labelElement.css('display') == 'none')
+        if (!whatToSay || whatToSay.length == 0)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
         MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
