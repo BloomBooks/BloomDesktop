@@ -270,18 +270,17 @@ function GetStyleClassFromElement(element) {
     return null;
 }
 
- //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
+ //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
     
     var divForBubble = $(group).clone();
     $(divForBubble).removeAttr('style');
 
-    //make the source texts in the bubble read-only
+    //make the source texts in the bubble read-only and remove any user font size adjustments
     $(divForBubble).find("textarea, div").each(function() {
         $(this).attr("readonly", "readonly");
         $(this).removeClass('bloom-editable');
         $(this).attr("contenteditable", "false");
-        // If we change font size, that should NOT affect the source text bubbles
         var styleClass = GetStyleClassFromElement(this);
         if (styleClass)
             $(this).removeClass(styleClass);
@@ -355,6 +354,7 @@ function MakeSourceTextDivForGroup(group) {
     });
 
     //now turn that new div into a set of tabs
+    // Review: as of 9 May 2014 the tab links have turned into bulleted links
     if ($(divForBubble).find("li").length > 0) {
         $(divForBubble).easytabs({
             animate: false,
@@ -717,15 +717,16 @@ function AddEditKeyHandlers() {
 
 // Add little language tags
 function AddLanguageTags() {
-    $(".bloom-editable:visible").each(function () {
+    $(".bloom-editable:visible[contentEditable=true]").each(function () {
         // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
         // with each other, leading to flashing back and forth
+        // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
         if ($(this).width() < 100) {
             return;
         }
 
         var key = $(this).attr("lang");
-        if (key == "*")
+        if (key == "*" || key.length < 1)
             return; //seeing a "*" was confusing even to me
 
         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
@@ -739,36 +740,8 @@ function AddLanguageTags() {
         if (whatToSay.length == 0 || whatToSay === undefined)
             whatToSay = key; //just show the code
 
-        //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
-        //then reappear
-
-        var shouldShowAlways = true; // "mouseleave unfocus";
-        var hideEvents = false; // "mouseover focusin";
-
-        //             shouldShowAlways = false;
-        //           hideEvents = 'unfocus mouseleave';
-
-        $(this).qtip({
-            content: whatToSay,
-
-            position: {
-                my: 'top right',
-                at: 'bottom right',
-                adjust: { y: -30 }
-            },
-            show: { ready: shouldShowAlways },
-            hide: {
-                event: hideEvents
-            },
-            style: {
-                classes: 'ui-languageToolTip',
-                tip: {
-                    border :0
-                }
-            }
-        });
-        // doing this makes it impossible to reposition them
-        // .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+        // Put whatToSay into data attribute for pickup by the css
+        $(this).attr('data-languageTipContent', whatToSay);
     });
 }
 

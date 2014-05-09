@@ -42,6 +42,24 @@ DIV.ui-tooltip-title
 }
 
 /* These items are for the font size toolbar, also stored outside of the scoped-css DIV */
+.tool-items:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+    font-size: 0;
+}
+.tool-items
+{
+    display: inline-block;
+}
+.tool-items
+{
+    display: block;
+    height: 1px;
+}
 .tool-item
 {
 	font: 17.9pt Andika;
