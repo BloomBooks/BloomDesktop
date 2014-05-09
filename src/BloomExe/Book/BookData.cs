@@ -359,14 +359,14 @@ namespace Bloom.Book
 				if (!String.IsNullOrEmpty(collectionSettings.District))
 					location += collectionSettings.District + @", ";
 				if (!String.IsNullOrEmpty(collectionSettings.Province))
-					location += collectionSettings.Province;
-
-				location = location.TrimEnd(new[] {' '}).TrimEnd(new[] {','});
+					location += collectionSettings.Province + @", ";
 
 				if (!String.IsNullOrEmpty(collectionSettings.Country))
 				{
 					location += collectionSettings.Country;
 				}
+
+				location = location.TrimEnd(new[] { ' ' }).TrimEnd(new[] { ',' });
 
 				data.UpdateGenericLanguageString("languageLocation", location, true);
 			}

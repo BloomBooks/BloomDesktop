@@ -73,3 +73,4 @@ DistFiles/Bloom.chm
 build\ChorusInstallerStuff\ChorusMergeModule.msm
 build\JohnsTestInstallerBuild.bat
 lib/wkhtmltopdf*.zip
+DistFiles/ReleaseNotes.html
