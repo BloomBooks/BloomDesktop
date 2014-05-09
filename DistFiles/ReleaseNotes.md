@@ -1,4 +1,12 @@
-﻿## 1.1.574 18 Feb 2014
+﻿## 2.0 9 BETA May 2014
+Can now publish books to books.bloomlibrary.org
+Can now get books at books.bloomlibrary.org and they will open in Bloom
+Can can font sizes of all similar books
+New Big Book template & Front matter
+Basic Book now auto-enlarges fonts if you make it A4Landscape (for making a5 books into Big Books)
+
+
+## 1.1.574 18 Feb 2014
 New experimental keyboard shortcuts:
 Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
 F7=Heading1, F8=Heading2.

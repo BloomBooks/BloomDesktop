@@ -470,7 +470,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			//shells & templates are stored without frontmatter. This will add and update the frontmatter to our preivew dom
+			//shells & templates may be stored without frontmatter. This will add and update the frontmatter to our preivew dom
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
 				BringBookUpToDate(previewDom, new NullProgress());
