@@ -1,11 +1,16 @@
 include ../../jade/bloom-xmatter-mixins.jade
 doctype html
 
+mixin pageWithJustPageSize
+	.A4Landscape(attributes)
+		block
+
 mixin page(label)
-	.bloom-page.A4Landscape(data-page="required singleton", attributes=attributes)
+	+pageWithJustPageSize.bloom-page(data-page="required singleton", attributes=attributes)
 		+page-label-english(label)
 		.marginBox
 			block
+
 
 html
 	head
@@ -19,17 +24,14 @@ html
 			+field-prototypeDeclaredExplicity
 				label.bubble Book title in {lang}
 				+editable('V').bookTitle.coverTitleVernacular-style(data-book='bookTitle')
-
-			//- Many people will not want this on the cover, so it would need to be hidden by css
-			+field-prototypeDeclaredExplicity
-				label.bubble Book title in {lang}
 				+editable('N1').bookTitle.coverTitleNationalLanguage1-style(data-book='bookTitle')
+
 
 		//- lang='N1' means show the language name here using the national language
 			.coverBottomLangName(data-library="nameOfLanguage",lang="N1")
 				{Lang in N1}
 
-		+page('Book Information').bloom-frontMatter.bigbookCredits#BB160261-9668-4B75-95DE-9B1993E2C6BB
+		+page('Inside Front Cover').cover.coverColor.bigBookFrontmatter.bloom-frontMatter.metadataPage#BB160261-9668-4B75-95DE-9B1993E2C6BB
 			.vernacularTitle(data-book='bookTitle',lang="V")
 			+field-prototypeDeclaredExplicity
 				label.bubble Book title in {lang}
@@ -56,14 +58,14 @@ html
 				label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 				+editable("N1").bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 			+field-prototypeDeclaredExplicity
-				label.bubble Acknowledgments for translated version, in {lang}
+				label.bubble Additional acknowledgments when used as a shell to and localized into another language.
 				+editable("N1").versionAcknowledgments.bloom-readOnlyInEditMode(data-book="versionAcknowledgments")
 			+field-prototypeDeclaredExplicity#funding
 				label.bubble Use this to acknowledge any funding agencies.
 				+editable(kLanguageForPrototypeOnly).funding(data-book='funding')
 			img.licenseImage(src="" data-book="licenseImage")#bottomLicenseImage
 
-		+page('Instructions').bloom-frontMatter.bigbookxmatterInstructions#A6160261-9668-4B75-95DE-9B1993E2C607
+		+page('Instructions').bigBookFrontmatter.bloom-frontMatter.bigbookxmatterInstructions#A6160261-9668-4B75-95DE-9B1993E2C607
 			+editable('N1')
 				H1 For the Teacher
 				p This Big Book is designed to be used for two weeks. It promotes enjoyment of storybooks, development of vocabulary, the skills of prediction, sequencing and main idea, and the understanding that books are made up of words.
@@ -91,5 +93,5 @@ html
 				ul
 					li act out (dramatize) the story as others help the teacher “read” it.
 
-		+factoryStandard-insideBackCover
-		+factoryStandard-outsideBackCover
+		+factoryStandard-insideBackCover.bigBookFrontmatter
+		+factoryStandard-outsideBackCover.bigBookFrontmatter

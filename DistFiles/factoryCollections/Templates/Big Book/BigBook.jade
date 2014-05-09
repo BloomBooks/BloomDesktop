@@ -1,5 +1,12 @@
 include ../../../jade/bloom-foundation-mixins
 
+//- This is an 'override' from bloom-foundation-mixins.jade
+//- that allows us to use its mixins that would otherwise
+//- put in a5portrait
+mixin pageWithJustPageSize
+	.A4Landscape(attributes)
+		block
+
 //- items marked with 'bloom-leadingElement' will be on the left page of a side-by-side layout
 mixin image-leading
 	+image(class='bloom-leadingElement', attributes)
@@ -22,11 +29,12 @@ html
 		//- Eventually, we'll remove Bloom's need for this.
 		meta(name='pageTemplateSource', content='Big Book')
 		title 'Big Book'
-		+stylesheets('Big Book.css')
+		+stylesheets('BigBook.css')
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Big Book')
 			+bookVariable-title('tpi', 'Bikpela Buk')
+			div(data-book='topic', lang='en') = BigBook
 
 		+page-choice('Just an Image').imageWholePage#AF708725-E961-44AA-9149-ADF66084A04F
 			+image-leading
