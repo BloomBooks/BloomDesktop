@@ -847,11 +847,11 @@ function SetBookCopyrightAndLicenseButtonVisibility() {
 function FindOrCreateTopicDialogDiv() {
     var dialogContents = $("body").find("div#topicChooser");
     if (!dialogContents.length) {
-        //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
         dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
 
         var topics = JSON.parse(GetSettings().topics);
-        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
+        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment",
+        // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
         dialogContents.append("<ol id='topics'></ol>");
         for (i in topics) {
@@ -860,7 +860,8 @@ function FindOrCreateTopicDialogDiv() {
 
         $("#topics").selectable();
 
-        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
+        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
+        //when you select an item, nothing visible happens (from stackoverflow)
         $("#topics").selectable({
             unselected: function() {
                 $(":not(.ui-selected)", this).each(function() {

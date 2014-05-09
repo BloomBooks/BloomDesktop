@@ -15,6 +15,11 @@ To handling the mis-match.*/
 	font-size: 10.5pt;
 }
 
+.ui-dialog
+{
+	z-index: 20000;
+}
+
 /* Qtip won't work if these rules are inside the scoped DIV */
 .qtip-content
 {
