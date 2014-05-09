@@ -381,10 +381,6 @@ UL.toolbox LI
 {
 	text-align: center;
 }
-.ui-dialog
-{
-	z-index: 20000;
-}
 /*Put in little grey language tooltips*/
 .bloom-editable[contentEditable=true]:after
 {
