@@ -171,8 +171,7 @@ namespace Bloom.Book
         public void AddEditMode(string mode)
         {
             // RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
-            var body = RawDom.SafeSelectNodes("/html/body")[0] as XmlElement;
-            body.SetAttribute("editMode", mode);
+            Body.SetAttribute("editMode", mode);
         }
 
 		public void RemoveModeStyleSheets()
