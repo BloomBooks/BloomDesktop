@@ -87,7 +87,7 @@ namespace BloomTemp
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
 			string xhtml = File.ReadAllText(temp.Path);
-			var re = new Regex(""<(title|div|i|table|td|span) ([^<]*)/>"");
+			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
