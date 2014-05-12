@@ -272,6 +272,7 @@ EditControlsModel.prototype.doMarkup = function() {
             var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
             $(".bloom-editable").checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
+            this.updateTotalWordsOnPage();
             break;
 
         case MarkupType.Decodable:
@@ -291,6 +292,14 @@ EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
     return levels[this.levelNumber - 1].getMaxWordsPerSentence();
 };
 
+EditControlsModel.prototype.maxWordsPerPage = function() {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 9999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerPage();
+};
+
 EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
     var max = $(".bloom-editable").getMaxSentenceLength();
     $("#actualWordsPerSentence").html(max.toString());
@@ -300,6 +309,14 @@ EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
     // instead of tooLarge). That will mess things up going from the longer to the shorter.
     this.setPresenceOfClass("actualWordsPerSentence", acceptable, "acceptable");
     this.setPresenceOfClass("actualWordsPerSentence", !acceptable, "tooLarge");
+};
+
+EditControlsModel.prototype.updateTotalWordsOnPage = function() {
+    var count = $(".bloom-editable").getTotalWordCount();
+    $("#actualWordsPerPage").html(count.toString());
+    var acceptable = count <= this.maxWordsPerPage();
+    this.setPresenceOfClass("actualWordsPerPage", acceptable, "acceptable");
+    this.setPresenceOfClass("actualWordsPerPage", !acceptable, "tooLarge");
 };
 
 // Should be called early on, before other init.
