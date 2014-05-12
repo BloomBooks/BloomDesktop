@@ -27,18 +27,18 @@ namespace Bloom.Edit
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
         private readonly LanguageSettings _languageSettings;
-    	private readonly DeletePageCommand _deletePageCommand;
-    	private readonly CollectionSettings _collectionSettings;
-    	private readonly SendReceiver _sendReceiver;
-    	private HtmlDom _domForCurrentPage;
+        private readonly DeletePageCommand _deletePageCommand;
+        private readonly CollectionSettings _collectionSettings;
+        private readonly SendReceiver _sendReceiver;
+        private HtmlDom _domForCurrentPage;
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private EditingView _view;
-    	private List<ContentLanguage> _contentLanguages;
-    	private IPage _previouslySelectedPage;
+        private List<ContentLanguage> _contentLanguages;
+        private IPage _previouslySelectedPage;
         private bool _inProcessOfDeleting;
 
-    	//public event EventHandler UpdatePageList;
+        //public event EventHandler UpdatePageList;
 
         public delegate EditingModel Factory();//autofac uses this
 
@@ -47,72 +47,72 @@ namespace Bloom.Edit
             TemplateInsertionCommand templateInsertionCommand,
             PageListChangedEvent pageListChangedEvent,
             RelocatePageEvent relocatePageEvent,
-			BookRefreshEvent bookRefreshEvent,
+            BookRefreshEvent bookRefreshEvent,
             DeletePageCommand deletePageCommand,
-			SelectedTabChangedEvent selectedTabChangedEvent,
-			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			LibraryClosing libraryClosingEvent,
+            SelectedTabChangedEvent selectedTabChangedEvent,
+            SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
+            LibraryClosing libraryClosingEvent,
             CollectionSettings collectionSettings,
-			SendReceiver sendReceiver)
+            SendReceiver sendReceiver)
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
             _languageSettings = languageSettings;
-        	_deletePageCommand = deletePageCommand;
-        	_collectionSettings = collectionSettings;
-        	_sendReceiver = sendReceiver;
+            _deletePageCommand = deletePageCommand;
+            _collectionSettings = collectionSettings;
+            _sendReceiver = sendReceiver;
 
-        	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+            bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
             pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
             templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
-			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null)); 
-			selectedTabChangedEvent.Subscribe(OnTabChanged);
-			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
-            deletePageCommand.Implementer=OnDeletePage;
+            bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
+            selectedTabChangedEvent.Subscribe(OnTabChanged);
+            selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
+            deletePageCommand.Implementer = OnDeletePage;
             pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
             relocatePageEvent.Subscribe(OnRelocatePage);
-			libraryClosingEvent.Subscribe(o=>SaveNow());
-        	_contentLanguages = new List<ContentLanguage>();
+            libraryClosingEvent.Subscribe(o => SaveNow());
+            _contentLanguages = new List<ContentLanguage>();
         }
 
 
-		/// <summary>
-		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
-		/// </summary>
-		/// <param name="details"></param>
-		private void OnTabAboutToChange(TabChangedDetails details)
-		{
-			if (details.From == _view)
-			{
-				SaveNow();
-				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
-				//won't polute the history
-				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
+        /// <summary>
+        /// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
+        /// </summary>
+        /// <param name="details"></param>
+        private void OnTabAboutToChange(TabChangedDetails details)
+        {
+            if (details.From == _view)
+            {
+                SaveNow();
+                //note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
+                //won't polute the history
+                _sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
 
-			}
-		}
-		
-		private void OnTabChanged(TabChangedDetails details)
-		{
-			_previouslySelectedPage = null;
-			Visible = details.To == _view;
-    		_view.OnVisibleChanged(Visible);
-    	}
+            }
+        }
 
-    	private void OnBookSelectionChanged(object sender, EventArgs e)
-    	{
-    		//prevent trying to save this page in whatever comes next
-    		var wasNull = _domForCurrentPage == null;
-    		_domForCurrentPage = null;
-    		_currentlyDisplayedBook = null;
-			if (Visible)
-			{
-				_view.ClearOutDisplay();
-				if (!wasNull)
-					_view.UpdatePageList(false);
-			}
-    	}
+        private void OnTabChanged(TabChangedDetails details)
+        {
+            _previouslySelectedPage = null;
+            Visible = details.To == _view;
+            _view.OnVisibleChanged(Visible);
+        }
+
+        private void OnBookSelectionChanged(object sender, EventArgs e)
+        {
+            //prevent trying to save this page in whatever comes next
+            var wasNull = _domForCurrentPage == null;
+            _domForCurrentPage = null;
+            _currentlyDisplayedBook = null;
+            if (Visible)
+            {
+                _view.ClearOutDisplay();
+                if (!wasNull)
+                    _view.UpdatePageList(false);
+            }
+        }
 
         private void OnDeletePage()
         {
@@ -139,20 +139,20 @@ namespace Bloom.Edit
         private void OnRelocatePage(RelocatePageInfo info)
         {
             info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
-			if(!info.Cancel)
-			{
-				Analytics.Track("Relocate Page");
-				Logger.WriteEvent("Relocate Page");
-			}
+            if (!info.Cancel)
+            {
+                Analytics.Track("Relocate Page");
+                Logger.WriteEvent("Relocate Page");
+            }
         }
 
         private void OnInsertTemplatePage(object sender, EventArgs e)
         {
             _bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
-			_view.UpdatePageList(false);
+            _view.UpdatePageList(false);
             //_pageSelection.SelectPage(newPage);
-			Analytics.Track("Insert Template Page");
-			Logger.WriteEvent("InsertTemplatePage");
+            Analytics.Track("Insert Template Page");
+            Logger.WriteEvent("InsertTemplatePage");
         }
 
 
@@ -178,15 +178,15 @@ namespace Bloom.Edit
         {
             get
             {
-//                if (_librarySettings.IsSourceCollection)
-//                {
-//                    return true;
-//                }
-//                else
-//                {
+                //                if (_librarySettings.IsSourceCollection)
+                //                {
+                //                    return true;
+                //                }
+                //                else
+                //                {
 
-					return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
-//                }
+                return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
+                //                }
             }
         }
 
@@ -195,214 +195,213 @@ namespace Bloom.Edit
             get
             {
                 return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-                       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook!=null 
-					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
+                       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
+                       && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
             }
 
         }
 
-		/// <summary>
-		/// These are the languages available for selecting for bilingual and trilingual
-		/// </summary>
-    	public IEnumerable<ContentLanguage> ContentLanguages
-    	{
-    		get
-    		{
-    			//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
-				if (_contentLanguages.Count() == 0)
-				{
-					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
-					                                          _collectionSettings.GetLanguage1Name("en"))
-					                      	{Locked = true, Selected = true});
+        /// <summary>
+        /// These are the languages available for selecting for bilingual and trilingual
+        /// </summary>
+        public IEnumerable<ContentLanguage> ContentLanguages
+        {
+            get
+            {
+                //_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
+                if (_contentLanguages.Count() == 0)
+                {
+                    _contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
+                                                              _collectionSettings.GetLanguage1Name("en")) { Locked = true, Selected = true });
 
-					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
-					                                _collectionSettings.GetLanguage2Name("en"))
-					            	{
-//					            		Selected =
-//					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
-//					            			_librarySettings.Language2Iso639Code
-					            	};
-					_contentLanguages.Add(item2);
-					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
-					{
-						//NB: this could be the 2nd language (when the national 1 language is not selected)
-//						bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
-//						                _librarySettings.Language3Iso639Code ||
-//						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
-//						                _librarySettings.Language3Iso639Code;
-						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-						                                _collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
-						_contentLanguages.Add(item3);
-					}
-				}
-				//update the selections
-    			_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).First().Selected =
-    				_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
-
-
-    			var contentLanguageMatchingNatLan2 =
-    				_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
-
-				if(contentLanguageMatchingNatLan2!=null)
-    			{
-					contentLanguageMatchingNatLan2.Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code 
-					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
-				}
+                    //NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
+                    var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
+                                                    _collectionSettings.GetLanguage2Name("en"))
+                    {
+                        //					            		Selected =
+                        //					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+                        //					            			_librarySettings.Language2Iso639Code
+                    };
+                    _contentLanguages.Add(item2);
+                    if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+                    {
+                        //NB: this could be the 2nd language (when the national 1 language is not selected)
+                        //						bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+                        //						                _librarySettings.Language3Iso639Code ||
+                        //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
+                        //						                _librarySettings.Language3Iso639Code;
+                        var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
+                                                        _collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
+                        _contentLanguages.Add(item3);
+                    }
+                }
+                //update the selections
+                _contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).First().Selected =
+                    _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code;
 
 
-    			return _contentLanguages;
-			}
-    	}
+                var contentLanguageMatchingNatLan2 =
+                    _contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
 
-    	public IEnumerable<Layout> GetLayoutChoices()
-    	{
-    		foreach(var layout in CurrentBook.GetLayoutChoices())
-    		{
-				yield return layout;
-    		}
-    	}
+                if (contentLanguageMatchingNatLan2 != null)
+                {
+                    contentLanguageMatchingNatLan2.Selected =
+                    _bookSelection.CurrentSelection.MultilingualContentLanguage2 == _collectionSettings.Language3Iso639Code
+                    || _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
+                }
 
-		public void SetLayout(Layout layout)
-		{
-			SaveNow();
-			CurrentBook.SetLayout(layout);
-			CurrentBook.PrepareForEditing();
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-			_view.UpdatePageList(true);//counting on this to redo the thumbnails
-		}
+                return _contentLanguages;
+            }
+        }
 
-    	/// <summary>
-		/// user has selected or de-selected a content language
-		/// </summary>
-		public void ContentLanguagesSelectionChanged()
-		{
-			Logger.WriteEvent("Changing Content Languages");
-			string l2 = null;
-			string l3 = null;
-			foreach (var language in _contentLanguages)
-			{
-				if (language.Locked)
-					continue; //that's the vernacular
-				if(language.Selected && l2==null)
-					l2 = language.Iso639Code;
-				else if(language.Selected)
-				{
-					l3 = language.Iso639Code;
-					break;
-				}
-			}
+        public IEnumerable<Layout> GetLayoutChoices()
+        {
+            foreach (var layout in CurrentBook.GetLayoutChoices())
+            {
+                yield return layout;
+            }
+        }
 
-			//Reload to display these changes
-			SaveNow();
-			CurrentBook.SetMultilingualContentLanguages(l2, l3);
-			CurrentBook.PrepareForEditing();
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			_view.UpdatePageList(true);//counting on this to redo the thumbnails
+        public void SetLayout(Layout layout)
+        {
+            SaveNow();
+            CurrentBook.SetLayout(layout);
+            CurrentBook.PrepareForEditing();
+            _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-			Logger.WriteEvent("ChangingContentLanguages"); 
-			Analytics.Track("Change Content Languages");
-		}
+            _view.UpdatePageList(true);//counting on this to redo the thumbnails
+        }
 
-    	public int NumberOfDisplayedLanguages
-    	{
-    		get { return ContentLanguages.Where(l => l.Selected).Count(); }
-    	}
+        /// <summary>
+        /// user has selected or de-selected a content language
+        /// </summary>
+        public void ContentLanguagesSelectionChanged()
+        {
+            Logger.WriteEvent("Changing Content Languages");
+            string l2 = null;
+            string l3 = null;
+            foreach (var language in _contentLanguages)
+            {
+                if (language.Locked)
+                    continue; //that's the vernacular
+                if (language.Selected && l2 == null)
+                    l2 = language.Iso639Code;
+                else if (language.Selected)
+                {
+                    l3 = language.Iso639Code;
+                    break;
+                }
+            }
 
-    	public bool CanEditCopyrightAndLicense
-    	{
-			get { return CurrentBook.CanChangeLicense; }
+            //Reload to display these changes
+            SaveNow();
+            CurrentBook.SetMultilingualContentLanguages(l2, l3);
+            CurrentBook.PrepareForEditing();
+            _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+            _view.UpdatePageList(true);//counting on this to redo the thumbnails
 
-    	}
+            Logger.WriteEvent("ChangingContentLanguages");
+            Analytics.Track("Change Content Languages");
+        }
 
-    	public class ContentLanguage
-    	{
-    		public readonly string Iso639Code;
-    		public readonly string Name;
+        public int NumberOfDisplayedLanguages
+        {
+            get { return ContentLanguages.Where(l => l.Selected).Count(); }
+        }
 
-    		public ContentLanguage(string iso639Code, string name)
-    		{
-    			Iso639Code = iso639Code;
-    			Name = name;
-    		}
-			public override string ToString()
-			{
-				return Name;
-			}
+        public bool CanEditCopyrightAndLicense
+        {
+            get { return CurrentBook.CanChangeLicense; }
 
-    		public bool Selected;
-    		public bool Locked;
-    	}
+        }
 
-    	public bool GetBookHasChanged()
+        public class ContentLanguage
+        {
+            public readonly string Iso639Code;
+            public readonly string Name;
+
+            public ContentLanguage(string iso639Code, string name)
+            {
+                Iso639Code = iso639Code;
+                Name = name;
+            }
+            public override string ToString()
+            {
+                return Name;
+            }
+
+            public bool Selected;
+            public bool Locked;
+        }
+
+        public bool GetBookHasChanged()
         {
             return _currentlyDisplayedBook != CurrentBook;
         }
 
         public void ViewVisibleNowDoSlowStuff()
         {
-			if(_currentlyDisplayedBook != CurrentBook)
-			{
-				CurrentBook.PrepareForEditing();
-			}
+            if (_currentlyDisplayedBook != CurrentBook)
+            {
+                CurrentBook.PrepareForEditing();
+            }
 
-        	_currentlyDisplayedBook = CurrentBook;
+            _currentlyDisplayedBook = CurrentBook;
 
-	        var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
-	        if (!string.IsNullOrEmpty(errors))
-	        {
-		        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
-		        return;
-	        }
-	        var page = _bookSelection.CurrentSelection.FirstPage;
+            var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
+            if (!string.IsNullOrEmpty(errors))
+            {
+                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+                return;
+            }
+            var page = _bookSelection.CurrentSelection.FirstPage;
             if (page != null)
                 _pageSelection.SelectPage(page);
-            
+
             if (_view != null)
             {
-				if(ShowTemplatePanel)
-				{
-					_view.UpdateTemplateList();
-				}
-				_view.UpdatePageList(false);
+                if (ShowTemplatePanel)
+                {
+                    _view.UpdateTemplateList();
+                }
+                _view.UpdatePageList(false);
             }
         }
 
         void OnPageSelectionChanged(object sender, EventArgs e)
         {
-			Logger.WriteMinorEvent("changing page selection");
-			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+            Logger.WriteMinorEvent("changing page selection");
+            Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
 
             if (_view != null)
             {
                 if (_previouslySelectedPage != null && _domForCurrentPage != null)
                 {
-                	if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+                    if (!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
                         SaveNow();
-					_view.UpdateThumbnailAsync(_previouslySelectedPage);
+                    _view.UpdateThumbnailAsync(_previouslySelectedPage);
                 }
-            	_previouslySelectedPage = _pageSelection.CurrentSelection;
+                _previouslySelectedPage = _pageSelection.CurrentSelection;
                 _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-            	_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+                _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
             }
 
-			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
+            GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
         }
 
-		public void RefreshDisplayOfCurrentPage()
-		{
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-		}
+        public void RefreshDisplayOfCurrentPage()
+        {
+            _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+        }
 
-    	public HtmlDom GetXmlDocumentForCurrentPage()
+        public HtmlDom GetXmlDocumentForCurrentPage()
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 
-    	    AddEditControlsToPage();
+            AddEditControlsToPage();
 
-    	    return _domForCurrentPage;
+            return _domForCurrentPage;
         }
 
         /// <summary>
@@ -451,8 +450,13 @@ namespace Bloom.Edit
             MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
             var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
-            var domForEditControls = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
-            AppendAllChildren(domForEditControls.DocumentElement.LastChild, _domForCurrentPage.Body);
+            var domForEditControls = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+
+            // move css files from the head into scoped tags in EditControls.htm
+            var div = domForEditControls.Body.SelectSingleNode("//div[@class='editControlsRoot']");
+            MoveStylesIntoScopedTag(domForEditControls, div);
+
+            AppendAllChildren(domForEditControls.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
             // looking at the EditControls.htm file and the generated html for the page, you would think we need the following three lines.
             // However, the generated html loads bloomBootstrap.js, and this loads all three files.
             //_domForCurrentPage.AddStyleSheet(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"));
@@ -464,7 +468,7 @@ namespace Bloom.Edit
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/jquery.text-markup.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
 
-            AppendAllChildren(domForEditControls.DocumentElement.FirstChild, _domForCurrentPage.Head);
+            AppendAllChildren(domForEditControls.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
             _domForCurrentPage.AddJavascriptFileToBody(
                 _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
             _domForCurrentPage.AddJavascriptFileToBody(
@@ -496,28 +500,54 @@ namespace Bloom.Edit
         private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
         {
             var body = domForCurrentPage.Body;
-            var head = domForCurrentPage.Head;
-            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
             var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
             var newDiv = body.OwnerDocument.CreateElement("div");
             newDiv.SetAttribute("style", "float:left");
-            // Varoius things in JavaScript land that want to add things using the styles add them to this element instead of body.
+            // Various things in JavaScript land that want to add things using the styles add them to this element instead of body.
             newDiv.SetAttribute("id", "mainPageScope");
             body.AppendChild(newDiv);
+
+            MoveStylesIntoScopedTag(domForCurrentPage, newDiv);
+
+            foreach (var child in childrenToMove)
+                newDiv.AppendChild(child);
+        }
+
+        private void MoveStylesIntoScopedTag(HtmlDom domForCurrentPage, XmlNode target)
+        {
+            var body = domForCurrentPage.Body;
+            var head = domForCurrentPage.Head;
+
+            // get the style sheets linked to this document
+            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
+
+            // create a style tag for the style sheets
             var scope = body.OwnerDocument.CreateElement("style");
-            newDiv.AppendChild(scope);
+            target.AppendChild(scope);
             scope.SetAttribute("scoped", "scoped");
+
             foreach (var style in stylesToMove)
             {
                 var source = style.Attributes["href"].Value;
-                if (source.Contains("editPaneGlobal"))
-                    continue; // Leave this one at the global level, it contains things that should NOT be scoped.
+
+                if (!source.StartsWith("file"))
+                {
+                    // get the filename
+                    var idx = source.LastIndexOfAny("\\/".ToCharArray());
+                    if (idx > -1)
+                        source = source.Substring(idx + 1);
+
+                    // do not attempt to do this to jquery
+                    if (source.StartsWith("jquery")) continue;
+
+                    // look for the css file, and build a file URI
+                    source = new Uri(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source)).AbsoluteUri;
+                }
+
                 var import = body.OwnerDocument.CreateTextNode("@import \"" + source.Replace("\\", "/") + "\";\n");
                 scope.AppendChild(import);
                 head.RemoveChild(style);
             }
-            foreach (var child in childrenToMove)
-                newDiv.AppendChild(child);
         }
 
         void AppendAllChildren(XmlNode source, XmlNode dest)
@@ -536,7 +566,7 @@ namespace Bloom.Edit
                     continue;
                 if (node.Name == "link" && node.Attributes != null && node.Attributes["rel"] != null)
                     continue; // likewise stylesheets must be inserted
-                dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
+                dest.AppendChild(dest.OwnerDocument.ImportNode(node, true));
             }
         }
 
@@ -544,43 +574,43 @@ namespace Bloom.Edit
         {
             if (_domForCurrentPage != null)
             {
-				_view.CleanHtmlAndCopyToPageDom();
+                _view.CleanHtmlAndCopyToPageDom();
                 _bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
             }
         }
 
-		public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
+        public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
         {
-			try
-			{
-				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
-				var editor = new PageEditingModel();
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
+            try
+            {
+                Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
+                var editor = new PageEditingModel();
+                editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
 
-				//we have to save so that when asked by the thumbnailer, the book will give the proper image
-				SaveNow();
-				//but then, we need the non-cleaned version back there
-				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+                //we have to save so that when asked by the thumbnailer, the book will give the proper image
+                SaveNow();
+                //but then, we need the non-cleaned version back there
+                _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-				Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
-				Analytics.Track("Change Picture");
-				Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
+                _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+                Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
+                Analytics.Track("Change Picture");
+                Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
 
-			}
-			catch (Exception e)
-			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
-			}
+            }
+            catch (Exception e)
+            {
+                ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
+            }
         }
 
-//        private void InvokeUpdatePageList()
-//        {
-//            if (UpdatePageList != null)
-//            {
-//                UpdatePageList(this, null);
-//            }
-//        }
+        //        private void InvokeUpdatePageList()
+        //        {
+        //            if (UpdatePageList != null)
+        //            {
+        //                UpdatePageList(this, null);
+        //            }
+        //        }
 
         public void SetView(EditingView view)
         {
@@ -611,7 +641,7 @@ namespace Bloom.Edit
                             @"_bookSelection.CurrentSelection.GetPages() gave no pages (BL-262 repro).
                                       Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
                             _bookSelection.CurrentSelection.TitleBestForUserDisplay,
-                            _bookSelection.CurrentSelection.CheckForErrors(), 
+                            _bookSelection.CurrentSelection.CheckForErrors(),
                             _bookSelection.CurrentSelection.RawDom.OuterXml,
                             new StackTrace().ToString()));
 
@@ -632,10 +662,10 @@ namespace Bloom.Edit
         }
 
 
-    	public Layout GetCurrentLayout()
-    	{
-    		return CurrentBook.GetLayout();
-    	}
+        public Layout GetCurrentLayout()
+        {
+            return CurrentBook.GetLayout();
+        }
 
 #if TooExpensive
     	public void BrowserFocusChanged()
@@ -646,19 +676,19 @@ namespace Bloom.Edit
     	}
 #endif
 
-    	public void CopyImageMetadataToWholeBook(Metadata metadata)
-    	{
-			using (var dlg = new ProgressDialogForeground())//REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
-			{
-				dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
-			}
-    	}
+        public void CopyImageMetadataToWholeBook(Metadata metadata)
+        {
+            using (var dlg = new ProgressDialogForeground())//REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
+            {
+                dlg.ShowAndDoWork(progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress));
+            }
+        }
 
         public string GetFontAvailabilityMessage()
         {
             var name = _collectionSettings.DefaultLanguage1FontName.ToLower();
-            
-            if(null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
+
+            if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
             {
                 var s = L10NSharp.LocalizationManager.GetString("EditTab.FontMissing",
                                                            "The current selected " +
@@ -668,50 +698,50 @@ namespace Bloom.Edit
             return null;
         }
 
-      /*  Later I found a different explanation for why i wasn't getting the data back... the new classes were at the pag div
-       *  level, and the c# code was only looking at the innerhtml of that div when saving (still is).
-       *  /// <summary>
-        /// Although browsers are happy to let you manipulate the DOM, in most cases gecko/xulrunner does not expect that we,
-        /// the host process, are going to need access to those changes. For example, if we have a control that adds a class
-        /// to some element based on a user choice, the user will see the choice take effect, but then when they come back to the
-        /// page later, their choice will be lost. This is because that new class just isn't in the html that gets returned to us,
-        /// if we do, for example, _browser.Document.GetElementsByTagName("body").outerHtml. (Other things changes *are* returned, like
-        /// the new contents of an editable div).
-        /// 
-        /// Anyhow this method, triggered by javascript that knows it did something that will be lost, is here in order to work
-        /// around this. The Javascript does something like:
-        /// var origin = window.location.protocol + '//' + window.location.host;
-        /// event.initMessageEvent ('PreserveClassAttributeOfElement', true, true, theHTML, origin, 1234, window, null);
-        /// document.dispatchEvent (event);
-        /// 
-        /// The hard part here is knowing which element gets this html
-        /// </summary>
-        /// <param name="?"></param>
-        public void PreserveHtmlOfElement(string elementHtml)
-        {
-            try
-            {
-                var editor = new PageEditingModel();
+        /*  Later I found a different explanation for why i wasn't getting the data back... the new classes were at the pag div
+         *  level, and the c# code was only looking at the innerhtml of that div when saving (still is).
+         *  /// <summary>
+          /// Although browsers are happy to let you manipulate the DOM, in most cases gecko/xulrunner does not expect that we,
+          /// the host process, are going to need access to those changes. For example, if we have a control that adds a class
+          /// to some element based on a user choice, the user will see the choice take effect, but then when they come back to the
+          /// page later, their choice will be lost. This is because that new class just isn't in the html that gets returned to us,
+          /// if we do, for example, _browser.Document.GetElementsByTagName("body").outerHtml. (Other things changes *are* returned, like
+          /// the new contents of an editable div).
+          /// 
+          /// Anyhow this method, triggered by javascript that knows it did something that will be lost, is here in order to work
+          /// around this. The Javascript does something like:
+          /// var origin = window.location.protocol + '//' + window.location.host;
+          /// event.initMessageEvent ('PreserveClassAttributeOfElement', true, true, theHTML, origin, 1234, window, null);
+          /// document.dispatchEvent (event);
+          /// 
+          /// The hard part here is knowing which element gets this html
+          /// </summary>
+          /// <param name="?"></param>
+          public void PreserveHtmlOfElement(string elementHtml)
+          {
+              try
+              {
+                  var editor = new PageEditingModel();
                
-                //todo if anyone ever needs it: preserve more than just the class
-                editor.PreserveClassAttributeOfElement(_pageSelection.CurrentSelection.GetDivNodeForThisPage(), elementHtml);
+                  //todo if anyone ever needs it: preserve more than just the class
+                  editor.PreserveClassAttributeOfElement(_pageSelection.CurrentSelection.GetDivNodeForThisPage(), elementHtml);
 
-                //we have to save so that when asked by the thumbnailer, the book will give the proper image
-  //              SaveNow();
-                //but then, we need the non-cleaned version back there
-//                _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+                  //we have to save so that when asked by the thumbnailer, the book will give the proper image
+    //              SaveNow();
+                  //but then, we need the non-cleaned version back there
+  //                _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-  //              _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+    //              _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 
-            }
-            catch (Exception e)
-            {
-                ErrorReport.NotifyUserOfProblem(e, "Could not PreserveClassAttributeOfElement");
-            }
-        }
-       */
+              }
+              catch (Exception e)
+              {
+                  ErrorReport.NotifyUserOfProblem(e, "Could not PreserveClassAttributeOfElement");
+              }
+          }
+         */
     }
-       
+
     public class TemplateInsertionCommand
     {
         public event EventHandler InsertPage;
