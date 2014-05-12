@@ -689,6 +689,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
+			RunJavaScript("$(\".bloom-editable\").removeSynphonyMarkup();");
 			_browser1.ReadEditableAreasNow();
 		}
 
