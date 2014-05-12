@@ -20,6 +20,7 @@ mixin stylesheets(nameOfTemplateSpecificCSS)
 	+stylesheet('basePage.css')
 	//- +stylesheet('languageDisplay.css')
 	+stylesheet('editMode.css')
+	+stylesheet('editPaneGlobal.css')
 	+stylesheet(nameOfTemplateSpecificCSS)
 	//- +stylesheet('file://..\customCollectionStyles.css')
 
@@ -83,7 +84,7 @@ mixin field-version1(placeholder)
 mixin image
 	- requireZeroArguments('image', arguments);
 	.bloom-imageContainer(attributes)
-		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
 		block
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell

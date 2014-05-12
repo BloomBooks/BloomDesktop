@@ -17,6 +17,7 @@ using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
+using System.Net;
 
 namespace Bloom.Edit
 {
@@ -155,8 +156,10 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
+                var decodedMetadata = GetMetadataCloneWithHtmlDecodedRights(metadata);
+
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -175,9 +178,10 @@ namespace Bloom.Edit
 						}
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is emtpy
-						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
-						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
+						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
+                        var rights = GetHtmlEncodedRights(dlg);
+                        dlg.Metadata.License.RightsStatement = rights;
+                        string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
 							string.Format(
@@ -205,6 +209,21 @@ namespace Bloom.Edit
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
     	}
+
+        private string GetHtmlEncodedRights(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
+        {
+            var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
+            return rights ?? string.Empty;
+        }
+
+        private Metadata GetMetadataCloneWithHtmlDecodedRights(Metadata metadata)
+        {
+            // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
+            var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
+            var safeMetadata = metadata.DeepCopy();
+            safeMetadata.License.RightsStatement = rightsStatement;
+            return safeMetadata;
+        }
 
         private void SetupThumnailLists()
         {
@@ -235,7 +254,7 @@ namespace Bloom.Edit
 			}
         }
 
-       void VisibleNowAddSlowContents(object sender, EventArgs e)
+        void VisibleNowAddSlowContents(object sender, EventArgs e)
         {
 		   //TODO: this is causing green boxes when you quit while it is still working
 		   //we should change this to a proper background task, with good
@@ -305,9 +324,33 @@ namespace Bloom.Edit
 				_browser1.Navigate(dom.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
+                // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+                // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+                // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+                // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+                // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+                // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+                // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+                // never happens.
+			    _browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
+                _browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
 			}
 			UpdateDisplay();
 		}
+
+        void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
+        {
+            if (_browser1.WebBrowser.Document.ReadyState != "complete")
+                return; // Keep receiving until it is complete.
+            _browser1.WebBrowser.ReadyStateChange -= WebBrowser_ReadyStateChanged; // just do this once
+            _browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
+            _model.DocumentCompleted();
+        }
+
+        public void AddMessageEventListener(string eventName, Action<string> action)
+        {
+            _browser1.AddMessageEventListener(eventName, action);
+        }
 
     	public void UpdateTemplateList()
         {
@@ -318,6 +361,11 @@ namespace Bloom.Edit
 			if (emptyThumbnailCache)
 				_pageListView.EmptyThumbnailCache();
             _pageListView.SetBook(_model.CurrentBook);
+        }
+
+        internal string RunJavaScript(string script)
+        {
+            return _browser1.RunJavaScript(script);
         }
 
         private void _browser1_OnBrowserClick(object sender, EventArgs e)
@@ -358,6 +406,11 @@ namespace Bloom.Edit
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
+                    // We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
+                    // since although its href is empty, the  <base href which we supply inserts an effective http: url.
+                    // We don't need anything to happen here for this case.
+                    if (anchor.Id == "setUpStages")
+				        return;
 					Process.Start(anchor.Href);
 					ge.Handled = true;
 					return;

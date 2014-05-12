@@ -1,10 +1,15 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
+interface qtipInterface extends JQuery {
+    qtip(options: any): JQuery;
+}
+
 class StyleEditor {
 
     private _previousBox: Element;
     private _supportFilesRoot: string;
+    private MIN_FONT_SIZE: number = 7;
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -23,6 +28,15 @@ class StyleEditor {
                 return classes[i];
             }
         }
+        // For awhile between v1 and v2 we used 'coverTitle' in Factory-XMatter
+        // In case this is one of those books, we'll replace it with 'coverTitle-style'
+        var coverTitleClass = 'coverTitle';
+        if ($(target).hasClass(coverTitleClass)) {
+            $(target).removeClass(coverTitleClass);
+            var newStyleName = 'coverTitle-style';
+            $(target).addClass(newStyleName);
+            return newStyleName;
+        }
         return null;
     }
 
@@ -33,19 +47,42 @@ class StyleEditor {
         this.ChangeSize(target, -2);
     }
 
+    static MigratePreStyleBook(target: HTMLElement): string {
+        var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
+        // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
+        var pageLineage = $(parentPage).attr('data-pagelineage');
+        if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
+            var styleName: string = "normal-style";
+            $(target).addClass(styleName);
+            return styleName;
+        }
+        return null;
+    }
+
     static GetStyleNameForElement(target: HTMLElement): string {
-        var styleName = this.GetStyleClassFromElement(target);
+        var styleName: string = this.GetStyleClassFromElement(target);
         if (!styleName) {
-            var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
-            // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-            var pageLineage = $(parentPage).attr('data-pagelineage');
-            if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
-                styleName = "normal-style";
-                $(target).addClass(styleName);
+            // The style name is probably on the parent translationGroup element
+            var parentGroup: HTMLDivElement = <HTMLDivElement><any> ($(target).parent(".bloom-translationGroup")[0]);
+            if (parentGroup) {
+                styleName = this.GetStyleClassFromElement(parentGroup);
+                if (styleName)
+                    $(target).addClass(styleName); // add style to bloom-editable div
+                else {
+                    return this.MigratePreStyleBook(target);
+                }
             }
             else {
-                return null;
+                // No .bloom-translationGroup? Unlikely...
+                return this.MigratePreStyleBook(target);
             }
+        }
+        // For awhile between v1 and v2 we used 'default-style' in Basic Book
+        // In case this is one of those books, we'll replace it with 'normal-style'
+        if (styleName == 'default-style') {
+            $(target).removeClass(styleName);
+            styleName = 'normal-style';
+            $(target).addClass(styleName);
         }
         return styleName;
     }
@@ -61,15 +98,23 @@ class StyleEditor {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
+        var fontSize = this.GetCalculatedFontSizeInPoints(target);
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
         var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
-        var sizeString: string = (<any>rule).style.fontSize;
-        if (!sizeString)
-            sizeString = $(target).css("font-size");
-        var units = sizeString.substr(sizeString.length - 2, 2);
-        sizeString = (parseInt(sizeString) + change).toString(); //notice that parseInt ignores the trailing units
+        var units = 'pt';
+        var sizeString = (fontSize + change).toString();
+        if (parseInt(sizeString) < this.MIN_FONT_SIZE)
+            return; // too small, quietly don't do it!
         rule.style.setProperty("font-size", sizeString + units, "important");
         // alert("New size rule: " + rule.cssText);
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        this.AddQtipToElement($('#formatButton'), toolTip);
+    }
+
+    GetCalculatedFontSizeInPoints(target: HTMLElement): number {
+        var sizeInPx = $(target).css('font-size');
+        return this.ConvertPxToPt(parseInt(sizeInPx));
     }
 
     ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
@@ -78,7 +123,7 @@ class StyleEditor {
             alert('ChangeSizeAbsolute called on an element with invalid style class.');
             return;
         }
-        if (newSize < 6) { // newSize is expected to come from a combobox entry by the user someday
+        if (newSize < this.MIN_FONT_SIZE) { // newSize is expected to come from a combobox entry by the user someday
             alert('ChangeSizeAbsolute called with too small a point size.');
             return;
         }
@@ -87,6 +132,9 @@ class StyleEditor {
         var units = "pt";
         var sizeString: string = newSize.toString();
         rule.style.setProperty("font-size", sizeString + units, "important");
+        // Now update tooltip
+        var toolTip = this.GetToolTip(target, styleName);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     }
 
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -134,7 +182,7 @@ class StyleEditor {
         var ratio = 1000/tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         tempDiv = null;
-        return pxSize*ratio;
+        return Math.round(pxSize*ratio);
     }
 
     GetToolTip(targetBox: HTMLElement, styleName: string): string {
@@ -142,11 +190,25 @@ class StyleEditor {
         var box = $(targetBox);
         var sizeString = box.css('font-size'); // always returns computed size in pixels
         var pxSize = parseInt(sizeString); // strip off units and parse
-        var ptSize = Math.round(this.ConvertPxToPt(pxSize));
+        var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
         return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
     }
 
+    AddQtipToElement(element: JQuery, toolTip: string) {
+        if (element.length == 0)
+            return;
+        (<qtipInterface>element).qtip( {
+            content: toolTip,
+            show: {
+                event: 'click mouseenter'
+            },
+            hide: {
+                event: 'unfocus', // qtip-only event that hides tooltip when anything other than the tooltip is clicked
+                inactive: 3000 // hides if tooltip is inactive for 3sec
+            }
+        });
+    }
 
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
@@ -173,10 +235,9 @@ class StyleEditor {
         var t = bottom + "px";
         $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        formatButton.attr('title', toolTip);
+        this.AddQtipToElement(formatButton, toolTip);
         formatButton.toolbar({
             content: '#format-toolbar',
-            //position: 'left',//nb: toolbar's June 2013 code, pushes the toolbar out to the left by 1/2 the width of the parent object, easily putting it in negative territory!
             position: 'left',
             hideOnClick: false
         });
@@ -189,8 +250,9 @@ class StyleEditor {
             if (whichButton.id == "bigger") {
                 editor.MakeBigger(targetBox);
             }
+            formatButton.trigger('click'); // This re-displays the qtip with the new value.
         });
-      }
+    }
 
     static CleanupElement(element) {
         //NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent

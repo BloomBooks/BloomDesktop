@@ -24,6 +24,12 @@ function MakeBigger2(target) {
     editor.MakeBigger(jQueryTarget);
 }
 
+function MakeSmaller(target) {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    editor.MakeSmaller(jQueryTarget);
+}
+
 function ChangeSizeAbsolute(target, newSize) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
@@ -38,7 +44,7 @@ function GetUserModifiedStyleSheet() {
     return new CSSStyleSheet();
 }
 
-function GetFontSize() {
+function GetFooStyleRuleFontSize() {
     var sizeString = $('.foo-style').css("font-size");
     return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
@@ -55,7 +61,7 @@ function ParseRuleForFontSize(ruleText) {
     if (beginPoint < 1 || endPoint < beginPoint)
         return null;
     var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
-    return parseInt(sizeString);
+    return parseFloat(sizeString);
 }
 
 function GetRuleForFooStyle() {
@@ -78,6 +84,23 @@ function GetRuleForNormalStyle() {
         }
     }
     return null;
+}
+
+function GetRuleForCoverTitleStyle() {
+    var x = GetUserModifiedStyleSheet().cssRules;
+
+    for (var i = 0; i < x.length; i++) {
+        if (x[i].cssText.indexOf('coverTitle-style') > -1) {
+            return x[i];
+        }
+    }
+    return null;
+}
+
+function GetCalculatedFontSize(target) {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    return editor.GetCalculatedFontSizeInPoints(jQueryTarget);
 }
 
 function GetRuleMatchingSelector(selector) {
@@ -133,11 +156,11 @@ describe("StyleEditor", function () {
 
     it("MakeBigger makes the text of the target style bigger", function () {
         $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
-        var originalSize = GetFontSize();
+        var originalSize = GetCalculatedFontSize('#testTarget');
         MakeBigger();
-        expect(GetFontSize()).toBe(originalSize + 2);
+        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 2);
         MakeBigger();
-        expect(GetFontSize()).toBe(originalSize + 4);
+        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 4);
     });
 
     //note originally i was just letting everything be changeable, regardless. The problem is that then things like title
@@ -201,7 +224,7 @@ describe("StyleEditor", function () {
     });
 
     it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", function () {
-        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>");
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget');
         var x = GetUserModifiedStyleSheet().cssRules;
@@ -225,7 +248,7 @@ describe("StyleEditor", function () {
     });
 
     it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", function () {
-        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8px ! important; }</style>");
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>");
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         ChangeSizeAbsolute('#testTarget', 20);
         var x = GetUserModifiedStyleSheet().cssRules;
@@ -253,6 +276,60 @@ describe("StyleEditor", function () {
         }
         expect(count).toBe(1);
         expect(GetFontSizeRuleByLang('xyz')).toBe(20);
+    });
+
+    it("If a 'default-style' slips through, make it 'normal-style'", function () {
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>");
+        MakeBigger2('#testTarget2');
+
+        expect(GetRuleForNormalStyle()).not.toBeNull();
+    });
+
+    it("If a 'coverTitle' slips through, make it 'coverTitle-style'", function () {
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>");
+        MakeBigger2('#testTarget2');
+
+        expect(GetRuleForCoverTitleStyle()).not.toBeNull();
+    });
+
+    it("MakeSmaller has no effect if it will be smaller than 7pt", function () {
+        $('body').append("<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='foo-style' lang='xyz'></div>");
+        ChangeSizeAbsolute('#testTarget2', 8);
+        MakeSmaller('#testTarget2');
+        expect(GetRuleForFooStyle()).not.toBeNull();
+        expect(GetFontSizeRuleByLang('xyz')).toBe(8);
+    });
+
+    it("When the element has a size rule in 'em's, MakeSmaller is still limited to bigger than 6pt font", function () {
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.6em ! important; }</style>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+        MakeSmaller('#testTarget');
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeRuleByLang('xyz')).toBe(0.6); // 0.6em -> 8pt -> smaller is 6pt (not allowed; remains 0.6em)
+    });
+
+    it("When the element has a size rule in enough 'em's, MakeSmaller will still work", function () {
+        $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.8em ! important; }</style>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+        MakeSmaller('#testTarget');
+        var x = GetUserModifiedStyleSheet().cssRules;
+
+        var count = 0;
+        for (var i = 0; i < x.length; i++) {
+            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
+                ++count;
+            }
+        }
+        expect(count).toBe(1);
+        expect(GetFontSizeRuleByLang('xyz')).toBe(8); // 0.8em -> 10pt -> smaller is 8pt
     });
 });
 //# sourceMappingURL=StyleEditorSpec.js.map
