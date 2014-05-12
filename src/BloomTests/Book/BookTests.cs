@@ -74,6 +74,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editPaneGlobal.css")).Returns("../notareallocation/editPaneGlobal.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
