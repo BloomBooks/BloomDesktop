@@ -1005,6 +1005,8 @@ jQuery(document).ready(function () {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
+
+
     //make images look click-able when you cover over them
     jQuery(".bloom-imageContainer").each(function () {
         SetupImageContainer(this);
@@ -1023,8 +1025,12 @@ jQuery(document).ready(function () {
         });
     });
 
+   var indexOfEditables=1;
     $('div.bloom-editable').each(function () {
         $(this).attr('contentEditable', 'true');
+        //hook Quill rich-text-editor to editable boxes
+		$(this).attr('id', 'editable'+indexOfEditables++);
+        var editor = new Quill('#' + $(this).attr('id'));
     });
 
     // Bloom needs to make some fields readonly. E.g., the original license when the user is translating a shellbook
