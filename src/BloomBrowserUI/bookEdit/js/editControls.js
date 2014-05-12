@@ -4,11 +4,18 @@ var SortType = {
     byFrequency: "byFrequency"
 };
 
+var MarkupType = {
+    None: 0,
+    Leveled: 1,
+    Decodable: 2
+};
+
 var EditControlsModel = function() {
     this.stageNumber = 1;
     this.levelNumber = 1;
     this.synphony = new SynphonyApi(); // default state
     this.sort = SortType.alphabetic;
+    this.currentMarkupType = MarkupType.Decodable;
 };
 
 EditControlsModel.prototype.incrementStage = function() {
@@ -28,6 +35,7 @@ EditControlsModel.prototype.setStageNumber = function(val) {
     this.updateStageLabel();
     this.updateWordList();
     this.enableStageButtons();
+    this.doMarkup();
 };
 
 EditControlsModel.prototype.updateStageLabel = function() {
@@ -37,7 +45,7 @@ EditControlsModel.prototype.updateStageLabel = function() {
         return;
     }
     this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
-}
+};
 
 EditControlsModel.prototype.incrementLevel = function() {
     this.setLevelNumber(this.levelNumber + 1);
@@ -56,6 +64,7 @@ EditControlsModel.prototype.setLevelNumber = function(val) {
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
     this.enableLevelButtons();
     this.updateLevelLimits();
+    this.doMarkup();
 };
 
 EditControlsModel.prototype.sortByLength = function() {
@@ -77,9 +86,9 @@ EditControlsModel.prototype.setSort = function(sortType) {
 };
 
 EditControlsModel.prototype.updateSortStatus = function() {
-    this.updateSelectedStatus("sortAlphabetic", this.sort == SortType.alphabetic);
-    this.updateSelectedStatus("sortLength", this.sort == SortType.byLength);
-    this.updateSelectedStatus("sortFrequency", this.sort == SortType.byFrequency);
+    this.updateSelectedStatus("sortAlphabetic", this.sort === SortType.alphabetic);
+    this.updateSelectedStatus("sortLength", this.sort === SortType.byLength);
+    this.updateSelectedStatus("sortFrequency", this.sort === SortType.byFrequency);
 };
 
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
@@ -143,10 +152,10 @@ EditControlsModel.prototype.updateLevelLimits = function() {
 };
 
 EditControlsModel.prototype.updateLevelLimit = function(id, limit) {
-    if (limit != 0) {
+    if (limit !== 0) {
         this.updateElementContent(id, limit.toString());
     }
-    this.updateDisabledLimit(id, limit == 0);
+    this.updateDisabledLimit(id, limit === 0);
 };
 
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
@@ -165,11 +174,11 @@ EditControlsModel.prototype.updateWordList = function() {
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
     switch(this.sort) {
         case SortType.alphabetic:
-            words.sort(function(a,b) { return a.localeCompare(b)});
+            words.sort(function(a,b) { return a.localeCompare(b);});
             break;
         case SortType.byLength:
             words.sort(function(a,b) {
-                if (a.length == b.length) {
+                if (a.length === b.length) {
                     return a.localeCompare(b);
                 }
                 return a.length - b.length;
@@ -179,7 +188,7 @@ EditControlsModel.prototype.updateWordList = function() {
             words.sort(function(a,b) {
                 var aFreq = stage.getFrequency(a);
                 var bFreq = stage.getFrequency(b);
-                if (aFreq == bFreq) {
+                if (aFreq === bFreq) {
                     return a.localeCompare(b);
                 }
                 return bFreq - aFreq; // MOST frequent first
@@ -204,26 +213,74 @@ EditControlsModel.prototype.updateWordList = function() {
     var wordIndex = 0;
     for (var i = 0; i < words.length; i++)
     {
-        if (wordIndex == 0) {
+        if (wordIndex === 0) {
             result += "<tr>";
         }
         result += "<td>" + words[i] + "</td>";
         wordIndex++;
-        if (wordIndex == wordsPerRow) {
+        if (wordIndex === wordsPerRow) {
             wordIndex = 0;
-            result += "</tr>"
+            result += "</tr>";
         }
     }
-    if (wordIndex != 0) {
+    if (wordIndex !== 0) {
         result += "</tr>";
     }
     this.updateElementContent("wordList", result);
 };
 
+EditControlsModel.prototype.setMarkupType = function(elementID) {
+
+    var pos = elementID.lastIndexOf('-');
+    if (pos < 0) return;
+
+    var id = elementID.substring(pos+1);
+    var newMarkupType = null;
+    switch (id) {
+        case '0':
+            if (this.currentMarkupType !== MarkupType.Decodable)
+                newMarkupType = MarkupType.Decodable;
+            break;
+
+        case '1':
+            if (this.currentMarkupType !== MarkupType.Leveled)
+                newMarkupType = MarkupType.Leveled;
+            break;
+
+        case '2':
+            if (this.currentMarkupType !== MarkupType.None)
+                newMarkupType = MarkupType.None;
+            break;
+    }
+
+    // if no change, return now
+    if (newMarkupType === null) return;
+
+    if (newMarkupType !== this.currentMarkupType) {
+        $('.bloom-editable').removeSynphonyMarkup();
+        this.currentMarkupType = newMarkupType;
+        this.doMarkup();
+    }
+};
+
+EditControlsModel.prototype.doMarkup = function() {
+    switch (this.currentMarkupType) {
+        case MarkupType.None:
+            break;
+
+        case MarkupType.Leveled:
+            var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
+            $(".bloom-editable").checkLeveledReader(options);
+            this.updateMaxWordsPerSentenceOnPage();
+            break;
+
+        case MarkupType.Decodable:
+            break;
+    }
+};
+
 EditControlsModel.prototype.lostFocus = function(element) {
-    var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
-    $(".bloom-editable").checkLeveledReader(options);
-    this.updateMaxWordsPerSentenceOnPage();
+    this.doMarkup();
 };
 
 EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
@@ -270,7 +327,7 @@ EditControlsModel.prototype.setElementAttribute = function(id, attrName, val) {
 
 // Attach click handlers
 var model = new EditControlsModel();
-if (typeof($) == "function") {
+if (typeof($) === "function") {
     // Running for real, and jquery properly loaded first
     $("#incStage").click(function () {
         model.incrementStage();
@@ -299,7 +356,7 @@ if (typeof($) == "function") {
            model.updateControlContents();
            // Todo: update the doc content also, if relevant limits changed
            // Todo: update model.levelNumber, if it is now out of range.
-       })
+       });
     });
     // Todo PhilH: replace this fake synphony with something real.
     var synphony = new SynphonyApi();
@@ -314,7 +371,7 @@ else {
     // running tests...or someone forgot to install jquery first
     $ = function() {
         alert("you should have loaded jquery first or blocked this call with spyOn");
-    }
+    };
 }
 
 // The function that the C# code calls to hook everything up.
@@ -324,7 +381,7 @@ else {
 function initialize(pathname, fakeIt) {
     var synphony = model.getSynphony();
     synphony.loadFile(pathname);
-    if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
+    if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
         synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
         synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
         synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
@@ -334,4 +391,7 @@ function initialize(pathname, fakeIt) {
         synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     }
     model.updateControlContents();
+
+    // change markup based on visible options
+    $('#accordion').children('h3').on('click', function() { model.setMarkupType(this.id); });
 };
