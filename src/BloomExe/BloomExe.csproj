@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -307,9 +307,7 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -660,7 +658,9 @@
     <Compile Include="web\IRequestInfo.cs" />
     <Compile Include="web\RequestInfo.cs" />
     <Compile Include="web\ServerBase.cs" />
-    <Compile Include="web\WebClientWithTimeout.cs" />
+    <Compile Include="web\WebClientWithTimeout.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="web\EnhancedImageServer.cs" />
     <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
       <Link>NDesk.DBus.dll</Link>
