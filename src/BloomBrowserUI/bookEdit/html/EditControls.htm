@@ -73,8 +73,8 @@
 					<span class="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel"></span>
 				</div>
 				<table class="statistics clear">
-					<tr><td class="section">Word counts</td></tr>
-					<tr><td>This Page</td></tr>
+					<tr><td class="section" colspan="3">Word counts</td></tr>
+					<tr><td colspan="3">This Page</td></tr>
 					<tr>
 						<td class="statistics-label"></td>
 						<td class="statistics-max">Max</td>
@@ -91,21 +91,23 @@
 						<td class="statistics-actual" id="actualWordsPerSentence">7</td>
 					</tr>
 
-					<tr><td  class="section">This Book</td></tr>
-					<tr>
+					<tr class="hidden"><td  class="section" colspan="3">This Book</td></tr>
+					<tr class="hidden">
 						<td class="statistics-label"></td>
 						<td class="statistics-max">Max</td>
 						<td class="statistics-actual">Actual</td>
 					</tr>
-					<tr>
+					<tr class="hidden">
 						<td class="statistics-label">total</td>
 						<td class="statistics-max" id="maxWordsPerBook"></td>
 						<td class="statistics-actual" id="actualWordCount">83</td>
 					</tr>
-					<td class="statistics-label">per page</td>
-					<td class="statistics-max" id="maxWordsPerPageBook">15</td>
-					<td class="statistics-actual" id="actualWordsPerPageBook">14</td>
-					<tr>
+					<tr class="hidden">
+						<td class="statistics-label">per page</td>
+						<td class="statistics-max" id="maxWordsPerPageBook">15</td>
+						<td class="statistics-actual" id="actualWordsPerPageBook">14</td>
+					</tr>
+					<tr class="hidden">
 						<td class="statistics-label">unique</td>
 						<td class="statistics-max" id="maxUniqueWordsPerBook">20</td>
 						<td class="statistics-actual" id="actualUniqueWords">22</td>

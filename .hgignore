@@ -79,3 +79,5 @@ build/JohnsTestInstallerBuild.bat
 src/BloomBrowserUI/bookEdit/js/libsynphony/
 lib/dotnet/
 TestResult.xml
+nbproject/
+lib/wkhtmltopdf/

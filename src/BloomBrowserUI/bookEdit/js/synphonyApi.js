@@ -21,7 +21,7 @@ SynphonyApi.prototype.loadFile = function(fileContent)
     }
     catch(e) {alert(e);}
     var levels = data.Levels;
-    if (levels != null) {
+    if ((typeof levels !== 'undefined') && (levels !== null)) {
         this.levels = [];
         for (var i = 0; i < levels.length; i++) {
             this.addLevel(jQuery.extend(new Level((i + 1).toString()), levels[i]));
@@ -109,7 +109,7 @@ Stage.prototype.incrementFrequencies = function(input) {
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
         var old = this.words[item];
-    if (old === null) {
+    if ((typeof old === 'undefined') || (old === null)) {
             old = 0;
         }
         this.words[item] = old + 1;
