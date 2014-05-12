@@ -489,10 +489,10 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left 0px 56px;*/
+	/*+placement:anchor-top-left 0px 30px;*/
 	position: absolute;
 	left: 0px;
-	top: 56px;
+	top: 30px;
 	width: 100%;
 	height: 29px;
 }

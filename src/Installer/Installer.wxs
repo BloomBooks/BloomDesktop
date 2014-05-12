@@ -203,8 +203,11 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="Interop.WIA.dll" Name="Interop.WIA.dll" KeyPath="yes" Source="..\..\output\release\Interop.WIA.dll" />
 		  </Component>
 		  <!-- web browser-->
-		  <Component Id="GeckoFx" Guid="{CCAC3970-37E9-4D64-9DC2-9855044E4CEB}">
-			<File Id="GeckoFx" Name="geckofx-11.dll" KeyPath="yes" Source="..\..\output\release\geckofx-11.dll" />
+		  <Component Id="GeckoFxCore" Guid="{C6918A94-421A-4D8E-8AE4-2536A0F323D6}">
+			<File Id="GeckoFxCore" Name="Geckofx-Core.dll" KeyPath="yes" Source="..\..\output\release\Geckofx-Core.dll" />
+		  </Component>
+		  <Component Id="GeckoFxWinforms" Guid="{50EE54F4-4CB1-4072-9541-91DDA7DF6313}">
+			<File Id="GeckoFxWinforms" Name="Geckofx-Winforms.dll" KeyPath="yes" Source="..\..\output\release\Geckofx-Winforms.dll" />
 		  </Component>
 		  <Component Id="libtidy.dll" Guid="{B192D381-F993-463E-9AA6-0920AFEFC622}">
 			<File Id="libtidy.dll" Name="libtidy.dll" KeyPath="yes" Source="..\..\output\release\libtidy.dll" />
@@ -284,7 +287,8 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="tidymanaged.dll"/>
 	  <ComponentRef Id="libtidy.dll"/>
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
-	  <ComponentRef Id="GeckoFx" />
+	  <ComponentRef Id="GeckoFxCore" />
+	  <ComponentRef Id="GeckoFxWinforms" />
 	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
 	  <ComponentRef Id="NetSparkle.Net40.dll"/>
 	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>

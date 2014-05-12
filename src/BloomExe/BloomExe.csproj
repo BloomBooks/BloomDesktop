@@ -82,6 +82,13 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
+    <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp">
+      <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
+    </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
     </Reference>
@@ -123,14 +130,8 @@
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet">
-      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
-    </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
@@ -181,6 +182,13 @@
     </Compile>
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\EditControlsModel.cs" />
+    <Compile Include="Edit\EditControlsView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\EditControlsView.Designer.cs">
+      <DependentUpon>EditControlsView.cs</DependentUpon>
     </Compile>
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
@@ -307,7 +315,10 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs" />
+    <Compile Include="ImageProcessing\ImageServer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -35,9 +35,8 @@ mixin page-cover(label)
 		block
 
 mixin chooser-topic
-	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode
-		//- REVIEW Make sure this is not visible even when the user isn't allowed to edit it.
-		label.bubble(data-functionOnHintClick="ShowTopicChooser()") Click to choose topic
+	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
 		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
 
 mixin field-ISBN
@@ -126,7 +125,7 @@ mixin factoryStandard-creditsInsideFrontCover
 mixin factoryStandard-titlePage
 	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
-		+field-prototypeDeclaredExplicity#titePageTitleBlock
+		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).title-page-bookTitle-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
