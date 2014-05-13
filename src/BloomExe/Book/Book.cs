@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -317,6 +318,7 @@ namespace Bloom.Book
 		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
+			dom.RemoveModeStyleSheets();
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
@@ -909,6 +911,32 @@ namespace Bloom.Book
 					.Select(div => div.Attributes["lang"].Value)
 					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 					.Distinct();
+			}
+		}
+
+		public string GetAboutBookHtml
+		{
+			get
+			{
+				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
+				var m = new Markdown(options);
+				var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
+
+				//until geckofx starts raising links on mailto, we hack around this by making it raise an http navigation, which we'll intercept and fix up.
+				contents = contents.Replace("mailto", "http://mailto");
+				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
+				var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
+				return html;
+
+			} //todo add other ui languages
+		}
+
+		public bool HasAboutBookInformationToShow { get { return File.Exists(AboutBookMarkdownPath); } }
+		public string AboutBookMarkdownPath  {
+			get
+			{
+				return _storage.FolderPath.CombineForPath("ReadMe_en.md");
 			}
 		}
 

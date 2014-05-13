@@ -323,13 +323,23 @@ namespace Bloom
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
-			if (e.Uri.OriginalString.ToLower().StartsWith("http") && !e.Uri.OriginalString.ToLower().Contains("bloom"))
+			string url = e.Uri.OriginalString;
+
+			//until geckofx starts raising links on mailto, we hack around this limitation by allowing this preceding http, which we just strip off
+			url = url.Replace("http://mailto", "mailto");
+
+			if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
 			{
 				e.Cancel = true;
-				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+				Process.Start(url); //open in the system browser instead
+				Debug.WriteLine("Navigating " + e.Uri);
 			}
-
-			Debug.WriteLine("Navigating " + e.Uri);
+			if (url.StartsWith("mailto"))
+			{
+				e.Cancel = true;
+				Process.Start(url); //let the system open the email program
+				Debug.WriteLine("Opening email program " + e.Uri);
+			}
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -398,6 +408,16 @@ namespace Bloom
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
 		}
+
+		public void NavigateRawHtml(string html)
+		{
+			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
+			File.WriteAllText(tf.Path,html);
+			SetNewTempFile(tf);
+			_url = _tempHtmlFile.Path;
+			UpdateDisplay();
+		}
+
 
 		private static string GetZoomCSS(float scale)
 		{

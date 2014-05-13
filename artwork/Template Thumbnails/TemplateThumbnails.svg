@@ -2581,7 +2581,7 @@
            height="212.14285"
            x="760.71429"
            y="-40" /></flowRegion><flowPara
-         id="flowPara3499"></flowPara></flowRoot>    <g
+         id="flowPara3499" /></flowRoot>    <g
        id="g3501-1"
        transform="translate(-771.35405,362.49194)"
        inkscape:export-filename="X:\dev\bloom2\artwork\Template Thumbnails\bigbook thumbnail.png"
@@ -2626,19 +2626,19 @@
          style="fill:#e48c84;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0" />
       <text
          xml:space="preserve"
-         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC"
-         x="0.70637006"
-         y="48.802132"
+         style="font-size:18.02381706px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC"
+         x="40.287472"
+         y="63.449345"
          id="text3485-4-7"
          sodipodi:linespacing="125%"
          inkscape:export-filename="X:\dev\bloom2\DistFiles\factoryCollections\Templates\Big Book\thumbnail.png"
          inkscape:export-xdpi="91.849998"
          inkscape:export-ydpi="91.849998"><tspan
            sodipodi:role="line"
-           x="0.70637006"
-           y="48.802132"
+           x="40.287472"
+           y="63.449345"
            id="tspan3489-8-7"
-           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC">BB</tspan></text>
+           style="font-size:18.02381706px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC">BB</tspan></text>
     </g>
   </g>
 </svg>
