@@ -88,18 +88,28 @@ namespace Bloom.CollectionTab
 			if (_bookSelection.CurrentSelection == null)
 			{
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection is null");
-				_browser.Navigate("about:blank", false);
-				_browser.Visible = false;
+				_previewBrowser.Navigate("about:blank", false);
+				//_previewBrowser.Visible = false;
+				_splitContainerForPreviewAndAboutBrowsers.Visible = false;
 				BackColor = Color.FromArgb(64,64,64);
 			}
 			else
 			{
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
 
-				_browser.Visible = true;
-				_browser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				_editBookButton.Visible = _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError;
+				_aboutBookBrowser.Visible = false;
+				//_previewBrowser.Visible = true;
+				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
+				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
+				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
+				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
+				{
+					_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
+					_aboutBookBrowser.NavigateRawHtml(_bookSelection.CurrentSelection.GetAboutBookHtml);
+					_aboutBookBrowser.Visible = true;
+				}
 				_reshowPending = false;
 			}
 		}
