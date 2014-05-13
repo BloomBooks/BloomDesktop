@@ -1,4 +1,7 @@
-﻿## 2.0 9 BETA May 2014
+﻿## 2.0 1022 BETA 13 May 2014
+Templates can now have a markdown "readme" for telling people about the template. Select the Big Book or Wall Calendar templates to see how these are displayed.
+
+## 2.0.1021 BETA 9 May 2014
 Can now publish books to books.bloomlibrary.org
 Can now get books at books.bloomlibrary.org and they will open in Bloom
 Can can font sizes of all similar books
