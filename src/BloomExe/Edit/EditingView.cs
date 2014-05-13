@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -8,7 +9,6 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -374,29 +374,15 @@ namespace Bloom.Edit
 					ge.Handled = true;
 					return;
 				}
-				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
-				{
-					Process.Start(anchor.Href);
-					ge.Handled = true;
-					return;
-				}
-				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
-				{
-					ge.Handled = false;//let gecko handle it
-					return;
-				}
-				else
-				{
-					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-					ge.Handled = true;
-				}
-
+                _browser1.HandleLinkClick(anchor, ge, _model.CurrentBook.FolderPath);
 			}
 //			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
         }
 
+   
 
-    	private void RememberSourceTabChoice(GeckoElement target)
+
+        private void RememberSourceTabChoice(GeckoElement target)
     	{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
     		var start = 1+ target.OuterHtml.IndexOf("#");

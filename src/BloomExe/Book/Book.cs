@@ -925,9 +925,7 @@ namespace Bloom.Book
                 var m = new Markdown(options);
                 var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
                 contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
-                
-                //until geckofx starts raising links on mailto, we hack around this by making it raise an http navigation, which we'll intercept and fix up.
-                contents = contents.Replace("mailto", "http://mailto");
+
                 var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
                 var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
                 return html;

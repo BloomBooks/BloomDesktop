@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.SendReceive;
+using Gecko;
 
 namespace Bloom.CollectionTab
 {
@@ -99,7 +100,7 @@ namespace Bloom.CollectionTab
 
                 _addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
                 _editBookButton.Visible = _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError;
-                _aboutBookBrowser.Visible = false;
+                _readmeBrowser.Visible = false;
                 //_previewBrowser.Visible = true;
                 _splitContainerForPreviewAndAboutBrowsers.Visible = true;
                 _previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
@@ -107,8 +108,8 @@ namespace Bloom.CollectionTab
                 if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
                 {
                     _splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false; 
-                    _aboutBookBrowser.NavigateRawHtml(_bookSelection.CurrentSelection.GetAboutBookHtml);
-                    _aboutBookBrowser.Visible = true;
+                    _readmeBrowser.NavigateRawHtml(_bookSelection.CurrentSelection.GetAboutBookHtml);
+                    _readmeBrowser.Visible = true;
                 }
                 _reshowPending = false;
             }
@@ -154,6 +155,16 @@ namespace Bloom.CollectionTab
 		{
 		
 		}
+
+        private void _readmeBrowser_OnBrowserClick(object sender, EventArgs e)
+        {
+            var ge = e as GeckoDomEventArgs;
+            var anchor = ge.Target as Gecko.DOM.GeckoAnchorElement;
+            if (anchor != null && anchor.Href != "" && anchor.Href != "#")
+            {
+                _readmeBrowser.HandleLinkClick(anchor, ge, _bookSelection.CurrentSelection.FolderPath);
+            }
+        }
 
     }
 }
