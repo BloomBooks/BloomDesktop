@@ -222,6 +222,13 @@ DIV.ISBNContainer
 	left: 2px;
 	bottom: 216px;
 }
+.A5Landscape .ISBNContainer
+{
+	/*+placement:anchor-bottom-left 2px -2px;*/
+	position: absolute;
+	left: 2px;
+	bottom: -2px;
+}
 DIV.ISBNContainer .bloom-editable
 {
 	width: 4.3cm !important;
@@ -243,7 +250,7 @@ DIV.coverBottomBookTopic
 	right: 0;
 	bottom: 0;
 	min-height: 20px;
-	height: 58px;
+	height: 49px;
 	text-align: right;
 }
 DIV.coverBottomBookTopic DIV
@@ -395,7 +402,7 @@ DIV.titlePage DIV#languageInformation
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	height: 57px;
+	height: 42px;
 }
 DIV.titlePage DIV.langName.bloom-contentNational1
 {
@@ -442,7 +449,7 @@ Had to take out the !important, though, to get user font-size to work on the ver
 }
 .A5Landscape DIV.originalAcknowledgments
 {
-	height: 156px;
+	/*[disabled]height:156px;*/
 	width: 100%;
 }
 DIV.originalAcknowledgments DIV.bloom-contentNational1
