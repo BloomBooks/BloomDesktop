@@ -30,18 +30,40 @@
         {
             this.components = new System.ComponentModel.Container();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this._addToCollectionButton = new System.Windows.Forms.Button();
             this._editBookButton = new System.Windows.Forms.Button();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-            this._addToCollectionButton = new System.Windows.Forms.Button();
             this._previewBrowser = new Bloom.Browser();
-            this._aboutBookBrowser = new Bloom.Browser();
+            this._readmeBrowser = new Bloom.Browser();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
             this._splitContainerForPreviewAndAboutBrowsers.Panel1.SuspendLayout();
             this._splitContainerForPreviewAndAboutBrowsers.Panel2.SuspendLayout();
             this._splitContainerForPreviewAndAboutBrowsers.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // _addToCollectionButton
+            // 
+            this._addToCollectionButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this._addToCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook1;
+            this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._addToCollectionButton, null);
+            this._L10NSharpExtender.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
+            this._addToCollectionButton.Location = new System.Drawing.Point(12, 6);
+            this._addToCollectionButton.Name = "_addToCollectionButton";
+            this._addToCollectionButton.Size = new System.Drawing.Size(255, 48);
+            this._addToCollectionButton.TabIndex = 0;
+            this._addToCollectionButton.Text = "Make a book using this source";
+            this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.toolTip1.SetToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
+            this._addToCollectionButton.UseVisualStyleBackColor = false;
+            this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
+            this._addToCollectionButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
+            this._addToCollectionButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
             // 
             // _editBookButton
             // 
@@ -83,33 +105,11 @@
             // 
             // _splitContainerForPreviewAndAboutBrowsers.Panel2
             // 
-            this._splitContainerForPreviewAndAboutBrowsers.Panel2.Controls.Add(this._aboutBookBrowser);
+            this._splitContainerForPreviewAndAboutBrowsers.Panel2.Controls.Add(this._readmeBrowser);
             this._splitContainerForPreviewAndAboutBrowsers.Size = new System.Drawing.Size(900, 450);
             this._splitContainerForPreviewAndAboutBrowsers.SplitterDistance = 338;
             this._splitContainerForPreviewAndAboutBrowsers.TabIndex = 3;
             this._splitContainerForPreviewAndAboutBrowsers.TabStop = false;
-            // 
-            // _addToCollectionButton
-            // 
-            this._addToCollectionButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this._addToCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook1;
-            this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._addToCollectionButton, null);
-            this._L10NSharpExtender.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
-            this._addToCollectionButton.Location = new System.Drawing.Point(12, 6);
-            this._addToCollectionButton.Name = "_addToCollectionButton";
-            this._addToCollectionButton.Size = new System.Drawing.Size(255, 48);
-            this._addToCollectionButton.TabIndex = 0;
-            this._addToCollectionButton.Text = "Make a book using this source";
-            this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.toolTip1.SetToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
-            this._addToCollectionButton.UseVisualStyleBackColor = false;
-            this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
-            this._addToCollectionButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
-            this._addToCollectionButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
             // 
             // _previewBrowser
             // 
@@ -123,17 +123,18 @@
             this._previewBrowser.Size = new System.Drawing.Size(900, 338);
             this._previewBrowser.TabIndex = 2;
             // 
-            // _aboutBookBrowser
+            // _readmeBrowser
             // 
-            this._aboutBookBrowser.BackColor = System.Drawing.Color.DarkGray;
-            this._aboutBookBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBookBrowser, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._aboutBookBrowser, null);
-            this._L10NSharpExtender.SetLocalizingId(this._aboutBookBrowser, "CollectionTab.Browser");
-            this._aboutBookBrowser.Location = new System.Drawing.Point(0, 0);
-            this._aboutBookBrowser.Name = "_aboutBookBrowser";
-            this._aboutBookBrowser.Size = new System.Drawing.Size(900, 108);
-            this._aboutBookBrowser.TabIndex = 2;
+            this._readmeBrowser.BackColor = System.Drawing.Color.DarkGray;
+            this._readmeBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._readmeBrowser, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._readmeBrowser, null);
+            this._L10NSharpExtender.SetLocalizingId(this._readmeBrowser, "CollectionTab.Browser");
+            this._readmeBrowser.Location = new System.Drawing.Point(0, 0);
+            this._readmeBrowser.Name = "_readmeBrowser";
+            this._readmeBrowser.Size = new System.Drawing.Size(900, 108);
+            this._readmeBrowser.TabIndex = 2;
+            this._readmeBrowser.OnBrowserClick += new System.EventHandler(this._readmeBrowser_OnBrowserClick);
             // 
             // LibraryBookView
             // 
@@ -165,6 +166,6 @@
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private ToPalaso.BetterSplitContainer _splitContainerForPreviewAndAboutBrowsers;
         private Browser _previewBrowser;
-        private Browser _aboutBookBrowser;
+        private Browser _readmeBrowser;
     }
 }
