@@ -523,9 +523,12 @@ namespace Bloom.Book
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
-    		XMatterHelper.RemoveExistingXMatter(bookDOM);
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
-			progress.WriteStatus("Injecting XMatter...");
+    		//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
+            //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
+            Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			
+            XMatterHelper.RemoveExistingXMatter(bookDOM);
+            layout = Layout.FromDom(bookDOM, layout);			//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
+            progress.WriteStatus("Injecting XMatter...");
 
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
     		TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
