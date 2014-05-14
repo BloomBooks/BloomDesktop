@@ -480,9 +480,7 @@ namespace Bloom.Book
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
-			candidates.Remove(folderPath.CombineForPath("configuration.htm"));
-			candidates.Remove(folderPath.CombineForPath("credits.htm"));
-			candidates.Remove(folderPath.CombineForPath("instructions.htm"));
+			candidates.RemoveAll((name) => name.ToLower().Contains("configuration"));
 			if (candidates.Count == 1)
 				return candidates[0];
 
