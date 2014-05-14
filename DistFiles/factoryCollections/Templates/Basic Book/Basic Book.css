@@ -108,6 +108,11 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	vertical-align: bottom;
 	display: table-cell;
 }
+/*Increase font size if it looks like a big book*/
+.A4Landscape .bloom-editable
+{
+	font-size: 500%;
+}
 /*------A4L Side-by-side common*/
 .imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
@@ -203,7 +208,6 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	display: table;
 }
 .imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable.bloom-content1
 {
@@ -232,7 +236,6 @@ DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 	width: 100%;
-	display: table;
 }
 DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
 {

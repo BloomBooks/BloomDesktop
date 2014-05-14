@@ -27,17 +27,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="580.6444"
-     inkscape:cy="53.88659"
+     inkscape:zoom="1.979899"
+     inkscape:cx="72.296148"
+     inkscape:cy="-246.68779"
      inkscape:document-units="px"
-     inkscape:current-layer="g6887"
+     inkscape:current-layer="g3501-1"
      showgrid="false"
-     inkscape:window-width="1786"
+     inkscape:window-width="1704"
      inkscape:window-height="1177"
-     inkscape:window-x="1192"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
+     inkscape:window-x="-30800"
+     inkscape:window-y="-32000"
+     inkscape:window-maximized="0"
      width="480px" />
   <defs
      id="defs4">
@@ -543,7 +543,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1606,7 +1606,7 @@
              height="40.153564"
              x="417.95062"
              y="367.94296" /></flowRegion><flowPara
-           id="flowPara7198"></flowPara></flowRoot>      <text
+           id="flowPara7198" /></flowRoot>      <text
          xml:space="preserve"
          style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
          x="93.346733"
@@ -2518,4 +2518,127 @@
        id="tspan3270-4"
        x="294.62912"
        y="-201.36565">?</tspan></text>
+  <g
+     inkscape:export-ydpi="90"
+     inkscape:export-xdpi="90"
+     inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\Wall Calendar\thumbnail.png"
+     transform="translate(634.83477,11.132706)"
+     id="g3385">
+    <g
+       id="g3501"
+       transform="translate(-777.14285,277.14286)"
+       inkscape:export-filename="X:\dev\bloom2\artwork\Template Thumbnails\bigbook thumbnail.png"
+       inkscape:export-xdpi="90.419998"
+       inkscape:export-ydpi="90.419998">
+      <rect
+         transform="matrix(0,1,-1,0,0,0)"
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         y="-271.36942"
+         x="11.281087"
+         height="98.271706"
+         width="67.331383"
+         id="rect3387"
+         style="fill:#e48c84;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3473"
+         y="43.717449"
+         x="186.14958"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Andika;-inkscape-font-specification:Andika"
+         xml:space="preserve"><tspan
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Andika;-inkscape-font-specification:Andika"
+           y="43.717449"
+           x="186.14958"
+           id="tspan3475"
+           sodipodi:role="line">BIG</tspan><tspan
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Andika;-inkscape-font-specification:Andika"
+           id="tspan3477"
+           y="93.717453"
+           x="186.14958"
+           sodipodi:role="line" /></text>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Andika;-inkscape-font-specification:Andika"
+         x="189.45622"
+         y="71.903915"
+         id="text3485"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           x="189.45622"
+           y="71.903915"
+           id="tspan3489"
+           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Andika;-inkscape-font-specification:Andika">BOOK</tspan></text>
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3493"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion3495"><rect
+           id="rect3497"
+           width="209.28571"
+           height="212.14285"
+           x="760.71429"
+           y="-40" /></flowRegion><flowPara
+         id="flowPara3499" /></flowRoot>    <g
+       id="g3501-1"
+       transform="translate(-771.35405,362.49194)"
+       inkscape:export-filename="X:\dev\bloom2\artwork\Template Thumbnails\bigbook thumbnail.png"
+       inkscape:export-xdpi="90.419998"
+       inkscape:export-ydpi="90.419998">
+      <rect
+         transform="matrix(0,1,-1,0,0,0)"
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="X:\dev\bloom2\DistFiles\factoryCollections\Templates\Big Book\thumbnail.png"
+         y="-271.36942"
+         x="11.281087"
+         height="98.271706"
+         width="67.331383"
+         id="rect3387-7"
+         style="fill:#e48c84;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Andika;-inkscape-font-specification:Andika"
+         x="205.11359"
+         y="51.700863"
+         id="text3485-4"
+         sodipodi:linespacing="125%"
+         inkscape:export-filename="X:\dev\bloom2\DistFiles\factoryCollections\Templates\Big Book\thumbnail.png"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-ydpi="91.849998"><tspan
+           sodipodi:role="line"
+           x="205.11359"
+           y="51.700863"
+           id="tspan3489-8"
+           style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Andika;-inkscape-font-specification:Andika">BB</tspan></text>
+      <rect
+         transform="matrix(0,1,-1,0,0,0)"
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="X:\dev\bloom2\DistFiles\factoryCollections\Templates\Big Book\thumbnail.png"
+         y="-76.053589"
+         x="4.3417206"
+         height="98.271706"
+         width="67.331383"
+         id="rect3387-7-5"
+         style="fill:#e48c84;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0" />
+      <text
+         xml:space="preserve"
+         style="font-size:18.02381706px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC"
+         x="40.287472"
+         y="63.449345"
+         id="text3485-4-7"
+         sodipodi:linespacing="125%"
+         inkscape:export-filename="X:\dev\bloom2\DistFiles\factoryCollections\Templates\Big Book\thumbnail.png"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-ydpi="91.849998"><tspan
+           sodipodi:role="line"
+           x="40.287472"
+           y="63.449345"
+           id="tspan3489-8-7"
+           style="font-size:18.02381706px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Eras Light ITC;-inkscape-font-specification:Eras Light ITC">BB</tspan></text>
+    </g>
+  </g>
 </svg>
