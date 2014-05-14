@@ -23,6 +23,7 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.
 document.write('<script type="text/javascript" src="' + thisDir + 'jquery.hotkeys.js"></script>');
 
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'customAccordion.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
 
 document.write('<script type="text/javascript" src="' + thisDir + 'toolbar/jquery.toolbar.js"></script>');
