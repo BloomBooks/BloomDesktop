@@ -78,10 +78,11 @@ SynphonyApi.prototype.AddStage = function(stage)
     this.stages.push(stage);
 };
 
-SynphonyApi.prototype.addStageWithWords = function(name, words)
+SynphonyApi.prototype.addStageWithWords = function(name, words, sightWords)
 {
     var stage = new Stage(name);
     stage.incrementFrequencies(words);
+    stage.sightWords = sightWords;
     this.stages.push(stage);
 };
 
@@ -89,6 +90,7 @@ SynphonyApi.prototype.addStageWithWords = function(name, words)
 var Stage = function(name) {
     this.name = name;
     this.words = {}; // We will add words as properties to this, using it as a map. Value of each is its frequency.
+    this.sightWords = ''; // a space-delimited string of sight words
 };
 
 Stage.prototype.getName = function() {
@@ -97,6 +99,18 @@ Stage.prototype.getName = function() {
 
 Stage.prototype.getWords = function() {
     return Object.getOwnPropertyNames(this.words);
+};
+
+Stage.prototype.getWordObjects = function() {
+
+    var wordObjects = [];
+    var words = this.getWords();
+    var wordName;
+    for (var i = 0; i < words.length; i++) {
+        wordName = words[i];
+        wordObjects.push({"Name": wordName, "Count": this.words[wordName]});
+    }
+    return wordObjects;
 };
 
 Stage.prototype.getFrequency = function(word) {

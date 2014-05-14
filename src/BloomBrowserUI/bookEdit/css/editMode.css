@@ -428,3 +428,21 @@ SPAN.sentence-too-long
 	-moz-text-decoration-line: underline;
 	-moz-text-decoration-color: orange;
 }
+SPAN.sight-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: green;
+}
+SPAN.word-not-found
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: orange;
+}
+SPAN.possible-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: blue;
+}
