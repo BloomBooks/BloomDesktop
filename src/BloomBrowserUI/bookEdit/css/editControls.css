@@ -42,7 +42,8 @@ div.sortIconSelected {background :grey}
 div.sortItem {
 	display: inline-block;
 	color: white;
-	padding: 2px 3px
+	padding: 2px 3px;
+	cursor: pointer
 }
 span.ofStage {font-size: xx-small}
 span.disabledIcon {visibility: hidden}

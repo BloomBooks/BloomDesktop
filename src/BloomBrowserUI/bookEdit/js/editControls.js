@@ -276,6 +276,27 @@ EditControlsModel.prototype.doMarkup = function() {
             break;
 
         case MarkupType.Decodable:
+            var stages = this.synphony.getStages();
+            if (stages.length === 0) return;
+
+            // get word lists
+            var cumulativeWords = [];
+            for (var i = 0; i < (this.stageNumber - 1); i++)
+                cumulativeWords = cumulativeWords.concat(stages[i].getWordObjects());
+
+            var focusWords = stages[this.stageNumber - 1].getWords();
+            var sightWords = stages[this.stageNumber - 1].sightWords;
+
+            // for now, build known grapheme list from words
+            var knownGraphemes = _.uniq(_.union(_.pluck(cumulativeWords, 'Name'), focusWords).join('').split(''));
+
+            $(".bloom-editable").checkDecodableReader({
+                focusWords: focusWords,
+                previousWords: cumulativeWords,
+                sightWords: sightWords,
+                knownGraphemes: knownGraphemes
+            });
+
             break;
     }
 };
@@ -399,9 +420,9 @@ function initialize(pathname, fakeIt) {
     var synphony = model.getSynphony();
     synphony.loadFile(pathname);
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
-        synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
-        synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
-        synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
+        synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat", "canine feline");
+        synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots", "carnivore omnivore");
+        synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns", "sentence paragraph");
         synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
         synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
         synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
