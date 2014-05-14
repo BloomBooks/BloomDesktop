@@ -47,6 +47,7 @@
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="bookEdit\js\customAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\StyleEditor.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
