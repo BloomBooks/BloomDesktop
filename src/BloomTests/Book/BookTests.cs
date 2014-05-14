@@ -73,14 +73,20 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
             _fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css"); 
-			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("editPaneGlobal.css")).Returns("../notareallocation/editPaneGlobal.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js"); 
+
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
-    		
+
+            _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
+
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
@@ -553,6 +559,25 @@ namespace BloomTests.Book
             Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
         }
 
+        //regression test
+        [Test]
+        public void BringBookUpToDate_A4LandscapeWithNoContentPages_RemainsA4Landscape()
+        {
+            _bookDom = new HtmlDom(@"
+				<html>
+                    <head>
+                        <meta name='xmatter' content='BigBook'/>
+                    </head>
+					<body>
+                        <div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"); 
+            var book = CreateBook();
+           // AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+            book.BringBookUpToDate(new NullProgress());
+            AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+        }
 	
 		
 		/// <summary>
