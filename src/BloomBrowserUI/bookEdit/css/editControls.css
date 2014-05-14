@@ -1,49 +1,121 @@
-/* Styles for EditControls.htm */
-
-div.editControlsRoot {
-	background-color:#404040;
-	color: white;
+/*Styles for EditControls.htm*/
+DIV.editControlsRoot
+{
+	background-color: #404040;
+	color: #FFFFFF;
 	font-size: x-small;
 	position: fixed;
-	top: 0; bottom: 0;
+	top: 0;
+	bottom: 0;
 	right: 0;
-	width: 200px
+	width: 200px;
+	padding-bottom: 12px;
 }
-td.section {margin-top: 20px}
-td.section {padding-top: 20px}
-span.scroll-button {color: white; float: left}
-span.stageLine {float: left}
-td.acceptable {color: green}
-td.tooLarge {color: orange}
-table.statistics {}
-td.statistics-label {padding-right: 5px}
-td.statistics-max {padding-right: 3px; text-align: center}
-td.statistics-actual {padding-right: 3px; text-align: center}
-div.ui-accordion {padding-left: 0px; padding-right: 0px}
-div.ui-accordion-content {padding-left: 3px !important; padding-right: 0px !important}
-span.setup {font-size: xx-small; margin-left: 10px}
-div.section {padding-top: 20px; color: lightskyblue}
-div.clear,table.clear {clear: both}
-div.tableHolder {overflow: auto; max-height: 300px}
-div.sortBlock {
+TD.section
+{
+	margin-top: 20px;
+}
+TD.section
+{
+	padding-top: 20px;
+}
+SPAN.scroll-button
+{
+	color: #FFFFFF;
+	float: left;
+}
+SPAN.stageLine
+{
+	float: left;
+}
+TD.acceptable
+{
+	color: #008000;
+}
+TD.tooLarge
+{
+	color: #FFA500;
+}
+TABLE.statistics
+{
+}
+TD.statistics-label
+{
+	padding-right: 5px;
+}
+TD.statistics-max
+{
+	padding-right: 3px;
+	text-align: center;
+}
+TD.statistics-actual
+{
+	padding-right: 3px;
+	text-align: center;
+}
+DIV.ui-accordion
+{
+	padding-left: 0px;
+	padding-right: 0px;
+}
+DIV.ui-accordion-content
+{
+	padding-left: 3px !important;
+	padding-right: 0px !important;
+}
+SPAN.setup
+{
+	font-size: xx-small;
+	margin-left: 10px;
+}
+DIV.section
+{
+	padding-top: 20px;
+	color: #87CEFA;
+}
+DIV.clear, TABLE.clear
+{
+	clear: both;
+}
+DIV.tableHolder
+{
+	overflow: auto;
+	max-height: 300px;
+}
+DIV.sortBlock
+{
 	margin-left: 15px;
 	display: inline-block;
 	border: solid;
-	border-color: white;
-	border-width: 1px
+	border-color: #FFFFFF;
+	border-width: 1px;
 }
-div.rightBorder {
+DIV.rightBorder
+{
 	border: solid;
-	border-color: white;
+	border-color: #FFFFFF;
 	border-width: 0;
-	border-right-width: 1px
+	border-right-width: 1px;
 }
-div.sortIconSelected {background :grey}
-div.sortItem {
+DIV.sortIconSelected
+{
+	background: #808080;
+}
+DIV.sortItem
+{
 	display: inline-block;
-	color: white;
-	padding: 2px 3px
+	color: #FFFFFF;
+	padding: 2px 3px;
 }
-span.ofStage {font-size: xx-small}
-span.disabledIcon {visibility: hidden}
-td.disabledLimit {visibility: hidden}
+SPAN.ofStage
+{
+	font-size: xx-small;
+}
+SPAN.disabledIcon
+{
+	visibility: hidden;
+}
+TD.disabledLimit
+{
+	visibility: hidden;
+}
