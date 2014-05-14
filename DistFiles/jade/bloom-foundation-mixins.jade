@@ -27,9 +27,14 @@ mixin stylesheets(nameOfTemplateSpecificCSS)
 mixin bookVariable-title(langCode, title)
 	div(data-book='bookTitle', lang=langCode)=title
 
+//- Copy this into your own template if you need a different
+//- default page size
+mixin pageWithJustPageSize
+	.A5Portrait(attributes)
+		block
+
 mixin page(englishLabel)
-	//- A5Portrait is just the default in Bloom
-	.bloom-page.A5Portrait(attributes)
+	+pageWithJustPageSize.bloom-page(attributes)
 		+page-label-english(englishLabel)
 		.marginBox
 			block
