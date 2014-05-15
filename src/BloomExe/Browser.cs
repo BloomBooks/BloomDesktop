@@ -780,9 +780,7 @@ namespace Bloom
             if (anchor.Href.ToLower().StartsWith("file"))
             //links to files are handled externally if we can tell they aren't html/javascript related
             {
-                // NB: The readme link should contain "file:///", two forward slashes doesn't work
-                // See http://stackoverflow.com/questions/12837024/href-file-doesnt-work
-                // Also, at this point spaces in the file name will cause the link to fail too.
+                // TODO: at this point spaces in the file name will cause the link to fail.
                 // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
                 var href = anchor.Href;
 
