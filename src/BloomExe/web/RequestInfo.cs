@@ -64,6 +64,12 @@ namespace Bloom.web
 
 			_actualContext.Response.ContentType = isJPEG ? "image/png" : "image/jpeg";
 
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				ReplyWithFileContent(path);
+				return;
+			}
+
 			//problems around here? See: http://www.west-wind.com/weblog/posts/2006/Oct/19/Common-Problems-with-rendering-Bitmaps-into-ASPNET-OutputStream
 			using (var image = Image.FromFile(path))
 			{
