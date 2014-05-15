@@ -2,7 +2,7 @@
 DIV.editControlsRoot
 {
 	background-color: #404040;
-	color: #FFFFFF;
+	color: white;
 	font-size: x-small;
 	position: fixed;
 	top: 0;
@@ -21,7 +21,7 @@ TD.section
 }
 SPAN.scroll-button
 {
-	color: #FFFFFF;
+	color: white;
 	float: left;
 }
 SPAN.stageLine
@@ -30,11 +30,11 @@ SPAN.stageLine
 }
 TD.acceptable
 {
-	color: #008000;
+	color: green;
 }
 TD.tooLarge
 {
-	color: #FFA500;
+	color: orange;
 }
 TABLE.statistics
 {
@@ -71,7 +71,7 @@ SPAN.setup
 DIV.section
 {
 	padding-top: 20px;
-	color: #87CEFA;
+	color: lightskyblue;
 }
 DIV.clear, TABLE.clear
 {
@@ -87,13 +87,13 @@ DIV.sortBlock
 	margin-left: 15px;
 	display: inline-block;
 	border: solid;
-	border-color: #FFFFFF;
+	border-color: white;
 	border-width: 1px;
 }
 DIV.rightBorder
 {
 	border: solid;
-	border-color: #FFFFFF;
+	border-color: white;
 	border-width: 0;
 	border-right-width: 1px;
 }
@@ -104,7 +104,7 @@ DIV.sortIconSelected
 DIV.sortItem
 {
 	display: inline-block;
-	color: #FFFFFF;
+	color: white;
 	padding: 2px 3px;
 }
 SPAN.ofStage
