@@ -10,6 +10,7 @@ DIV.editControlsRoot
 	right: 0;
 	width: 200px;
 	padding-bottom: 12px;
+	z-index: 18000; /* Just over help bubbles, but under topic dialog */
 }
 TD.section
 {

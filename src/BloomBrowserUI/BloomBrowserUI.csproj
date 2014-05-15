@@ -23,6 +23,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="bookEdit\css\editControls.css" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />
