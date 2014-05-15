@@ -780,9 +780,13 @@ namespace Bloom
             if (anchor.Href.ToLower().StartsWith("file"))
             //links to files are handled externally if we can tell they aren't html/javascript related
             {
-                var href = anchor.Attributes["href"].NodeValue;//NB: don't change to anchor.Href; in geckofx22, at least, that will always give you "file:///", dropping the actual path
+                // NB: The readme link should contain "file:///", two forward slashes doesn't work
+                // See http://stackoverflow.com/questions/12837024/href-file-doesnt-work
+                // Also, at this point spaces in the file name will cause the link to fail too.
+                // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+                var href = anchor.Href;
 
-                var path = href.Replace("file://", "");
+                var path = href.Replace("file:///", "");
 
                 if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
                 {
