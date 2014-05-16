@@ -34,8 +34,6 @@ namespace Bloom.Publish
 			_loginDialog = login;
 
 			InitializeComponent();
-			Controls.Remove(_saveButton);//our parent will retrieve this
-			Controls.Remove(_printButton);//our parent will retrieve this
 
 			if(this.DesignMode)
 				return;
