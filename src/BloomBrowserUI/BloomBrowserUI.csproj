@@ -23,11 +23,15 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\css\editControls.css" />
+    <Content Include="bookEdit\EditControls\editControls.css" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />
     <Content Include="bookEdit\css\editTranslationMode.css" />
+    <Content Include="bookEdit\EditControls\DecodableRT\panel.htm" />
+    <Content Include="bookEdit\EditControls\EditControls.htm" />
+    <Content Include="bookEdit\EditControls\LeveledRT\panel.htm" />
+    <Content Include="bookEdit\EditControls\PageElements\panel.htm" />
     <Content Include="bookEdit\html\EditControls.htm" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
@@ -240,6 +244,10 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="packages.config" />
+    <Content Include="bookEdit\EditControls\DecodableRT\panel.jade" />
+    <Content Include="bookEdit\EditControls\EditControls.jade" />
+    <Content Include="bookEdit\EditControls\LeveledRT\panel.jade" />
+    <Content Include="bookEdit\EditControls\PageElements\panel.jade" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

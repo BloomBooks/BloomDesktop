@@ -450,7 +450,7 @@ namespace Bloom.Edit
         {
             MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/EditControls", "EditControls.htm");
             var domForEditControls = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
             // move css files from the head into scoped tags in EditControls.htm
