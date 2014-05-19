@@ -80,4 +80,7 @@ src/BloomBrowserUI/bookEdit/js/libsynphony/
 lib/dotnet/
 TestResult.xml
 DistFiles/pdf/
-src/BloomBrowserUI/bookEdit/js/libsynphony/
+nbproject/
+lib/wkhtmltopdf*.zip
+DistFiles/ReleaseNotes.html
+ReadMe_*.html

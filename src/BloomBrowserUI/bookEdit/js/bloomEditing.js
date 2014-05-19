@@ -417,7 +417,6 @@ function MakeSourceTextDivForGroup(group) {
   });
 }
 
-
 function GetLocalizedHint(whatToSay, targetElement) {
     if(whatToSay.startsWith("*")){
         whatToSay = whatToSay.substring(1,1000);
@@ -682,6 +681,17 @@ function AddOverflowHandler() {
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
+}
+
+var resizeTimer;
+var windowBorder = 12; // window border is about 12px
+function resizeAccordion() {
+    var windowHeight = $(window).height();
+    var root = $(".editControlsRoot");
+    // Set accordion container height to fit in new window size
+    // Then accordion Resize() will adjust it to fit the container
+    root.height(windowHeight - windowBorder);
+    BloomAccordion.Resize();
 }
 
 //---------------------------------------------------------------------------------
@@ -1233,6 +1243,13 @@ jQuery(document).ready(function () {
     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
+    var accordion = new BloomAccordion();
+
+    // Now bind the window's resize function to the accordion resizer
+    $(window).bind('resize', function () {
+        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+        resizeTimer = setTimeout(resizeAccordion, 100);
+    });
 });
 
 //function SetCopyrightAndLicense(data) {

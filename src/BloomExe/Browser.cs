@@ -353,13 +353,13 @@ namespace Bloom
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
-			if (e.Uri.OriginalString.ToLower().StartsWith("http") && !e.Uri.OriginalString.ToLower().Contains("bloom"))
+			string url = e.Uri.OriginalString;
+			if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
 			{
 				e.Cancel = true;
-				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+				Process.Start(url); //open in the system browser instead
+				Debug.WriteLine("Navigating " + e.Uri);
 			}
-
-			Debug.WriteLine("Navigating " + e.Uri);
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -428,6 +428,16 @@ namespace Bloom
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
 		}
+
+		public void NavigateRawHtml(string html)
+		{
+			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
+			File.WriteAllText(tf.Path,html);
+			SetNewTempFile(tf);
+			_url = _tempHtmlFile.Path;
+			UpdateDisplay();
+		}
+
 
 		private static string GetZoomCSS(float scale)
 		{
@@ -752,6 +762,54 @@ namespace Bloom
 			//so we stick it in the css instead
 			_browser.Document.Body.Style.CssText = string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
 			_browser.Window.ScrollTo(0,0);
+		}
+
+		/// <summary>
+		/// When you receive a OnBrowserClick and have determined that nothing was clicked on that the c# needs to pay attention to,
+		/// pass it on to this method. It will either let the browser handle it normally, or redirect it to the operating system
+		/// so that it can open the file or external website itself.
+		/// </summary>
+		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
+		{
+			if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+			{
+				Process.Start(anchor.Href);
+				eventArgs.Handled = true;
+				return;
+			}
+			if (anchor.Href.ToLower().StartsWith("file"))
+			//links to files are handled externally if we can tell they aren't html/javascript related
+			{
+				// TODO: at this point spaces in the file name will cause the link to fail.
+				// That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+				var href = anchor.Href;
+
+				var path = href.Replace("file:///", "");
+
+				if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
+				{
+					eventArgs.Handled = true;
+					Process.Start(new ProcessStartInfo()
+					{
+						FileName = path,
+						WorkingDirectory = workingDirectoryForFileLinks
+					});
+					return;
+				}
+				eventArgs.Handled = false; //let gecko handle it
+				return;
+			}
+			else if (anchor.Href.ToLower().StartsWith("mailto"))
+			{
+				eventArgs.Handled = true;
+				Process.Start(anchor.Href); //let the system open the email program
+				Debug.WriteLine("Opening email program " + anchor.Href);
+			}
+			else
+			{
+				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+				eventArgs.Handled = true;
+			}
 		}
 	}
 
