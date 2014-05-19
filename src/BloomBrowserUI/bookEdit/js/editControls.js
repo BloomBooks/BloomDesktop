@@ -323,12 +323,12 @@ else {
 }
 
 // The function that the C# code calls to hook everything up.
-// pathname should be the standard file that stores the Synphony settings for the collection.
-// (Note that it may not exist.) For debugging and demo purposes we generate some fake data if fakeIt is true
+// settingsFileContent should be the content of the standard file that stores the Synphony settings for the collection.
+// (Note that it may be empty.) For debugging and demo purposes we generate some fake data if fakeIt is true
 // and the attempt to load the file does not produce anything.
-function initialize(pathname, fakeIt) {
+function initialize(settingsFileContent, fakeIt) {
     var synphony = model.getSynphony();
-    synphony.loadFile(pathname);
+    synphony.loadSettings(settingsFileContent);
     if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
         synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat");
         synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots");
