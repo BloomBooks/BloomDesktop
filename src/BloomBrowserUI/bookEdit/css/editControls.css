@@ -108,7 +108,7 @@ DIV.sortItem
 	color: white;
 	padding: 2px 3px;
 }
-SPAN.ofStage
+SPAN.ofStage, SPAN.ofLevel
 {
 	font-size: xx-small;
 }
