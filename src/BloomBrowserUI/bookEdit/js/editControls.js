@@ -92,6 +92,7 @@ EditControlsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
 EditControlsModel.prototype.updateControlContents = function() {
     this.updateWordList();
     this.updateNumberOfStages();
+    this.updateNumberOfLevels();
     this.updateStageLabel();
     this.enableStageButtons();
     this.enableLevelButtons();
@@ -100,6 +101,10 @@ EditControlsModel.prototype.updateControlContents = function() {
 
 EditControlsModel.prototype.updateNumberOfStages = function() {
     this.updateElementContent("numberOfStages", this.synphony.getStages().length.toString());
+};
+
+EditControlsModel.prototype.updateNumberOfLevels = function() {
+    this.updateElementContent("numberOfLevels", this.synphony.getLevels().length.toString());
 };
 
 EditControlsModel.prototype.enableStageButtons = function() {
@@ -325,9 +330,9 @@ function initialize(pathname, fakeIt) {
     var synphony = model.getSynphony();
     synphony.loadFile(pathname);
     if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
-        synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
-        synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
-        synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
+        synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat");
+        synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots");
+        synphony.addStageWithWords("3", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
         synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
         synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
         synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
