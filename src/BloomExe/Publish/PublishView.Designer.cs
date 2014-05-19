@@ -56,13 +56,13 @@
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
-			this._browser = new Gecko.GeckoWebBrowser();
+			this._pdfViewer = new PdfViewer();
             this._workingIndicator.SuspendLayout();
             this._topBarPanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this._contextMenuStrip.SuspendLayout();
             this._menusToolStrip.SuspendLayout();
-			this._browser.SuspendLayout();
+			this._pdfViewer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -373,17 +373,17 @@
             this.label1.Size = new System.Drawing.Size(108, 1);
             this.label1.TabIndex = 17;
             //
-            // _browser
+            // _pdfViewer
             //
-            this._browser.BackColor = System.Drawing.Color.White;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._browser, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._browser, null);
-            this._L10NSharpExtender.SetLocalizingId(this._browser, "GeckoWebBrowser.GeckoWebBrowser");
-            this._browser.Location = new System.Drawing.Point(114, 3);
-            this._browser.Name = "_browser";
-            this._browser.Size = new System.Drawing.Size(716, 537);
-            this._browser.TabIndex = 16;
-            this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._pdfViewer.BackColor = System.Drawing.Color.White;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._pdfViewer, null);
+            this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
+            this._pdfViewer.Location = new System.Drawing.Point(114, 3);
+            this._pdfViewer.Name = "_pdfViewer";
+            this._pdfViewer.Size = new System.Drawing.Size(716, 537);
+            this._pdfViewer.TabIndex = 16;
+            this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
             // 
             // PublishView
             // 
@@ -392,13 +392,13 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this._workingIndicator);
-            this.Controls.Add(this._browser);
+            this.Controls.Add(this._pdfViewer);
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
             this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
             this.Name = "PublishView";
             this.Size = new System.Drawing.Size(833, 540);
-            this._browser.ResumeLayout();
+            this._pdfViewer.ResumeLayout();
             this._workingIndicator.ResumeLayout(false);
             this._topBarPanel.ResumeLayout(false);
             this._topBarPanel.PerformLayout();
@@ -423,7 +423,7 @@
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private Gecko.GeckoWebBrowser _browser;
+		private PdfViewer _pdfViewer;
 		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
 		private System.Windows.Forms.RadioButton _simplePDFRadio;
