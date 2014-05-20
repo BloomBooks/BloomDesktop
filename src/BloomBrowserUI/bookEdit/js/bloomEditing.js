@@ -686,20 +686,23 @@ function AddOverflowHandler() {
 
 // Add various editing key handlers
 function AddEditKeyHandlers() {
-    //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
+    //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
     $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
         var selection = document.getSelection();
-        if (selection != null && selection != '') {
+        if (selection) {
             //NB: by using exeCommand, we get undo-ability
             document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
         }
     });
+
+    // Make F7 apply top-level header style (H1)
     $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H1");
     });
 
+    // Make F8 apply header style (H2)
     $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H2");
@@ -756,7 +759,7 @@ function AddHintBubbles() {
     $(".bloom-editable:visible label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0)
+        if (!whatToSay)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
@@ -776,7 +779,7 @@ function AddHintBubbles() {
     $(".bloom-translationGroup > label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0)
+        if (!whatToSay)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
@@ -790,7 +793,7 @@ function AddHintBubbles() {
         var labelElement = $(this);
         var imageContainer = $(this).parent();
         var whatToSay = labelElement.text();
-        if (!whatToSay || whatToSay.length == 0)
+        if (!whatToSay)
             return;
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
         MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
@@ -801,7 +804,7 @@ function AddHintBubbles() {
     //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
     $("*[data-hint]").each(function () {
         var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-        if (!whatToSay || whatToSay.length == 0)
+        if (!whatToSay)
             return;
 
         //make hints that start with a * only show when the field has focus
