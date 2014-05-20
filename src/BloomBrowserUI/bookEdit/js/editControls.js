@@ -434,7 +434,8 @@ function initialize(settingsFileContent, fakeIt) {
         synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     }
     model.updateControlContents();
-
+    model.doMarkup();
+    
     // change markup based on visible options
     $('#accordion').children('h3').on('click', function() { model.setMarkupType(this.id); });
 };
