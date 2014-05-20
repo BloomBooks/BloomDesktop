@@ -32,8 +32,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PageListView));
             this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
             this._pagesLabel = new System.Windows.Forms.Label();
-            this._thumbNailList = new Bloom.Edit.ThumbNailList();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            this._thumbNailList = new Bloom.Edit.WebThumbNailList();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,29 +58,27 @@
             this._pagesLabel.TabIndex = 1;
             this._pagesLabel.Text = "Pages";
             // 
+            // _L10NSharpExtender
+            // 
+            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+            this._L10NSharpExtender.PrefixForNewItems = null;
+            // 
             // _thumbNailList
             // 
             this._thumbNailList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this._thumbNailList.BackColor = System.Drawing.SystemColors.Control;
-            this._thumbNailList.Font = new System.Drawing.Font("Tahoma", 9F);
             this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._thumbNailList.ItemWhichWouldPrecedeANewPageInsertion = null;
             this._L10NSharpExtender.SetLocalizableToolTip(this._thumbNailList, null);
             this._L10NSharpExtender.SetLocalizationComment(this._thumbNailList, null);
-            this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "PageListView.ThumbNailList");
-            this._thumbNailList.Location = new System.Drawing.Point(0, 40);
-            this._thumbNailList.Margin = new System.Windows.Forms.Padding(0, 3, 0, 3);
+            this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "WebThumbNailList");
+            this._thumbNailList.Location = new System.Drawing.Point(0, 36);
             this._thumbNailList.Name = "_thumbNailList";
             this._thumbNailList.PreferPageNumbers = false;
             this._thumbNailList.RelocatePageEvent = null;
-            this._thumbNailList.Size = new System.Drawing.Size(113, 173);
+            this._thumbNailList.Size = new System.Drawing.Size(116, 177);
             this._thumbNailList.TabIndex = 2;
-            // 
-            // _L10NSharpExtender
-            // 
-            this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             // 
             // PageListView
             // 
@@ -107,7 +105,7 @@
 
         private System.Windows.Forms.Label _pagesLabel;
         private System.Windows.Forms.ImageList _pageThumbnails;
-		private Bloom.Edit.ThumbNailList _thumbNailList;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private WebThumbNailList _thumbNailList;
     }
 }
