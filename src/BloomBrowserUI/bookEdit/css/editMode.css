@@ -382,7 +382,7 @@ UL.toolbox LI
 	text-align: center;
 }
 /*Put in little grey language tooltips*/
-.bloom-editable[contentEditable=true]:after
+.bloom-editable[contentEditable=true]:not([data-languageTipContent='']):after
 {
 	/*Same grey color as pageLabel*/
 	color: rgba(0, 0, 0, 0.2);
