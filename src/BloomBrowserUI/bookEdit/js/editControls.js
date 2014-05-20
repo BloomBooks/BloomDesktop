@@ -131,6 +131,10 @@ EditControlsModel.prototype.updateDisabledStatus = function(eltId, isDisabled) {
 // (class names used with this method should not occur as substrings within a longer class name)
 EditControlsModel.prototype.setPresenceOfClass = function(eltId, isWanted, className) {
     var old = this.getElementAttribute(eltId, "class");
+
+    // this can happen during testing
+    if ((typeof old === 'undefined') || (old === null)) return;
+
     if (isWanted && old.indexOf(className) < 0) {
         this.setElementAttribute(eltId, "class", old + (old.length ? " " : "") + className);
     }
@@ -435,7 +439,7 @@ function initialize(settingsFileContent, fakeIt) {
     }
     model.updateControlContents();
     model.doMarkup();
-    
+
     // change markup based on visible options
     $('#accordion').children('h3').on('click', function() { model.setMarkupType(this.id); });
 };
