@@ -23,6 +23,10 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
+    <Content Include="bookEdit\BookPagesThumbnailList\test.css" />
+    <Content Include="bookEdit\BookPagesThumbnailList\test.htm" />
+    <Content Include="bookEdit\BookPagesThumbnailList\test.js" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />

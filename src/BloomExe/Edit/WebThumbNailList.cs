@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
@@ -26,6 +27,7 @@ namespace Bloom.Edit
 		public HtmlThumbNailer Thumbnailer;
 		private Image _placeHolderImage;
 		public event EventHandler PageSelectedChanged;
+		private Bloom.Browser _browser;
 
 		public WebThumbNailList()
 		{
@@ -40,6 +42,27 @@ namespace Bloom.Edit
 //
 //			_placeHolderImage = new Bitmap(32, 32);
 
+
+			if (!ReallyDesignMode)
+			{
+				_browser = new Browser();
+				this._browser.BackColor = System.Drawing.Color.DarkGray;
+				this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
+				this._browser.Location = new System.Drawing.Point(0, 0);
+				this._browser.Name = "_browser";
+				this._browser.Size = new System.Drawing.Size(150, 491);
+				this._browser.TabIndex = 0;
+				this.components.Add(_browser);
+			}
+		}
+
+		protected bool ReallyDesignMode
+		{
+			get
+			{
+				return (base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
+					(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
+			}
 		}
 
 //        void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
@@ -427,5 +450,29 @@ namespace Bloom.Edit
 //					Thumbnailer.PageChanged(pageId);
 //    		}
 //    	}
+		public void EmptyThumbnailCache()
+		{
+
+		}
+
+		public void SetPageInsertionPoint(IPage determinePageWhichWouldPrecedeNextInsertion)
+		{
+
+		}
+
+		public void SelectPage(IPage page)
+		{
+
+		}
+
+		public void SetItems(IEnumerable<IPage> pages)
+		{
+
+		}
+
+		public void UpdateThumbnailAsync(IPage page)
+		{
+
+		}
 	}
 }

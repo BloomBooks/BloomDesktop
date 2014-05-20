@@ -29,9 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ThumbNailList));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WebThumbNailList));
             this._thumbnailImageList = new System.Windows.Forms.ImageList(this.components);
-            this._browser = new Bloom.Browser();
             this.SuspendLayout();
             // 
             // _thumbnailImageList
@@ -40,23 +39,13 @@
             this._thumbnailImageList.TransparentColor = System.Drawing.Color.Transparent;
             this._thumbnailImageList.Images.SetKeyName(0, "x-office-document.png");
             // 
-            // _browser
-            // 
-            this._browser.BackColor = System.Drawing.Color.DarkGray;
-            this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._browser.Location = new System.Drawing.Point(0, 0);
-            this._browser.Name = "_browser";
-            this._browser.Size = new System.Drawing.Size(150, 491);
-            this._browser.TabIndex = 0;
-            // 
-            // ThumbNailList
+            // WebThumbNailList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.Controls.Add(this._browser);
             this.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Name = "ThumbNailList";
+            this.Name = "WebThumbNailList";
             this.Size = new System.Drawing.Size(150, 491);
             this.ResumeLayout(false);
 
@@ -65,6 +54,5 @@
         #endregion
 
         private System.Windows.Forms.ImageList _thumbnailImageList;
-        private Browser _browser;
     }
 }
