@@ -101,6 +101,7 @@ EditControlsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
 EditControlsModel.prototype.updateControlContents = function() {
     this.updateWordList();
     this.updateNumberOfStages();
+    this.updateNumberOfLevels();
     this.updateStageLabel();
     this.enableStageButtons();
     this.enableLevelButtons();
@@ -109,6 +110,10 @@ EditControlsModel.prototype.updateControlContents = function() {
 
 EditControlsModel.prototype.updateNumberOfStages = function() {
     this.updateElementContent("numberOfStages", this.synphony.getStages().length.toString());
+};
+
+EditControlsModel.prototype.updateNumberOfLevels = function() {
+    this.updateElementContent("numberOfLevels", this.synphony.getLevels().length.toString());
 };
 
 EditControlsModel.prototype.enableStageButtons = function() {
@@ -413,12 +418,12 @@ else {
 }
 
 // The function that the C# code calls to hook everything up.
-// pathname should be the standard file that stores the Synphony settings for the collection.
-// (Note that it may not exist.) For debugging and demo purposes we generate some fake data if fakeIt is true
+// settingsFileContent should be the content of the standard file that stores the Synphony settings for the collection.
+// (Note that it may be empty.) For debugging and demo purposes we generate some fake data if fakeIt is true
 // and the attempt to load the file does not produce anything.
-function initialize(pathname, fakeIt) {
+function initialize(settingsFileContent, fakeIt) {
     var synphony = model.getSynphony();
-    synphony.loadFile(pathname);
+    synphony.loadSettings(settingsFileContent);
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
         synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat", "canine feline");
         synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots", "carnivore omnivore");

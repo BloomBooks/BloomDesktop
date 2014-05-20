@@ -239,6 +239,7 @@ describe("Bloom Edit Controls tests", function() {
 
     it ("updates level buttons on init", function() {
         model.updateControlContents();
+        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
         expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
     });
 
