@@ -923,6 +923,17 @@ function ShowTopicChooser() {
     });
 }
 
+var resizeTimer;
+var windowBorder = 12; // window border is about 12px
+function resizeAccordion() {
+    var windowHeight = $(window).height();
+    var root = $(".editControlsRoot");
+    // Set accordion container height to fit in new window size
+    // Then accordion Resize() will adjust it to fit the container
+    root.height(windowHeight - windowBorder);
+    BloomAccordion.Resize();
+}
+
 // ---------------------------------------------------------------------------------
 // document ready function
 // ---------------------------------------------------------------------------------
