@@ -9,6 +9,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using Newtonsoft.Json;
 using Palaso.Extensions;
+using System.Xml;
 
 namespace Bloom.Book
 {
@@ -334,6 +335,7 @@ namespace Bloom.Book
 		public bool IsFolio { get; set; }
 
 		// Todo: multilingual
+		// Do we just fix the setter here!?
 		[JsonProperty("title")]
 		public string Title { get; set; }
 
