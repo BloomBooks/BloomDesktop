@@ -451,20 +451,25 @@ namespace Bloom.Edit
             MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
             var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
-            var domForEditControls = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
-            AppendAllChildren(domForEditControls.DocumentElement.LastChild, _domForCurrentPage.Body);
+            var domForEditControls = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+
+            // move css files from the head into scoped tags in EditControls.htm
+            var div = domForEditControls.Body.SelectSingleNode("//div[@class='editControlsRoot']");
+            MoveStylesIntoScopedTag(domForEditControls, div);
+            
+            AppendAllChildren(domForEditControls.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
             // looking at the EditControls.htm file and the generated html for the page, you would think we need the following three lines.
             // However, the generated html loads bloomBootstrap.js, and this loads all three files.
             //_domForCurrentPage.AddStyleSheet(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"));
             //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-1.10.1.js"));
             //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-ui-1.10.3.custom.min.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/xregexp-all-min.js")); // before bloom_xregexp_categories
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_xregexp_categories.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/jquery.text-markup.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
+            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
 
-            AppendAllChildren(domForEditControls.DocumentElement.FirstChild, _domForCurrentPage.Head);
+            AppendAllChildren(domForEditControls.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
             _domForCurrentPage.AddJavascriptFileToBody(
                 _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
             _domForCurrentPage.AddJavascriptFileToBody(
@@ -496,28 +501,56 @@ namespace Bloom.Edit
         private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
         {
             var body = domForCurrentPage.Body;
-            var head = domForCurrentPage.Head;
-            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
             var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
             var newDiv = body.OwnerDocument.CreateElement("div");
             newDiv.SetAttribute("style", "float:left");
-            // Varoius things in JavaScript land that want to add things using the styles add them to this element instead of body.
+            // Various things in JavaScript land that want to add things using the styles add them to this element instead of body.
             newDiv.SetAttribute("id", "mainPageScope");
             body.AppendChild(newDiv);
+
+            MoveStylesIntoScopedTag(domForCurrentPage, newDiv);
+            
+            foreach (var child in childrenToMove)
+                newDiv.AppendChild(child);
+        }
+
+        private void MoveStylesIntoScopedTag(HtmlDom domForCurrentPage, XmlNode target)
+        {
+            var body = domForCurrentPage.Body;
+            var head = domForCurrentPage.Head;
+
+            // get the style sheets linked to this document
+            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
+
+            // create a style tag for the style sheets
             var scope = body.OwnerDocument.CreateElement("style");
-            newDiv.AppendChild(scope);
+            target.AppendChild(scope);
             scope.SetAttribute("scoped", "scoped");
+
             foreach (var style in stylesToMove)
             {
                 var source = style.Attributes["href"].Value;
                 if (source.Contains("editPaneGlobal"))
                     continue; // Leave this one at the global level, it contains things that should NOT be scoped.
+
+                if (!source.StartsWith("file"))
+                {
+                    // get the filename
+                    var idx = source.LastIndexOfAny("\\/".ToCharArray());
+                    if (idx > -1)
+                        source = source.Substring(idx + 1);
+
+                    // do not attempt to do this to jquery
+                    if (source.StartsWith("jquery")) continue;
+
+                    // look for the css file, and build a file URI
+                    source = new Uri(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source)).AbsoluteUri;
+                }
+
                 var import = body.OwnerDocument.CreateTextNode("@import \"" + source.Replace("\\", "/") + "\";\n");
                 scope.AppendChild(import);
                 head.RemoveChild(style);
             }
-            foreach (var child in childrenToMove)
-                newDiv.AppendChild(child);
         }
 
         void AppendAllChildren(XmlNode source, XmlNode dest)
