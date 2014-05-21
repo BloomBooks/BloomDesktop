@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -332,6 +333,7 @@ namespace Bloom.Book
 		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
+			dom.RemoveModeStyleSheets();
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
@@ -485,7 +487,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			//shells & templates are stored without frontmatter. This will add and update the frontmatter to our preivew dom
+			//shells & templates may be stored without frontmatter. This will add and update the frontmatter to our preivew dom
 			if (Type == BookType.Shell || Type == BookType.Template)
 			{
 				BringBookUpToDate(previewDom, new NullProgress());
@@ -536,8 +538,11 @@ namespace Bloom.Book
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
+			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
+			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
+			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
+			layout = Layout.FromDom(bookDOM, layout);			//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
 			progress.WriteStatus("Injecting XMatter...");
 
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
@@ -907,23 +912,55 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
 		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
 		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
 		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
 		/// for to identify the main content of the book?
-		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
-		/// language.
+		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
+		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
+		/// we'll say that a book contains a language if it has a title defined in that language.
 		/// </summary>
 		public IEnumerable<string> AllLanguages
 		{
 			get
 			{
-				return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 					.Select(div => div.Attributes["lang"].Value)
 					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 					.Distinct();
+				if (langList.Count() == 0)
+					langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
+						.Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
+						.Select(div => div.Attributes["lang"].Value)
+						.Where(lang => lang != "*" && lang != "z" && lang != "")
+						.Distinct();
+				return langList;
+			}
+		}
+
+		public string GetAboutBookHtml
+		{
+			get
+			{
+				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
+				var m = new Markdown(options);
+				var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
+
+				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
+				var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
+				return html;
+
+			} //todo add other ui languages
+		}
+
+		public bool HasAboutBookInformationToShow { get { return File.Exists(AboutBookMarkdownPath); } }
+		public string AboutBookMarkdownPath  {
+			get
+			{
+				return _storage.FolderPath.CombineForPath("ReadMe_en.md");
 			}
 		}
 
