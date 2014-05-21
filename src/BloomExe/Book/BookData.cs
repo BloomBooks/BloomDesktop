@@ -424,14 +424,7 @@ namespace Bloom.Book
                         isCollectionValue = true;
                     }
 
-                    // Review: Why not use node.InnerText to avoid sentence-too-long spans, etc.?
                     string value = node.InnerXml.Trim(); //may contain formatting
-                    if (key.ToLower() == "booktitle")
-                    {
-                        // Make the book title raw text so our thumbnail caption doesn't show up with sentence-too-long spans
-                        // otherwise it gets into the meta.json file and everything!
-                        value = node.InnerText.Trim();
-                    }
                     if (node.Name.ToLower() == "img")
                     {
                         value = node.GetAttribute("src");
