@@ -63,11 +63,10 @@ namespace BloomTests.Book
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
 			File.WriteAllText(jsonPath,
-				"{'suitableForMakingShells':true,'experimental':false,'title':'<span class=\"sentence-too-long\" data-segment=\"sentence\">Book on &lt;span&gt;s\r\n</span>'}");
+				"{'title':'<span class=\"sentence-too-long\" data-segment=\"sentence\">Book on &lt;span&gt;s\r\n</span>'}");
 			var bi = new BookInfo(_folder.Path, true); // loads metadata, but doesn't use Title setter
 			// SUT
 			bi.Title = bi.Title; // exercises setter
-			Assert.That(bi.IsExperimental, Is.False);
 			Assert.AreEqual("Book on <span>s\r\n", bi.Title);
 		}
 	}
