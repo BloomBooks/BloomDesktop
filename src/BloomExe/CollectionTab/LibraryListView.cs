@@ -686,7 +686,7 @@ namespace Bloom.CollectionTab
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror);
+			_model.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)

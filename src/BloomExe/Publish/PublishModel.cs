@@ -357,7 +357,13 @@ namespace Bloom.Publish
 
 		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
 		{
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Color.White,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = false
+			};
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
