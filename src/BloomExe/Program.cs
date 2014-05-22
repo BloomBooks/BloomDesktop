@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
+using Bloom.CollectionTab;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Microsoft.Win32;
@@ -36,6 +37,7 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
+
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
 #else
@@ -43,6 +45,7 @@ namespace Bloom
 		private static DateTime _earliestWeShouldCloseTheSplashScreen;
 		private static SplashScreen _splashForm;
 		private static bool _alreadyHadSplashOnce;
+		private static BookDownloadSupport _bookDownloadSupport;
 #endif
 
 		[STAThread]
@@ -64,13 +67,13 @@ namespace Bloom
 					Settings.Default.Save();
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
-#if DEBUG
-				if (args.Length > 0)
-				{
-					// This allows us to debug things like  interpreting a URL.
-					MessageBox.Show("Attach debugger now");
-				}
-#endif
+//#if DEBUG
+//                if (args.Length > 0)
+//                {
+//                    // This allows us to debug things like  interpreting a URL.
+//                    MessageBox.Show("Attach debugger now");
+//                }
+//#endif
 
 #if DEBUG
 				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
@@ -99,7 +102,8 @@ namespace Bloom
 
 #if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
 					if (args.Length > 1)
-						Thread.Sleep(3000);//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
+						Thread.Sleep(3000);
+							//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
 
 #else
 					if (!GrabMutexForBloom())
@@ -110,9 +114,8 @@ namespace Bloom
 
 					SetUpErrorHandling();
 
-					EnsureThisInstanceIsRegisteredForBloomUrls();
-
 					_applicationContainer = new ApplicationContainer();
+					_bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
 					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
 					{
@@ -122,32 +125,13 @@ namespace Bloom
 						// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
 						SetUpLocalization();
 						Browser.SetUpXulRunner();
-						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(), _applicationContainer.HtmlThumbnailer, new OrderList());
+						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+							_applicationContainer.HtmlThumbnailer, new DownloadOrderList());
 						transfer.UploadFolder(args[1], _applicationContainer);
 						return;
 					}
 
-					// We need the download folder to exist if we are asked to download a book.
-					// We also want it to exist, to show the (planned) link that offers to launch the web site.
-					// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
-					// a downloaded book to the UI.
-					// So, we just make sure it exists here at startup.
-					string downloadFolder = BookTransfer.DownloadFolder;
-					if (!Directory.Exists(downloadFolder))
-					{
-						var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(Path.GetDirectoryName(downloadFolder), Path.GetFileName(downloadFolder));
-						var settings = new NewCollectionSettings()
-						{
-							Language1Iso639Code = "en",
-							Language1Name = "English",
-							IsSourceCollection = true,
-							PathToSettingsFile = pathToSettingsFile
-							// All other defaults are fine
-						};
-						CollectionSettings.CreateNewCollection(settings);
-					}
 
-					StartReceivingArgsFromOtherBloom();
 
 					SetUpLocalization();
 					Logger.Init();
@@ -160,7 +144,7 @@ namespace Bloom
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
 						else
-							HandleBloomBookOrder(args[0]);
+							_bookDownloadSupport.HandleBloomBookDownloadOrder(args[0]);
 					}
 
 					if (args.Length > 0 && args[0] == "--rename")
@@ -178,7 +162,8 @@ namespace Bloom
 						}
 						catch (Exception error)
 						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
+							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+								"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
 							Environment.Exit(-1);
 						}
 
@@ -199,15 +184,17 @@ namespace Bloom
 
 					try
 					{
-					  Application.Run();
-						StopReceivingArgsFromOtherBloom();
+						Application.Run();
 					}
-					catch (System.AccessViolationException nasty)
+					catch(System.AccessViolationException nasty)
 					{
 						Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
 						System.Environment.FailFast("AccessViolationException");
 					}
-
+					finally
+					{
+						_bookDownloadSupport.Dispose();
+					}
 					Settings.Default.Save();
 
 					Logger.ShutDown();
@@ -223,129 +210,17 @@ namespace Bloom
 			}
 		}
 
-		/// <summary>
-		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
-		/// Todo Linux: no idea what has to happen to register a url handler...probably not this, though.
-		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
-		/// </summary>
-		private static void EnsureThisInstanceIsRegisteredForBloomUrls()
-		{
-			if (AlreadyRegistered(Registry.ClassesRoot))
-				return;
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
-			var key = root.CreateSubKey(@"bloom\shell\open\command");
-			key.SetValue("", DesiredBloomCommand);
-
-			key = root.CreateSubKey("bloom");
-			key.SetValue("", "BLOOM:URL Protocol");
-			key.SetValue("URL Protocol", "");
-		}
-
-		private static bool AlreadyRegistered(RegistryKey root)
-		{
-			var key = root.OpenSubKey(@"bloom\shell\open\command");
-			if (key == null)
-				return false;
-			var wanted = DesiredBloomCommand;
-			if (wanted != (key.GetValue("") as string).ToLowerInvariant())
-				return false;
-			key = root.OpenSubKey("bloom");
-			if (key.GetValue("") as string != "BLOOM:URL Protocol")
-				return false;
-			if (key.GetValue("URL Protocol") as string != "")
-				return false;
-			return true;
-		}
-
-		private static string DesiredBloomCommand
-		{
-			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
-		}
-
-		private static Thread _serverThread;
-		private static bool _shuttingDown;
-		/// <summary>
-		/// Start a server which can process requests from another instance of bloom
-		/// (typically started by initiating a download by navigating to a link starting with bloom://;
-		/// can also be by opening a bookorder file.)
-		/// </summary>
-		private static void StartReceivingArgsFromOtherBloom()
-		{
-			_serverThread = new Thread(ServerThreadAction);
-			_serverThread.Start();
-		}
-
-		private static void StopReceivingArgsFromOtherBloom()
-		{
-			if (_serverThread != null)
-			{
-				_shuttingDown = true;
-				// This will go to our own thread that is waiting for such a connection, allowing the WaitForConnection
-				// to unblock so the thread can terminate.
-				NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
-				try
-				{
-					pipeClient.Connect(100);
-				}
-				catch (TimeoutException)
-				{
-					return; // failed to send, maybe we got a real request during shutdown?
-				}
-				_serverThread.Join(1000); // If for some reason we can't clean up nicely, we'll exit anyway
-				_serverThread = null;
-			}
-		}
-
-		private const string ArgsPipeName = @"SendBloomArgs";
-
-		/// <summary>
-		/// The function executed by the server thread which listens for messages from other bloom instances.
-		/// Review: do we need to be able to handle many at once? What will happen if the user opens one order while we are handling another?
-		/// </summary>
-		private static void ServerThreadAction(object unused)
-		{
-			while(!_shuttingDown)
-			{
-				var pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
-				pipeServer.WaitForConnection();
-				if (_shuttingDown)
-					return; // We got the spurious message that allows us to unblock and exit
-				string argument = null;
-				try
-				{
-					int len = pipeServer.ReadByte()*256;
-					len += pipeServer.ReadByte();
-					var inBuffer = new byte[len];
-					pipeServer.Read(inBuffer, 0, len);
-					argument = Encoding.UTF8.GetString(inBuffer);
-				}
-				catch (IOException e)
-				{
-					//Catch the IOException that is raised if the pipe is broken
-					// or disconnected.
-					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
-					// was trying to do doesn't happen.
-				}
-				HandleBloomBookOrder(argument);
-				pipeServer.Dispose();
-			}
-		}
-
-		private static void HandleBloomBookOrder(string argument)
-		{
-			_applicationContainer.OrderList.AddOrder(argument);
-		}
 
 		/// <summary>
 		/// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
 		/// </summary>
 		/// <param name="args"></param>
 		/// <returns>true if another instance is handling things and this one should exit</returns>
-		private static bool SendArgsToOtherBloomInstance(string[] args)
+		public static bool SendArgsToOtherBloomInstance(string[] args)
 		{
 			if (args.Length != 1)
 				return false; // We only try to send exactly one argument to another instance.
-			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
+			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", BookDownloadSupport.ArgsPipeName, PipeDirection.Out);
 			try
 			{
 				pipeClient.Connect(200);
