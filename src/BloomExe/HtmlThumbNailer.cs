@@ -237,7 +237,18 @@ namespace Bloom
                             {
                                 if (_disposed)
                                     return;
-                                pendingThumbnail = MakeThumbNail(fullsizeImage, _widthInPixels, _heightInPixels,
+                                int width = _widthInPixels;
+                                int height = _heightInPixels;
+                                // Adjust height and width so image does not end up with extra blank area
+                                if (fullsizeImage.Width < fullsizeImage.Height)
+                                {
+                                    width = Math.Min(width, height*fullsizeImage.Width/fullsizeImage.Height + 2); // +2 seems to be needed (at least for 70 pix height) so nothing is clipped
+                                }
+                                else if (fullsizeImage.Width > fullsizeImage.Height)
+                                {
+                                    height = Math.Min(height, width * fullsizeImage.Height / fullsizeImage.Width + 2);
+                                }
+                                pendingThumbnail = MakeThumbNail(fullsizeImage, width, height,
                                     Color.Transparent,
                                     order.DrawBorderDashed);
                             }
