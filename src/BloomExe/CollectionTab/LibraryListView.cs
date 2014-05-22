@@ -323,7 +323,7 @@ namespace Bloom.CollectionTab
 				return;
 			}
 
-			var titleBestForUserDisplay = ShortenTitleIfNeeded(BookInfo.CheckForAndRemoveXmlInString(book.TitleBestForUserDisplay));
+			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 			if (titleBestForUserDisplay != button.Text)
 			{
 				Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);

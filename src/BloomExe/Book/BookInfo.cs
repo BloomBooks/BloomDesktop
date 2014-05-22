@@ -100,23 +100,8 @@ namespace Bloom.Book
 			get { return MetaData.Title; }
 			set
 			{
-				var titleStr = CheckForAndRemoveXmlInString(value);
+				var titleStr = Book.RemoveXmlMarkup(value);
 				MetaData.Title = titleStr;
-			}
-		}
-
-		public static string CheckForAndRemoveXmlInString(string input)
-		{
-			try
-			{
-				var doc = new XmlDocument();
-				doc.PreserveWhitespace = true;
-				doc.LoadXml("<div>" + input + "</div>");
-				return doc.DocumentElement.InnerText;
-			}
-			catch (XmlException)
-			{
-				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
