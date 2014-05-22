@@ -1,6 +1,6 @@
 ﻿namespace Bloom.Edit
 {
-    partial class EditControlsView
+    partial class ReaderToolsView
     {
         /// <summary> 
         /// Required designer variable.

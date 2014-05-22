@@ -1,0 +1,26 @@
+* { font-size: 9pt; }
+body { margin: 0 }
+.align-top { vertical-align: top; }
+td { padding: 0 8px; }
+.smaller { font-size: 8pt; }
+label { font-weight: 700; }
+div.scrolling { overflow: auto; }
+div.floating {
+	display: inline-block;
+	position: relative;
+	float: left;
+}
+
+@media (max-width: 649px) {
+	div.scrolling { overflow: auto; height: 246px; }
+	div.floating { margin: 8px; }
+	#word-lists-div { width: 250px; }
+	#word-lists-div textarea { width: 245px; }
+}
+
+@media (min-width: 650px) {
+	div.scrolling { overflow: hidden; }
+	div.floating { margin: 0 12px; }
+	#word-lists-div { width: 270px; }
+	#word-lists-div textarea { width: 265px; }
+}

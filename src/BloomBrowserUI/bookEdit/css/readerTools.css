@@ -1,5 +1,5 @@
-/*Styles for EditControls.htm*/
-DIV.editControlsRoot
+/*Styles for ReaderTools.htm*/
+DIV.readerToolsRoot
 {
 	background-color: #404040;
 	color: white;
@@ -123,3 +123,4 @@ TD.disabledLimit
 
 
 .hidden { display: none !important; }
+.align-top { vertical-align: top; }
