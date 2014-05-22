@@ -10,8 +10,8 @@ load:
   - js/libsynphony/bloom_lib.js
   - js/libsynphony/jquery.text-markup.js
   - js/synphonyApi.js
-  - js/editControls.js
+  - js/readerTools.js
 test:
-  - test/editControls.Test.js
+  - test/readerTools.Test.js
 
 timeout: 90

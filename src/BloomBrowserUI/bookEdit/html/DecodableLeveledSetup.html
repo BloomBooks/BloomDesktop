@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<link type="text/css" rel="stylesheet" href="../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" />
+		<link type="text/css" rel="stylesheet" href="../css/decodableLeveledSetup.css" />
+		<script type="text/javascript" src="../../lib/jquery-1.10.1.js"></script>
+		<script type="text/javascript" src="../../lib/jquery-ui-1.10.3.custom.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.easytabs.js"></script>
+		<script type="text/javascript" src="../js/decodableLeveledSetup.js"></script>
+		<script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
+	</head>
+	<body>
+		<div id="dlstabs" class="ui-dialog ui-widget" style="width: auto" >
+			<ul>
+				<li><a href="#dlstabs-1">Language</a></li>
+				<li><a href="#dlstabs-2">Decodable Stages</a></li>
+				<li><a href="#dlstabs-3">Levels</a></li>
+			</ul>
+			<div id="dlstabs-1" class="scrolling">
+				<div class="floating" style="width: 200px">
+					<label for="dls_letters">Letters</label><br />
+					<textarea id="dls_letters" style="height: 55px; width: 195px"></textarea><br />
+					<span class="smaller">* List in alphabetic order<br />* Separate by spaces<br />E.g. "a b c d"</span><br /><br />
+					<label for="dls_letter_combinations">Letter Combinations (Graphemes)</label><br />
+					<textarea id="dls_letter_combinations" style="height: 55px; width: 195px"></textarea><br />
+					<span class="smaller">* Separate by spaces<br />E.g. "ai oo sh ng th ing"</span>
+				</div>
+				<div class="floating" id="word-lists-div">
+					<label for="dls_word_lists">Word Lists and Sample Texts</label><br />
+					<textarea id="dls_word_lists" style="height: 55px;"></textarea><br />
+					<a href="javascript:openTextFolder();" class="smaller">Open the sample texts folder for this language.</a>
+					<p class="smaller">About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</p>
+					<p class="smaller">If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.</p>
+					<p class="smaller">Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</p>
+					<p class="smaller">Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</p>
+				</div>
+				<div  class="floating">
+					<label for="dls_more_words">More Words</label><br />
+					<textarea id="dls_more_words" style="height: 328px; width: 100px"></textarea>
+				</div>
+			</div>
+			<div id="dlstabs-2">
+				<p>Morbi tincidunt, dui sit .</p>
+			</div>
+			<div id="dlstabs-3">
+				<p>Mauris eleifend est et turpis.</p>
+				<p>Duis cursus.</p>
+			</div>
+		</div>
+	</body>
+</html>

@@ -30,13 +30,16 @@ SynphonyApi.prototype.loadSettings = function(fileContent)
     // Todo: load stage data.
 };
 
-function FindOrCreateConfigDiv() {
+function FindOrCreateConfigDiv(path) {
     var dialogContents = $("body").find("div#synphonyConfig");
     if (!dialogContents.length) {
         dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
 
-        dialogContents.append("<textarea id = 'synphonyData' rows='20' cols='70'></textarea>");
+        var url = path.replace(/\/js\/$/, '/html/DecodableLeveledSetup.html').replace(/file:\/\/(\w)/, 'file:///$1');
+        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame"></iframe>';
+        dialogContents.append(html);
     }
+
     return dialogContents;
 }
 
@@ -45,31 +48,44 @@ function FindOrCreateConfigDiv() {
 // to let the caller update the UI.
 SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
     // Todo: this should launch the new API JohnH designed, not just this crude textarea editor.
-    var dialogContents = FindOrCreateConfigDiv();
-    $("#synphonyData").html(this.source);
-    var _this = this;
+    var dialogContents = FindOrCreateConfigDiv(this.getScriptPath());
+    var h = 580;
+    var w = 720;
+
+    if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
+        h = 460;
+        w = 580;
+    }
+//    $("#synphonyData").html(this.source);
+//    var _this = this;
     var dlg = $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
         //zIndex removed in newer jquery, now we get it in the css
         buttons: {
             "OK": function () {
-                _this.loadSettings($("#synphonyData").val(), false);
-                event = document.createEvent('MessageEvent');
-                var origin = window.location.protocol + '//' + window.location.host;
-                // I don't know what all the other parameters mean, but the first is the name of the event the
-                // C# is listening for, and must be exactly the string here. The fourth is the new content
-                // of the file.
-                event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, _this.source, origin, 1234, window, null);
-                document.dispatchEvent (event);
-                $(this).dialog("close");
-                whenChanged();
+                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+//                _this.loadSettings($("#synphonyData").val(), false);
+//                event = document.createEvent('MessageEvent');
+//                var origin = window.location.protocol + '//' + window.location.host;
+//                // I don't know what all the other parameters mean, but the first is the name of the event the
+//                // C# is listening for, and must be exactly the string here. The fourth is the new content
+//                // of the file.
+//                event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, _this.source, origin, 1234, window, null);
+//                document.dispatchEvent (event);
+//
+//                $(this).dialog("close");
+//                whenChanged();
             },
             "Cancel": function () {
                 $(this).dialog("close");
             }
-        }
+        },
+        height: h,
+        width: w
     });
+
+    $("div.ui-dialog").zIndex(18100);
 };
 
 // This is at least useful for testing; maybe for real use.
@@ -84,6 +100,14 @@ SynphonyApi.prototype.addStageWithWords = function(name, words, sightWords)
     stage.incrementFrequencies(words);
     stage.sightWords = sightWords;
     this.stages.push(stage);
+};
+
+SynphonyApi.prototype.getScriptPath = function() {
+
+    var src = $('script[src$="synphonyApi.js"]').attr('src').replace('synphonyApi.js', '').replace(/\\/g, '/');
+    if (!src) return '';
+    return src;
+
 };
 
 // Defines an object to hold data about one stage in the decodable books tool
