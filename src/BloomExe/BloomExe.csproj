@@ -62,7 +62,7 @@
     </Reference>
     <Reference Include="Analytics.NET, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\Analytics.NET.dll</HintPath>
     </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
@@ -80,9 +80,9 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="DesktopAnalytics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
@@ -111,9 +111,8 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Palaso, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -341,6 +340,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\KeyManager.cs" />
     <Compile Include="WebLibraryIntegration\LoginDialog.cs">
       <SubType>Form</SubType>
@@ -348,7 +348,7 @@
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="WebLibraryIntegration\OrderList.cs" />
+    <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>

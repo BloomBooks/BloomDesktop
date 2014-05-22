@@ -8,7 +8,7 @@ namespace Bloom.WebLibraryIntegration
 	/// <summary>
 	/// This class exists (as a singleton, managed by Autofac) to manage requests for books to be downloaded.
 	/// </summary>
-	public class OrderList
+	public class DownloadOrderList
 	{
 		public event EventHandler OrderAdded;
 		private List<string> _orders = new List<string>();
