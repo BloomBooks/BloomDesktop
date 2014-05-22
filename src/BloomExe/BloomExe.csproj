@@ -59,6 +59,9 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Analytics.NET">
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\Analytics.NET.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
     </Reference>
@@ -70,6 +73,9 @@
     </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="DesktopAnalytics">
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
@@ -86,8 +92,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="PdfDroplet">
       <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
@@ -110,14 +115,8 @@
     <Reference Include="AeroWizard">
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
-    <Reference Include="Analytics.NET">
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
-    </Reference>
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="DesktopAnalytics">
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
