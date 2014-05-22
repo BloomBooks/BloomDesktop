@@ -213,11 +213,13 @@ namespace Bloom.Book
 			if(LockedDown)
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
+                pageDom.AddEditMode("translation");
 			}
 			else
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
-			}
+                pageDom.AddEditMode("original");
+            }
             pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css"));
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
