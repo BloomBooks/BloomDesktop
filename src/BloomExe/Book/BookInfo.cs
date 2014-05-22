@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Bloom.Collection;
-using Bloom.Properties;
 using Newtonsoft.Json;
 using Palaso.Extensions;
 using System.Xml;

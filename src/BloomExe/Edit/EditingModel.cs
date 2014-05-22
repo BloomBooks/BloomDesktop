@@ -151,7 +151,17 @@ namespace Bloom.Edit
 			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
-			Analytics.Track("Insert Template Page");
+			try
+			{
+				Analytics.Track("Insert Template Page", new Dictionary<string, string>
+					{
+						{ "template-source", (sender as Page).Book.Title},
+						{ "page", (sender as Page).Caption}
+					});
+			}
+			catch (Exception)
+			{
+			}
 			Logger.WriteEvent("InsertTemplatePage");
 		}
 

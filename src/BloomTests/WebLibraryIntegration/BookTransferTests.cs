@@ -21,7 +21,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _workFolderPath;
 		private BookTransfer _transfer;
 		private BloomParseClient _parseClient;
-		private OrderList _orders;
+		private DownloadOrderList _downloadOrders;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 
 		[SetUp]
@@ -37,8 +37,8 @@ namespace BloomTests.WebLibraryIntegration
 			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
-			_orders = new OrderList();
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new HtmlThumbNailer(30,30,new MonitorTarget()),  _orders);
+			_downloadOrders = new DownloadOrderList();
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new HtmlThumbNailer(30,30,new MonitorTarget()),  _downloadOrders);
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
