@@ -142,10 +142,13 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
-
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom,
-													  Palette.TextAgainstDarkBackground,
-													  false, image => RefreshOneThumbnailCallback(page, image), 
+            var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+            {
+                BackgroundColor = Palette.TextAgainstDarkBackground,
+                DrawBorderDashed = false,
+                CenterImageUsingTransparentPadding = true
+            };
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image), 
 													  error=> HandleThumbnailerError(page, error));
 		}
 

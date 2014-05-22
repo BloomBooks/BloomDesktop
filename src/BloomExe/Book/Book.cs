@@ -158,9 +158,9 @@ namespace Bloom.Book
 		    return _bookData.PrettyPrintLanguage(code);
 	    }
 
-		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+		public virtual void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
 		{
-			try
+		    try
 			{
 				if (HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
 				{
@@ -182,8 +182,7 @@ namespace Bloom.Book
 				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = _storage.FolderPath;
-
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback,errorCallback);
+			    _thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, thumbnailOptions, callback, errorCallback);
 			}
 			catch (Exception err)
 			{
@@ -1486,13 +1485,14 @@ namespace Bloom.Book
 			}
 		}
 
-    	public void RebuildThumbNailAsync(Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+    	public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
     	{
 			if (!_storage.RemoveBookThumbnail())
 				return;
 
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
-			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this.BookInfo,image), 
+    	    thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image), 
 				error=>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.

@@ -18,6 +18,7 @@ using Palaso.Code;
 using Palaso.Reporting;
 using Palaso.Xml;
 using Gecko;
+using Segmentio;
 
 namespace Bloom
 {
@@ -85,7 +86,22 @@ namespace Bloom
 			}
 		}
 
-    	/// <summary>
+        public class ThumbnailOptions
+        {
+            public Color BackgroundColor=Color.White;
+            public Color BorderColor = Color.Transparent;
+            public bool  DrawBorderDashed=false;
+
+            /// <summary>
+            /// Use this when all thumbnails need to be the centered in the same size png.
+            /// Unfortunately as long as we're using the winform listview, we seem to need to make the icons
+            /// the same size otherwise the title-captions don't line up.
+            /// </summary>
+            public bool CenterImageUsingTransparentPadding = true;
+        }
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="key">whatever system you want... just used for caching</param>
@@ -93,7 +109,7 @@ namespace Bloom
         /// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
         /// <param name="drawBorderDashed"></param>
         /// <returns></returns>
-        public void GetThumbnailAsync(string folderForThumbNailCache,string key, XmlDocument document, Color backgroundColorOfResult, bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+        public void GetThumbnailAsync(string folderForThumbNailCache, string key, XmlDocument document, ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
         {
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
 
@@ -130,11 +146,10 @@ namespace Bloom
 	       	_orders.Enqueue(new ThumbnailOrder()
         	            	{
 								ThumbNailFilePath = thumbNailFilePath,
-        	            		BackgroundColorOfResult = backgroundColorOfResult,
+                                Options = options,
         	            		Callback = callback,
 								ErrorCallback = errorCallback,
         	            		Document = document,
-        	            		DrawBorderDashed = drawBorderDashed,
         	            		FolderForThumbNailCache = folderForThumbNailCache,
         	            		Key = key
         	            	});
@@ -150,7 +165,7 @@ namespace Bloom
 			{
 				Logger.WriteMinorEvent("HtmlThumbNailer: starting work on thumbnail ({0})", order.ThumbNailFilePath);
 				
-				_backgroundColorOfResult = order.BackgroundColorOfResult;
+				_backgroundColorOfResult = order.Options.BackgroundColor;
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
 
 
@@ -225,9 +240,26 @@ namespace Bloom
 #endif
                             if (_disposed)
                                 return;
-                            pendingThumbnail = MakeThumbNail(docImage, _widthInPixels, _heightInPixels,
-                                                             Color.Transparent,
-                                                             order.DrawBorderDashed);
+                            int width = _widthInPixels;
+                            int height = _heightInPixels;
+
+                            //unfortunately as long as we're using the winform listview, we seem to need to make the icons
+                            //the same size otherwise the title-captions don't line up.
+
+                            if (!order.Options.CenterImageUsingTransparentPadding)
+                            {
+                                // Adjust height and width so image does not end up with extra blank area
+                                if (docImage.Width < docImage.Height)
+                                {
+                                    width = Math.Min(width, (int)Math.Ceiling((float)height * (float)docImage.Width / (float)docImage.Height) + 1);
+                                        // +2 seems to be needed (at least for 70 pix height) so nothing is clipped
+                                }
+                                else if (docImage.Width > docImage.Height)
+                                {
+                                    height = Math.Min(height, (int)Math.Ceiling((float)width * (float)docImage.Height / (float)docImage.Width) + 1);
+                                }
+                            }
+                            pendingThumbnail = MakeThumbNail(docImage, width, height, order.Options);
                         }
                         catch (Exception error)
                         {
@@ -354,7 +386,7 @@ namespace Bloom
 
 
 
-        private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, Color borderColor, bool drawBorderDashed)
+        private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, ThumbnailOptions options)
         {
 			if (bmp == null)
 				return null;
@@ -366,12 +398,19 @@ namespace Bloom
             int actualHeight = destinationHeight;
 
             if (bmp.Width > bmp.Height)
-                actualHeight = (int)(((float)bmp.Height / (float)bmp.Width) * actualWidth);
+                actualHeight = (int)(Math.Ceiling(((float)bmp.Height / (float)bmp.Width) * (float)actualWidth));
             else if (bmp.Width < bmp.Height)
-                actualWidth = (int)(((float)bmp.Width / (float)bmp.Height) * actualHeight);
+                actualWidth = (int)(Math.Ceiling(((float)bmp.Width / (float)bmp.Height) * (float)actualHeight));
 
-            int horizontalOffset = (destinationWidth / 2) - (actualWidth / 2);
-            int verticalOffset = (destinationHeight / 2) - (actualHeight / 2);
+
+            int horizontalOffset = 0;
+            int verticalOffset = 0;
+
+            if (options.CenterImageUsingTransparentPadding)
+            {
+                horizontalOffset = (destinationWidth/2) - (actualWidth/2);
+                verticalOffset = (destinationHeight/2) - (actualHeight/2);
+            }
 
 #if MONO
 //    this worked but didn't incorporate the offsets, so when it went back to the caller, it got displayed
@@ -412,17 +451,18 @@ namespace Bloom
 						GraphicsUnit.Pixel, WhiteToBackground);
 
                     Pen pn = new Pen(Color.Black, 1);
-                if (drawBorderDashed)
+                if (options.DrawBorderDashed)
                 {
                     pn.DashStyle = DashStyle.Dash;
                     pn.Width = 2;
                 }
                 destRect.Height--;//hack, we were losing the bottom
+			    destRect.Width--;
                 graphics.DrawRectangle(pn, destRect);
 //                else
 //                {
 //
-//                    Pen pn = new Pen(borderColor, 1);
+//                    Pen pn = new Pen(options.BorderColor, 1);
 //                    graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
 //                }
 			}
@@ -518,12 +558,11 @@ namespace Bloom
 		public Image ResultingThumbnail;
 		public Action<Image> Callback;
 		public Action<Exception> ErrorCallback;
-		public bool DrawBorderDashed;
 		public XmlDocument Document;
-		public Color BackgroundColorOfResult;
 		public string FolderForThumbNailCache;
 		public string Key;
 		public bool Done;
 		public string ThumbNailFilePath;
+	    public HtmlThumbNailer.ThumbnailOptions Options;
 	}
 }
