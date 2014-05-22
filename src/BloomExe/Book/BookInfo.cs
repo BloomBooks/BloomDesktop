@@ -100,25 +100,10 @@ namespace Bloom.Book
 			get { return MetaData.Title; }
 			set
             {
-                var titleStr = CheckForAndRemoveXmlInString(value);
+                var titleStr = Book.RemoveXmlMarkup(value);
                 MetaData.Title = titleStr;
             }
 		}
-
-        public static string CheckForAndRemoveXmlInString(string input)
-        {
-            try
-            {
-                var doc = new XmlDocument();
-                doc.PreserveWhitespace = true;
-                doc.LoadXml("<div>" + input + "</div>");
-                return doc.DocumentElement.InnerText;
-            }
-            catch (XmlException)
-            {
-                return input; // If we can't parse for some reason, return the original string
-            }
-        }
 
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
 		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
