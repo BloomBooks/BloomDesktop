@@ -131,6 +131,7 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+				t = BookInfo.CheckForAndRemoveXmlInString(t);
 				return t;
 			}
 		}
