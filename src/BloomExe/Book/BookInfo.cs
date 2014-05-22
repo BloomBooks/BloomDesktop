@@ -9,6 +9,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using Newtonsoft.Json;
 using Palaso.Extensions;
+using System.Xml;
 
 namespace Bloom.Book
 {
@@ -334,8 +335,18 @@ namespace Bloom.Book
 		public bool IsFolio { get; set; }
 
 		// Todo: multilingual
+		// Do we just fix the setter here!?
 		[JsonProperty("title")]
 		public string Title { get; set; }
+		//[JsonProperty("title")]
+		//public string Title
+		//{
+		//    get;
+		//    set
+		//    {
+
+		//    }
+		//}
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnail.
