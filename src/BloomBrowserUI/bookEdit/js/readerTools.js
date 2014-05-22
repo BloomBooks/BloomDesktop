@@ -238,25 +238,23 @@ ReaderToolsModel.prototype.updateWordList = function() {
     this.updateElementContent("wordList", result);
 };
 
-ReaderToolsModel.prototype.setMarkupType = function(elementID) {
+ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 
-    var pos = elementID.lastIndexOf('-');
-    if (pos < 0) return;
+    if ((typeof markupType === 'undefined') || markupType === null) return;
 
-    var id = elementID.substring(pos+1);
     var newMarkupType = null;
-    switch (id) {
-        case '0':
+    switch (markupType) {
+        case 0:
             if (this.currentMarkupType !== MarkupType.Decodable)
                 newMarkupType = MarkupType.Decodable;
             break;
 
-        case '1':
+        case 1:
             if (this.currentMarkupType !== MarkupType.Leveled)
                 newMarkupType = MarkupType.Leveled;
             break;
 
-        case '2':
+        case 2:
             if (this.currentMarkupType !== MarkupType.None)
                 newMarkupType = MarkupType.None;
             break;
@@ -441,5 +439,5 @@ function initializeSynphony(settingsFileContent, fakeIt) {
     model.doMarkup();
 
     // change markup based on visible options
-    $('#accordion').children('h3').on('click', function() { model.setMarkupType(this.id); });
+    $('#accordion').children('h3').on('click', function() { model.setMarkupType($(this).data('markuptype')); });
 };
