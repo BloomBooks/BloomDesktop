@@ -1267,6 +1267,7 @@ $(document).ready(function () {
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
     var accordion = new BloomAccordion();
+    resizeAccordion(); // Make sure it gets run once, at least.
 
     // Now bind the window's resize function to the accordion resizer
     $(window).bind('resize', function () {
