@@ -73,7 +73,7 @@ namespace Bloom.Book
 			set { MetaData.IsSuitableForVernacularLibrary = value; }
 		}
 
-		//SeeAlso: commeted IsExperimental on Book
+		//SeeAlso: commented IsExperimental on Book
 		public bool IsExperimental
 		{
 			get { return MetaData.IsExperimental; }
@@ -93,7 +93,11 @@ namespace Bloom.Book
 		public string Title
 		{
 			get { return MetaData.Title; }
-			set { MetaData.Title = value; }
+			set
+			{
+				var titleStr = Book.RemoveXmlMarkup(value);
+				MetaData.Title = titleStr;
+			}
 		}
 
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
@@ -330,18 +334,8 @@ namespace Bloom.Book
 		public bool IsFolio { get; set; }
 
 		// Todo: multilingual
-		// Do we just fix the setter here!?
 		[JsonProperty("title")]
 		public string Title { get; set; }
-		//[JsonProperty("title")]
-		//public string Title
-		//{
-		//    get;
-		//    set
-		//    {
-
-		//    }
-		//}
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnail.
