@@ -84,3 +84,5 @@ lib/wkhtmltopdf*.zip
 DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
+lib/wkhtmltopdf/
+DistFiles/optipng.exe
