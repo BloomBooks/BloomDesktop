@@ -459,6 +459,8 @@ namespace Bloom
 			}
 			return thumbnail;
 #else
+			int skipMarginH = 30;
+			int skipMarginV = 30;
 			Bitmap croppedImage = (bmp as Bitmap).Clone(new Rectangle(new Point(skipMarginH, skipMarginV), new Size(bmp.Width - 2 * skipMarginH, bmp.Height - 2 * skipMarginV)), bmp.PixelFormat);
 			return croppedImage.GetThumbnailImage(destinationWidth, destinationHeight, null, System.IntPtr.Zero);
 #endif
