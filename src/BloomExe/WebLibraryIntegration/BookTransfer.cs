@@ -550,8 +550,11 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Languages = book.AllLanguages.ToArray();
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
-			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book, invokeTarget);
+			if (book.RemoveThumbnail())
+			{
+				progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
+				RebuildThumbnail(book, invokeTarget);
+			}
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
