@@ -59,6 +59,9 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Analytics.NET">
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\Analytics.NET.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
     </Reference>
@@ -71,6 +74,9 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
+    <Reference Include="DesktopAnalytics">
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.1\lib\net40\DesktopAnalytics.dll</HintPath>
+    </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -82,8 +88,11 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfDroplet">
       <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
@@ -106,23 +115,14 @@
     <Reference Include="AeroWizard">
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
-    <Reference Include="Analytics.NET">
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
-    </Reference>
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="DesktopAnalytics">
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
     <Reference Include="L10NSharp">
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
@@ -329,6 +329,8 @@
     </Compile>
     <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
+    <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -350,7 +352,6 @@
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="WebLibraryIntegration\OrderList.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>

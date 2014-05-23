@@ -5,7 +5,7 @@ var SynphonyApi = function() {
     this.source = "";
 };
 
-SynphonyApi.prototype.loadFile = function(fileContent)
+SynphonyApi.prototype.loadSettings = function(fileContent)
 {
     if (!fileContent) {
         return;
@@ -54,7 +54,7 @@ SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
         //zIndex removed in newer jquery, now we get it in the css
         buttons: {
             "OK": function () {
-                _this.loadFile($("#synphonyData").val(), false);
+                _this.loadSettings($("#synphonyData").val(), false);
                 event = document.createEvent('MessageEvent');
                 var origin = window.location.protocol + '//' + window.location.host;
                 // I don't know what all the other parameters mean, but the first is the name of the event the
