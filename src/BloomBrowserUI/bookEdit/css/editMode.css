@@ -1,26 +1,4 @@
-/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-/*+clearfix {*/
-.tool-items:after
-{
-	content: ".";
-	display: block;
-	height: 0;
-	clear: both;
-	visibility: hidden;
-	font-size: 0;
-}
-.tool-items
-{
-	display: inline-block;
-}
-.tool-items
-{
-	/*\*/
-	display: block;
-	/**/
-	-height: 1px;
-}
-/*+}*/
+/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 DIV.bloom-imageContainer
 {
 	border: 1px solid #C0B9B9;
@@ -29,7 +7,6 @@ DIV.bloom-imageContainer
 {
 	border: thin solid rgba(1, 1, 1, 0.2);
 }
-
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox DIV.pageLabel
 {
@@ -350,7 +327,6 @@ DIV.marginBox
 {
 	color: #000000;
 }
-
 /*Toolbox*/
 #toolbox
 {
@@ -405,9 +381,17 @@ UL.toolbox LI
 {
 	text-align: center;
 }
-.ui-dialog
+/*Put in little grey language tooltips*/
+.bloom-editable[contentEditable=true]:not([data-languageTipContent='']):after
 {
-	z-index: 20000;
+	/*Same grey color as pageLabel*/
+	color: rgba(0, 0, 0, 0.2);
+	content: attr(data-languageTipContent);
+	/*+placement:anchor-bottom-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	font-size: small;
 }
 /*Simulate the html5 placeholder attribute which is not available on divs
 The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug

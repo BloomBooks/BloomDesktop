@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Bloom.Collection;
-using Bloom.Properties;
 using Newtonsoft.Json;
 using Palaso.Extensions;
+using System.Xml;
 
 namespace Bloom.Book
 {
@@ -77,7 +73,7 @@ namespace Bloom.Book
 			set { MetaData.IsSuitableForVernacularLibrary = value; }
 		}
 
-		//SeeAlso: commeted IsExperimental on Book
+		//SeeAlso: commented IsExperimental on Book
 		public bool IsExperimental
 		{
 			get { return MetaData.IsExperimental; }
@@ -97,7 +93,11 @@ namespace Bloom.Book
 		public string Title
 		{
 			get { return MetaData.Title; }
-			set { MetaData.Title = value; }
+			set
+			{
+				var titleStr = Book.RemoveXmlMarkup(value);
+				MetaData.Title = titleStr;
+			}
 		}
 
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.

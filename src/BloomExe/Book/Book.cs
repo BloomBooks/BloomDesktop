@@ -131,7 +131,23 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+				t = RemoveXmlMarkup(t);
 				return t;
+			}
+		}
+
+		public static string RemoveXmlMarkup(string input)
+		{
+			try
+			{
+				var doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml("<div>" + input + "</div>");
+				return doc.DocumentElement.InnerText;
+			}
+			catch (XmlException)
+			{
+				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
@@ -165,7 +181,7 @@ namespace Bloom.Book
 			return _bookData.PrettyPrintLanguage(code);
 		}
 
-		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+		public virtual void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			try
 			{
@@ -189,8 +205,7 @@ namespace Bloom.Book
 				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = _storage.FolderPath;
-
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback,errorCallback);
+				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, thumbnailOptions, callback, errorCallback);
 			}
 			catch (Exception err)
 			{
@@ -213,10 +228,12 @@ namespace Bloom.Book
 			if(LockedDown)
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
+				pageDom.AddEditMode("translation");
 			}
 			else
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
+				pageDom.AddEditMode("original");
 			}
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css"));
 			pageDom.SortStyleSheetLinks();
@@ -1507,13 +1524,14 @@ namespace Bloom.Book
 			}
 		}
 
-		public void RebuildThumbNailAsync(Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+		public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
 			if (!_storage.RemoveBookThumbnail())
 				return;
 
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
-			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this.BookInfo,image),
+			thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image),
 				error=>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.

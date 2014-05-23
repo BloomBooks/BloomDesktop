@@ -187,9 +187,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			book.RebuildThumbNailAsync(callback,errorCallback);
+			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
 		}
 
 		public void MakeBloomPack(string path)
