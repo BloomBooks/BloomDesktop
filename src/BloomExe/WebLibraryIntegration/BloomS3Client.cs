@@ -148,7 +148,11 @@ namespace Bloom.WebLibraryIntegration
 		{
 			ThumbnailUrl = null;
 			BookOrderUrl = null;
-			DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
+
+			// In case we're overwriting, get rid of any deleted files.
+			// Review gjm: Will we have problems with this if there were readonly files uploaded?
+			DeleteBookData(storageKeyOfBookFolder);
+
 			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
 			//and at the same time introduce a wrapper with the last part of the unique key for this person+book
 			string prefix = ""; // storageKey up to last slash (or empty)
@@ -165,12 +169,28 @@ namespace Bloom.WebLibraryIntegration
 			}
 
 			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
+			if(Directory.Exists(wrapperPath)) // Which it may if we've tried to upload this book before
+			{
+				RemoveAllReadOnlyAttributesRecursively(wrapperPath);
+				Directory.Delete(wrapperPath, true);
+			}
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
 			UploadDirectory(prefix, wrapperPath, progress);
 
+			// If we just copied a readonly thumbnail or preview pdf into the directory,
+			// this keeps the Delete from failing.
+			RemoveAllReadOnlyAttributesRecursively(wrapperPath);
 			Directory.Delete(wrapperPath, true);
+		}
+
+		private void RemoveAllReadOnlyAttributesRecursively(string wrapperPath)
+		{
+			foreach(var filename in Directory.GetFiles(wrapperPath, "*.*", SearchOption.AllDirectories))
+			{
+				File.SetAttributes(filename, FileAttributes.Normal);
+			}
 		}
 
 
