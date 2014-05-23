@@ -207,6 +207,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Publish\AdobeReaderControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Publish\BloomLibraryPublishControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -218,6 +224,12 @@
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\PdfViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\PdfViewer.Designer.cs">
+      <DependentUpon>PdfViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
@@ -303,12 +315,6 @@
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
-    <Compile Include="Publish\AdobeReaderControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="SimpleMessageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -321,9 +327,7 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
@@ -511,11 +515,17 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Publish\BloomLibraryPublishControl.resx">
       <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\PdfViewer.resx">
+      <DependentUpon>PdfViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
@@ -549,10 +559,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
@@ -676,6 +682,21 @@
       <Link>libgeckofix.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </None>
+    <Compile Include="web\IRequestInfo.cs" />
+    <Compile Include="web\RequestInfo.cs" />
+    <Compile Include="web\ServerBase.cs" />
+    <Compile Include="web\WebClientWithTimeout.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="web\EnhancedImageServer.cs" />
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll.config" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
