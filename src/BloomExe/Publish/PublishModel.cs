@@ -17,7 +17,6 @@ using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace Bloom.Publish
 {
@@ -126,7 +125,7 @@ namespace Bloom.Publish
 		}
 
 
-		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+		private TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
@@ -143,7 +142,7 @@ namespace Bloom.Publish
 			PageLayout.UpdatePageSplitMode(dom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
+			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)

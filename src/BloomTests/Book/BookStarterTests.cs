@@ -12,7 +12,6 @@ using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace BloomTests.Book
 {

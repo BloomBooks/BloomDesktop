@@ -135,11 +135,11 @@ namespace Bloom.Wizard.WinForms
 		{
 			if (_currentShownPage.IsFinishPage)
 			{
-				_nextAndFinishedButton.Text = "Finished";
+				_nextAndFinishedButton.Text = FinishButtonText;
 			}
 			else
 			{
-				_nextAndFinishedButton.Text = "Next";
+				_nextAndFinishedButton.Text = NextButtonText;
 			}
 
 			if (SelectedPageChanged != null)
