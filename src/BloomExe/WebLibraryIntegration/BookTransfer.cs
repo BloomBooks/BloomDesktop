@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -32,26 +33,26 @@ namespace Bloom.WebLibraryIntegration
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
 		private readonly HtmlThumbNailer _htmlThumbnailer;
-		// A list of 'orders' to download books. These may be urls or (this may be obsolete) paths to book order files.
+		// A list of 'downloadOrders' to download books. These may be urls or (this may be obsolete) paths to book order files.
 		// One order is created when a url or book order is found as the single command line argument.
 		// It gets processed by an initial call to HandleOrders in LibraryListView.ManageButtonsAtIdleTime
 		// when everything is sufficiently initialized to handle downloading a new book.
 		// Orders may also be created in the Program.ServerThreadAction method, on a thread that is set up
-		// to receive download orders from additional instances of Bloom created by clicking a download link
+		// to receive download downloadOrders from additional instances of Bloom created by clicking a download link
 		// in a web page. These may be handled at any time.
-		private OrderList _orders;
+		private DownloadOrderList _downloadOrders;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, OrderList orders)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, DownloadOrderList downloadOrders)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
 			_htmlThumbnailer = htmlThumbnailer;
-			_orders = orders;
-			if (_orders != null)
+			_downloadOrders = downloadOrders;
+			if (_downloadOrders != null)
 			{
-				_orders.OrderAdded += _OrderAdded;
+				_downloadOrders.OrderAdded += DownloadOrderAdded;
 			}
 		}
 
@@ -71,17 +72,17 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		void _OrderAdded(object sender, EventArgs e)
+		void DownloadOrderAdded(object sender, EventArgs e)
 		{
 			HandleOrders();
 		}
 
 		public void HandleOrders()
 		{
-			if (_orders == null)
+			if (_downloadOrders == null)
 				return;
 			string order;
-			while ((order = _orders.GetOrder()) != null)
+			while ((order = _downloadOrders.GetOrder()) != null)
 			{
 				HandleBloomBookOrder(order);
 			}
@@ -94,31 +95,47 @@ namespace Bloom.WebLibraryIntegration
 			if (bucketStart == -1)
 				throw new ArgumentException("URL is not within expected bucket");
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
+			string url = "unknown";
+			string title = "unknown";
 			try
 			{
 				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				url = metadata.DownloadSource;
+				title = metadata.Title;
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
-					// downloading the metadata is considered step 1.
-				return DownloadBook(metadata.DownloadSource, destPath);
+				// downloading the metadata is considered step 1.
+				var destinationPath = DownloadBook(metadata.DownloadSource, destPath);
 
+				Analytics.Track("DownloadedBook-Success",
+					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+				return destinationPath;
 			}
-			catch(WebException e)
+			catch (WebException e)
 			{
 				DisplayNetworkDownloadProblem(e);
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 			catch (AmazonServiceException e)
 			{
 				DisplayNetworkDownloadProblem(e);
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 			catch (Exception e)
 			{
-			ShellWindow.Invoke((Action) (() =>
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-				LocalizationManager.GetString("Publish.Upload.DownloadProblem",
-						"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				ShellWindow.Invoke((Action) (() =>
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+						LocalizationManager.GetString("Publish.Upload.DownloadProblem",
+							"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 		}
@@ -155,7 +172,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var mainWindow = ShellWindow;
 			if (mainWindow == null)
-				return; // We shouldn't be trying to handle orders while we don't have a main window open.
+				return; // We shouldn't be trying to handle downloadOrders while we don't have a main window open.
 			mainWindow.Invoke((Action)(() =>
 			{
 				_progressDialog = new ProgressDialog();
@@ -361,14 +378,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns></returns>
 		internal string DownloadBook(string s3BookId, string dest)
 		{
-			var result = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
+			var destinationPath = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
-				var bookInfo = new BookInfo(result, false); // A downloaded book is a template, so never editable.
+				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
 				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
 			}
 
-			return result;
+			return destinationPath;
 		}
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
@@ -556,7 +573,14 @@ namespace Bloom.WebLibraryIntegration
 		{
 			bool done = false;
 			string error = null;
-			book.RebuildThumbNailAsync((info, image) => done = true,
+
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				CenterImageUsingTransparentPadding = false
+				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
+			};
+
+			book.RebuildThumbNailAsync(options, (info, image) => done = true,
 				(info, ex) =>
 				{
 					done = true;

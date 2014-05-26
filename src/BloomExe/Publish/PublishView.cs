@@ -11,7 +11,8 @@ using Bloom.Edit;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
-
+using Gecko;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
@@ -33,8 +34,6 @@ namespace Bloom.Publish
 			_loginDialog = login;
 
 			InitializeComponent();
-			Controls.Remove(_saveButton);//our parent will retrieve this
-			Controls.Remove(_printButton);//our parent will retrieve this
 
 			if(this.DesignMode)
 				return;
@@ -67,6 +66,7 @@ namespace Bloom.Publish
 //#endif
 
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+			GeckoPreferences.Default["pdfjs.disabled"] = false;
 		}
 
 
@@ -215,7 +215,7 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_publishControl);
 				_publishControl = null;
-				_adobeReaderControl.Visible = true;
+				_pdfViewer.Visible = true;
 			}
 			switch (displayMode)
 			{
@@ -223,7 +223,7 @@ namespace Bloom.Publish
 					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
-					_adobeReaderControl.Visible = false;
+					_pdfViewer.Visible = false;
 					break;
 				case PublishModel.DisplayModes.Working:
 					_printButton.Enabled = _saveButton.Enabled = false;
@@ -234,18 +234,18 @@ namespace Bloom.Publish
 				case PublishModel.DisplayModes.ShowPdf:
 					if (File.Exists(_model.PdfFilePath))
 					{
-						_adobeReaderControl.Visible = true;
-						_saveButton.Enabled = true;
+						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
 						Cursor = Cursors.Default;
-						_printButton.Enabled = _adobeReaderControl.ShowPdf(_model.PdfFilePath);
+						_saveButton.Enabled = true;
+						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
-					_adobeReaderControl.Visible = false; // We will replace it with another control.
+					_pdfViewer.Visible = false;
 					Cursor = Cursors.Default;
 
 					if (_publishControl == null)
@@ -268,9 +268,9 @@ namespace Bloom.Publish
 
 			_publishControl = new BloomLibraryPublishControl(this, _bookTransferrer, _loginDialog,
 				_model.BookSelection.CurrentSelection);
-			_publishControl.SetBounds(_adobeReaderControl.Left, _adobeReaderControl.Top,
-				_adobeReaderControl.Width, _adobeReaderControl.Height);
-			_publishControl.Anchor = _adobeReaderControl.Anchor;
+			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+				_pdfViewer.Width, _pdfViewer.Height);
+			_publishControl.Anchor = _pdfViewer.Anchor;
 			var saveBackColor = _publishControl.BackColor;
 			Controls.Add(_publishControl); // somehow this changes the backcolor
 			_publishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
@@ -368,9 +368,8 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
-
-			_adobeReaderControl.Print();
-			Logger.WriteEvent("Calling Print on Adobe Reader");
+			_pdfViewer.Print();
+			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
 

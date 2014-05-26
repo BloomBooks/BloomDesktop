@@ -1,7 +1,7 @@
 #!/bin/bash
 # server=build.palaso.org
 # project=Bloom
-# build=Bloom-linux-win32-continuous
+# build=Bloom-Default-Win32-Auto (Bloom 3)
 # root_dir=..
 # $Id: 4634ff740f8de8637c6b5cc04f4a1b2ee0954b5d $
 
@@ -82,34 +82,41 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"src\\BloomBrowserUI\\bookEdit\\js\\libsynphony"}
 #     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
-# [2] build: chorus-win32-master Continuous (bt2)
+# [2] build: pdf.js (bt401)
+#     project: BuildTasks
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt401
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
+#     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
+# [3] build: chorus-win32-master Continuous (bt2)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt2
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>"Mercurial", "MercurialExtensions"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [3] build: XulRunner22-win32 (bt397)
+# [4] build: XulRunner22-win32 (bt397)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt397
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"xulrunner-22.0.en-US.win32.zip!**"=>"lib"}
-# [4] build: palaso-win32-master Continuous (bt223)
+# [5] build: palaso-win32-master Continuous (bt223)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt223
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Palaso.BuildTasks.dll"=>"build/", "exiftool/*.*"=>"DistFiles", "*.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git []
-# [5] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [6] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: http://hg.palaso.org/pdfdroplet [default]
-# [6] build: TidyManaged-master-win32-continuous (bt349)
+# [7] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt349
 #     clean: false
@@ -119,6 +126,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 
 # make sure output directories exist
 mkdir -p ../DistFiles
+mkdir -p ../DistFiles/pdf
 mkdir -p ../Mercurial
 mkdir -p ../MercurialExtensions
 mkdir -p ../build/
@@ -140,6 +148,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/synphony_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/synphony_lib.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/underscore_min_152.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/underscore_min_152.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/xregexp-all-min.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/xregexp-all-min.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../DistFiles/pdf/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/Microsoft_VC90_CRT_x86.msm
@@ -206,6 +215,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 # extract downloaded zip files
 unzip -uqo ../lib/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
 unzip -uqo ../lib/dotnet/geckofx.zip -d ../lib/dotnet
+unzip -uqo ../DistFiles/pdf/pdfjs-viewer.zip -d ../DistFiles/pdf
 unzip -uqo ../Mercurial/Mercurial.zip -d ../Mercurial
 unzip -uqo ../lib/xulrunner-22.0.en-US.win32.zip -d ../lib
 # End of script
