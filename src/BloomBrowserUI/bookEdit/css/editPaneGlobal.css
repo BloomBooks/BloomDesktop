@@ -1,5 +1,4 @@
-﻿/*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.
-    Unless otherwise noted, these rules have been moved from editMode.css
+﻿/* Unless otherwise noted, these rules have been moved from editMode.css
     BODY is not within the scoped css DIV */
 BODY
 {
@@ -7,13 +6,18 @@ BODY
 }
 BODY
 {
-	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2-5% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the basePage.css, we have 10pt, but here, 11pt.
 So if you change this, change it there. Note, this might not be the best long-term solution
 To handling the mis-match.*/
 	font-size: 10.5pt;
+}
+
+.ui-dialog
+{
+	z-index: 20000;
 }
 
 /* Qtip won't work if these rules are inside the scoped DIV */
@@ -43,6 +47,24 @@ DIV.ui-tooltip-title
 }
 
 /* These items are for the font size toolbar, also stored outside of the scoped-css DIV */
+.tool-items:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+    font-size: 0;
+}
+.tool-items
+{
+    display: inline-block;
+}
+.tool-items
+{
+    display: block;
+    height: 1px;
+}
 .tool-item
 {
 	font: 17.9pt Andika;
@@ -64,7 +86,6 @@ DIV.ui-tooltip-title
 .largerFontButton.tool-item
 {
 	font-size: 17.7pt;
-	/*[disabled]line-height:0.6;*/
 }
 /*[clearfix]*/.tool-items
 {
@@ -76,8 +97,12 @@ DIV.ui-tooltip-title
 	border-radius: 3pt;
 }
 
-/* Moved from editOriginalMode.css */
-DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
+/* There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.
+    Parts of each of these files has been moved to this global file because their targets are not within the scoped css.
+    Book.GetEditableHtmlDomForPage() now adds an 'editMode' attribute to the BODY element to distinguish the rules.
+
+    Moved from editOriginalMode.css */
+BODY[editMode="original"] DIV.ui-sourceTextsForBubble TEXTAREA, BODY[editMode="original"] DIV.ui-sourceTextsForBubble DIV
 {
 	background-color: transparent;
 	border: none;
@@ -85,16 +110,16 @@ DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
 	overflow: auto;
 }
 /* Moved from editTranslationMode.css */
-DIV.ui-sourceTextsForBubble
+BODY[editMode="translation"] DIV.ui-sourceTextsForBubble
 {
 	width: 203px;
 	margin-top: 10px;
 }
-DIV.uibloomSourceTextsBubble DIV.ui-tooltip-content
+BODY[editMode="translation"] DIV.uibloomSourceTextsBubble DIV.ui-tooltip-content
 {
 	width: 210px;
 }
-DIV DIV.ui-sourceTextsForBubble TEXTAREA
+BODY[editMode="translation"] DIV DIV.ui-sourceTextsForBubble TEXTAREA
 {
 	height: 304px;
 	background: transparent;
@@ -103,13 +128,13 @@ DIV DIV.ui-sourceTextsForBubble TEXTAREA
 	width: 320px;
 	margin: 11px 0 0;
 }
-.ui-tooltip .qtip .uibloomSourceTextsBubble
+BODY[editMode="translation"] .ui-tooltip .qtip .uibloomSourceTextsBubble
 {
 	width: 293px !important;
 	height: 138px;
 	max-width: 1009px !important;
 }
-DIV.ui-sourceTextsForBubble UL
+BODY[editMode="translation"] DIV.ui-sourceTextsForBubble UL
 {
 	background: none;
 }
