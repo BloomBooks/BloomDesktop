@@ -28,10 +28,10 @@
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />
     <Content Include="bookEdit\css\editTranslationMode.css" />
-    <Content Include="bookEdit\EditControls\DecodableRT\panel.htm" />
+    <Content Include="bookEdit\EditControls\DecodableRT\DecodableRT.htm" />
     <Content Include="bookEdit\EditControls\EditControls.htm" />
-    <Content Include="bookEdit\EditControls\LeveledRT\panel.htm" />
-    <Content Include="bookEdit\EditControls\PageElements\panel.htm" />
+    <Content Include="bookEdit\EditControls\LeveledRT\LeveledRT.htm" />
+    <Content Include="bookEdit\EditControls\PageElements\PageElements.htm" />
     <Content Include="bookEdit\html\EditControls.htm" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
@@ -244,10 +244,10 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="packages.config" />
-    <Content Include="bookEdit\EditControls\DecodableRT\panel.jade" />
+    <Content Include="bookEdit\EditControls\DecodableRT\DecodableRT.jade" />
     <Content Include="bookEdit\EditControls\EditControls.jade" />
-    <Content Include="bookEdit\EditControls\LeveledRT\panel.jade" />
-    <Content Include="bookEdit\EditControls\PageElements\panel.jade" />
+    <Content Include="bookEdit\EditControls\LeveledRT\LeveledRT.jade" />
+    <Content Include="bookEdit\EditControls\PageElements\PageElements.jade" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
