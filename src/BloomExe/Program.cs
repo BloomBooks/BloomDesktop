@@ -115,7 +115,6 @@ namespace Bloom
 					SetUpErrorHandling();
 
 					_applicationContainer = new ApplicationContainer();
-					_bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
 					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
 					{
@@ -132,6 +131,7 @@ namespace Bloom
 					}
 
 
+					_bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
 					SetUpLocalization();
 					Logger.Init();
