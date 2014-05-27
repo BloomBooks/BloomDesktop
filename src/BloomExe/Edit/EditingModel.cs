@@ -514,13 +514,7 @@ namespace Bloom.Edit
 			foreach(var subFolder in subFolders)
 			{
 				var htmFile = Path.GetFileName(subFolder); // just the last folder name?
-				var filePath = FileLocator.GetFileDistributedWithApplication(true, subFolder, htmFile + ".htm");
-				if (filePath == null)
-				{
-					var message = "Bloom is missing a file called " + htmFile + ".htm";
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(message);
-					continue;
-				}
+				var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, htmFile + ".htm");
 				var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath, false));
 				AppendAllChildren(subPanelDom.Body, accordion); // still need to copy any script and link elements
 			}
