@@ -547,7 +547,7 @@ namespace Bloom.WebLibraryIntegration
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.Languages = book.AllLanguages.ToArray();
+			book.BookInfo.Languages = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));

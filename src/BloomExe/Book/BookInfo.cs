@@ -235,10 +235,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public string[] Languages
+		public Pointer[] Languages
 		{
-			get { return MetaData.Languages; }
-			set { MetaData.Languages = value; }
+			get { return MetaData.LangPointers; }
+			set { MetaData.LangPointers = value; }
 		}
 
 		/// <summary>
@@ -391,8 +391,12 @@ namespace Bloom.Book
 		[JsonProperty("pageCount")]
 		public int PageCount { get; set; }
 
+		// This is obsolete but loading old Json files fails if we don't have a setter for it.
 		[JsonProperty("languages")]
-		public string[] Languages { get; set; }
+		public string[] Languages { get { return new string[0]; } set {}}
+
+		[JsonProperty("langPointers")]
+		public Pointer[] LangPointers { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -402,7 +406,7 @@ namespace Bloom.Book
 			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
 			// to an object in another table: in this case the special table of users.
 			if (Uploader == null)
-				Uploader = new Pointer() { Type = "Pointer", ClassName = "_User" };
+				Uploader = new Pointer() { ClassName = "_User" };
 			Uploader.ObjectId = id;
 		}
 
@@ -419,6 +423,10 @@ namespace Bloom.Book
 	/// </summary>
 	public class Pointer
 	{
+		public Pointer()
+		{
+			Type = "Pointer"; // Required for all parse.com pointers.
+		}
 
 		[JsonProperty("__type")]
 		public string Type { get; set; }
@@ -428,5 +436,29 @@ namespace Bloom.Book
 
 		[JsonProperty("objectId")]
 		public string ObjectId { get; set; }
+	}
+
+	/// <summary>
+	/// This class represents the parse.com Language class (for purposes of generating json)
+	/// </summary>
+	public class ParseComLanguage
+	{
+		[JsonIgnore]
+		public string Json
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(this);
+			}
+		}
+
+		[JsonProperty("isoCode")]
+		public string IsoCode { get; set; }
+
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("ethnologueCode")]
+		public string EthnologueCode { get; set; }
 	}
 }
