@@ -1524,6 +1524,21 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Try to remove the existing thumbnail, return false if the thumbnail is read-only
+		/// </summary>
+		/// <returns></returns>
+		internal bool RemoveThumbnail()
+		{
+			return _storage.RemoveBookThumbnail();
+		}
+
+		/// <summary>
+		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// </summary>
+		/// <param name="thumbnailOptions"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
 		public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
 			if (!_storage.RemoveBookThumbnail())
