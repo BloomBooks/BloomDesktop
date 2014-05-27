@@ -31,7 +31,7 @@ mixin page-xmatter(label)
 
 mixin page-cover(label)
 	- requireOneArgument('page-cover',arguments)
-	+page-xmatter(label).cover.frontCover.outsideCover.coverColor.bloom-frontMatter(attributes)
+	+page-xmatter(label).cover.frontCover.outsideFrontCover.coverColor.bloom-frontMatter(attributes)
 		block
 
 mixin chooser-topic
