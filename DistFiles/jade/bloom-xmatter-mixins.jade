@@ -31,7 +31,7 @@ mixin page-xmatter(label)
 
 mixin page-cover(label)
 	- requireOneArgument('page-cover',arguments)
-	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
+	+page-xmatter(label).cover.frontCover.outsideCover.coverColor.bloom-frontMatter(attributes)
 		block
 
 mixin chooser-topic
@@ -154,7 +154,7 @@ mixin factoryStandard-insideBackCover
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
-	+page-xmatter('Outside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").outside-back-cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."
