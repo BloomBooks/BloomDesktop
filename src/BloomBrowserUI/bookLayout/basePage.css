@@ -185,10 +185,7 @@ DIV.bloom-page.A4Portrait
 {
 	width: 108mm;
 	height: 175mm;
-	/*+placement:anchor-top-left 0 15mm;*/
-	position: absolute;
-	left: 0;
-	top: 15mm;
+	margin-top: 15mm;
 }
 .A4Portrait DIV.marginBox
 {
@@ -208,13 +205,19 @@ DIV.bloom-page.A4Portrait
 	left: 0;
 	top: 15mm;
 }
-DIV.bloom-page:nth-of-type(odd) DIV.marginBox
+.bloom-page:nth-of-type(odd) .marginBox
 {
 	margin-left: 15mm;
 }
-DIV.bloom-page:nth-of-type(even) DIV.marginBox
+.bloom-page:nth-of-type(even) .marginBox
 {
 	margin-left: 25mm;
+}
+.bloom-page.outsideFrontCover .marginBox, .bloom-page.outsideBackCover .marginBox
+{
+	/*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
+	margin-left: auto;
+	margin-right: auto;
 }
 .A5Landscape DIV.marginBox
 {
