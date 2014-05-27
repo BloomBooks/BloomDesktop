@@ -1,6 +1,5 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
+﻿#if !__MonoCS__
+using System;
 using System.Windows.Forms;
 using L10NSharp;
 
@@ -105,3 +104,4 @@ namespace Bloom.Publish
 		}
 	}
 }
+#endif
