@@ -458,7 +458,7 @@ namespace Bloom.Edit
 		{
 			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/EditControls", "EditControls.htm");
 			var domForEditControls = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
 			// move css files from the head into scoped tags in EditControls.htm
@@ -483,6 +483,10 @@ namespace Bloom.Edit
 			_domForCurrentPage.AddJavascriptFileToBody(
 				_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"editControls.js")); // must be last
 
+			// Load into the accordion panel whatever subfolders/htm files are under the EditControls folder
+			var subFolders = Directory.GetDirectories(Path.GetDirectoryName(path));
+			AppendAccordionPanels(subFolders);
+
 			// It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
 			// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
 			// (We haven't made the temp file yet; but it will be in the system temp folder.)
@@ -499,6 +503,21 @@ namespace Bloom.Edit
 			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
 			System.IO.File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
 			_domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
+		}
+
+		private void AppendAccordionPanels(string[] subFolders)
+		{
+			if (subFolders.Length == 0)
+				return;
+
+			var accordion = _domForCurrentPage.Body.SelectSingleNode("//div[@id='accordion']");
+			foreach(var subFolder in subFolders)
+			{
+				var htmFile = Path.GetFileName(subFolder); // just the last folder name?
+				var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, htmFile + ".htm");
+				var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath, false));
+				AppendAllChildren(subPanelDom.Body, accordion); // still need to copy any script and link elements
+			}
 		}
 
 		/// <summary>
