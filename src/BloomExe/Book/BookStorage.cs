@@ -505,7 +505,7 @@ namespace Bloom.Book
 					var uri = folderPath + Path.DirectorySeparatorChar;
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
-					uri = ImageServer.GetPathEndingInSlash() + uri;
+					uri = ImageServer.PathEndingInSlash + uri;
 					path = uri;
 				}
 				else
