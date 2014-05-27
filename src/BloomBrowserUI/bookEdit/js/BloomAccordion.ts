@@ -14,7 +14,7 @@ class BloomAccordion {
 
     static Resize() {
         (<accordionInterface>$("#accordion")).accordion("refresh");
-        //var myHeight = $(document).find(".editControlsRoot").innerHeight();
+        //var myHeight = $(document).find(".readerToolsRoot").innerHeight();
         //console.log("Refreshed accordion to: "+myHeight);
     }
 }
