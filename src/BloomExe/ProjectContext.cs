@@ -140,9 +140,6 @@ namespace Bloom
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
-				const int kListViewIconHeightAndWidth = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
-
 				builder.Register<LanguageSettings>(c =>
 													{
 														var librarySettings = c.Resolve<CollectionSettings>();
