@@ -227,12 +227,12 @@ namespace Bloom
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+            yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/EditControls");
 
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
-
 
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
 
