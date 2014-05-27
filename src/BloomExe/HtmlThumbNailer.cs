@@ -412,27 +412,7 @@ namespace Bloom
                 verticalOffset = (destinationHeight/2) - (actualHeight/2);
             }
 
-#if MONO
-//    this worked but didn't incorporate the offsets, so when it went back to the caller, it got displayed
-//            out of proportion.
-//            Image x = bmp.GetThumbnailImage(destinationWidth, destinationHeight, callbackOnAbort, System.IntPtr.Zero);
-//            return x;
-
-          
-            Bitmap retBmp = new Bitmap(destinationWidth, destinationHeight);//, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
-            Graphics grp = Graphics.FromImage(retBmp);
-            //grp.PixelOffsetMode = PixelOffsetMode.None;
-         //guessing that this is the problem?   grp.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-            grp.DrawImage(bmp, horizontalOffset, verticalOffset, actualWidth, actualHeight);
-
-//            Pen pn = new Pen(borderColor, 1); //Color.Wheat
-//
-//
-//            grp.DrawRectangle(pn, 0, 0, retBmp.Width - 1, retBmp.Height - 1);
-
-            return retBmp;
-#else
+#if !__MonoCS__
 
             Bitmap thumbnail = new Bitmap(destinationWidth, destinationHeight, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
 			using (Graphics graphics = Graphics.FromImage(thumbnail))
@@ -467,6 +447,9 @@ namespace Bloom
 //                }
 			}
         	return thumbnail;
+#else
+			Bitmap croppedImage = (bmp as Bitmap).Clone(new Rectangle(new Point(skipMarginH, skipMarginV), new Size(bmp.Width - 2 * skipMarginH, bmp.Height - 2 * skipMarginV)), bmp.PixelFormat);
+			return croppedImage.GetThumbnailImage(destinationWidth, destinationHeight, null, System.IntPtr.Zero);			
 #endif
         }
 
