@@ -222,6 +222,34 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 		}
 
+        [Test]
+        public void GetLanguagePointers_CreatesLanguagesButDoesNotDuplicate()
+        {
+			Login();
+            _parseClient.DeleteLanguages();
+            _parseClient.CreateLanguage(new ParseComLanguage() {IsoCode = "en", Name="English", EthnologueCode = "eng"});
+            _parseClient.CreateLanguage(new ParseComLanguage() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
+            Assert.That(_parseClient.LanguageExists(new ParseComLanguage() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
+            Assert.That(_parseClient.LanguageExists(new ParseComLanguage() { IsoCode = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
+            Assert.That(_parseClient.LanguageExists(new ParseComLanguage() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
+            Assert.That(_parseClient.LanguageExists(new ParseComLanguage() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
+
+            var pointers = _parseClient.GetLanguagePointers(new[]
+            {
+                new ParseComLanguage() {IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
+                new ParseComLanguage() {IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
+            });
+            Assert.That(_parseClient.LanguageExists(new ParseComLanguage() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
+            Assert.That(_parseClient.LanguageCount(new ParseComLanguage() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
+
+            Assert.That(pointers[0], Is.Not.Null);
+            Assert.That(pointers[0].ClassName, Is.EqualTo("language"));
+            var first = _parseClient.GetLanguage(pointers[0].ObjectId);
+            Assert.That(first.name.Value, Is.EqualTo("MyLang"));
+            var second = _parseClient.GetLanguage(pointers[1].ObjectId);
+            Assert.That(second.name.Value, Is.EqualTo("MyOtherLang"));
+        }
+
 	    [Test]
 	    public void UploadBook_NotLoggedIn_Throws()
 	    {

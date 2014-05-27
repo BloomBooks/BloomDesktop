@@ -91,7 +91,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");        
         }
 
-
+        public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
 
 	    public void InvokeContentsChanged(EventArgs e)
         {
