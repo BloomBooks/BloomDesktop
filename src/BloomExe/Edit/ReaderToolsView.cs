@@ -19,21 +19,21 @@ namespace Bloom.Edit
 	/// By design it is as thin a wrapper as possible around the browser. Eventually we expect to merge
 	/// all the controls on the main window into a single web browser control.
 	/// </summary>
-	public partial class EditControlsView : UserControl, IEditControlsView
+	public partial class ReaderToolsView : UserControl, IReaderToolsView
 	{
 		public GeckoWebBrowser Browser { get; private set; }
-		private EditControlsModel _model;
+		private ReaderToolsModel _model;
 
-		public delegate EditControlsView Factory();//autofac uses this
+		public delegate ReaderToolsView Factory();//autofac uses this
 
-		public EditControlsView(EditControlsModel model)
+		public ReaderToolsView(ReaderToolsModel model)
 		{
 			_model = model;
 			_model.View = this;
 			InitializeComponent();
 			Browser = new GeckoWebBrowser();
 			Browser.Dock = DockStyle.Fill;
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "ReaderTools.htm");
 			Browser.HandleCreated += (sender, args) =>
 			{
 				Browser.Navigate("file:///" + path);
@@ -95,7 +95,7 @@ namespace Bloom.Edit
 	/// <summary>
 	/// Ways the model can call back to the real gui.
 	/// </summary>
-	interface IEditControlsView
+	interface IReaderToolsView
 	{
 		/// <summary>
 		/// Currently methods in the model that use this are typically overridden in a test stub for test purposes.

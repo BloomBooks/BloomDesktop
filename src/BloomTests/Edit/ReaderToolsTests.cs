@@ -10,10 +10,10 @@ using NUnit.Framework;
 namespace BloomTests.Edit
 {
 	/// <summary>
-	/// Tests functions of the EditControlsModel
+	/// Tests functions of the ReaderToolsModel
 	/// </summary>
 	[TestFixture]
-	public class EditControlsTests
+	public class ReaderToolsTests
 	{
 		private ModelStub _model;
 
@@ -37,13 +37,13 @@ namespace BloomTests.Edit
 		}
 	}
 
-	public class MockView : IEditControlsView
+	public class MockView : IReaderToolsView
 	{
 		//public GeckoWebBrowser Browser { get; private set; }
 		public GeckoWebBrowser Browser { get; private set; }
 	}
 
-	public class ModelStub : EditControlsModel
+	public class ModelStub : ReaderToolsModel
 	{
 		public List<Tuple<string, string>> ElementsUpdated = new List<Tuple<string, string>>();
 

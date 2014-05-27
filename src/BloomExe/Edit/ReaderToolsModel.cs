@@ -8,13 +8,13 @@ using Bloom.Collection;
 
 namespace Bloom.Edit
 {
-	public class EditControlsModel
+	public class ReaderToolsModel
 	{
-		public delegate EditControlsView Factory();//autofac uses this
+		public delegate ReaderToolsView Factory();//autofac uses this
 
 		private CollectionSettings _collectionSettings;
 
-		public EditControlsModel(CollectionSettings settings)
+		public ReaderToolsModel(CollectionSettings settings)
 		{
 			_collectionSettings = settings;
 			// Enhance JohnT: eventually we probably persist somewhere what stage or level they are at?
@@ -45,7 +45,7 @@ namespace Bloom.Edit
 		/// <summary>
 		/// The view for which we are the model.
 		/// </summary>
-		internal IEditControlsView View { get; set; }
+		internal IReaderToolsView View { get; set; }
 
 		/// <summary>
 		/// Set the InnerHtml of the element identified by the ID. It must exist.
