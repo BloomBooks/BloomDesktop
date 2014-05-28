@@ -100,8 +100,8 @@ namespace Bloom.Book
 		// What we upload needs to be a functional URL (probably relative to our site root).
 		public string Thumbnail
 		{
-			get { return MetaData.Thumbnail; }
-			set { MetaData.Thumbnail = value; }
+			get { return MetaData.BaseUrl; }
+			set { MetaData.BaseUrl = value; }
 		}
 
 		public string Isbn
@@ -333,10 +333,9 @@ namespace Bloom.Book
 		public string Title { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
-		// containing the actual url where we can grab the thumbnail.
-		// Locally the thumbnail is always called just thumbnail.png.
-		[JsonProperty("thumbnail")]
-		public string Thumbnail { get; set; }
+		// containing the actual url where we can grab the thumbnails, pdfs, etc.
+		[JsonProperty("baseUrl")]
+		public string BaseUrl { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the book order file which when opened by Bloom causes it

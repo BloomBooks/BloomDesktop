@@ -315,7 +315,7 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
-				metadata.Thumbnail = _s3Client.ThumbnailUrl;
+				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
 				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
@@ -555,6 +555,7 @@ namespace Bloom.WebLibraryIntegration
 			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
 			MakeThumbnail(book, 70, invokeTarget);
 			MakeThumbnail(book, 256, invokeTarget);
+			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
