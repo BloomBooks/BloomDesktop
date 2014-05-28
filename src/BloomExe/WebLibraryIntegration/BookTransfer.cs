@@ -553,7 +553,8 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book, invokeTarget);
+            MakeThumbnail(book, 70, invokeTarget);
+            MakeThumbnail(book, 256, invokeTarget);
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -571,7 +572,7 @@ namespace Bloom.WebLibraryIntegration
 			return result;
 		}
 
-		void RebuildThumbnail(Book.Book book, Control invokeTarget)
+		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
 		{
 			bool done = false;
 			string error = null;
@@ -581,9 +582,9 @@ namespace Bloom.WebLibraryIntegration
 		        CenterImageUsingTransparentPadding = false,
 		        //since this is destined for HTML, it's much easier to handle if there is no pre-padding
 
-                Height=70,
+                Height=height,
                 Width =-1,
-                //FileName = "thumbnail256.png"
+                FileName = "thumbnail-"+height+".png"
 		    };
 
 			book.RebuildThumbNailAsync(options, (info, image) => done = true,

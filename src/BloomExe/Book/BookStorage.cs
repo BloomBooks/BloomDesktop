@@ -33,9 +33,9 @@ namespace Bloom.Book
         string FileName { get; }
         string FolderPath { get; }
         string PathToExistingHtml { get; }
-		bool TryGetPremadeThumbnail(out Image image);
+		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
-		bool RemoveBookThumbnail();
+		bool RemoveBookThumbnail(string fileName);
 		
 		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 	    bool GetLooksOk();
@@ -130,13 +130,14 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <returns>false if we shouldn't mess with the thumbnail</returns>
-		public bool RemoveBookThumbnail()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns>false if we shouldn't mess with the thumbnail</returns>
+        public bool RemoveBookThumbnail(string fileName)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+            string path = Path.Combine(_folderPath, fileName);
 			if(File.Exists(path) && 
 			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
@@ -158,9 +159,9 @@ namespace Bloom.Book
 			return _fileLocator;
 		}
 
-		public bool TryGetPremadeThumbnail(out Image image)
+		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+            string path = Path.Combine(_folderPath, fileName);
 			if (File.Exists(path))
 			{
 				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
