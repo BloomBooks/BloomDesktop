@@ -431,7 +431,9 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
-				MessageBox.Show("To use this feature, you must first run Bloom normally and log in.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
+					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+				return;
 			}
 			using (var dlg = new BulkUploadProgressDlg())
 			{
@@ -547,14 +549,12 @@ namespace Bloom.WebLibraryIntegration
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.Languages = book.AllLanguages.ToArray();
+			book.BookInfo.Languages = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
-			if (book.RemoveThumbnail())
-			{
-				progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-				RebuildThumbnail(book, invokeTarget);
-			}
+			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
+			MakeThumbnail(book, 70, invokeTarget);
+			MakeThumbnail(book, 256, invokeTarget);
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -572,15 +572,19 @@ namespace Bloom.WebLibraryIntegration
 			return result;
 		}
 
-		static void RebuildThumbnail(Book.Book book, Control invokeTarget)
+		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
 		{
 			bool done = false;
 			string error = null;
 
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
 			{
-				CenterImageUsingTransparentPadding = false
+				CenterImageUsingTransparentPadding = false,
 				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
+
+				Height=height,
+				Width =-1,
+				FileName = "thumbnail-"+height+".png"
 			};
 
 			book.RebuildThumbNailAsync(options, (info, image) => done = true,
@@ -595,7 +599,7 @@ namespace Bloom.WebLibraryIntegration
 				Application.DoEvents();
 				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
 				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				book.MakeThumbnailerAdvance(invokeTarget);
+				this._htmlThumbnailer.Advance(invokeTarget);
 			}
 		}
 
