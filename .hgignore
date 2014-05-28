@@ -75,3 +75,4 @@ build\JohnsTestInstallerBuild.bat
 lib/wkhtmltopdf*.zip
 DistFiles/ReleaseNotes.html
 ReadMe_*.html
+B2.sln

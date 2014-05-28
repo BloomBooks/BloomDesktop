@@ -167,7 +167,7 @@ namespace Bloom.Book
 					callback(Resources.Error70x70);
 				}
 				Image thumb;
-				if (_storage.TryGetPremadeThumbnail(out thumb))
+				if (_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
 					callback(thumb);
 					return;
@@ -1487,7 +1487,7 @@ namespace Bloom.Book
 
 		public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
-			if (!_storage.RemoveBookThumbnail())
+			if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
 				return;
 
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
