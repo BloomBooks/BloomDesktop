@@ -184,7 +184,7 @@ namespace BloomTests.Book
 	                Language2Iso639Code = "en",
 	                Language3Iso639Code = "fr"
 	            });
-	        using (var htmlThumbNailer = new Moq.Mock<HtmlThumbNailer>(new object[] {60, 60, new MonitorTarget()}).Object)
+	        using (var htmlThumbNailer = new Moq.Mock<HtmlThumbNailer>(new object[] {new MonitorTarget()}).Object)
 	        {
 	            var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
 	                collectionSettings,
