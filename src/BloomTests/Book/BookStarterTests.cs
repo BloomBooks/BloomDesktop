@@ -1,18 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
-using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace BloomTests.Book
 {
