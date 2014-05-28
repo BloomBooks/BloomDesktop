@@ -11,6 +11,7 @@ using Bloom.Book;
 using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
+using Palaso.IO;
 
 
 namespace Bloom
@@ -43,7 +44,8 @@ namespace Bloom
 			content = content.Replace("></span>", ">REMOVEME</span>");
 			content = content.Replace("></i>", ">REMOVEME</i>");
 
-
+			// fix for <br></br> tag doubling
+			content = content.Replace("<br></br>", "<br />");
 
 			//using (var temp = new TempFile())
 			var temp = new TempFile();

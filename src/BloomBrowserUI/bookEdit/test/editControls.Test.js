@@ -227,28 +227,29 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     it ("updates word list on init", function() {
-        model.postNavigationInit();
+        model.updateControlContents();
         expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>cat</td><td>rat</td><td>sat</td></tr>");
     });
 
     it ("updates stage count and buttons on init", function() {
-        model.postNavigationInit();
+        model.updateControlContents();
         expect(model.updateElementContent).toHaveBeenCalledWith("numberOfStages", "3");
         expect(model.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
     });
 
     it ("updates level buttons on init", function() {
-        model.postNavigationInit();
+        model.updateControlContents();
+        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
         expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
     });
 
     it ("updates stage label on init", function() {
-        model.postNavigationInit();
+        model.updateControlContents();
         expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1A");
     });
 
     it("sets level max values on init", function() {
-        model.postNavigationInit();
+        model.updateControlContents();
         expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "4");
         expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "4");
         expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "17");

@@ -308,7 +308,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string DecodableLevelPathName
 		{
-			get { return Path.GetDirectoryName(SettingsFilePath) + "DecodableLevelData.json"; }
+			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "DecodableLevelData.json"); }
 		}
 
 		[XmlIgnore]

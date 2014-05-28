@@ -23,9 +23,12 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="bookEdit\css\editControls.css" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
+    <Content Include="bookEdit\css\editPaneGlobal.css" />
     <Content Include="bookEdit\css\editTranslationMode.css" />
+    <Content Include="bookEdit\html\EditControls.htm" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
     <Content Include="bookEdit\iconfont\index.html" />
@@ -40,9 +43,12 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
+    <Content Include="bookEdit\js\editControls.js" />
+    <Content Include="bookEdit\js\synphonyApi.js" />
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\StyleEditor.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />

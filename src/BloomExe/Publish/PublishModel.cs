@@ -17,7 +17,6 @@ using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace Bloom.Publish
 {
@@ -126,7 +125,7 @@ namespace Bloom.Publish
 		}
 
 
-		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+		private TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
@@ -143,7 +142,7 @@ namespace Bloom.Publish
 			PageLayout.UpdatePageSplitMode(dom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
+			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -357,7 +356,13 @@ namespace Bloom.Publish
 
 		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
 		{
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Color.White,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = false
+			};
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -391,7 +396,7 @@ namespace Bloom.Publish
 ////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 ////            HtmlDom.AddPublishClassToBody(dom);
 ////
-////	        foreach (var pageDom in dom.SelectNodes("/html/body/div[contains(@class,'bloom-page')]"))
+////	        foreach (var pageDom in dom.SelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
 ////	        {
 ////	            yield return pageDom;
 ////	        }

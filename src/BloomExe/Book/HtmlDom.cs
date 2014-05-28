@@ -168,6 +168,11 @@ namespace Bloom.Book
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
+		public void AddEditMode(string mode)
+		{
+			// RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
+			Body.SetAttribute("editMode", mode);
+		}
 
 		public void RemoveModeStyleSheets()
 		{
@@ -185,6 +190,10 @@ namespace Bloom.Book
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}
 			}
+			// If present, remove the editMode attribute that tells use which mode we're editing in (original or translation)
+			var body = RawDom.SafeSelectNodes("/html/body")[0] as XmlElement;
+			if (body.HasAttribute("editMode"))
+				body.RemoveAttribute("editMode");
 		}
 
 		public string ValidateBook(string descriptionOfBookForErrorLog)

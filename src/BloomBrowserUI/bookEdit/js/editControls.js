@@ -31,7 +31,12 @@ EditControlsModel.prototype.setStageNumber = function(val) {
 };
 
 EditControlsModel.prototype.updateStageLabel = function() {
-    this.updateElementContent("stageNumber", this.synphony.getStages()[this.stageNumber - 1].getName());
+    var stages = this.synphony.getStages();
+    if (stages.length <= 0) {
+        this.updateElementContent("stageNumber", "");
+        return;
+    }
+    this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
 }
 
 EditControlsModel.prototype.incrementLevel = function() {
@@ -82,11 +87,12 @@ EditControlsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
     this.setPresenceOfClass(eltId, isSelected, sortIconSelectedClass);
 };
 
-// Should be called when the browser has loaded the page.
+// Should be called when the browser has loaded the page, and when the user has changed configuration.
 // It updates various things in the UI to be consistent with the state of things in the model.
-EditControlsModel.prototype.postNavigationInit = function() {
+EditControlsModel.prototype.updateControlContents = function() {
     this.updateWordList();
     this.updateNumberOfStages();
+    this.updateNumberOfLevels();
     this.updateStageLabel();
     this.enableStageButtons();
     this.enableLevelButtons();
@@ -95,6 +101,10 @@ EditControlsModel.prototype.postNavigationInit = function() {
 
 EditControlsModel.prototype.updateNumberOfStages = function() {
     this.updateElementContent("numberOfStages", this.synphony.getStages().length.toString());
+};
+
+EditControlsModel.prototype.updateNumberOfLevels = function() {
+    this.updateElementContent("numberOfLevels", this.synphony.getLevels().length.toString());
 };
 
 EditControlsModel.prototype.enableStageButtons = function() {
@@ -127,6 +137,9 @@ EditControlsModel.prototype.enableLevelButtons = function() {
 
 EditControlsModel.prototype.updateLevelLimits = function() {
     var level = this.synphony.getLevels()[this.levelNumber - 1];
+    if (!level) {
+        level = new Level("");
+    }
     this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerPageBook", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerSentence", level.getMaxWordsPerSentence());
@@ -147,8 +160,12 @@ EditControlsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
 };
 
 EditControlsModel.prototype.updateWordList = function() {
-    var stage = this.synphony.getStages()[this.stageNumber - 1];
-    var words = stage.getWords();
+    var stages = this.synphony.getStages();
+    var words = [];
+    if (stages.length > 0) {
+        var stage = stages[this.stageNumber - 1];
+        words = stage.getWords();
+    }
     // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
     switch(this.sort) {
@@ -215,17 +232,15 @@ EditControlsModel.prototype.lostFocus = function(element) {
 };
 
 EditControlsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
-    return this.synphony.getLevels()[this.levelNumber - 1].getMaxWordsPerSentence();
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 9999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerSentence();
 };
 
 EditControlsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
-    var max = 0;
-    $(".bloom-editable").each(function(index) {
-        var fragments = stringToSentences(this.innerHTML);
-        for (var i = 0; i < fragments.length; i++) {
-            max = Math.max(max, fragments[i].wordCount());
-        }
-    });
+    var max = $(".bloom-editable").getMaxSentenceLength();
     $("#actualWordsPerSentence").html(max.toString());
     var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
     // The two styles here must match ones defined in EditControls.htm or its stylesheet.
@@ -283,8 +298,13 @@ if (typeof($) == "function") {
     $("#sortFrequency").click(function () {
         model.sortByFrequency();
     });
-    $("#setUpStages").click(function () {
-        alert("setup!");
+    $("#setUpStages").click(function (clickEvent) {
+        clickEvent.preventDefault(); // don't try to follow nonexistent href
+       model.getSynphony().showConfigDialog(function() {
+           model.updateControlContents();
+           // Todo: update the doc content also, if relevant limits changed
+           // Todo: update model.levelNumber, if it is now out of range.
+       })
     });
     // Todo PhilH: replace this fake synphony with something real.
     var synphony = new SynphonyApi();
@@ -303,20 +323,20 @@ else {
 }
 
 // The function that the C# code calls to hook everything up.
-// pathname should be the standard file that stores the Synphony settings for the collection.
-// (Note that it may not exist.) For debugging and demo purposes we generate some fake data if fakeIt is true
+// settingsFileContent should be the content of the standard file that stores the Synphony settings for the collection.
+// (Note that it may be empty.) For debugging and demo purposes we generate some fake data if fakeIt is true
 // and the attempt to load the file does not produce anything.
-function initialize(pathname, fakeIt) {
+function initialize(settingsFileContent, fakeIt) {
     var synphony = model.getSynphony();
-    synphony.loadFile(pathname);
+    synphony.loadSettings(settingsFileContent);
     if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
-        synphony.addStageWithWords("A", "the cat sat on the mat the rat sat on the cat");
-        synphony.addStageWithWords("B", "cats and dogs eat rats rats eat lots");
-        synphony.addStageWithWords("C", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
+        synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat");
+        synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots");
+        synphony.addStageWithWords("3", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
         synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
         synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
         synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
         synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     }
-    model.postNavigationInit();
+    model.updateControlContents();
 };
