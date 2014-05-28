@@ -109,7 +109,7 @@ Stage.prototype.incrementFrequencies = function(input) {
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
         var old = this.words[item];
-    if (old === null) {
+    if (!old) {
             old = 0;
         }
         this.words[item] = old + 1;

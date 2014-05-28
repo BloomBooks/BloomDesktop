@@ -17,8 +17,8 @@ describe("SynphonyApi tests", function() {
         api.AddStage(stage2);
         expect(api.getStages()[0]).toBe(stage1);
         expect(api.getStages()[1]).toBe(stage2);
-    })
-})
+    });
+});
 
 describe("Stage tests", function() {
     it("remembers its name", function() {
@@ -34,5 +34,5 @@ describe("Stage tests", function() {
         expect(words).toContain("sat");
         expect(stage.getFrequency("the")).toBe(2);
         expect(stage.getFrequency("cat")).toBe(1);
-    })
-})
+    });
+});
