@@ -505,7 +505,7 @@ namespace Bloom.Book
 	            href = href.Replace("%5C", "/");
 
 
-	            var fileName = Path.GetFileName(href);
+				var fileName = Path.GetFileName(href).Replace('\\', '/');
 	            if (!fileName.StartsWith("xx"))
 	                //I use xx  as a convenience to temporarily turn off stylesheets during development
 	            {

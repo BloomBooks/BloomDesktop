@@ -269,7 +269,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
-			return existing.ToString().Replace("\r\n", "").Replace("\\", "");
+			return existing.ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", "");
 		}
 
     	private bool IsComplexObject(string value)
