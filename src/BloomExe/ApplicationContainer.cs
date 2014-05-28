@@ -66,7 +66,7 @@ namespace Bloom
                 builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
 
                 const int kListViewIconHeightAndWidth = 70;
-                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
+                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).SingleInstance();
 
 				_container = builder.Build();
 			}

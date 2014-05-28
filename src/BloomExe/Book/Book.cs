@@ -1609,14 +1609,5 @@ namespace Bloom.Book
         {
             return OurHtmlDom.GetMetaValue("bloomBookLineage","");
         }
-
-		/// <summary>
-		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
-		/// </summary>
-		/// <param name="invokeTarget">A control created on the UI thread.</param>
-		internal void MakeThumbnailerAdvance(Control invokeTarget)
-		{
-			_thumbnailProvider.Advance(invokeTarget);
-		}
 	}
 }

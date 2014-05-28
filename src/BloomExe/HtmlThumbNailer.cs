@@ -25,6 +25,7 @@ namespace Bloom
         private Color _backgroundColorOfResult;
         private bool _browserHandleCreated;
     	private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
+        private static HtmlThumbNailer _theOnlyOneAllowed;
 
         /// <summary>
         ///This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give us the size it was on the first page we navigated to,
@@ -36,6 +37,14 @@ namespace Bloom
 
         public HtmlThumbNailer(int widthInPixels, int heightInPixels, MonitorTarget monitorObjectForBrowserNavigation)
         {
+            if (_theOnlyOneAllowed != null)
+            {
+                Debug.Fail("Something tried to make a second HtmlThumbnailer; there should only be one.");
+                throw new ApplicationException("Something tried to make a second HtmlThumbnailer; there should only be one.");
+            }
+
+            _theOnlyOneAllowed = this;
+
     	    _monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
     	    Application.Idle += new EventHandler(Application_Idle);
         }
@@ -380,7 +389,7 @@ namespace Bloom
             int thumbnailHeight = options.Height;
 
             //unfortunately as long as we're using the winform listview, we seem to need to make the icons
-            //the same size otherwise the title-captions don't line up.
+            //the same size regardless of the book's shape, otherwise the title-captions don't line up.
 
             if (options.CenterImageUsingTransparentPadding)
             {
@@ -411,29 +420,29 @@ namespace Bloom
 #if !__MonoCS__
 
             var thumbnail = new Bitmap(thumbnailWidth, thumbnailHeight, PixelFormat.Format64bppPArgb);
-			using (Graphics graphics = Graphics.FromImage(thumbnail))
+			using (var graphics = Graphics.FromImage(thumbnail))
 			{
 				graphics.PixelOffsetMode = PixelOffsetMode.None;
 				graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
                 var destRect = new Rectangle(horizontalOffset, verticalOffset, contentWidth,contentHeight); 
-                //leave out the grey boarder which is in the browser, and zoom in some
+            
                graphics.DrawImage(bmp,
                         destRect, 
                         0,0, bmp.Width, bmp.Height, //source 
                         GraphicsUnit.Pixel, WhiteToBackground);
 
-
-                    Pen pn = new Pen(Color.Black, 1);
-                if (options.DrawBorderDashed)
-                {
-                    pn.DashStyle = DashStyle.Dash;
-                    pn.Width = 2;
-                }
-                destRect.Height--;//hack, we were losing the bottom
-			    destRect.Width--;
-                graphics.DrawRectangle(pn, destRect);
-
+			    using (var pn = new Pen(Color.Black, 1))
+			    {
+			        if (options.DrawBorderDashed)
+			        {
+			            pn.DashStyle = DashStyle.Dash;
+			            pn.Width = 2;
+			        }
+			        destRect.Height--; //hack, we were losing the bottom
+			        destRect.Width--;
+			        graphics.DrawRectangle(pn, destRect);
+			    }
 			}
         	return thumbnail;
 #else
@@ -509,6 +518,7 @@ namespace Bloom
 				}));
 			}
     		_browserCacheForDifferentPaperSizes.Clear();
+    	    _theOnlyOneAllowed = null;
     	}
 
 		/// <summary>
