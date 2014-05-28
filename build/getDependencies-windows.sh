@@ -3,7 +3,7 @@
 # project=Bloom
 # build=Bloom-Default-Win32-Auto (Bloom 3)
 # root_dir=..
-# $Id: 4634ff740f8de8637c6b5cc04f4a1b2ee0954b5d $
+# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
 
 cd "$(dirname "$0")"
 
@@ -127,6 +127,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 # make sure output directories exist
 mkdir -p ../DistFiles
 mkdir -p ../DistFiles/pdf
+mkdir -p ../Downloads
 mkdir -p ../Mercurial
 mkdir -p ../MercurialExtensions
 mkdir -p ../build/
@@ -137,8 +138,8 @@ mkdir -p ../output/release
 mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
 
 # download artifact dependencies
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../DistFiles/wkhtmltopdf-0.10.0_rc2.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../lib/dotnet/geckofx.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../Downloads/wkhtmltopdf-0.10.0_rc2.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../Downloads/geckofx.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng.exe ../DistFiles/optipng.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
@@ -148,7 +149,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/synphony_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/synphony_lib.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/underscore_min_152.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/underscore_min_152.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/xregexp-all-min.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/xregexp-all-min.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../DistFiles/pdf/pdfjs-viewer.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/Microsoft_VC90_CRT_x86.msm
@@ -168,9 +169,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastS
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Mercurial.zip ../Mercurial/Mercurial.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Mercurial.zip ../Downloads/Mercurial.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions ../MercurialExtensions/MercurialExtensions
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt397/latest.lastSuccessful/xulrunner-22.0.en-US.win32.zip ../lib/xulrunner-22.0.en-US.win32.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt397/latest.lastSuccessful/xulrunner-22.0.en-US.win32.zip ../Downloads/xulrunner-22.0.en-US.win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/exiftool/exiftool.exe ../DistFiles/exiftool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
@@ -213,9 +214,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/libtidy.dll ../lib/dotnet/libtidy.dll
 # extract downloaded zip files
-unzip -uqo ../DistFiles/wkhtmltopdf-0.10.0_rc2.zip -d ../DistFiles
-unzip -uqo ../lib/dotnet/geckofx.zip -d ../lib/dotnet
-unzip -uqo ../DistFiles/pdf/pdfjs-viewer.zip -d ../DistFiles/pdf
-unzip -uqo ../Mercurial/Mercurial.zip -d ../Mercurial
-unzip -uqo ../lib/xulrunner-22.0.en-US.win32.zip -d ../lib
+unzip -uqo ../Downloads/wkhtmltopdf-0.10.0_rc2.zip -d ../DistFiles
+unzip -uqo ../Downloads/geckofx.zip -d ../lib/dotnet
+unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
+unzip -uqo ../Downloads/Mercurial.zip -d ../Mercurial
+unzip -uqo ../Downloads/xulrunner-22.0.en-US.win32.zip -d ../lib
 # End of script
