@@ -98,7 +98,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");        
         }
 
-
+        public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
 
 	    public void InvokeContentsChanged(EventArgs e)
         {
@@ -190,7 +190,7 @@ namespace Bloom.Book
 					callback(Resources.Error70x70);
 				}
 				Image thumb;
-				if (_storage.TryGetPremadeThumbnail(out thumb))
+				if (_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
 					callback(thumb);
 					return;
@@ -1525,15 +1525,6 @@ namespace Bloom.Book
 		}
 
         /// <summary>
-        /// Try to remove the existing thumbnail, return false if the thumbnail is read-only
-        /// </summary>
-        /// <returns></returns>
-        internal bool RemoveThumbnail()
-        {
-            return _storage.RemoveBookThumbnail();
-        }
-
-        /// <summary>
         /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
         /// </summary>
         /// <param name="thumbnailOptions"></param>
@@ -1541,7 +1532,7 @@ namespace Bloom.Book
         /// <param name="errorCallback"></param>
     	public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
     	{
-			if (!_storage.RemoveBookThumbnail())
+			if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
 				return;
 
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
@@ -1663,14 +1654,5 @@ namespace Bloom.Book
         {
             return OurHtmlDom.GetMetaValue("bloomBookLineage","");
         }
-
-		/// <summary>
-		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
-		/// </summary>
-		/// <param name="invokeTarget">A control created on the UI thread.</param>
-		internal void MakeThumbnailerAdvance(Control invokeTarget)
-		{
-			_thumbnailProvider.Advance(invokeTarget);
-		}
     }
 }

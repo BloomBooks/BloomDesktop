@@ -103,6 +103,7 @@ namespace BloomTests.Book
 				_testFolder.Dispose();
 				_testFolder = null;
 			}
+			_thumbnailer.Object.Dispose();
 		}
 
     	private Bloom.Book.Book CreateBook()
