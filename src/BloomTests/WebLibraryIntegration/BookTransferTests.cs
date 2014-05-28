@@ -198,9 +198,8 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
 
 			var record = _parseClient.GetSingleBookRecord(metadata.Id);
-			string thumbnail = record.thumbnail;
-			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
-			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
+			string baseUrl = record.baseUrl;
+			Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
 			string order = record.bookOrder;
 			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
