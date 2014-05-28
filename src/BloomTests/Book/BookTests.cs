@@ -96,6 +96,7 @@ namespace BloomTests.Book
 		public void TearDown()
 		{
 			_testFolder.Dispose();
+		    _thumbnailer.Object.Dispose();
 		}
 
     	private Bloom.Book.Book CreateBook()

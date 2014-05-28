@@ -23,8 +23,9 @@ namespace BloomTests.WebLibraryIntegration
 	    private BloomParseClient _parseClient;
 	    private DownloadOrderList _downloadOrders;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
+        private HtmlThumbNailer _htmlThumbNailer;
 
-		[SetUp]
+        [SetUp]
         public void Setup()
         {
             _workFolder = new TemporaryFolder("unittest");
@@ -38,13 +39,15 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_downloadOrders = new DownloadOrderList();
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new HtmlThumbNailer(30,30,new MonitorTarget()),  _downloadOrders);
+		    _htmlThumbNailer = new HtmlThumbNailer(30,30,new MonitorTarget());
+		    _transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer,  _downloadOrders);
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
         }
 
         [TearDown]
         public void TearDown()
         {
+            _htmlThumbNailer.Dispose();
             _workFolder.Dispose();
         }
 
