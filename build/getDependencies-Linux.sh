@@ -1,9 +1,9 @@
 #!/bin/bash
 # server=build.palaso.org
 # project=Bloom
-# build=Bloom-linux-precise64-continuous
+# build=Bloom-Default-precise64-Auto (Bloom 3)
 # root_dir=..
-# $Id: 8fa3d81233f94c653ca4357ed5e300790d8bc404 $
+# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
 
 cd "$(dirname "$0")"
 
@@ -17,6 +17,8 @@ f) force=1 ;;
 c) clean=1 ;;
 esac
 done
+
+shift $((OPTIND - 1))
 
 copy_auto() {
 if [ "$clean" == "1" ]
@@ -58,41 +60,57 @@ wget -q -L -N $1
 cd -
 }
 
+# clean destination directories
+rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 
 # *** Results ***
-# build: Bloom-linux-precise64-continuous (bt338)
+# build: Bloom-Default-precise64-Auto (Bloom 3) (bt403)
 # project: Bloom
-# URL: http://build.palaso.org/viewType.html?buildTypeId=bt338
-# VCS: https://bitbucket.org/hatton/bloom-desktop [linux]
+# URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
+# VCS: https://bitbucket.org/hatton/bloom-desktop [default]
 # dependencies:
-# [0] build: bloom-2.0.-win32-static-dependencies (bt326)
+# [0] build: bloom-3.0.-win32-static-dependencies (bt396)
 #     project: Bloom
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt326
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: chorus-precise64-master Continuous (bt323)
+# [1] build: LibSynphony (bt394)
+#     project: Bloom
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
+#     clean: true
+#     revision: latest.lastSuccessful
+#     paths: {"*.*"=>"src\\BloomBrowserUI\\bookEdit\\js\\libsynphony"}
+#     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
+# [2] build: pdf.js (bt401)
+#     project: BuildTasks
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt401
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
+#     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
+# [3] build: chorus-precise64-master Continuous (bt323)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt323
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet", "geckofix.so"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [2] build: palaso-precise64-master Continuous (bt322)
+# [4] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt322
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [master]
-# [3] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [5] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"PdfDroplet.exe*"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
+#     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: http://hg.palaso.org/pdfdroplet [default]
-# [4] build: TidyManaged-master-precise64-continuous (bt351)
+# [6] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
@@ -102,14 +120,24 @@ cd -
 
 # make sure output directories exist
 mkdir -p ../DistFiles
+mkdir -p ../DistFiles/pdf
+mkdir -p ../Downloads
 mkdir -p ../build/
 mkdir -p ../lib/dotnet
+mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
 
 # download artifact dependencies
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_lib.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_xregexp_categories.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_xregexp_categories.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/jquery.text-markup.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/jquery.text-markup.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/synphony_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/synphony_lib.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/underscore_min_152.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/underscore_min_152.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/xregexp-all-min.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/xregexp-all-min.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe.mdb ../lib/dotnet/Chorus.exe.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
@@ -151,6 +179,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll ../lib/dotnet/Palaso.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll.config ../lib/dotnet/Palaso.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll.mdb ../lib/dotnet/Palaso.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll ../lib/dotnet/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll.mdb ../lib/dotnet/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll.config ../lib/dotnet/PalasoUIWindowsForms.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll.mdb ../lib/dotnet/PalasoUIWindowsForms.dll.mdb
@@ -178,6 +208,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/Palaso.dll ../lib/dotnet/Palaso.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/Palaso.dll.config ../lib/dotnet/Palaso.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/Palaso.dll.mdb ../lib/dotnet/Palaso.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll ../lib/dotnet/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll.mdb ../lib/dotnet/PalasoUIWindowsForms.GeckoFxWebBrowserAdapter.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/PalasoUIWindowsForms.dll.config ../lib/dotnet/PalasoUIWindowsForms.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/debug/PalasoUIWindowsForms.dll.mdb ../lib/dotnet/PalasoUIWindowsForms.dll.mdb
@@ -194,4 +226,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
+# extract downloaded zip files
+unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 # End of script

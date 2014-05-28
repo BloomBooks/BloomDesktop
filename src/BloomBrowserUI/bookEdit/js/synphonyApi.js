@@ -2,11 +2,74 @@
 var SynphonyApi = function() {
     this.stages = [];
     this.levels = [];
+    this.source = "";
 };
 
-SynphonyApi.prototype.loadFile = function(pathname)
+SynphonyApi.prototype.loadSettings = function(fileContent)
 {
-    // Todo PhilH: should load the specified file.
+    if (!fileContent) {
+        return;
+    }
+    var data;
+    this.source = fileContent;
+    // Note: for some reason this try...catch doesn't work. Errors in the json stop the program.
+    // One web site hinted that the actual parsing is done in another thread and thus is not
+    // considered to be inside this try...catch.
+    try {
+        var json = fileContent.replace(/(\r\n|\n|\r|\t)/gm, " ");
+        var data = JSON.parse(json);
+    }
+    catch(e) {alert(e);}
+    var levels = data.Levels;
+    if (levels != null) {
+        this.levels = [];
+        for (var i = 0; i < levels.length; i++) {
+            this.addLevel(jQuery.extend(new Level((i + 1).toString()), levels[i]));
+        }
+    }
+    // Todo: load stage data.
+};
+
+function FindOrCreateConfigDiv() {
+    var dialogContents = $("body").find("div#synphonyConfig");
+    if (!dialogContents.length) {
+        dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
+
+        dialogContents.append("<textarea id = 'synphonyData' rows='20' cols='70'></textarea>");
+    }
+    return dialogContents;
+}
+
+
+// Show the configuration dialog. If the user clicks OK, send the new file to C#, then call whenChanged()
+// to let the caller update the UI.
+SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
+    // Todo: this should launch the new API JohnH designed, not just this crude textarea editor.
+    var dialogContents = FindOrCreateConfigDiv();
+    $("#synphonyData").html(this.source);
+    var _this = this;
+    var dlg = $(dialogContents).dialog({
+        autoOpen: "true",
+        modal: "true",
+        //zIndex removed in newer jquery, now we get it in the css
+        buttons: {
+            "OK": function () {
+                _this.loadSettings($("#synphonyData").val(), false);
+                event = document.createEvent('MessageEvent');
+                var origin = window.location.protocol + '//' + window.location.host;
+                // I don't know what all the other parameters mean, but the first is the name of the event the
+                // C# is listening for, and must be exactly the string here. The fourth is the new content
+                // of the file.
+                event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, _this.source, origin, 1234, window, null);
+                document.dispatchEvent (event);
+                $(this).dialog("close");
+                whenChanged();
+            },
+            "Cancel": function () {
+                $(this).dialog("close");
+            }
+        }
+    });
 };
 
 // This is at least useful for testing; maybe for real use.

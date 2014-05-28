@@ -322,8 +322,8 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
 				return;
 			}
-			
-		    var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
+
+            var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 		    if (titleBestForUserDisplay != button.Text)
 		    {
 			    Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);
@@ -686,7 +686,7 @@ namespace Bloom.CollectionTab
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror); 
+			_model.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror); 
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)

@@ -302,7 +302,7 @@ namespace BloomTests.Book
 //            </div></head><body></body></html>");
             var dom = new HtmlDom();
             var data = new BookData(dom, new CollectionSettings(){Country="the country", Province = "the province", District= "the district"}, null);
-            Assert.AreEqual("the district, the province<br/>the country", data.GetVariableOrNull("languageLocation", "*"));
+            Assert.AreEqual("the district, the province, the country", data.GetVariableOrNull("languageLocation", "*"));
           }
 
         /*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1Name, true);

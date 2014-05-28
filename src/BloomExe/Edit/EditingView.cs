@@ -324,9 +324,33 @@ namespace Bloom.Edit
 				_browser1.Navigate(dom.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
+                // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+                // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+                // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+                // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+                // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+                // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+                // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+                // never happens.
+			    _browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
+                _browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
 			}
 			UpdateDisplay();
 		}
+
+        void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
+        {
+            if (_browser1.WebBrowser.Document.ReadyState != "complete")
+                return; // Keep receiving until it is complete.
+            _browser1.WebBrowser.ReadyStateChange -= WebBrowser_ReadyStateChanged; // just do this once
+            _browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
+            _model.DocumentCompleted();
+        }
+
+        public void AddMessageEventListener(string eventName, Action<string> action)
+        {
+            _browser1.AddMessageEventListener(eventName, action);
+        }
 
     	public void UpdateTemplateList()
         {
@@ -337,6 +361,11 @@ namespace Bloom.Edit
 			if (emptyThumbnailCache)
 				_pageListView.EmptyThumbnailCache();
             _pageListView.SetBook(_model.CurrentBook);
+        }
+
+        internal string RunJavaScript(string script)
+        {
+            return _browser1.RunJavaScript(script);
         }
 
         private void _browser1_OnBrowserClick(object sender, EventArgs e)
@@ -377,6 +406,11 @@ namespace Bloom.Edit
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
+                    // We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
+                    // since although its href is empty, the  <base href which we supply inserts an effective http: url.
+                    // We don't need anything to happen here for this case.
+                    if (anchor.Id == "setUpStages")
+				        return;
 					Process.Start(anchor.Href);
 					ge.Handled = true;
 					return;
