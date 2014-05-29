@@ -52,7 +52,7 @@ mixin field-acknowledgments-localizedVersion
 	//-   holding place for user style adjustments (like font-size)
 	+editable("N1").versionAcknowledgments.inside-cover-version-acknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
-// TODO: this is a mess
+//- TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
@@ -98,8 +98,8 @@ mixin factoryStandard-outsideFrontCover
 		//- light of jade it is overly complicated.
 
 		+field-prototypeDeclaredExplicity
+			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bookTitle.coverTitle-style(data-book='bookTitle')
-				label.bubble Book title in {lang}
 
 		.bloom-imageContainer
 			img(src="placeholder.png", data-book='coverImage')
