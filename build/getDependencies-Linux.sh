@@ -3,7 +3,7 @@
 # project=Bloom
 # build=Bloom-Default-precise64-Auto (Bloom 3)
 # root_dir=..
-# $Id: 4634ff740f8de8637c6b5cc04f4a1b2ee0954b5d $
+# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
 
 cd "$(dirname "$0")"
 
@@ -121,6 +121,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 # make sure output directories exist
 mkdir -p ../DistFiles
 mkdir -p ../DistFiles/pdf
+mkdir -p ../Downloads
 mkdir -p ../build/
 mkdir -p ../lib/dotnet
 mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
@@ -136,7 +137,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/synphony_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/synphony_lib.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/underscore_min_152.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/underscore_min_152.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/xregexp-all-min.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/xregexp-all-min.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../DistFiles/pdf/pdfjs-viewer.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe.mdb ../lib/dotnet/Chorus.exe.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
@@ -226,5 +227,5 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 # extract downloaded zip files
-unzip -uqo ../DistFiles/pdf/pdfjs-viewer.zip -d ../DistFiles/pdf
+unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 # End of script
