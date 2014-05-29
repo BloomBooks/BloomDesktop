@@ -107,6 +107,7 @@ DIV.sortItem
 	display: inline-block;
 	color: white;
 	padding: 2px 3px;
+	cursor: pointer;
 }
 SPAN.ofStage
 {
@@ -120,3 +121,5 @@ TD.disabledLimit
 {
 	visibility: hidden;
 }
+
+.hidden { display: none !important; }

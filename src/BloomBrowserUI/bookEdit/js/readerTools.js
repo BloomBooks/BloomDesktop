@@ -4,11 +4,18 @@ var SortType = {
     byFrequency: "byFrequency"
 };
 
+var MarkupType = {
+    None: 0,
+    Leveled: 1,
+    Decodable: 2
+};
+
 var ReaderToolsModel = function() {
     this.stageNumber = 1;
     this.levelNumber = 1;
     this.synphony = new SynphonyApi(); // default state
     this.sort = SortType.alphabetic;
+    this.currentMarkupType = MarkupType.Decodable;
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -28,6 +35,7 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
     this.updateStageLabel();
     this.updateWordList();
     this.enableStageButtons();
+    this.doMarkup();
 };
 
 ReaderToolsModel.prototype.updateStageLabel = function() {
@@ -37,7 +45,7 @@ ReaderToolsModel.prototype.updateStageLabel = function() {
         return;
     }
     this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
-}
+};
 
 ReaderToolsModel.prototype.incrementLevel = function() {
     this.setLevelNumber(this.levelNumber + 1);
@@ -56,6 +64,7 @@ ReaderToolsModel.prototype.setLevelNumber = function(val) {
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
     this.enableLevelButtons();
     this.updateLevelLimits();
+    this.doMarkup();
 };
 
 ReaderToolsModel.prototype.sortByLength = function() {
@@ -77,9 +86,9 @@ ReaderToolsModel.prototype.setSort = function(sortType) {
 };
 
 ReaderToolsModel.prototype.updateSortStatus = function() {
-    this.updateSelectedStatus("sortAlphabetic", this.sort == SortType.alphabetic);
-    this.updateSelectedStatus("sortLength", this.sort == SortType.byLength);
-    this.updateSelectedStatus("sortFrequency", this.sort == SortType.byFrequency);
+    this.updateSelectedStatus("sortAlphabetic", this.sort === SortType.alphabetic);
+    this.updateSelectedStatus("sortLength", this.sort === SortType.byLength);
+    this.updateSelectedStatus("sortFrequency", this.sort === SortType.byFrequency);
 };
 
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
@@ -152,10 +161,10 @@ ReaderToolsModel.prototype.updateLevelLimits = function() {
 };
 
 ReaderToolsModel.prototype.updateLevelLimit = function(id, limit) {
-    if (limit != 0) {
+    if (limit !== 0) {
         this.updateElementContent(id, limit.toString());
     }
-    this.updateDisabledLimit(id, limit == 0);
+    this.updateDisabledLimit(id, limit === 0);
 };
 
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
@@ -174,11 +183,11 @@ ReaderToolsModel.prototype.updateWordList = function() {
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
     switch(this.sort) {
         case SortType.alphabetic:
-            words.sort(function(a,b) { return a.localeCompare(b)});
+            words.sort(function(a,b) { return a.localeCompare(b); });
             break;
         case SortType.byLength:
             words.sort(function(a,b) {
-                if (a.length == b.length) {
+                if (a.length === b.length) {
                     return a.localeCompare(b);
                 }
                 return a.length - b.length;
@@ -188,7 +197,7 @@ ReaderToolsModel.prototype.updateWordList = function() {
             words.sort(function(a,b) {
                 var aFreq = stage.getFrequency(a);
                 var bFreq = stage.getFrequency(b);
-                if (aFreq == bFreq) {
+                if (aFreq === bFreq) {
                     return a.localeCompare(b);
                 }
                 return bFreq - aFreq; // MOST frequent first
@@ -213,27 +222,96 @@ ReaderToolsModel.prototype.updateWordList = function() {
     var wordIndex = 0;
     for (var i = 0; i < words.length; i++)
     {
-        if (wordIndex == 0) {
+        if (wordIndex === 0) {
             result += "<tr>";
         }
         result += "<td>" + words[i] + "</td>";
         wordIndex++;
-        if (wordIndex == wordsPerRow) {
+        if (wordIndex === wordsPerRow) {
             wordIndex = 0;
-            result += "</tr>"
+            result += "</tr>";
         }
     }
-    if (wordIndex != 0) {
+    if (wordIndex !== 0) {
         result += "</tr>";
     }
     this.updateElementContent("wordList", result);
 };
 
-ReaderToolsModel.prototype.lostFocus = function(element) {
-    var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
-    $(".bloom-editable").checkLeveledReader(options);
-    this.updateMaxWordsPerSentenceOnPage();
+ReaderToolsModel.prototype.setMarkupType = function(markupType) {
+
+    if ((typeof markupType === 'undefined') || markupType === null) return;
+
+    var newMarkupType = null;
+    switch (markupType) {
+        case 0:
+            if (this.currentMarkupType !== MarkupType.Decodable)
+                newMarkupType = MarkupType.Decodable;
+            break;
+
+        case 1:
+            if (this.currentMarkupType !== MarkupType.Leveled)
+                newMarkupType = MarkupType.Leveled;
+            break;
+
+        case 2:
+            if (this.currentMarkupType !== MarkupType.None)
+                newMarkupType = MarkupType.None;
+            break;
+    }
+
+    // if no change, return now
+    if (newMarkupType === null) return;
+
+    if (newMarkupType !== this.currentMarkupType) {
+        $('.bloom-editable').removeSynphonyMarkup();
+        this.currentMarkupType = newMarkupType;
+        this.doMarkup();
+    }
 };
+
+ReaderToolsModel.prototype.doMarkup = function() {
+    switch (this.currentMarkupType) {
+        case MarkupType.None:
+            break;
+
+        case MarkupType.Leveled:
+            var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
+            $(".bloom-editable").checkLeveledReader(options);
+            this.updateMaxWordsPerSentenceOnPage();
+            this.updateTotalWordsOnPage();
+            break;
+
+        case MarkupType.Decodable:
+            var stages = this.synphony.getStages();
+            if (stages.length === 0) return;
+
+            // get word lists
+            var cumulativeWords = [];
+            for (var i = 0; i < (this.stageNumber - 1); i++)
+                cumulativeWords = cumulativeWords.concat(stages[i].getWordObjects());
+
+            var focusWords = stages[this.stageNumber - 1].getWords();
+            var sightWords = stages[this.stageNumber - 1].sightWords;
+
+            // for now, build known grapheme list from words
+            var knownGraphemes = _.uniq(_.union(_.pluck(cumulativeWords, 'Name'), focusWords).join('').split(''));
+
+            $(".bloom-editable").checkDecodableReader({
+                focusWords: focusWords,
+                previousWords: cumulativeWords,
+                sightWords: sightWords,
+                knownGraphemes: knownGraphemes
+            });
+
+            break;
+    }
+};
+
+ReaderToolsModel.prototype.lostFocus = function(element) {
+    this.doMarkup();
+};
+
 
 ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
     var levels = this.synphony.getLevels();
@@ -241,6 +319,14 @@ ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
         return 9999;
     }
     return levels[this.levelNumber - 1].getMaxWordsPerSentence();
+};
+
+ReaderToolsModel.prototype.maxWordsPerPage = function() {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 9999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerPage();
 };
 
 ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
@@ -252,6 +338,14 @@ ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
     // instead of tooLarge). That will mess things up going from the longer to the shorter.
     this.setPresenceOfClass("actualWordsPerSentence", acceptable, "acceptable");
     this.setPresenceOfClass("actualWordsPerSentence", !acceptable, "tooLarge");
+};
+
+ReaderToolsModel.prototype.updateTotalWordsOnPage = function() {
+    var count = $(".bloom-editable").getTotalWordCount();
+    $("#actualWordsPerPage").html(count.toString());
+    var acceptable = count <= this.maxWordsPerPage();
+    this.setPresenceOfClass("actualWordsPerPage", acceptable, "acceptable");
+    this.setPresenceOfClass("actualWordsPerPage", !acceptable, "tooLarge");
 };
 
 // Should be called early on, before other init.
@@ -279,7 +373,7 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
 
 // Attach click handlers
 var model = new ReaderToolsModel();
-if (typeof($) == "function") {
+if (typeof($) === "function") {
     // Running for real, and jquery properly loaded first
     $("#incStage").click(function () {
         model.incrementStage();
@@ -304,16 +398,17 @@ if (typeof($) == "function") {
     });
     $("#setUpStages").click(function (clickEvent) {
         clickEvent.preventDefault(); // don't try to follow nonexistent href
-       model.getSynphony().showConfigDialog(function() {
-           model.updateControlContents();
-           // Todo: update the doc content also, if relevant limits changed
-           // Todo: update model.levelNumber, if it is now out of range.
-       })
+        model.getSynphony().showConfigDialog(function() {
+            model.updateControlContents();
+            // Todo: update the doc content also, if relevant limits changed
+            // Todo: update model.levelNumber, if it is now out of range.
+        });
     });
-    // Todo PhilH: replace this fake synphony with something real.
+
     var synphony = new SynphonyApi();
     model.setSynphony(synphony);
-    initialize("", true);
+    initializeSynphony("", true);
+
     // invoke function when a bloom-editable element loses focus
     $(".bloom-editable").focusout(function() {
         model.lostFocus(this); // This is the element that just lost focus.
@@ -323,24 +418,29 @@ else {
     // running tests...or someone forgot to install jquery first
     $ = function() {
         alert("you should have loaded jquery first or blocked this call with spyOn");
-    }
+    };
 }
 
 // The function that the C# code calls to hook everything up.
 // settingsFileContent should be the content of the standard file that stores the Synphony settings for the collection.
 // (Note that it may be empty.) For debugging and demo purposes we generate some fake data if fakeIt is true
 // and the attempt to load the file does not produce anything.
-function initialize(settingsFileContent, fakeIt) {
+function initializeSynphony(settingsFileContent, fakeIt) {
+
     var synphony = model.getSynphony();
     synphony.loadSettings(settingsFileContent);
-    if (fakeIt && synphony.getStages().length == 0 && synphony.getLevels().length == 0) {
-        synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat");
-        synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots");
-        synphony.addStageWithWords("3", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns");
+    if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
+        synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat", "canine feline");
+        synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots", "carnivore omnivore");
+        synphony.addStageWithWords("3", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns", "sentence paragraph");
         synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
         synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20,  maxWordsPerBook: 40}));
         synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
         synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
     }
     model.updateControlContents();
+    model.doMarkup();
+
+    // change markup based on visible options
+    $('#accordion').children('h3').on('click', function() { model.setMarkupType($(this).data('markuptype')); });
 };
