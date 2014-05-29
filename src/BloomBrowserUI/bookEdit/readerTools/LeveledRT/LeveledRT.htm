@@ -2,15 +2,15 @@
 <html>
   <head></head>
   <body>
-	<h3>Leveled Reader Tool</h3>
+	<h3 data-markuptype="1">Leveled Reader Tool</h3>
 	<div>
 	  <div class="stageLine"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Level <span id="levelNumber">1</span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
 	  <table class="statistics clear">
 		<tr>
-		  <td class="section">Word counts</td>
+		  <td class="section" colspan="3">Word counts</td>
 		</tr>
 		<tr>
-		  <td>This Page</td>
+		  <td colspan="3">This Page</td>
 		</tr>
 		<tr>
 		  <td class="statistics-label"></td>
@@ -27,23 +27,25 @@
 		  <td id="maxWordsPerSentence" class="statistics-max">5</td>
 		  <td id="actualWordsPerSentence" class="statistics-actual">7</td>
 		</tr>
-		<tr>
-		  <td class="section">This Book</td>
+		<tr class="hidden">
+		  <td class="section" colspan="3">This Book</td>
 		</tr>
-		<tr>
+		<tr class="hidden">
 		  <td class="statistics-label"></td>
 		  <td class="statistics-max">Max</td>
 		  <td class="statistics-actual">Actual</td>
 		</tr>
-		<tr>
+		<tr class="hidden">
 		  <td class="statistics-label">total</td>
 		  <td id="maxWordsPerBook" class="statistics-max"></td>
 		  <td id="actualWordCount" class="statistics-actual">83</td>
 		</tr>
-		<td class="statistics-label">per page</td>
-		<td id="maxWordsPerPageBook" class="statistics-max">15</td>
-		<td id="actualWordsPerPageBook" class="statistics-actual">14</td>
-		<tr>
+		<tr class="hidden">
+			<td class="statistics-label">per page</td>
+			<td id="maxWordsPerPageBook" class="statistics-max">15</td>
+			<td id="actualWordsPerPageBook" class="statistics-actual">14</td>
+		</tr>
+		<tr class="hidden">
 		  <td class="statistics-label">unique</td>
 		  <td id="maxUniqueWordsPerBook" class="statistics-max">20</td>
 		  <td id="actualUniqueWords" class="statistics-actual">22</td>
