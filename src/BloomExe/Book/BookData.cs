@@ -187,8 +187,19 @@ namespace Bloom.Book
 				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 
-			if (info != null)
-				info.TagsList = tag;
+			if (info != null && tag != null)
+			{
+				// In case we're running localized, for now we'd like to record in the metadata the original English tag.
+				// This allows the book to be found by this tag in the current, non-localized version of bloom library.
+				// Eventually it will make it easier, we think, to implement localization of bloom library.
+				string originalTag;
+				if (RuntimeInformationInjector.TopicReversal == null ||
+					!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
+				{
+					originalTag = tag; // just use it unmodified if we don't have anything
+				}
+				info.TagsList = originalTag;
+			}
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
