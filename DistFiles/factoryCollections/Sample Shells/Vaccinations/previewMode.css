@@ -68,6 +68,10 @@ This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctl
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	}
 }
+DIV#formatButton
+{
+	display: none !important;
+}
 BUTTON
 {
 	display: none !important;
@@ -126,20 +130,20 @@ DIV.numberedPage:nth-of-type(odd):after
 {
 	content: counter(pageNumber);
 	font-size: 14pt;
-	/*+placement:anchor-bottom-left 59px 53px;*/
+	/*+placement:anchor-bottom-left 57px 37px;*/
 	position: absolute;
-	left: 59px;
-	bottom: 53px;
+	left: 57px;
+	bottom: 37px;
 	margin-top: -7mm;
 }
 DIV.numberedPage:nth-of-type(even):after
 {
 	content: counter(pageNumber);
 	font-size: 14pt;
-	/*+placement:anchor-bottom-right 60px 53px;*/
+	/*+placement:anchor-bottom-right 60px 37px;*/
 	position: absolute;
 	right: 60px;
-	bottom: 53px;
+	bottom: 37px;
 	text-align: right;
 	margin-top: -7mm;
 }
