@@ -97,21 +97,14 @@ namespace Bloom.Publish
                 _contextMenuStrip.Items.Add(item);
             }
 
-            //then we don't know if the pdf is out of date, so we assume it is, and don't show the prior pdf
-            _model.BookletPortion = PublishModel.BookletPortions.None;
-            _coverRadio.Checked = _bodyRadio.Checked = _simplePDFRadio.Checked = false;
-
-		    if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
-		    {
-                SetupPublishControl();
-		    }
-            else
-		    {
-		        _model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
-		    }
+			// We choose not to remember the last state this tab might have been in.
+			// Also since we don't know if the pdf is out of date, we assume it is, and don't show the prior pdf.
+			// SetModelFromButtons takes care of both of these things for the model
+			_coverRadio.Checked = _bodyRadio.Checked = _simplePDFRadio.Checked = _uploadRadio.Checked = false;
+			SetModelFromButtons();
+			_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
 
 			UpdateDisplay();
-			//MakeBooklet();
 
             _activated = true;
 		}
@@ -183,7 +176,6 @@ namespace Bloom.Publish
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
-
 
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
@@ -335,8 +327,15 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
 			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-			else // no booklet radio, or cloud radio (We want to upload the all-pages version.)
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+			else
+			{
+				// if one of the other radios is checked we want to upload the all-pages version.
+				// otherwise, we don't know yet.
+				if (_simplePDFRadio.Checked || _uploadRadio.Checked)
+					_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+				else
+					_model.BookletPortion = PublishModel.BookletPortions.None;
+			}
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.ShowCropMarks = _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
 		}
