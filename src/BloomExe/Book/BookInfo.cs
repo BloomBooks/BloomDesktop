@@ -95,6 +95,17 @@ namespace Bloom.Book
 			set { MetaData.Title = value; }
 		}
 
+		/// <summary>
+		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
+		/// This stores a Json string representing lang:title pairs, e.g.,
+		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
+		/// </summary>
+		public string AllTitles
+		{
+			get { return MetaData.AllTitles; }
+			set { MetaData.AllTitles = value; }
+		}
+
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
 		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
 		// What we upload needs to be a functional URL (probably relative to our site root).
@@ -331,6 +342,9 @@ namespace Bloom.Book
 		// Todo: multilingual
 		[JsonProperty("title")]
 		public string Title { get; set; }
+
+		[JsonProperty("allTitles")]
+		public string AllTitles { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnails, pdfs, etc.

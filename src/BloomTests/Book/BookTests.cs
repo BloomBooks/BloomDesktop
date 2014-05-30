@@ -893,6 +893,35 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void Save_UpdatesAllTitles()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+							<textarea lang='de' data-book='bookTitle'>Mein schönen Titel</textarea>
+							<textarea lang='es' data-book='bookTitle'>мy buen título</textarea>
+						</div>
+					</div>
+				</body></html>".Replace("nice title", "\"nice\" title\\topic"));
+
+			var book = CreateBook();
+
+			book.Save();
+
+			// Enhance: the order is not critical.
+			Assert.That(_metadata.AllTitles, Is.EqualTo("{\"de\":\"Mein schönen Titel\",\"en\":\"my \\\"nice\\\" title\\\\topic\",\"es\":\"мy buen título\"}"));
+		}
+
+		[Test]
 		public void AllLanguages_FindsBloomEditableElements()
 		{
 			_bookDom = new HtmlDom(

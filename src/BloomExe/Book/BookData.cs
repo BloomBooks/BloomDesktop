@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using Bloom.Collection;
@@ -816,7 +817,24 @@ namespace Bloom.Book
 				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 				_dom.Title = t;
 				if (info != null)
+				{
 					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+					// Now build the AllTitles field
+					var sb = new StringBuilder();
+					sb.Append("{");
+					foreach (var langForm in title.TextAlternatives.Forms)
+					{
+						if (sb.Length > 1)
+							sb.Append(",");
+						sb.Append("\"");
+						sb.Append(langForm.WritingSystemId);
+						sb.Append("\":\"");
+						sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"","\\\"")); // Escape backslash and double-quote
+						sb.Append("\"");
+					}
+					sb.Append("}");
+					info.AllTitles = sb.ToString();
+				}
 			}
 		}
 
