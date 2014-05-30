@@ -68,6 +68,10 @@ This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctl
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
 	}
 }
+DIV#formatButton
+{
+	display: none !important;
+}
 BUTTON
 {
 	display: none !important;
