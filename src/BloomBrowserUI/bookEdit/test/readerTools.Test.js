@@ -22,7 +22,7 @@ describe("Bloom Edit Controls tests", function() {
     var classValues;
 
     beforeEach(function() {
-        model = new EditControlsModel();
+        model = new ReaderToolsModel();
         model.setSynphony(api);
         spyOn(model, 'updateElementContent');
         // simulated values of class attribute. Currently we ignore the attrName argument, since we only modify class.
