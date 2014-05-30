@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using Bloom.Collection;
 
 namespace Bloom.Edit
 {
-    public class EditControlsModel
+    public class ReaderToolsModel
     {
-        public delegate EditControlsView Factory();//autofac uses this
+        public delegate ReaderToolsView Factory();//autofac uses this
 
         private CollectionSettings _collectionSettings;
 
-        public EditControlsModel(CollectionSettings settings)
+        public ReaderToolsModel(CollectionSettings settings)
         {
             _collectionSettings = settings;
             // Enhance JohnT: eventually we probably persist somewhere what stage or level they are at?
@@ -22,30 +17,9 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Find the element with the indicated ID, and make sure that it has the className in its class attribute if isWanted is true, and not otherwise.
-        /// (Tests currently assume it will be added last, but this is not required.)
-        /// (class names used with this method should not occur as substrings within a longer class name)
-        /// </summary>
-        /// <param name="eltId"></param>
-        /// <param name="isWanted"></param>
-        /// <param name="className"></param>
-        private void SetPresenceOfClass(string eltId, bool isWanted, string className)
-        {
-            var old = GetElementAttribute(eltId, "class");
-            if (isWanted && ! old.Contains(className))
-            {
-                UpdateElementAttribute(eltId, "class", old + " " + className);
-            }
-            else if (!isWanted && old.Contains(className))
-            {
-                UpdateElementAttribute(eltId, "class", old.Replace(className, "").Replace("  ", " ").Trim());
-            }
-        }
-
-        /// <summary>
         /// The view for which we are the model.
         /// </summary>
-        internal IEditControlsView View { get; set; }
+        internal IReaderToolsView View { get; set; }
 
         /// <summary>
         /// Set the InnerHtml of the element identified by the ID. It must exist.
@@ -106,24 +80,14 @@ namespace Bloom.Edit
         /// <param name="id"></param>
         internal void ControlClicked(string id)
         {
-            switch (id)
-            {
+            //switch (id)
+            //{
  
-                //case "setUpStages":
-                //    SetUpStages();
-                //    break;
-            }
+            //    //case "setUpStages":
+            //    //    SetUpStages();
+            //    //    break;
+            //}
         }
-
-        //private void SetUpStages()
-        //{
-        //    // Enhance Phil Hopper (JohnT): this should launch the real Synphony dialog (or some modified version of our own),
-        //    // and then update the Stages list and call UpdateWordList(), UpdateNumberOfStages().
-        //    MessageBox.Show(View as Control,
-        //        "This dialog should be replaced with a Synphony one to configure word lists for stages",
-        //        "Configure Stages");
-        //}
-
 
         internal void PostNavigationInitialize()
         {
