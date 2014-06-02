@@ -166,14 +166,35 @@ namespace Bloom.WebLibraryIntegration
 			}
 
 			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
+
+			//If we previously uploaded the book, but then had a problem, this directory could still be on our harddrive. Clear it out.
+			if (Directory.Exists(wrapperPath))
+			{
+				DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
+			}
+
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
 			UploadDirectory(prefix, wrapperPath, progress);
 
-			Directory.Delete(wrapperPath, true);
+			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
 		}
 
+		private static void DeleteFileSystemInfo(FileSystemInfo fileSystemInfo)
+		{
+			var directoryInfo = fileSystemInfo as DirectoryInfo;
+			if (directoryInfo != null)
+			{
+				foreach (var childInfo in directoryInfo.GetFileSystemInfos())
+				{
+					DeleteFileSystemInfo(childInfo);
+				}
+			}
+
+			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
+			fileSystemInfo.Delete();
+		}
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"

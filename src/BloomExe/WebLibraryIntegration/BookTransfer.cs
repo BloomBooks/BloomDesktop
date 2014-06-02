@@ -594,13 +594,18 @@ namespace Bloom.WebLibraryIntegration
 					done = true;
 					throw ex;
 				});
-			while (!done)
+			var giveUpTime = DateTime.Now.AddSeconds(5);
+			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
 				Application.DoEvents();
 				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
 				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
 				this._htmlThumbnailer.Advance(invokeTarget);
+			}
+			if (!done)
+			{
+				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
 			}
 		}
 
