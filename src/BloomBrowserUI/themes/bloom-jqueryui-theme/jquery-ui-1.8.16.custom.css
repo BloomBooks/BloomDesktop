@@ -1390,10 +1390,10 @@ BUTTON.ui-button::-moz-focus-inner
 }
 .ui-dialog .ui-dialog-titlebar-close SPAN
 {
-    position: absolute;
-    top: 50%;
-    width: 17px;
-    height: 17px;
+	position: absolute;
+	top: 50%;
+	width: 17px;
+	height: 17px;
 	display: block;
 }
 .ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus
