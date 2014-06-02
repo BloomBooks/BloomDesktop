@@ -329,8 +329,8 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 			else
 			{
-				// if one of the other radios is checked we want to upload the all-pages version.
-				// otherwise, we don't know yet.
+				// if one of the other radios is checked we want to show the all-pages version.
+				// otherwise, we don't yet know what version to show, so we don't show one.
 				if (_simplePDFRadio.Checked || _uploadRadio.Checked)
 					_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 				else
