@@ -760,8 +760,9 @@ namespace Bloom
 			}
 */
 			// So we append it to the css instead, making sure it's within the 'mainPageScope', if there is one
-			var cssString = string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
+			var cssString = GetZoomCSS(scale);
 			var pageScope = _browser.Document.GetElementById("mainPageScope");
+			// Gecko's CssText setter is smart enough not to duplicate styles!
 			if (pageScope != null)
 				(pageScope as GeckoHtmlElement).Style.CssText += cssString;
 			else
