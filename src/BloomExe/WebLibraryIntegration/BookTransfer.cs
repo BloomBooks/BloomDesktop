@@ -594,7 +594,8 @@ namespace Bloom.WebLibraryIntegration
 					done = true;
 					throw ex;
 				});
-			while (!done)
+		    var giveUpTime = DateTime.Now.AddSeconds(5);
+			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
 				Application.DoEvents();
@@ -602,6 +603,10 @@ namespace Bloom.WebLibraryIntegration
 				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
                 this._htmlThumbnailer.Advance(invokeTarget);
 			}
+		    if (!done)
+		    {
+		        throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
+		    }
 		}
 
         internal bool IsThisVersionAllowedToUpload()

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // Note that an automated process updates these in the TeamCity build; these ones however are important
-// for whether a local build satisfies BloomParseClient.IsThisVersionAllowedToUpload.
+// for whether a local build satisfies BloomParseClient.GetIsThisVersionAllowedToUpload.
 // [assembly: AssemblyVersion("0.9.999.0")]
 [assembly: AssemblyVersion("2.0.000.0")]
 [assembly: AssemblyFileVersion("2.0.000.0")]
