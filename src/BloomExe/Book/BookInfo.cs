@@ -246,10 +246,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public Pointer[] Languages
+		public LanguageTableReference[] LanguageTableReferences
 		{
-			get { return MetaData.LangPointers; }
-			set { MetaData.LangPointers = value; }
+			get { return MetaData.LanguageTableReferences; }
+			set { MetaData.LanguageTableReferences = value; }
 		}
 
 		/// <summary>
@@ -409,7 +409,7 @@ namespace Bloom.Book
 		public string[] Languages { get { return new string[0]; } set {}}
 
 		[JsonProperty("langPointers")]
-		public Pointer[] LangPointers { get; set; }
+		public LanguageTableReference[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -419,7 +419,7 @@ namespace Bloom.Book
 			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
 			// to an object in another table: in this case the special table of users.
 			if (Uploader == null)
-				Uploader = new Pointer() { ClassName = "_User" };
+				Uploader = new LanguageTableReference() { ClassName = "_User" };
 			Uploader.ObjectId = id;
 		}
 
@@ -428,15 +428,15 @@ namespace Bloom.Book
 		/// This is stored in a special way that parse.com requires for cross-table pointers.
 		/// </summary>
 		[JsonProperty("uploader")]
-		public Pointer Uploader { get; set; }
+		public LanguageTableReference Uploader { get; set; }
 	}
 
 	/// <summary>
 	/// This is the required structure for a parse.com pointer to an object in another table.
 	/// </summary>
-	public class Pointer
+	public class LanguageTableReference
 	{
-		public Pointer()
+		public LanguageTableReference()
 		{
 			Type = "Pointer"; // Required for all parse.com pointers.
 		}
@@ -454,7 +454,7 @@ namespace Bloom.Book
 	/// <summary>
 	/// This class represents the parse.com Language class (for purposes of generating json)
 	/// </summary>
-	public class ParseComLanguage
+	public class LanguageDescriptor
 	{
 		[JsonIgnore]
 		public string Json
