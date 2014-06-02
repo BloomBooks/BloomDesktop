@@ -434,9 +434,9 @@ namespace Bloom.Collection
 			}
 		}
 
-		internal ParseComLanguage[] MakeLanguageUploadData(string[] isoCodes)
+		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
 		{
-			var result = new ParseComLanguage[isoCodes.Length];
+			var result = new LanguageDescriptor[isoCodes.Length];
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
@@ -457,7 +457,7 @@ namespace Bloom.Collection
 					if (string.IsNullOrEmpty(ethCode))
 						ethCode = code;
 				}
-				result[i] = new ParseComLanguage() { IsoCode = code, Name = name, EthnologueCode = ethCode };
+				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
 			}
 			return result;
 		}

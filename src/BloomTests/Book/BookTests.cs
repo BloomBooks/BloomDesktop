@@ -90,7 +90,7 @@ namespace BloomTests.Book
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60, new MonitorTarget() });
+			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] {new MonitorTarget() });
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
 	  }
@@ -897,6 +897,35 @@ namespace BloomTests.Book
 			topicElt.InnerText = "Science";
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
+
+		[Test]
+		public void Save_UpdatesAllTitles()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+							<textarea lang='de' data-book='bookTitle'>Mein schönen Titel</textarea>
+							<textarea lang='es' data-book='bookTitle'>мy buen título</textarea>
+						</div>
+					</div>
+				</body></html>".Replace("nice title", "\"nice\" title\\topic"));
+
+			var book = CreateBook();
+
+			book.Save();
+
+			// Enhance: the order is not critical.
+			Assert.That(_metadata.AllTitles, Is.EqualTo("{\"de\":\"Mein schönen Titel\",\"en\":\"my \\\"nice\\\" title\\\\topic\",\"es\":\"мy buen título\"}"));
 		}
 
 		[Test]

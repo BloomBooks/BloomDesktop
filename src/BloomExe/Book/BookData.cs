@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using Bloom.Collection;
@@ -187,8 +188,19 @@ namespace Bloom.Book
 				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 
-			if (info != null)
-				info.TagsList = tag;
+			if (info != null && tag != null)
+			{
+				// In case we're running localized, for now we'd like to record in the metadata the original English tag.
+				// This allows the book to be found by this tag in the current, non-localized version of bloom library.
+				// Eventually it will make it easier, we think, to implement localization of bloom library.
+				string originalTag;
+				if (RuntimeInformationInjector.TopicReversal == null ||
+					!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
+				{
+					originalTag = tag; // just use it unmodified if we don't have anything
+				}
+				info.TagsList = originalTag;
+			}
 		}
 
 		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -805,7 +817,24 @@ namespace Bloom.Book
 				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 				_dom.Title = t;
 				if (info != null)
+				{
 					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+					// Now build the AllTitles field
+					var sb = new StringBuilder();
+					sb.Append("{");
+					foreach (var langForm in title.TextAlternatives.Forms)
+					{
+						if (sb.Length > 1)
+							sb.Append(",");
+						sb.Append("\"");
+						sb.Append(langForm.WritingSystemId);
+						sb.Append("\":\"");
+						sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"","\\\"")); // Escape backslash and double-quote
+						sb.Append("\"");
+					}
+					sb.Append("}");
+					info.AllTitles = sb.ToString();
+				}
 			}
 		}
 

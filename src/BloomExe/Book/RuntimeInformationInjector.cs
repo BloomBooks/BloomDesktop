@@ -109,6 +109,11 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// keeps track of the most recent set of topics we injected, mapping the localization back to the original.
+		/// </summary>
+		public static Dictionary<string, string> TopicReversal;
+
+		/// <summary>
 		/// stick in a json with various settings we want to make available to the javascript
 		/// </summary>
 		public static void AddUISettingsToDom(HtmlDom pageDom, CollectionSettings collectionSettings, IFileLocator fileLocator)
@@ -136,9 +141,11 @@ namespace Bloom.Book
 			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
 			var builder = new StringBuilder();
 			builder.Append("[");
+			TopicReversal = new Dictionary<string, string>();
 			foreach (var topic in topics)
 			{
 				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, "shows in the topics chooser in the edit tab");
+				TopicReversal[localized] = topic;
 				builder.Append("\""+localized+"\", ");
 			}
 			builder.Append("]");
