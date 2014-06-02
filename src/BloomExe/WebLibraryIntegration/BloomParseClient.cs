@@ -230,7 +230,7 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        public dynamic CreateLanguage(ParseComLanguage lang)
+        public dynamic CreateLanguage(LanguageDescriptor lang)
         {
             if (!LoggedIn)
                 throw new ApplicationException();
@@ -252,12 +252,12 @@ namespace Bloom.WebLibraryIntegration
             return JObject.Parse(response.Content);
         }
 
-        public bool LanguageExists(ParseComLanguage lang)
+        public bool LanguageExists(LanguageDescriptor lang)
         {
             return LanguageCount(lang) > 0;
         }
 
-        internal int LanguageCount(ParseComLanguage lang)
+        internal int LanguageCount(LanguageDescriptor lang)
         {
             var getLang = MakeGetRequest("classes/language");
             getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
@@ -271,7 +271,7 @@ namespace Bloom.WebLibraryIntegration
             return results.Count;
         }
 
-        internal string LanguageId(ParseComLanguage lang)
+        internal string LanguageId(LanguageDescriptor lang)
         {
             var getLang = MakeGetRequest("classes/language");
             getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
@@ -335,9 +335,9 @@ namespace Bloom.WebLibraryIntegration
         /// </summary>
         /// <param name="languages"></param>
         /// <returns></returns>
-        internal Pointer[] GetLanguagePointers(ParseComLanguage[] languages)
+        internal LanguageTableReference[] GetLanguagePointers(LanguageDescriptor[] languages)
         {
-            var result = new Pointer[languages.Length];
+            var result = new LanguageTableReference[languages.Length];
             for (int i = 0; i < languages.Length; i++)
             {
                 var lang = languages[i];
@@ -347,7 +347,7 @@ namespace Bloom.WebLibraryIntegration
                     var language = CreateLanguage(lang);
                     id = language["objectId"].Value;
                 }
-                result[i] = new Pointer() {ClassName = "language", ObjectId = id};
+                result[i] = new LanguageTableReference() {ClassName = "language", ObjectId = id};
             }
             return result;
         }

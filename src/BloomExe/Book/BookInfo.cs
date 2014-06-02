@@ -100,13 +100,24 @@ namespace Bloom.Book
             }
 		}
 
+        /// <summary>
+        /// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
+        /// This stores a Json string representing lang:title pairs, e.g., 
+        /// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
+        /// </summary>
+        public string AllTitles
+        {
+            get { return MetaData.AllTitles; }
+            set { MetaData.AllTitles = value; }
+        }
+
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
 		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
 		// What we upload needs to be a functional URL (probably relative to our site root).
 		public string Thumbnail
 		{
-			get { return MetaData.Thumbnail; }
-			set { MetaData.Thumbnail = value; }
+			get { return MetaData.BaseUrl; }
+			set { MetaData.BaseUrl = value; }
 		}
 
 		public string Isbn
@@ -240,10 +251,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-        public Pointer[] Languages
+        public LanguageTableReference[] LanguageTableReferences
 		{
-			get { return MetaData.LangPointers; }
-            set { MetaData.LangPointers = value; }
+			get { return MetaData.LanguageTableReferences; }
+            set { MetaData.LanguageTableReferences = value; }
 		}
 
 		/// <summary>
@@ -337,11 +348,13 @@ namespace Bloom.Book
         [JsonProperty("title")]
         public string Title { get; set; }
 
+        [JsonProperty("allTitles")]
+        public string AllTitles { get; set; }
+
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
-		// containing the actual url where we can grab the thumbnail.
-		// Locally the thumbnail is always called just thumbnail.png.
-		[JsonProperty("thumbnail")]
-		public string Thumbnail { get; set; }
+		// containing the actual url where we can grab the thumbnails, pdfs, etc.
+		[JsonProperty("baseUrl")]
+		public string BaseUrl { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the book order file which when opened by Bloom causes it
@@ -401,7 +414,7 @@ namespace Bloom.Book
 		public string[] Languages { get { return new string[0]; } set {}}
 
         [JsonProperty("langPointers")]
-        public Pointer[] LangPointers { get; set; }
+        public LanguageTableReference[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -411,7 +424,7 @@ namespace Bloom.Book
 			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
 			// to an object in another table: in this case the special table of users.
 			if (Uploader == null)
-				Uploader = new Pointer() { ClassName = "_User" };
+				Uploader = new LanguageTableReference() { ClassName = "_User" };
 			Uploader.ObjectId = id;
 		}
 
@@ -420,15 +433,15 @@ namespace Bloom.Book
 		/// This is stored in a special way that parse.com requires for cross-table pointers.
 		/// </summary>
 		[JsonProperty("uploader")]
-		public Pointer Uploader { get; set; }
+		public LanguageTableReference Uploader { get; set; }
 	}
 
 	/// <summary>
 	/// This is the required structure for a parse.com pointer to an object in another table.
 	/// </summary>
-	public class Pointer
+	public class LanguageTableReference
 	{
-	    public Pointer()
+	    public LanguageTableReference()
 	    {
 	        Type = "Pointer"; // Required for all parse.com pointers.
 	    }
@@ -446,7 +459,7 @@ namespace Bloom.Book
     /// <summary>
     /// This class represents the parse.com Language class (for purposes of generating json)
     /// </summary>
-    public class ParseComLanguage
+    public class LanguageDescriptor
     {
         [JsonIgnore]
         public string Json

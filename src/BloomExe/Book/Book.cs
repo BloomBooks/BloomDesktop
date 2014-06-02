@@ -1532,8 +1532,14 @@ namespace Bloom.Book
         /// <param name="errorCallback"></param>
     	public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
     	{
-			if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
-				return;
+    	    if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
+    	    {
+                // thumbnail is marked readonly, so just use it
+    	        Image thumb;
+                _storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
+                callback(this.BookInfo, thumb);
+    	        return;
+    	    }
 
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
     	    thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;

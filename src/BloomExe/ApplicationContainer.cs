@@ -66,8 +66,7 @@ namespace Bloom
                 //HtmlThumbnailer & ConfigurationDialog, at least, use this.
                 builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
 
-                const int kListViewIconHeightAndWidth = 70;
-                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).SingleInstance();
+                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<MonitorTarget>())).SingleInstance();
 
 				_container = builder.Build();
 			}

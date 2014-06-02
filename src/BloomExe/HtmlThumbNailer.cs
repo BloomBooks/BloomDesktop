@@ -36,7 +36,7 @@ namespace Bloom
 
     	private bool _disposed;
 
-        public HtmlThumbNailer(int widthInPixels, int heightInPixels, MonitorTarget monitorObjectForBrowserNavigation)
+        public HtmlThumbNailer(MonitorTarget monitorObjectForBrowserNavigation)
         {
             if (_theOnlyOneAllowed != null)
             {
