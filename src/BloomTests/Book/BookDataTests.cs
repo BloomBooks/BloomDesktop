@@ -46,7 +46,7 @@ namespace BloomTests.Book
             VerifyLangData(results[2], "xyz", "Cockney", "xyz");
         }
 
-        void VerifyLangData(ParseComLanguage lang, string code, string name, string ethCode)
+        void VerifyLangData(LanguageDescriptor lang, string code, string name, string ethCode)
         {
             Assert.That(lang.IsoCode, Is.EqualTo(code));
             Assert.That(lang.Name, Is.EqualTo(name));
