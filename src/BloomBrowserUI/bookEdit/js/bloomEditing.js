@@ -523,8 +523,8 @@ function UpdateOverlay(container, img) {
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
-    var license = $(img).attr('data-license');
-    if (!license || license.length == 0) {
+    var copyright = $(img).attr('data-copyright');
+    if (!copyright || copyright.length == 0) {
 
         var buttonModifier = "largeImageButton";
         if ($(container).height() < 80) {
