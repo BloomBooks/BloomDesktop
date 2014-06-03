@@ -983,12 +983,12 @@ namespace BloomTests.Book
 			// Creative Commons License
 		    var licenseData = new Metadata();
 		    licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
-		    licenseData.License.RightsStatement = "Please acknowledge nicely";
+            licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
 			book.UpdateLicenseMetdata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
-			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
+            Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
 
 			// Custom License
 		    licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
