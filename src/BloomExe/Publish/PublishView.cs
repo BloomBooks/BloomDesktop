@@ -327,15 +327,13 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
 			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-			else
-			{
-				// if one of the other radios is checked we want to show the all-pages version.
-				// otherwise, we don't yet know what version to show, so we don't show one.
-				if (_simplePDFRadio.Checked || _uploadRadio.Checked)
+			// The version we want to upload for web previews is the one that is shown for
+			// the _simplePDFRadio button, so pick AllPagesNoBooklet for both of these.
+			else if (_simplePDFRadio.Checked || _uploadRadio.Checked)
 					_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				else
-					_model.BookletPortion = PublishModel.BookletPortions.None;
-			}
+			// otherwise, we don't yet know what version to show, so we don't show one.
+			else
+				_model.BookletPortion = PublishModel.BookletPortions.None;
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.ShowCropMarks = _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
 		}
