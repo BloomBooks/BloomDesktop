@@ -330,7 +330,7 @@ namespace Bloom.Publish
 			// The version we want to upload for web previews is the one that is shown for
 			// the _simplePDFRadio button, so pick AllPagesNoBooklet for both of these.
 			else if (_simplePDFRadio.Checked || _uploadRadio.Checked)
-					_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 			// otherwise, we don't yet know what version to show, so we don't show one.
 			else
 				_model.BookletPortion = PublishModel.BookletPortions.None;
