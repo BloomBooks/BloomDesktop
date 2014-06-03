@@ -270,12 +270,14 @@ namespace Bloom.Publish
 	            _model.BookSelection.CurrentSelection);
 			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
+	        _publishControl.Dock = _pdfViewer.Dock;
 			_publishControl.Anchor = _pdfViewer.Anchor;
 	        var saveBackColor = _publishControl.BackColor;
 	        Controls.Add(_publishControl); // somehow this changes the backcolor
 	        _publishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
+            // Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (whcih is Left) for Fill to work.
+            _publishControl.BringToFront();
 	    }
-
 
 	    private void OnBookletRadioChanged(object sender, EventArgs e)
         {
