@@ -1598,7 +1598,7 @@ namespace Bloom.Book
             // Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
             // to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
             // in the language of the web site user rather than the language of the uploader.
-            notes = regex.Replace(notes,
+            notes = regex.Replace(notes ?? "",
                 new MatchEvaluator(
                     m =>
                         m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
