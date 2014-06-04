@@ -100,6 +100,10 @@ DIV.coverBottomLangName
 {
 	font-size: 14pt;
 }
+.A4Landscape.bigBookFrontmatter *:not(.pageLabel)
+{
+    font-size: 16pt;
+}
 .A4Landscape.bloom-metaData
 {
 	margin-top: 29px;
