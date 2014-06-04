@@ -2,7 +2,9 @@
 {
 	BODY
 	{
-		background-color: #363333;
+		/* This caused a pesky line to show up on pdfs
+		background-color: #363333; */
+		background-color: white;
 	}
 }
 @media screen
