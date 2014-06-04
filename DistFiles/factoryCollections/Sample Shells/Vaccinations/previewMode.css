@@ -1,12 +1,3 @@
-@media print
-{
-	BODY
-	{
-		/* This caused a pesky line to show up on pdfs
-		background-color: #363333; */
-		background-color: white;
-	}
-}
 @media screen
 {
 	BODY
