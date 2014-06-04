@@ -1586,8 +1586,11 @@ namespace Bloom.Book
 		{
 			_bookData.SetLicenseMetdata(metadata);
 			BookInfo.License = metadata.License.Token;
+			BookInfo.Copyright = metadata.CopyrightNotice;
 			// obfuscate any emails in the license notes.
 			var notes = metadata.License.RightsStatement;
+			if (notes == null)
+				return;
 			// recommended at http://www.regular-expressions.info/email.html.
 			// This purposely does not handle non-ascii emails, or ones with special characters, which he says few servers will handle anyway.
 			// It is also not picky about exactly valid top-level domains (or country codes), and will exclude the rare 'museum' top-level domain.
@@ -1598,13 +1601,12 @@ namespace Bloom.Book
 			// Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
 			// to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
 			// in the language of the web site user rather than the language of the uploader.
-			notes = regex.Replace(notes ?? "",
+			notes = regex.Replace(notes,
 				new MatchEvaluator(
 					m =>
 						m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
 						"(download book to read full email address)"));
 			BookInfo.LicenseNotes = notes;
-			BookInfo.Copyright = metadata.CopyrightNotice;
 		}
 
 		public void SetTitle(string name)
