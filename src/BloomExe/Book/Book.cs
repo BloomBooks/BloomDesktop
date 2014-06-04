@@ -897,23 +897,31 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
 		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
 		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
 		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
 		/// for to identify the main content of the book?
-		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
-		/// language.
+		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
+		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
+        /// we'll say that a book contains a language if it has a title defined in that language.
 		/// </summary>
 	    public IEnumerable<string> AllLanguages
 	    {
 		    get
 		    {
-			    return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+			    var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 				    .Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				    .Select(div => div.Attributes["lang"].Value)
 					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 				    .Distinct();
+                if (langList.Count() == 0)
+                    langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
+                        .Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
+                        .Select(div => div.Attributes["lang"].Value)
+                        .Where(lang => lang != "*" && lang != "z" && lang != "")
+                        .Distinct();
+                return langList;
 		    }
 	    }
 
