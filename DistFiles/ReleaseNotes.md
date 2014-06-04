@@ -1,4 +1,7 @@
-﻿## 1.2.4 - 22 Mar 2014
+﻿## 1.2.7 - 4 June 2014
+* Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
+
+## 1.2.4 - 22 Mar 2014
 * Boxes now turn red when text overflow is detected.
 
 ## 1.2.1 - 20 Mar 2014
