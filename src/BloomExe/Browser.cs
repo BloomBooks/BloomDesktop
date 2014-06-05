@@ -545,7 +545,9 @@ namespace Bloom
 
 				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
 					{
-						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
+						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
