@@ -198,7 +198,7 @@
 		does not know when a new version of the help file is available, so it can get stale,
 		which is fine for developers, but not for our official builds.
 		-->
-		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<WebDownload FileUri="https://www.dropbox.com/s/yyz41un2smi2u7n/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
 
   <Target Name="MakeWixForXulRunner" >
