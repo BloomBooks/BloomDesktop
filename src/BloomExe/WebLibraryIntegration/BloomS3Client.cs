@@ -210,11 +210,15 @@ namespace Bloom.WebLibraryIntegration
             }
             prefix = prefix + Path.GetFileName(directoryPath) + kDirectoryDelimeterForS3;
 
+            var filesToUpload = Directory.GetFiles(directoryPath);
             // Remember the url that can be used to download files like thumbnails and preview.pdf. This seems to work but I wish
             // I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-            BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);
-
-            foreach (string file in Directory.GetFiles(directoryPath))
+            // This method gets called for the root directory (ending in guid), the main directory (ending in book name), and subdirectories.
+            // We want to keep the one that ends in the book name...the main root directory.
+            // This should be the first non-empty directory we are passed (the root only has a folder in it)
+            if (BaseUrl == null && filesToUpload.Length > 0)
+                BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
+            foreach (string file in filesToUpload)
             {
                 string fileName = Path.GetFileName(file);
                 var request = new TransferUtilityUploadRequest()
