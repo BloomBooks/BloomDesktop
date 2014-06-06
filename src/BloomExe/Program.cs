@@ -58,6 +58,7 @@ namespace Bloom
 					Settings.Default.Save();
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
+				Analytics.UrlThatReturnsExternalIpAdress = "http://icanhazip.com";
 
 #if DEBUG
 				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
