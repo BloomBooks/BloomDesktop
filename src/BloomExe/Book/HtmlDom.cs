@@ -504,8 +504,7 @@ namespace Bloom.Book
 				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
 				href = href.Replace("%5C", "/");
 
-
-				var fileName = Path.GetFileName(href).Replace('\\', '/');
+				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
 				if (!fileName.StartsWith("xx"))
 					//I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
