@@ -100,7 +100,7 @@ DIV.coverBottomLangName
 {
 	font-size: 14pt;
 }
-.A4Landscape.bigBookFrontmatter *:not(.pageLabel)
+.A4Landscape.bigBookBackmatter *:not(.pageLabel)
 {
     font-size: 16pt;
 }
