@@ -98,7 +98,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");        
         }
 
-
+        public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
 
 	    public void InvokeContentsChanged(EventArgs e)
         {
@@ -190,7 +190,7 @@ namespace Bloom.Book
 					callback(Resources.Error70x70);
 				}
 				Image thumb;
-				if (_storage.TryGetPremadeThumbnail(out thumb))
+				if (_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
 					callback(thumb);
 					return;
@@ -1524,10 +1524,22 @@ namespace Bloom.Book
 			}
 		}
 
+        /// <summary>
+        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// </summary>
+        /// <param name="thumbnailOptions"></param>
+        /// <param name="callback"></param>
+        /// <param name="errorCallback"></param>
     	public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
     	{
-			if (!_storage.RemoveBookThumbnail())
-				return;
+    	    if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
+    	    {
+                // thumbnail is marked readonly, so just use it
+    	        Image thumb;
+                _storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
+                callback(this.BookInfo, thumb);
+    	        return;
+    	    }
 
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
     	    thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
@@ -1648,14 +1660,5 @@ namespace Bloom.Book
         {
             return OurHtmlDom.GetMetaValue("bloomBookLineage","");
         }
-
-		/// <summary>
-		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
-		/// </summary>
-		/// <param name="invokeTarget">A control created on the UI thread.</param>
-		internal void MakeThumbnailerAdvance(Control invokeTarget)
-		{
-			_thumbnailProvider.Advance(invokeTarget);
-		}
-	}
+    }
 }

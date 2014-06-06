@@ -11,11 +11,8 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
-using Bloom.CollectionTab;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
-using Microsoft.Win32;
-using Palaso.Extensions;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -107,10 +104,8 @@ namespace Bloom
                         }
                         return;
                     }
-
                     if (SendArgsToOtherBloomInstance(args))
                         return;
-
 #if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
                     if (args.Length > 1)
                         Thread.Sleep(3000);
@@ -126,7 +121,6 @@ namespace Bloom
                     SetUpErrorHandling();
 
                     _applicationContainer = new ApplicationContainer();
-                    _bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
                     if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
                     {
@@ -143,6 +137,7 @@ namespace Bloom
                     }
 
 
+                    _bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
                     SetUpLocalization();
                     Logger.Init();

@@ -74,14 +74,14 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
             // , adjust: { y: -20 }
         };
     }
-    else { // with the big back covers, the adjustment just makes things worse.      
+    else { // with the big back covers, the adjustment just makes things worse.
         pos = {
             at: 'right center',
             my: 'left center'
         };
     }
 
-    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
+    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
@@ -101,9 +101,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         shouldShowAlways = false;
         hideEvents = 'focusout mouseleave';
     }
-    
+
     whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
-    
+
     $(targetElement).qtip({
         content: whatToSay,
         position: pos,
@@ -144,7 +144,7 @@ function Cleanup() {
     $("*.editTimeOnly").remove();
     $("*.dragHandle").remove();
     $("*").removeAttr("data-easytabs");
-    
+
     $("div.ui-resizable-handle").remove();
     $('div, figure').each(function() {
         $(this).removeClass('ui-draggable');
@@ -180,7 +180,7 @@ function AddToolbox(){
                     var $x = $($(ui.draggable).clone()[0]);
                     // $x.text("");
 
-                    //we need different behavior when it is in the toolbox vs. once it is live 
+                    //we need different behavior when it is in the toolbox vs. once it is live
                     $x.attr("class", $x.data("classesafterdrop"));
                     $x.removeAttr("classesafterdrop");
 
@@ -200,7 +200,7 @@ function AddToolbox(){
                     $x.removeClass("widgetInToolbox");
                     SetupResizableElement($x);
                     SetupDeletable($x);
-                    
+
                     $(this).append($x);
                 }
             }
@@ -211,7 +211,7 @@ function AddToolbox(){
         var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
         // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
         var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
-         
+
         var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
 
 
@@ -272,7 +272,7 @@ function GetStyleClassFromElement(element) {
 
  //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
-    
+
     var divForBubble = $(group).clone();
     $(divForBubble).removeAttr('style');
 
@@ -286,7 +286,7 @@ function MakeSourceTextDivForGroup(group) {
             $(this).removeClass(styleClass);
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
-    
+
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
@@ -302,14 +302,14 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function() {
         $(this).remove();
     });
-    
+
     //in case some formatting didn't get cleaned up
     StyleEditor.CleanupElement(divForBubble);
 
     //if there are no languages to show in the bubble, bail out now
     if ($(divForBubble).find("textarea, div").length == 0)
         return;
-    
+
 /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument    $(this).after(divForBubble);*/
 
     var selectorOfDefaultTab="li:first-child";
@@ -377,7 +377,7 @@ function MakeSourceTextDivForGroup(group) {
 	    showEvents = false;
 	    hideEvents = false;
 	    shouldShowAlways = true;
-        
+
         //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
             showEvents = 'focusin';
@@ -522,8 +522,8 @@ function UpdateOverlay(container, img) {
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
-    var license = $(img).attr('data-license');
-    if (!license || license.length == 0) {
+    var copyright = $(img).attr('data-copyright');
+    if (!copyright || copyright.length == 0) {
 
         var buttonModifier = "largeImageButton";
         if ($(container).height() < 80) {
@@ -640,23 +640,23 @@ jQuery.fn.IsOverflowing = function () {
     // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
     // so we'll apply the same 'fudge' factor to both comparisons.
     var focusedBorderFudgeFactor = 2;
-	
+
 	 //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
-	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it 
+	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
 	 //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
 	 //element.
 	 var growFromCenterVerticalFudgeFactor =0;
 	 if($(element).data('firefoxheight')){
 		growFromCenterVerticalFudgeFactor = 2;
 	 }
-	 
+
 	 //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
 	 //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
 	 // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
 	 var shortBoxFudgeFactor = 4;
-	 
+
 	//console.log('s='+element.scrollHeight+' c='+element.clientHeight);
-		
+
 	 return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
 			 element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
 		 elemBottom > parentBottom + focusedBorderFudgeFactor;
@@ -927,7 +927,7 @@ var resizeTimer;
 var windowBorder = 12; // window border is about 12px
 function resizeAccordion() {
     var windowHeight = $(window).height();
-    var root = $(".editControlsRoot");
+    var root = $(".readerToolsRoot");
     // Set accordion container height to fit in new window size
     // Then accordion Resize() will adjust it to fit the container
     root.height(windowHeight - windowBorder);
@@ -1036,10 +1036,10 @@ $(document).ready(function () {
     $("*.bloom-translationGroup > label.placeholder").each(function () {
 
         var labelText = $(this).text();
-         
+
         //put the attributes on the individual child divs
         $(this).parent().find('.bloom-editable').each(function () {
-             
+
             //enhance: it would make sense to allow each of these to be customized for their div
             //so that you could have a placeholder that said "Name in {lang}", for example.
             $(this).attr('data-placeholder', labelText);
@@ -1106,7 +1106,7 @@ $(document).ready(function () {
             }
 
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-             
+
             whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
             var pos = { at: 'right center',
@@ -1220,7 +1220,7 @@ $(document).ready(function () {
     SetOverlayForImagesWithoutMetadata();
 
     //focus on the first editable field
-    
+
     SetupShowingTopicChooserWhenTopicIsClicked();
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
@@ -1247,7 +1247,7 @@ $(document).ready(function () {
             ResetRememberedSize(this);
         });
     });
-     
+
     var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
 
     $("div.bloom-editable:visible").each(function () {

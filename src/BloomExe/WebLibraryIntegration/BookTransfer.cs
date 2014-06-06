@@ -315,7 +315,7 @@ namespace Bloom.WebLibraryIntegration
 		    try
 		    {
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
-				metadata.Thumbnail = _s3Client.ThumbnailUrl;
+				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
 				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
@@ -431,7 +431,9 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
-				MessageBox.Show("To use this feature, you must first run Bloom normally and log in.");
+                Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
+                    "For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+			    return;
 			}
 			using (var dlg = new BulkUploadProgressDlg())
 			{
@@ -547,12 +549,14 @@ namespace Bloom.WebLibraryIntegration
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.Languages = book.AllLanguages.ToArray();
+            book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book, invokeTarget);
-			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
+            MakeThumbnail(book, 70, invokeTarget);
+            MakeThumbnail(book, 256, invokeTarget);
+            //the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
+            var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
@@ -569,15 +573,19 @@ namespace Bloom.WebLibraryIntegration
 			return result;
 		}
 
-		static void RebuildThumbnail(Book.Book book, Control invokeTarget)
+		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
 		{
 			bool done = false;
 			string error = null;
 
 		    HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
 		    {
-		        CenterImageUsingTransparentPadding = false
+		        CenterImageUsingTransparentPadding = false,
 		        //since this is destined for HTML, it's much easier to handle if there is no pre-padding
+
+                Height=height,
+                Width =-1,
+                FileName = "thumbnail-"+height+".png"
 		    };
 
 			book.RebuildThumbNailAsync(options, (info, image) => done = true,
@@ -586,14 +594,19 @@ namespace Bloom.WebLibraryIntegration
 					done = true;
 					throw ex;
 				});
-			while (!done)
+		    var giveUpTime = DateTime.Now.AddSeconds(5);
+			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
 				Application.DoEvents();
 				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
 				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				book.MakeThumbnailerAdvance(invokeTarget);
+                this._htmlThumbnailer.Advance(invokeTarget);
 			}
+		    if (!done)
+		    {
+		        throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
+		    }
 		}
 
         internal bool IsThisVersionAllowedToUpload()

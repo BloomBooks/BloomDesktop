@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Bloom.Book;
 using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
@@ -432,6 +433,34 @@ namespace Bloom.Collection
 	            throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
 	        }
 	    }
+
+        internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
+        {
+            var result = new LanguageDescriptor[isoCodes.Length];
+            for (int i = 0; i < isoCodes.Length; i++)
+            {
+                var code = isoCodes[i];
+                var data = _lookupIsoCode.GetExactLanguageMatch(code);
+                string name;
+                if (code == Language1Iso639Code)
+                    name = Language1Name;
+                else if (data == null)
+                    name = code;
+                else
+                    name = data.Name;
+                string ethCode;
+                if (data == null)
+                    ethCode = code;
+                else
+                {
+                    ethCode = data.ISO3Code;
+                    if (string.IsNullOrEmpty(ethCode))
+                        ethCode = code;
+                }
+                result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
+            }
+            return result;
+        }
     }
 }
 

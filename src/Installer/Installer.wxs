@@ -307,7 +307,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
       
       <ComponentGroupRef Id ="DistFiles"/>
       <ComponentGroupRef Id ="BrowserUIFiles"/>
-      <ComponentGroupRef Id="wkhtmltopdf" />
       <ComponentGroupRef Id="XulRunner" />
 
 

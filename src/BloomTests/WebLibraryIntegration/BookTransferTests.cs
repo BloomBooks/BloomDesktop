@@ -23,8 +23,9 @@ namespace BloomTests.WebLibraryIntegration
 	    private BloomParseClient _parseClient;
 	    private DownloadOrderList _downloadOrders;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
+        private HtmlThumbNailer _htmlThumbNailer;
 
-		[SetUp]
+        [SetUp]
         public void Setup()
         {
             _workFolder = new TemporaryFolder("unittest");
@@ -38,13 +39,15 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_downloadOrders = new DownloadOrderList();
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new HtmlThumbNailer(30,30,new MonitorTarget()),  _downloadOrders);
+		    _htmlThumbNailer = new HtmlThumbNailer(new MonitorTarget());
+		    _transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer,  _downloadOrders);
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
         }
 
         [TearDown]
         public void TearDown()
         {
+            _htmlThumbNailer.Dispose();
             _workFolder.Dispose();
         }
 
@@ -195,9 +198,8 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
 
 		    var record = _parseClient.GetSingleBookRecord(metadata.Id);
-		    string thumbnail = record.thumbnail;
-			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
-			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
+            string baseUrl = record.baseUrl;
+            Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
 		    string order = record.bookOrder;
 			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
@@ -221,6 +223,34 @@ namespace BloomTests.WebLibraryIntegration
 		    var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest);
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 		}
+
+        [Test]
+        public void GetLanguagePointers_CreatesLanguagesButDoesNotDuplicate()
+        {
+			Login();
+            _parseClient.DeleteLanguages();
+            _parseClient.CreateLanguage(new LanguageDescriptor() {IsoCode = "en", Name="English", EthnologueCode = "eng"});
+            _parseClient.CreateLanguage(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
+            Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
+            Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
+            Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
+            Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
+
+            var pointers = _parseClient.GetLanguagePointers(new[]
+            {
+                new LanguageDescriptor() {IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
+                new LanguageDescriptor() {IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
+            });
+            Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
+            Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
+
+            Assert.That(pointers[0], Is.Not.Null);
+            Assert.That(pointers[0].ClassName, Is.EqualTo("language"));
+            var first = _parseClient.GetLanguage(pointers[0].ObjectId);
+            Assert.That(first.name.Value, Is.EqualTo("MyLang"));
+            var second = _parseClient.GetLanguage(pointers[1].ObjectId);
+            Assert.That(second.name.Value, Is.EqualTo("MyOtherLang"));
+        }
 
 	    [Test]
 	    public void UploadBook_NotLoggedIn_Throws()

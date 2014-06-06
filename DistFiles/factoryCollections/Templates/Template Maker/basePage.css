@@ -38,9 +38,6 @@ FIELDSET, A IMG
 {
 	border: 0;
 }
-/*Bloom uses labels to make bubbles*/
-.bloom-translationGroup label {display:none} 
-
 BODY
 {
 	font-size: 100%;
@@ -188,10 +185,7 @@ DIV.bloom-page.A4Portrait
 {
 	width: 108mm;
 	height: 175mm;
-	/*+placement:anchor-top-left 0 15mm;*/
-	position: absolute;
-	left: 0;
-	top: 15mm;
+	margin-top: 15mm;
 }
 .A4Portrait DIV.marginBox
 {
@@ -211,13 +205,19 @@ DIV.bloom-page.A4Portrait
 	left: 0;
 	top: 15mm;
 }
-DIV.bloom-page:nth-of-type(odd) DIV.marginBox
+.bloom-page:nth-of-type(odd) .marginBox
 {
 	margin-left: 15mm;
 }
-DIV.bloom-page:nth-of-type(even) DIV.marginBox
+.bloom-page:nth-of-type(even) .marginBox
 {
 	margin-left: 25mm;
+}
+.bloom-page.outsideFrontCover .marginBox, .bloom-page.outsideBackCover .marginBox
+{
+	/*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
+	margin-left: auto;
+	margin-right: auto;
 }
 .A5Landscape DIV.marginBox
 {
@@ -245,4 +245,20 @@ DIV.bloom-page:nth-of-type(even) DIV.marginBox
 	left: 13.8mm;
 	top: 12.8mm;
 	height: 178.5mm;
+}
+/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+LABEL.bubble, LABEL.placeholder
+{
+	display: none;
+}
+.superscript
+{
+	vertical-align: super;
+	font-size: 80%;
+}
+H1
+{
+	font-weight: bold !important;
+	font-size: 120%;
+	color: #1C27D2;
 }
