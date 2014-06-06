@@ -9,9 +9,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.ImageProcessing;
 using Bloom.Library;
-using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -140,9 +138,6 @@ namespace Bloom
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
-				const int kListViewIconHeightAndWidth = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
-
 				builder.Register<LanguageSettings>(c =>
 													{
 														var librarySettings = c.Resolve<CollectionSettings>();
@@ -227,12 +222,12 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
-
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
 

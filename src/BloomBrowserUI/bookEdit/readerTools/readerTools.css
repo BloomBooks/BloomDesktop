@@ -1,5 +1,5 @@
-/*Styles for EditControls.htm*/
-DIV.editControlsRoot
+/*Styles for ReaderTools.htm*/
+DIV.readerToolsRoot
 {
 	background-color: #404040;
 	color: white;
@@ -107,8 +107,9 @@ DIV.sortItem
 	display: inline-block;
 	color: white;
 	padding: 2px 3px;
+	cursor: pointer;
 }
-SPAN.ofStage, SPAN.ofLevel
+SPAN.ofStage
 {
 	font-size: xx-small;
 }
@@ -120,3 +121,5 @@ TD.disabledLimit
 {
 	visibility: hidden;
 }
+
+.hidden { display: none !important; }

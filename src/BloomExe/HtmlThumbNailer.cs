@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -17,21 +15,18 @@ using BloomTemp;
 using Gecko.Utils;
 using Palaso.Code;
 using Palaso.Reporting;
-using Palaso.Xml;
 using Gecko;
-using Segmentio;
 
 namespace Bloom
 {
 	public class HtmlThumbNailer : IDisposable
 	{
 		Dictionary<string, Image> _images = new Dictionary<string, Image>();
-		private readonly int _widthInPixels = 70;
-		private readonly int _heightInPixels = 70;
 		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
 		private Color _backgroundColorOfResult;
 		private bool _browserHandleCreated;
 		private Queue<ThumbnailOrder> _orders = new Queue<ThumbnailOrder>();
+		private static HtmlThumbNailer _theOnlyOneAllowed;
 
 		/// <summary>
 		///This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give us the size it was on the first page we navigated to,
@@ -41,10 +36,16 @@ namespace Bloom
 
 		private bool _disposed;
 
-		public HtmlThumbNailer(int widthInPixels, int heightInPixels, MonitorTarget monitorObjectForBrowserNavigation)
+		public HtmlThumbNailer(MonitorTarget monitorObjectForBrowserNavigation)
 		{
-			_widthInPixels = widthInPixels;
-			_heightInPixels = heightInPixels;
+			if (_theOnlyOneAllowed != null)
+		{
+				Debug.Fail("Something tried to make a second HtmlThumbnailer; there should only be one.");
+				throw new ApplicationException("Something tried to make a second HtmlThumbnailer; there should only be one.");
+			}
+
+			_theOnlyOneAllowed = this;
+
 			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
 			Application.Idle += new EventHandler(Application_Idle);
 		}
@@ -99,6 +100,11 @@ namespace Bloom
 			/// the same size otherwise the title-captions don't line up.
 			/// </summary>
 			public bool CenterImageUsingTransparentPadding = true;
+
+
+			public int Width = 70;
+			public int Height = 70;
+			public string FileName = "thumbnail.png";
 		}
 
 
@@ -116,7 +122,7 @@ namespace Bloom
 
 			string thumbNailFilePath = null;
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
-				thumbNailFilePath = Path.Combine(folderForThumbNailCache, "thumbnail.png");
+				thumbNailFilePath = Path.Combine(folderForThumbNailCache, options.FileName);
 
 			//In our cache?
 			Image image;
@@ -235,15 +241,8 @@ namespace Bloom
 								throw new ApplicationException(
 									"Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 							}
-							/*							When we were using geckofx11, we used this approach, which stopped working when we moved to geckofx22:
-														var docImage = new Bitmap(browser.Width, browser.Height);
-														browser.DrawToBitmap(docImage, new Rectangle(0, 0, browser.Width, browser.Height));
 														if (_disposed)
 															return;
-														pendingThumbnail = MakeThumbNail(fullsizeImage, _widthInPixels, _heightInPixels,
-															Color.Transparent,
-															order.DrawBorderDashed);
-							 */
 
 							var creator = new ImageCreator(browser);
 							byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
@@ -253,8 +252,8 @@ namespace Bloom
 							{
 								if (_disposed)
 									return;
-								int width = _widthInPixels;
-								int height = _heightInPixels;
+								int width = order.Options.Width;
+								int height = order.Options.Height;
 								if (!order.Options.CenterImageUsingTransparentPadding)
 								{
 									// Adjust height and width so image does not end up with extra blank area
@@ -268,7 +267,7 @@ namespace Bloom
 										height = Math.Min(height, width * fullsizeImage.Height / fullsizeImage.Width + 2);
 									}
 								}
-								pendingThumbnail = MakeThumbNail(fullsizeImage, width, height, order.Options);
+								pendingThumbnail = MakeThumbNail(fullsizeImage, order.Options);
 							}
 						}
 						catch (Exception error)
@@ -337,6 +336,7 @@ namespace Bloom
 			Logger.WriteMinorEvent("HtmlThumNailer: finished work on thumbnail ({0})", order.ThumbNailFilePath);
 			order.Callback(pendingThumbnail);
 		}
+
 		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
 		{
 			ThumbnailOrder order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
@@ -399,50 +399,66 @@ namespace Bloom
 
 
 
-		private Image MakeThumbNail(Image bmp, int destinationWidth, int destinationHeight, ThumbnailOptions options)
+		private Image MakeThumbNail(Image bmp, ThumbnailOptions options)
 		{
 			if (bmp == null)
 				return null;
-			//get the lesser of the desired and original size
-			destinationWidth = bmp.Width > destinationWidth ? destinationWidth : bmp.Width;
-			destinationHeight = bmp.Height > destinationHeight ? destinationHeight : bmp.Height;
 
-			int actualWidth = destinationWidth;
-			int actualHeight = destinationHeight;
-
-			if (bmp.Width > bmp.Height)
-				actualHeight = (int)(Math.Ceiling(((float)bmp.Height / (float)bmp.Width) * (float)actualWidth));
-			else if (bmp.Width < bmp.Height)
-				actualWidth = (int)(Math.Ceiling(((float)bmp.Width / (float)bmp.Height) * (float)actualHeight));
-
+			int contentWidth;
+			int contentHeight;
 
 			int horizontalOffset = 0;
 			int verticalOffset = 0;
 
+			int thumbnailWidth = options.Width;
+			int thumbnailHeight = options.Height;
+
+			//unfortunately as long as we're using the winform listview, we seem to need to make the icons
+			//the same size regardless of the book's shape, otherwise the title-captions don't line up.
+
 			if (options.CenterImageUsingTransparentPadding)
 			{
-				horizontalOffset = (destinationWidth / 2) - (actualWidth / 2);
-				verticalOffset = (destinationHeight / 2) - (actualHeight / 2);
+				if (bmp.Width > bmp.Height)//landscape
+				{
+					contentWidth = options.Width;
+					contentHeight = (int)(Math.Ceiling(((float)bmp.Height / (float)bmp.Width) * (float)contentWidth));
+				}
+				else if (bmp.Width < bmp.Height) //portrait
+				{
+					contentHeight = options.Height;
+					contentWidth = (int) (Math.Ceiling(((float) bmp.Width/(float) bmp.Height)*(float) contentHeight));
+				}
+				else //square page
+				{
+					contentWidth = options.Width;
+					contentHeight = options.Height;
+				}
+				horizontalOffset = (options.Width / 2) - (contentWidth / 2);
+				verticalOffset = (options.Height / 2) - (contentHeight / 2);
+			}
+			else
+			{
+				thumbnailHeight = contentHeight = options.Height;
+				thumbnailWidth = contentWidth = (int)Math.Floor((float)options.Height * (float)bmp.Width / (float)bmp.Height);
 			}
 
 #if !__MonoCS__
-			Bitmap thumbnail = new Bitmap(destinationWidth, destinationHeight, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
-			using (Graphics graphics = Graphics.FromImage(thumbnail))
+
+			var thumbnail = new Bitmap(thumbnailWidth, thumbnailHeight, PixelFormat.Format64bppPArgb);
+			using (var graphics = Graphics.FromImage(thumbnail))
 			{
 				graphics.PixelOffsetMode = PixelOffsetMode.None;
 				graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-				var destRect = new Rectangle(horizontalOffset, verticalOffset, actualWidth, actualHeight);
+				var destRect = new Rectangle(horizontalOffset, verticalOffset, contentWidth,contentHeight);
 
-
-				//leave out the grey boarder which is in the browser, and zoom in some
-				int skipMarginH = 0;// 30; //
-				int skipMarginV = 0;
-				graphics.DrawImage(bmp, destRect, skipMarginH, skipMarginV,
-						bmp.Width - (skipMarginH * 2), bmp.Height - (skipMarginV * 2),
+			   graphics.DrawImage(bmp,
+						destRect,
+						0,0, bmp.Width, bmp.Height, //source
 						GraphicsUnit.Pixel, WhiteToBackground);
 
-				Pen pn = new Pen(Color.Black, 1);
+				using (var pn = new Pen(Color.Black, 1))
+				{
 				if (options.DrawBorderDashed)
 				{
 					pn.DashStyle = DashStyle.Dash;
@@ -451,19 +467,14 @@ namespace Bloom
 				destRect.Height--;//hack, we were losing the bottom
 				destRect.Width--;
 				graphics.DrawRectangle(pn, destRect);
-				//                else
-				//                {
-				//
-				//                    Pen pn = new Pen(options.BorderColor, 1);
-				//                    graphics.DrawRectangle(pn, 0, 0, thumbnail.Width - 1, thumbnail.Height - 1);
-				//                }
+				}
 			}
 			return thumbnail;
 #else
 			int skipMarginH = 30;
 			int skipMarginV = 30;
 			Bitmap croppedImage = (bmp as Bitmap).Clone(new Rectangle(new Point(skipMarginH, skipMarginV), new Size(bmp.Width - 2 * skipMarginH, bmp.Height - 2 * skipMarginV)), bmp.PixelFormat);
-			return croppedImage.GetThumbnailImage(destinationWidth, destinationHeight, null, System.IntPtr.Zero);
+			return croppedImage.GetThumbnailImage(contentWidth, contentHeight, null, System.IntPtr.Zero);
 #endif
 		}
 
@@ -534,6 +545,7 @@ namespace Bloom
 				}));
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
+			_theOnlyOneAllowed = null;
 		}
 
 		/// <summary>

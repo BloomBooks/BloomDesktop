@@ -4,11 +4,12 @@ Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for
 
 ## RoadMap / Day-to-day progress
 
-See the [Bloom Trello Board](https://trello.com/board/bloom-development/4f087ec138f81c83752051a0).
+See the Trello boards:
+[Bloom 2](https://trello.com/b/UA7QLibU/bloom-desktop-2-0), [Bloom 3](https://trello.com/b/ErDHtpNe/bloom-3-0)
 
 ## Bug Reports
 
-Reports can be entered in [http://jira.palaso.org/issues/browse/BL](http://jira.palaso.org/issues/browse/BL). They can be entered there via email by sending to [issues@bloom.palaso.org](mailto:issues@bloom.palaso.org); things sent there will be visible on the web to anyone who makes an account on the jira system.
+Reports can be entered in [jira](https://jira.sil.org/browse/BL). They can be entered there via email by sending to [issues@bloom.palaso.org](mailto:issues@bloom.palaso.org); things sent there will be visible on the web to anyone who makes an account on the jira system.
 
 ## Continuous Build System
 
@@ -36,9 +37,6 @@ or
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
 
-### Mercurial
-If you'll be working with Send/Receive, please copy the "Mercurial" and "Mercurial Extensions" folders from an installation of Bloom to the root of your Bloom source directory.
-
 #### About Bloom Dependencies
 
 Our **[Palaso libraries](http://projects.palaso.org/projects/palaso)** hold the classes that are common to multiple products. If you need to build palaso from source, see [projects.palaso.org/projects/palaso/wiki](http://projects.palaso.org/projects/palaso/wiki).
@@ -47,9 +45,7 @@ Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-mak
 
 Our **[Chorus](http://projects.palaso.org/projects/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the GeckoFX .net wrapper.
-
-If you need to build GeckoFX from source, see [https://bitbucket.org/geckofx](https://bitbucket.org/geckofx). Note that Bloom is actually built off of the [Hatton fork](https://bitbucket.org/hatton/geckofx-11.0). In either case, you'll need to figure out which version of gecko (firefox) Bloom is currently using.
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx).
 
 **XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
 
@@ -64,11 +60,11 @@ Bloom uses various web services that require identification. We can't really kee
 
 # Registry settings
 
-One responsibilty of Bloom desktop is to handle url's starting with "bloom://"", such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you install Bloom. Developers who need this functionality can get it using the build/bloom link.reg file. You need to edit this file first. It contains a full path to Bloom.exe, and the first part of the path will depend on where you have put your working folder. After adjusting that, just double-click it to create the registry entries for handling bloom: urls.
+One responsibility of Bloom desktop is to handle url's starting with "bloom://"", such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you install Bloom. Developers who need this functionality can get it using the build/bloom link.reg file. You need to edit this file first. It contains a full path to Bloom.exe, and the first part of the path will depend on where you have put your working folder. After adjusting that, just double-click it to create the registry entries for handling bloom: urls.
 
 # Testers
 
-Please see "Tips for Testing Palaso Software":https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit
+Please see [Tips for Testing Palaso Software](https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit)
 
 # License
 

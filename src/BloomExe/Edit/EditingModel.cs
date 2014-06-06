@@ -408,7 +408,7 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 
-			AddEditControlsToPage();
+			AddReaderToolsToPage();
 
 			return _domForCurrentPage;
 		}
@@ -432,7 +432,7 @@ namespace Bloom.Edit
 #else
 			var fakeIt = "false";
 #endif
-			_view.RunJavaScript("if (typeof(initialize) == \"function\") {initialize(\"" + input + "\", " + fakeIt + ");}");
+			_view.RunJavaScript("if (typeof(initializeSynphony) == \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
 		}
 
 		private void SaveDecodableLevelSettings(string content)
@@ -446,42 +446,47 @@ namespace Bloom.Edit
 		/// (currently the decodable/leveled reader ones).
 		/// This involves
 		///   - Moving the body of the current page into a new division, and changing stylesheet links
-		///     to @import statements in a new scoped div. This insulates the EditControls from the main page stylesheet.
+		///     to @import statements in a new scoped div. This insulates the ReaderTools from the main page stylesheet.
 		///     (Note: should we ever use a non-gecko browser, e.g. for Macintosh, be aware that scoped style is not yet
 		///     supported by most of them, and a different solution may be needed.)
-		///   - Appending the contents of the body of EditControls.htm to the body of the page
-		///   - Appending (most of) the header of EditControls.htm to the header of the page
-		///   - Adding the JavaScript and css file references needed by the EditControls in the appropriate places
+		///   - Appending the contents of the body of ReaderTools.htm to the body of the page
+		///   - Appending (most of) the header of ReaderTools.htm to the header of the page
+		///   - Adding the JavaScript and css file references needed by the ReaderTools in the appropriate places
 		///   - Copying some font-awesome files to a subdirectory of the temp folder, since FireFox won't let us load them from elsewhere
 		/// </summary>
-		private void AddEditControlsToPage()
+		private void AddReaderToolsToPage()
 		{
 			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/html", "EditControls.htm");
-			var domForEditControls = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools", "ReaderTools.htm");
+			var domForReaderTools = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
-			// move css files from the head into scoped tags in EditControls.htm
-			var div = domForEditControls.Body.SelectSingleNode("//div[@class='editControlsRoot']");
-			MoveStylesIntoScopedTag(domForEditControls, div);
+			// move css files from the head into scoped tags in ReaderTools.htm
+			var div = domForReaderTools.Body.SelectSingleNode("//div[@class='readerToolsRoot']");
+			MoveStylesIntoScopedTag(domForReaderTools, div);
 
-			AppendAllChildren(domForEditControls.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
-			// looking at the EditControls.htm file and the generated html for the page, you would think we need the following three lines.
+			AppendAllChildren(domForReaderTools.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
+			// looking at the ReaderTools.htm file and the generated html for the page, you would think we need the following three lines.
 			// However, the generated html loads bloomBootstrap.js, and this loads all three files.
 			//_domForCurrentPage.AddStyleSheet(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"));
 			//_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-1.10.1.js"));
 			//_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-ui-1.10.3.custom.min.js"));
+			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/underscore_min_152.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/xregexp-all-min.js")); // before bloom_xregexp_categories
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_xregexp_categories.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/jquery.text-markup.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
 
-			AppendAllChildren(domForEditControls.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
+			AppendAllChildren(domForReaderTools.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
 			_domForCurrentPage.AddJavascriptFileToBody(
 				_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
 			_domForCurrentPage.AddJavascriptFileToBody(
-				_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"editControls.js")); // must be last
+				_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"readerTools.js")); // must be last
+
+			// Load into the accordion panel whatever subfolders/htm files are under the ReaderTools folder
+			var subFolders = Directory.GetDirectories(Path.GetDirectoryName(path));
+			AppendAccordionPanels(subFolders);
 
 			// It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
 			// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
@@ -499,6 +504,21 @@ namespace Bloom.Edit
 			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
 			System.IO.File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
 			_domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
+		}
+
+		private void AppendAccordionPanels(string[] subFolders)
+		{
+			if (subFolders.Length == 0)
+				return;
+
+			var accordion = _domForCurrentPage.Body.SelectSingleNode("//div[@id='accordion']");
+			foreach(var subFolder in subFolders)
+			{
+				var htmFile = Path.GetFileName(subFolder); // just the last folder name?
+				var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, htmFile + ".htm");
+				var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath, false));
+				AppendAllChildren(subPanelDom.Body, accordion); // still need to copy any script and link elements
+			}
 		}
 
 		/// <summary>

@@ -115,10 +115,16 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core">
+    <Reference Include="Geckofx-Core, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Core</Package>
+    </Reference>
+    <Reference Include="Geckofx-Winforms, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Winforms</Package>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Winforms">
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -135,7 +141,7 @@
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
-    <Compile Include="Edit\EditControlsTests.cs" />
+    <Compile Include="Edit\ReaderToolsTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />

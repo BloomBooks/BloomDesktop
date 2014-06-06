@@ -1,4 +1,26 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*+clearfix {*/
+.tool-items:after
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+	font-size: 0;
+}
+.tool-items
+{
+	display: inline-block;
+}
+.tool-items
+{
+	/*\*/
+	display: block;
+	/**/
+	-height: 1px;
+}
+/*+}*/
 DIV.bloom-imageContainer
 {
 	border: 1px solid #C0B9B9;
@@ -411,4 +433,25 @@ SPAN.sentence-too-long
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
 	-moz-text-decoration-color: orange;
+}
+
+.ui-dialog { z-index: 20000; }
+
+SPAN.sight-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: green;
+}
+SPAN.word-not-found
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: orange;
+}
+SPAN.possible-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: blue;
 }

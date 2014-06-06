@@ -24,6 +24,34 @@ namespace BloomTests.Book
 				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
+		[Test]
+		public void MakeLanguageUploadData_FindsDefaultInfo()
+		{
+			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyk"});
+			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+			VerifyLangData(results[0], "en", "English", "eng");
+			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+			VerifyLangData(results[2], "xyk", "xyk", "xyk");
+		}
+
+		[Test]
+		public void MakeLanguageUploadData_FindsOverriddenNames()
+		{
+			_collectionSettings.Language1Name = "Cockney";
+			// Note: no current way of overriding others; verify they aren't changed.
+			var results = _collectionSettings.MakeLanguageUploadData(new[] { "en", "tpi", "xyz" });
+			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+			VerifyLangData(results[0], "en", "English", "eng");
+			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+			VerifyLangData(results[2], "xyz", "Cockney", "xyz");
+		}
+
+		void VerifyLangData(LanguageDescriptor lang, string code, string name, string ethCode)
+		{
+			Assert.That(lang.IsoCode, Is.EqualTo(code));
+			Assert.That(lang.Name, Is.EqualTo(name));
+			Assert.That(lang.EthnologueCode, Is.EqualTo(ethCode));
+		}
 
 	   [Test]
 		public void SuckInDataFromEditedDom_NoDataDIvTitleChanged_NewTitleInCache()

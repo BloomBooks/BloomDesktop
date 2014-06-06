@@ -41,11 +41,12 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// This is set during UploadBook if the book has a thumbnail.png file in the book's folder, to the URL
-		/// that will retrieve that file from S3.
+		/// This is set during UploadBook to the URL holding files like various thumbnails, preview, etc.
+		/// It ends up in a parse.com column named "baseUrl", and the angular appends things like "/thumbnail256.png" to it.
 		/// It only contains useful information after UploadBook.
 		/// </summary>
-		public string ThumbnailUrl { get; private set; }
+		public string BaseUrl { get; private set; }
+
 		// Similarly for the book order file.
 		public string BookOrderUrl { get; private set; }
 
@@ -146,7 +147,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="pathToBloomBookDirectory"></param>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress)
 		{
-			ThumbnailUrl = null;
+			BaseUrl = null;
 			BookOrderUrl = null;
 			DeleteBookData(storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
 			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
@@ -165,14 +166,35 @@ namespace Bloom.WebLibraryIntegration
 			}
 
 			var wrapperPath = Path.Combine(Path.GetTempPath(), tempFolderName);
+
+			//If we previously uploaded the book, but then had a problem, this directory could still be on our harddrive. Clear it out.
+			if (Directory.Exists(wrapperPath))
+			{
+				DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
+			}
+
 			Directory.CreateDirectory(wrapperPath);
 
 			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
 			UploadDirectory(prefix, wrapperPath, progress);
 
-			Directory.Delete(wrapperPath, true);
+			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
 		}
 
+		private static void DeleteFileSystemInfo(FileSystemInfo fileSystemInfo)
+		{
+			var directoryInfo = fileSystemInfo as DirectoryInfo;
+			if (directoryInfo != null)
+			{
+				foreach (var childInfo in directoryInfo.GetFileSystemInfos())
+				{
+					DeleteFileSystemInfo(childInfo);
+				}
+			}
+
+			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
+			fileSystemInfo.Delete();
+		}
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
@@ -186,7 +208,11 @@ namespace Bloom.WebLibraryIntegration
 					"Source directory does not exist or could not be found: "
 					+ directoryPath);
 			}
-			prefix = prefix + Path.GetFileName(directoryPath)+kDirectoryDelimeterForS3;
+			prefix = prefix + Path.GetFileName(directoryPath) + kDirectoryDelimeterForS3;
+
+			// Remember the url that can be used to download files like thumbnails and preview.pdf. This seems to work but I wish
+			// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
+			BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);
 
 			foreach (string file in Directory.GetFiles(directoryPath))
 			{
@@ -195,7 +221,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					BucketName = _bucketName,
 					FilePath = file,
-					Key = prefix+ fileName
+					Key = prefix + fileName
 				};
 				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
 				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
@@ -211,7 +237,8 @@ namespace Bloom.WebLibraryIntegration
 					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
-				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus","Uploading {0}"), fileName);
+				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus", "Uploading {0}"),
+					fileName);
 
 				try
 				{
@@ -222,18 +249,12 @@ namespace Bloom.WebLibraryIntegration
 				{
 					throw;
 				}
-				//var response =_amazonS3.UploadPart(request);
-				if (fileName == "thumbnail.png")
-				{
-					// Remember the url that can be used to download the thumbnail. This seems to work but I wish
-					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-					ThumbnailUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
-				}
-				else if (fileName.EndsWith(BookTransfer.BookOrderExtension))
+				if (fileName.EndsWith(BookTransfer.BookOrderExtension))
 				{
 					// Remember the url that can be used to download the book. This seems to work but I wish
 					// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-					BookOrderUrl = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" + HttpUtility.UrlEncode(prefix + fileName);
+					BookOrderUrl = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" +
+								   HttpUtility.UrlEncode(prefix + fileName);
 				}
 			}
 

@@ -7,27 +7,36 @@ var SynphonyApi = function() {
 
 SynphonyApi.prototype.loadSettings = function(fileContent)
 {
-    if (!fileContent) {
+    if (!fileContent)
         return;
-    }
+
     var data;
     this.source = fileContent;
+
     // Note: for some reason this try...catch doesn't work. Errors in the json stop the program.
     // One web site hinted that the actual parsing is done in another thread and thus is not
     // considered to be inside this try...catch.
     try {
         var json = fileContent.replace(/(\r\n|\n|\r|\t)/gm, " ");
-        var data = JSON.parse(json);
+        data = JSON.parse(json);
     }
     catch(e) {alert(e);}
+
     var levels = data.Levels;
-    if (levels != null) {
+    if (levels) {
         this.levels = [];
         for (var i = 0; i < levels.length; i++) {
             this.addLevel(jQuery.extend(new Level((i + 1).toString()), levels[i]));
         }
     }
-    // Todo: load stage data.
+
+    var stages = data.Stages;
+    if (stages) {
+        this.stages = [];
+        for (var i = 0; i < stages.length; i++) {
+            this.AddStage(jQuery.extend(new Stage((i + 1).toString()), stages[i]));
+        }
+    }
 };
 
 function FindOrCreateConfigDiv() {
@@ -78,10 +87,11 @@ SynphonyApi.prototype.AddStage = function(stage)
     this.stages.push(stage);
 };
 
-SynphonyApi.prototype.addStageWithWords = function(name, words)
+SynphonyApi.prototype.addStageWithWords = function(name, words, sightWords)
 {
     var stage = new Stage(name);
     stage.incrementFrequencies(words);
+    stage.sightWords = sightWords;
     this.stages.push(stage);
 };
 
@@ -89,6 +99,7 @@ SynphonyApi.prototype.addStageWithWords = function(name, words)
 var Stage = function(name) {
     this.name = name;
     this.words = {}; // We will add words as properties to this, using it as a map. Value of each is its frequency.
+    this.sightWords = ''; // a space-delimited string of sight words
 };
 
 Stage.prototype.getName = function() {
@@ -97,6 +108,18 @@ Stage.prototype.getName = function() {
 
 Stage.prototype.getWords = function() {
     return Object.getOwnPropertyNames(this.words);
+};
+
+Stage.prototype.getWordObjects = function() {
+
+    var wordObjects = [];
+    var words = this.getWords();
+    var wordName;
+    for (var i = 0; i < words.length; i++) {
+        wordName = words[i];
+        wordObjects.push({"Name": wordName, "Count": this.words[wordName]});
+    }
+    return wordObjects;
 };
 
 Stage.prototype.getFrequency = function(word) {
@@ -109,9 +132,7 @@ Stage.prototype.incrementFrequencies = function(input) {
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
         var old = this.words[item];
-    if (old === null) {
-            old = 0;
-        }
+    if (!old) old = 0;
         this.words[item] = old + 1;
     }
 };
