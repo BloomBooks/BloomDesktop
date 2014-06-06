@@ -63,7 +63,7 @@ DIV.ui-tooltip-content
 }
 .uibloomSourceTextsBubble .ui-tooltip-content
 {
-	/*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+	/*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
 	min-height: 60px !important;
 }
 .bloom-imageContainer
@@ -112,7 +112,7 @@ DIV#bloomDataDiv
 }
 P
 {
-	margin-left: 1cm;
+    /*[disabled]margin-left:1cm;*/
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV.bloom-translationGroup DIV.bloom-editable

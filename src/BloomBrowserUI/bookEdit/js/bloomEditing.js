@@ -270,6 +270,11 @@ function GetStyleClassFromElement(element) {
     return null;
 }
 
+//:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
+jQuery.expr[':'].hasNoText = function (obj) {
+    return jQuery.trim(jQuery(obj).text()).length == 0;
+};
+
  //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
     
@@ -295,7 +300,7 @@ function MakeSourceTextDivForGroup(group) {
         $(this).remove();
     });
     //don't want empty items in the bubble
-    $(divForBubble).find("textarea:empty, div:empty").each(function() {
+    $(divForBubble).find("textarea:empty, div:hasNoText").each(function() {
         $(this).remove();
     });
 
@@ -703,6 +708,94 @@ jQuery(document).ready(function () {
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     jQuery("textarea").blur(function () {
         this.innerHTML = this.value;
+    });
+
+
+    jQuery.fn.reverse = function () {
+         return this.pushStack(this.get().reverse(), arguments);
+    };
+
+    //if this browser doesn't have endsWith built in, add it
+    if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+            return this.indexOf(suffix, this.length - suffix.length) !== -1;
+        };
+    }
+
+    //firefox adds a <BR> when you press return, which is lame because you can't put css styles on BR, such as indent.
+    //Eventually we may use a wysiwyg add-on which does this conversion as you type, but for now, we change it when
+    //you tab or click out.
+    jQuery(".bloom-editable").blur(function () {
+
+        //This might mess some things up, so we're only applying it selectively
+        if (!$(this).hasClass('.bloom-BRToP')
+           && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+        return;
+
+        var x = $(this).html();
+
+        //the first time we see a field editing in Firefox, it won't have a p opener
+        if (!x.startsWith('<p>')) {
+            x = "<p>" + x;
+        }
+
+        x = x.split("<br>").join("</p><p>");
+
+        //the first time we see a field editing in Firefox, it won't have a p closer
+        if (!x.endsWith('</p>')) {
+            x = x + "</p>";
+        }
+        $(this).html(x);
+
+        //If somehow you get leading empty paragraphs, FF won't let you delete them
+        $('p').each(function () {
+            if ($(this).text() === "") {
+                $(this).remove();
+            } else {
+                return false; //break
+            }
+        });
+
+        //for some reason, perhaps FF-related, we end up with a new empty paragraph each time
+        //so remove trailing <p></p>s
+        $('p').reverse().each(function () {
+            if ($(this).text() === "") {
+                $(this).remove();
+            } else {
+                return false; //break
+            }
+        });
+    });
+
+    //when we discover an empty text box that has been marked to use PRs, start us off on the right foot
+    $('.bloom-editable').focus(function () {
+        if (!$(this).hasClass('.bloom-BRToP')
+            && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+                return;
+
+        if ($(this).text() == '') {
+            //stick in a paragraph, which makes FF do paragarphs instead of BRs.
+            $(this).html('<p>&nbsp;</p>'); //zwnj makes the cursor invisible
+
+            //now select that space, so we delete it when we start typing
+
+            var el = $(this).find('p')[0].childNodes[0];
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+        else {
+            var el = $(this).find('p')[0];
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(true);//move to start of first paragraph
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    //TODO if you do Ctrl+A and delete, you're now outside of our <p></p> zone. clicking out will trigger the blur handerl above, which will restore it.
     });
 
     SetBookCopyrightAndLicenseButtonVisibility();
