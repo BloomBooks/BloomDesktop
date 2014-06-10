@@ -1,4 +1,7 @@
-﻿## 2.0 1022 BETA 13 May 2014
+﻿## 2.0.1038 BETA 6 June 2014
+Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
+
+## 2.0 1022 BETA 13 May 2014
 Templates can now have a markdown "readme" for telling people about the template. Select the Big Book or Wall Calendar templates to see how these are displayed.
 
 ## 2.0.1021 BETA 9 May 2014
