@@ -13,14 +13,12 @@ SynphonyApi.prototype.loadSettings = function(fileContent)
     var data;
     this.source = fileContent;
 
-    // Note: for some reason this try...catch doesn't work. Errors in the json stop the program.
-    // One web site hinted that the actual parsing is done in another thread and thus is not
-    // considered to be inside this try...catch.
-    try {
-        var json = fileContent.replace(/(\r\n|\n|\r|\t)/gm, " ");
-        data = JSON.parse(json);
-    }
-    catch(e) {alert(e);}
+    data = JSON.parse(fileContent);
+
+    if (!lang_data) lang_data = new LanguageData();
+
+    lang_data.addGrapheme(data.letters.split(' '));
+    lang_data.addGrapheme(data.letterCombinations.split(' '));
 
     var levels = data.Levels;
     if (levels) {
@@ -30,54 +28,55 @@ SynphonyApi.prototype.loadSettings = function(fileContent)
         }
     }
 
-    var stages = data.Stages;
-    if (stages) {
+    var stgs = data.stages;
+    if (stgs) {
         this.stages = [];
-        for (var i = 0; i < stages.length; i++) {
-            this.AddStage(jQuery.extend(new Stage((i + 1).toString()), stages[i]));
+        for (var i = 0; i < stgs.length; i++) {
+            var newStage = jQuery.extend(true, new Stage((i + 1).toString()), stgs[i]);
+            this.AddStage(newStage);
         }
     }
 };
 
-function FindOrCreateConfigDiv() {
+function FindOrCreateConfigDiv(path) {
     var dialogContents = $("body").find("div#synphonyConfig");
     if (!dialogContents.length) {
         dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
 
-        dialogContents.append("<textarea id = 'synphonyData' rows='20' cols='70'></textarea>");
+        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm').replace(/file:\/\/(\w)/, 'file:///$1');
+        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
+        dialogContents.append(html);
     }
     return dialogContents;
+    //document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + this.source, \'*\');
 }
-
 
 // Show the configuration dialog. If the user clicks OK, send the new file to C#, then call whenChanged()
 // to let the caller update the UI.
 SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
-    // Todo: this should launch the new API JohnH designed, not just this crude textarea editor.
-    var dialogContents = FindOrCreateConfigDiv();
-    $("#synphonyData").html(this.source);
-    var _this = this;
+
+    var dialogContents = FindOrCreateConfigDiv(this.getScriptPath());
+    var h = 580;
+    var w = 720;
+
+    if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
+        h = 460;
+        w = 580;
+    }
+
     var dlg = $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
-        //zIndex removed in newer jquery, now we get it in the css
         buttons: {
             "OK": function () {
-                _this.loadSettings($("#synphonyData").val(), false);
-                event = document.createEvent('MessageEvent');
-                var origin = window.location.protocol + '//' + window.location.host;
-                // I don't know what all the other parameters mean, but the first is the name of the event the
-                // C# is listening for, and must be exactly the string here. The fourth is the new content
-                // of the file.
-                event.initMessageEvent ('saveDecodableLevelSettingsEvent', true, true, _this.source, origin, 1234, window, null);
-                document.dispatchEvent (event);
-                $(this).dialog("close");
-                whenChanged();
+                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
             },
             "Cancel": function () {
                 $(this).dialog("close");
             }
-        }
+        },
+        height: h,
+        width: w
     });
 };
 
@@ -90,9 +89,23 @@ SynphonyApi.prototype.AddStage = function(stage)
 SynphonyApi.prototype.addStageWithWords = function(name, words, sightWords)
 {
     var stage = new Stage(name);
-    stage.incrementFrequencies(words);
+    stage.addWords(words);
     stage.sightWords = sightWords;
     this.stages.push(stage);
+};
+
+SynphonyApi.prototype.getScriptPath = function() {
+
+    var src = $('script[src$="synphonyApi.js"]').attr('src').replace('synphonyApi.js', '').replace(/\\/g, '/');
+    if (!src) return '';
+    return src;
+};
+
+SynphonyApi.prototype.addWords = function(words) {
+
+    if (!lang_data) lang_data = new LanguageData();
+    for (var i = 0; i < words.length; i++)
+        lang_data.addWord(words[i]);
 };
 
 // Defines an object to hold data about one stage in the decodable books tool
@@ -126,13 +139,21 @@ Stage.prototype.getFrequency = function(word) {
     return this.words[word];
 };
 
-// This is useful for creating test fakes. May or may not be for real API.
-Stage.prototype.incrementFrequencies = function(input) {
-    var items = input.split(' ');
+/**
+ *
+ * @param {mixed} input Either an array of strings (words), or a string containing a space-delimited list of words
+ */
+Stage.prototype.addWords = function(input) {
+
+    var items;
+    if (Array.isArray(input))
+        items = input;
+    else
+        items = input.split(' ');
+
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
-        var old = this.words[item];
-		if (!old) old = 0;
+        var old = this.words[item] || 0;
         this.words[item] = old + 1;
     }
 };

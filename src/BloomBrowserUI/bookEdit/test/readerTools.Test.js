@@ -1,8 +1,8 @@
 describe("Bloom Edit Controls tests", function() {
     var api = new SynphonyApi();
-    api.addStageWithWords("1A", "cat sat rat");
-    api.addStageWithWords("A", "bob fob");
-    api.addStageWithWords("3", "big wig fig rig");
+    api.addStageWithWords("1A", "cat sat rat", "feline rodent");
+    api.addStageWithWords("A", "bob fob", "one two");
+    api.addStageWithWords("3", "big wig fig rig", "fruit nut");
 
     var levelD = new Level("D");
     levelD.maxWordsPerBook = 17;
@@ -154,31 +154,31 @@ describe("Bloom Edit Controls tests", function() {
 
         // Default is currently alphabetic
         model.setStageNumber(1);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>catty</td><td>rate</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word">rate</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.sortByLength();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>sat</td><td>rate</td><td>catty</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">rate</div><div class="word">catty</div>');
 
         model.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>rate</td><td>catty</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">rate</div><div class="word">catty</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.sortAlphabetically();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>catty</td><td>rate</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word">rate</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.setStageNumber(2);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>cob</td><td>fob</td></tr><tr><td>hope</td><td>job</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">cob</div><div class="word">fob</div><div class="word">hope</div><div class="word">job</div>');
 
         model.updateElementContent.reset();
         model.sortByLength(); // same-length ones should be alphabetic
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>cob</td><td>fob</td></tr><tr><td>job</td><td>hope</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">cob</div><div class="word">fob</div><div class="word">job</div><div class="word">hope</div>');
 
         model.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>hope</td><td>bob</td><td>cob</td></tr><tr><td>fob</td><td>job</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">hope</div><div class="word">bob</div><div class="word">cob</div><div class="word">fob</div><div class="word">job</div>');
     });
 
     it("updates word list when stage changes", function() {
@@ -190,15 +190,15 @@ describe("Bloom Edit Controls tests", function() {
         model.setSynphony(api2);
 
         model.setStageNumber(2);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>fob</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">fob</div>');
 
         model.updateElementContent.reset();
         model.setStageNumber(1);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>cat</td><td>rat</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">cat</div><div class="word">rat</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.setStageNumber(3);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>big</td><td>fig</td><td>rig</td></tr><tr><td>wig</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">big</div><div class="word">fig</div><div class="word">rig</div><div class="word">wig</div>');
     });
 
     it ("sets selected class when sort button clicked", function() {
@@ -228,7 +228,7 @@ describe("Bloom Edit Controls tests", function() {
 
     it ("updates word list on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>cat</td><td>rat</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">cat</div><div class="word">rat</div><div class="word">sat</div><div class=\"word sight-word\">feline</div><div class=\"word sight-word\">rodent</div>');
     });
 
     it ("updates stage count and buttons on init", function() {
