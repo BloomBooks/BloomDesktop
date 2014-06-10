@@ -123,3 +123,13 @@ TD.disabledLimit
 }
 
 .hidden { display: none !important; }
+.align-top { vertical-align: top; }
+
+DIV.wordList { margin: 4px; }
+DIV.word { min-width: 40px; margin: 2px; float: left; }
+DIV.sight-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: green;
+}

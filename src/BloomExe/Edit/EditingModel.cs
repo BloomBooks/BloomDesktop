@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -125,7 +126,7 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+				ErrorReport.NotifyUserOfProblem(error,
 																 "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
 			}
 			finally
@@ -418,27 +419,89 @@ namespace Bloom.Edit
 		/// </summary>
 		internal void DocumentCompleted()
 		{
+			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
+			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
+			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
+			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
+
+			// get saved reader settings
 			var path = _collectionSettings.DecodableLevelPathName;
 			var decodableLeveledSettings = "";
-			if (System.IO.File.Exists(path))
-				decodableLeveledSettings = System.IO.File.ReadAllText(path, Encoding.UTF8);
-			// We need to escape backslashes and quotes so the whole content arrives intact.
-			// Backslash first so the ones we insert for quotes don't get further escaped.
-			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
-			var input = decodableLeveledSettings.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n");
+			if (File.Exists(path))
+				decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
+
+			var input = cleanUpJsonDataForJavascript(decodableLeveledSettings);
 #if DEBUG
 			var fakeIt = "true";
 #else
 			var fakeIt = "false";
 #endif
-			_view.RunJavaScript("if (typeof(initializeSynphony) == \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
+			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
+		}
+
+		private string cleanUpDataForJavascript(string data)
+		{
+			// We need to escape backslashes and quotes so the whole content arrives intact.
+			// Backslash first so the ones we insert for quotes don't get further escaped.
+			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
+			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
+		}
+
+		private string cleanUpJsonDataForJavascript(string jsonData)
+		{
+			// Remove line ends, otherwise javascript chokes during JSON.parse().
+			// Check for both Windows and Unix line ends.
+			Regex rgx = new Regex("\r\n|\n");
+			jsonData = rgx.Replace(jsonData, "");
+			return cleanUpDataForJavascript(jsonData);
 		}
 
 		private void SaveDecodableLevelSettings(string content)
 		{
 			var path = _collectionSettings.DecodableLevelPathName;
-			System.IO.File.WriteAllText(path, content, Encoding.UTF8);
+			File.WriteAllText(path, content, Encoding.UTF8);
+
+			_view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
+		}
+
+		private void OpenTextsFolder(string arg)
+		{
+			if (_collectionSettings.SettingsFilePath == null) return;
+			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
+			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+			Process.Start(path);
+		}
+
+		/// <summary>Gets a list of the files in the Sample Texts folder</summary>
+		/// <param name="arg">Not Used</param>
+		private void GetTextsList(string arg)
+		{
+			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
+			if (!Directory.Exists(path)) return;
+
+			var fileList = "";
+			foreach (var file in Directory.GetFiles(path))
+			{
+				if (fileList.Length == 0) fileList = Path.GetFileName(file);
+				else fileList += "\\r" + Path.GetFileName(file);
+			}
+
+			_view.RunJavaScript("if (typeof(setTextsList) === \"function\") {setTextsList(\"" + fileList + "\");}");
+		}
+
+		/// <summary>Gets the contents of a Sample Text file</summary>
+		/// <param name="fileName"></param>
+		private void GetSampleFileContents(string fileName)
+		{
+			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
+			if (!Directory.Exists(path)) return;
+			path = Path.Combine(path, fileName);
+
+			var text = File.ReadAllText(path);
+			text = cleanUpDataForJavascript(text);
+
+			_view.RunJavaScript("if (typeof(setSampleFileContents) === \"function\") {setSampleFileContents(\"" + text + "\");}");
 		}
 
 		/// <summary>
@@ -475,6 +538,7 @@ namespace Bloom.Edit
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/xregexp-all-min.js")); // before bloom_xregexp_categories
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_xregexp_categories.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/jquery.text-markup.js"));
+			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"jquery.div-columns.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
 			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
 

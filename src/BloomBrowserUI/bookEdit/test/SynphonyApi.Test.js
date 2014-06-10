@@ -27,7 +27,7 @@ describe("Stage tests", function() {
     });
     it("parses a string into frequency counts", function() {
         var stage = new Stage("1");
-        stage.incrementFrequencies("the cat sat on the mat");
+        stage.addWords("the cat sat on the mat");
         var words = stage.getWords();
         expect(words.length).toEqual(5);
         expect(words).toContain("the");
