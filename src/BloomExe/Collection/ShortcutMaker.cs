@@ -35,6 +35,7 @@ namespace Bloom.Collection
             }
             shortcut.Save();
 #else
+			// TODO-Linux
 			throw new NotImplementedException();
 #endif
 		}
