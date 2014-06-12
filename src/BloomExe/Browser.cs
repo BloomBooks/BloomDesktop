@@ -210,7 +210,7 @@ namespace Bloom
             UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
         	_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
-            _browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
+            _browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
             _updateCommandsTimer.Enabled = true;//hack
         	var errorsToHide = new List<string>();
@@ -245,7 +245,7 @@ namespace Bloom
 
 			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
 			GeckoPreferences.User["browser.zoom.full"] = true;
-
+            
             //in firefox 14, at least, there was a bug such that if you have more than one lang on the page, all are check with English
             //until we get past that, it's just annoying
             
@@ -545,7 +545,9 @@ namespace Bloom
 
 				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
 					{
-						var titleNode = s.OwnerNode.GetSingleElement("@title");
+						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
+						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
@@ -720,7 +722,7 @@ namespace Bloom
 				var div = _browser.Document.ActiveElement;
 				if (div != null)
 				{
-					div = div.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
+                    div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
 					if (div != null)
 					{
 						if (div.ScrollWidth > _browser.Width)
