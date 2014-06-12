@@ -728,7 +728,7 @@ jQuery(document).ready(function () {
     jQuery(".bloom-editable").blur(function () {
 
         //This might mess some things up, so we're only applying it selectively
-        if (!$(this).hasClass('.bloom-BRToP')
+        if ($(this).closest('.bloom-requiresParagraphs').length == 0
            && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
         return;
 
@@ -767,15 +767,15 @@ jQuery(document).ready(function () {
         });
     });
 
-    //when we discover an empty text box that has been marked to use PRs, start us off on the right foot
+    //when we discover an empty text box that has been marked to use paragraphs, start us off on the right foot
     $('.bloom-editable').focus(function () {
-        if (!$(this).hasClass('.bloom-BRToP')
+        if ($(this).closest('.bloom-requiresParagraphs').length == 0
             && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
                 return;
 
         if ($(this).text() == '') {
-            //stick in a paragraph, which makes FF do paragarphs instead of BRs.
-            $(this).html('<p>&nbsp;</p>'); //zwnj makes the cursor invisible
+            //stick in a paragraph, which makes FF do paragraphs instead of BRs.
+            $(this).html('<p>&nbsp;</p>'); // &zwnj; (zero width non-joiner) would be better but it makes the cursor invisible
 
             //now select that space, so we delete it when we start typing
 
@@ -788,6 +788,8 @@ jQuery(document).ready(function () {
         }
         else {
             var el = $(this).find('p')[0];
+            if (!el)
+                return; // these have text, but not p's yet. We'll have to wait until they leave (blur) to add in the P's.
             var range = document.createRange();
             range.selectNodeContents(el);
             range.collapse(true);//move to start of first paragraph
@@ -1304,7 +1306,11 @@ jQuery(document).ready(function () {
     $(".bloom-imageContainer img").each(function () {
         $(this).parent().resize(function () {
             $(this).find("img").scaleImage({ scale: "fit" });
-            ResetRememberedSize(this);
+            try {
+                ResetRememberedSize(this);
+            } catch (error) {
+                console.log(error);
+            }
         });
     });
 
