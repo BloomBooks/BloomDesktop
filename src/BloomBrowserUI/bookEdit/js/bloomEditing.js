@@ -775,7 +775,7 @@ jQuery(document).ready(function () {
 
         if ($(this).text() == '') {
             //stick in a paragraph, which makes FF do paragraphs instead of BRs.
-            $(this).html('<p>&nbsp;</p>'); // makes the cursor invisible
+            $(this).html('<p>&nbsp;</p>'); // &zwnj; (zero width non-joiner) would be better but it makes the cursor invisible
 
             //now select that space, so we delete it when we start typing
 
