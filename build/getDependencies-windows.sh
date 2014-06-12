@@ -62,6 +62,7 @@ cd -
 
 # clean destination directories
 rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
+rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # *** Results ***
 # build: Bloom-Default-Win32-Auto (Bloom 3) (bt222)
@@ -80,7 +81,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
 #     clean: true
 #     revision: latest.lastSuccessful
-#     paths: {"*.*"=>"src\\BloomBrowserUI\\bookEdit\\js\\libsynphony"}
+#     paths: {"libsynphony-js.zip!**"=>"src/BloomBrowserUI/bookEdit/js/libsynphony", "libsynphony-test-js.zip!**"=>"src/BloomBrowserUI/bookEdit/test/libsynphony"}
 #     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
 # [2] build: pdf.js (bt401)
 #     project: BuildTasks
@@ -96,12 +97,12 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     revision: latest.lastSuccessful
 #     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>"Mercurial", "MercurialExtensions"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [4] build: XulRunner22-win32 (bt397)
+# [4] build: XulRunner29-win32 (bt400)
 #     project: GeckoFx
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt397
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt400
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"xulrunner-22.0.en-US.win32.zip!**"=>"lib"}
+#     paths: {"xulrunner-29.0.en-US.win32.zip!**"=>"lib"}
 # [5] build: palaso-win32-master Continuous (bt223)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt223
@@ -136,6 +137,7 @@ mkdir -p ../lib
 mkdir -p ../lib/dotnet
 mkdir -p ../output/release
 mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
+mkdir -p ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../Downloads/wkhtmltopdf-0.10.0_rc2.zip
@@ -143,12 +145,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng.exe ../DistFiles/optipng.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_lib.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/bloom_xregexp_categories.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/bloom_xregexp_categories.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/jquery.text-markup.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/jquery.text-markup.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/synphony_lib.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/synphony_lib.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/underscore_min_152.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/underscore_min_152.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/xregexp-all-min.js ../src/BloomBrowserUI/bookEdit/js/libsynphony/xregexp-all-min.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-js.zip ../Downloads/libsynphony-js.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-test-js.zip ../Downloads/libsynphony-test-js.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
@@ -171,7 +169,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastS
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Mercurial.zip ../Downloads/Mercurial.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions ../MercurialExtensions/MercurialExtensions
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt397/latest.lastSuccessful/xulrunner-22.0.en-US.win32.zip ../Downloads/xulrunner-22.0.en-US.win32.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt400/latest.lastSuccessful/xulrunner-29.0.en-US.win32.zip ../Downloads/xulrunner-29.0.en-US.win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/exiftool/exiftool.exe ../DistFiles/exiftool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
@@ -216,7 +214,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 # extract downloaded zip files
 unzip -uqo ../Downloads/wkhtmltopdf-0.10.0_rc2.zip -d ../DistFiles
 unzip -uqo ../Downloads/geckofx.zip -d ../lib/dotnet
+unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony
+unzip -uqo ../Downloads/libsynphony-test-js.zip -d ../src/BloomBrowserUI/bookEdit/test/libsynphony
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 unzip -uqo ../Downloads/Mercurial.zip -d ../Mercurial
-unzip -uqo ../Downloads/xulrunner-22.0.en-US.win32.zip -d ../lib
+unzip -uqo ../Downloads/xulrunner-29.0.en-US.win32.zip -d ../lib
 # End of script
