@@ -11,13 +11,15 @@ namespace Bloom.Book
 		private readonly Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookStarter.Factory _bookStarterFactory;
+		private readonly Configurator.Factory _configuratorFactory;
 
 		public BookServer(Book.Factory bookFactory, BookStorage.Factory storageFactory,
-						  BookStarter.Factory bookStarterFactory)
+						  BookStarter.Factory bookStarterFactory, Configurator.Factory configuratorFactory)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_bookStarterFactory = bookStarterFactory;
+			_configuratorFactory = configuratorFactory;
 		}
 
 		public Book GetBookFromBookInfo(BookInfo bookInfo)
@@ -39,7 +41,7 @@ namespace Bloom.Book
 				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, containingDestinationFolder);
 				if (Configurator.IsConfigurable(pathToFolderOfNewBook))
 				{
-					var c = new Configurator(containingDestinationFolder);
+					var c = _configuratorFactory(containingDestinationFolder);
 					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
 					{
 						return null; // the template had a configuration page and they clicked "cancel"

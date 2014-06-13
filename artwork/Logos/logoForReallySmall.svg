@@ -13,7 +13,7 @@
    height="88.65625"
    id="svg3135"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="logoForReallySmall.svg">
   <defs
      id="defs3137" />
@@ -24,17 +24,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="242.1898"
-     inkscape:cy="-86.340626"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="27.399298"
+     inkscape:cy="59.119482"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1058"
-     inkscape:window-x="-8"
+     inkscape:window-height="1178"
+     inkscape:window-x="1592"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      fit-margin-top="0"
@@ -54,7 +54,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -63,10 +63,207 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-249.03125,-140.46875)">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:1.22881043;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3910"
+       width="44.375973"
+       height="26.067003"
+       x="160.55449"
+       y="219.33891" />
     <path
        style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 251.04624,142.46413 0,42.3316 c 0,23.3746 18.957,42.3175 42.3316,42.3175 23.3747,0 42.3174,-18.9429 42.3174,-42.3175 l 0,-42.3316 c -23.3746,0 -42.3174,18.957 -42.3174,42.3316 0,-23.3746 -18.957,-42.3316 -42.3316,-42.3316 z"
-       id="path10-8-1-3-4-7-0-0-5-4-2-2-4"
+       d="m 345.60272,145.13165 0,42.3316 c 0,23.3746 18.957,42.3175 42.3316,42.3175 23.3747,0 42.3174,-18.9429 42.3174,-42.3175 l 0,-42.3316 c -23.3746,0 -42.3174,18.957 -42.3174,42.3316 0,-23.3746 -18.957,-42.3316 -42.3316,-42.3316 z"
+       id="path10-8-1-3-4-7-0-0-5-4-2-2-4-1"
        inkscape:connector-curvature="0" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:connector-curvature="0"
+       id="path10-8-1-3-4-7-0-0-5-4-2-2-7-5-5-3-5-8-2-4-4-0-1"
+       d="m 144.48129,206.23803 -0.2053,36.93406 c -0.11133,20.03115 16.2457,36.26507 36.27715,36.26507 20.03147,0 36.26491,-16.2336 36.26491,-36.26507 l 0,-36.27715 c -20.03138,0 -36.56482,22.20059 -34.73952,26.13775 -0.70261,-1.8021 -17.56579,-26.79466 -37.59724,-26.79466 z"
+       style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:3.90187454;stroke-miterlimit:4;stroke-dasharray:none"
+       sodipodi:nodetypes="csssccc" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       transform="matrix(0.24701895,0,0,0.24701895,318.29406,88.345282)"
+       d="m -503.33473,476.20172 a 54.447071,54.447071 0 1 1 -108.89414,0 54.447071,54.447071 0 1 1 108.89414,0 z"
+       sodipodi:ry="54.447071"
+       sodipodi:rx="54.447071"
+       sodipodi:cy="476.20172"
+       sodipodi:cx="-557.7818"
+       id="path3101-5-6-7-9-0-4-9-4-7-0-8-3-0-2-4-3-3-9-7"
+       style="fill:#000000;fill-opacity:0.94901961;stroke:#ffffff;stroke-width:5.26528406;stroke-miterlimit:4;stroke-dasharray:none"
+       sodipodi:type="arc" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path4441-5-7-9-8-3-0-0-5-5-2-7-8-2-45-5-3-9-4-1"
+       d="m 216.76483,206.74171 c -25.71399,2.3656 -32.21192,17.35038 -34.57373,27.30751 m 3.61668,29.63801 c 2.75003,-33.93469 -15.14199,-53.17526 -41.23323,-56.94552"
+       style="fill:none;stroke:#000000;stroke-width:2.60232949;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       transform="matrix(0.91762574,0,0,0.85697581,3448.1383,-1936.5445)"
+       d="m -3519,2522.0313 a 4.625,5.625 0 1 1 -9.25,0 4.625,5.625 0 1 1 9.25,0 z"
+       sodipodi:ry="5.625"
+       sodipodi:rx="4.625"
+       sodipodi:cy="2522.0312"
+       sodipodi:cx="-3523.625"
+       id="path5011-9-2-2-5-8-5"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       sodipodi:type="arc" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       transform="matrix(1.0683057,0,0,0.85697581,3909.5281,-1934.1879)"
+       d="m -3519,2522.0313 a 4.625,5.625 0 1 1 -9.25,0 4.625,5.625 0 1 1 9.25,0 z"
+       sodipodi:ry="5.625"
+       sodipodi:rx="4.625"
+       sodipodi:cy="2522.0312"
+       sodipodi:cx="-3523.625"
+       id="path5011-0-8-5-8-1"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       sodipodi:type="arc" />
+    <g
+       id="g4009"
+       transform="translate(-134.28571,-28.571429)">
+      <path
+         style="fill:#000000;fill-opacity:1;stroke:none"
+         d="m 189.59625,108.29305 c 10.39213,-1.27249 17.81508,-1.06041 17.81508,-1.06041 22.69286,20.78421 22.16067,16.66618 23.85739,25.14954 l -1.88536,3.12924 c -7.63504,-0.42423 -21.12371,-17.88671 -21.12371,-17.88671 l 0.84832,35.63017 -17.17884,0 -0.42416,-34.99386 c -15.32668,13.56023 -20.15585,18.5226 -24.17749,18.02709 -0.83027,-1.36391 0.23795,-4.54524 0.86728,-6.25814 1.48408,-4.03984 21.40149,-21.73692 21.40149,-21.73692 z"
+         id="path3103-2-6-5-2-4-1-3-2-0-3-3-4-9-8-8-4-5-4-5-4"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccsc"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+      <path
+         sodipodi:nodetypes="csssccc"
+         style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:3.17532682;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 170.42608,117.26468 -0.16707,30.05676 c -0.0906,16.30126 13.22067,29.51235 29.52217,29.51235 16.30151,0 29.51221,-13.21083 29.51221,-29.51235 l 0,-29.52216 c -16.30144,0 -29.75627,18.06673 -28.27086,21.27077 -0.57178,-1.46654 -14.29495,-21.80537 -30.59645,-21.80537 z"
+         id="path10-8-1-3-4-7-0-0-5-4-2-2-7-5-5-3-5-8-2-4-4-0-1-8"
+         inkscape:connector-curvature="0"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+      <path
+         sodipodi:type="arc"
+         style="fill:#000000;fill-opacity:0.94901961;stroke:#ffffff;stroke-width:5.26528406;stroke-miterlimit:4;stroke-dasharray:none"
+         id="path3101-5-6-7-9-0-4-9-4-7-0-8-3-0-2-4-3-3-9-7-8"
+         sodipodi:cx="-557.7818"
+         sodipodi:cy="476.20172"
+         sodipodi:rx="54.447071"
+         sodipodi:ry="54.447071"
+         d="m -503.33473,476.20172 c 0,30.07029 -24.37678,54.44707 -54.44707,54.44707 -30.07029,0 -54.44707,-24.37678 -54.44707,-54.44707 0,-30.07029 24.37678,-54.44707 54.44707,-54.44707 30.07029,0 54.44707,24.37678 54.44707,54.44707 z"
+         transform="matrix(0.20102283,0,0,0.20102283,310.35885,4.6566206)"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:2.11776328;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         d="m 229.25008,117.67458 c -20.92592,1.92511 -26.2139,14.11965 -28.13594,22.22272 m 2.94324,24.11927 c 2.23796,-27.61589 -12.32248,-43.27377 -33.5554,-46.34199"
+         id="path4441-5-7-9-8-3-0-0-5-5-2-7-8-2-45-5-3-9-4-1-2"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccc"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+      <path
+         sodipodi:type="arc"
+         style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         id="path5011-9-2-2-5-8-5-4"
+         sodipodi:cx="-3523.625"
+         sodipodi:cy="2522.0312"
+         sodipodi:rx="4.625"
+         sodipodi:ry="5.625"
+         d="m -3519,2522.0313 c 0,3.1066 -2.0707,5.625 -4.625,5.625 -2.5543,0 -4.625,-2.5184 -4.625,-5.625 0,-3.1067 2.0707,-5.625 4.625,-5.625 2.5543,0 4.625,2.5183 4.625,5.625 z"
+         transform="matrix(0.74675942,0,0,0.6974028,2858.9262,-1626.5215)"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+      <path
+         sodipodi:type="arc"
+         style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+         id="path5011-0-8-5-8-1-5"
+         sodipodi:cx="-3523.625"
+         sodipodi:cy="2522.0312"
+         sodipodi:rx="4.625"
+         sodipodi:ry="5.625"
+         d="m -3519,2522.0313 c 0,3.1066 -2.0707,5.625 -4.625,5.625 -2.5543,0 -4.625,-2.5184 -4.625,-5.625 0,-3.1067 2.0707,-5.625 4.625,-5.625 2.5543,0 4.625,2.5183 4.625,5.625 z"
+         transform="matrix(0.86938198,0,0,0.6974028,3234.4031,-1624.6037)"
+         inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+         inkscape:export-xdpi="61.389999"
+         inkscape:export-ydpi="61.389999" />
+    </g>
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:connector-curvature="0"
+       id="path10-8-1-3-4-7-0-0-5-4-2-2-7-5-5-3-5-8-2-4-4-0-1-1"
+       d="m 252.26554,145.63435 -0.22893,41.18515 c -0.12415,22.33673 18.11558,40.43918 40.45264,40.43918 22.33708,0 40.43899,-18.10209 40.43899,-40.43918 l 0,-40.45263 c -22.337,0 -40.77342,24.75587 -38.73803,29.14619 -0.78348,-2.00952 -19.58761,-29.87871 -41.92467,-29.87871 z"
+       style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4.35097933;stroke-miterlimit:4;stroke-dasharray:none"
+       sodipodi:nodetypes="csssccc" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path4441-5-7-9-8-3-0-0-5-5-2-7-8-2-45-5-3-9-4-1-1"
+       d="m 332.8689,146.196 c -28.67367,2.63788 -35.91951,19.34741 -38.55316,30.45059 m 4.03295,33.04935 c 3.06657,-37.84058 -16.88483,-59.29573 -45.97915,-63.49994"
+       style="fill:none;stroke:#000000;stroke-width:2.9018569;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 293.14793,171.59572 C 292.92136,165.4784 282.78805,146.337 262.41172,140.83085"
+       id="path6055-8-5-4-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-ydpi="61.389999" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:connector-curvature="0"
+       id="path10-8-1-3-4-7-0-0-5-4-2-2-7-5-5-3-5-8-2-4-4-0-1-1-7"
+       d="m 491.9784,89.628693 -0.23285,41.890887 c -0.12628,22.71948 18.426,41.13213 41.14583,41.13213 22.71984,0 41.13194,-18.41228 41.13194,-41.13213 l 0,-41.145817 c -22.71976,0 -41.47211,25.180077 -39.40184,29.645627 -0.7969,-2.04395 -19.92326,-30.390697 -42.64308,-30.390697 z"
+       style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4.42553663;stroke-miterlimit:4;stroke-dasharray:none"
+       sodipodi:nodetypes="csssccc" />
+    <path
+       inkscape:export-ydpi="61.389999"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path4441-5-7-9-8-3-0-0-5-5-2-7-8-2-45-5-3-9-4-1-1-6"
+       d="m 573.96296,90.199963 c -29.16501,2.68308 -36.53502,19.678937 -39.2138,30.972387 m 4.10206,33.61567 c 3.11912,-38.489 -17.17416,-60.311797 -46.76704,-64.588057"
+       style="fill:none;stroke:#000000;stroke-width:2.95158243;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 306.25039,99.266684 c -5.37329,0.54385 -9.94407,1.323866 -14.00371,3.003286 -17.08095,7.06584 -23.10992,22.03082 -22.92685,26.79037 -0.22657,-6.11732 -12.80109,-26.39515 -39.19624,-30.133516 m 0.11328,3.058666 c 30.24681,6.34389 39.08296,27.52799 39.08296,27.52799 0,0 8.04316,-25.82874 37.38369,-26.39515"
+       id="path6055-8-5-4-6-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csccccc"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-ydpi="61.389999" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 292.87685,172.49691 c 0.22657,-6.11732 5.18285,-27.65784 33.00905,-30.25979"
+       id="path6055-8-5-4-6-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="C:\dev\Bloom\artwork\Logo250x359.png"
+       inkscape:export-xdpi="61.389999"
+       inkscape:export-ydpi="61.389999" />
   </g>
 </svg>

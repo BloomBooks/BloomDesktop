@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
@@ -190,11 +191,18 @@ namespace Bloom.CollectionCreating
 		{
 			DialogResult = DialogResult.OK;
 
+			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
+			if (_collectionInfo.Country == "Papua New Guinea")
+			{
+				_collectionInfo.Language2Iso639Code = "en";
+				_collectionInfo.Language3Iso639Code = "tpi";
+			}
+
 			Logger.WriteEvent("Finshed New Collection Wizard");
 			if (_collectionInfo.IsSourceCollection)
 				Analytics.Track("Created New Source Collection");
 			else
-				Analytics.Track("Create New Vernacular Collection");
+				Analytics.Track("Create New Vernacular Collection",new Dictionary<string, string>() { { "Country", _collectionInfo.Country } });
 			Close();
 		}
 
@@ -220,7 +228,7 @@ namespace Bloom.CollectionCreating
 
 		}
 
-		private void _finishPage_Initialize(object sender, AeroWizard.WizardPageInitEventArgs e)
+		private void _finishPage_Initialize(object sender, EventArgs e)
 		{
 			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPage","OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.");
 			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));

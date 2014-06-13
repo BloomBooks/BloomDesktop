@@ -19,6 +19,7 @@ using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -134,7 +135,7 @@ namespace Bloom.CollectionTab
 			{
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (Bloom.ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
@@ -186,9 +187,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			book.RebuildThumbNailAsync(callback,errorCallback);
+			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
 		}
 
 		public void MakeBloomPack(string path)
@@ -239,15 +240,15 @@ namespace Bloom.CollectionTab
 			return TheOneEditableCollection.Name+".BloomPack";
 		}
 
-		public void DoChecksAndUpdatesOfAllBooks()
+		public void DoUpdatesOfAllBooks()
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
-				dlg.ShowAndDoWork((progress, args) => DoChecksAndUpdatesOfAllBooks(progress));
+				dlg.ShowAndDoWork((progress, args) => DoUpdatesOfAllBooks(progress));
 			}
 		}
 
-		public void DoChecksAndUpdatesOfAllBooks(IProgress progress)
+		public void DoUpdatesOfAllBooks(IProgress progress)
 		{
 			int i = 0;
 			foreach (var bookInfo in TheOneEditableCollection.GetBookInfos())
@@ -260,22 +261,98 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		public void DoChecksOfAllBooks()
+		{
+			using (var dlg = new ProgressDialogBackground())
+			{
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg,null));
+				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
+				{
+					MessageBox.Show("Bloom will now open a list of problems it found.");
+					var path = Path.GetTempFileName() + ".txt";
+					File.WriteAllText(path, dlg.ProgressString.Text);
+					System.Diagnostics.Process.Start(path);
+				}
+				else
+				{
+					MessageBox.Show("Bloom didn't find any problems.");
+				}
+			}
+		}
+
+		public void AttemptMissingImageReplacements(string pathToFolderOfReplacementImages=null)
+		{
+			using (var dlg = new ProgressDialogBackground())
+			{
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg, pathToFolderOfReplacementImages));
+				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
+				{
+					MessageBox.Show("There were some problems. Bloom will now open a log of the attempt to replace missing images.");
+				}
+				else
+				{
+					MessageBox.Show("There are no more missing images. Bloom will now open a log of what it did.");
+				}
+
+				var path = Path.GetTempFileName() + ".txt";
+				File.WriteAllText(path, dlg.ProgressString.Text);
+				System.Diagnostics.Process.Start(path);
+			}
+
+		}
+
+
+		public void DoChecksOfAllBooksBackgroundWork(ProgressDialogBackground dialog, string pathToFolderOfReplacementImages)
+		{
+			var bookInfos = TheOneEditableCollection.GetBookInfos();
+			var count = bookInfos.Count();
+			if (count == 0)
+				return;
+
+			foreach (var bookInfo in bookInfos)
+			{
+				//not allowed in this thread: dialog.ProgressBar.Value++;
+				dialog.Progress.ProgressIndicator.PercentCompleted += 100/count;
+
+				var book = _bookServer.GetBookFromBookInfo(bookInfo);
+
+				dialog.Progress.WriteMessage("Checking " + book.TitleBestForUserDisplay);
+				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
+				dialog.ProgressString.WriteMessage("");
+			}
+			dialog.ProgressBar.Value++;
+		}
+
+
+
+
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
-			var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
-
-			TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
-
-			if (_bookSelection != null)
+			try
 			{
-				_bookSelection.SelectBook(newBook);
+				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
+
+
+				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+
+				if (_bookSelection != null)
+				{
+					_bookSelection.SelectBook(newBook);
+				}
+				//enhance: would be nice to know if this is a new shell
+				if (sourceBook.IsShellOrTemplate)
+				{
+					Analytics.Track("Create Book",
+						new Dictionary<string, string>() {{"Category", sourceBook.CategoryForUsageReporting}});
+				}
+				_editBookCommand.Raise(newBook);
 			}
-			//enhance: would be nice to know if this is a new shell
-			if (sourceBook.IsShellOrTemplate)
+			catch (Exception e)
 			{
-				Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Bloom ran into an error while creating that book. (Sorry!)");
 			}
-			_editBookCommand.Raise(newBook);
+
 		}
 
 		public Book.Book GetBookFromBookInfo(BookInfo bookInfo)

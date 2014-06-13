@@ -1,0 +1,26 @@
+html
+	head
+	body
+		h3 Decodable Reader Tool
+		div
+			.stageLine
+				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
+				span.stageLabel.stageLine="Stage "
+					span#stageNumber 1
+					span.ofStage=" of "
+						span#numberOfStages 2
+				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
+				span.setup.stageLine
+					a(href='')#setUpStages Set up Stages
+			.section.clear Words in this stage
+				.sortBlock
+					//- careful! these divs are inline...space between them is significant
+					.sortItem.rightBorder.sortIconSelected#sortAlphabetic
+						i.fa.fa-sort-alpha-asc(title='Sort alphabetically')
+					.sortItem.rightBorder#sortLength
+						i.fa.fa-sort-amount-asc(title='Sort by word length')
+					.sortItem#sortFrequency
+						i.fa.fa-long-arrow-up(title='Sort by frequency')
+						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
+			.tableHolder
+				table.wordList#wordList

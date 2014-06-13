@@ -45,7 +45,7 @@ namespace Bloom.Collection.BloomPack
 				_folderName = GetRootFolderName(zip);
 				if (_folderName == null)
 					return;
-				string destinationFolder = Path.Combine(ProjectContext.InstalledCollectionsDirectory, _folderName);
+				string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 				if (Directory.Exists(destinationFolder))
 				{
 					Logger.WriteEvent("BloomPack already exists, asking...");
@@ -62,7 +62,7 @@ namespace Bloom.Collection.BloomPack
 					try
 					{
 						Logger.WriteEvent("Deleting existing BloomPack at " + destinationFolder);
-						Directory.Delete(destinationFolder, true);
+						DeleteExistingDirectory(destinationFolder);
 					}
 					catch (Exception error)
 					{
@@ -76,6 +76,27 @@ namespace Bloom.Collection.BloomPack
 			_okButton.Enabled = false;
 			_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Extracting", "Extracting...", "Shown while BloomPacks are being installed");
 			_backgroundWorker.RunWorkerAsync();
+		}
+
+		private static void DeleteExistingDirectory(string destinationFolder)
+		{
+			foreach (var dir in Directory.GetDirectories(destinationFolder))
+			{
+				DeleteExistingDirectory(dir);
+			}
+
+			//By Bloom convention, thumbnails that were created by hand are marked "read only" so that the
+			//thumbnail generator never overwrites them. However now that we're trying to clear out this
+			//folder, we need to remove that readonly flag so we can delete it.
+			foreach (var f in Directory.GetFiles(destinationFolder))
+			{
+				var attributes = File.GetAttributes(f);
+				if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+				{
+					File.SetAttributes(f, attributes & ~FileAttributes.ReadOnly);
+				}
+			}
+			Directory.Delete(destinationFolder, true);
 		}
 
 		private string GetRootFolderName(ZipFile zip)
@@ -107,7 +128,6 @@ namespace Bloom.Collection.BloomPack
 				if (_folderName == null)
 					return;
 
-
 				//NB: in the version i have at the moment, EntriesExtracted & EntriesTotal are always 0
 				zip.ExtractProgress +=(o, extractProgress) =>
 					_backgroundWorker.ReportProgress(extractProgress.EntriesExtracted/
@@ -115,31 +135,38 @@ namespace Bloom.Collection.BloomPack
 
 				zip.ZipError += (o, args) => { throw args.Exception; };
 
-				zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
+				zip.ExtractAll(ProjectContext.GetInstalledCollectionsDirectory());
 
-				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.InstalledCollectionsDirectory, _folderName);
-				foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
+				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+				CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
+			}
+		}
+
+		//xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections,
+		//but now we need to move xmatter over to programdata/../xmatter
+		private static void CopyXMatterFoldersToWhereTheyBelong(string newlyAddedFolderOfThePack)
+		{
+			foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
+			{
+				var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
+				try
 				{
-					var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
-					try
+					if (Directory.Exists(destDirName))
 					{
-						if (Directory.Exists(destDirName))
-						{
-							Directory.Delete(destDirName, true);
-						}
+						Directory.Delete(destDirName, true);
 					}
-					catch (Exception error)
-					{
-						throw new ApplicationException("Could not delete the existing xmatter pack in order to update it",error);
-					}
-					try
-					{
-						Directory.Move(dir, destDirName);
-					}
-					catch (Exception error)
-					{
-						throw new ApplicationException("Could not move an xmatter pack from collections to xmatter", error);
-					}
+				}
+				catch (Exception error)
+				{
+					throw new ApplicationException("Could not delete the existing xmatter pack in order to update it", error);
+				}
+				try
+				{
+					Directory.Move(dir, destDirName);
+				}
+				catch (Exception error)
+				{
+					throw new ApplicationException("Could not move an xmatter pack from collections to xmatter", error);
 				}
 			}
 		}

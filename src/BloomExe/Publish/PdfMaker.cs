@@ -62,10 +62,10 @@ namespace Bloom.Publish
 			}
 
 			//   if (bookletPortion != PublishModel.BookletPortions.None)
-			{
+		{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 				RunThroughPDFDroplet(outputPdfPath, paperSizeName, booketLayoutMethod);
-			}
+				}
 		}
 
 

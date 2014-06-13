@@ -2,20 +2,21 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
+using PalasoUIWinforms.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -34,7 +35,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-		private Sparkle _sparkleApplicationUpdater;
+
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 
@@ -53,7 +54,6 @@ namespace Bloom.Workspace
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ChorusSystem chorusSystem,
-							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
 
 			)
@@ -64,14 +64,10 @@ namespace Bloom.Workspace
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
-			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-#if !DEBUG
-			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
-#endif
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
@@ -207,10 +203,10 @@ namespace Bloom.Workspace
 
 		private void Application_Idle(object sender, EventArgs e)
 		{
-			//this didn't work... we got to idle when the lists were still populating
-			Application.Idle -= new EventHandler(Application_Idle);
-			//            Cursor = Cursors.Default;
+			Application.Idle -= Application_Idle;
+
 		}
+
 
 		private void OnUpdateDisplay(object sender, System.EventArgs e)
 		{
@@ -315,9 +311,9 @@ namespace Bloom.Workspace
 			//_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
 		}
 
-		private void toolStripMenuItem1_Click(object sender, EventArgs e)
+		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			using(var dlg = new AboutDialog())
+			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm")))
 			{
 				dlg.ShowDialog();
 			}
@@ -336,11 +332,7 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
-			using(var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon,path))
-			{
-				dlg.ShowDialog();
-			}
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages","0 Release Notes.htm"));
 		}
 
 		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
@@ -383,6 +375,14 @@ namespace Bloom.Workspace
 			CheckDPISettings();
 		}
 
+		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new RegistrationDialog(true))
+			{
+				dlg.ShowDialog();
+			}
+		}
+
 		private void CheckDPISettings()
 		{
 			Graphics g = this.CreateGraphics();
@@ -406,8 +406,10 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
+
+
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

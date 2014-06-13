@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Forms;
 using System.Xml;
+using Palaso.IO;
 
 namespace BloomTemp
 {
@@ -46,7 +46,7 @@ namespace BloomTemp
 		private TempLiftFile()
 		{
 		}
-		public static TempLiftFile TrackExisting(string path)
+		public new static TempLiftFile TrackExisting(string path)
 		{
 			Debug.Assert(File.Exists(path));
 			TempLiftFile t = new TempLiftFile();
@@ -56,98 +56,8 @@ namespace BloomTemp
 
 	}
 
-	public class TempFile : IDisposable
+	public static class TempFileUtils
 	{
-		protected string _path;
-
-		public TempFile()
-		{
-			_path = System.IO.Path.GetTempFileName();
-		}
-
-		internal TempFile(bool dontMakeMeAFile)
-		{
-		}
-
-
-
-		public TempFile(TemporaryFolder parentFolder)
-		{
-			if (parentFolder != null)
-			{
-				_path = parentFolder.GetPathForNewTempFile(true);
-			}
-			else
-			{
-				_path = System.IO.Path.GetTempFileName();
-			}
-
-		}
-
-
-		public TempFile(string contents)
-			: this()
-		{
-			File.WriteAllText(_path, contents);
-		}
-
-		public TempFile(string[] contentLines)
-			: this()
-		{
-			File.WriteAllLines(_path, contentLines);
-		}
-
-		public string Path
-		{
-			get { return _path; }
-		}
-		public void Dispose()
-		{
-			File.Delete(_path);
-		}
-
-
-		//        public static TempFile TrackExisting(string path)
-		//        {
-		//            return new TempFile(path, false);
-		//        }
-		public static TempFile CopyOf(string pathToExistingFile)
-		{
-			TempFile t = new TempFile();
-			File.Copy(pathToExistingFile, t.Path, true);
-			return t;
-		}
-
-		private TempFile(string existingPath, bool dummy)
-		{
-			_path = existingPath;
-		}
-
-		public static TempFile TrackExisting(string path)
-		{
-			return new TempFile(path, false);
-		}
-
-		public static TempFile CreateAndGetPathButDontMakeTheFile()
-		{
-			TempFile t = new TempFile();
-			File.Delete(t.Path);
-			return t;
-		}
-
-		public static TempFile CreateXmlFileWithContents(string fileName, TemporaryFolder folder, string xmlBody)
-		{
-			string path = folder.Combine(fileName);
-			using (XmlWriter x = XmlWriter.Create(path))
-			{
-				x.WriteStartDocument();
-				x.WriteRaw(xmlBody);
-			}
-			return new TempFile(path, true);
-		}
-
-
-
 		public static TempFile CreateHtm5FromXml(XmlNode dom)
 		{
 			var temp = TempFile.TrackExisting(GetHtmlTempPath());
@@ -157,15 +67,28 @@ namespace BloomTemp
 			settings.Indent = true;
 			settings.CheckCharacters = true;
 			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html;
+			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
 
+			// Enhance JohnT: no reason to go to disk for this intermediate version.
 			using (var writer = XmlWriter.Create(temp.Path, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
+			// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
+			// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
+			// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
+			// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
+			// Also, embedded controls (like ReaderTools.htm) now pass through this xml-to-html conversion, and this file contains
+			// several more kinds of empty element, some of which have attributes.
+			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
+			// because there are some elements that never have content like <br /> which should NOT be converted.
+			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
+			string xhtml = File.ReadAllText(temp.Path);
+			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + File.ReadAllText(temp.Path));
+			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
 
 			return temp;
 		}
@@ -175,7 +98,7 @@ namespace BloomTemp
 			string x,y;
 			do
 			{
-				x = System.IO.Path.GetTempFileName();
+				x = Path.GetTempFileName();
 				y = x + ".htm";
 			} while (File.Exists(y));
 			File.Move(x,y);
@@ -183,6 +106,9 @@ namespace BloomTemp
 		}
 	}
 
+	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means
+	// refactoring some Palaso code and moving TemporaryFolder from Palaso.TestUtilities into
+	// Palaso.IO
 	public class TemporaryFolder : IDisposable
 	{
 		private string _path;
@@ -336,8 +262,5 @@ namespace BloomTemp
 			}
 		}
 	}
-
-
-
 
 }

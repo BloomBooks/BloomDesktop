@@ -1,0 +1,77 @@
+# Environment settings for running programs with the SIL version of mono
+# Set MONO_ENVIRON to this file's pathname, then run, for example,
+#    /opt/mono-sil/bin/mono --debug Bloom.exe
+# These setting assume that the packaged SIL Mono is installed in /opt/mono-sil.
+# This may well change to /opt, simplifying the script to not need to distinguish as much
+# between RUNMODE values.  (The first if below may still be needed, but not the second?)
+# Note that this file is intended to be "sourced", not "executed".
+
+# the sourcing script should cd/pushd to the directory containing this script
+BASE="$(pwd)"
+[ -z "$BUILD" ] && BUILD=Debug
+[ -z "$MONO_PREFIX" ] && MONO_PREFIX=/opt/mono-sil
+
+# Dependency locations
+# Search for xulrunner and geckofx, select the best, and add its location to LD_LIBRARY_PATH.
+# Also determine the location of the geckofx assemblies and shared object libraries.
+. ./environ-xulrunner
+
+GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
+
+MONO_RUNTIME=v4.0.30319
+MONO_PATH="${GDK_SHARP}:${GECKOFX}"
+
+################################################################################################
+
+if [ "$RUNMODE" = "INSTALLED" ]
+then
+	# Add the installation directory to the library paths
+	LD_LIBRARY_PATH="${BASE}:${LD_LIBRARY_PATH}"
+	MONO_PATH="${BASE}:${MONO_PATH}"
+else
+	# Add the build output to paths
+	PATH="${BASE}/output/${BUILD}:${PATH}"
+	LD_LIBRARY_PATH="${BASE}/output/${BUILD}:${LD_LIBRARY_PATH}"
+	MONO_PATH="${BASE}/output/${BUILD}:${MONO_PATH}"
+fi
+
+################################################################################################
+
+if [ "$RUNMODE" = "PACKAGE" -o "$RUNMODE" = "INSTALLED" ]
+then
+	# Add packaged mono items to paths
+	PATH="/opt/mono-sil/bin:${PATH}"
+	LD_LIBRARY_PATH="/opt/mono-sil/lib:${LD_LIBRARY_PATH}"
+	PKG_CONFIG_PATH="/opt/mono-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	MONO_GAC_PREFIX="/opt/mono-sil:/usr"
+else
+	# Add locally-built mono items to paths
+	# We also add the default values for PKG_CONFIG_PATH - MonoDevelop resets the PKG_CONFIG_PATH
+	# environment variable if we're running under a different Mono runtime so that some
+	# packages that got installed in standard locations can't be found otherwise.
+	PATH="${MONO_PREFIX}/bin:${PATH}"
+	LD_LIBRARY_PATH="${MONO_PREFIX}/lib:${LD_LIBRARY_PATH}"
+	PKG_CONFIG_PATH="${MONO_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig:/lib/pkgconfig:/usr/lib/pkgconfig"
+	MONO_GAC_PREFIX="${MONO_PREFIX}:/usr"
+fi
+
+################################################################################################
+
+MONO_TRACE_LISTENER="Console.Out"
+#MONO_IOMAP=case
+MONO_MWF_SCALING=disable
+# if debugging for performance unset DEBUG_ENABLE_PTR_VALIDATION env var.
+#export DEBUG_ENABLE_PTR_VALIDATION=1
+
+export \
+	PATH LD_LIBRARY_PATH PKG_CONFIG_PATH LD_PRELOAD \
+	MONO_PATH \
+	MONO_RUNTIME MONO_PREFIX MONO_GAC_PREFIX \
+	MONO_TRACE_LISTENER MONO_IOMAP MONO_MWF_SCALING
+
+# prevent Gecko from printing scary message about "double free or corruption" on shutdown
+# (See FWNX-1216.)  Tom Hindle suggested this hack as a stopgap.
+export MALLOC_CHECK_=0
+
+#sets keyboard input method to none
+unset XMODIFIERS

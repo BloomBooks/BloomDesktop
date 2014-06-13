@@ -5,14 +5,11 @@
     <Setting Name="FirstTimeRun" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MruProjects" Type="Bloom.ToPalaso.MostRecentPathsList" Scope="User">
+    <Setting Name="MruProjects" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="Reporting" Type="Palaso.Reporting.ReportingSettings" Scope="User">
-      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="UserInterfaceLanguage" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -36,6 +33,18 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ShowExperimentalCommands" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="WebUserId" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WebPassword" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WebShowPassword" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseAdobePdfViewer" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

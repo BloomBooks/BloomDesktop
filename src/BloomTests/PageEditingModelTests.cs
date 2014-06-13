@@ -129,5 +129,15 @@ namespace BloomTests
 			}
 
 		}
+		/* abandoned this feature for now, as I realized we don't need it. But maybe some day.
+		[Test]
+		public void PreserveClassAttributeOfElement_ElementFound_HtmlChanged()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div id='parent'><div id='foo' class='old'></div></div></body></html>");
+			var model = new PageEditingModel();
+			model.PreserveClassAttributeOfElement(dom.DocumentElement, "<div id='foo' class='new'></div>");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='foo' and @class='new']", 1);
+		}*/
 	}
 }

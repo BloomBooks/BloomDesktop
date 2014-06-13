@@ -1,17 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
-using Palaso.Xml;
 
 namespace BloomTests.Book
 {
@@ -34,19 +31,16 @@ namespace BloomTests.Book
 			_librarySettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
 			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
-			_fileLocator = new FileLocator(new string[]
-											{
-												FileLocator.GetDirectoryDistributedWithApplication("root"),
-												FileLocator.GetDirectoryDistributedWithApplication("xMatter"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "xMatter", "Factory-XMatter")
-											});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), _librarySettings.Object);
-
-			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+			var collectionSettings = new CollectionSettings(Path.Combine(_projectFolder.Path, "test.bloomCollection"));
+
+			var xmatterFinder = new XMatterPackFinder(new []{FileLocator.GetDirectoryDistributedWithApplication("xMatter")});
+
+			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations());
+
+
+			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings.Object);
+			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 		}
 
 		[TearDown]
@@ -175,8 +169,6 @@ namespace BloomTests.Book
 
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover ')]", 4);
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
-
-			//should only get these two pages
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", 5);
 		}
 
@@ -398,7 +390,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDiv()
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
 
@@ -407,6 +399,9 @@ namespace BloomTests.Book
 
 			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
+
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.That(metadata.Title, Is.EqualTo("My Book"));
 		}
 
 		[Test]
@@ -421,25 +416,54 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_CreatesCorrectMetaJson()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			var jsonFile = Path.Combine(bookFolderPath, BookInfo.MetaDataFileName);
+			Assert.That(File.Exists(jsonFile), "Creating a book should create a metadata json file meta.json");
+
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.That(metadata.Id, Is.Not.Null, "New book should get an ID");
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
+			var jsonFile = Path.Combine(bookFolderPath, BookInfo.MetaDataFileName);
+			Assert.That(File.Exists(jsonFile), "Creating a book should create a metadata json file meta.json");
+			var metadata = new BookInfo(bookFolderPath, false);
+
 			var kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
-			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 1);
-			//we should get our own id, now reuse our parent's
-			AssertThatXmlIn.HtmlFile(GetPathToHtml(bookFolderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookId' and @content='056B6F11-4A6C-4942-B2BC-8861E62B03B3']", 0);
+			Assert.That(metadata.BookLineage, Is.EqualTo(kIdOfBasicBook));
+			//we should get our own id, not reuse our parent's
+			Assert.That(metadata.Id, Is.Not.EqualTo(kIdOfBasicBook), "New book should get its own ID, not reuse parent's");
 		}
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook()
 		{
+			// Try it when we have json and no lineage metadata in the html.
+			CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook(null, true);
+			// Should be able to get it from the old metadata if there is no json
+			CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook("bloomBookLineage", false);
+			// And from the even older metadata.
+			CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook("bookLineage", false);
+		}
+		public void CreateBookOnDiskFromTemplate_SourceHasTwoInLineage_BookLineageExtedsThoseWithIdOfSourceBook(string lineage, bool includeJson)
+		{
 			var shellFolderPath = GetShellBookFolder(
-				@" ", null);
+				@" ", null, lineage, includeJson);
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
 
-			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='bloomBookLineage' and @content='first,second,thisNewGuy']", 1);
+			var metadata = new BookInfo(folderPath, false);
+			Assert.That(metadata.BookLineage, Is.EqualTo("first,second,thisNewGuy"));
 		}
 
 		[Test]
@@ -527,19 +551,26 @@ namespace BloomTests.Book
 						   null//no defaultNameForDerivedBooks
 						   );
 		}
-		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks)
+
+		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks, string lineageName = null, bool includeJson = true)
 		{
-			var content =
+			var lineage = "";
+			if (lineageName != null)
+				lineage = @"<meta name='" + lineageName + "' content='first,second' />";
+			var idString = "";
+			if (!includeJson)
+				idString = @"<meta name='bloomBookId' content='thisNewGuy' />";
+			var content = String.Format(
 				@"<?xml version='1.0' encoding='utf-8' ?>
 				<!DOCTYPE html>
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-					<meta name='bloomBookLineage' content='first,second' />
-					<meta name='bloomBookId' content='thisNewGuy' />
+					{0}
+					{1}
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />";
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />", lineage, idString);
 			if(!string.IsNullOrEmpty(defaultNameForDerivedBooks))
 			{
 				content += @"<meta name='defaultNameForDerivedBooks' content='"+defaultNameForDerivedBooks+"'/>";
@@ -553,6 +584,15 @@ namespace BloomTests.Book
 			Directory.CreateDirectory(folder);
 			string shellFolderPath = Path.Combine(folder, "guitar.htm");
 			File.WriteAllText(shellFolderPath, content);
+			if (includeJson)
+			{
+				var json = "{'bookLineage':'first,second','bookInstanceId':'thisNewGuy','title':'Test Shell'}";
+				File.WriteAllText(Path.Combine(folder, BookInfo.MetaDataFileName), json);
+			}
+			else
+			{
+				File.Delete(Path.Combine(folder, BookInfo.MetaDataFileName)); // in case an earlier run created it
+			}
 			return folder;
 		}
 

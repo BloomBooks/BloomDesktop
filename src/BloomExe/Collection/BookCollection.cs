@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Bloom.Book;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.Collection
 {
@@ -30,6 +31,12 @@ namespace Bloom.Collection
 		{
 		}
 
+		// For unit tests only.
+		internal BookCollection(List<BookInfo> state)
+		{
+			_bookInfos = state;
+		}
+
 		public BookCollection(string path, CollectionType collectionType,
 			BookSelection bookSelection)
 		{
@@ -49,7 +56,7 @@ namespace Bloom.Collection
 			string path = Path.Combine(_path, "customCollectionStyles.css");
 			if(File.Exists(path))
 				return;
-			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("root","collection styles override template.css"),path);
+			File.Copy(BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI","bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
@@ -63,7 +70,7 @@ namespace Bloom.Collection
 
 		public void DeleteBook(Book.BookInfo bookInfo)
 		{
-			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
+			var didDelete = ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
 			if (!didDelete)
 				return;
 
@@ -129,6 +136,30 @@ namespace Bloom.Collection
 			NotifyCollectionChanged();
 		}
 
+		/// <summary>
+		/// Insert a book into the appropriate place. If there is already a book with the same FolderPath, replace it.
+		/// </summary>
+		/// <param name="bookInfo"></param>
+		public void InsertBookInfo(BookInfo bookInfo)
+		{
+			IComparer<string> comparer = new NaturalSortComparer<string>();
+			for (int i = 0; i < _bookInfos.Count; i++)
+			{
+				var compare = comparer.Compare(_bookInfos[i].FolderPath, bookInfo.FolderPath);
+				if (compare == 0)
+				{
+					_bookInfos[i] = bookInfo; // Replace
+					return;
+				}
+				if (compare > 0)
+				{
+					_bookInfos.Insert(i, bookInfo);
+					return;
+				}
+			}
+			_bookInfos.Add(bookInfo);
+		}
+
 		private void AddBookInfo(string path)
 		{
 			try
@@ -156,5 +187,7 @@ namespace Bloom.Collection
 			get { throw new NotImplementedException(); }
 			set { throw new NotImplementedException(); }
 		}
+
+		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
 	}
 }

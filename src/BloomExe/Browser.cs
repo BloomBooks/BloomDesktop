@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Gecko;
+using Gecko.DOM;
 using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
+//using Palaso.UI.WindowsForms.HtmlBrowser;
 using Palaso.Xml;
-using Gecko;
-using Gecko.DOM;
-using TempFile = BloomTemp.TempFile;
+using BloomTemp;
 
 namespace Bloom
 {
 	public partial class Browser : UserControl
 	{
-		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SetDllDirectory(string lpPathName);
-
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
 		private string _url;
@@ -37,13 +37,32 @@ namespace Bloom
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 
+		private static int XulRunnerVersion
+		{
+			get
+			{
+				var geckofx = Assembly.GetAssembly(typeof(GeckoWebBrowser));
+				if (geckofx == null)
+					return 0;
 
+				var versionAttribute = geckofx.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), true)
+					.FirstOrDefault() as AssemblyFileVersionAttribute;
+				return versionAttribute == null ? 0 : new Version(versionAttribute.Version).Major;
+			}
+		}
+
+		// TODO: refactor to use same initialization code as Palaso
 		public static void SetUpXulRunner()
 		{
-			string xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (Xpcom.IsInitialized)
+				return;
+
+			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
 			if (!Directory.Exists(xulRunnerPath))
 			{
-
+				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
+			if (!Directory.Exists(xulRunnerPath))
+			{
 				//if this is a programmer, go look in the lib directory
 				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
 											 Path.Combine("lib", "xulrunner"));
@@ -52,19 +71,31 @@ namespace Bloom
 				//but it's a hassle to update all the other parts (installer, build machine) with this number,
 				//so we only use it if we don't find the unnumbered alternative.
 				if(!Directory.Exists(xulRunnerPath))
+					{
 					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-												 Path.Combine("lib", "xulrunner22"));
+							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
+					}
 
-				//NB: WHEN CHANGING VERSIONS, ALSO CHANGE IN THESE LOCATIONS:
-				// get the new xulrunner, zipped (as it comes from mozilla), onto c:\builddownloads on the palaso teamcity build machine
-				//	build/build.win.proj: change the zip file to match the new name
-
-
+					if (!Directory.Exists(xulRunnerPath))
+					{
+						throw new ConfigurationException(
+							"Can't find the directory where xulrunner (version {0}) is installed",
+							XulRunnerVersion);
+					}
+				}
 			}
-			//Review: an early tester found that wrong xpcom was being loaded. The following solution is from http://www.geckofx.org/viewtopic.php?id=74&action=new
-			SetDllDirectory(xulRunnerPath);
 
-			Gecko.Xpcom.Initialize(xulRunnerPath);
+			Xpcom.Initialize(xulRunnerPath);
+			Application.ApplicationExit += OnApplicationExit;
+			}
+
+		private static void OnApplicationExit(object sender, EventArgs e)
+		{
+			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
+			// otherwise the app might not exit properly.
+			if (Xpcom.IsInitialized)
+				Xpcom.Shutdown();
+			Application.ApplicationExit -= OnApplicationExit;
 		}
 
 		public Browser()
@@ -179,7 +210,7 @@ namespace Bloom
 			UpdateDisplay();
 			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
-			_browser.DocumentCompleted += new EventHandler(_browser_DocumentCompleted);
+			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
 			var errorsToHide = new List<string>();
@@ -235,9 +266,9 @@ namespace Bloom
 		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
-			if (e.CtrlKey && e.KeyChar == 'v')
+			const uint DOM_VK_INSERT = 0x2D;
+			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				Debug.WriteLine("Ctrl-v pressed.");
 				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
@@ -246,8 +277,6 @@ namespace Bloom
 				else if(_browser.CanPaste && Clipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-
-
 					PasteFilteredText();
 				}
 			}
@@ -255,12 +284,10 @@ namespace Bloom
 
 		private void PasteFilteredText()
 		{
-//filter whatever's on there down to just simple text.
-			//While it's tempting to allow formatted pasting, if you're making a shell, that's just
-			//kidding yourself; the translator won't get to have that formatting too.
+			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			//setting clears everything else:
 			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
-			Debug.WriteLine("Asking browser to paste:" + Clipboard.GetText());
 			_browser.Paste();
 		}
 
@@ -270,6 +297,26 @@ namespace Bloom
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
+
+			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+		}
+		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
+		{
+			//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
+			//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
+			//on a developer/ support-person computer.
+			var builder = new StringBuilder();
+
+			foreach (string label in ErrorReport.Properties.Keys)
+			{
+				 builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
+			}
+
+			builder.AppendLine();
+
+			builder.AppendLine(File.ReadAllText(_url));
+			Clipboard.SetText(builder.ToString());
+			MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
 		}
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
@@ -306,13 +353,13 @@ namespace Bloom
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
-			if (e.Uri.OriginalString.ToLower().StartsWith("http") && !e.Uri.OriginalString.ToLower().Contains("bloom"))
+			string url = e.Uri.OriginalString;
+			if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
 			{
 				e.Cancel = true;
-				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+				Process.Start(url); //open in the system browser instead
+				Debug.WriteLine("Navigating " + e.Uri);
 			}
-
-			Debug.WriteLine("Navigating " + e.Uri);
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -377,10 +424,20 @@ namespace Bloom
 				body.SetAttribute("style", GetZoomCSS(scale));
 			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			SetNewTempFile(TempFile.CreateHtm5FromXml(dom));
+			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();
 		}
+
+		public void NavigateRawHtml(string html)
+		{
+			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
+			File.WriteAllText(tf.Path,html);
+			SetNewTempFile(tf);
+			_url = _tempHtmlFile.Path;
+			UpdateDisplay();
+		}
+
 
 		private static string GetZoomCSS(float scale)
 		{
@@ -439,26 +496,22 @@ namespace Bloom
 			if (_pageDom == null)
 				return;
 
-#if DEBUG
+			// As of august 2012 textareas only occur in the Calendar
 			if (_pageDom.SelectNodes("//textarea").Count > 0)
-				Debug.Fail("Oh, a chance to test bluring textarea's!");
-#endif
-			//as of august 2012 textareas only occur in the Calendar
-	//		if (_pageDom.SelectNodes("//textarea").Count >0)
 			{
 				//This approach was to force an onblur so that we can get at the actual user-edited value.
 				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
 				//_browser.WebBrowserFocus.Deactivate();
 				//_browser.WebBrowserFocus.Activate();
 
-				//now, we just do the blur directly.
+				// Now, we just do the blur directly.
 				var activeElement = _browser.Window.Document.ActiveElement;
 				if(activeElement!=null)
 					activeElement.Blur();
 			}
 
 			var body = _browser.Document.GetElementsByTagName("body");
-			if (body.Count ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+			if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
 				return;
 
 			var content = body[0].InnerHtml;
@@ -473,12 +526,12 @@ namespace Bloom
 				if (_pageDom == null)
 					return;
 
-				var destinationDomPage = _pageDom.SelectSingleNode("//body/div[contains(@class,'bloom-page')]");
+				var destinationDomPage = _pageDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
 				if (destinationDomPage == null)
 					return;
 				var expectedPageId = destinationDomPage["id"];
 
-				var browserPageId = bodyDom.SelectSingleNode("//body/div[contains(@class,'bloom-page')]");
+				var browserPageId = bodyDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
 				if (browserPageId == null)
 					return;//why? but I've seen it happen
 
@@ -489,6 +542,42 @@ namespace Bloom
 					return;
 				}
 				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+
+				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
+					{
+						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
+						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+						if (titleNode == null)
+							return false;
+						return titleNode.NodeValue == "userModifiedStyles";
+					});
+
+				if (userModifiedStyleSheet != null)
+				{
+					try
+					{
+						/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+						 * rules don't show up inside of it. So
+						 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+						 */
+						var styles = new StringBuilder();
+						styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+						foreach (var cssRule in userModifiedStyleSheet.CssRules)
+						{
+							styles.AppendLine(cssRule.CssText);
+						}
+						styles.AppendLine("</style>");
+						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
+						_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+					}
+					catch (COMException)
+					{
+						// Trying to access the CssRules might throw an exception if there are
+						// no rules. If so, just ignore.
+					}
+				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
 //				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
@@ -503,11 +592,11 @@ namespace Bloom
 			}
 			catch(Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (invalid incoming html).\r\n\r\n+{0}", e);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (invalid incoming html).{1}{1}+{0}",
+					e, Environment.NewLine);
 				return;
 			}
-
-
 
 			try
 			{
@@ -516,7 +605,9 @@ namespace Bloom
 			catch (Exception e)
 			{
 				var exceptionWithHtmlContents = new Exception(content);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Sorry, Bloom choked on something on this page (validating page).\r\n\r\n+{0}", e.Message);
+				ErrorReport.NotifyUserOfProblem(e,
+					"Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
+					e.Message, Environment.NewLine);
 			}
 
 		}
@@ -533,7 +624,7 @@ namespace Bloom
 		{
 			if (_url != "about:blank")
 			{
-				RunJavaScript("Cleanup()");
+		//		RunJavaScript("Cleanup()");
 					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
 				LoadPageDomFromBrowser();
 			}
@@ -571,23 +662,30 @@ namespace Bloom
 			head.AppendChild(script);
 		}
 
-		public void RunJavaScript(string script)
+		public string RunJavaScript(string script)
 		{
-			//NB: someday, look at jsdIDebuggerService, which has an Eval
+			using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
+		{
+				string result;
+				context.EvaluateScript(script, out result);
+				return result;
+		   }
+		}
 
-			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,
+		HashSet<string> _knownEvents = new HashSet<string>();
 
-
-			WebBrowser.Navigate("javascript:void(" +script+")");
-			// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
-			//var filter = new TestMessageFilter();
-			//Application.AddMessageFilter(filter);
-				Application.DoEvents();
-
-
-			//NB: Navigating and Navigated events are never raised. I'm going under the assumption for now that the script blocks
+		/// <summary>
+		/// Only the first call per browser per event name takes effect.
+		/// </summary>
+		/// <param name="eventName"></param>
+		/// <param name="action"></param>
+		public void AddMessageEventListener(string eventName, Action<string> action)
+		{
+			if (_knownEvents.Contains(eventName))
+				return; // This browser already knows what to do about this; hopefully we don't have a conflict.
+			_browser.AddMessageEventListener(eventName, action);
+			_knownEvents.Add(eventName);
 	   }
-
 
 
 		/* snippets
@@ -624,7 +722,7 @@ namespace Bloom
 				var div = _browser.Document.ActiveElement;
 				if (div != null)
 				{
-					div = div.GetElements("//div[contains(@class, 'bloom-page')]").FirstOrDefault();
+					div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
 					if (div != null)
 					{
 						if (div.ScrollWidth > _browser.Width)
@@ -663,9 +761,63 @@ namespace Bloom
 				geckoMarkupDocumentViewer.SetFullZoomAttribute(scale);
 			}
 */
-			//so we stick it in the css instead
-			_browser.Document.Body.Style.CssText = string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
+			// So we append it to the css instead, making sure it's within the 'mainPageScope', if there is one
+			var cssString = GetZoomCSS(scale);
+			var pageScope = _browser.Document.GetElementById("mainPageScope");
+			// Gecko's CssText setter is smart enough not to duplicate styles!
+			if (pageScope != null)
+				(pageScope as GeckoHtmlElement).Style.CssText += cssString;
+			else
+				_browser.Document.Body.Style.CssText += cssString;
 			_browser.Window.ScrollTo(0,0);
+		}
+
+		/// <summary>
+		/// When you receive a OnBrowserClick and have determined that nothing was clicked on that the c# needs to pay attention to,
+		/// pass it on to this method. It will either let the browser handle it normally, or redirect it to the operating system
+		/// so that it can open the file or external website itself.
+		/// </summary>
+		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
+		{
+			if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+			{
+				Process.Start(anchor.Href);
+				eventArgs.Handled = true;
+				return;
+			}
+			if (anchor.Href.ToLower().StartsWith("file"))
+			//links to files are handled externally if we can tell they aren't html/javascript related
+			{
+				// TODO: at this point spaces in the file name will cause the link to fail.
+				// That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+				var href = anchor.Href;
+
+				var path = href.Replace("file:///", "");
+
+				if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
+				{
+					eventArgs.Handled = true;
+					Process.Start(new ProcessStartInfo()
+					{
+						FileName = path,
+						WorkingDirectory = workingDirectoryForFileLinks
+					});
+					return;
+				}
+				eventArgs.Handled = false; //let gecko handle it
+				return;
+			}
+			else if (anchor.Href.ToLower().StartsWith("mailto"))
+			{
+				eventArgs.Handled = true;
+				Process.Start(anchor.Href); //let the system open the email program
+				Debug.WriteLine("Opening email program " + anchor.Href);
+			}
+			else
+			{
+				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+				eventArgs.Handled = true;
+			}
 		}
 	}
 

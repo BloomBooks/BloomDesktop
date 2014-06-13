@@ -139,6 +139,9 @@
   <data name="Copy16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SILLogoBlue132x184" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SILLogoBlue132x184.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="menuButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\menuButton.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -148,8 +151,8 @@
   <data name="feedback24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\feedback24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Error70x701" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Error70x701.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="placeHolderBookThumbnail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\placeHolderBookThumbnail.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="sendreceiveToolbarButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sendreceiveToolbarButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -174,9 +177,6 @@
   </data>
   <data name="cutDisable16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cutDisable16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Favicon16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Favicon16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="copyDisable16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\copyDisable16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -217,11 +217,17 @@
   <data name="PagePlaceHolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pagePlaceHolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteMessageBoxImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteMessageBoxImage.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="open" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\open.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PackageFlat" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PackageFlat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SILInBlueNoTagLineWithTrademark100x113" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SILInBlueNoTagLineWithTrademark100x113.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="settings16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -250,6 +256,9 @@
   <data name="Usb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Usb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SIL_Logo_Blue_Smaller_Transparent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SIL_Logo_Blue_Smaller_Transparent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DeletePageDisabled24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePageDisabled24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -259,17 +268,26 @@
   <data name="cloneFromChorusHub" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cloneFromChorusHub.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="DeleteMessageBoxImage" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DeleteMessageBoxImage.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="deletePage16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\deletePage16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="cropMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\cropMarks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="print" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\print.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="library32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\library32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="publish32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\publish32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sil logo on dark 132x127" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sil logo on dark 132x127.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="cloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\cloud.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Error70x701" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Error70x701.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="pasteDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pasteDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -277,46 +295,49 @@
   <data name="cloneFromInternet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cloneFromInternet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="simplePages" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\simplePages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="placeHolderBookThumbnail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\placeHolderBookThumbnail.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="helpTab32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\helpTab32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="LogoForLibraryChoosingDialog" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LogoForLibraryChoosingDialog.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="deletePage16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\deletePage16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Logo16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Favicon16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Cut16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cut16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="simplePages" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\simplePages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="LogoForSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\LogoForSplashScreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="deletePage24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\deletePage24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="settings24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\settings24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Logo16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Favicon16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="library32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\library32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="newBook" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\newBook.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="deletePage24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\deletePage24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="LogoForSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LogoForSplashScreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="settings24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settings24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="BloomDarkGrey300-ish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BloomDarkGrey300-ish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Favicon16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Favicon16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="WelcomeHeader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WelcomeHeader.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="cropMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\cropMarks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="upload" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\upload.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

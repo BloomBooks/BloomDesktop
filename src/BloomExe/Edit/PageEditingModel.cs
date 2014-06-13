@@ -190,5 +190,18 @@ namespace Bloom.Edit
 
 			img.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
 		}
+
+		/*
+		 * /// <summary>
+		/// NB: ideally, this would just be PreserveHtmlOfElement but for now, this actually only copies the @class over
+		/// </summary>
+		public void PreserveClassAttributeOfElement(XmlElement pageElement, string elementHtml)
+		{
+			XmlElement incoming = XmlHtmlConverter.GetXmlDomFromHtml(elementHtml, false).SelectSingleNode("//body").FirstChild as XmlElement;
+			string id = incoming.GetStringAttribute("id");
+			XmlElement elementToChange = pageElement.SelectSingleNode("//*[@id='" + id + "']") as XmlElement;
+			var newClassContent =  incoming.GetAttribute("class");
+			elementToChange.SetAttribute("class", newClassContent);
+		}*/
 	}
 }

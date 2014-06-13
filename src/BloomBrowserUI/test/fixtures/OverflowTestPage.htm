@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- Tests of overflow feature in Bloom that puts a red background in a field if there's too much content-->
+<head></head>
+<body>
+  <!-- Test#0-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Default font bloom-editable with no styles doesn't overflow">Test text
+  </div>
+  <!-- Test#1-->
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Andika bloom-editable with large text and small height should overflow" style="font-family:Andika;font-size:large;height:21px;">Test text
+  </div>
+  <!-- Test#2-->
+  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Default font bloom-editable with large text and small height should overflow" style="font-size:20pt;height:24px;overflow:visible">Test text
+  </div>
+  <!-- Test#3-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with no other styles should not overflow" style="font-family:Andika;">Test text
+  </div>
+  <!-- Test#4-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with fixed height should not overflow" style="font-family:Andika;height=50px">Test text
+  </div>
+  <!-- Test#5-->
+  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Andika bloom-editable with only some padding should not overflow" style="font-family:Andika;padding: 2px;">Test text
+  </div>
+  <!-- Test#6-->
+  <div style="width:25em;height:45px" class="marginBox">
+	<div class="bloom-translationGroup">
+	  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test that expanding vertically past margins overflows" style="font-family:Andika;font-size:20pt">Too much test text to put on one line at 20pt font.
+	  </div>
+	</div>
+  </div>
+  <!-- Test#7-->
+  <div style="width:25em;height:45px" class="marginBox">
+	<div class="bloom-translationGroup">
+	  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test that not expanding vertically past margins does not overflow" style="font-family:Andika;font-size:20pt">Just enough text.
+	  </div>
+	</div>
+  </div>
+  <!-- Test#8-->
+  <div style="width:25em;height:90px" class="marginBox">
+	<div class="bloom-translationGroup">
+	  <div lang="z" contenteditable="true" class="bloom-editable bloom-content1" style="font-family:Andika;font-size:20pt">Just enough text.
+	  </div>
+	</div>
+	<div class="bloom-translationGroup">
+	  <div class="myTest bloom-editable bloom-content1" lang="z" contenteditable="true" name="Test that multiple translation groups don't necessarily overflow" style="font-family:Andika;font-size:20pt">Just enough text.
+	  </div>
+	</div>
+  </div>
+  <!-- Test#9-->
+  <div style="width:25em;height:90px" class="marginBox">
+	<div class="bloom-translationGroup">
+	  <div lang="z" contenteditable="true" class="bloom-editable bloom-content1" style="font-family:Andika;font-size:20pt">Just enough text.
+	  </div>
+	</div>
+	<div class="bloom-translationGroup">
+	  <div class="myTest bloom-editable bloom-content1 expectToOverflow" lang="z" contenteditable="true" name="Test that multiple translation groups expanding vertically past margins overflows" style="font-family:Andika;font-size:20pt">Too much test text to put on one line at 20pt font.
+	  </div>
+	</div>
+  </div>
+</body>

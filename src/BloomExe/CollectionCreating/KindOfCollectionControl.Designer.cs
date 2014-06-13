@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KindOfCollectionControl));
             this._radioSourceCollection = new System.Windows.Forms.RadioButton();
             this._radioNormalVernacularCollection = new System.Windows.Forms.RadioButton();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -67,7 +68,7 @@
             this._radioNormalVernacularCollection.Size = new System.Drawing.Size(212, 29);
             this._radioNormalVernacularCollection.TabIndex = 6;
             this._radioNormalVernacularCollection.TabStop = true;
-            this._radioNormalVernacularCollection.Text = "Vernacular Collection";
+            this._radioNormalVernacularCollection.Text = "Vernacular/Local Language Collection";
             this._radioNormalVernacularCollection.UseVisualStyleBackColor = true;
             this._radioNormalVernacularCollection.CheckedChanged += new System.EventHandler(this._radioNormalVernacularCollection_CheckedChanged);
             // 
@@ -109,12 +110,10 @@
             this.betterLabel2.Multiline = true;
             this.betterLabel2.Name = "betterLabel2";
             this.betterLabel2.ReadOnly = true;
-            this.betterLabel2.Size = new System.Drawing.Size(358, 49);
+            this.betterLabel2.Size = new System.Drawing.Size(358, 65);
             this.betterLabel2.TabIndex = 10;
             this.betterLabel2.TabStop = false;
-            this.betterLabel2.Text = "A collection of shell or template books in one or more languages of wider communi" +
-    "cation. From this, you can make a BloomPack to give to others so that they can m" +
-    "ake vernacular books with it.";
+            this.betterLabel2.Text = resources.GetString("betterLabel2.Text");
             // 
             // KindOfCollectionControl
             // 

@@ -9,6 +9,9 @@ namespace Bloom.ToPalaso
 	/// A splitter which doesn't leave itself selected when you use it (that default behavior is lame)
 	/// </summary>
 	public partial class BetterSplitContainer : SplitContainer
+#if __MonoCS__
+		, System.ComponentModel.ISupportInitialize
+#endif
 	{
 		public BetterSplitContainer()
 		{
@@ -62,5 +65,18 @@ namespace Bloom.ToPalaso
 			}
 		}
 
+#if __MonoCS__
+		#region ISupportInitialize implementation
+		public void BeginInit ()
+		{
+
+		}
+
+		public void EndInit ()
+		{
+
+		}
+		#endregion
+#endif
 	}
 }

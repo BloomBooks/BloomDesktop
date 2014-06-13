@@ -110,19 +110,23 @@ namespace Bloom.Book
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
-			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
-			//	for shells, we'll still have pages.
+			// NB: For a new book based on a page template, I think this should remove *everything*,
+			// because the rest is in the xmatter.
+			// For shells, we'll still have pages.
+
 			//Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
+				initialPageDivs.Count > 0;
+				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
-				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
+				initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
 			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
-			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
+			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, Layout.A5Portrait, _fileLocator);
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
@@ -133,7 +137,7 @@ namespace Bloom.Book
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
-			SetLineageAndId(storage);
+			SetLineageAndId(storage, sourceFolderPath);
 
 			SetBookTitle(storage, bookData);
 
@@ -162,23 +166,36 @@ namespace Bloom.Book
 			return storage.FolderPath;
 		}
 
-		private void SetLineageAndId(BookStorage storage)
+		private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
 		{
-			var parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
-
-			var lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
-			if (string.IsNullOrEmpty(lineage))
+			string parentId = null;
+			string lineage = null;
+			if (File.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
 			{
-				lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
+				var sourceMetaData = new BookInfo(sourceFolderPath, false);
+				parentId = sourceMetaData.Id;
+				lineage = sourceMetaData.BookLineage;
 			}
+			else
+			{
+				// No parent meta.json, try for legacy embedded metadata in html
+				parentId = GetMetaValue(storage.Dom.RawDom, "bloomBookId", "");
+				lineage = GetMetaValue(storage.Dom.RawDom, "bloomBookLineage", "");
+				if (string.IsNullOrEmpty(lineage))
+				{
+					lineage = GetMetaValue(storage.Dom.RawDom, "bookLineage", ""); //try the old name for this value
+				}
+			}
+
 			if (!string.IsNullOrEmpty(lineage))
 				lineage += ",";
 			if (!string.IsNullOrEmpty(parentId))
 			{
-				storage.Dom.UpdateMetaElement("bloomBookLineage", lineage + parentId);
+				storage.MetaData.BookLineage = lineage + parentId;
 			}
-			storage.Dom.UpdateMetaElement("bloomBookId",Guid.NewGuid().ToString());
-			storage.Dom.RemoveMetaElement("bookLineage");//old name
+			storage.MetaData.Id = Guid.NewGuid().ToString();
+			storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
+			storage.Dom.RemoveMetaElement("bookLineage"); // even older name
 		}
 
 //		private static void ClearAwayAllTranslations(XmlNode element)
@@ -236,8 +253,11 @@ namespace Bloom.Book
 			var nameSuggestion = storage.Dom.GetMetaValue("defaultNameForDerivedBooks", kdefaultName);
 //	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
 
-			if(nameSuggestion!=null)
-				bookData.Set("bookTitle",nameSuggestion,"en");
+			if (nameSuggestion != null)
+			{
+				bookData.Set("bookTitle", nameSuggestion, "en");
+				storage.MetaData.Title = nameSuggestion;
+			}
 			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
 //	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
@@ -262,9 +282,9 @@ namespace Bloom.Book
 				var data = new DataSet();
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1Iso639Code));
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code));
-				data.WritingSystemCodes.Add("V", _collectionSettings.Language1Iso639Code);
-				data.WritingSystemCodes.Add("N1", _collectionSettings.Language2Iso639Code);
-				data.WritingSystemCodes.Add("N2", _collectionSettings.Language3Iso639Code);
+				data.WritingSystemAliases.Add("V", _collectionSettings.Language1Iso639Code);
+				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2Iso639Code);
+				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
 
 
 				//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
@@ -272,7 +292,7 @@ namespace Bloom.Book
 
 				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(initialPath, data.WritingSystemCodes, sizeAndOrientation);
+				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation);
 			}
 		}
 
@@ -307,6 +327,16 @@ namespace Bloom.Book
 			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
 			//prevent us from editing it while in a shell-making collections, since we don't honor this
 			//tag in shell-making collections.
+
+			//The problem is, if you make a book in some vernacular library, then share it so that others
+			//can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
+			//being used as a shell. So everything is editable (not a big deal) but you're also locked out
+			// of editing the acknowledgements for translated version.
+
+			//It seems to me at the moment (May 2014) that the time to mark something as locked down should
+			//be when the they create a book based on a source-with-content book. So the current approach
+			//below, of pre-locking it, would go away.
+
 			if(_isSourceCollection)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");

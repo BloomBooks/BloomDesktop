@@ -1,16 +1,20 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Windows.Forms;
-using Microsoft.Win32;
-using NetSparkle;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-
+using Palaso.Reporting;
+using Palaso.Extensions;
 
 namespace Bloom
 {
@@ -20,15 +24,12 @@ namespace Bloom
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection, Sparkle _sparkle)
+		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
 		{
-			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName);
+			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
-
-
 
 #if DEBUG
 			WindowState = FormWindowState.Normal;
@@ -42,23 +43,9 @@ namespace Bloom
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
-
-			_sparkle.AboutToExitForInstallerRun += ((x, cancellable) =>
-			{
-				cancellable.Cancel = false;
-				QuitForVersionUpdate = true;
-				Close();
-			});
-
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
 				UserWantsToOpeReopenProject = true;
-				Close();
-			});
-
-			SystemEvents.SessionEnding += ((x,y)=>
-			{
-				QuitForSystemShutdown=true;
 				Close();
 			});
 
@@ -77,54 +64,68 @@ namespace Bloom
 			//get everything saved (under the old collection name, if we are changing the name and restarting)
 			_libraryClosingEvent.Raise(null);
 
-			//change the collection name now, when it's safe
-			try
+			if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) &&
+				_nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
 			{
-				if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
-					_collectionSettings.AttemptSaveAsToNewName(_nameToChangeCollectionUponClosing);
-			}
-			catch (Exception error)
-			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom could not rename the project to '{0}'", _nameToChangeCollectionUponClosing);
-			}
+				//Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
+				//when this run isn't holding onto anything.
+				try
+				{
+					var existingDirectoryPath = Path.GetDirectoryName(_collectionSettings.SettingsFilePath);
+					var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
+					var newDirectoryPath = Path.Combine(parentDirectory, _nameToChangeCollectionUponClosing);
 
-			Settings.Default.MruProjects.AddNewPath(_collectionSettings.SettingsFilePath);
+					Process.Start(Application.ExecutablePath,
+						string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
+
+					//give some time for that process.start to finish staring the new instance, which will see
+					//we have a mutex and wait for us to die, then see the --rename, and do its work.
+
+					Thread.Sleep(2000);
+					Environment.Exit(-1); //Force termination of the current process.
+				}
+				catch (Exception error)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+						"Sorry, Bloom failed to even prepare for the rename of the project to '{0}'", _nameToChangeCollectionUponClosing);
+				}
+			}
 
 			base.OnClosing(e);
 		}
 
 		private void SetWindowText()
 		{
-			Text = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetVersionInfo());
+			Text = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
 			if(_collectionSettings.IsSourceCollection)
 			{
 				Text += "SOURCE COLLECTION";
 			}
 		}
 
-		public static string GetVersionInfo()
+		public static string GetBuiltOnDate()
 		{
 			var asm = Assembly.GetExecutingAssembly();
 			var ver = asm.GetName().Version;
-			var file = asm.CodeBase.Replace("file:", string.Empty);
-			file = file.TrimStart('/');
+			var file = asm.CodeBase.Replace("file://", string.Empty);
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
-			return string.Format("Version {0}.{1}.{2} Built on {3}", ver.Major, ver.Minor,
-				ver.Build, fi.CreationTime.ToString("dd-MMM-yyyy"));
+			return string.Format("{0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
+		}
+
+		public static string GetShortVersionInfo()
+		{
+			var asm = Assembly.GetExecutingAssembly();
+			var ver = asm.GetName().Version;
+
+			return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
 		}
 
 		public bool UserWantsToOpenADifferentProject { get; set; }
 
 		public bool UserWantsToOpeReopenProject;
-
-		/// <summary>
-		/// used when the user does an in-app installer download; after we close down, Program will read this and return control to Sparkle
-		/// </summary>
-		public bool QuitForVersionUpdate;
-
-		public bool QuitForSystemShutdown;
-
 		private string _nameToChangeCollectionUponClosing;
 
 

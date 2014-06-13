@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="bloomPreview.js" Guid="3eb897ae-4e91-4e45-802a-0cc94c685d60" />
+  <File Id="bloomPreviewBootstrap.js" Guid="8dd3605c-9df2-4991-9661-a359d585a6fe" />
+  <File Id="BrowserUIDir.bookPreview.js.bloomPreview.js" Guid="3e5bc734-2c9f-453f-af57-fe6444884281" />
+  <File Id="BrowserUIDir.bookPreview.js.bloomPreviewBootstrap.js" Guid="9c6c1440-8053-44aa-93d2-2dec48b70a59" />
+  <File Id="owserUIDir.bookPreview.js.bloomPreviewBootstrap.js" Guid="a0a1688a-6fd9-44a3-947f-e52e172207e0" />
+</InstallerMetadata>

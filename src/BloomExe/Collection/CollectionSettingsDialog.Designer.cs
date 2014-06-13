@@ -655,7 +655,9 @@
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._tab);
+#if !__MonoCS__
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+#endif
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");

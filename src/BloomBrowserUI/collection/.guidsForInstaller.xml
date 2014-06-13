@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="thumbnail.css" Guid="f0e3f848-3c87-41a2-84d0-0a99aa49c64c" />
+  <File Id="BrowserUIDir.collection.thumbnail.css" Guid="782dba62-e9cc-4fb9-98c9-7caff96a2294" />
+</InstallerMetadata>

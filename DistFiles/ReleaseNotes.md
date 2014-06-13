@@ -1,3 +1,119 @@
+﻿## 2.0 1022 BETA 13 May 2014
+Templates can now have a markdown "readme" for telling people about the template. Select the Big Book or Wall Calendar templates to see how these are displayed.
+
+## 2.0.1021 BETA 9 May 2014
+Can now publish books to books.bloomlibrary.org
+Can now get books at books.bloomlibrary.org and they will open in Bloom
+Can can font sizes of all similar books
+New Big Book template & Front matter
+Basic Book now auto-enlarges fonts if you make it A4Landscape (for making a5 books into Big Books)
+
+
+## 1.1.574 18 Feb 2014
+New experimental keyboard shortcuts:
+Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
+F7=Heading1, F8=Heading2.
+Pasting text with \v 123 will give you a superscript 123.
+
+
+## 1.1  12 Feb 2014
+Make textboxes red when there is more text in them than fits
+
+## 1.1.6 - 19 Dec 2013
+* for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
+* make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
+
+## 1.1.5 - 13 Dec 2013
+* You can now add additional usage limitation information to a Creative Commons license.
+* [Template Development] JADE is now the standard way to make custom templates
+* Fixed problem that prevented changing the collection name.
+
+## 1.1.1 - 1 Nov 2013
+* Fixed problem with picking the wrong version of xmatter stylesheets at runtime
+
+## 1.0.29 - 3 Feb 2014
+* Update French localization
+
+## 1.0.28 - 31 Jan 2014
+* Move format version of Bloom 1.0 up to 1.1. and start rejecting books that are greater than that.
+
+## 1.0.25 - 31 Jan 2014
+* Fix problem where unicode characters in project folder would make images not show up in PDF
+
+## 1.0.24 - 13 Dec 2013
+* Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
+* Fix height of green source text bubble on Just Text pages.
+* Fix bug tht would cause problems if you used a '&' in a copyright notice.
+* Add context menu item for getting stylesheet troubleshooting information to the clipboard.
+* Avoid collecting new strings for localization from non-developer machines.
+* Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
+	this to do different things when editing vs. publishing.
+* Fix problem of folio books not using the most recent stylesheet.
+
+## 1.0.19 - 1 Nov 2013
+* Fix Documentation Link from Collection Tab
+* For template designers, offer a file of jade mixins
+
+## 1.0.17 - 1 Nov 2013
+* Background color on elements wasn't getting through to the PDF
+
+## 1.0.16 - 31 Oct 2013
+* Stop complaining if the user has restricted access to the localization files but isn't trying to localize anything
+
+## 1.0.12 - 18 Oct 2013
+* enabled pages to incorporate combobox that control layouts dynamically
+
+## 1.0.09 - 14 Oct 2013
+* added Spanish localizations
+* dropped 'beta' label
+
+## 1.0.08 - 10 Oct 2013
+* now supports watermark hints on fields that haven't been filled in yet
+
+## 1.0.06 - 12 Sept 2013
+* Windows XP users trying to scan without the necessary windows components should now get a helpful message.
+
+## 1.0.05 - 10 Sept 2013
+* Fix style-sheet-related problem when showing Calendar pages
+
+## 1.0.04 - 9 Sept 2013
+* New right-click command on the collection to "Replace Missing Images", where you specify a folder to look for replacements.
+
+## 1.0.03 - 6 Sept 2013
+* If image file is missing, now shows a message and lets you chose another one.
+* New right-click command on the collection to "Check All Books", which finds missing images.
+
+## 0.9.117 29 Aug 2013
+* Now prompts for registration starting on 3rd launch.
+
+## 0.9.115 24 Aug 2013
+* Added bloom-copyFromOtherLanguageIfNecessary to limit what fields get the copy treatment introduced in 0.9.114
+
+## 0.9.114 24 Aug 2013
+* Will now copy some fields from one global language (like English) to the national languages in use if it needs to in order to preserve information in derived books. For example, who the original illustrator was.
+* Show "French" as "français" in settings dialog.
+* Better error when there's a problem loading a book.
+* Fixed forgetting the "experimental commands" setting
+* Only show the copyright missing if the copyright itself is missing, not the license or illustrator.
+* Don't show a * in the ISBN box
+* When making new collection
+ * automatically fill in country based on language chosen (will be wrong sometimes, but you see it and can change it).
+ * If language is in PNG, auto set National Languages to English and Tok Pisin.
+ * Book folders now take their names from vernacular if possible, rather than English. If the vernacular is empty, then the next choice is the National Language 1, then NL2, and only then English, French, Portuguese, or Thai.
+
+## 0.9.111 17 Aug 2013
+* New bloom-draggableLabel feature for when images need editable labels
+
+## 0.9.110 17 Aug 2013
+* Added missing null xmatter
+
+## 0.9.109 14 Aug 2013
+* Update french localizations
+* Fix extra blank page problem
+
+## 0.9.105 10 Aug 2013
+* B5 pages turned into booklets now properly use B4 paper (were being squished onto B5 paper).
+
 ## 0.9.101 27 July 2013
 * Allow xmatter to be installed via bloom packs (the creator/distributor of the bloom pack must manually add the xmatter pack to the zip file).
 

@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Publish;
+using Bloom.Book;
+using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
@@ -43,10 +45,16 @@ namespace Bloom.Collection
 			AllowNewBooks = true;
 		}
 
+		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
+		{
+			// For some reason this constructor is used to create new collections. But I think a static method is much clearer.
+			new CollectionSettings(collectionInfo);
+		}
+
 		public CollectionSettings(NewCollectionSettings collectionInfo)
 			:this(collectionInfo.PathToSettingsFile)
 		{
-			AllowNewBooks = true;
+			AllowNewBooks = collectionInfo.AllowNewBooks;
 			DefaultLanguage1FontName = GetDefaultFontName();
 
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
@@ -65,8 +73,8 @@ namespace Bloom.Collection
 		/// can be used whether the library exists already, or not
 		/// </summary>
 		public CollectionSettings(string desiredOrExistingSettingsFilePath)
+			:this()
 		{
-			AllowNewBooks = true;
 			SettingsFilePath = desiredOrExistingSettingsFilePath;
 			CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
@@ -118,7 +126,7 @@ namespace Bloom.Collection
 			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
 				return "L1-Unknown-" + Language1Iso639Code;
-			return exactLanguageMatch.Name;
+			return GetLanguageNameInUILangIfPossible(exactLanguageMatch.Name, inLanguage);
 		}
 
 		public string GetLanguage2Name(string inLanguage)
@@ -128,15 +136,8 @@ namespace Bloom.Collection
 				//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 				//So, we'd rather have GetBestLanguageMatch()
 
-
-				//profiling showed we were spending a lot of time looking this up, hence the cache
-				if (!_isoToLangNameDictionary.ContainsKey(Language2Iso639Code))
-				{
-					_isoToLangNameDictionary.Add(Language2Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language2Iso639Code).Name);
+				return GetLanguageName(Language2Iso639Code, inLanguage);
 				}
-				return _isoToLangNameDictionary[Language2Iso639Code];
-
-			}
 			catch (Exception)
 			{
 				Debug.Fail("check this out. BL-193 Reproduction");
@@ -146,6 +147,37 @@ namespace Bloom.Collection
 			}
 		}
 
+		/// <summary>
+		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
+		/// If the language code is unknown, return it unchanged.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="inLanguage"></param>
+		/// <returns></returns>
+		public string GetLanguageName(string code, string inLanguage)
+		{
+			//profiling showed we were spending a lot of time looking this up, hence the cache
+			if (!_isoToLangNameDictionary.ContainsKey(code))
+			{
+				var match = _lookupIsoCode.GetExactLanguageMatch(code);
+				if (match == null)
+					_isoToLangNameDictionary[code] = code; // best name we can come up with is the code itself
+				else
+					_isoToLangNameDictionary.Add(code, match.Name);
+			}
+
+			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
+		}
+
+		private string GetLanguageNameInUILangIfPossible(string name, string codeOfDesiredLanguage)
+		{
+			//we don't have a general way to get the language names translated yet. But at least we can show a few languages properly
+
+			if (codeOfDesiredLanguage == "fr" && name == "French")
+				return "français";
+			return name;
+		}
+
 		public string GetLanguage3Name(string inLanguage)
 		{
 			try
@@ -153,13 +185,8 @@ namespace Bloom.Collection
 				if (string.IsNullOrEmpty(Language3Iso639Code))
 					return string.Empty;
 
-				//profiling showed we were spending a lot of time looking this up, hence the cache
-				if (!_isoToLangNameDictionary.ContainsKey(Language3Iso639Code))
-				{
-					_isoToLangNameDictionary.Add(Language3Iso639Code, _lookupIsoCode.GetExactLanguageMatch(Language3Iso639Code).Name);
+				return GetLanguageName(Language3Iso639Code, inLanguage);
 				}
-				return _isoToLangNameDictionary[Language3Iso639Code];
-			}
 			catch (Exception)
 			{
 				return "L2N-Unknown-" + Language3Iso639Code;
@@ -184,7 +211,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
-
+			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			library.Save(SettingsFilePath);
 
 			SavesettingsCollectionStylesCss();
@@ -277,6 +304,15 @@ namespace Bloom.Collection
 
 		public virtual string CollectionName { get; protected set; }
 
+		/// <summary>
+		/// The file (currently at a fixed location in every settings folder) where we store any settings
+		/// related to Decodable and Leveled Readers.
+		/// </summary>
+		public string DecodableLevelPathName
+		{
+			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "DecodableLevelData.json"); }
+		}
+
 		[XmlIgnore]
 		public string FolderPath
 		{
@@ -331,43 +367,48 @@ namespace Bloom.Collection
 			return parentFolderPath.CombineForPath(newCollectionName, newCollectionName + ".bloomCollection");
 		}
 
-		public void AttemptSaveAsToNewName(string name)
+
+		public static string RenameCollection(string fromDirectory, string toDirectory)
 		{
-			name = name.Trim().SanitizeFilename('-');
-			var newName = name + ".BloomCollection";
-
-			if (name == CollectionName.Trim())
-				return;
-
-			//first try renaming the collections settings file
-			try
-			{   Save();
-				var current = SettingsFilePath;
-				var newPath = Path.Combine(Path.GetDirectoryName(SettingsFilePath), newName);
-				File.Move(current, newPath);
-				SettingsFilePath = newPath;
-			}
-			catch (Exception e1)
+			if (!Directory.Exists(fromDirectory))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e1,
-																 "Bloom was unable to change the collection name to '{0}'",
-																 name);
+				throw new ApplicationException("Bloom could not complete the renaming of the collection, because there isn't a directory with the source name anymore: " + fromDirectory);
 			}
 
-			//now try renaming the directory
+			if (Directory.Exists(toDirectory)) //there's already a folder taking this name
+		{
+				throw new ApplicationException("Bloom could not complete the renaming of the collection, because there is already a directory with the new name: " + toDirectory);
+			}
+
+			//this is just a sanity check, it will throw if the existing directory doesn't have a collection
+			FindSettingsFileInFolder(fromDirectory);
+
+//first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
+			Directory.Move(fromDirectory, toDirectory);
+			string  collectionSettingsPath;
 			try
 			{
-				var existingDirectory = Path.GetDirectoryName(SettingsFilePath);
-				var parentDirectory = Path.GetDirectoryName(existingDirectory);
-				var newDirectory = Path.Combine(parentDirectory, name);
-				Directory.Move(existingDirectory, newDirectory);
-				SettingsFilePath = Path.Combine(newDirectory, newName);
+				collectionSettingsPath = FindSettingsFileInFolder(toDirectory);
 			}
-			catch (Exception e2)
+			catch (Exception)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e2,
-																 "Bloom did change the collection name to {0}, but was unable to change name of the folder. Perhaps there is already a folder with that name?",
-																 name);
+				throw;
+			}
+
+			try
+			{
+				//we now make a default name based on the name of the directory
+				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory)+".bloomCollection");
+				if (!File.Exists(destinationPath))
+					File.Move(collectionSettingsPath, destinationPath);
+
+				return destinationPath;
+			}
+			catch (Exception error)
+			{
+				//change the directory name back, so the rename isn't half-done.
+				Directory.Move(toDirectory, fromDirectory);
+				throw new ApplicationException(string.Format("Could change the folder name, but not the collection file name",fromDirectory,toDirectory),error);
 			}
 		}
 
@@ -397,6 +438,34 @@ namespace Bloom.Collection
 			{
 				throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
 			}
+		}
+
+		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
+		{
+			var result = new LanguageDescriptor[isoCodes.Length];
+			for (int i = 0; i < isoCodes.Length; i++)
+			{
+				var code = isoCodes[i];
+				var data = _lookupIsoCode.GetExactLanguageMatch(code);
+				string name;
+				if (code == Language1Iso639Code)
+					name = Language1Name;
+				else if (data == null)
+					name = code;
+				else
+					name = data.Name;
+				string ethCode;
+				if (data == null)
+					ethCode = code;
+				else
+				{
+					ethCode = data.ISO3Code;
+					if (string.IsNullOrEmpty(ethCode))
+						ethCode = code;
+				}
+				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
+			}
+			return result;
 		}
 	}
 }

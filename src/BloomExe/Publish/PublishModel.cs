@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -24,13 +31,15 @@ namespace Bloom.Publish
 
 		public enum DisplayModes
 		{
-			NoBook,
+			WaitForUserToChooseSomething,
 			Working,
-			ShowPdf
+			ShowPdf,
+			Upload
 		}
 
 		public enum BookletPortions
 		{
+			None,
 			AllPagesNoBooklet,
 			BookletCover,
 			BookletPages,//include front and back matter that isn't coverstock
@@ -50,22 +59,29 @@ namespace Bloom.Publish
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookServer _bookServer;
+		private readonly HtmlThumbNailer _htmlThumbNailer;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
-			_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
+			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
+			_htmlThumbNailer = htmlThumbNailer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletPortion = BookletPortions.BookletPages;
+			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
 		public PublishView View { get; set; }
+
+		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
+		public bool UploadMode { get; set; }
+
+		public bool PdfGenerationSucceeded { get; set; }
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
@@ -107,23 +123,30 @@ namespace Bloom.Publish
 				//we can't safely do any ui-related work from this thread, like putting up a dialog
 				doWorkEventArgs.Result = e;
 				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
-				//                SetDisplayMode(DisplayModes.NoBook);
+				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
 		}
 
-		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+
+		private TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+
+			HtmlDom.AddPublishClassToBody(dom);
+			//HtmlDom.AddWebkitClassToBody(dom);
+
+			//wkhtmltopdf can't handle file://
+			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
 			PageLayout.UpdatePageSplitMode(dom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
+			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -149,10 +172,19 @@ namespace Bloom.Publish
 			return path;
 		}
 
-		private void SetDisplayMode(DisplayModes displayMode)
+		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
+		internal DisplayModes DisplayMode
 		{
-			if (View != null)
-				View.SetDisplayMode(displayMode);
+			get
+			{
+				return _currentDisplayMode;
+			}
+			set
+			{
+				_currentDisplayMode = value;
+				if (View != null)
+					View.Invoke((Action) (() => View.SetDisplayMode(value)));
+			}
 		}
 
 		public void Dispose()
@@ -214,6 +246,9 @@ namespace Bloom.Publish
 					var portion = "";
 					switch (BookletPortion)
 					{
+						case BookletPortions.None:
+							Debug.Fail("Save should not be enabled");
+							return;
 						case BookletPortions.AllPagesNoBooklet:
 							portion = "Pages";
 							break;
@@ -274,11 +309,101 @@ namespace Bloom.Publish
 
 		public void RefreshValuesUponActivation()
 		{
-			if (BookSelection.CurrentSelection!=null)
+			if (BookSelection.CurrentSelection != null)
 			{
 				PageLayout = BookSelection.CurrentSelection.GetLayout();
 			}
 
 		}
+
+		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
+		private Func<IEnumerable<ToolStripItem>> _getExtensionMenuItems;
+
+		public IEnumerable<HtmlDom> GetPageDoms()
+		{
+			if (BookSelection.CurrentSelection.IsFolio)
+			{
+				foreach (var bi in _currentBookCollectionSelection.CurrentSelection.GetBookInfos())
+				{
+					var book = _bookServer.GetBookFromBookInfo(bi);
+					//need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
+					book.SetLayout(new Layout()
+					{
+						SizeAndOrientation =  SizeAndOrientation.FromString("B5Portrait"),
+						Style = "HideProductionNotes"
+					});
+					foreach (var page in  book.GetPages())
+					{
+						yield return book.GetPreviewXmlDocumentForPage(page);
+					}
+				}
+			}
+			else //this one is just for testing, it's not especially fruitfal to export for a single book
+			{
+				//need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
+				BookSelection.CurrentSelection.SetLayout(new Layout()
+				{
+					SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
+					Style = "HideProductionNotes"
+				});
+
+				foreach (var page in BookSelection.CurrentSelection.GetPages())
+				{
+					var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
+					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
+					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath, false);
+					yield return previewXmlDocumentForPage;
+				}
+			}
+		}
+
+
+		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
+		{
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Color.White,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = false
+			};
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
+		}
+
+		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
+		{
+			//for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
+			//to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
+			//TODO: this should work, but it doesn't because BookInfo.BookLineage isn't working: if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.BookInfo.BookLineage))
+			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.GetBookLineage()))
+			{
+				//load any extension assembly found in the template's root directory
+				//var catalog = new DirectoryCatalog(this.BookSelection.CurrentSelection.FindTemplateBook().FolderPath, "*.dll");
+				var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
+				var container = new CompositionContainer(catalog);
+				//inject what we have to offer for the extension to consume
+				container.ComposeExportedValue<string>("PathToBookFolder",BookSelection.CurrentSelection.FolderPath);
+				container.ComposeExportedValue<string>("Language1Iso639Code", _collectionSettings.Language1Iso639Code);
+				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
+			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
+				container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
+				container.SatisfyImportsOnce(this);
+				return _getExtensionMenuItems == null ? new List<ToolStripItem>() : _getExtensionMenuItems();
+			}
+			else
+			{
+				return new List<ToolStripMenuItem>();
+			}
+		}
+//
+//	    private IEnumerable<XmlDocument> GetFileForPrinting()
+//	    {
+////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+////            HtmlDom.AddPublishClassToBody(dom);
+////
+////	        foreach (var pageDom in dom.SelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
+////	        {
+////	            yield return pageDom;
+////	        }
+//	    }
 	}
 }

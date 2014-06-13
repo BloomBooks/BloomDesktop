@@ -1,28 +1,28 @@
 /*Cover Page*/
 .A5Portrait.bloom-frontMatter DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 189.4mm;
 	/*[disabled]border:1px solid #000000;*/
 }
 .B5Portrait.bloom-frontMatter DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 220mm;
 	/*[disabled]border:1px solid #000000;*/
 }
 .bloom-frontMatter.A4Landscape DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;
 }
 .A4Portrait DIV.marginBox
 {
-/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 269.3mm;
 }
 /*....Title*/
-.bloom-translationGroup.coverTitle
+.coverTitle-style
 {
 	width: 100%;
 	text-align: center;
@@ -227,6 +227,7 @@ DIV.ISBNContainer .bloom-editable
 	width: 4.3cm !important;
 	display: inline-block;
 	vertical-align: text-top;
+	max-height: 1.8em;
 }
 .ISBNContainer SPAN
 {
@@ -313,13 +314,13 @@ DIV.titlePage
 	display: block;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titePageTitleBlock DIV.bloom-contentNational2
+DIV#titlePageTitleBlock DIV.bloom-contentNational2, DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
 	height: 35px;
 	text-align: center;
 	width: 419px;
 }
-DIV#titePageTitleBlock DIV.bloom-contentNational1
+DIV#titlePageTitleBlock DIV.bloom-contentNational1, DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
 	height: 35px;
 	text-align: center;
@@ -333,7 +334,7 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 }
 /*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
 It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
-DIV#titePageTitleBlock DIV.bloom-content1
+DIV#titlePageTitleBlock DIV.bloom-content1, DIV#titePageTitleBlock DIV.bloom-content1
 {
 	font-size: 150%;
 	height: 111px;
@@ -403,7 +404,7 @@ DIV.titlePage DIV.langName.bloom-contentNational1
 }
 DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
-/*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+	/*Ideally, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
 }
 DIV.languageLocation
@@ -414,7 +415,7 @@ DIV.languageLocation
 	top: 50px;
 	width: 407px;
 }
-DIV#titePageTitleBlock
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock
 {
 	width: inherit;
 }
@@ -428,8 +429,9 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
-	font-size: 10pt !important;
+	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
+	Had to take out the !important, though, to get user font-size to work on the verso page*/
+	font-size: 10pt;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
@@ -487,10 +489,10 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left 0px 56px;*/
+	/*+placement:anchor-top-left 0px 30px;*/
 	position: absolute;
 	left: 0px;
-	top: 56px;
+	top: 30px;
 	width: 100%;
 	height: 29px;
 }

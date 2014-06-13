@@ -28,21 +28,46 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 
 			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1Name);
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code) && !d.ContainsKey(collectionSettings.Language2Iso639Code))
-				d.Add(collectionSettings.Language2Iso639Code, collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code) && !d.ContainsKey(collectionSettings.Language3Iso639Code))
-				d.Add(collectionSettings.Language3Iso639Code, collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+				SafelyAddLanguage(d, collectionSettings.Language2Iso639Code,
+					collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
+			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+				SafelyAddLanguage(d, collectionSettings.Language3Iso639Code,
+					collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
 
-			d.Add("vernacularLang", collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
-			d.Add("{V}", collectionSettings.Language1Name);
-			d.Add("{N1}", collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			d.Add("{N2}", collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+			SafelyAddLanguage(d, "vernacularLang", collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
+			SafelyAddLanguage(d, "{V}", collectionSettings.Language1Name);
+			SafelyAddLanguage(d, "{N1}", collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
+			SafelyAddLanguage(d, "{N2}", collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+
+			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
+			// whether there is text in a language not yet added to the dictionary.
+			// For now, we just add a few we know we need
+			AddSomeCommonNationalLanguages(d);
 
 			AddLocalizedHintContentsToDictionary(pageDom, d, collectionSettings);
 
 			dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
-			pageDom.Head.InsertAfter(dictionaryScriptElement, null);
+			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
+		}
+
+		private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
+		{
+			SafelyAddLanguage(d, "ha", "Hausa");
+			SafelyAddLanguage(d, "hi", "Hindi");
+			SafelyAddLanguage(d, "es", "Spanish");
+			SafelyAddLanguage(d, "fr", "French");
+			SafelyAddLanguage(d, "pt", "Portuguese");
+			SafelyAddLanguage(d, "swa", "Swahili");
+			SafelyAddLanguage(d, "th", "Thai");
+			SafelyAddLanguage(d, "tpi", "Tok Pisin");
+		}
+
+		private static void SafelyAddLanguage(Dictionary<string, string> d, string key, string name)
+		{
+			if (!d.ContainsKey(key))
+				d.Add(key, name);
 		}
 
 		private static void AddLocalizedHintContentsToDictionary(HtmlDom singlePageHtmlDom, Dictionary<string, string> dictionary, CollectionSettings collectionSettings)
@@ -84,6 +109,11 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// keeps track of the most recent set of topics we injected, mapping the localization back to the original.
+		/// </summary>
+		public static Dictionary<string, string> TopicReversal;
+
+		/// <summary>
 		/// stick in a json with various settings we want to make available to the javascript
 		/// </summary>
 		public static void AddUISettingsToDom(HtmlDom pageDom, CollectionSettings collectionSettings, IFileLocator fileLocator)
@@ -97,22 +127,25 @@ namespace Bloom.Book
 			element.SetAttribute("id", "ui-settings");
 			var d = new Dictionary<string, string>();
 
-			d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
+			//d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
 			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
 
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
+			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
 
-			d.Add("bloomProgramFolder", Directory.GetParent(FileLocator.GetDirectoryDistributedWithApplication("root")).FullName);
+			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"));
 
-			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition" };
+			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
 			var builder = new StringBuilder();
 			builder.Append("[");
+			TopicReversal = new Dictionary<string, string>();
 			foreach (var topic in topics)
 			{
 				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, "shows in the topics chooser in the edit tab");
+				TopicReversal[localized] = topic;
 				builder.Append("\""+localized+"\", ");
 			}
 			builder.Append("]");
@@ -121,7 +154,8 @@ namespace Bloom.Book
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
-			pageDom.RawDom.SelectSingleNode("//head").InsertAfter(element, null);
+			var head = pageDom.RawDom.SelectSingleNode("//head");
+			head.InsertAfter(element, head.LastChild);
 		}
 	}
 }

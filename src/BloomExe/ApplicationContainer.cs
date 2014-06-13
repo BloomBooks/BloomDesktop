@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using System.Linq;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using NetSparkle;
+using Palaso.Reporting;
 
 
 namespace Bloom
@@ -32,20 +34,39 @@ namespace Bloom
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 				builder.Register<Sparkle>(c =>
-											  {
-												  var s = new Sparkle(@"http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/appcast.xml", Resources.Bloom);
-												  s.CustomInstallerArguments = "/qb";
-												  s.DoLaunchAfterUpdate = false;
-												  return s;
-											  }).InstancePerLifetimeScope();
+				{
+					string url;
+					try
+					{
+						var updateTable = new UpdateVersionTable();
+						url = updateTable.GetAppcastUrl();
+					}
+					catch (Exception)
+					{
+						url = "";
+						Logger.WriteEvent("Could not retrieve UpdateVersionTable from the internet");
+					}
+					var s =new Sparkle(url,Resources.Bloom);
+					s.CustomInstallerArguments = "/qb";
+					s.DoLaunchAfterUpdate = false;
+					return s;
+				}).InstancePerLifetimeScope();
+
 
 				builder.Register(c => LocalizationManager).SingleInstance();
+				builder.Register(c => new DownloadOrderList()).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
 				}
 				builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
+
+				//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
+				//HtmlThumbnailer & ConfigurationDialog, at least, use this.
+				builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
+
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<MonitorTarget>())).SingleInstance();
 
 				_container = builder.Build();
 			}
@@ -55,12 +76,14 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-			public Sparkle ApplicationUpdator
+			public LocalizationManager LocalizationManager;
+
+			public DownloadOrderList DownloadOrderList
 			{
-				get { return _container.Resolve<Sparkle>(); }
+				get { return _container.Resolve<DownloadOrderList>(); }
 			}
 
-			public LocalizationManager LocalizationManager;
+			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
 			public void Dispose()
 			{

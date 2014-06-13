@@ -11,8 +11,11 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ImageToolbox;
+using Palaso.UI.WindowsForms.Widgets;
 
 namespace Bloom.CollectionTab
 {
@@ -27,6 +30,7 @@ namespace Bloom.CollectionTab
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
 		private bool _thumbnailRefreshPending;
+		private BookTransfer _bookTransferrer;
 		private DateTime _lastClickTime;
 		private bool _primaryCollectionReloadPending;
 		private LinkLabel _missingBooksLink;
@@ -46,11 +50,12 @@ namespace Bloom.CollectionTab
 		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
-			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
+			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
+			_bookTransferrer = bookTransferrer;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
@@ -80,7 +85,6 @@ namespace Bloom.CollectionTab
 			if(Settings.Default.ShowExperimentalCommands)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
-
 		}
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
@@ -99,7 +103,7 @@ namespace Bloom.CollectionTab
 					try
 					{
 						_model.ExportInDesignXml(dlg.FileName);
-#if !MONO
+#if !__MonoCS__
 						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
 #endif
 						Analytics.Track("Exported XML For InDesign");
@@ -165,6 +169,14 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
+					// now we're all set to handle any pending book orders, especially one that may have been created
+					// at startup from a command line argument. We're also ready to receive any notifications of new books
+					// downloaded.
+					if (_bookTransferrer != null)
+					{
+						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
+						_bookTransferrer.HandleOrders();
+					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
@@ -249,7 +261,7 @@ namespace Bloom.CollectionTab
 					var collectionHeader = new Label()
 						{
 							Text = collection.Name,
-							Size = new Size(_sourceBooksFlow.Width - 20, 15),
+							Size = new Size(_sourceBooksFlow.Width - 20, 20),
 							ForeColor = Palette.TextAgainstDarkBackground,
 							Padding = new Padding(10, 0, 0, 0)
 						};
@@ -261,11 +273,11 @@ namespace Bloom.CollectionTab
 				}
 			}
 
-			AddWhereIsTheRestLink();
+			AddFinalLinks();
 			_sourceBooksFlow.ResumeLayout();
 		}
 
-		private void AddWhereIsTheRestLink()
+		private void AddFinalLinks()
 		{
 			if (_model.IsShellProject)
 			{
@@ -297,7 +309,20 @@ namespace Bloom.CollectionTab
 				return;
 
 			BookInfo bookInfo = button.Tag as BookInfo;
-			var book = _model.GetBookFromBookInfo(bookInfo);
+			Book.Book book;
+			try
+			{
+				book = _model.GetBookFromBookInfo(bookInfo);
+			}
+			catch (Exception error)
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				return;
+			}
+
 			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 			if (titleBestForUserDisplay != button.Text)
 			{
@@ -310,7 +335,10 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-
+		void OnBloomLibrary_Click(object sender, EventArgs e)
+		{
+			Process.Start("http://dev.bloomlibrary.org");
+		}
 		void OnMissingBooksLink_Click(object sender, EventArgs e)
 		{
 			if (_model.IsShellProject)
@@ -323,6 +351,10 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		/// <summary>
+		///
+		/// </summary>
+		/// <returns>True if the collection should be shown</returns>
 		private bool LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
 		{
 			collection.CollectionChanged += OnCollectionChanged;
@@ -347,6 +379,32 @@ namespace Bloom.CollectionTab
 				{
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+bookInfo.FolderPath);
 				}
+			}
+			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
+			{
+				if (!_model.IsShellProject) // eventually it might make sense from there too, but maybe we should then lead with a query that just gets templates? or
+											// maybe before we get to that, we'll be getting template pages from the "new page" dialog instead.
+				{
+					var bloomLibrayLink = new LinkLabel()
+					{
+						Text =
+							L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
+																	"Get more source books at BloomLibrary.org",
+																	"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
+						Width = 400,
+						Margin = new Padding(17, 0, 0, 0),
+						//TextAlign = ContentAlignment.TopCenter,
+						LinkColor = Palette.TextAgainstDarkBackground
+					};
+
+					bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
+
+					//flowLayoutPanel.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
+					flowLayoutPanel.Controls.Add(bloomLibrayLink);
+					//flowLayoutPanel.SetFlowBreak(bloomLibrayLink, true);
+
+				}
+				return true;
 			}
 			return loadedAtLeastOneBook;
 		}
@@ -423,29 +481,82 @@ namespace Bloom.CollectionTab
 			_primaryCollectionReloadPending = true;
 		}
 
+		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
+		{
+			var newBook = e.BookDetails;
+			Invoke((Action) (() =>
+			{
+				if (!HaveButtonForBook(newBook))
+				{
+					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
+					downloadCollection.InsertBookInfo(newBook);
+					// It's always worth reloading...maybe we didn't have a button before because it was not
+					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+					// other way...we want the button to have valid metadata for the book.
+					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+					LoadSourceCollectionButtons();
+				}
+				// This actually works...displays the book and offers to let you use it as a template...even if it
+				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
+				// whether this is desirable.
+				SelectBook(newBook);
+			}));
+		}
+
+		private bool HaveButtonForBook(BookInfo newBook)
+		{
+			foreach (var item in _sourceBooksFlow.Controls)
+			{
+				var button = item as Button;
+				if (button == null)
+					continue;
+				var info = button.Tag as BookInfo;
+				if (info == null)
+					continue;
+				if (info.FolderPath == newBook.FolderPath)
+					return true;
+			}
+			return false;
+		}
+
 		private void OnClickBook(object sender, EventArgs e)
+		{
+			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
+			if (bookInfo == null)
+				return;
+
+			var lastClickTime = _lastClickTime;
+			_lastClickTime = DateTime.Now;
+
+			try
+			{
+				if (SelectedBook != null && bookInfo == SelectedBook.BookInfo)
+				{
+					//I couldn't get the DoubleClick event to work, so I rolled my own
+					if (Control.MouseButtons == MouseButtons.Left &&
+						DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
+					{
+						_model.DoubleClickedBook();
+					}
+					return; // already selected, nothing to do.
+				}
+			}
+			catch (Exception error) // Review: is this needed now bulk of method refactored into SelectBook?
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
+			}
+			SelectBook(bookInfo);
+		}
+
+		private void SelectBook(BookInfo bookInfo)
 		{
 			try
 			{
-				BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
-				if (bookInfo == null)
-					return;
-
-				if (SelectedBook!=null && bookInfo == SelectedBook.BookInfo)
-				{
-					//I couldn't get the DoubleClick event to work, so I rolled my own
-					if (Control.MouseButtons == MouseButtons.Left  && DateTime.Now.Subtract(_lastClickTime).TotalMilliseconds <SystemInformation.DoubleClickTime)
-					{
-						_model.DoubleClickedBook();
-						return;
-					}
-				}
-				else
-				{
-					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
-				}
-
-				_lastClickTime = DateTime.Now;
+				_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
 
 				_bookContextMenu.Enabled = true;
 				//Debug.WriteLine("before selecting " + SelectedBook.Title);
@@ -459,9 +570,13 @@ namespace Bloom.CollectionTab
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
-			catch (Exception err)
+			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(err, "Bloom cannot display that book.");
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 		}
 
@@ -571,7 +686,7 @@ namespace Bloom.CollectionTab
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror);
+			_model.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)
@@ -609,7 +724,7 @@ namespace Bloom.CollectionTab
 
 		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
 		{
-			Process.Start(ProjectContext.InstalledCollectionsDirectory);
+			Process.Start(ProjectContext.GetInstalledCollectionsDirectory());
 		}
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)
@@ -641,9 +756,25 @@ namespace Bloom.CollectionTab
 
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_model.DoChecksAndUpdatesOfAllBooks();
+			_model.DoUpdatesOfAllBooks();
+		}
+		private void _doChecksOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.DoChecksOfAllBooks();
 		}
 
+		private void _rescueMissingImagesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.ShowNewFolderButton = false;
+				dlg.Description = "Select the folder where replacement images can be found";
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					_model.AttemptMissingImageReplacements(dlg.SelectedPath);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -658,6 +789,10 @@ namespace Bloom.CollectionTab
 			base.Dispose(disposing);
 			_disposed = true;
 		}
+
+
+
+
 
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.

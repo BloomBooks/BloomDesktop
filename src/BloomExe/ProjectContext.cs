@@ -9,10 +9,9 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.ImageProcessing;
 using Bloom.Library;
-using Bloom.Properties;
 using Bloom.SendReceive;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
@@ -30,12 +29,14 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private BloomServer _bloomServer;
-		private ImageServer _imageServer;
+		private ServerBase _httpServer;
 		public Form ProjectWindow { get; private set; }
+
+		public string SettingsPath { get; private set; }
 
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
+			SettingsPath = projectSettingsPath;
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			ProjectWindow = _scope.Resolve <Shell>();
@@ -51,19 +52,16 @@ namespace Bloom
 
 			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
 			{
+				// REVIEW: This seems to be used only for testing purposes
 				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
 				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, _scope.Resolve<HtmlThumbNailer>());
-				_bloomServer.Start();
+				_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+				_httpServer.StartWithSetupIfNeeded();
 			}
 			else
 			{
-				if (Settings.Default.ImageHandler != "off")
-				{
-					_imageServer = _scope.Resolve<ImageServer>();
-
-					_imageServer.StartWithSetupIfNeeded();
-				}
+				_httpServer = _scope.Resolve<EnhancedImageServer>();
+				_httpServer.StartWithSetupIfNeeded();
 			}
 		}
 
@@ -113,8 +111,12 @@ namespace Bloom
 				}
 				catch (Exception error)
 				{
+#if !DEBUG
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
 						"There was a problem loading the Chorus Send/Receive system for this collection. Bloom will try to limp along, but you'll need technical help to resolve this. If you have no other choice, find this folder: {0}, move it somewhere safe, and restart Bloom.", Path.GetDirectoryName(projectSettingsPath).CombineForPath(".hg"));
+#endif
+					//swallow for develoeprs, because this happens if you don't have the Mercurial and "Mercurial Extensions" folders in the root, and our
+					//getdependencies doesn't yet do that.
 				}
 
 
@@ -134,10 +136,7 @@ namespace Bloom
 
 				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>(), c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFileLocations())).InstancePerLifetimeScope();
-
-				const int kListViewIconHeightAndSize = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndSize)).InstancePerLifetimeScope();
+				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{
@@ -161,7 +160,7 @@ namespace Bloom
 				builder.Register<SourceCollectionsList>(c =>
 					 {
 						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, InstalledCollectionsDirectory };
+						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() };
 						 return l;
 					 }).InstancePerLifetimeScope();
 
@@ -169,6 +168,13 @@ namespace Bloom
 					 {
 						 return c.Resolve<SourceCollectionsList>();
 					 }).InstancePerLifetimeScope();
+
+				builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
+
+				// Enhance: may need some way to test a release build in the sandbox.
+				builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
+				builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
+				builder.RegisterType<LoginDialog>().AsSelf();
 
 				//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
@@ -193,16 +199,46 @@ namespace Bloom
 			});
 
 		}
-		private static IEnumerable<string> GetFileLocations()
+
+		internal static BloomS3Client CreateBloomS3Client()
 		{
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("root"));//hack to get the distfiles folder itself
-			yield return FileLocator.GetDirectoryDistributedWithApplication("root");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+		}
+
+
+		/// <summary>
+		/// Give the locations of the bedrock files/folders that come with Bloom. These will have priority
+		/// </summary>
+		public static IEnumerable<string> GetFactoryFileLocations()
+		{
+			//bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI","bookLayout");
+
+			//hack to get the distfiles folder itself
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
+
+			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 
-			yield return templatesDir;  //currently, this is where factory-xmatter.htm lives
+			yield return templatesDir;
 
 			foreach (var templateDir in Directory.GetDirectories(templatesDir))
 			{
@@ -210,14 +246,20 @@ namespace Bloom
 			}
 
 			yield return FactoryCollectionsDirectory;
-			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
+		}
 
+		/// <summary>
+		/// Give the locations of files/folders that the user has installed (plus sample shells)
+		/// </summary>
+		public static IEnumerable<string> GetFoundFileLocations()
+		{
+			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
 			foreach (var dir in Directory.GetDirectories(samplesDir))
 			{
 				yield return dir;
 			}
 
-			//TODO: This is not going to cut it. The intent is to use the versino of a css from
+			//Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
 			//the template directory, to aid the template developer (he/she will want to make tweaks in the
 			//original, not the copies with sample data). But this is very blunt; we're throwing in every
 			//template we can find; so the code which uses this big pot could easily link to the wrong thing
@@ -225,15 +267,21 @@ namespace Bloom
 			//template on the machine ("superprimer1/superprimer.css" and "superprimer2/superprimer.css").
 			//Tangentially related is the problem of a stylesheet of a template changing and messing up
 			//a users's existing just-fine document. We have to somehow address that, too.
-			if (Directory.Exists(InstalledCollectionsDirectory))
+			if (Directory.Exists(GetInstalledCollectionsDirectory()))
 			{
-				foreach (var dir in Directory.GetDirectories(InstalledCollectionsDirectory))
+				foreach (var dir in Directory.GetDirectories(GetInstalledCollectionsDirectory()))
 				{
 					yield return dir;
+
+					//more likely, what we're looking for will be found in the book folders of the collection
+					foreach (var templateDirectory in Directory.GetDirectories(dir))
+					{
+						yield return templateDirectory;
+					}
 				}
 
 				// add those directories from collections which are just pointed to by shortcuts
-				foreach (var shortcut in Directory.GetFiles(InstalledCollectionsDirectory, "*.lnk", SearchOption.TopDirectoryOnly))
+				foreach (var shortcut in Directory.GetFiles(GetInstalledCollectionsDirectory(), "*.lnk", SearchOption.TopDirectoryOnly))
 				{
 					var collectionDirectory = ResolveShortcut.Resolve(shortcut);
 					if (Directory.Exists(collectionDirectory))
@@ -262,17 +310,15 @@ namespace Bloom
 			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}
 
-		public static string InstalledCollectionsDirectory
+		public static string GetInstalledCollectionsDirectory()
 		{
-			get
-			{
-				//we want this path of directories sitting there, waiting for the user
-				var d = GetBloomAppDataFolder();
-				var collections = d.CombineForPath("Collections");
-				if (!Directory.Exists(collections))
-					Directory.CreateDirectory(collections);
-				return collections;
-			}
+			//we want this path of directories sitting there, waiting for the user
+			var d = GetBloomAppDataFolder();
+			var collections = d.CombineForPath("Collections");
+
+			if (!Directory.Exists(collections))
+				Directory.CreateDirectory(collections);
+			return collections;
 		}
 
 		public static string XMatterAppDataFolder
@@ -295,10 +341,15 @@ namespace Bloom
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
 
+		internal BookServer BookServer
+		{
+			get { return _scope.Resolve<BookServer>(); }
+		}
+
 
 		public static string GetBloomAppDataFolder()
 		{
-			var d = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL");
+			var d = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombineForPath("SIL");
 			if (!Directory.Exists(d))
 				Directory.CreateDirectory(d);
 			d = d.CombineForPath("Bloom");
@@ -315,12 +366,9 @@ namespace Bloom
 			_scope.Dispose();
 			_scope = null;
 
-			if (_bloomServer != null)
-				_bloomServer.Dispose();
-			_bloomServer = null;
-			if (_imageServer!=null)
-				_imageServer.Dispose();
-			_imageServer = null;
+			if (_httpServer != null)
+				_httpServer.Dispose();
+			_httpServer = null;
 		}
 
 		/// <summary>
@@ -330,12 +378,12 @@ namespace Bloom
 		/// </summary>
 		private void AddShortCutInComputersBloomCollections(string vernacularCollectionDirectory)
 		{
-			if (!Directory.Exists(ProjectContext.InstalledCollectionsDirectory))
+			if (!Directory.Exists(ProjectContext.GetInstalledCollectionsDirectory()))
 				return;//well, that would be a bug, I suppose...
 
 			try
 			{
-				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.InstalledCollectionsDirectory);
+				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.GetInstalledCollectionsDirectory());
 			}
 			catch (ApplicationException e)
 			{
@@ -349,5 +397,11 @@ namespace Bloom
 
 		}
 
+	}
+
+	public class MonitorTarget
+	{
+		//doesn't need any guts, just use for dependency injection
+		//Dependecy injection gives us a single instance app-wide, and that single instance is the thing we monitor to achieve mutex on browser navigation
 	}
 }

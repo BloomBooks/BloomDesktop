@@ -1,0 +1,252 @@
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1807" measuredH="665" mockupW="1747" mockupH="639">
+  <controls>
+	<control controlID="0" controlTypeID="com.balsamiq.mockups::TitleWindow" x="60" y="26" w="876" h="625" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bottomheight>0</bottomheight>
+		<text>Bloom</text>
+	  </controlProperties>
+	</control>
+	<control controlID="1" controlTypeID="com.balsamiq.mockups::TabBar" x="60" y="55" w="876" h="603" measuredW="218" measuredH="100" zOrder="1" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<selectedIndex>0</selectedIndex>
+		<text>Collection%2C%20Edit%2C%20Publish</text>
+	  </controlProperties>
+	</control>
+	<control controlID="2" controlTypeID="com.balsamiq.mockups::TabBar" x="435" y="79" w="501" h="575" measuredW="198" measuredH="100" zOrder="2" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<selectedIndex>1</selectedIndex>
+		<tabHPosition>right</tabHPosition>
+		<tabVPosition>bottom</tabVPosition>
+		<text>Preview%2C%20Metadata</text>
+	  </controlProperties>
+	</control>
+	<control controlID="3" controlTypeID="com.balsamiq.mockups::Label" x="464" y="107" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="3" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Usage/License</text>
+	  </controlProperties>
+	</control>
+	<control controlID="4" controlTypeID="com.balsamiq.mockups::Label" x="464" y="257" w="-1" h="-1" measuredW="29" measuredH="21" zOrder="4" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Tags</text>
+	  </controlProperties>
+	</control>
+	<control controlID="12" controlTypeID="com.balsamiq.mockups::IconLabel" x="464" y="278" w="-1" h="-1" measuredW="97" measuredH="21" zOrder="5" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>TagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>Easy%20Reader</text>
+	  </controlProperties>
+	</control>
+	<control controlID="13" controlTypeID="com.balsamiq.mockups::IconLabel" x="581" y="278" w="-1" h="-1" measuredW="74" measuredH="21" zOrder="6" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>TagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>Full%20Color</text>
+	  </controlProperties>
+	</control>
+	<control controlID="14" controlTypeID="com.balsamiq.mockups::Label" x="464" y="188" w="-1" h="-1" measuredW="114" measuredH="21" zOrder="7" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Source%20Languages</text>
+	  </controlProperties>
+	</control>
+	<control controlID="15" controlTypeID="com.balsamiq.mockups::IconLabel" x="464" y="211" w="-1" h="-1" measuredW="62" measuredH="21" zOrder="8" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>FlagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>English</text>
+	  </controlProperties>
+	</control>
+	<control controlID="16" controlTypeID="com.balsamiq.mockups::IconLabel" x="544" y="211" w="-1" h="-1" measuredW="59" measuredH="21" zOrder="9" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>FlagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>French</text>
+	  </controlProperties>
+	</control>
+	<control controlID="17" controlTypeID="com.balsamiq.mockups::Label" x="581" y="137" w="-1" h="-1" measuredW="212" measuredH="21" zOrder="10" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Free%20to%20use%20and%20modify%20%28CC-BY-NC%29</text>
+	  </controlProperties>
+	</control>
+	<control controlID="18" controlTypeID="com.balsamiq.mockups::Image" x="464" y="132" w="85" h="30" measuredW="403" measuredH="141" zOrder="11" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<src>http%3A//mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png</src>
+	  </controlProperties>
+	</control>
+	<control controlID="20" controlTypeID="com.balsamiq.mockups::Label" x="464" y="322" w="-1" h="-1" measuredW="82" measuredH="21" zOrder="12" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Type%20of%20Book</text>
+	  </controlProperties>
+	</control>
+	<control controlID="21" controlTypeID="com.balsamiq.mockups::RadioButtonGroup" x="464" y="348" w="-1" h="-1" measuredW="284" measuredH="17" zOrder="13" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>A%20set%20of%20template%20pages%20for%20making%20other%20books</text>
+	  </controlProperties>
+	</control>
+	<control controlID="22" controlTypeID="com.balsamiq.mockups::Label" x="464" y="388" w="-1" h="-1" measuredW="102" measuredH="21" zOrder="14" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>This%20Template%20Is</text>
+	  </controlProperties>
+	</control>
+	<control controlID="23" controlTypeID="com.balsamiq.mockups::Paragraph" x="449" y="409" w="357" h="80" measuredW="200" measuredH="80" zOrder="15" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>*%20suitable%20for%20vernacular%20books%0A*%20suitable%20for%20making%20new%20shells</text>
+	  </controlProperties>
+	</control>
+	<control controlID="25" controlTypeID="com.balsamiq.mockups::Paragraph" x="464" y="480" w="428" h="80" measuredW="200" measuredH="80" zOrder="16" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20adipisicing%20elit%2C%20sed%20do%20eiusmod%20tempor%20incididunt%20ut%20labore%20et%20dolore%20magna%20aliqua.%20Ut%20enim%20ad%20minim%20veniam%2C%20quis%20nostrud%20exercitation%20ullamco%20laboris%20nisi%20ut%20aliquip%20ex%20ea%20commodo%20consequat.%20Duis%20aute%20irure%20dolor%20in%20reprehenderit%20in%20voluptate%20velit%20esse%20cillum%20dolore%20eu%20fugiat%20nulla%20pariatur.%20Excepteur%20sint%20occaecat%20cupidatat%20non%20proident%2C%20sunt%20in%20culpa%20qui%20officia%20deserunt%20mollit%20anim%20id%20est%20laborum.%20</text>
+	  </controlProperties>
+	</control>
+	<control controlID="26" controlTypeID="com.balsamiq.mockups::TitleWindow" x="962" y="40" w="845" h="625" measuredW="450" measuredH="400" zOrder="17" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bottomheight>0</bottomheight>
+		<text>Bloom</text>
+	  </controlProperties>
+	</control>
+	<control controlID="27" controlTypeID="com.balsamiq.mockups::TabBar" x="962" y="69" w="845" h="594" measuredW="218" measuredH="100" zOrder="18" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<selectedIndex>1</selectedIndex>
+		<text>Collection%2C%20Edit%2C%20Publish</text>
+	  </controlProperties>
+	</control>
+	<control controlID="29" controlTypeID="com.balsamiq.mockups::Label" x="1176" y="120" w="-1" h="-1" measuredW="93" measuredH="21" zOrder="19" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Usage/License</text>
+	  </controlProperties>
+	</control>
+	<control controlID="30" controlTypeID="com.balsamiq.mockups::Label" x="1176" y="270" w="-1" h="-1" measuredW="29" measuredH="21" zOrder="20" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Tags</text>
+	  </controlProperties>
+	</control>
+	<control controlID="33" controlTypeID="com.balsamiq.mockups::Label" x="1176" y="201" w="-1" h="-1" measuredW="114" measuredH="21" zOrder="21" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Source%20Languages</text>
+	  </controlProperties>
+	</control>
+	<control controlID="34" controlTypeID="com.balsamiq.mockups::IconLabel" x="1176" y="224" w="-1" h="-1" measuredW="62" measuredH="21" zOrder="22" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>FlagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>English</text>
+	  </controlProperties>
+	</control>
+	<control controlID="35" controlTypeID="com.balsamiq.mockups::IconLabel" x="1256" y="224" w="-1" h="-1" measuredW="59" measuredH="21" zOrder="23" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>FlagIcon%7Cxsmall</icon>
+		<labelPosition>right</labelPosition>
+		<text>French</text>
+	  </controlProperties>
+	</control>
+	<control controlID="36" controlTypeID="com.balsamiq.mockups::Label" x="1293" y="150" w="-1" h="-1" measuredW="212" measuredH="21" zOrder="24" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Free%20to%20use%20and%20modify%20%28CC-BY-NC%29</text>
+	  </controlProperties>
+	</control>
+	<control controlID="37" controlTypeID="com.balsamiq.mockups::Image" x="1176" y="145" w="85" h="30" measuredW="403" measuredH="141" zOrder="25" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<src>http%3A//mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png</src>
+	  </controlProperties>
+	</control>
+	<control controlID="38" controlTypeID="com.balsamiq.mockups::Label" x="1176" y="335" w="-1" h="-1" measuredW="82" measuredH="21" zOrder="26" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Type%20of%20Book</text>
+	  </controlProperties>
+	</control>
+	<control controlID="40" controlTypeID="com.balsamiq.mockups::Label" x="1176" y="427" w="-1" h="-1" measuredW="102" measuredH="21" zOrder="27" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>This%20Template%20Is</text>
+	  </controlProperties>
+	</control>
+	<control controlID="42" controlTypeID="com.balsamiq.mockups::Label" x="1170" y="510" w="-1" h="-1" measuredW="202" measuredH="21" zOrder="28" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Notes%20to%20People%20Using%20This%20Book</text>
+	  </controlProperties>
+	</control>
+	<control controlID="45" controlTypeID="com.balsamiq.mockups::Image" x="977" y="121" w="-1" h="-1" measuredW="103" measuredH="72" zOrder="30" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<src>./assets/Page1Thumb.png</src>
+	  </controlProperties>
+	</control>
+	<control controlID="47" controlTypeID="com.balsamiq.mockups::Canvas" x="980" y="222" w="100" h="70" measuredW="100" measuredH="70" zOrder="31" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="48" controlTypeID="com.balsamiq.mockups::Canvas" x="980" y="311" w="100" h="70" measuredW="100" measuredH="70" zOrder="32" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+	  </controlProperties>
+	</control>
+	<control controlID="49" controlTypeID="com.balsamiq.mockups::Canvas" x="980" y="402" w="100" h="70" measuredW="100" measuredH="70" zOrder="33" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderColor>2848996</borderColor>
+	  </controlProperties>
+	</control>
+	<control controlID="50" controlTypeID="com.balsamiq.mockups::Canvas" x="962" y="95" w="169" h="570" measuredW="100" measuredH="70" zOrder="29" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<borderStyle>none</borderStyle>
+		<color>15658734</color>
+	  </controlProperties>
+	</control>
+	<control controlID="51" controlTypeID="com.balsamiq.mockups::Icon" x="1004" y="413" w="-1" h="-1" measuredW="48" measuredH="48" zOrder="34" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<icon>TagIcon%7Clarge</icon>
+	  </controlProperties>
+	</control>
+	<control controlID="52" controlTypeID="com.balsamiq.mockups::Label" x="1004" y="472" w="-1" h="-1" measuredW="57" measuredH="21" zOrder="35" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Metadata</text>
+	  </controlProperties>
+	</control>
+	<control controlID="54" controlTypeID="com.balsamiq.mockups::TextArea" x="1176" y="540" w="598" h="102" measuredW="200" measuredH="140" zOrder="36" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20adipisicing%20elit%2C%20sed%20do%20eiusmod%20tempor%20incididunt%20ut%20labore%20et%20dolore%20magna%20aliqua.%20Ut%20enim%20ad%20minim%20veniam%2C%20quis%20nostrud%20exercitation%20ullamco%20laboris%20nisi%20ut%20aliquip%20ex%20ea%20commodo%20consequat.%20Duis%20aute%20irure%20dolor%20in%20reprehenderit%20in%20voluptate%20velit%20esse%20cillum%20dolore%20eu%20fugiat%20nulla%20pariatur.%20Excepteur%20sint%20occaecat%20cupidatat%20non%20proident%2C%20sunt%20in%20culpa%20qui%20officia%20deserunt%20mollit%20anim%20id%20est%20laborum.</text>
+		<verticalScrollbar>true</verticalScrollbar>
+	  </controlProperties>
+	</control>
+	<control controlID="55" controlTypeID="com.balsamiq.mockups::CheckBoxGroup" x="1176" y="450" w="-1" h="-1" measuredW="202" measuredH="39" zOrder="37" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>%5B%20%5D%20suitable%20for%20vernacular%20books%0A%5Bx%5D%20suitable%20for%20making%20new%20shells</text>
+	  </controlProperties>
+	</control>
+	<control controlID="56" controlTypeID="com.balsamiq.mockups::RadioButtonGroup" x="1176" y="355" w="308" h="62" measuredW="308" measuredH="61" zOrder="38" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>%28%20%29%20A%20unique%20local%20language%20book%0A%28o%29%20A%20set%20of%20template%20pages%20for%20making%20other%20books%0A%28%20%29%20A%20shell%20book</text>
+	  </controlProperties>
+	</control>
+	<control controlID="57" controlTypeID="com.balsamiq.mockups::TextInput" x="1176" y="291" w="-1" h="-1" measuredW="152" measuredH="27" zOrder="39" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Easy%20Reader%2C%20Full%20Color</text>
+	  </controlProperties>
+	</control>
+	<control controlID="60" controlTypeID="com.balsamiq.mockups::Label" x="464" y="459" w="-1" h="-1" measuredW="202" measuredH="21" zOrder="40" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<bold>true</bold>
+		<text>Notes%20to%20People%20Using%20This%20Book</text>
+	  </controlProperties>
+	</control>
+	<control controlID="61" controlTypeID="com.balsamiq.mockups::StickyNote" x="1551" y="93" w="256" h="134" measuredW="109" measuredH="123" zOrder="41" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>My%20latest%20thinking%20is%20that%20we%20should%20*not*%20include%20this%20virutal%20page%2C%20as%20it%20will%20confuse/complicate%20the%20workflow%20for%20the%20the%20simple%20shell-book-localizing%20user..%20Let%27s%20see%20how%20having%20it%20in%20Publish%20alone%20works%20for%20people.</text>
+	  </controlProperties>
+	</control>
+	<control controlID="62" controlTypeID="com.balsamiq.mockups::StickyNote" x="697" y="165" w="224" h="138" measuredW="109" measuredH="123" zOrder="42" locked="false" isInGroup="-1">
+	  <controlProperties>
+		<text>Under%20what%20conditions%20does%20it%20make%20sense%20to%20show%20this%20even%20for%20books%20we%27re%20editing%3F%20E.g.%2C%20we%20need%20access%20to%20the%20notes%20the%20author%20left%20us.</text>
+	  </controlProperties>
+	</control>
+  </controls>
+</mockup>
