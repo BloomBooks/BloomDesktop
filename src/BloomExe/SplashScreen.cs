@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom
@@ -31,7 +32,8 @@ namespace Bloom
 		private SplashScreen()
 		{
 			InitializeComponent();
-			_versionInfo.Text = Shell.GetVersionInfo();
+			_shortVersionLabel.Text = Shell.GetShortVersionInfo(); 
+			_longVersionInfo.Text = Shell.GetBuiltOnDate();
 			_feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
 		}
 		
@@ -55,5 +57,13 @@ namespace Bloom
 			BringToFront();
 		}
 
+
+		private void SplashScreen_Paint(object sender, PaintEventArgs e)
+		{
+			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
+										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid);
+		}
     }
 }

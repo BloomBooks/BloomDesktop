@@ -75,7 +75,7 @@ namespace Bloom.Edit
            GeckoDocument doc = _browser.WebBrowser.Document;
 
             var body = doc.GetElementsByTagName("body").First();
-            GeckoHtmlElement div =  doc.CreateHtmlElement("div");
+			GeckoHtmlElement div = doc.CreateElement("div") as GeckoHtmlElement;
             div.Id = "output";
             body.AppendChild(div);
 

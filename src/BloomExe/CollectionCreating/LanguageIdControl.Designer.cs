@@ -1,4 +1,6 @@
-﻿namespace Bloom.CollectionCreating
+﻿using System.Windows.Forms;
+
+namespace Bloom.CollectionCreating
 {
 	partial class LanguageIdControl
 	{
@@ -46,9 +48,10 @@
 			this._L10NSharpExtender.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
 			this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
 			this._lookupISOControl.Name = "_lookupISOControl";
-			this._lookupISOControl.Size = new System.Drawing.Size(551, 231);
+			this._lookupISOControl.Size = new System.Drawing.Size(560, 231);
 			this._lookupISOControl.TabIndex = 11;
 			this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
+			this._lookupISOControl.Dock = DockStyle.Fill;
 			// 
 			// _L10NSharpExtender
 			// 

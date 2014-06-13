@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="ProgramDir.xMatter.Null_XMatter.Null_XMatter.css" Guid="e2c40ee9-c7da-4c61-b800-bb6ff0fed42d" />
+  <File Id="ProgramDir.xMatter.Null_XMatter.Null_XMatter.htm" Guid="9e2ca5f6-c2f1-4e55-8918-4789ce09b4c1" />
+</InstallerMetadata>

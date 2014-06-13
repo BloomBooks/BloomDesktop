@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="ui_bg_flat_30_cccccc_40x100.png2" Guid="1cb2651e-41ca-4efb-89fa-ce8550b0aa62" />
+  <File Id="ui_bg_flat_50_5c5c5c_40x100.png2" Guid="2fe92797-9f52-4e45-a853-f9b48702bc36" />
+  <File Id="ui_bg_glass_20_555555_1x400.png2" Guid="ad10d3d7-e088-4147-a0a4-200e185e393d" />
+  <File Id="ui_bg_glass_40_0078a3_1x400.png" Guid="640550e3-85c2-451a-a5f7-f9fe83a5a0b9" />
+  <File Id="ui_bg_glass_40_ffc73d_1x400.png2" Guid="0e175714-7d86-4cf1-b134-f2297c239d49" />
+  <File Id="ui_bg_gloss_wave_25_333333_500x100.png" Guid="f1c3e9eb-0335-4982-9f05-2a3717bb826f" />
+  <File Id="ui_bg_highlight_soft_80_eeeeee_1x100.png2" Guid="b480a642-0f63-4667-9818-19a2c80eb3c8" />
+  <File Id="ui_bg_inset_soft_25_000000_1x100.png" Guid="c1dd7536-3054-43d9-9520-3dc85fb2bf38" />
+  <File Id="ui_bg_inset_soft_30_f58400_1x100.png" Guid="436b2860-baba-4982-8570-5774e8c0e17a" />
+  <File Id="ui_icons_222222_256x240.png3" Guid="504a3f3a-50c5-49a3-9f46-b17868795b16" />
+  <File Id="ui_icons_4b8e0b_256x240.png2" Guid="9fc91232-71f5-4834-8389-551acc5c4f27" />
+  <File Id="ui_icons_a83300_256x240.png2" Guid="fa3495b3-8765-4eab-b6f9-4d7bf59cd72b" />
+  <File Id="ui_icons_cccccc_256x240.png2" Guid="9bbcc93c-53de-47c0-9a3c-418153a5c25a" />
+  <File Id="ui_icons_ffffff_256x240.png2" Guid="9bb421db-d513-4ca9-8674-bc2f49ef8522" />
+  <File Id="ui_bg_flat_30_cccccc_40x100.png1" Guid="f14e0510-bb74-4dfb-a1da-8017c1efa062" />
+  <File Id="ui_bg_flat_50_5c5c5c_40x100.png1" Guid="965c74a2-dabf-430f-afc3-48f6330009ad" />
+  <File Id="ui_bg_glass_20_555555_1x400.png1" Guid="61632f95-3616-4a87-a40a-b2fcf8c1b84f" />
+  <File Id="ui_bg_glass_40_ffc73d_1x400.png1" Guid="e9c0a4a8-408b-47fb-b327-ff039d267615" />
+  <File Id="ui_bg_highlight_soft_80_eeeeee_1x100.png1" Guid="b0540e6f-c0c0-485d-acc4-ee0fa13fa64a" />
+  <File Id="ui_icons_222222_256x240.png2" Guid="f969177c-fcd2-4d80-a2c4-84dd2c6cfe27" />
+  <File Id="ui_icons_4b8e0b_256x240.png1" Guid="cea2b8d2-4932-4e8c-8826-b838970c8857" />
+  <File Id="ui_icons_a83300_256x240.png1" Guid="a0240627-5ba1-405c-90f7-1a34c7240f05" />
+  <File Id="ui_icons_cccccc_256x240.png1" Guid="6826e25e-22b2-440b-b81f-016ca6c9fa61" />
+  <File Id="ui_icons_ffffff_256x240.png1" Guid="746f085d-1dc4-427f-b890-7aa2395c68a6" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_flat_30_cccccc_40x100.png" Guid="1e61143b-acbf-4d37-8442-236d89d19e6a" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_flat_50_5c5c5c_40x100.png" Guid="332aa196-74bf-4409-a9ff-ef1bdb84e0e9" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_glass_20_555555_1x400.png" Guid="39f827e8-9f19-45ce-925a-edac3602d3ba" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_glass_40_0078a3_1x400.png" Guid="e7f6ba3d-e45d-4510-9d34-98547ce39e35" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_glass_40_ffc73d_1x400.png" Guid="089584b8-7ab1-44b8-b2ce-1e89486142db" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_gloss_wave_25_333333_500x100.png" Guid="d8f54900-88bb-4731-a5dd-e88e3645e0a8" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_highlight_soft_80_eeeeee_1x100.png" Guid="c5448eec-cc6d-456c-800e-6ea42791880d" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_inset_soft_25_000000_1x100.png" Guid="cd8ca20b-92c0-4bb2-a413-a4e3220d273d" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_bg_inset_soft_30_f58400_1x100.png" Guid="6dcb1f2c-b783-4c28-803c-ccb5e4803fec" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_icons_222222_256x240.png" Guid="3e4943c4-f083-4bcd-bf9c-302bb26cac8e" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_icons_4b8e0b_256x240.png" Guid="b8780e8f-6283-4130-b1e2-697b0fe55e2e" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_icons_a83300_256x240.png" Guid="49bf9961-4309-4c0c-8f58-c65d0130a964" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_icons_cccccc_256x240.png" Guid="411fc8e6-126e-4726-b42b-2716ff4e3b72" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.ui_darkness.images.ui_icons_ffffff_256x240.png" Guid="72c3a46d-79dd-4af7-b697-5d272b75d739" />
+  <File Id="ui_darkness.images.ui_bg_flat_30_cccccc_40x100.png" Guid="1c30df58-0ef7-47ec-94a5-290905c1e879" />
+  <File Id="ui_darkness.images.ui_bg_flat_50_5c5c5c_40x100.png" Guid="3bffa16c-a044-4de3-a147-0cd3ca4409f0" />
+  <File Id="ui_darkness.images.ui_bg_glass_20_555555_1x400.png" Guid="455195e5-c853-48ee-bbb0-529a806d775f" />
+  <File Id="ui_darkness.images.ui_bg_glass_40_0078a3_1x400.png" Guid="8ff99760-b721-49ee-bde2-9f22b658c0ca" />
+  <File Id="ui_darkness.images.ui_bg_glass_40_ffc73d_1x400.png" Guid="f5ae2dca-fcc9-40ae-9dd2-2aca8d957b52" />
+  <File Id="ness.images.ui_bg_gloss_wave_25_333333_500x100.png" Guid="d34f9793-0517-4579-8e9c-58653087ccf2" />
+  <File Id="ss.images.ui_bg_highlight_soft_80_eeeeee_1x100.png" Guid="76da86dd-9bab-49da-a7be-565a0fc7b467" />
+  <File Id="rkness.images.ui_bg_inset_soft_25_000000_1x100.png" Guid="c317f825-ef9d-48b7-8555-93e7b4e2e445" />
+  <File Id="rkness.images.ui_bg_inset_soft_30_f58400_1x100.png" Guid="420b4b6f-1658-4cd1-ac37-33af8e204e73" />
+  <File Id="css.ui_darkness.images.ui_icons_222222_256x240.png" Guid="609de63b-61cb-4e62-99e5-72966eb93001" />
+  <File Id="css.ui_darkness.images.ui_icons_4b8e0b_256x240.png" Guid="3a3ea045-27ff-478a-9530-63a8a3dd91c1" />
+  <File Id="css.ui_darkness.images.ui_icons_a83300_256x240.png" Guid="27bcbfd2-5f87-41b3-a2bd-78528675ce6e" />
+  <File Id="css.ui_darkness.images.ui_icons_cccccc_256x240.png" Guid="c2329de6-d644-4c89-b623-5eb2f1c6c96c" />
+  <File Id="css.ui_darkness.images.ui_icons_ffffff_256x240.png" Guid="7fa01428-4e3a-45b9-8bc6-615ac003f7ad" />
+</InstallerMetadata>

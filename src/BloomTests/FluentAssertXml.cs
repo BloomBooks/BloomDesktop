@@ -6,7 +6,7 @@ using Bloom;
 using NUnit.Framework;
 using Palaso.Xml;
 
-namespace Palaso.TestUtilities
+namespace BloomTests
 {
     //NB: if c# ever allows us to add static exension methods,
     //then all this could be an extension on nunit's Assert class.
@@ -191,7 +191,7 @@ namespace Palaso.TestUtilities
 
         private XmlNode GetNode(string xpath)
         {
-#if MONO
+#if __MonoCS__
             // Currently the method XmlNodeExtensions.GetPrefixedPath doesn't allow for / in a literal string
             return NodeOrDom.SelectSingleNode(xpath);
 #else

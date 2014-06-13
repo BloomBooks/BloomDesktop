@@ -14,7 +14,7 @@ namespace Bloom.ToPalaso
 		public ProgressDialogBackground()
 		{
 			InitializeComponent();
-			_statusLabel.Text= "";
+			StatusLabel.Text= "";
 		}
 
 		public MultiProgress Progress = new MultiProgress();
@@ -23,7 +23,9 @@ namespace Bloom.ToPalaso
 		{
 			Progress.ProgressIndicator = ProgressBar;
 
-			Progress.AddStatusProgress(_statusLabel);
+			Progress.AddStatusProgress(StatusLabel);
+			ProgressString = new StringBuilderProgress();
+			Progress.AddMessageProgress(ProgressString);
 			//Progress.AddMessageProgress(_messageLabelProgress);
 			_backgroundWorker.RunWorkerCompleted += (sender, e) => Close();
 			_backgroundWorker.WorkerReportsProgress = true;
@@ -32,6 +34,8 @@ namespace Bloom.ToPalaso
 			_backgroundWorker.DoWork += (sender, arg) => work(Progress, arg);
 			ShowDialog();
 		}
+
+		public StringBuilderProgress ProgressString;
 
 		void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{

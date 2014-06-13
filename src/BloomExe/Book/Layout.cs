@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Xml;
 using Newtonsoft.Json;
 using Palaso.Extensions;
+using Palaso.IO;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -106,8 +108,26 @@ namespace Bloom.Book
 			return layout;
 		}
 
+	    public static Layout FromDomAndChoices(HtmlDom dom, Layout defaultIfMissing, IFileLocator fileLocator)
+	    {
+            // If the stylesheet's special style which tells us which page/orientations it supports matches the default
+            // page size and orientation in the template's bloom-page class, we don't need this method.
+            // Otherwise, we need to make sure that the book's layout updates to something that really is a possibility.
+            var layout = FromDom(dom, defaultIfMissing);
+	        layout = EnsureLayoutIsAmongValidChoices(dom, layout, fileLocator);
+	        return layout;
+	    }
+
+        private static Layout EnsureLayoutIsAmongValidChoices(HtmlDom dom, Layout layout, IFileLocator fileLocator)
+        {
+            var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator);
+            if (layoutChoices.Any(l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName))
+                return layout;
+            return layoutChoices.Any() ?  layoutChoices.First() : layout;
+        }
+
 		/// <summary>
-		/// At rutnime, this string comes out of a dummy css 'content' line. For unit tests, it just comes from the test.
+		/// At runtime, this string comes out of a dummy css 'content' line. For unit tests, it just comes from the test.
 		/// </summary>
 		/// <param name="contents"></param>
 		/// <returns></returns>

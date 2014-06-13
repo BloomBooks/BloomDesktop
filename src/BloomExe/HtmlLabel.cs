@@ -19,6 +19,14 @@ namespace Bloom
 		public HtmlLabel()
 		{
 			InitializeComponent();
+
+			_browser = new GeckoWebBrowser();
+
+			_browser.Parent = this;
+			_browser.Dock = DockStyle.Fill;
+			Controls.Add(_browser);
+			_browser.NoDefaultContextMenu = true;
+			_browser.Margin = new Padding(0);
 		}
 
 
@@ -52,29 +60,20 @@ namespace Bloom
 			if (this.DesignModeAtAll())
 				return;
 
-			_browser = new GeckoWebBrowser();
-
-			_browser.Parent = this;
-			_browser.Dock = DockStyle.Fill;
-			Controls.Add(_browser);
-			_browser.NoDefaultContextMenu = true;
-			_browser.Margin = new Padding(0);
-			
 			HTML = _html;//in the likely case that there's html waiting to be shown
-			_browser.DomClick += new EventHandler<DomEventArgs>(OnBrowser_DomClick);
+			_browser.DomClick += new EventHandler<DomMouseEventArgs>(OnBrowser_DomClick);
 		
 		}
 
-		private void OnBrowser_DomClick(object sender, DomEventArgs e)
+		private void OnBrowser_DomClick(object sender, DomEventArgs ge)
 		{
 			if (this.DesignModeAtAll())
 				return;
 
-			var domEventArgs = e as DomEventArgs;
-			if (domEventArgs.Target == null)
+			if (ge.Target == null)
 				return;
 
-			var targetElement = domEventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
+			var targetElement = ge.Target.CastToGeckoElement() as GeckoHtmlElement;
 			if (targetElement == null)
 				return;
 
@@ -82,7 +81,7 @@ namespace Bloom
 			{
 				var url = targetElement.GetAttribute("href");
 				System.Diagnostics.Process.Start(url);
-				e.Handled = true; //don't let the browser navigate itself
+				ge.Handled = true; //don't let the browser navigate itself
 			}
 		}
 	}

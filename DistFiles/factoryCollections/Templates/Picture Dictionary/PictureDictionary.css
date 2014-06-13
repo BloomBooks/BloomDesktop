@@ -1,8 +1,3 @@
-/*This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
-#bloom-supportedPageConfigurations
-{
-	content: "A5Portrait";
-}
 BODY
 {
 }
@@ -19,7 +14,7 @@ DIV.wordsDiv DIV
 	height: 24px;
 	width: 100%;
 	display: inline;
-	line-height: 0.9;
+	line-height: 1.3;
 	text-align: center;
 }
 DIV.bloom-imageContainer

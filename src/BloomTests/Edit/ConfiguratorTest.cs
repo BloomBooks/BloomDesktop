@@ -42,10 +42,16 @@ namespace BloomTests.Edit
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 			                               		FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "root"),
+                                                FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Wall Calendar"),
+												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
+												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 			                               	});
-			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), new CollectionSettings()), library.Object);
+
+            var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+
+            _starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
             _shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
             _libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 
@@ -65,7 +71,7 @@ namespace BloomTests.Edit
         [STAThread]
         public void ShowConfigureDialog()
         {
-			var c = new Configurator(_libraryFolder.Path);
+			var c = new Configurator(_libraryFolder.Path, new MonitorTarget());
 
 			var stringRep = DynamicJson.Serialize(new
 			{
@@ -81,7 +87,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetAllData_LocalOnly_ReturnLocal()
 		{
-			var c = new Configurator(_libraryFolder.Path);
+			var c = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			c.CollectJsonData(j.ToString());
@@ -91,7 +97,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void LibrarySettingsAreRoundTriped()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			var stringRep = DynamicJson.Serialize(new
 			          	{
 			          		library = new {stuff = "foo"}
@@ -99,7 +105,7 @@ namespace BloomTests.Edit
 
 			first.CollectJsonData(stringRep.ToString());
 			
-			var second = new Configurator(_libraryFolder.Path);
+			var second = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("foo", j.library.stuff); 
 		}
@@ -118,11 +124,11 @@ namespace BloomTests.Edit
 				library = new { two = "2", color = "blue" }
 			});
 			
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path);
+			var second = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("2", j.library.two); 
 			Assert.AreEqual("1", j.library.one);
@@ -135,11 +141,11 @@ namespace BloomTests.Edit
 			var firstData = "{\"library\":{\"days\":[\"1\",\"2\"]}}";
 			var secondData = "{\"library\":{\"days\":[\"one\",\"two\"]}}";
 
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path);
+			var second = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("one", j.library.days[0]);
 			Assert.AreEqual("two", j.library.days[1]);
@@ -158,11 +164,11 @@ namespace BloomTests.Edit
 				library = new { food = new { bread = "b", fruit = "f" } }
 			});
 
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path);
+			var second = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("v", j.library.food.veg);
 			Assert.AreEqual("f", j.library.food.fruit);
@@ -177,7 +183,7 @@ namespace BloomTests.Edit
     	[Test]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = new DynamicJson();
 			j.library = new DynamicJson();
 			j.library.librarystuff = "foo";
@@ -193,7 +199,7 @@ namespace BloomTests.Edit
     	[Test]
 		public void WhenCollectedNoGlobalDataThenGlobalDataIsEmpty()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -203,7 +209,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetLibraryData_NoGlobalData_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -212,13 +218,13 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetLibraryData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			Assert.AreEqual("{}", first.GetLibraryData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path);
+			var first = new Configurator(_libraryFolder.Path, new MonitorTarget());
 			Assert.AreEqual("", first.LocalData);
 		}
 
@@ -227,7 +233,11 @@ namespace BloomTests.Edit
         {
             var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Wall Calendar");
             var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
-			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent(), new CollectionSettings());
+            var projectFolder = new TemporaryFolder("ConfiguratorTests_ProjectCollection");
+            //review
+            var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+
+			var bs = new BookStorage(Path.GetDirectoryName(path), _fileLocator, new BookRenamedEvent(), collectionSettings);
             return bs;
         }
 

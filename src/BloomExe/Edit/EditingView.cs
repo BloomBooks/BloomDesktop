@@ -17,6 +17,7 @@ using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
+using System.Net;
 
 namespace Bloom.Edit
 {
@@ -60,8 +61,6 @@ namespace Bloom.Edit
             _browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
         
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
-
-
 
         	_menusToolStrip.Renderer = new FixedToolStripRenderer();
 
@@ -136,6 +135,7 @@ namespace Bloom.Edit
 #if TooExpensive
 			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
 #endif
+            //_browser1.WebBrowser.AddMessageEventListener("PreserveHtmlOfElement", elementHtml => _model.PreserveHtmlOfElement(elementHtml));
     	}
 
     	private void OnShowBookMetadataEditor()
@@ -150,9 +150,16 @@ namespace Bloom.Edit
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
+				if (metadata.License is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+				{
+					//looks like the first time. Nudge them with a nice default license.
+					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+				}
+
+                var decodedMetadata = GetMetadataCloneWithHtmlDecodedRights(metadata);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -171,8 +178,9 @@ namespace Bloom.Edit
 						}
 
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is emtpy
-						string rights = dlg.Metadata.License.RightsStatement==null ? string.Empty : dlg.Metadata.License.RightsStatement.Replace("'", "\\'");
+						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
+                        var rights = GetHtmlEncodedRights(dlg);
+                        dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
@@ -201,6 +209,21 @@ namespace Bloom.Edit
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
     	}
+
+        private string GetHtmlEncodedRights(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
+        {
+            var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
+            return rights ?? string.Empty;
+        }
+
+        private Metadata GetMetadataCloneWithHtmlDecodedRights(Metadata metadata)
+        {
+            // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
+            var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
+            var safeMetadata = metadata.DeepCopy();
+            safeMetadata.License.RightsStatement = rightsStatement;
+            return safeMetadata;
+        }
 
         private void SetupThumnailLists()
         {
@@ -301,9 +324,33 @@ namespace Bloom.Edit
 				_browser1.Navigate(dom.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
+                // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+                // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+                // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+                // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+                // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+                // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+                // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+                // never happens.
+			    _browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
+                _browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
 			}
 			UpdateDisplay();
 		}
+
+        void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
+        {
+            if (_browser1.WebBrowser.Document.ReadyState != "complete")
+                return; // Keep receiving until it is complete.
+            _browser1.WebBrowser.ReadyStateChange -= WebBrowser_ReadyStateChanged; // just do this once
+            _browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
+            _model.DocumentCompleted();
+        }
+
+        public void AddMessageEventListener(string eventName, Action<string> action)
+        {
+            _browser1.AddMessageEventListener(eventName, action);
+        }
 
     	public void UpdateTemplateList()
         {
@@ -316,35 +363,37 @@ namespace Bloom.Edit
             _pageListView.SetBook(_model.CurrentBook);
         }
 
+        internal string RunJavaScript(string script)
+        {
+            return _browser1.RunJavaScript(script);
+        }
+
         private void _browser1_OnBrowserClick(object sender, EventArgs e)
         {
-            var domEventArgs = e as DomEventArgs;
-			if (domEventArgs.Target == null)
+            var ge = e as DomEventArgs;
+			if (ge == null || ge.Target == null)
 				return;//I've seen this happen
 
-			var targetElement= domEventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
-	        if (targetElement == null)
-		        return;
-
-			if (targetElement.ClassName.Contains("sourceTextTab"))
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			if (target.ClassName.Contains("sourceTextTab"))
 			{
-				RememberSourceTabChoice(targetElement);
+				RememberSourceTabChoice(target);
 				return;
 			}
-        	if (targetElement.ClassName.Contains("changeImageButton"))
-                OnChangeImage(targetElement);
-			if (targetElement.ClassName.Contains("pasteImageButton"))
-				OnPasteImage(targetElement);
-			if (targetElement.ClassName.Contains("editMetadataButton"))
-				OnEditImageMetdata(targetElement);
+			if (target.ClassName.Contains("changeImageButton"))
+                OnChangeImage(ge);
+			if (target.ClassName.Contains("pasteImageButton"))
+				OnPasteImage(ge);
+			if (target.ClassName.Contains("editMetadataButton"))
+				OnEditImageMetdata(ge);
 
-        	var anchor = targetElement as Gecko.DOM.GeckoAnchorElement;
-			if(anchor!=null)
+			var anchor = target as Gecko.DOM.GeckoAnchorElement;
+			if(anchor!=null && anchor.Href!="" && anchor.Href!="#")
 			{
 				if(anchor.Href.Contains("bookMetadataEditor"))
 				{
 					OnShowBookMetadataEditor();
-					domEventArgs.Handled = true; 
+					ge.Handled = true; 
 					return;
 				}
 				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
@@ -352,24 +401,29 @@ namespace Bloom.Edit
 					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
 					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
 					_browser1.RunJavaScript(function);
-					domEventArgs.Handled = true;
+					ge.Handled = true;
 					return;
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
+                    // We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
+                    // since although its href is empty, the  <base href which we supply inserts an effective http: url.
+                    // We don't need anything to happen here for this case.
+                    if (anchor.Id == "setUpStages")
+				        return;
 					Process.Start(anchor.Href);
-					domEventArgs.Handled = true;
+					ge.Handled = true;
 					return;
 				}
 				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
 				{
-					domEventArgs.Handled = false;//let gecko handle it
+					ge.Handled = false;//let gecko handle it
 					return;
 				}
 				else
 				{
 					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-					domEventArgs.Handled = true;
+					ge.Handled = true;
 				}
 
 			}
@@ -386,9 +440,9 @@ namespace Bloom.Edit
     	}
 
 
-		private void OnEditImageMetdata(GeckoHtmlElement target)
+		private void OnEditImageMetdata(DomEventArgs ge)
 		{
-			var imageElement = GetImageNode(target);
+			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
 			string fileName = imageElement.GetAttribute("src").Replace("%20", " ");
@@ -436,7 +490,7 @@ namespace Bloom.Edit
 			//doesn't work: _browser1.WebBrowser.Reload();
 		}
 
-		private void OnPasteImage(GeckoHtmlElement target)
+    	private void OnPasteImage(DomEventArgs ge)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -456,10 +510,11 @@ namespace Bloom.Edit
                     return;
                 }
 
+				var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
                 if (target.ClassName.Contains("licenseImage"))
                     return;
 
-                var imageElement = GetImageNode(target);
+                var imageElement = GetImageNode(ge);
                 if (imageElement == null)
                     return;
                 Cursor = Cursors.WaitCursor;
@@ -505,6 +560,20 @@ namespace Bloom.Edit
             if(dataObject==null)
                return null;
 
+            // the ContainsImage() returns false when copying an PNG from MS Word
+            // so here we explicitly ask for a PNG and see if we can convert it.
+            if (dataObject.GetDataPresent("PNG"))
+            {
+                var o = dataObject.GetData("PNG") as System.IO.Stream;
+                try
+                {
+                    return Image.FromStream(o);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
            //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
             if (dataObject.GetDataPresent(DataFormats.FileDrop))
             {
@@ -526,41 +595,33 @@ namespace Bloom.Edit
         }
 
 
-		private static GeckoHtmlElement GetImageNode(GeckoHtmlElement target)
+		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
     	{
 			GeckoHtmlElement imageElement = null;
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
     		foreach (var n in target.Parent.ChildNodes)
     		{
-				if (n is GeckoElement && ((GeckoHtmlElement)n).TagName.ToLower() == "img")
+				imageElement = n as GeckoHtmlElement;
+				if (imageElement != null && imageElement.TagName.ToLower() == "img")
     			{
-					imageElement = (GeckoHtmlElement)n;
-    				break;
+					return imageElement;
     			}
     		}
 
-    		if (imageElement == null)
-    		{
     			Debug.Fail("Could not find image element");
     			return null;
     		}
-    		return imageElement;
-    	}
 
-//	    private GeckoHtmlElement GetHtmlElementTarget(DomEventArgs eventArgs)
-//	    {
-//		    return eventArgs.Target.CastToGeckoElement() as GeckoHtmlElement;
-//	    }
-
-		private void OnChangeImage(GeckoHtmlElement target)
+    	private void OnChangeImage(DomEventArgs ge)
         {
-			var imageElement = GetImageNode(target);
+			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
 			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");			
 			
 			//TODO: this would let them set it once without us bugging them, but after that if they
 			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-			if (!currentPath.ToLower().Contains("placeholder")  //always alow them to put in something over a placeholder
+			if (!currentPath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
 				&& !_model.CanChangeImages())
 			{
 				if(DialogResult.Cancel== MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning","This book is locked down as shell. Are you sure you want to change the picture?"),LocalizationManager.GetString("EditTab.ChangeImage","Change Image"),MessageBoxButtons.OKCancel))
@@ -568,7 +629,7 @@ namespace Bloom.Edit
 					return;
 				}
 			}
-
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
         	if (target.ClassName.Contains("licenseImage"))
 				return;
 
@@ -628,6 +689,7 @@ namespace Bloom.Edit
         /// </summary>
         public void CleanHtmlAndCopyToPageDom()
         {
+            RunJavaScript("$(\".bloom-editable\").removeSynphonyMarkup();");
             _browser1.ReadEditableAreasNow();
         }
 

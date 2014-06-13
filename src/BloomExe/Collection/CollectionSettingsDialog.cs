@@ -42,6 +42,8 @@ namespace Bloom.Collection
 
 		    _showSendReceive.Checked = Settings.Default.ShowSendReceive;
 		    _showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
+			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
 //		                                                  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
@@ -71,8 +73,8 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage1Name("en"), _collectionSettings.Language1Iso639Code);
-			_language2Name.Text = string.Format("{0} ({1})",  _collectionSettings.GetLanguage2Name("en"), _collectionSettings.Language2Iso639Code);
+			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), _collectionSettings.Language1Iso639Code);
+			_language2Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), _collectionSettings.Language2Iso639Code);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
@@ -81,7 +83,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name("en"), _collectionSettings.Language3Iso639Code);
+				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), _collectionSettings.Language3Iso639Code);
 				_removeLanguage3Link.Visible = true;
 			}
 
@@ -177,7 +179,7 @@ namespace Bloom.Collection
             if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
             {
                 _queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
-                //_collectionSettings.AttemptSaveAsToNewName(_bloomCollectionName.Text.SanitizeFilename('-'));
+                //_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
             }
 			_collectionSettings.Save();
 

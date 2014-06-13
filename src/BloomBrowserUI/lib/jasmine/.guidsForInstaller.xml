@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jasmine_1.1.0.js" Guid="3a6fe13f-9955-49bc-87e8-36b06648bded" />
+  <File Id="JasmineAdapter_1.1.2.js" Guid="7649ce82-743b-4868-ab08-bf0a3250308b" />
+  <File Id="BrowserUIDir.lib.jasmine.jasmine_1.1.0.js" Guid="81f29e7d-fc13-4db8-b7d1-e7c66a3fa2a6" />
+  <File Id="BrowserUIDir.lib.jasmine.JasmineAdapter_1.1.2.js" Guid="de4a6552-b46f-4f4e-a6ce-f4ec490abf31" />
+</InstallerMetadata>

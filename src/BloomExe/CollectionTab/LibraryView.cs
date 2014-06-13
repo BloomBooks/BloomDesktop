@@ -39,9 +39,14 @@ namespace Bloom.CollectionTab
 			_makeBloomPackButton.Visible = model.IsShellProject;
             _sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
-			_sendReceiveButton.Click+=new EventHandler((x,y)=>sendReceiveCommand.Raise(this));
-        	_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
-        	;
+			if (sendReceiveCommand != null)
+			{
+				_sendReceiveButton.Click += (x, y) => sendReceiveCommand.Raise(this);
+				_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
+			}
+			else
+				_sendReceiveButton.Enabled = false;
+
 			selectedTabChangedEvent.Subscribe(c=>
 												{
 													if (c.To == this)
@@ -76,7 +81,17 @@ namespace Bloom.CollectionTab
 
     	public string HelpTopicUrl
     	{
-			get { return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collections_tasks_overview.htm"; }
+    	    get
+    	    {
+    	        if (_model.IsShellProject)
+    	        {
+                    return "/Tasks/Source_Collection_tasks/Source_Collection_tasks_overview.htm";
+    	        }
+    	        else
+    	        {
+    	            return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collection_tasks_overview.htm";
+    	        }
+    	    }
     	}
 
     	public Control TopBarControl

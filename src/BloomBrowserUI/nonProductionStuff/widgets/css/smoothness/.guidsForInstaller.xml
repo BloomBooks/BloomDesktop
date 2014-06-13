@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="jquery_ui_1.8.16.custom.css2" Guid="39bfc2cc-eaed-4cf6-a8fe-0546d503a5cc" />
+  <File Id="jquery_ui_1.8.16.custom.css1" Guid="59736a12-502d-44c2-a182-a99e33a8fb71" />
+  <File Id="BrowserUIDir.nonProductionStuff.widgets.css.smoothness.jquery_ui_1.8.16.custom.css" Guid="2f0b404d-504a-457c-aa60-dd5a039b9d97" />
+  <File Id="widgets.css.smoothness.jquery_ui_1.8.16.custom.css" Guid="f52c9c75-c9ea-4de7-b143-05c279cdd0e8" />
+</InstallerMetadata>

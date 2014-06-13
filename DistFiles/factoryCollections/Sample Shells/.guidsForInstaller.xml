@@ -4,4 +4,9 @@
   <File Id="SampleShells.bloomLibrary" Guid="31e21879-ab33-44f8-9278-2ef8d5ef890b" />
   <File Id="A5_Wall_Calendar.zip" Guid="814e1f53-a163-48b3-b332-54d187915d19" />
   <File Id="SampleShells.BloomCollection" Guid="2fb135cd-61c9-473f-9160-682c40c2a464" />
+  <File Id="collection.css" Guid="23c4c533-05d4-484e-bcb6-5da8899e1979" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.collection.css" Guid="9d3a8120-bcea-4173-a8b1-8d087f2c3805" />
+  <File Id="ProgramDir.factoryCollections.Sample_Shells.SampleShells.BloomCollection" Guid="0a9988b6-db32-45e1-924d-c1cbf7ccdfd6" />
+  <File Id="ir.factoryCollections.Sample_Shells.collection.css" Guid="7451c538-f24c-42d1-809b-90f0101c85e8" />
+  <File Id="ections.Sample_Shells.SampleShells.BloomCollection" Guid="f48f0c82-1418-40c7-81d0-8d62b5ecc20e" />
 </InstallerMetadata>

@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
-<InstallerMetadata>
-  <File Id="jquery_ui_1.8.16.custom.css" Guid="412bbdd9-d563-4090-9202-7eb3d59b9d45" />
-</InstallerMetadata>

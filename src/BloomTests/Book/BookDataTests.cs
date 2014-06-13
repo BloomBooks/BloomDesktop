@@ -24,6 +24,34 @@ namespace BloomTests.Book
                 Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
         }
 
+        [Test]
+        public void MakeLanguageUploadData_FindsDefaultInfo()
+        {
+            var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyk"});
+            Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+            VerifyLangData(results[0], "en", "English", "eng");
+            VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+            VerifyLangData(results[2], "xyk", "xyk", "xyk");
+        }
+
+        [Test]
+        public void MakeLanguageUploadData_FindsOverriddenNames()
+        {
+            _collectionSettings.Language1Name = "Cockney";
+            // Note: no current way of overriding others; verify they aren't changed.
+            var results = _collectionSettings.MakeLanguageUploadData(new[] { "en", "tpi", "xyz" });
+            Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+            VerifyLangData(results[0], "en", "English", "eng");
+            VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+            VerifyLangData(results[2], "xyz", "Cockney", "xyz");
+        }
+
+        void VerifyLangData(LanguageDescriptor lang, string code, string name, string ethCode)
+        {
+            Assert.That(lang.IsoCode, Is.EqualTo(code));
+            Assert.That(lang.Name, Is.EqualTo(name));
+            Assert.That(lang.EthnologueCode, Is.EqualTo(ethCode));
+        }
         
        [Test]
         public void SuckInDataFromEditedDom_NoDataDIvTitleChanged_NewTitleInCache()
@@ -138,7 +166,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
             var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
             textarea2.InnerText = "newXyzTitle";
-            var data = new BookData(dom,   new CollectionSettings(), null);
+			var data = new BookData(dom, new CollectionSettings() { Language1Iso639Code = "etr" }, null);
             data.SynchronizeDataItemsThroughoutDOM();
             var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='3']");
             Assert.AreEqual("newXyzTitle", textarea3.InnerText);
@@ -165,7 +193,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
             var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']");
             textarea1.InnerText = "newEnglishTitle";
-            var data = new BookData(dom,   new CollectionSettings(), null);
+            var data = new BookData(dom,   new CollectionSettings(){Language1Iso639Code = "etr"}, null);
             data.SynchronizeDataItemsThroughoutDOM();
             var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
             Assert.AreEqual("xyzTitle", textarea2.InnerText); 
@@ -190,7 +218,10 @@ namespace BloomTests.Book
                     </div>
                 </div>
                 </body></html>");
-            var collectionSettings = new CollectionSettings();
+	        var collectionSettings = new CollectionSettings()
+		        {
+			        Language1Iso639Code = "etr"
+		        };
             var data = new BookData(dom,   collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
             XmlElement nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
@@ -299,7 +330,7 @@ namespace BloomTests.Book
 //            </div></head><body></body></html>");
             var dom = new HtmlDom();
             var data = new BookData(dom, new CollectionSettings(){Country="the country", Province = "the province", District= "the district"}, null);
-            Assert.AreEqual("the district, the province<br/>the country", data.GetVariableOrNull("languageLocation", "*"));
+            Assert.AreEqual("the district, the province, the country", data.GetVariableOrNull("languageLocation", "*"));
           }
 
         /*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1Name, true);
@@ -485,6 +516,36 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/body/div/div[@lang='es']", 0);
         }
 
+		[Test]
+		public void PrettyPrintLanguage_DoesNotModifyUnknownCodes()
+		{
+			var htmlDom = new HtmlDom();
+			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged" };
+			var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("xyz"), Is.EqualTo("xyz"));
+		}
+
+	    [Test]
+	    public void PrettyPrintLanguage_AdjustsLang1()
+	    {
+			var htmlDom = new HtmlDom();
+		    var settingsettings = new CollectionSettings() {Language1Iso639Code = "pdc", Language1Name = "German, Kludged"};
+		    var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("pdc"), Is.EqualTo("German, Kludged"));
+	    }
+
+		[Test]
+		public void PrettyPrintLanguage_AdjustsKnownLanguages()
+		{
+			var htmlDom = new HtmlDom();
+			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "de", Language3Iso639Code = "fr"};
+			var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
+			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
+		}
+
         #region Metadata
         [Test]
         public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()
@@ -526,5 +587,148 @@ namespace BloomTests.Book
         }
 
         #endregion
-    }
+
+		#region Copying data across languages, where it seems the lesser of two evils
+
+//		[Test]
+//		public void SynchronizeDataItemsThroughoutDOM_EnglishTitleButNoVernacular_DoesNotCopyInEnglish()
+//		{
+//			var dom = new HtmlDom(@"<html ><head></head><body>
+//                <div id='bloomDataDiv'>
+//                     <div data-book='bookTitle' lang='en'>the title</div>
+//                </div>
+//                <div class='bloom-page verso'>
+//					 <div id='originalContributions' class='bloom-translationGroup'>
+//						<div data-book='originalContributions' lang='etr'></div>
+//						<div data-book='originalContributions' lang='en'></div> 
+//					</div>
+//                </div>
+//                </body></html>");
+//			var collectionSettings = new CollectionSettings()
+//			{
+//				Language1Iso639Code = "fr"
+//			};
+//			var data = new BookData(dom, collectionSettings, null);
+//			data.SynchronizeDataItemsThroughoutDOM();
+//			XmlElement englishContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='en']");
+//			Assert.AreEqual("the contributions", englishContributions.InnerText, "Should copy English into body of course, as normal");
+//			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+//			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy English into French Contributions becuase it's better than just showing nothing");
+//		}
+
+
+		[Test]
+	    public void SynchronizeDataItemsThroughoutDOM_HasOnlyEnglishContributorsButEnglishIsLang3_CopiesEnglishIntoNationalLanguageSlot()
+	    {
+			var dom = new HtmlDom(@"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='originalContributions' lang='en'>the contributions</div>
+                </div>
+                <div class='bloom-page verso'>
+					 <div id='originalContributions' class='bloom-translationGroup'>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='en'></div> 
+					</div>
+                </div>
+                </body></html>");
+		    var collectionSettings = new CollectionSettings()
+			    {
+				      Language1Iso639Code = "etr",
+					  Language2Iso639Code = "fr"
+			    };
+			var data = new BookData(dom, collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			XmlElement englishContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='en']");
+			Assert.AreEqual("the contributions", englishContributions.InnerText, "Should copy English into body of course, as normal");
+			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy English into French Contributions becuase it's better than just showing nothing");
+			//Assert.AreEqual("en",frenchContributions.GetAttribute("bloom-languageBloomHadToCopyFrom"),"Should have left a record that we did this dubious 'borrowing' from English");
+	    }
+
+
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasOnlyEnglishContributorsInDataDivButFrenchInBody_DoesNotCopyEnglishIntoFrenchSlot()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='originalContributions' lang='en'>the contributions</div>
+                </div>
+                <div class='bloom-page verso'>
+					 <div id='originalContributions' class='bloom-translationGroup'>
+						<div data-book='originalContributions' lang='fr'>les contributeurs</div>
+						<div data-book='originalContributions' lang='xyz'></div>
+					</div>
+                </div>
+                </body></html>");
+			var collectionSettings = new CollectionSettings()
+			{
+				Language1Iso639Code = "etr",
+				Language2Iso639Code = "fr"
+			};
+			var data = new BookData(dom, collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			Assert.AreEqual("les contributeurs", frenchContributions.InnerText, "Should not touch existing French Contributions");
+			//Assert.IsFalse(frenchContributions.HasAttribute("bloom-languageBloomHadToCopyFrom"));
+		}
+
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasFrenchAndEnglishContributorsInDataDiv_DoesNotCopyEnglishIntoFrenchSlot()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='originalContributions' lang='en'>the contributions</div>
+					<div data-book='originalContributions' lang='fr'>les contributeurs</div>
+                </div>
+                <div class='bloom-page verso'>
+					 <div id='originalContributions' class='bloom-translationGroup'>
+						<div data-book='originalContributions' lang='fr'></div>
+						<div data-book='originalContributions' lang='xyz'></div>
+					</div>
+                </div>
+                </body></html>");
+			var collectionSettings = new CollectionSettings()
+			{
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "fr"
+			};
+			var data = new BookData(dom, collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			Assert.AreEqual("les contributeurs", frenchContributions.InnerText, "Should use the French, not the English even though the French in the body was empty");
+			XmlElement vernacularContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='xyz']");
+			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasOnlyEdoloContributors_CopiesItIntoL2ButNotL1()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='originalContributions' lang='etr'>the contributions</div>
+                </div>
+                <div class='bloom-page verso'>
+					 <div id='originalContributions' class='bloom-translationGroup'>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='fr'></div>
+						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='xyz'></div>
+					</div>
+                </div>
+                </body></html>");
+			var collectionSettings = new CollectionSettings()
+			{
+				      Language1Iso639Code = "xyz",
+					  Language2Iso639Code = "fr"
+			};
+			var data = new BookData(dom, collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy Edolo into French Contributions becuase it's better than just showing nothing");
+			XmlElement vernacularContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='xyz']");
+			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
+		}
+
+		#endregion
+	}
 }

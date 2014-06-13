@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="bloomBootstrap.js" Guid="94d07f45-a1f7-45bf-bfc9-a7df335820fd" />
+  <File Id="bloomEditing.js" Guid="d9dfbc12-6721-42f7-90fc-a690f50621b3" />
+  <File Id="StyleEditing.js.map" Guid="6da9e71f-4e8d-4c12-92ef-78329396d6f2" />
+  <File Id="StyleEditing.ts" Guid="daadbf14-a5bb-4af2-ba73-84886de80b43" />
+  <File Id="StyleEditing.js" Guid="60964a9d-df99-4c22-835c-065d140dfd0b" />
+  <File Id="BrowserUIDir.bookEdit.js.bloomBootstrap.js" Guid="293a30ab-ede1-4e98-8afd-d60d4761fcf7" />
+  <File Id="BrowserUIDir.bookEdit.js.bloomEditing.js" Guid="c425d8a9-5be3-4615-b883-a47f54a619b4" />
+  <File Id="BrowserUIDir.bookEdit.js.StyleEditing.js" Guid="e784a68e-2dbd-4e86-99fd-4e2612f6e5be" />
+  <File Id="BrowserUIDir.bookEdit.js.StyleEditing.js.map" Guid="e7ca469e-916b-4083-9621-7e5bc6b16573" />
+  <File Id="BrowserUIDir.bookEdit.js.StyleEditing.ts" Guid="193ed9c6-a7bd-49a7-b214-85c880ec4337" />
+</InstallerMetadata>

@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
+<InstallerMetadata>
+  <File Id="topicDialog.htm" Guid="8a01a8b3-cb47-48eb-8dea-4c72a2f8288b" />
+  <File Id="BrowserUIDir.bookEdit.html.topicDialog.htm" Guid="6b9f0488-8f25-4fb0-a1ff-01628dba2e26" />
+</InstallerMetadata>

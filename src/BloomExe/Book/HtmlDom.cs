@@ -7,6 +7,8 @@ using System.Xml.Xsl;
 using System.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
+using Palaso.IO;
+using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -16,6 +18,7 @@ namespace Bloom.Book
 	/// HtmlDom manages the lower-level operations on a Bloom XHTML DOM.
 	/// These doms can be a whole book, or just one page we're currently editing.
 	/// They are actually XHTML, though when we save or send to a browser, we always convert to plain html.
+	/// May also contain a BookInfo, which for certain operations should be kept in sync with the HTML.
 	/// </summary>
 	public class HtmlDom
 	{
@@ -42,7 +45,10 @@ namespace Bloom.Book
 		{
 			get { return XmlUtils.GetOrCreateElement(_dom, "html", "head"); }
 		}
-
+        public XmlElement Body
+        {
+            get { return XmlUtils.GetOrCreateElement(_dom, "html", "body"); }
+        }
 		public string Title
 		{
 			get
@@ -146,12 +152,27 @@ namespace Bloom.Book
 
 		public void AddJavascriptFile(string pathToJavascript)
 		{
-			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
-			element.SetAttribute("type", "text/javascript");
-			element.SetAttribute("src", "file://" + pathToJavascript);
-			Head.AppendChild(element);
+		    Head.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
+	    private XmlElement MakeJavascriptElement(string pathToJavascript)
+	    {
+	        XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
+	        element.SetAttribute("type", "text/javascript");
+	        element.SetAttribute("src", "file://" + pathToJavascript);
+	        return element;
+	    }
+
+	    public void AddJavascriptFileToBody(string pathToJavascript)
+        {
+            Body.AppendChild(MakeJavascriptElement(pathToJavascript));
+        }
+
+        public void AddEditMode(string mode)
+        {
+            // RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
+            Body.SetAttribute("editMode", mode);
+        }
 
 		public void RemoveModeStyleSheets()
 		{
@@ -169,6 +190,10 @@ namespace Bloom.Book
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}
 			}
+            // If present, remove the editMode attribute that tells use which mode we're editing in (original or translation)
+            var body = RawDom.SafeSelectNodes("/html/body")[0] as XmlElement;
+            if (body.HasAttribute("editMode"))
+                body.RemoveAttribute("editMode");
 		}
 
 		public string ValidateBook(string descriptionOfBookForErrorLog)
@@ -240,6 +265,19 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// gecko 11 requires the file://, but modern firefox and chrome can't handle it. Checked also that IE10 works without it.
+		/// </summary>
+		public void RemoveFileProtocolFromStyleSheetLinks()
+		{
+			List<XmlElement> links = new List<XmlElement>();
+			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var linke = link.GetAttribute("href");
+				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+
 		//        /// <summary>
 		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
 		//        /// </summary>
@@ -261,7 +299,7 @@ namespace Bloom.Book
 
 		public static void AddClass(XmlElement e, string className)
 		{
-			e.SetAttribute("class", (e.GetAttribute("class") + " " + className).Trim());
+			e.SetAttribute("class", (e.GetAttribute("class").Replace(className,"").Trim() + " " + className).Trim());
 		}
 
 		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
@@ -346,16 +384,16 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Can be called without knowing that the old or new exists.
+		/// Can be called without knowing that the old exists.
 		/// If it already has the new, the old is just removed.
 		/// This is just for migration.
 		/// </summary>
-		public void RenameMetaElement(string oldName, string newName)
+		public void RemoveMetaElement(string oldName, Func<string> read, Action<string> write)
 		{
 			if (!HasMetaElement(oldName))
 				return;
 
-			if (HasMetaElement(newName))
+			if (!string.IsNullOrEmpty(read()))
 			{
 				RemoveMetaElement(oldName);
 				return;
@@ -363,7 +401,7 @@ namespace Bloom.Book
 
 			//ok, so we do have to transfer the value over
 
-			UpdateMetaElement(newName,GetMetaValue(oldName,""));
+			write(GetMetaValue(oldName,""));
 
 			//and remove any of the old name
 			foreach(XmlElement node in _dom.SafeSelectNodes("//head/meta[@name='" + oldName + "']"))
@@ -433,5 +471,74 @@ namespace Bloom.Book
 					yield return fileName;
 			}
 		}
+
+
+	    public void AddPublishClassToBody()
+	    {
+            AddPublishClassToBody(_dom);
+	    }
+
+
+        /// <summary>
+        /// By including this class, we help stylesheets do something different for edit vs. publish mode.
+        /// </summary>
+	    public static void AddPublishClassToBody(XmlDocument dom)
+        {
+            AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
+        }
+
+
+
+	    public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)
+	    {
+	        foreach (XmlElement linkNode in SafeSelectNodes("/html/head/link"))
+	        {
+	            var href = linkNode.GetAttribute("href");
+	            if (href == null)
+	            {
+	                continue;
+	            }
+
+	            //TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
+
+	            //TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
+	            href = href.Replace("%5C", "/");
+
+				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
+	            if (!fileName.StartsWith("xx"))
+	                //I use xx  as a convenience to temporarily turn off stylesheets during development
+	            {
+	                var path = fileLocator.LocateOptionalFile(fileName);
+
+	                //we want these stylesheets to come from the book folder
+	                if (string.IsNullOrEmpty(path) || path.Contains("languageDisplay.css"))
+	                {
+	                    //look in the same directory as the book
+	                    var local = Path.Combine(folderPath, fileName);
+	                    if (File.Exists(local))
+	                        path = local;
+	                }
+	                    //we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
+	                else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
+	                {
+	                    //look in the parent directory of the book
+	                    var pathInCollection = Path.Combine(Path.GetDirectoryName(folderPath), fileName);
+	                    if (File.Exists(pathInCollection))
+	                        path = pathInCollection;
+	                }
+	                if (!string.IsNullOrEmpty(path))
+	                {
+	                    //this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
+	                    linkNode.SetAttribute("href", "file://" + path);
+	                }
+	                else
+	                {
+	                    throw new ApplicationException(
+	                        string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName,
+	                            folderPath));
+	                }
+	            }
+	        }
+	    }
 	}
 }

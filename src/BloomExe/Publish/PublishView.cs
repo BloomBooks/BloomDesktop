@@ -3,24 +3,32 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.ComponentModel.Composition.Primitives;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Palaso.Reporting;
 using GeckofxHtmlToPdf;
 
+using Gecko;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
 	public partial class PublishView : UserControl, IBloomTabArea
     {		
 		private readonly PublishModel _model;
+	    private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
+		private BloomLibraryPublishControl _publishControl;
+		private BookTransfer _bookTransferrer;
+		private LoginDialog _loginDialog;
 
 		/// <summary>
 		/// note, we have this even if we're using some other engine... a bit awkward that, but it comes from
@@ -32,11 +40,12 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
         public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
         {
+	        _bookTransferrer = bookTransferrer;
+	        _loginDialog = login;
+
 				InitializeComponent();
- 				Controls.Remove(_saveButton);//our parent will retrieve this
-				Controls.Remove(_printButton);//our parent will retrieve this
 		
             if(this.DesignMode)
                 return;
@@ -55,7 +64,7 @@ namespace Bloom.Publish
 													{
 														Activate();
 													}
-													else if (c.To!=this && _makePdfBackgroundWorker.IsBusy)
+													else if (c.To!=this && IsMakingPdf)
 														_makePdfBackgroundWorker.CancelAsync();
 			                                  	});
 
@@ -70,6 +79,7 @@ namespace Bloom.Publish
 //#endif
 
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+			GeckoPreferences.Default["pdfjs.disabled"] = false;
         }
 
 
@@ -77,20 +87,54 @@ namespace Bloom.Publish
 
 		private void Activate()
 		{
+		    _activated = false;
+
 			Logger.WriteEvent("Entered Publish Tab");
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 				return;
 
-			_activated = true;
 
 //			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 
+
 			_model.RefreshValuesUponActivation();
 
+            //reload items from extension(s), as they may differ by book (e.g. if the extension comes from the template of the book)
+            var toolStripItemCollection = new List<ToolStripItem>(from ToolStripItem x in _contextMenuStrip.Items select x);
+            foreach (ToolStripItem item in toolStripItemCollection)
+		    {
+		        if (item.Tag == "extension")
+                    _contextMenuStrip.Items.Remove(item);
+		    }
+            foreach (var item in _model.GetExtensionMenuItems())
+            {
+                item.Tag = "extension";
+                _contextMenuStrip.Items.Add(item);
+            }
+
+            //then we don't know if the pdf is out of date, so we assume it is, and don't show the prior pdf
+            _model.BookletPortion = PublishModel.BookletPortions.None;
+            _coverRadio.Checked = _bodyRadio.Checked = _simplePDFRadio.Checked = false;
+
+		    if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
+		    {
+                SetupPublishControl();
+		    }
+            else
+		    {
+		        _model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+		    }
+
 			UpdateDisplay();
-			MakeBooklet();
+			//MakeBooklet();
+
+            _activated = true;
 		}
 
+		internal bool IsMakingPdf
+		{
+			get { return _makePdfBackgroundWorker.IsBusy; }
+		}
 		
 
 		public Control TopBarControl
@@ -100,6 +144,7 @@ namespace Bloom.Publish
 
     	void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
+    		_model.PdfGenerationSucceeded = false;
 			if(e.Result is Exception)
 			{
 				var error = e.Result as Exception;
@@ -115,22 +160,28 @@ namespace Bloom.Publish
 				{
 					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 				}
-				SetDisplayMode(PublishModel.DisplayModes.NoBook);
+				// We CAN upload even without a preview.
+				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.WaitForUserToChooseSomething);
+				UpdateDisplay();
 				return;
 			}
-    		SetDisplayMode(PublishModel.DisplayModes.ShowPdf);
-			UpdateDisplay();
+			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
+    		if (IsHandleCreated) // May not be when bulk uploading
+    		{
+    			_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
+    			Invoke((Action) (UpdateDisplay));
+    		}
 			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
 				MakeBooklet();
 			}
 		}
 
+
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            //_loadTimer.Enabled = true;
-            //UpdateEditButtons();
         }
 
 		private void UpdateDisplay()
@@ -140,10 +191,13 @@ namespace Bloom.Publish
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
-			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover;
-			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages;
-			_noBookletRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet;
-			_showCropMarks.Checked = _model.ShowCropMarks;
+			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
+			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
+			_simplePDFRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_uploadRadio.Checked = _model.UploadMode;
+			// No reason to update from model...we only change the model when the user changes the check box,
+			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
+			//_showCropMarks.Checked = _model.ShowCropMarks;
 
 
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
@@ -172,12 +226,19 @@ namespace Bloom.Publish
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
         {
+			if (displayMode != PublishModel.DisplayModes.Upload && _publishControl != null)
+			{
+				Controls.Remove(_publishControl);
+				_publishControl = null;
+				_pdfViewer.Visible = true;
+			}
             switch (displayMode)
             {
-                case PublishModel.DisplayModes.NoBook:
+				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
                     _printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
+					_pdfViewer.Visible = false;
                     break;
                 case PublishModel.DisplayModes.Working:
             		_printButton.Enabled = _saveButton.Enabled = false;
@@ -188,15 +249,50 @@ namespace Bloom.Publish
                 case PublishModel.DisplayModes.ShowPdf:
 					if (File.Exists(_model.PdfFilePath))
 					{
-						_saveButton.Enabled = true;
+						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
 						Cursor = Cursors.Default;
-						_printButton.Enabled = _adobeReaderControl.ShowPdf(_model.PdfFilePath);
+						_saveButton.Enabled = true;
+						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
+					break;
+				case PublishModel.DisplayModes.Upload:
+	            {
+		            _workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
+		            _saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
+					_pdfViewer.Visible = false;
+						Cursor = Cursors.Default;
+
+	                if (_publishControl == null)
+	                {
+	                    SetupPublishControl();
+					}
+
             		break;
             }
         }
+        }
 
+	    private void SetupPublishControl()
+	    {
+            if (_publishControl != null)
+            {
+                //we currently rebuild it to update contents, as currently the constructor is where setup logic happens (we could change that)
+                Controls.Remove(_publishControl); ;
+            } 
+
+            _publishControl = new BloomLibraryPublishControl(this, _bookTransferrer, _loginDialog,
+	            _model.BookSelection.CurrentSelection);
+			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+				_pdfViewer.Width, _pdfViewer.Height);
+	        _publishControl.Dock = _pdfViewer.Dock;
+			_publishControl.Anchor = _pdfViewer.Anchor;
+	        var saveBackColor = _publishControl.BackColor;
+	        Controls.Add(_publishControl); // somehow this changes the backcolor
+	        _publishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
+            // Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+            _publishControl.BringToFront();
+	    }
 
         private void OnBookletRadioChanged(object sender, EventArgs e)
         {
@@ -204,10 +300,25 @@ namespace Bloom.Publish
 				return;
 
         	var oldPortion = _model.BookletPortion;
+	        var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
 			SetModelFromButtons();
-			if (oldPortion == _model.BookletPortion)
-				return; // no changes detected
-
+	        if (oldPortion == _model.BookletPortion && oldCrop == _model.ShowCropMarks)
+	        {
+				// no changes detected
+		        if (_uploadRadio.Checked)
+		        {
+					_model.DisplayMode = PublishModel.DisplayModes.Upload;
+		        }
+				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
+				{
+					// no change because the PREVIOUS button was the cloud one. Need to restore the appropriate
+					// non-cloud display
+					_model.DisplayMode = _model.PdfGenerationSucceeded
+						? PublishModel.DisplayModes.ShowPdf
+						: PublishModel.DisplayModes.WaitForUserToChooseSomething;
+				}
+		        return;
+	        }
 
         	ControlsChanged();
         }
@@ -227,7 +338,7 @@ namespace Bloom.Publish
 
 		private void ControlsChanged()
 		{
-			if (_makePdfBackgroundWorker.IsBusy)
+			if (IsMakingPdf)
 			{
 				_makePdfBackgroundWorker.CancelAsync();
 			}
@@ -237,21 +348,40 @@ namespace Bloom.Publish
 
 		private void SetModelFromButtons()
 		{
-			if (_noBookletRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-			else if (_coverRadio.Checked)
+			if (_coverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-			else
+			else if (_bodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-
-			_model.ShowCropMarks = _showCropMarks.Checked;
+			else // no booklet radio, or cloud radio (We want to upload the all-pages version.)
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+			_model.UploadMode = _uploadRadio.Checked;
+			_model.ShowCropMarks = _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
 		}
+
+		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
     	public void MakeBooklet()
     	{
+			if (IsMakingPdf)
+			{
+				// Can't start again until this one finishes
+				return;
+			}
+    		_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+    		if (_uploadRadio.Checked)
+    		{
+				// We aren't going to display it, so don't bother generating it unless the user actually uploads.
+				// Unfortunately, the completion of the generation process is normally responsible for putting us into
+				// the right display mode for what we generated (or failed to), after this routine puts us into the
+				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
+				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
+				SetDisplayMode(PublishModel.DisplayModes.Upload);
+    			return;
+    		}
+
     		SetDisplayMode(PublishModel.DisplayModes.Working);
     	
-			_makePdfBackgroundWorker.RunWorkerAsync();
+    		_makePdfBackgroundWorker.RunWorkerAsync();
 
 			//but geckofxhtmltopdf can't run in the backgroudn
     		//_makePdfBackgroundWorker_DoWork(this, new DoWorkEventArgs(null));
@@ -259,9 +389,8 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
-
-			_adobeReaderControl.Print();
-			Logger.WriteEvent("Calling Print on Adobe Reader");
+			_pdfViewer.Print();
+			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
 
@@ -290,6 +419,28 @@ namespace Bloom.Publish
 
 		}
 
-
+		/// <summary>
+		/// Make the preview required for publishing the book.
+		/// </summary>
+		internal void MakePublishPreview()
+		{
+			if (IsMakingPdf)
+			{
+				// Can't start another until current attempt finishes.
+				_makePdfBackgroundWorker.CancelAsync();
+				while (IsMakingPdf)
+					Thread.Sleep(100);
+			}
+			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
+			_model.ShowCropMarks = false; // don't want in online preview
+			_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
+			_makePdfBackgroundWorker.RunWorkerAsync();
+			// We normally generate PDFs in the background, but this routine should not return until we actually have one.
+			while (IsMakingPdf)
+			{
+				Thread.Sleep(100);
+				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
+			}
+		}
     }
 }

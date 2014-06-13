@@ -2,4 +2,5 @@
 <!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
 <InstallerMetadata>
   <File Id="wesay_map.png" Guid="1b54c4df-ca13-40ac-8dde-c342329d818a" />
+  <File Id="ProgramDir.factoryCollections.wesay_map.png" Guid="7b1dabd4-dcdc-488d-8dcd-1b0a66b3fb0d" />
 </InstallerMetadata>

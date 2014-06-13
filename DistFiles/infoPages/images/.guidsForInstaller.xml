@@ -6,4 +6,9 @@
   <File Id="image02.png" Guid="6b61433d-6c26-408b-a246-abf81fa6c7c7" />
   <File Id="image03.png" Guid="bed83762-1883-4367-bac1-a2962893b2e8" />
   <File Id="image04.png" Guid="847f9aa1-1c5d-4f5c-857b-462b253687a3" />
+  <File Id="ProgramDir.infoPages.images.image00.png" Guid="3a73fd20-ce88-4192-9eb9-63bfb266beb1" />
+  <File Id="ProgramDir.infoPages.images.image01.png" Guid="0a0ffae5-2ece-48d0-92fe-032a2dabf484" />
+  <File Id="ProgramDir.infoPages.images.image02.png" Guid="4bbd04b1-329a-422b-824c-83b19313a38b" />
+  <File Id="ProgramDir.infoPages.images.image03.png" Guid="465ea129-4a9d-43a3-bcf4-7b6ee109e35d" />
+  <File Id="ProgramDir.infoPages.images.image04.png" Guid="914cefb9-0415-4552-b8bf-f6b8577731b6" />
 </InstallerMetadata>

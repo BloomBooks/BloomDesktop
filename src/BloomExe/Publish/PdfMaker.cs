@@ -30,7 +30,7 @@ namespace Bloom.Publish
 
 		public PdfEngineChoices EngineChoice { get; set; }
 
-	    /// <summary>
+    	/// <summary>
     	/// 
     	/// </summary>
     	/// <param name="inputHtmlPath"></param>
@@ -47,7 +47,7 @@ namespace Bloom.Publish
                           "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
 		    switch (EngineChoice)
-		    {
+            {
 				case PdfEngineChoices.geckofxHtmlToPdfComponent:
 					new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, geckofxHtmlToPdfComponent);
 					break;
@@ -59,16 +59,16 @@ namespace Bloom.Publish
 				    break;
 			    default:
 				    throw new ArgumentOutOfRangeException();
-		    }
+            }
 
 			//   if (bookletPortion != PublishModel.BookletPortions.None)
-            {
+        {
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 				RunThroughPDFDroplet(outputPdfPath, paperSizeName, booketLayoutMethod);
-            }
+				}
         }
 
-     
+
 		/// <summary>
 		/// 
 		/// </summary>
