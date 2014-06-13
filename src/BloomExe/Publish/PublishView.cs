@@ -313,9 +313,10 @@ namespace Bloom.Publish
 
 		private void ControlsChanged()
 		{
-			if (IsMakingPdf)
+			if (IsMakingPdf || _model.BookletPortion == PublishModel.BookletPortions.None)
 			{
 				_makePdfBackgroundWorker.CancelAsync();
+				UpdateDisplay(); // We may need to uncheck a layout item here
 			}
 			else
 				MakeBooklet();
