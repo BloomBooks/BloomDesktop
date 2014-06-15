@@ -62,7 +62,7 @@
     </Reference>
     <Reference Include="Analytics.NET, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.2\lib\net40\Analytics.NET.dll</HintPath>
     </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
@@ -77,9 +77,9 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="DesktopAnalytics, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="DesktopAnalytics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.0.2\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="geckofx-11">
       <HintPath>..\..\lib\dotnet\geckofx-11.dll</HintPath>
