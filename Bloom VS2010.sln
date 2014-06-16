@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{04AF3A87-C943-4731-BE3D-659EA705171D}"
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.config = build\dependencies.config
+		environ = environ
+		environ-xulrunner = environ-xulrunner
+		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistFiles", "DistFiles", "{D38FC737-8C27-46CB-B490-3CB2E7AB3C99}"

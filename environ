@@ -15,6 +15,7 @@ BASE="$(pwd)"
 # Search for xulrunner and geckofx, select the best, and add its location to LD_LIBRARY_PATH.
 # Also determine the location of the geckofx assemblies and shared object libraries.
 . ./environ-xulrunner
+
 GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
 
 MONO_RUNTIME=v4.0.30319
@@ -45,9 +46,12 @@ then
 	MONO_GAC_PREFIX="/opt/mono-sil:/usr"
 else
 	# Add locally-built mono items to paths
+	# We also add the default values for PKG_CONFIG_PATH - MonoDevelop resets the PKG_CONFIG_PATH
+	# environment variable if we're running under a different Mono runtime so that some
+	# packages that got installed in standard locations can't be found otherwise.
 	PATH="${MONO_PREFIX}/bin:${PATH}"
 	LD_LIBRARY_PATH="${MONO_PREFIX}/lib:${LD_LIBRARY_PATH}"
-	PKG_CONFIG_PATH="${MONO_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	PKG_CONFIG_PATH="${MONO_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig:/lib/pkgconfig:/usr/lib/pkgconfig"
 	MONO_GAC_PREFIX="${MONO_PREFIX}:/usr"
 fi
 
@@ -71,8 +75,3 @@ export MALLOC_CHECK_=0
 
 #sets keyboard input method to none
 unset XMODIFIERS
-
-export LD_PRELOAD=libgeckofix.so
-export LD_LIBRARY_PATH=/home/eberhard/Develop/xulrunner/gecko-dev/obj-browser/dist/bin:/opt/mono-sil/lib:/home/eberhard/Develop/bloom-desktop/output/Debug
-export XULRUNNER=/home/eberhard/Develop/xulrunner/gecko-dev/obj-browser/dist/bin
-PATH=$XULRUNNER:$PATH
