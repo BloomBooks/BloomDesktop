@@ -734,9 +734,11 @@ namespace Bloom
             if (anchor.Href.ToLower().StartsWith("file"))
             //links to files are handled externally if we can tell they aren't html/javascript related
             {
-                var href = anchor.Attributes["href"].NodeValue;//NB: don't change to anchor.Href; in geckofx22, at least, that will always give you "file:///", dropping the actual path
+                // TODO: at this point spaces in the file name will cause the link to fail.
+                // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+                var href = anchor.Href;
 
-                var path = href.Replace("file://", "");
+                var path = href.Replace("file:///", "");
 
                 if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
                 {
