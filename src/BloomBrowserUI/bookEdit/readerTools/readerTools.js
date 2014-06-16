@@ -10,15 +10,22 @@ function processMessage(event) {
     var params = event.data.split("\n");
 
     switch(params[0]) {
-        case 'Texts':
-            var textsList = model.texts.join("\r");
-            document.getElementById('settings_frame').contentWindow.postMessage('Files\n' + textsList, '*');
+        case 'Texts': // request from setup dialog for the list of sample texts
+            if (model.texts)
+                document.getElementById('settings_frame').contentWindow.postMessage('Files\n' + model.texts.join("\r"), '*');
             return;
 
-        case 'Words':
-            var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[2].split(' '), true, true);
+        case 'Words': // request from setup dialog for a list of words for a stage
+            var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
             words = $.extend({}, words);
             document.getElementById('settings_frame').contentWindow.postMessage('Words\n' + JSON.stringify(words), '*');
+            return;
+
+        case 'Refresh': // notification from setup dialog that settings have changed
+            var synphony = model.getSynphony();
+            synphony.loadSettings(params[1]);
+            model.updateControlContents();
+            model.doMarkup();
             return;
     }
 }
@@ -41,8 +48,8 @@ var ReaderToolsModel = function() {
     this.synphony = new SynphonyApi(); // default state
     this.sort = SortType.alphabetic;
     this.currentMarkupType = MarkupType.Decodable;
-    this.allWords = null;
-    this.texts = null;
+    this.allWords = {};
+    this.texts = [];
     this.textCounter = 0;
 };
 
@@ -207,32 +214,30 @@ ReaderToolsModel.prototype.updateWordList = function() {
     var stages = this.synphony.getStages();
     if (stages.length === 0) return;
 
-    var stage = stages[this.stageNumber - 1];
-    var words = stage.getWords();
-    var sightWords = this.getSightWords(this.stageNumber);
+    var words = this.getStageWordsAndSightWords(this.stageNumber);
 
     // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
     switch(this.sort) {
         case SortType.alphabetic:
             words.sort(function(a, b) {
-                return a.localeCompare(b);
+                return a.Name.localeCompare(b.Name);
             });
             break;
         case SortType.byLength:
             words.sort(function(a, b) {
-                if (a.length === b.length) {
-                    return a.localeCompare(b);
+                if (a.Name.length === b.Name.length) {
+                    return a.Name.localeCompare(b.Name);
                 }
-                return a.length - b.length;
+                return a.Name.length - b.Name.length;
             });
             break;
         case SortType.byFrequency:
             words.sort(function(a, b) {
-                var aFreq = stage.getFrequency(a);
-                var bFreq = stage.getFrequency(b);
+                var aFreq = a.Count;
+                var bFreq = b.Count;
                 if (aFreq === bFreq) {
-                    return a.localeCompare(b);
+                    return a.Name.localeCompare(b.Name);;
                 }
                 return bFreq - aFreq; // MOST frequent first
             });
@@ -241,29 +246,78 @@ ReaderToolsModel.prototype.updateWordList = function() {
 
     // Review JohnH (JohnT): should they be arranged across rows or down columns?
     var result = "";
-    for (var i = 0; i < words.length; i++)
-        result += '<div class="word">' + words[i] + '</div>';
-
-    for (var i = 0; i < sightWords.length; i++)
-        result += '<div class="word sight-word">' + sightWords[i] + '</div>';
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
+    }
 
     this.updateElementContent("wordList", result);
 
     $.divsToColumns('word');
 };
 
+/**
+ * Get the sight words for the current stage and all previous stages
+ * @param {Int} stageNumber
+ * @returns {Array} An array of strings
+ */
 ReaderToolsModel.prototype.getSightWords = function(stageNumber) {
 
-    var stages = this.synphony.getStages();
+    var stages = this.synphony.getStages(stageNumber);
     var sightWords = [];
     if (stages.length > 0) {
 
-        for (var i = 0; i < stageNumber; i++) {
+        for (var i = 0; i < stages.length; i++) {
             if (stages[i].sightWords) sightWords = _.union(sightWords, stages[i].sightWords.split(' '));
         }
     }
 
     return sightWords;
+};
+
+/**
+ * Get the sight words for the current stage and all previous stages as an array of DataWord objects
+ * @param {type} stageNumber
+ * @returns {DataWord[]}
+ */
+ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
+
+    var words = this.getSightWords(stageNumber);
+    var returnVal = [];
+
+    for (var i = 0; i < words.length; i++) {
+        var dw = new DataWord(words[i]);
+        dw.isSightWord = true;
+        returnVal.push(dw);
+    }
+
+    return returnVal;
+};
+
+/**
+ * Get the graphemes for the current stage and all previous stages
+ * @param {type} stageNumber
+ * @returns {Array} An array of strings
+ */
+ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
+
+    var stages = this.synphony.getStages(stageNumber);
+    return _.pluck(stages, 'letters').join(' ').split(' ');
+};
+
+ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
+
+    var g = this.getKnownGraphemes(stageNumber);
+    return this.selectWordsFromSynphony(false, g, g, true, true);
+};
+
+ReaderToolsModel.prototype.getStageWordsAndSightWords = function(stageNumber) {
+
+    // first get the sight words
+    var sightWords = this.getSightWordsAsObjects(stageNumber);
+    var stageWords = this.getStageWords(stageNumber);
+
+    return _.uniq(stageWords.concat(sightWords), false, function(w) { return w.Name; });
 };
 
 /**
@@ -318,19 +372,18 @@ ReaderToolsModel.prototype.doMarkup = function() {
             break;
 
         case MarkupType.Decodable:
-            var stages = this.synphony.getStages();
+
+            // get current stage and all previous stages
+            var stages = this.synphony.getStages(this.stageNumber);
             if (stages.length === 0) return;
 
             // get word lists
-            var cumulativeWords = [];
-            for (var i = 0; i < (this.stageNumber - 1); i++)
-                cumulativeWords = cumulativeWords.concat(stages[i].getWordObjects());
-
-            var focusWords = stages[this.stageNumber - 1].getWords();
+            var cumulativeWords = this.getStageWords(this.stageNumber);
+            var focusWords = cumulativeWords;
             var sightWords = this.getSightWords(this.stageNumber);
 
-            // for now, build known grapheme list from words
-            var knownGraphemes = _.uniq(_.union(_.pluck(cumulativeWords, 'Name'), focusWords).join('').split(''));
+            // get known grapheme list from stages
+            var knownGraphemes = this.getKnownGraphemes(this.stageNumber);
 
             $(".bloom-editable").checkDecodableReader({
                 focusWords: focusWords,
@@ -407,12 +460,11 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
  */
 ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
 
-    var words = libsynphony.getUniqueWordsFromHtmlString(fileContents);
+    var words = libsynphony.getWordsFromHtmlString(fileContents);
 
-    if (this.allWords === null)
-        this.allWords = words;
-    else
-        this.allWords = _.union(this.allWords, words);
+    for (var i = 0; i < words.length; i++) {
+        this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
+    }
 };
 
 /**
@@ -443,32 +495,21 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
 ReaderToolsModel.prototype.addWordsToSynphony = function() {
 
     // add words to the word list
-    var syn = model.getSynphony();
+    var syn = this.getSynphony();
     syn.addWords(this.allWords);
     libsynphony.processVocabularyGroups();
-
-    // get the words for each stage
-    var knownGPCs = [];
-
-    for (var i = 0; i < syn.stages.length; i++) {
-
-        var desiredGPCs = syn.stages[i].letters.split(' ');
-        knownGPCs = _.union(knownGPCs, desiredGPCs);
-
-        var words = this.selectWordsFromSynphony(true, desiredGPCs, knownGPCs, true, true);
-        syn.stages[i].addWords(words);
-    }
 };
 
 /**
  * Gets words from SynPhony that match the input criteria
- * @param {Array} desiredGPCs An array of strings
- * @param {Array} knownGPCs An array of strings
+ * @param {Boolean} justWordName Return just the word names, not DataWord objects
+ * @param {String[]} desiredGPCs An array of strings
+ * @param {String[]} knownGPCs An array of strings
  * @param {Boolean} restrictToKnownGPCs
  * @param {Boolean} allowUpperCase
- * @param {Array} syllableLengths An array of integers, may be empty
- * @param {type} selectedGroups An array of strings, may be empty
- * @param {type} partsOfSpeech An array of strings, may be empty
+ * @param {Int[]} syllableLengths An array of integers, uses 1-24 if empty
+ * @param {String[]} selectedGroups An array of strings, uses all groups if empty
+ * @param {String[]} partsOfSpeech An array of strings, uses all parts of speach if empty
  * @returns {Array} An array of strings or DataWord objects
  */
 ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech) {
@@ -557,13 +598,18 @@ function initializeSynphony(settingsFileContent, fakeIt) {
     var synphony = model.getSynphony();
     synphony.loadSettings(settingsFileContent);
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
-        synphony.addStageWithWords("1", "the cat sat on the mat the rat sat on the cat", "canine feline");
-        synphony.addStageWithWords("2", "cats and dogs eat rats rats eat lots", "carnivore omnivore");
-        synphony.addStageWithWords("3", "this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns", "sentence paragraph");
-        synphony.addLevel(jQuery.extend(new Level("1"), {maxWordsPerPage: 4, maxWordsPerSentence: 2, maxUniqueWordsPerBook: 15, maxWordsPerBook: 30}));
-        synphony.addLevel(jQuery.extend(new Level("2"), {maxWordsPerPage: 6, maxWordsPerSentence: 4, maxUniqueWordsPerBook: 20, maxWordsPerBook: 40}));
-        synphony.addLevel(jQuery.extend(new Level("3"), {maxWordsPerPage: 8, maxWordsPerSentence: 5, maxUniqueWordsPerBook: 25}));
-        synphony.addLevel(jQuery.extend(new Level("4"), {maxWordsPerPage: 10, maxWordsPerSentence: 6, maxUniqueWordsPerBook: 35}));
+
+        var settings = new Object();
+        settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z';
+        settings.letterCombinations = 'th oo ing';
+        settings.moreWords = 'the cat sat on the mat the rat sat on the cat cats and dogs eat rats rats eat lots this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns';
+        settings.stages = [];
+
+        settings.stages.push({"letters":"a c m r t","sightWords":"feline canine"});
+        settings.stages.push({"letters":"d g o e s","sightWords":"carnivore omnivore"});
+        settings.stages.push({"letters":"h i j n th","sightWords":"rodent"});
+
+        synphony.loadSettings(JSON.stringify(settings));
     }
     model.updateControlContents();
     model.doMarkup();
@@ -595,16 +641,15 @@ function fireCSharpReaderToolsEvent(eventName, eventData) {
  */
 function closeSetupDialog() {
     $('#synphonyConfig').dialog("close");
-
     $('#synphonyConfig').remove();
 }
 
 /**
  * Called by C# in response to a request for the files in the sample texts directory
- * @param {String} textsList List of file namess delimites by \r
+ * @param {String} textsList List of file names delimited by \r
  */
 function setTextsList(textsList) {
-    model.texts = textsList.split(/\r/);
+    model.texts = textsList.split(/\r/).filter(function(e){return e;});
     model.getNextSampleFile();
 }
 

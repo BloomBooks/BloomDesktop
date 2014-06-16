@@ -5,26 +5,37 @@ var SynphonyApi = function() {
     this.source = "";
 };
 
-SynphonyApi.prototype.loadSettings = function(fileContent)
-{
-    if (!fileContent)
-        return;
+/**
+ * Decodable Leveled Reader Settings
+ * @returns {DLRSettings}
+ */
+var DLRSettings = function() {
+    this.letters = '';
+    this.letterCombinations = '';
+    this.levels = [];
+    this.stages = [];
+};
 
-    var data;
-    this.source = fileContent;
-
-    data = JSON.parse(fileContent);
+SynphonyApi.prototype.loadSettings = function(fileContent) {
 
     if (!lang_data) lang_data = new LanguageData();
 
+    if (!fileContent) return;
+
+    var data = jQuery.extend(new DLRSettings(), JSON.parse(fileContent));
+    if (data.letters === '') return;
+
+    this.source = fileContent;
+
     lang_data.addGrapheme(data.letters.split(' '));
     lang_data.addGrapheme(data.letterCombinations.split(' '));
+    lang_data.addWord(data.moreWords.split(' '));
 
-    var levels = data.Levels;
-    if (levels) {
+    var lvls = data.levels;
+    if (lvls) {
         this.levels = [];
-        for (var i = 0; i < levels.length; i++) {
-            this.addLevel(jQuery.extend(new Level((i + 1).toString()), levels[i]));
+        for (var i = 0; i < lvls.length; i++) {
+            this.addLevel(jQuery.extend(new Level(i), lvls[i]));
         }
     }
 
@@ -32,7 +43,7 @@ SynphonyApi.prototype.loadSettings = function(fileContent)
     if (stgs) {
         this.stages = [];
         for (var i = 0; i < stgs.length; i++) {
-            var newStage = jQuery.extend(true, new Stage((i + 1).toString()), stgs[i]);
+            var newStage = jQuery.extend(true, new Stage(i+1), stgs[i]);
             this.AddStage(newStage);
         }
     }
@@ -55,10 +66,11 @@ function FindOrCreateConfigDiv(path) {
 // to let the caller update the UI.
 SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
 
-    var dialogContents = FindOrCreateConfigDiv(this.getScriptPath());
+    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory());
     var h = 580;
     var w = 720;
 
+    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Taskbar" settings
     if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
         h = 460;
         w = 580;
@@ -86,53 +98,41 @@ SynphonyApi.prototype.AddStage = function(stage)
     this.stages.push(stage);
 };
 
-SynphonyApi.prototype.addStageWithWords = function(name, words, sightWords)
-{
-    var stage = new Stage(name);
-    stage.addWords(words);
-    stage.sightWords = sightWords;
-    this.stages.push(stage);
-};
-
-SynphonyApi.prototype.getScriptPath = function() {
+/**
+ * Gets a URI that points to the directory containing the "synphonyApi.js" file.
+ * @returns {String}
+ */
+SynphonyApi.prototype.getScriptDirectory = function() {
 
     var src = $('script[src$="synphonyApi.js"]').attr('src').replace('synphonyApi.js', '').replace(/\\/g, '/');
     if (!src) return '';
     return src;
 };
 
+/**
+ * Add a list of words to the lang_data object
+ * @param {Object} words The keys are the words, and the values are the counts
+ */
 SynphonyApi.prototype.addWords = function(words) {
 
+    if (!words) return;
+
+    var wordNames = Object.keys(words);
+
     if (!lang_data) lang_data = new LanguageData();
-    for (var i = 0; i < words.length; i++)
-        lang_data.addWord(words[i]);
+    for (var i = 0; i < wordNames.length; i++) {
+        lang_data.addWord(wordNames[i], words[wordNames[i]]);
+    }
 };
 
 // Defines an object to hold data about one stage in the decodable books tool
 var Stage = function(name) {
     this.name = name;
-    this.words = {}; // We will add words as properties to this, using it as a map. Value of each is its frequency.
     this.sightWords = ''; // a space-delimited string of sight words
 };
 
 Stage.prototype.getName = function() {
     return this.name;
-};
-
-Stage.prototype.getWords = function() {
-    return Object.getOwnPropertyNames(this.words);
-};
-
-Stage.prototype.getWordObjects = function() {
-
-    var wordObjects = [];
-    var words = this.getWords();
-    var wordName;
-    for (var i = 0; i < words.length; i++) {
-        wordName = words[i];
-        wordObjects.push({"Name": wordName, "Count": this.words[wordName]});
-    }
-    return wordObjects;
 };
 
 Stage.prototype.getFrequency = function(word) {
@@ -141,25 +141,15 @@ Stage.prototype.getFrequency = function(word) {
 
 /**
  *
- * @param {mixed} input Either an array of strings (words), or a string containing a space-delimited list of words
+ * @param {Int} stageNumber Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
+ * @returns {Array} An array of Stage objects
  */
-Stage.prototype.addWords = function(input) {
+SynphonyApi.prototype.getStages = function(stageNumber) {
 
-    var items;
-    if (Array.isArray(input))
-        items = input;
+    if (typeof stageNumber === 'undefined')
+        return this.stages;
     else
-        items = input.split(' ');
-
-    for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        var old = this.words[item] || 0;
-        this.words[item] = old + 1;
-    }
-};
-
-SynphonyApi.prototype.getStages = function() {
-    return this.stages;
+        return _.first(this.stages, stageNumber);
 };
 
 

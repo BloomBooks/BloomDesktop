@@ -457,6 +457,8 @@ namespace Bloom.Edit
             return cleanUpDataForJavascript(jsonData);
         }
 
+        /// <summary>Receives data from javascript, saves it, then closes the dialog</summary>
+        /// <param name="content"></param>
         private void SaveDecodableLevelSettings(string content)
         {
             var path = _collectionSettings.DecodableLevelPathName;
@@ -465,6 +467,8 @@ namespace Bloom.Edit
             _view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
         }
 
+        /// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
+        /// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
         private void OpenTextsFolder(string arg)
         {
             if (_collectionSettings.SettingsFilePath == null) return;
@@ -474,17 +478,18 @@ namespace Bloom.Edit
         }
 
         /// <summary>Gets a list of the files in the Sample Texts folder</summary>
-        /// <param name="arg">Not Used</param>
+        /// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
         private void GetTextsList(string arg)
         {
             var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-            if (!Directory.Exists(path)) return;
-
             var fileList = "";
-            foreach (var file in Directory.GetFiles(path))
-            {
-                if (fileList.Length == 0) fileList = Path.GetFileName(file);
-                else fileList += "\\r" + Path.GetFileName(file);
+
+            if (Directory.Exists(path)) { 
+                foreach (var file in Directory.GetFiles(path))
+                {
+                    if (fileList.Length == 0) fileList = Path.GetFileName(file);
+                    else fileList += "\\r" + Path.GetFileName(file);
+                }
             }
 
             _view.RunJavaScript("if (typeof(setTextsList) === \"function\") {setTextsList(\"" + fileList + "\");}");
@@ -495,7 +500,6 @@ namespace Bloom.Edit
         private void GetSampleFileContents(string fileName)
         {
             var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-            if (!Directory.Exists(path)) return;
             path = Path.Combine(path, fileName);
 
             var text = File.ReadAllText(path);

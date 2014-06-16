@@ -19,28 +19,35 @@ function processMessage(event) {
             return;
 
         case 'Data':
-            if (params.length > 1) loadReaderSetupData(params[1]);
+            loadReaderSetupData(params[1]);
+
+            // initialize the selected letters
+            $('#stages-table tbody tr:first').click();
             return;
 
         case 'Files':
-            if (params.length > 1) document.getElementById('dls_word_lists').value = params[1].replace(/\r/g, '\n');
+            document.getElementById('dls_word_lists').value = params[1].replace(/\r/g, '\n');
             return;
 
         case 'Words':
-            if (params.length > 1) updateMatchingWords(params[1]);
+            updateMatchingWords(params[1]);
             return;
     }
 }
 
 /**
- * Fires an event for C# to handle
- * @param {type} eventName
- * @param {type} eventData
+ * Fires an event for C# to handle.
+ * The listeners in C# are set up in EditingModel.cs, in the function "DocumentCompleted()", and using this
+ * syntax: _view.AddMessageEventListener("nameOfEvent", FunctionThatHandlesTheEvent);
+ * @param {String} eventName
+ * @param {String} eventData Note: use JSON.stringify if passing object data.
  */
 function fireCSharpSetupEvent(eventName, eventData) {
 
     var event = document.createEvent('MessageEvent');
     var origin = window.location.protocol + '//' + window.location.host;
+
+    // MessageEvent.initMessageEvent(eventName, bubbles, cancelable, data, origin, lastEventId, source, ports); from http://help.dottoro.com/ljknkjqd.php
     event.initMessageEvent(eventName, true, true, eventData, origin, 1234, window, null);
     document.dispatchEvent(event);
 }
@@ -54,7 +61,7 @@ function saveClicked() {
     var s = new Object();
     s.letters = document.getElementById('dls_letters').value.trim();
     s.letterCombinations = document.getElementById('dls_letter_combinations').value.trim();
-    s.moreWords = document.getElementById('dls_more_words').value.trim();
+    s.moreWords = document.getElementById('dls_more_words').value.trim().replace(/\n/g, ' ');
 
     // stages
     s.stages = [];
@@ -66,8 +73,12 @@ function saveClicked() {
         s.stages.push(stage);
     }
 
+    // send to parent
+    var settingsStr = JSON.stringify(s);
+    window.parent.postMessage('Refresh\n' + settingsStr, '*');
+
     // send to C#
-    fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', JSON.stringify(s));
+    fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
 }
 
 /**
@@ -78,11 +89,16 @@ function loadReaderSetupData(jsonData) {
 
     if (!jsonData) return;
 
-    // language tab
+    // validate data
     var data = JSON.parse(jsonData);
+    if (!data.letters) data.letters = '';
+    if (!data.letterCombinations) data.letterCombinations = '';
+    if (!data.moreWords) data.moreWords = '';
+
+    // language tab
     document.getElementById('dls_letters').value = data.letters;
     document.getElementById('dls_letter_combinations').value = data.letterCombinations;
-    document.getElementById('dls_more_words').value = data.moreWords;
+    document.getElementById('dls_more_words').value = data.moreWords.replace(/ /g, '\n');
 
     // stages tab
     displayLetters();
@@ -91,6 +107,8 @@ function loadReaderSetupData(jsonData) {
     tbody.html('');
 
     for (var i = 0; i < stages.length; i++) {
+        if (!stages[i].letters) stages[i].letters = '';
+        if (!stages[i].sightWords) stages[i].sightWords = '';
         tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td>' + stages[i].letters + '</td><td>' + stages[i].sightWords + '</td></tr>');
     }
 
@@ -100,10 +118,6 @@ function loadReaderSetupData(jsonData) {
         displayLetters();
         selectLetters(this);
     });
-
-    // initialize the selected letters
-    if (stages.length > 0)
-        $('#stages-table tbody tr:first').click();
 }
 
 /**
@@ -142,7 +156,7 @@ function getWordsForSelectedStage() {
     }));
     sightWords = _.union(sightWords, (tr.cells[2].innerHTML).split(' '));
 
-    window.parent.postMessage('Words\n' + knownGPCS + '\n' + knownGPCS, '*');
+    window.parent.postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -152,18 +166,12 @@ function getWordsForSelectedStage() {
 function selectLetter(div) {
 
     // update the css classes
-    switch (true) {
-        case div.classList.contains('unselected-letter'):
-            $(div).removeClass('unselected-letter').addClass('current-letter');
-            break;
-
-        case div.classList.contains('current-letter'):
-            $(div).removeClass('current-letter').addClass('unselected-letter');
-            break;
-
-        default:
-            return;
-    }
+    if (div.classList.contains('unselected-letter'))
+        $(div).removeClass('unselected-letter').addClass('current-letter');
+    else if (div.classList.contains('current-letter'))
+        $(div).removeClass('current-letter').addClass('unselected-letter');
+    else
+        return;
 
     // update the stages table
     var letters = $('.current-letter').map(function() {
@@ -182,6 +190,18 @@ function displayLetters() {
     var letters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
     letters = letters.filter(function(n){ return n !== ''; });
 
+    /**
+     * If there are more than 30 letters the parent div containing the letter divs will scroll vertically, so the
+     * letter divs need to be different widths to accommodate the scroll bar.
+     *
+     * The suffix 's' stands for 'short', and 'l' stands for 'long.'
+     *
+     * parent div class rs-letter-container-s does not scroll
+     * parent div class rs-letter-container-l scrolls vertically
+     *
+     * letter div class rs-letters-s fit 6 on a row
+     * letter div class rs-letters-l fit 5 on a row (because of the scroll bar)
+     */
     var suffix = 's';
     if (letters.length > 30) suffix = 'l';
 
