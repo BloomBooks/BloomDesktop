@@ -70,6 +70,7 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
     this.updateStageLabel();
     this.updateWordList();
     this.enableStageButtons();
+    this.saveState();
     this.doMarkup();
 };
 
@@ -99,6 +100,7 @@ ReaderToolsModel.prototype.setLevelNumber = function(val) {
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
     this.enableLevelButtons();
     this.updateLevelLimits();
+    this.saveState();
     this.doMarkup();
 };
 
@@ -354,6 +356,8 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
         this.currentMarkupType = newMarkupType;
         this.doMarkup();
     }
+
+    this.saveState();
 };
 
 /**
@@ -536,6 +540,42 @@ ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desi
         return libsynphony.selectGPCWordsWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
 };
 
+ReaderToolsModel.prototype.saveState = function() {
+
+    // this is needed for unit testing
+    if (typeof $('#accordion').accordion !== 'function') return;
+
+    var state = new DRTState();
+    state.active = $('#accordion').accordion('option', 'active');
+    state.stage = this.stageNumber;
+    state.level = this.levelNumber;
+    state.markupType = this.currentMarkupType;
+
+    libsynphony.dbSet('drt_state', state);
+};
+
+ReaderToolsModel.prototype.restoreState = function() {
+
+    // this is needed for unit testing
+    if (typeof $('#accordion').accordion !== 'function') return;
+
+    var state = libsynphony.dbGet('drt_state');
+    if (!state) state = new DRTState();
+
+    $('#accordion').accordion('option', 'active', state.active);
+    this.stageNumber = state.stage;
+    this.levelNumber = state.level;
+    this.currentMarkupType = state.markupType;
+    this.doMarkup();
+};
+
+function DRTState() {
+    this.active = 0;
+    this.stage = 1;
+    this.level = 1;
+    this.markupType = MarkupType.Decodable;
+}
+
 var model = new ReaderToolsModel();
 if (typeof ($) === "function") {
     // Running for real, and jquery properly loaded first
@@ -597,6 +637,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
 
     var synphony = model.getSynphony();
     synphony.loadSettings(settingsFileContent);
+    model.restoreState();
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
 
         var settings = new Object();
@@ -612,12 +653,11 @@ function initializeSynphony(settingsFileContent, fakeIt) {
         synphony.loadSettings(JSON.stringify(settings));
     }
     model.updateControlContents();
-    model.doMarkup();
 
     // change markup based on visible options
-    $('#accordion').children('h3').on('click', function() {
-        model.setMarkupType($(this).data('markuptype'));
-    });
+    $('#accordion').on('accordionactivate', function(event, ui) {
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    } );
 
     // get the list of sample texts
     fireCSharpReaderToolsEvent('getTextsListEvent', 'files'); // get the list of texts
