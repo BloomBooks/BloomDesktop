@@ -15,7 +15,6 @@ using L10NSharp;
 using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
-using Segmentio;
 
 namespace Bloom.WebLibraryIntegration
 {

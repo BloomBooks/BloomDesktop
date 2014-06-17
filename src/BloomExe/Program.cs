@@ -73,7 +73,7 @@ namespace Bloom
 //#endif
 
 #if DEBUG
-				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
+				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
 
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
