@@ -87,8 +87,8 @@
     <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
            DestinationFolder ="$(RootDir)\output\installer"/>
 		   
-	<!-- This appcast file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
-		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  ).
+	<!-- In TeamCity, this appcast.xml file needs to be listed in the General Settings:Artifact paths, so that it can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
+		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  Our new VersionUpgradeTable approach (see below) lets us get arround this if we need to change to a new configuration id).
 	-->
 		
 	<!-- Note: The issue of channels is worked out yet. For one thing, this current approach doesn't have some common appcast.xml that multiple TeamCity configurations can be updating.
@@ -96,8 +96,16 @@
 			find out about new RELEASE versions from the same configuration, not about betas, not about new Releases from some new configuration.
 			
 		For another, a strict "Channel" approach is overly simplistic; you don't actually want to be stuck with a beta if a release just came out. What we'd want is more of a "tolerance"
-		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).  I think we will get something like
-		that with this approach; your "channel" is actually the TC configuration, so you can conceivably go from alpha to beta to release. -->
+		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).  
+		
+		Update: Bloom now has a way of us controlling the "channel": At runtime, Bloom tries to retrieves "VersionUpgradeTable.txt"
+		from a fixed URL. It looks up its current version and the table tells it which appcast to download.
+		
+		In this way, we can control the upgrade path for users of old versions. We can, for example, move beta users to
+		a release version. For more information, see the class UpdateVersionTable. If you don't find it in Bloom, it may
+		have been moved to github.com/hatton/NetSparkle so that other apps can use it.
+		
+		-->
 	
 	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
                  DatePlaceholder='VERSION_NUMBER'
