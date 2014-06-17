@@ -44,11 +44,7 @@ function processMessage(event) {
  */
 function fireCSharpSetupEvent(eventName, eventData) {
 
-    var event = document.createEvent('MessageEvent');
-    var origin = window.location.protocol + '//' + window.location.host;
-
-    // MessageEvent.initMessageEvent(eventName, bubbles, cancelable, data, origin, lastEventId, source, ports); from http://help.dottoro.com/ljknkjqd.php
-    event.initMessageEvent(eventName, true, true, eventData, origin, 1234, window, null);
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
 }
 
