@@ -395,7 +395,6 @@ ReaderToolsModel.prototype.doMarkup = function() {
                 sightWords: sightWords,
                 knownGraphemes: knownGraphemes
             });
-
             break;
     }
 };
@@ -638,6 +637,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
     var synphony = model.getSynphony();
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
+
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
 
         var settings = new Object();
@@ -652,6 +652,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
 
         synphony.loadSettings(JSON.stringify(settings));
     }
+
     model.updateControlContents();
 
     // change markup based on visible options
@@ -670,9 +671,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
  */
 function fireCSharpReaderToolsEvent(eventName, eventData) {
 
-    var event = document.createEvent('MessageEvent');
-    var origin = window.location.protocol + '//' + window.location.host;
-    event.initMessageEvent(eventName, true, true, eventData, origin, 1234, window, null);
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
 }
 
@@ -689,6 +688,7 @@ function closeSetupDialog() {
  * @param {String} textsList List of file names delimited by \r
  */
 function setTextsList(textsList) {
+
     model.texts = textsList.split(/\r/).filter(function(e){return e;});
     model.getNextSampleFile();
 }
