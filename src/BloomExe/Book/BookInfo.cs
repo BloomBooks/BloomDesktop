@@ -251,7 +251,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public LanguageTableReference[] LanguageTableReferences
+		public ParseDotComObjectPointer[] LanguageTableReferences
 		{
 			get { return MetaData.LanguageTableReferences; }
 			set { MetaData.LanguageTableReferences = value; }
@@ -414,7 +414,7 @@ namespace Bloom.Book
 		public string[] Languages { get { return new string[0]; } set {}}
 
 		[JsonProperty("langPointers")]
-		public LanguageTableReference[] LanguageTableReferences { get; set; }
+		public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -424,7 +424,7 @@ namespace Bloom.Book
 			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
 			// to an object in another table: in this case the special table of users.
 			if (Uploader == null)
-				Uploader = new LanguageTableReference() { ClassName = "_User" };
+				Uploader = new ParseDotComObjectPointer() { ClassName = "_User" };
 			Uploader.ObjectId = id;
 		}
 
@@ -433,15 +433,15 @@ namespace Bloom.Book
 		/// This is stored in a special way that parse.com requires for cross-table pointers.
 		/// </summary>
 		[JsonProperty("uploader")]
-		public LanguageTableReference Uploader { get; set; }
+		public ParseDotComObjectPointer Uploader { get; set; }
 	}
 
 	/// <summary>
 	/// This is the required structure for a parse.com pointer to an object in another table.
 	/// </summary>
-	public class LanguageTableReference
+	public class ParseDotComObjectPointer
 	{
-		public LanguageTableReference()
+		public ParseDotComObjectPointer()
 		{
 			Type = "Pointer"; // Required for all parse.com pointers.
 		}

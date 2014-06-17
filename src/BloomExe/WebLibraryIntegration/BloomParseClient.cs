@@ -335,9 +335,9 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="languages"></param>
 		/// <returns></returns>
-		internal LanguageTableReference[] GetLanguagePointers(LanguageDescriptor[] languages)
+		internal ParseDotComObjectPointer[] GetLanguagePointers(LanguageDescriptor[] languages)
 		{
-			var result = new LanguageTableReference[languages.Length];
+			var result = new ParseDotComObjectPointer[languages.Length];
 			for (int i = 0; i < languages.Length; i++)
 			{
 				var lang = languages[i];
@@ -347,7 +347,7 @@ namespace Bloom.WebLibraryIntegration
 					var language = CreateLanguage(lang);
 					id = language["objectId"].Value;
 				}
-				result[i] = new LanguageTableReference() {ClassName = "language", ObjectId = id};
+				result[i] = new ParseDotComObjectPointer() {ClassName = "language", ObjectId = id};
 			}
 			return result;
 		}
