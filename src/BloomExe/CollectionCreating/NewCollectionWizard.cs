@@ -9,6 +9,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
+using Palaso.Extensions;
 using Palaso.Reporting;
 
 namespace Bloom.CollectionCreating
@@ -147,11 +148,14 @@ namespace Bloom.CollectionCreating
 			if (caller is LanguageIdControl)
 			{
 				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
-				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, string.Format(pattern, _collectionInfo.Language1Name));
+				// GetPathForNewSettings uses Path.Combine which can fail with non-ascii characters in the ISO language name
+				var originalName = string.Format(pattern, _collectionInfo.Language1Name);
+				var newCollectionName = originalName.SanitizePath('.');
+				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, newCollectionName);
 				//_collectionInfo.CollectionName = ;
 
 
-				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems
+				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems || (originalName != newCollectionName)
 													? _collectionNamePage	//go ahead to the language location page for now, but then divert to the page
 																		//we use for fixing up the name
 													: _finishPage;
