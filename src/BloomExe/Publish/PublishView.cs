@@ -10,6 +10,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
+using L10NSharp;
 using Palaso.Reporting;
 
 
@@ -100,7 +101,7 @@ namespace Bloom.Publish
 			// We choose not to remember the last state this tab might have been in.
 			// Also since we don't know if the pdf is out of date, we assume it is, and don't show the prior pdf.
 			// SetModelFromButtons takes care of both of these things for the model
-			_coverRadio.Checked = _bodyRadio.Checked = _simplePDFRadio.Checked = _uploadRadio.Checked = false;
+			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = false;
 			SetModelFromButtons();
 			_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
 
@@ -169,10 +170,19 @@ namespace Bloom.Publish
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
-			_coverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
-			_bodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
-			_simplePDFRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
+			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
+			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
+
+		    if (!_model.AllowUpload)
+		    {
+		       //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
+		    }
+		    _uploadRadio.Enabled = _model.AllowUpload;
+            _bookletBodyRadio.Enabled = _model.ShowBookletOption;
+            _bookletCoverRadio.Enabled = _model.ShowCoverOption;
+           
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
@@ -324,13 +334,13 @@ namespace Bloom.Publish
 
 		private void SetModelFromButtons()
 		{
-			if (_coverRadio.Checked)
+			if (_bookletCoverRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-			else if (_bodyRadio.Checked)
+			else if (_bookletBodyRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 			// The version we want to upload for web previews is the one that is shown for
-			// the _simplePDFRadio button, so pick AllPagesNoBooklet for both of these.
-			else if (_simplePDFRadio.Checked || _uploadRadio.Checked)
+			// the _simpleAllPagesRadio button, so pick AllPagesNoBooklet for both of these.
+			else if (_simpleAllPagesRadio.Checked || _uploadRadio.Checked)
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 			// otherwise, we don't yet know what version to show, so we don't show one.
 			else
