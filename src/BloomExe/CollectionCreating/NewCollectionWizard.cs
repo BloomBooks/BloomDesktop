@@ -148,7 +148,7 @@ namespace Bloom.CollectionCreating
 			if (caller is LanguageIdControl)
 			{
 				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
-				// GetPathForNewSettings uses Path.Combine which can fail with non-ascii characters in the ISO language name
+				// GetPathForNewSettings uses Path.Combine which can fail with certain characters that are illegal in paths, but not in language names.
 				// The characters we ran into were two pipe characters ("|") at the front of the language name.
 				var tentativeCollectionName = string.Format(pattern, _collectionInfo.Language1Name);
 				var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
