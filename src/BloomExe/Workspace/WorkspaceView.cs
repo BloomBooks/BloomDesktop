@@ -332,7 +332,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start("http://bloom.palaso.org");
+			Process.Start("http://bloomlibrary.org");
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
