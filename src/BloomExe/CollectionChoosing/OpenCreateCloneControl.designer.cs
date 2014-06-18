@@ -232,8 +232,7 @@ namespace Bloom.CollectionChoosing
 			this._lookingForSourceCollectionsHtml.Dock = System.Windows.Forms.DockStyle.Bottom;
 			this._lookingForSourceCollectionsHtml.Font = new System.Drawing.Font("Segoe UI", 9.75F);
 			this._lookingForSourceCollectionsHtml.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
-			this._lookingForSourceCollectionsHtml.HTML = "Are you are looking for shell books to translate into your language? Read about <" +
-	"a href=\"http://bloom.palaso.org/bloompacks\">how to get free Bloom Packs</a>";
+			this._lookingForSourceCollectionsHtml.HTML = "Are you are looking for shell books to translate into your language? Check out the <a href=\'http://bloomlibrary.org/#/browse/'>Bloom Book Library</a>.";
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lookingForSourceCollectionsHtml, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._lookingForSourceCollectionsHtml, null);
 			this._L10NSharpExtender.SetLocalizingId(this._lookingForSourceCollectionsHtml, "OpenCreateNewCollectionsDialog.MoreBloompacksInformation");
