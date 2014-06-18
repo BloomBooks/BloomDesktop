@@ -149,15 +149,15 @@ namespace Bloom.CollectionCreating
 			{
 				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				// GetPathForNewSettings uses Path.Combine which can fail with non-ascii characters in the ISO language name
-				// The character we ran into was Unicode hex 1C1 which is IPA for Alveolar Lateral Click
+				// The characters we ran into were two pipe characters ("|") at the front of the language name.
 				var tentativeCollectionName = string.Format(pattern, _collectionInfo.Language1Name);
 				var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, sanitizedCollectionName);
-				//_collectionInfo.CollectionName = ;
 
 				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems || (tentativeCollectionName != sanitizedCollectionName)
-					? _collectionNamePage	//go ahead to the language location page for now,
-											//but then divert to the page we use for fixing up the name
+					//go ahead to the language location page for now,
+					//but then divert to the page we use for fixing up the name
+					? _collectionNamePage
 					: _finishPage;
 			}
 		}
