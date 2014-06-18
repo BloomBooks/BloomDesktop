@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -60,6 +61,19 @@ namespace Bloom.Book
 		public Color CoverColor { get; set; }
 
 		public string FolderPath { get; set; }
+
+        public bool AllowUploading
+        {
+            get { return MetaData.AllowUploadingToBloomLibrary; }
+        }
+
+        public bool BookletMakingIsAppropriate
+        {
+            get
+            {
+                return MetaData.BookletMakingIsAppropriate;
+            }
+        }
 
 		public bool IsSuitableForMakingShells
 		{
@@ -418,6 +432,15 @@ namespace Bloom.Book
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
+
+        // This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
+        [JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
+        public bool AllowUploadingToBloomLibrary { get; set; }
+
+        [JsonProperty("bookletMakingIsAppropriate",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
+        public bool BookletMakingIsAppropriate { get; set; }
 
 		public void SetUploader(string id)
 		{
