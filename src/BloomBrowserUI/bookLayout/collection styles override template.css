@@ -1,4 +1,4 @@
-/*  Some books my need control over aspects of layout that cannot yet be adjusted
+/*  Some books may need control over aspects of layout that cannot yet be adjusted
     from the Bloom interface. In those cases, Bloom provides this "under the hood" method
     of creating style rules using the underlying "Cascading Stylesheets" system. 
     These rules are then applied to all books in this collection.
