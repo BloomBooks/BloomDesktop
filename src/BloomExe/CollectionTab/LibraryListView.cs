@@ -16,6 +16,7 @@ using DesktopAnalytics;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Widgets;
+using L10NSharp;
 
 namespace Bloom.CollectionTab
 {
@@ -48,6 +49,8 @@ namespace Bloom.CollectionTab
 		/// want you'd see at the top of the screen to update before what's at the bottom or offscreen
 		/// </summary>
 		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
+
+        private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
         public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
@@ -319,7 +322,12 @@ namespace Bloom.CollectionTab
 				//skip over the dependency injection layer
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
+				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
+				{
+					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+				}
 				return;
 			}
 
@@ -337,17 +345,27 @@ namespace Bloom.CollectionTab
 
         void OnBloomLibrary_Click(object sender, EventArgs e)
         {
+            if (_model.IsShellProject)
+            {
+                // Display dialog making sure they know what they're doing
+                var dialogResult = ShowBloomLibraryLinkVerificationDialog();
+                if (dialogResult != DialogResult.OK)
+                    return;
+            }
             Process.Start("http://dev.bloomlibrary.org");
         }
+
+        DialogResult ShowBloomLibraryLinkVerificationDialog()
+        {
+            var dlg = new BloomLibraryLinkVerification();
+            return dlg.GetVerification(this);
+        }
+
 	    void OnMissingBooksLink_Click(object sender, EventArgs e)
         {
             if (_model.IsShellProject)
             {
-                MessageBox.Show(L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
-            }
-            else
-            {
-                //MessageBox.Show(L10NSharp.LocalizationManager.GetString("hiddenBookExplanationForVernacularCollections", "Because this is a vernacular collection, Bloom isn't offering all the same."));
+                MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
             }
         }
 
@@ -382,28 +400,18 @@ namespace Bloom.CollectionTab
     		}
             if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
             {
-                if (!_model.IsShellProject) // eventually it might make sense from there too, but maybe we should then lead with a query that just gets templates? or
-                                            // maybe before we get to that, we'll be getting template pages from the "new page" dialog instead.
+                var bloomLibrayLink = new LinkLabel()
                 {
-                    var bloomLibrayLink = new LinkLabel()
-                    {
-                        Text =
-                            L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
-                                                                    "Get more source books at BloomLibrary.org",
-                                                                    "Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
-                        Width = 400,
-                        Margin = new Padding(17, 0, 0, 0),
-                        //TextAlign = ContentAlignment.TopCenter,
-                        LinkColor = Palette.TextAgainstDarkBackground
-                    };
-
-                    bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
-                    
-                    //flowLayoutPanel.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
-                    flowLayoutPanel.Controls.Add(bloomLibrayLink);
-                    //flowLayoutPanel.SetFlowBreak(bloomLibrayLink, true);
-
-                }
+                    Text =
+                        L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
+                                                                "Get more source books at BloomLibrary.org",
+                                                                "Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
+                    Width = 400,
+                    Margin = new Padding(17, 0, 0, 0),
+                    LinkColor = Palette.TextAgainstDarkBackground
+                };
+                bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
+                flowLayoutPanel.Controls.Add(bloomLibrayLink);
                 return true;
             }
             return loadedAtLeastOneBook;
