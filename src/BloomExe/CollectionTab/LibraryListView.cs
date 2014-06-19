@@ -50,6 +50,8 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
 
+		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
+
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
 		{
@@ -320,7 +322,12 @@ namespace Bloom.CollectionTab
 				//skip over the dependency injection layer
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
+				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
+				{
+					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+				}
 				return;
 			}
 
