@@ -149,6 +149,14 @@ DIV.coverBottomLangName
 {
 	content: 'Language: ';
 }
+.metadataPage .languageName:not(:empty):after
+{
+    content: ', ';
+}
+.metadataPage .languageDialect:not(:empty):after
+{
+    content: ', ';
+}
 .metadataPage .languageLine *
 {
 	display: inline-block;
