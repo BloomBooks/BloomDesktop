@@ -721,7 +721,19 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
 			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
-				EnsureHasLinkToStyleSheet(dom,"customBookStyles.css");
+				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
+			else
+				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
+		{
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == path)
+					dom.RemoveStyleSheetIfFound(path);
+			}
 		}
 
 		private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)

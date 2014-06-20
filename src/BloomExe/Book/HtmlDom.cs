@@ -522,5 +522,10 @@ namespace Bloom.Book
 				}
 			}
 		}
+
+		internal void RemoveStyleSheetIfFound(string path)
+		{
+			XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
+		}
 	}
 }
