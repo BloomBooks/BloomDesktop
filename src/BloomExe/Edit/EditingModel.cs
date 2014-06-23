@@ -408,7 +408,8 @@ namespace Bloom.Edit
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 
-    	    AddReaderToolsToPage();
+            if (_currentlyDisplayedBook.BookInfo.Accordion.Contains("decodableReader"))
+    	        AddReaderToolsToPage();
 
     	    return _domForCurrentPage;
         }
