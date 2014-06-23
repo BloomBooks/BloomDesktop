@@ -288,15 +288,18 @@ namespace Bloom.Book
 			}
 		}
 
-        public List<string> Accordion
+		/// <summary>
+		/// The panels being displayed in the accordion for this book
+		/// </summary>
+        public List<string> Tools
         {
             get
             {
-                if (MetaData.Accordion == null)
-                    MetaData.Accordion = new List<string>();
-                return MetaData.Accordion;
+                if (MetaData.Tools == null)
+                    MetaData.Tools = new List<string>();
+                return MetaData.Tools;
             }
-            set { MetaData.Accordion = value; }
+            set { MetaData.Tools = value; }
         }
 	}
 
@@ -470,8 +473,8 @@ namespace Bloom.Book
 
         /// <summary>These panels are being displayed in the accordion for this book</summary>
         /// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-        [JsonProperty("accordion")]
-        public List<string> Accordion { get; set; }
+        [JsonProperty("tools")]
+        public List<string> Tools { get; set; }
 	}
 
 	/// <summary>
