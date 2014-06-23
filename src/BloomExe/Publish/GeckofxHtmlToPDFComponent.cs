@@ -235,8 +235,11 @@ namespace GeckofxHtmlToPdf
 		private void FinishMakingPdf()
 		{
 			if (!File.Exists(_pathToTempPdf))
-				throw new ApplicationException(
-					"GeckoFxHtmlToPdf was not able to create the PDF.\r\n\r\nDetails: Gecko did not produce the expected document.");
+			{
+				throw new ApplicationException(string.Format(
+					"GeckoFxHtmlToPdf was not able to create the PDF.{0}{0}Details: Gecko did not produce the expected document.",
+					Environment.NewLine));
+			}
 
 			try
 			{
@@ -248,8 +251,8 @@ namespace GeckofxHtmlToPdf
 				//TODO: we can get here for a different reason: the source file is still in use
 				throw new ApplicationException(
 					string.Format(
-						"Tried to move the file {0} to {1}, but the Operating System said that one of these files was locked. Please try again.\r\n\r\nDetails: {1}",
-						_pathToTempPdf, _conversionOrder.OutputPdfPath, e.Message));
+						"Tried to move the file {0} to {1}, but the Operating System said that one of these files was locked. Please try again.{3}{3}" +
+						"Details: {2}", _pathToTempPdf, _conversionOrder.OutputPdfPath, e.Message, Environment.NewLine));
 			}
 		}
 
