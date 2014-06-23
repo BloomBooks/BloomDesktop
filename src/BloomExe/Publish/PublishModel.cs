@@ -211,6 +211,21 @@ namespace Bloom.Publish
 			set { _pdfMaker.ShowCropMarks = value; }
 		}
 
+		public bool AllowUpload {
+			get { return BookSelection.CurrentSelection.BookInfo.AllowUploading; }
+		}
+
+		public bool ShowBookletOption
+		{
+			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+		}
+
+		public bool ShowCoverOption
+		{
+			//currently the only cover option we have is a booklet one
+			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+		}
+
 		public override bool Equals(object obj)
 		{
 			if (obj == null)

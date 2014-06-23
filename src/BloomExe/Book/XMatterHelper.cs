@@ -35,7 +35,16 @@ namespace Bloom.Book
 			_nameOfXMatterPack = nameOfXMatterPack;
 
 			string directoryName = nameOfXMatterPack + "-XMatter";
-			var directoryPath = fileLocator.LocateDirectory(directoryName, "xmatter pack directory named " + directoryName);
+			string directoryPath;
+			try
+			{
+				directoryPath = fileLocator.LocateDirectoryWithThrow(directoryName);
+			}
+			catch (Exception error)
+			{
+				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
+				throw new ApplicationException(String.Format("Could not find xmatter pack directory named " + directoryName), error);
+			}
 			string htmName = nameOfXMatterPack + "-XMatter.htm";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			if(!File.Exists(PathToXMatterHtml))
