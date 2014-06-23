@@ -160,7 +160,10 @@ namespace Bloom.Book
 			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
 			element.SetAttribute("type", "text/javascript");
 			if (!pathToJavascript.StartsWith("file"))
-				pathToJavascript = new Uri(pathToJavascript).AbsoluteUri;
+			{
+				if (File.Exists(pathToJavascript))
+					pathToJavascript = new Uri(pathToJavascript).AbsoluteUri;
+			}
 			element.SetAttribute("src", pathToJavascript);
 			return element;
 		}
