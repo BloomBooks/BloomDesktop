@@ -329,16 +329,24 @@ namespace Bloom.WebLibraryIntegration
 					var json = _parseClient.GetSingleBookRecord(metadata.Id);
 					parseId = json.objectId.Value;
 				}
+		     //   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+		        {
+		            Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+		        }
 		    }
 			catch (WebException e)
 			{
                 DisplayNetworkUploadProblem(e, progress);
+                if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+                    Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			catch (AmazonServiceException e)
 			{
                 DisplayNetworkUploadProblem(e, progress);
-				return "";
+                if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+                    Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+                return "";
 			}
 			catch (Exception e)
 			{			    
@@ -346,7 +354,9 @@ namespace Bloom.WebLibraryIntegration
                                 "There was a problem uploading your book. You may need to restart Bloom or get technical help."));
                 progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}")); 
                 progress.WriteVerbose(e.StackTrace);
-			    return "";
+                if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+                    Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+                return "";
 			}
 			return s3BookId;
 		}
