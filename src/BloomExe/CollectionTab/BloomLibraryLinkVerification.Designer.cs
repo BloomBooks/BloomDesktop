@@ -61,10 +61,9 @@
             // 
             // _message
             // 
-            this._message.AutoSize = true;
-            this._message.Location = new System.Drawing.Point(133, 50);
+            this._message.Location = new System.Drawing.Point(104, 48);
             this._message.Name = "_message";
-            this._message.Size = new System.Drawing.Size(212, 17);
+            this._message.Size = new System.Drawing.Size(652, 116);
             this._message.TabIndex = 2;
             this._message.Text = "Some localizable message here.";
             // 
@@ -81,7 +80,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this._cancelButton;
-            this.ClientSize = new System.Drawing.Size(770, 264);
+            this.ClientSize = new System.Drawing.Size(775, 270);
             this.Controls.Add(this._infoIcon);
             this.Controls.Add(this._message);
             this.Controls.Add(this._cancelButton);
@@ -98,7 +97,6 @@
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this._infoIcon)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
