@@ -680,16 +680,6 @@
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
-    <None Include="..\..\lib\dotnet\Geckofx-Core.dll.config">
-      <Link>Geckofx-Core.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
-    </None>
-    <None Include="..\..\lib\dotnet\libgeckofix.so" Condition="'$(OS)'=='Unix'">
-      <Link>libgeckofix.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
-    </None>
     <Compile Include="web\IRequestInfo.cs" />
     <Compile Include="web\RequestInfo.cs" />
     <Compile Include="web\ServerBase.cs" />
