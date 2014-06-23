@@ -422,7 +422,7 @@ has a :before rule applied and which already has focus, weird things happen and 
 When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
 so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
 even when the div is focused (as long as it is empty).*/
-[contentEditable=true]:empty:not(:focus):before
+[contentEditable=true][data-placeholder]:empty:not(:focus):before
 {
 	content: attr(data-placeholder);
 	color: #DDDBDB;
