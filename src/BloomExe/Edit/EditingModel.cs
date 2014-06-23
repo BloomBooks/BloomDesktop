@@ -18,6 +18,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using Bloom.Properties;
 
 namespace Bloom.Edit
 {
@@ -25,6 +26,7 @@ namespace Bloom.Edit
     {
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
+// ReSharper disable once NotAccessedField.Local
         private readonly LanguageSettings _languageSettings;
     	private readonly DeletePageCommand _deletePageCommand;
     	private readonly CollectionSettings _collectionSettings;
@@ -36,6 +38,7 @@ namespace Bloom.Edit
     	private List<ContentLanguage> _contentLanguages;
     	private IPage _previouslySelectedPage;
         private bool _inProcessOfDeleting;
+        private string _accordionFolder;
 
     	//public event EventHandler UpdatePageList;
 
@@ -61,11 +64,11 @@ namespace Bloom.Edit
         	_collectionSettings = collectionSettings;
         	_sendReceiver = sendReceiver;
 
-        	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-            pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
-            templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+        	bookSelection.SelectionChanged += OnBookSelectionChanged;
+            pageSelection.SelectionChanged += OnPageSelectionChanged;
+            templateInsertionCommand.InsertPage += OnInsertTemplatePage;
 
-			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null)); 
+			bookRefreshEvent.Subscribe(book => OnBookSelectionChanged(null, null)); 
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
             deletePageCommand.Implementer=OnDeletePage;
@@ -226,12 +229,7 @@ namespace Bloom.Edit
 
 					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
-					                                _collectionSettings.GetLanguage2Name("en"))
-					            	{
-//					            		Selected =
-//					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
-//					            			_librarySettings.Language2Iso639Code
-					            	};
+					                                _collectionSettings.GetLanguage2Name("en"));
 					_contentLanguages.Add(item2);
 					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 					{
@@ -317,7 +315,7 @@ namespace Bloom.Edit
 
     	public int NumberOfDisplayedLanguages
     	{
-    		get { return ContentLanguages.Where(l => l.Selected).Count(); }
+    		get { return ContentLanguages.Count(l => l.Selected); }
     	}
 
     	public bool CanEditCopyrightAndLicense
@@ -362,7 +360,7 @@ namespace Bloom.Edit
 	        var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
 	        if (!string.IsNullOrEmpty(errors))
 	        {
-		        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+		        ErrorReport.NotifyUserOfProblem(errors);
 		        return;
 	        }
 	        var page = _bookSelection.CurrentSelection.FirstPage;
@@ -409,8 +407,8 @@ namespace Bloom.Edit
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 
-            if (_currentlyDisplayedBook.BookInfo.Tools.Contains("decodableReader"))
-    	        AddReaderToolsToPage();
+    	    //AddReaderToolsToPage();
+            AddAccordionToPage();
 
     	    return _domForCurrentPage;
         }
@@ -421,18 +419,37 @@ namespace Bloom.Edit
         internal void DocumentCompleted()
         {
             // listen for events raised by javascript
+            _view.AddMessageEventListener("loadReaderToolSettingsEvent", LoadReaderToolSettings);
             _view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
+            _view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
+            _view.AddMessageEventListener("loadAccordionPanelEvent", LoadAccordionPanel);
             _view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
             _view.AddMessageEventListener("getTextsListEvent", GetTextsList);
             _view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
 
+			var tools = _currentlyDisplayedBook.BookInfo.Tools;
+            var settings = new Dictionary<string, object>();
+            settings.Add("showPE", tools.Contains("pageElements").ToInt());
+			settings.Add("showDRT", tools.Contains("decodableReader").ToInt());
+			settings.Add("showLRT", tools.Contains("leveledReader").ToInt());
+			settings.Add("current", _currentlyDisplayedBook.BookInfo.CurrentTool);
+
+            var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
+
+            _view.RunJavaScript("if (typeof(restoreAccordionSettings) === \"function\") {restoreAccordionSettings(\"" + settingsStr + "\");}");
+        }
+
+        /// <summary>Gets reader tool settings from DecodableLevelData.json and send to javascript</summary>
+        /// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
+        private void LoadReaderToolSettings(string arg)
+        {
             // get saved reader settings
             var path = _collectionSettings.DecodableLevelPathName;
             var decodableLeveledSettings = "";
             if (File.Exists(path))
                 decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
 
-            var input = cleanUpJsonDataForJavascript(decodableLeveledSettings);
+            var input = CleanUpJsonDataForJavascript(decodableLeveledSettings);
 #if DEBUG
             var fakeIt = "true";
 #else
@@ -441,7 +458,31 @@ namespace Bloom.Edit
             _view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
         }
 
-        private string cleanUpDataForJavascript(string data)
+        private void SaveAccordionSettings(string data)
+        {
+            var args = data.Split(new [] {'\t'});
+
+            switch (args[0])
+            {
+                case "showPE":
+					_currentlyDisplayedBook.BookInfo.Tools.UpdateSetting("pageElements", args[1] == "1");
+                    return;
+
+                case "showDRT":
+					_currentlyDisplayedBook.BookInfo.Tools.UpdateSetting("decodableReader", args[1] == "1");
+                    return;
+
+                case "showLRT":
+					_currentlyDisplayedBook.BookInfo.Tools.UpdateSetting("leveledReader", args[1] == "1");
+                    return;
+
+				case "current":
+					_currentlyDisplayedBook.BookInfo.CurrentTool = args[1];
+					return;
+            }
+        }
+
+        private static string CleanUpDataForJavascript(string data)
         {
             // We need to escape backslashes and quotes so the whole content arrives intact.
             // Backslash first so the ones we insert for quotes don't get further escaped.
@@ -449,13 +490,16 @@ namespace Bloom.Edit
             return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
         }
 
-        private string cleanUpJsonDataForJavascript(string jsonData)
+        /// <summary>
+        /// Remove line ends, otherwise javascript chokes during JSON.parse().
+        /// Checks for both Windows and Unix line ends.
+        /// </summary>
+        /// <param name="jsonData"></param>
+        /// <returns></returns>
+        private static string CleanUpJsonDataForJavascript(string jsonData)
         {
-            // Remove line ends, otherwise javascript chokes during JSON.parse().
-            // Check for both Windows and Unix line ends.
-            Regex rgx = new Regex("\r\n|\n");
-            jsonData = rgx.Replace(jsonData, "");
-            return cleanUpDataForJavascript(jsonData);
+            jsonData = jsonData.Replace("\r", "").Replace("\n", "");
+            return CleanUpDataForJavascript(jsonData);
         }
 
         /// <summary>Receives data from javascript, saves it, then closes the dialog</summary>
@@ -504,9 +548,49 @@ namespace Bloom.Edit
             path = Path.Combine(path, fileName);
 
             var text = File.ReadAllText(path);
-            text = cleanUpDataForJavascript(text);
+            text = CleanUpDataForJavascript(text);
 
             _view.RunJavaScript("if (typeof(setSampleFileContents) === \"function\") {setSampleFileContents(\"" + text + "\");}");
+        }
+
+        private void AddAccordionToPage()
+        {
+            MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
+
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
+            _accordionFolder = Path.GetDirectoryName(path);
+
+            var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+
+            // move css files from the head into scoped tags in ReaderTools.htm
+            var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
+            MoveStylesIntoScopedTag(domForAccordion, div);
+
+            AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
+
+            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
+
+            AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
+
+            // Load settings into the accordion panel
+            AppendAccordionSettingsPanel();
+
+            // It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
+            // live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
+            // (We haven't made the temp file yet; but it will be in the system temp folder.)
+            var pathToFontAwesomeStyles =
+                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
+            var requiredLocationOfFontAwesomeStyles = Path.GetTempPath() + "/" + "font-awesome/css/font-awesome.min.css";
+            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
+            File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
+            var pathToFontAwesomeFont = Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)) +
+                                        "/fonts/fontawesome-webfont.woff";
+            var requiredLocationOfFontAwesomeFont =
+                Path.GetDirectoryName(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles)) +
+                "/fonts/fontawesome-webfont.woff";
+            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
+            File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
+            _domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
         }
 
         /// <summary>
@@ -526,19 +610,15 @@ namespace Bloom.Edit
         {
             MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools", "ReaderTools.htm");
-            var domForReaderTools = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
+            var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
             // move css files from the head into scoped tags in ReaderTools.htm
-            var div = domForReaderTools.Body.SelectSingleNode("//div[@class='readerToolsRoot']");
-            MoveStylesIntoScopedTag(domForReaderTools, div);
+            var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
+            MoveStylesIntoScopedTag(domForAccordion, div);
             
-            AppendAllChildren(domForReaderTools.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
-            // looking at the ReaderTools.htm file and the generated html for the page, you would think we need the following three lines.
-            // However, the generated html loads bloomBootstrap.js, and this loads all three files.
-            //_domForCurrentPage.AddStyleSheet(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"));
-            //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-1.10.1.js"));
-            //_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"lib/jquery-ui-1.10.3.custom.min.js"));
+            AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
+
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/underscore_min_152.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/xregexp-all-min.js")); // before bloom_xregexp_categories
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_xregexp_categories.js"));
@@ -546,8 +626,9 @@ namespace Bloom.Edit
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"jquery.div-columns.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
             _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
+            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
 
-            AppendAllChildren(domForReaderTools.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
+            AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
             _domForCurrentPage.AddJavascriptFileToBody(
                 _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
             _domForCurrentPage.AddJavascriptFileToBody(
@@ -555,7 +636,7 @@ namespace Bloom.Edit
 
             // Load into the accordion panel whatever subfolders/htm files are under the ReaderTools folder
             var subFolders = Directory.GetDirectories(Path.GetDirectoryName(path));
-            AppendAccordionPanels(subFolders);
+            //AppendAccordionPanels(subFolders);
 
             // It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
             // live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
@@ -564,37 +645,52 @@ namespace Bloom.Edit
                 _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
             var requiredLocationOfFontAwesomeStyles = Path.GetTempPath() + "/" + "font-awesome/css/font-awesome.min.css";
             Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
-            System.IO.File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
+            File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
             var pathToFontAwesomeFont = Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)) +
                                         "/fonts/fontawesome-webfont.woff";
             var requiredLocationOfFontAwesomeFont =
                 Path.GetDirectoryName(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles)) +
                 "/fonts/fontawesome-webfont.woff";
             Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
-            System.IO.File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
+            File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
             _domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
         }
 
-        private void AppendAccordionPanels(string[] subFolders)
+        /// <summary>Request from javascript to load a panel into the accordion</summary>
+        /// <param name="panelName"></param>
+        private void LoadAccordionPanel(string panelName)
         {
-            if (subFolders.Length == 0)
-                return;
+            // load the requested panel
+            var subFolder = Path.Combine(_accordionFolder, panelName);
+            var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, panelName + ".htm");
+            var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
 
+            // move stylesheets to scoped div
+            var div = subPanelDom.Body.SelectSingleNode("//div");
+            MoveStylesIntoScopedTag(subPanelDom, div);
+
+            // escape for javascript
+            var html = CleanUpDataForJavascript(subPanelDom.Body.InnerXml);
+
+            // load panel into the accordion
+            _view.RunJavaScript("if (typeof(loadAccordionPanel) === \"function\") {loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
+        }
+
+        /// <summary>Loads the initial panel into the accordion</summary>
+        private void AppendAccordionSettingsPanel()
+        {
             var accordion = _domForCurrentPage.Body.SelectSingleNode("//div[@id='accordion']");
-            foreach(var subFolder in subFolders)
-            {
-                var htmFile = Path.GetFileName(subFolder); // just the last folder name?
-                var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, htmFile + ".htm");
-                var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath, false));
-                AppendAllChildren(subPanelDom.Body, accordion); // still need to copy any script and link elements
-            }
+            var subFolder = Path.Combine(_accordionFolder, "settings");
+            var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, "Settings.htm");
+            var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
+            AppendAllChildren(subPanelDom.Body, accordion);
         }
 
         /// <summary>
         /// Move everything in the body into a new div, which begins with a style scoped element.
         /// Replace stylesheet links in the head with importing those styles into the style element.
         /// </summary>
-        /// <param name="_domForCurrentPage"></param>
+        /// <param name="domForCurrentPage"></param>
         private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
         {
             var body = domForCurrentPage.Body;
@@ -666,7 +762,8 @@ namespace Bloom.Edit
                     continue;
                 if (node.Name == "link" && node.Attributes != null && node.Attributes["rel"] != null)
                     continue; // likewise stylesheets must be inserted
-                dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
+                if (dest.OwnerDocument != null) 
+                    dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
             }
         }
 
@@ -743,7 +840,7 @@ namespace Bloom.Edit
                             _bookSelection.CurrentSelection.TitleBestForUserDisplay,
                             _bookSelection.CurrentSelection.CheckForErrors(), 
                             _bookSelection.CurrentSelection.RawDom.OuterXml,
-                            new StackTrace().ToString()));
+                            new StackTrace()));
 
                     ErrorReport.NotifyUserOfProblem(exception,
                                                     "There was a problem looking through the pages of this book. If you can send emails, please click 'details' and send this report to the developers.");

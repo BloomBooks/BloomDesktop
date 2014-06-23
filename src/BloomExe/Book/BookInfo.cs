@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Palaso.Extensions;
 using System.Xml;
+using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -191,6 +191,8 @@ namespace Bloom.Book
 			get { return Path.GetFileName(FolderPath); }
 		}
 
+
+
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
@@ -288,19 +290,22 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// The panels being displayed in the accordion for this book
-		/// </summary>
-        public List<string> Tools
-        {
-            get
-            {
-                if (MetaData.Tools == null)
-                    MetaData.Tools = new List<string>();
-                return MetaData.Tools;
-            }
-            set { MetaData.Tools = value; }
-        }
+		public List<string> Tools
+		{
+			get
+			{
+				if (MetaData.Tools == null)
+					MetaData.Tools = new List<string>();
+				return MetaData.Tools;
+			}
+			set { MetaData.Tools = value; }
+		}
+
+		public string CurrentTool
+		{
+			get { return MetaData.CurrentTool; }
+			set { MetaData.CurrentTool = value; }
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -451,7 +456,7 @@ namespace Bloom.Book
         [DefaultValue(true)]
         public bool AllowUploadingToBloomLibrary { get; set; }
 
-        [JsonProperty("bookletMakingIsAppropriate",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(true)]
         public bool BookletMakingIsAppropriate { get; set; }
 
@@ -471,10 +476,13 @@ namespace Bloom.Book
 		[JsonProperty("uploader")]
 		public ParseDotComObjectPointer Uploader { get; set; }
 
-        /// <summary>These panels are being displayed in the accordion for this book</summary>
-        /// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-        [JsonProperty("tools")]
-        public List<string> Tools { get; set; }
+		/// <summary>These panels are being displayed in the accordion for this book</summary>
+		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
+		[JsonProperty("tools")]
+		public List<string> Tools { get; set; }
+
+		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
+		public string CurrentTool { get; set; }
 	}
 
 	/// <summary>

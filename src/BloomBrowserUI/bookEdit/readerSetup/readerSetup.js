@@ -30,7 +30,7 @@ function processMessage(event) {
             return;
 
         case 'Words':
-            updateMatchingWords(params[1]);
+            displayWordsForSelectedStage(params[1]);
             return;
     }
 }
@@ -133,10 +133,10 @@ function selectStage(tr) {
     $(tr).removeClass('linked').addClass('selected');
 
     // get the words
-    getWordsForSelectedStage();
+    requestWordsForSelectedStage();
 }
 
-function getWordsForSelectedStage() {
+function requestWordsForSelectedStage() {
 
     var tr = $('#stages-table tbody tr.selected').get(0);
 
@@ -175,7 +175,7 @@ function selectLetter(div) {
     });
     $('#stages-table tbody tr.selected td:nth-child(2)').html($.makeArray(letters).join(' '));
 
-    getWordsForSelectedStage();
+    requestWordsForSelectedStage();
 }
 
 /**
@@ -298,7 +298,10 @@ function renumberStages(rows) {
     });
 }
 
-function reorderStages() {
+/**
+ * Called to update the stage numbers on the screen after rows are reordered.
+ */
+function updateStageNumbers() {
 
     var rows = $('#stages-table tbody tr');
     renumberStages(rows);
@@ -308,7 +311,7 @@ function reorderStages() {
     document.getElementById('remove-stage-number').innerHTML = currentStage;
 }
 
-function updateMatchingWords(wordsStr) {
+function displayWordsForSelectedStage(wordsStr) {
 
     var words = JSON.parse(wordsStr);
     words = _.toArray(words);
@@ -378,5 +381,5 @@ if (typeof ($) === "function") {
 
 $(document).ready(function() {
     window.parent.postMessage('Texts', '*');
-    $('#stages-table tbody').sortable({stop: reorderStages });
+    $('#stages-table tbody').sortable({stop: updateStageNumbers });
 });
