@@ -689,7 +689,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (typeof($) == \"function\") { $(\".bloom-editable\").removeSynphonyMarkup(); }");
+			RunJavaScript("if ((typeof(jQuery) == \"function\") && (jQuery.isFunction(jQuery.fn.removeSynphonyMarkup))) {jQuery(\".bloom-editable\").removeSynphonyMarkup();}");
 			_browser1.ReadEditableAreasNow();
 		}
 

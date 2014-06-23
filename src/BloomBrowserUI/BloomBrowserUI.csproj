@@ -32,8 +32,6 @@
     <Content Include="bookEdit\ReaderTools\ReaderTools.htm" />
     <Content Include="bookEdit\ReaderTools\LeveledRT\LeveledRT.htm" />
     <Content Include="bookEdit\ReaderTools\PageElements\PageElements.htm" />
-    <Content Include="bookEdit\html\HtmlPage1.html" />
-    <Content Include="bookEdit\html\topicDialog.htm" />
     <Content Include="bookEdit\iconfont\index.html" />
     <Content Include="bookEdit\iconfont\license.txt" />
     <Content Include="bookEdit\iconfont\lte-ie7.js" />

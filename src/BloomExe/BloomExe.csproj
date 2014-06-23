@@ -203,6 +203,7 @@
     <Compile Include="Edit\ReaderToolsView.Designer.cs">
       <DependentUpon>ReaderToolsView.cs</DependentUpon>
     </Compile>
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>

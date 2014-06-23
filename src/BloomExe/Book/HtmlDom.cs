@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
-using System.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -159,7 +159,9 @@ namespace Bloom.Book
 		{
 			XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
 			element.SetAttribute("type", "text/javascript");
-			element.SetAttribute("src", "file://" + pathToJavascript);
+			if (!pathToJavascript.StartsWith("file"))
+				pathToJavascript = new Uri(pathToJavascript).AbsoluteUri;
+			element.SetAttribute("src", pathToJavascript);
 			return element;
 		}
 
