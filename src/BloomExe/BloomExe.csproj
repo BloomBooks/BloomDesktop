@@ -242,13 +242,13 @@
     <Compile Include="Publish\ConversionProgress.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Publish\ConversionProgress.designer.cs">
+    <Compile Include="Publish\ConversionProgress.Designer.cs">
       <DependentUpon>ConversionProgress.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\GeckofxHtmlToPDFComponent.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Publish\GeckofxHtmlToPDFComponent.designer.cs">
+    <Compile Include="Publish\GeckofxHtmlToPDFComponent.Designer.cs">
       <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfComponent.cs" />
