@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -190,8 +191,6 @@ namespace Bloom.Book
 			get { return Path.GetFileName(FolderPath); }
 		}
 
-
-
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
@@ -287,6 +286,17 @@ namespace Bloom.Book
 			{
 				MetaData.SetUploader(value);
 			}
+		}
+
+		public List<string> Accordion
+		{
+			get
+			{
+				if (MetaData.Accordion == null)
+					MetaData.Accordion = new List<string>();
+				return MetaData.Accordion;
+			}
+			set { MetaData.Accordion = value; }
 		}
 	}
 
@@ -457,6 +467,11 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("uploader")]
 		public ParseDotComObjectPointer Uploader { get; set; }
+
+		/// <summary>These panels are being displayed in the accordion for this book</summary>
+		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
+		[JsonProperty("accordion")]
+		public List<string> Accordion { get; set; }
 	}
 
 	/// <summary>
