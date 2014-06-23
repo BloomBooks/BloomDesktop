@@ -179,6 +179,7 @@ namespace GeckofxHtmlToPdf
 			var printSettings = service.GetNewPrintSettingsAttribute();
 
 			printSettings.SetToFileNameAttribute(_pathToTempPdf);
+			printSettings.SetPrintToFileAttribute(true);
 			printSettings.SetPrintSilentAttribute(true); //don't show a printer settings dialog
 			printSettings.SetShowPrintProgressAttribute(false);
 
