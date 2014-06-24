@@ -1044,12 +1044,32 @@ function ResizeUsingPercentages(e,ui){
      //first used in the Uganda SHRP Primer 1 template, on the image on day 1
      //This took *enormous* fussing in the css. TODO: copy what we learned there
      //to the (currently experimental) Toolbox template (see 'bloom-draggable')
-     $(".bloom-draggableLabel")
-         .draggable(
+   
+     $(".bloom-draggableLabel").each(function () {
+         // previous to June 2014, containment was working, so some items may be 
+         // out of bounds. This gets any such back in bounds.
+         if ($(this).position().left < 0) {
+             $(this).css('left', 0);
+         }
+         if ($(this).position().top < 0) {
+             $(this).css('top', 0);
+         }
+         if ($(this).position().left + $(this).width() > $(this).parent().width()) {
+             $(this).css('left', $(this).parent().width() - $(this).width());
+         }
+         if ($(this).position().top > $(this).parent().height()) {
+             $(this).css('top', $(this).parent().height() - $(this).height());
+         }
+
+         $(this).draggable(
          {
-             containment: "bloom-imageContainer"
-            ,handle: '.dragHandle'
-         })
+             containment: "parent", //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
+             handle: '.dragHandle'
+         });
+     });
+
+
+     $(".bloom-draggableLabel")
         .mouseenter(function () {
          $(this).prepend(" <div class='dragHandle'></div>")
          });
