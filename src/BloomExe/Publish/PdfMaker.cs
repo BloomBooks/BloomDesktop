@@ -98,7 +98,7 @@ namespace Bloom.Publish
                     //Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold, 
                     //so that's ok.
 
-                    " --print-media-type " +
+                    " --no-outline --print-media-type " +
                     pageSizeArguments +
                     (landscape ? " -O Landscape " : "") +
 #if DEBUG
