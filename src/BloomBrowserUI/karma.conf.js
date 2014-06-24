@@ -37,8 +37,10 @@ module.exports = function (config) {
             'bookEdit/js/libsynphony/bloom_lib.js',
             'bookEdit/js/libsynphony/jquery.text-markup.js',
             'bookEdit/js/synphonyApi.js',
-            'bookEdit/js/readerTools.js',
-            'bookEdit/test/*.Test.js'
+            'bookEdit/js/jquery.div-columns.js',
+            'bookEdit/readerTools/readerTools.js',
+            'bookEdit/test/*.Test.js',
+            'bookEdit/test/libsynphony/*.test.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

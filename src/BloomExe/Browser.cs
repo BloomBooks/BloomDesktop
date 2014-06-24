@@ -667,7 +667,7 @@ namespace Bloom
             using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
             {
                 string result;
-                context.EvaluateScript(script, out result);
+                context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
                 return result;
            } 	
         }
