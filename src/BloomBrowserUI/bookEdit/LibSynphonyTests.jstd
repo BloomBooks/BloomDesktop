@@ -8,11 +8,9 @@ load:
   - js/libsynphony/synphony_lib.js
   - js/libsynphony/bloom_xregexp_categories.js
   - js/libsynphony/bloom_lib.js
-  - js/jquery.div-columns.js
   - js/libsynphony/jquery.text-markup.js
   - js/synphonyApi.js
-  - readerTools/readerTools.js
 test:
-  - test/readerTools.Test.js
+  - test/libsynphony/*.test.js
 
 timeout: 90

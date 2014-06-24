@@ -1,29 +1,47 @@
 describe("Bloom Edit Controls tests", function() {
-    var api = new SynphonyApi();
-    api.addStageWithWords("1A", "cat sat rat");
-    api.addStageWithWords("A", "bob fob");
-    api.addStageWithWords("3", "big wig fig rig");
-
-    var levelD = new Level("D");
-    levelD.maxWordsPerBook = 17;
-    levelD.maxWordsPerSentence = 3;
-    levelD.maxUniqueWordsPerBook = 10;
-    levelD.maxWordsPerPage = 4;
-    api.addLevel(levelD);
-    var levelE = new Level("E");
-    // maxWordsPerBook is deliberately left at default, 0.
-    levelE.maxWordsPerSentence = 5;
-    levelE.maxUniqueWordsPerBook = 12;
-    levelE.maxWordsPerPage = 6;
-    api.addLevel(levelE);
-    api.addLevel(new Level("F"));
 
     var model;
     var classValues;
 
     beforeEach(function() {
+
+        lang_data = null;
         model = new ReaderToolsModel();
-        model.setSynphony(api);
+
+        var settings = new Object();
+        settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z';
+        settings.letterCombinations = 'th oo ing';
+        settings.moreWords = 'catty sat rate bob fob big wig fig rig';
+        settings.stages = [];
+
+        settings.stages.push({"letters":"a c e r s t y","sightWords":"feline rodent"});
+        settings.stages.push({"letters":"b f o","sightWords":"one two"});
+        settings.stages.push({"letters":"g i w","sightWords":"fruit nut"});
+
+        var api = model.getSynphony();
+        api.loadSettings(JSON.stringify(settings));
+
+        // TODO: update level data when level setup finished
+//        var levelD = new Level("D");
+//        levelD.maxWordsPerBook = 17;
+//        levelD.maxWordsPerSentence = 3;
+//        levelD.maxUniqueWordsPerBook = 10;
+//        levelD.maxWordsPerPage = 4;
+//        api.addLevel(levelD);
+//        var levelE = new Level("E");
+//        // maxWordsPerBook is deliberately left at default, 0.
+//        levelE.maxWordsPerSentence = 5;
+//        levelE.maxUniqueWordsPerBook = 12;
+//        levelE.maxWordsPerPage = 6;
+//        api.addLevel(levelE);
+//        api.addLevel(new Level("F"));
+
+        var sampleFileContents = 'catty catty, sat sat sat sat sat sat sat sat, bob bob bob, fob fob, wig, fig fig fig fig fig fig, rig, catty, sat bob fob fig, sat fig, sat';
+        model.addWordsFromFile(sampleFileContents);
+
+        model.addWordsToSynphony();
+        model.updateWordList();
+
         spyOn(model, 'updateElementContent');
         // simulated values of class attribute. Currently we ignore the attrName argument, since we only modify class.
         classValues = {decStage:"something", incStage: "something", decLevel: "something", incLevel: "something"};
@@ -41,11 +59,11 @@ describe("Bloom Edit Controls tests", function() {
 
     it("increments stage to limit on stage right button", function() {
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "A");
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 2);
 
         model.updateElementContent.reset();
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 3);
 
         model.updateElementContent.reset();
         model.incrementStage();
@@ -56,44 +74,44 @@ describe("Bloom Edit Controls tests", function() {
         model.setStageNumber(3);
         model.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "A");
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 2);
 
         model.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1A");
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 1);
 
         model.updateElementContent.reset();
         model.decrementStage();
         expect(model.updateElementContent).not.toHaveBeenCalled();
     });
 
-    it("increments level to limit on level right button", function() {
-        model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "E");
-
-        model.updateElementContent.reset();
-        model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "F");
-
-        model.updateElementContent.reset();
-        model.incrementLevel();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
-    });
-
-    it("decrements level to 1 on level left button", function() {
-        model.setLevelNumber(3);
-        model.updateElementContent.reset();
-        model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "E");
-
-        model.updateElementContent.reset();
-        model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "D");
-
-        model.updateElementContent.reset();
-        model.decrementLevel();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
-    });
+//    it("increments level to limit on level right button", function() {
+//        model.incrementLevel();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "E");
+//
+//        model.updateElementContent.reset();
+//        model.incrementLevel();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "F");
+//
+//        model.updateElementContent.reset();
+//        model.incrementLevel();
+//        expect(model.updateElementContent).not.toHaveBeenCalled();
+//    });
+//
+//    it("decrements level to 1 on level left button", function() {
+//        model.setLevelNumber(3);
+//        model.updateElementContent.reset();
+//        model.decrementLevel();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "E");
+//
+//        model.updateElementContent.reset();
+//        model.decrementLevel();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "D");
+//
+//        model.updateElementContent.reset();
+//        model.decrementLevel();
+//        expect(model.updateElementContent).not.toHaveBeenCalled();
+//    });
 
     it("setting stage updates stage button visibility", function() {
         model.setStageNumber(3);
@@ -117,88 +135,65 @@ describe("Bloom Edit Controls tests", function() {
         expect(model.getElementAttribute("incStage", "class")).toBe("something disabledIcon");
     });
 
-    it("updates level button visibility when setting level", function() {
-        model.setLevelNumber(3);
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
-
-        model.decrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-
-        model.decrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
-
-        model.incrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-
-        model.incrementLevel();
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
-    });
-
-    it("updates content of level element when setting level", function() {
-        model.setLevelNumber(3);
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "F");
-    });
+//    it("updates level button visibility when setting level", function() {
+//        model.setLevelNumber(3);
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+//        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
+//
+//        model.decrementLevel();
+//        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+//
+//        model.decrementLevel();
+//        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
+//
+//        model.incrementLevel();
+//        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+//
+//        model.incrementLevel();
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+//        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
+//    });
+//
+//    it("updates content of level element when setting level", function() {
+//        model.setLevelNumber(3);
+//        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "F");
+//    });
 
     it("sorts word list correctly when sort buttons clicked", function() {
-        var api2 = new SynphonyApi(); // use own api for this test, don't modify the shared variable
-        api2.addStageWithWords("1", "catty catty catty sat rate rate rate rate rate");
-        api2.addStageWithWords("2", "bob fob cob job hope hope hope");
-        model.setSynphony(api2);
+
         model.setStageNumber(2);
         model.updateElementContent.reset();
 
         // Default is currently alphabetic
         model.setStageNumber(1);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>catty</td><td>rate</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.sortByLength();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>sat</td><td>rate</td><td>catty</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
         model.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>rate</td><td>catty</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div>');
 
         model.updateElementContent.reset();
         model.sortAlphabetically();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>catty</td><td>rate</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
         model.updateElementContent.reset();
         model.setStageNumber(2);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>cob</td><td>fob</td></tr><tr><td>hope</td><td>job</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div><div class="word sight-word">two</div>');
 
         model.updateElementContent.reset();
         model.sortByLength(); // same-length ones should be alphabetic
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>cob</td><td>fob</td></tr><tr><td>job</td><td>hope</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">sat</div><div class="word sight-word">two</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
         model.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>hope</td><td>bob</td><td>cob</td></tr><tr><td>fob</td><td>job</td></tr>");
-    });
-
-    it("updates word list when stage changes", function() {
-        var api2 = new SynphonyApi(); // use own api for this test, don't modify the shared variable
-        // We want a specific set of words to test rows of one, two, and three words.
-        api2.addStageWithWords("1", "cat sat rat"); // exactly fills row
-        api2.addStageWithWords("2", "bob fob"); // less than one row
-        api2.addStageWithWords("3", "big wig fig rig"); // second partial row (with just one word)
-        model.setSynphony(api2);
-
-        model.setStageNumber(2);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>bob</td><td>fob</td></tr>");
-
-        model.updateElementContent.reset();
-        model.setStageNumber(1);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>cat</td><td>rat</td><td>sat</td></tr>");
-
-        model.updateElementContent.reset();
-        model.setStageNumber(3);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>big</td><td>fig</td><td>rig</td></tr><tr><td>wig</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">bob</div><div class="word">catty</div><div class="word">fob</div><div class="word sight-word">feline</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word sight-word">two</div>');
     });
 
     it ("sets selected class when sort button clicked", function() {
@@ -228,7 +223,7 @@ describe("Bloom Edit Controls tests", function() {
 
     it ("updates word list on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", "<tr><td>cat</td><td>rat</td><td>sat</td></tr>");
+        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class=\"word sight-word\">feline</div><div class="word">rate</div><div class=\"word sight-word\">rodent</div><div class="word">sat</div>');
     });
 
     it ("updates stage count and buttons on init", function() {
@@ -237,34 +232,34 @@ describe("Bloom Edit Controls tests", function() {
         expect(model.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
     });
 
-    it ("updates level buttons on init", function() {
-        model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
-    });
+//    it ("updates level buttons on init", function() {
+//        model.updateControlContents();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
+//        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
+//    });
 
     it ("updates stage label on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1A");
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 1);
     });
 
-    it("sets level max values on init", function() {
-        model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "4");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "4");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "17");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "3");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "10");
-        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("");
-    });
-
-    it("updates max values when level changes", function() {
-        model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "6");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
-        expect(model.updateElementContent).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "5");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "12");
-        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("disabledLimit");
-    });
+//    it("sets level max values on init", function() {
+//        model.updateControlContents();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "4");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "4");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "17");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "3");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "10");
+//        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("");
+//    });
+//
+//    it("updates max values when level changes", function() {
+//        model.incrementLevel();
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "6");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
+//        expect(model.updateElementContent).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "5");
+//        expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "12");
+//        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("disabledLimit");
+//    });
 });
