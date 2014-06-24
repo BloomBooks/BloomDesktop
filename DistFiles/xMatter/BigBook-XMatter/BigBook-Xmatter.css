@@ -56,12 +56,18 @@ DIV.coverBottomLangName
 {
 	height: 50%;
 }
-/*Instructions Page*/
-.bigbookxmatterInstructions H1
+/*Instructions Page - save the H1 for backwards compatibility*/
+.bigbookxmatterInstructions .instructionHeader, .bigbookxmatterInstructions H1
 {
 	text-align: center;
 	color: #000000;
 	font-size: 14pt;
+}
+/* The old H1 tag caused bookmarks to be generated in the PDF,
+   but automatically set boldface. */
+.bigbookxmatterInstructions .instructionHeader
+{
+    font-weight: bold;
 }
 .bigbookxmatterInstructions .bloom-editable
 {
