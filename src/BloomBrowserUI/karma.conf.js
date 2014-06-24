@@ -38,7 +38,7 @@ module.exports = function (config) {
             'bookEdit/js/libsynphony/jquery.text-markup.js',
             'bookEdit/js/synphonyApi.js',
             'bookEdit/js/jquery.div-columns.js',
-            'bookEdit/readerTools/readerTools.js',
+            'bookEdit/js/readerTools.js',
             'bookEdit/test/*.Test.js',
             'bookEdit/test/libsynphony/*.test.js'
         ],
