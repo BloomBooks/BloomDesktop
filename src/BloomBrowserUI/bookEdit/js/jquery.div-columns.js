@@ -28,10 +28,18 @@
             var marginRight = parseInt(div.css('margin-right'));
 
             $('div.' + cssClassName).css('width', function() {
+
+                // only size the divs once
+                if ($(this).data('sized') === 1) return;
+
+                // if the div is not visible, offsetWidth will be zero
+                if (!this.offsetWidth) return;
+
                 var w = this.offsetWidth;
                 var i =  Math.ceil(w / minWidth);
                 w = minWidth * i + (i - 1) * (marginLeft + marginRight);
                 this.style.width = w + 'px';
+                $(this).data('sized', 1);
             });
         }
     });

@@ -14,17 +14,26 @@
 					<div id="sortFrequency" class="sortItem"><i title="Sort by frequency" class="fa fa-long-arrow-up"></i><i id="sortFrequency2" title="Sort by frequency" class="fa fa-facebook"></i></div>
 				</div>
 			</div>
-			<div class="tableHolder">
+			<div class="tableHolder clear">
 				<div id="wordList" class="wordList"></div>
 			</div>
 			<div style="display: inline-block; position: relative; float: right; margin: 10px 14px">
 				<span class="setup stageLine"><a href="" id="setUpStages">Set up Stages</a></span>
 			</div>
 			<script>
-				$(document).ready(initializeDecodableRT());
 				$(document).ready(function() {
+					setTimeout(initializeDecodableRT, 100);
 					var path = thisDir + '../../images/keys-white.png';
 					document.getElementById('decodable-keys').src = path;
+				});
+
+				$('#accordion').onOnce('accordionactivate.decodableRT', function(event, ui) {
+					var id = ui.newHeader.data('panelId');
+					if (id) {
+						if (id.toString() === 'DecodableRT') {
+							$.divsToColumns('word');
+						}
+					}
 				});
 			</script>
 		</div>
