@@ -26,8 +26,8 @@ namespace Bloom.Edit
 		{
 			this.Activated += new EventHandler(On_Activated);
 
-			_browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
-		//	this fires, but leave us in a state withtout a cursor			_browser.WebBrowser.DocumentCompleted += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
+			// DEPRICATED: _browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
+			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_browser.Navigate(_filePath, false);
 
@@ -45,7 +45,7 @@ namespace Bloom.Edit
 			_browser.Select();
 		}
 
-		void NavigateFinishedNotifier_NavigateFinished(object sender, EventArgs e)
+		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
 			_browser.AddScriptSource("jquery-1.6.4.js");
 			_browser.AddScriptSource("form2object.js");
@@ -60,7 +60,7 @@ namespace Bloom.Edit
 					}
 				function preloadSettings()
 					{
-						 x =  "+_libraryJsonData+ @";
+						 x =  " + _libraryJsonData + @";
 						var $inputs = $('#form').find('[name]');
 						populateForm($inputs, x, 'name');
 					}");
@@ -72,7 +72,7 @@ namespace Bloom.Edit
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
-		   GeckoDocument doc = _browser.WebBrowser.Document;
+			GeckoDocument doc = _browser.WebBrowser.Document;
 
 			var body = doc.GetElementsByTagName("body").First();
 			GeckoHtmlElement div = doc.CreateElement("div") as GeckoHtmlElement;
