@@ -35,18 +35,14 @@ function restoreAccordionSettings(settings) {
     var opts = JSON.parse(settings);
     var check = '&#10004;';
 
-    if (opts['showPE']) {
-        document.getElementById('showPE').innerHTML = check;
-        fireCSharpAccordionEvent('loadAccordionPanelEvent', 'PageElements');
-    }
-    if (opts['showDRT']) {
-        document.getElementById('showDRT').innerHTML = check;
-        fireCSharpAccordionEvent('loadAccordionPanelEvent', 'DecodableRT');
-    }
-    if (opts['showLRT']) {
-        document.getElementById('showLRT').innerHTML = check;
-        fireCSharpAccordionEvent('loadAccordionPanelEvent', 'LeveledRT');
-    }
+    if (opts['showPE'])
+        requestPanel('showPE', 'PageElements');
+
+    if (opts['showDRT'])
+        requestPanel('showDRT', 'DecodableRT');
+
+    if (opts['showLRT'])
+        requestPanel('showLRT', 'LeveledRT');
 
     // set the current panel
     if (opts['current']) {
@@ -58,13 +54,32 @@ function restoreAccordionSettings(settings) {
                 // the index is the last segment of the element id
                 var idx = this.id.substr(this.id.lastIndexOf('-') + 1);
 
+                // turn off animation
+                var ani = $('#accordion').accordion('option', 'animate');
+                $('#accordion').accordion('option', 'animate', false);
+
                 // the index must be passed as an int, a string will not work
                 $('#accordion').accordion('option', 'active', parseInt(idx));
+
+                // trun animation back on
+                $('#accordion').accordion('option', 'animate', ani);
 
                 // break from the each() loop
                 return false;
             }
         });
+    }
+}
+
+function requestPanel(checkBoxId, panelId) {
+
+    // this is the character code for a check mark
+    var check = '&#10004;';
+
+    var chkBox = document.getElementById(checkBoxId);
+    if (chkBox) {
+        chkBox.innerHTML = check;
+        fireCSharpAccordionEvent('loadAccordionPanelEvent', panelId);
     }
 }
 
