@@ -123,6 +123,11 @@ namespace Bloom
 
 		public void SaveHTML(string path)
 		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<string>(SaveHTML), path);
+				return;
+			}
 			_browser.SaveDocument(path, "text/html");
 		}
 
@@ -130,6 +135,13 @@ namespace Bloom
 		{
 			if (_copyCommand == null)
 				return;
+
+			if (InvokeRequired)
+			{
+				Invoke(new Action(UpdateEditButtons));
+				return;
+			}
+
 			try
 			{
 				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
@@ -155,6 +167,7 @@ namespace Bloom
 
 		void OnValidating(object sender, CancelEventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			LoadPageDomFromBrowser();
 			//_afterValidatingTimer.Enabled = true;//LoadPageDomFromBrowser();
 		}
@@ -177,10 +190,12 @@ namespace Bloom
 			base.Dispose(disposing);
 			_disposed = true;
 		}
+
 		public GeckoWebBrowser WebBrowser { get { return _browser; } }
 
 		protected override void OnLoad(EventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			base.OnLoad(e);
 
 			if(DesignMode)
@@ -266,6 +281,7 @@ namespace Bloom
 		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			const uint DOM_VK_INSERT = 0x2D;
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
@@ -284,6 +300,7 @@ namespace Bloom
 
 		private void PasteFilteredText()
 		{
+			Debug.Assert(!InvokeRequired);
 			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
 			//setting clears everything else:
@@ -293,6 +310,7 @@ namespace Bloom
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
@@ -300,8 +318,10 @@ namespace Bloom
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
+
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
 			//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
 			//on a developer/ support-person computer.
@@ -321,6 +341,7 @@ namespace Bloom
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
 			File.Copy(_url, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(temp.Path);
@@ -328,20 +349,21 @@ namespace Bloom
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			string path = Path.GetTempFileName().Replace(".tmp",".html");
 			File.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(GetPathToStylizer(), path);
 		}
+
 		public static string GetPathToStylizer()
 		{
 			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
 		}
 
-
-
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
-		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+			Debug.Assert(!InvokeRequired);
+			//this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
 			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
 
@@ -350,9 +372,9 @@ namespace Bloom
 				handler(this, e);
 		}
 
-
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
+			Debug.Assert(!InvokeRequired);
 			string url = e.Uri.OriginalString;
 			if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
 			{
@@ -364,8 +386,7 @@ namespace Bloom
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
-
-
+			Debug.Assert(!InvokeRequired);
 			//_setInitialZoomTimer.Enabled = true;
 
 			Application.Idle += new EventHandler(Application_Idle);
@@ -384,6 +405,11 @@ namespace Bloom
 			if (_disposed)
 				return;
 
+			if (InvokeRequired)
+			{
+				Invoke(new Action<object, EventArgs>(Application_Idle), sender, e);
+				return;
+			}
 			Application.Idle -= new EventHandler(Application_Idle);
 
 			ZoomToFullWidth();
@@ -400,6 +426,12 @@ namespace Bloom
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<string, bool>(Navigate), url, cleanupFileAfterNavigating);
+				return;
+			}
+
 			_url=url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
@@ -412,7 +444,13 @@ namespace Bloom
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom)
 		{
-			_pageDom =(XmlDocument) dom;//.CloneNode(true); //clone because we want to modify it a bit
+			if (InvokeRequired)
+			{
+				Invoke(new Action<XmlDocument>(Navigate), dom);
+				return;
+			}
+
+			_pageDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
 
 			/*	This doesn't work for the 1st book shown, or when you change book sizes.
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
@@ -431,6 +469,12 @@ namespace Bloom
 
 		public void NavigateRawHtml(string html)
 		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<string>(NavigateRawHtml), html);
+				return;
+			}
+
 			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
 			File.WriteAllText(tf.Path,html);
 			SetNewTempFile(tf);
@@ -469,6 +513,7 @@ namespace Bloom
 
 		private void UpdateDisplay()
 		{
+			Debug.Assert(!InvokeRequired);
 			if (!_browserIsReadyToNavigate)
 				return;
 
@@ -493,6 +538,7 @@ namespace Bloom
 		/// </summary>
 		private void LoadPageDomFromBrowser()
 		{
+			Debug.Assert(!InvokeRequired);
 			if (_pageDom == null)
 				return;
 
@@ -632,6 +678,7 @@ namespace Bloom
 
 		public void Copy()
 		{
+			Debug.Assert(!InvokeRequired);
 			_browser.CopySelection();
 		}
 
@@ -641,6 +688,7 @@ namespace Bloom
 		/// <param name="filename"></param>
 		public void AddScriptSource(string filename)
 		{
+			Debug.Assert(!InvokeRequired);
 			if (!File.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
 				throw new FileNotFoundException(filename);
 
@@ -654,6 +702,7 @@ namespace Bloom
 
 		public void AddScriptContent(string content)
 		{
+			Debug.Assert(!InvokeRequired);
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
@@ -664,6 +713,7 @@ namespace Bloom
 
 		public string RunJavaScript(string script)
 		{
+			Debug.Assert(!InvokeRequired);
 			using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
 			{
 				string result;
@@ -681,6 +731,7 @@ namespace Bloom
 		/// <param name="action"></param>
 		public void AddMessageEventListener(string eventName, Action<string> action)
 		{
+			Debug.Assert(!InvokeRequired);
 			if (_knownEvents.Contains(eventName))
 				return; // This browser already knows what to do about this; hopefully we don't have a conflict.
 			_browser.AddMessageEventListener(eventName, action);
@@ -707,6 +758,7 @@ namespace Bloom
 
 		public void ShowHtml(string html)
 		{
+			Debug.Assert(!InvokeRequired);
 			_browser.LoadHtml(html);
 		}
 
@@ -719,6 +771,11 @@ namespace Bloom
 		{
 			if (_browser != null)
 			{
+				if (_browser.InvokeRequired)
+				{
+					return (float)_browser.Invoke((MethodInvoker)(() => GetScaleToShowWholeWidthOfPage()));
+				}
+
 				var div = _browser.Document.ActiveElement;
 				if (div != null)
 				{
@@ -752,6 +809,7 @@ namespace Bloom
 
 		private void SetZoom(float scale)
 		{
+			Debug.Assert(!InvokeRequired);
 /*			//Dangerous. See https://bitbucket.org/geckofx/geckofx-11.0/issue/12/setfullzoom-doesnt-work
 			//and if I get it to work (by only calling it from onresize, it stops working after you navigate
 
@@ -779,6 +837,7 @@ namespace Bloom
 		/// </summary>
 		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		{
+			Debug.Assert(!InvokeRequired);
 			if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
 			{
 				Process.Start(anchor.Href);
