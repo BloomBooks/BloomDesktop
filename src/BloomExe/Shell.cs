@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using NetSparkle;
 using Bloom.Collection;
-using Bloom.Properties;
 using Bloom.Workspace;
 using Palaso.Extensions;
 
@@ -35,6 +34,9 @@ namespace Bloom
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
 
 			Size = new Size(1024,720);
+#else
+			// We only want this screen size context menu in Debug mode
+			ContextMenuStrip = null;
 #endif
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
