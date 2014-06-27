@@ -22,17 +22,23 @@ namespace Bloom
     public class HtmlThumbNailer : IDisposable
     {
         Dictionary<string, Image> _images = new Dictionary<string, Image>();
-        private readonly MonitorTarget _monitorObjectForBrowserNavigation;
         private Color _backgroundColorOfResult;
-        private bool _browserHandleCreated;
         private Queue<ThumbnailOrder> _orders = new Queue<ThumbnailOrder>();
         private static HtmlThumbNailer _theOnlyOneAllowed;
 
-        /// <summary>
-        ///This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give us the size it was on the first page we navigated to,
-        //so that if the book size changes, our thumbnails are all wrong. 
-        /// </summary>
-        private Dictionary<string, GeckoWebBrowser> _browserCacheForDifferentPaperSizes = new Dictionary<string, GeckoWebBrowser>();
+		/// <summary>
+		/// This controls helps to call geckofx methods on the correct thread (UI thread).
+		/// We expect that our c'tor gets called on the UI thread and since we then create
+		/// _syncControl on the UI thread we can use it to invoke geckofx methods on the UI thread.
+		/// </summary>
+		private Control _syncControl;
+
+		/// <summary>
+		/// This is to overcome a problem with XULRunner 1.9 (or my use of it)this will always give
+		/// us the size it was on the first page we navigated to, so that if the book size changes,
+		/// our thumbnails are all wrong.
+		/// </summary>
+		private Dictionary<string, GeckoWebBrowser> _browserCacheForDifferentPaperSizes = new Dictionary<string, GeckoWebBrowser>();
 
         private bool _disposed;
 
@@ -46,38 +52,8 @@ namespace Bloom
 
             _theOnlyOneAllowed = this;
 
-            _monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
-            Application.Idle += new EventHandler(Application_Idle);
-        }
-
-        void Application_Idle(object sender, EventArgs e)
-        {
-            if (_orders.Count > 0)
-            {
-                if (Monitor.TryEnter(_monitorObjectForBrowserNavigation))
-                //don't try to work with the browser while other processes are doing it to... maybe can remove this when we clear out any Application.DoEvents() that our current old version of Geckofx is forcing us to use because of unreliable end-of-navigation detection
-                {
-                    try
-                    {
-                        ThumbnailOrder thumbnailOrder = _orders.Dequeue();
-                        try
-                        {
-                            ProcessOrder(thumbnailOrder);
-                        }
-                        catch (Exception error)
-                        {
-                            //putting up a green box here, because, say, the page was messed up, is bad manners
-                            Logger.WriteEvent("HtmlThumbNailer reported exception:{0}", error.Message);
-                            thumbnailOrder.ErrorCallback(error);
-                        }
-                    }
-                    finally
-                    {
-                        // Ensure that the lock is released.
-                        Monitor.Exit(_monitorObjectForBrowserNavigation);
-                    }
-                }
-            }
+			_syncControl = new Control();
+			_syncControl.CreateControl();
         }
 
         public void RemoveFromCache(string key)
@@ -101,7 +77,6 @@ namespace Bloom
             /// </summary>
             public bool CenterImageUsingTransparentPadding = true;
 
-
             public int Width = 70;
             public int Height = 70;
             public string FileName = "thumbnail.png";
@@ -116,7 +91,8 @@ namespace Bloom
         /// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
         /// <param name="drawBorderDashed"></param>
         /// <returns></returns>
-        public void GetThumbnailAsync(string folderForThumbNailCache, string key, XmlDocument document, ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
+		public void GetThumbnailAsync(string folderForThumbNailCache, string key, XmlDocument document,
+			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
         {
             //review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
 
@@ -148,256 +124,256 @@ namespace Bloom
                     }
                 }
             }
-            //!!!!!!!!! geckofx doesn't work in its own thread, so we're using the Application's idle event instead.
 
-            _orders.Enqueue(new ThumbnailOrder()
-            {
-                ThumbNailFilePath = thumbNailFilePath,
-                Options = options,
-                Callback = callback,
-                ErrorCallback = errorCallback,
-                Document = document,
-                FolderForThumbNailCache = folderForThumbNailCache,
-                Key = key
-            });
-        }
+			ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder),
+				new ThumbnailOrder() {
+					ThumbNailFilePath = thumbNailFilePath,
+					Options = options,
+					Callback = callback,
+					ErrorCallback = errorCallback,
+					Document = document,
+					FolderForThumbNailCache = folderForThumbNailCache,
+					Key = key
+				});
+		}
 
-        void ProcessOrder(ThumbnailOrder order)
-        {
-            //e.Result = order;
-            //Thread.CurrentThread.Name = "Thumbnailer" + order.Key;
-            Image pendingThumbnail = null;
+		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
+		{
+			var order = (ThumbnailOrder)browser.Tag;
+			using (var waitHandle = new AutoResetEvent(false))
+			{
+				order.WaitHandle = waitHandle;
+				_syncControl.Invoke(new Action<string>(browser.Navigate), filePath);
+				waitHandle.WaitOne(5000);
+			}
+			if (_disposed)
+				return false;
+			if (!order.Done)
+			{
+				Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
+					Thread.CurrentThread.ManagedThreadId);
+				Debug.Fail("(debug only) Make thumbnail timed out");
+				return false;
+			}
+			return true;
+		}
 
-            lock (this)
-            {
-                Logger.WriteMinorEvent("HtmlThumbNailer: starting work on thumbnail ({0})", order.ThumbNailFilePath);
+		private Size SetWidthAndHeight(GeckoWebBrowser browser)
+		{
+			if (_syncControl.InvokeRequired)
+			{
+				return (Size)_syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+			}
+			Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+			var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault() as GeckoElement;
+			if (div == null)
+			{
+				var order = (ThumbnailOrder)browser.Tag;
+				Logger.WriteEvent("HtmlThumNailer ({1}):  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath,
+					Thread.CurrentThread.ManagedThreadId);
+				throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
+			}
+			browser.Height = div.ClientHeight;
+			browser.Width = div.ClientWidth;
+			return new Size(browser.Width, browser.Height);
+		}
 
-                _backgroundColorOfResult = order.Options.BackgroundColor;
-                XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
+		private Image CreateImage(GeckoWebBrowser browser)
+		{
+			if (_syncControl.InvokeRequired)
+			{
+				return (Image)_syncControl.Invoke(new Func<GeckoWebBrowser, Image>(CreateImage), browser);
+			}
 
-
-                var browser = GetBrowserForPaperSize(order.Document);
-                lock (browser)
-                {
-                    using (var temp = TempFileUtils.CreateHtm5FromXml(order.Document))
-                    {
-                        order.Done = false;
-                        browser.Tag = order;
-
-                        browser.Navigate(temp.Path);
-
-                        var minimumTime = DateTime.Now.AddSeconds(0); //was 1 second, with geckofx11. For geckofx22, we're trying out no minumum time. Will need testing on slow machines to get confidence.
-                        var stopTime = DateTime.Now.AddSeconds(5);
-                        while (!_disposed && (DateTime.Now < minimumTime || !order.Done || browser.Document.ActiveElement == null) && DateTime.Now < stopTime)
-                        {
-                            Application.DoEvents(); //TODO: avoid this
-                        }
-                        if (_disposed)
-                            return;
-                        if (!order.Done)
-                        {
-                            Logger.WriteEvent("HtmlThumNailer: Timed out on ({0})", order.ThumbNailFilePath);
-                            Debug.Fail("(debug only) Make thumbnail timed out");
-                            return;
-                        }
-
-                        Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
 #if __MonoCS__
-						Application.RaiseIdle(null);
+			var offscreenBrowser = browser as OffScreenGeckoWebBrowser;
+			Debug.Assert(offscreenBrowser != null);
+
+			return offscreenBrowser.GetBitmap(browser.Width, browser.Height);
+#else
+			var creator = new ImageCreator(browser);
+			byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
+			using (var stream = new MemoryStream(imageBytes))
+				return Image.FromStream(stream);
 #endif
+		}
 
-                        /* saw crash here, shortly after startup: 
-                         * 1) opened an existing book
-                         * 2) added a title
-                         * 3) added a dog from aor
-                         * 4) got this crash
-                         *    at Gecko.nsIDOMXPathEvaluator.CreateNSResolver(nsIDOMNode nodeResolver)
-                               at Gecko.GeckoNode.GetElements(String xpath) in C:\dev\geckofx11hatton\Skybound.Gecko\DOM\GeckoNode.cs:line 222
-                               at Bloom.HtmlThumbNailer.ProcessOrder(ThumbnailOrder order) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 167
-                               at Bloom.HtmlThumbNailer.Application_Idle(Object sender, EventArgs e) in C:\dev\Bloom\src\BloomExe\HtmlThumbNailer.cs:line 53
-                         */
-						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault();
-                        if (div == null)
-                        {
-                            Logger.WriteEvent("HtmlThumNailer:  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath);
-                            throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
-                        }
+		private Image CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser)
+		{
+			// runs on threadpool thread
+			using (var temp = TempFileUtils.CreateHtm5FromXml(order.Document))
+			{
+				order.Done = false;
+				browser.Tag = order;
+				if (!OpenTempFileInBrowser(browser, temp.Path))
+					return null;
 
-						browser.Height = ((GeckoElement)div).ClientHeight;
-                        browser.Width = ((GeckoElement)div).ClientWidth;
+				var browserSize = SetWidthAndHeight(browser);
+				try
+				{
+					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width, (uint)browserSize.Height,
+						Thread.CurrentThread.ManagedThreadId);
+					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
+					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
+					//the placeholder thumbnail.
+					if (browserSize.Width == 0 || browserSize.Height == 0)
+					{
+						var paperSizeName = GetPaperSizeName(order.Document);
+						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
+					}
+					using (Image fullsizeImage = CreateImage(browser))
+					{
+						if (_disposed)
+							return null;
+						return MakeThumbNail(fullsizeImage, order.Options);
+					}
+				}
+				catch (Exception error)
+				{
+					Logger.WriteEvent("HtmlThumbNailer ({0}) got {1}", Thread.CurrentThread.ManagedThreadId, error.Message);
+					Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
+					foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
+					{
+						try
+						{
+							Logger.WriteEvent("Disposing of browser {0}", browserCacheForDifferentPaperSize.Key);
+							browserCacheForDifferentPaperSize.Value.Dispose();
+						}
+						catch (Exception e2)
+						{
+							Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
+						}
+					}
+					_browserCacheForDifferentPaperSizes.Clear();
+					#if DEBUG
+					Debug.Fail(error.Message);
+					#endif
+				}
+			}
+			return null;
+		}
 
-                        try
-                        {
-                            Logger.WriteMinorEvent("HtmlThumNailer: browser.GetBitmap({0},{1})", browser.Width,
-                                                   (uint)browser.Height);
+		private void ProcessOrder(object stateInfo)
+		{
+			// called on threadpool thread
+			var order = stateInfo as ThumbnailOrder;
+			if (order == null)
+				return;
+
+			Image pendingThumbnail = null;
+
+			lock (this)
+			{
+				Logger.WriteMinorEvent("HtmlThumbNailer ({1}): starting work on thumbnail ({0})", order.ThumbNailFilePath,
+					Thread.CurrentThread.ManagedThreadId);
+
+				_backgroundColorOfResult = order.Options.BackgroundColor;
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
+
+				var browser = GetBrowserForPaperSize(order.Document);
+				lock (browser)
+				{
+					pendingThumbnail = CreateThumbNail(order, browser);
+				}
+				if (pendingThumbnail == null)
+				{
+					pendingThumbnail = Resources.PagePlaceHolder;
+				}
+				else if (!string.IsNullOrEmpty(order.ThumbNailFilePath))
+				{
+					try
+					{
+						//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
+						using (Bitmap b = new Bitmap(pendingThumbnail))
+						{
+							b.Save(order.ThumbNailFilePath);
+						}
+					}
+					catch (Exception)
+					{
+						//this is going to fail if we don't have write permission
+					}
+				}
+
+				pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
+
+				Debug.WriteLine("THumbnail created with dimensions ({0},{1})", browser.Width, browser.Height);
+
+				try
+				//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
+				{
+					if (_images.ContainsKey(order.Key))
+						_images.Remove(order.Key);
+					_images.Add(order.Key, pendingThumbnail);
+				}
+				catch (Exception error)
+				{
+					Logger.WriteMinorEvent("Skipping minor error: " + error.Message);
+					//not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
+				}
+			}
+			//order.ResultingThumbnail = pendingThumbnail;
+			if (_disposed)
+				return;
+			Logger.WriteMinorEvent("HtmlThumNailer ({1}): finished work on thumbnail ({0})", order.ThumbNailFilePath,
+				Thread.CurrentThread.ManagedThreadId);
+			order.Callback(pendingThumbnail);
+		}
+
+		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
+		{
+			Debug.WriteLine("_browser_Navigated ({0})", Thread.CurrentThread.ManagedThreadId);
+			ThumbnailOrder order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
+			order.Done = true;
+			order.WaitHandle.Set();
+		}
+
+		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
+		{
+			var paperSizeName = GetPaperSizeName(document);
+
+			GeckoWebBrowser b;
+			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
+			{
+				if (_syncControl.InvokeRequired)
+				{
+					using (var waitHandle = new AutoResetEvent(false))
+					{
+						b = (GeckoWebBrowser)_syncControl.Invoke(
+							new Func<AutoResetEvent, GeckoWebBrowser>(MakeNewBrowser), waitHandle);
+						waitHandle.WaitOne(2000);
+					}
+				}
+				else
+					b = MakeNewBrowser(null);
+				b.Navigated += _browser_Navigated;
+				_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
+			}
+			return b;
+		}
+
+		private static string GetPaperSizeName(XmlDocument document)
+		{
+			string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document, "A5Portrait").ToString();
+			return paperSizeName;
+		}
 
 
-                            //BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
-                            //the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
-                            //the placeholder thumbnail.
-                            if (browser.Width == 0 || browser.Height == 0)
-                            {
-                                var paperSizeName = GetPaperSizeName(order.Document);
-                                throw new ApplicationException(
-                                    "Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
-                            }
-                                                        if (_disposed)
-                                                            return;
-
-                            var creator = new ImageCreator(browser);
-                            byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
-
-                            using (var stream = new System.IO.MemoryStream(imageBytes))
-                            using (Image fullsizeImage = Image.FromStream(stream))
-                            {
-                                if (_disposed)
-                                    return;
-								int width = order.Options.Width;
-								int height = order.Options.Height;
-                                if (!order.Options.CenterImageUsingTransparentPadding)
-                                {
-                                    // Adjust height and width so image does not end up with extra blank area
-                                    if (fullsizeImage.Width < fullsizeImage.Height)
-                                    {
-                                        width = Math.Min(width, height * fullsizeImage.Width / fullsizeImage.Height + 2);
-                                        // +2 seems to be needed (at least for 70 pix height) so nothing is clipped
-                                    }
-                                    else if (fullsizeImage.Width > fullsizeImage.Height)
-                                    {
-                                        height = Math.Min(height, width * fullsizeImage.Height / fullsizeImage.Width + 2);
-                                    }
-                                }
-                                pendingThumbnail = MakeThumbNail(fullsizeImage, order.Options);
-                            }
-                        }
-                        catch (Exception error)
-                        {
-#if DEBUG
-                            Debug.Fail(error.Message);
-#endif
-                            Logger.WriteEvent("HtmlThumbNailer got " + error.Message);
-                            Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
-                            foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
-                            {
-                                try
-                                {
-                                    Logger.WriteEvent("Disposing of browser {0}", browserCacheForDifferentPaperSize.Key);
-                                    browserCacheForDifferentPaperSize.Value.Dispose();
-                                }
-                                catch (Exception e2)
-                                {
-                                    Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
-                                }
-                            }
-                            _browserCacheForDifferentPaperSizes.Clear();
-                        }
-                    }
-                }
-                if (pendingThumbnail == null)
-                {
-                    pendingThumbnail = Resources.PagePlaceHolder;
-                }
-                else if (!string.IsNullOrEmpty(order.ThumbNailFilePath))
-                {
-                    try
-                    {
-                        //gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
-                        using (Bitmap b = new Bitmap(pendingThumbnail))
-                        {
-                            b.Save(order.ThumbNailFilePath);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //this is going to fail if we don't have write permission
-                    }
-                }
-
-                pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
-
-                Debug.WriteLine("THumbnail created with dimensions ({0},{1})", browser.Width, browser.Height);
-
-                try
-                //I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
-                {
-                    if (_images.ContainsKey(order.Key))
-                        _images.Remove(order.Key);
-                    _images.Add(order.Key, pendingThumbnail);
-                }
-                catch (Exception error)
-                {
-                    Logger.WriteMinorEvent("Skipping minor error: " + error.Message);
-                    //not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
-                }
-            }
-            //order.ResultingThumbnail = pendingThumbnail;
-            if (_disposed)
-                return;
-            Logger.WriteMinorEvent("HtmlThumNailer: finished work on thumbnail ({0})", order.ThumbNailFilePath);
-            order.Callback(pendingThumbnail);
-        }
-
-        void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
-        {
-            ThumbnailOrder order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
-            order.Done = true;
-        }
-
-
-        private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
-        {
-            var paperSizeName = GetPaperSizeName(document);
-
-            GeckoWebBrowser b;
-            if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
-            {
-                b = MakeNewBrowser();
-                b.Navigated += new EventHandler<GeckoNavigatedEventArgs>(_browser_Navigated);
-                _browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
-            }
-            return b;
-        }
-
-        private static string GetPaperSizeName(XmlDocument document)
-        {
-            string paperSizeName = SizeAndOrientation.GetSizeAndOrientation(document, "A5Portrait").ToString();
-            return paperSizeName;
-        }
-
-
-        private GeckoWebBrowser MakeNewBrowser()
-        {
-            Debug.WriteLine("making browser");
+		private GeckoWebBrowser MakeNewBrowser(AutoResetEvent waitHandle)
+		{
+			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
-
-            var browser = new GeckoWebBrowser();
+			var browser = new GeckoWebBrowser();
 #else
 			var browser = new OffScreenGeckoWebBrowser();
 #endif
-            browser.HandleCreated += new EventHandler(OnBrowser_HandleCreated);
-            browser.CreateControl();
-            var giveUpTime = DateTime.Now.AddSeconds(2);
-            while (!_browserHandleCreated && DateTime.Now < giveUpTime)
-            {
-                //TODO: could lead to hard to reproduce bugs
-                Application.DoEvents();
-                Thread.Sleep(100);
-            }
-            return browser;
-        }
-
-
-        /// <summary>
-        /// we need to wait for this to happen before we can proceed to navigate to the page
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void OnBrowser_HandleCreated(object sender, EventArgs e)
-        {
-            _browserHandleCreated = true;
-        }
-
-
+			browser.HandleCreated += (sender, e) => {
+				if (waitHandle != null)
+					waitHandle.Set();
+			};
+			browser.CreateControl();
+			return browser;
+		}
 
         private Image MakeThumbNail(Image bmp, ThumbnailOptions options)
         {
@@ -407,8 +383,10 @@ namespace Bloom
             int contentWidth;
             int contentHeight;
 
+#if !__MonoCS__
             int horizontalOffset = 0;
             int verticalOffset = 0;
+#endif
 
             int thumbnailWidth = options.Width;
             int thumbnailHeight = options.Height;
@@ -433,8 +411,10 @@ namespace Bloom
                     contentWidth = options.Width; 
                     contentHeight = options.Height;
                 }
+#if !__MonoCS__
                 horizontalOffset = (options.Width / 2) - (contentWidth / 2);
-                verticalOffset = (options.Height / 2) - (contentHeight / 2);                
+                verticalOffset = (options.Height / 2) - (contentHeight / 2);
+#endif
             }
             else
             {
@@ -443,14 +423,13 @@ namespace Bloom
             }
 
 #if !__MonoCS__
-
             var thumbnail = new Bitmap(thumbnailWidth, thumbnailHeight, PixelFormat.Format64bppPArgb);
 			using (var graphics = Graphics.FromImage(thumbnail))
             {
                 graphics.PixelOffsetMode = PixelOffsetMode.None;
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                var destRect = new Rectangle(horizontalOffset, verticalOffset, contentWidth,contentHeight); 
+                var destRect = new Rectangle(horizontalOffset, verticalOffset, contentWidth,contentHeight);
 
                graphics.DrawImage(bmp,
                         destRect, 
@@ -473,8 +452,9 @@ namespace Bloom
 #else
 			int skipMarginH = 30;
 			int skipMarginV = 30;
-			Bitmap croppedImage = (bmp as Bitmap).Clone(new Rectangle(new Point(skipMarginH, skipMarginV), new Size(bmp.Width - 2 * skipMarginH, bmp.Height - 2 * skipMarginV)), bmp.PixelFormat);
-			return croppedImage.GetThumbnailImage(contentWidth, contentHeight, null, System.IntPtr.Zero);
+			Bitmap croppedImage = (bmp as Bitmap).Clone(new Rectangle(new Point(skipMarginH, skipMarginV),
+				new Size(bmp.Width - 2 * skipMarginH, bmp.Height - 2 * skipMarginV)), bmp.PixelFormat);
+			return croppedImage.GetThumbnailImage(contentWidth, contentHeight, null, IntPtr.Zero);
 #endif
         }
 
@@ -534,7 +514,6 @@ namespace Bloom
         public void Dispose()
         {
             _disposed = true;
-            Application.Idle -= Application_Idle;
             _orders.Clear();
             foreach (var browser in _browserCacheForDifferentPaperSizes)
             {
@@ -557,8 +536,9 @@ namespace Bloom
         {
             if (_orders.Count == 0)
                 return;
-            if (invokeTarget != null)
-                invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
+			// Should not be needed anymore with the new approach
+//            if (invokeTarget != null)
+//                invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
         }
     }
 
@@ -573,5 +553,6 @@ namespace Bloom
         public bool Done;
         public string ThumbNailFilePath;
         public HtmlThumbNailer.ThumbnailOptions Options;
+		public AutoResetEvent WaitHandle;
     }
 }
