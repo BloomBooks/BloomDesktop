@@ -116,6 +116,7 @@ namespace Bloom.web
 			catch (Exception e)
 			{
 				error = e;
+				_listener = null;
 				return false;
 			}
 		}
