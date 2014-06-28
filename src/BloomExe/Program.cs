@@ -281,7 +281,7 @@ namespace Bloom
 				_splashForm = null; //but we are done with it
 			}
 
-			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
+			if (!_bookDownloadSupport.HadOrder && RegistrationDialog.ShouldWeShowRegistrationDialog())
 			{
 				using (var dlg = new RegistrationDialog(false))
 				{
