@@ -41,12 +41,25 @@ namespace BloomTests.WebLibraryIntegration
 			if (_client.LogIn("mytest@example.com", "nonsense"))
 				_client.DeleteCurrentUser();
 		    Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-		    _client.CreateUser("mytest@example.com", "nonsense");
+            Assert.That(_client.UserExists("mytest@example.com"), Is.False);
+            _client.CreateUser("mytest@example.com", "nonsense");
 			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True);
+            Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "login is not case-independent");
+            Assert.That(_client.UserExists("mytest@example.com"), Is.True);
+            Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
 			_client.DeleteCurrentUser();
 			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-		}
+            Assert.That(_client.UserExists("mytest@example.com"), Is.False); 
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
+            _client.CreateUser("Mytest@Example.com", "nonsense");
+            Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
+            Assert.That(_client.UserExists("Mytest@Example.com"), Is.True);
+            Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
+            _client.DeleteCurrentUser();
+            Assert.That(_client.LoggedIn, Is.False);
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
+        }
 
         [Test]
         public void LoggedIn_Initially_IsFalse()
