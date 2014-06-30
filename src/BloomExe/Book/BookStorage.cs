@@ -405,7 +405,6 @@ namespace Bloom.Book
 					continue;
 
 				//trim off the end of "license.png?123243"
-
 				var startOfDontCacheHack = imageFileName.IndexOf('?');
 				if (startOfDontCacheHack > -1)
 					imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
