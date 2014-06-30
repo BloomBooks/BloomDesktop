@@ -398,6 +398,11 @@ namespace Bloom.Book
 					}
 					continue;
 				}
+				// Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
+				// Also, at present the user can't insert them into a book. Don't report them.
+				// TODO: if we ever allow the user to add .svg files, we'll need to change this
+				if (Path.HasExtension(imageFileName) && Path.GetExtension(imageFileName).ToLowerInvariant() == ".svg")
+					continue;
 
 				//trim off the end of "license.png?123243"
 
