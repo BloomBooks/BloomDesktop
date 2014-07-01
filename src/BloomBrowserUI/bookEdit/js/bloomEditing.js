@@ -124,7 +124,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
 
 function Cleanup() {
 
-        //for stuff bloom introduces, just use this "bloom-ui" class to have it removed
+    // for stuff bloom introduces, just use this "bloom-ui" class to have it removed
     $(".bloom-ui").each(function() {
         $(this).remove();
     });
@@ -684,6 +684,8 @@ function AddOverflowHandler() {
                 if ($this.hasClass('overflow'))
                     $this.removeClass('overflow');
             }
+            // This will make sure that any language tags on this div stay in position with editing.
+            $this.qtip('reposition');
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
@@ -959,10 +961,11 @@ jQuery(document).ready(function () {
                 }
             }
         });
-        // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
+        // doing this makes it impossible to reposition them
+        // .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
     });
 
-    // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
+    // I took away this feature because qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
     // say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
     //    $("*[title]").each(function() {
     //        $(this).qtip({ position: {
