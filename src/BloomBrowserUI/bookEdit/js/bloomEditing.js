@@ -285,6 +285,7 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("textarea, div").each(function() {
         $(this).attr("readonly", "readonly");
         $(this).removeClass('bloom-editable');
+        $(this).removeClass('overflow'); // don't want red in source text bubbles
         $(this).attr("contenteditable", "false");
         // If we change font size, that should NOT affect the source text bubbles
         var styleClass = GetStyleClassFromElement(this);
@@ -681,8 +682,7 @@ function AddOverflowHandler() {
             if ($this.IsOverflowing())
                 $this.addClass('overflow');
             else {
-                if ($this.hasClass('overflow'))
-                    $this.removeClass('overflow');
+                $this.removeClass('overflow');
             }
             // This will make sure that any language tags on this div stay in position with editing.
             $this.qtip('reposition');
