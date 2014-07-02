@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -6,7 +7,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Palaso.Extensions;
 using System.Xml;
-using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -63,18 +63,18 @@ namespace Bloom.Book
 
 		public string FolderPath { get; set; }
 
-        public bool AllowUploading
-        {
-            get { return MetaData.AllowUploadingToBloomLibrary; }
-        }
+		public bool AllowUploading
+		{
+			get { return MetaData.AllowUploadingToBloomLibrary; }
+		}
 
-        public bool BookletMakingIsAppropriate
-        {
-            get
-            {
-                return MetaData.BookletMakingIsAppropriate;
-            }
-        }
+		public bool BookletMakingIsAppropriate
+		{
+			get
+			{
+				return MetaData.BookletMakingIsAppropriate;
+			}
+		}
 
 		public bool IsSuitableForMakingShells
 		{
@@ -109,22 +109,22 @@ namespace Bloom.Book
 		{
 			get { return MetaData.Title; }
 			set
-            {
-                var titleStr = Book.RemoveXmlMarkup(value);
-                MetaData.Title = titleStr;
-            }
+			{
+				var titleStr = Book.RemoveXmlMarkup(value);
+				MetaData.Title = titleStr;
+			}
 		}
 
-        /// <summary>
-        /// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
-        /// This stores a Json string representing lang:title pairs, e.g., 
-        /// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
-        /// </summary>
-        public string AllTitles
-        {
-            get { return MetaData.AllTitles; }
-            set { MetaData.AllTitles = value; }
-        }
+		/// <summary>
+		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
+		/// This stores a Json string representing lang:title pairs, e.g., 
+		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
+		/// </summary>
+		public string AllTitles
+		{
+			get { return MetaData.AllTitles; }
+			set { MetaData.AllTitles = value; }
+		}
 
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
 		// Not sure what it needs to be. Locally the thumbnail is always called just thumbnail.png.
@@ -191,8 +191,6 @@ namespace Bloom.Book
 			get { return Path.GetFileName(FolderPath); }
 		}
 
-
-
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
@@ -211,7 +209,7 @@ namespace Bloom.Book
 
 		public static Color NextBookColor()
 		{
-			return CoverColors[_coverColorIndex++%CoverColors.Length];
+			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
 		public void Save()
@@ -266,10 +264,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-        public ParseDotComObjectPointer[] LanguageTableReferences
+		public ParseDotComObjectPointer[] LanguageTableReferences
 		{
 			get { return MetaData.LanguageTableReferences; }
-            set { MetaData.LanguageTableReferences = value; }
+			set { MetaData.LanguageTableReferences = value; }
 		}
 
 		/// <summary>
@@ -310,7 +308,8 @@ namespace Bloom.Book
 
 	public class ErrorBookInfo : BookInfo
 	{
-		public ErrorBookInfo(string folderPath, Exception exception) : base(folderPath,false/*review*/)
+		public ErrorBookInfo(string folderPath, Exception exception)
+			: base(folderPath, false/*review*/)
 		{
 			Exception = exception;
 		}
@@ -377,11 +376,11 @@ namespace Bloom.Book
 		public bool IsFolio { get; set; }
 
 		// Todo: multilingual
-        [JsonProperty("title")]
-        public string Title { get; set; }
+		[JsonProperty("title")]
+		public string Title { get; set; }
 
-        [JsonProperty("allTitles")]
-        public string AllTitles { get; set; }
+		[JsonProperty("allTitles")]
+		public string AllTitles { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnails, pdfs, etc.
@@ -441,24 +440,24 @@ namespace Bloom.Book
 		[JsonProperty("pageCount")]
 		public int PageCount { get; set; }
 
-        // This is obsolete but loading old Json files fails if we don't have a setter for it.
+		// This is obsolete but loading old Json files fails if we don't have a setter for it.
 		[JsonProperty("languages")]
-		public string[] Languages { get { return new string[0]; } set {}}
+		public string[] Languages { get { return new string[0]; } set { } }
 
-        [JsonProperty("langPointers")]
-        public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
+		[JsonProperty("langPointers")]
+		public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
 
-        // This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
-        [JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(true)]
-        public bool AllowUploadingToBloomLibrary { get; set; }
+		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
+		[JsonProperty("allowUploadingToBloomLibrary", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[DefaultValue(true)]
+		public bool AllowUploadingToBloomLibrary { get; set; }
 
-        [JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(true)]
-        public bool BookletMakingIsAppropriate { get; set; }
+		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[DefaultValue(true)]
+		public bool BookletMakingIsAppropriate { get; set; }
 
 		public void SetUploader(string id)
 		{
@@ -490,10 +489,10 @@ namespace Bloom.Book
 	/// </summary>
 	public class ParseDotComObjectPointer
 	{
-	    public ParseDotComObjectPointer()
-	    {
-	        Type = "Pointer"; // Required for all parse.com pointers.
-	    }
+		public ParseDotComObjectPointer()
+		{
+			Type = "Pointer"; // Required for all parse.com pointers.
+		}
 
 		[JsonProperty("__type")]
 		public string Type { get; set; }
@@ -505,27 +504,27 @@ namespace Bloom.Book
 		public string ObjectId { get; set; }
 	}
 
-    /// <summary>
-    /// This class represents the parse.com Language class (for purposes of generating json)
-    /// </summary>
-    public class LanguageDescriptor
-    {
-        [JsonIgnore]
-        public string Json
-        {
-            get
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-        }
+	/// <summary>
+	/// This class represents the parse.com Language class (for purposes of generating json)
+	/// </summary>
+	public class LanguageDescriptor
+	{
+		[JsonIgnore]
+		public string Json
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(this);
+			}
+		}
 
-        [JsonProperty("isoCode")]
-        public string IsoCode { get; set; }
+		[JsonProperty("isoCode")]
+		public string IsoCode { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+		[JsonProperty("name")]
+		public string Name { get; set; }
 
-        [JsonProperty("ethnologueCode")]
-        public string EthnologueCode { get; set; }       
-    }
+		[JsonProperty("ethnologueCode")]
+		public string EthnologueCode { get; set; }
+	}
 }

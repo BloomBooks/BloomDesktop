@@ -407,7 +407,6 @@ namespace Bloom.Edit
         {
             _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 
-    	    //AddReaderToolsToPage();
             AddAccordionToPage();
 
     	    return _domForCurrentPage;
@@ -594,69 +593,10 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Mangle the page to add a div which floats on the right and contains various editing controls
-        /// (currently the decodable/leveled reader ones).
-        /// This involves
-        ///   - Moving the body of the current page into a new division, and changing stylesheet links
-        ///     to @import statements in a new scoped div. This insulates the ReaderTools from the main page stylesheet.
-        ///     (Note: should we ever use a non-gecko browser, e.g. for Macintosh, be aware that scoped style is not yet
-        ///     supported by most of them, and a different solution may be needed.)
-        ///   - Appending the contents of the body of ReaderTools.htm to the body of the page
-        ///   - Appending (most of) the header of ReaderTools.htm to the header of the page
-        ///   - Adding the JavaScript and css file references needed by the ReaderTools in the appropriate places
-        ///   - Copying some font-awesome files to a subdirectory of the temp folder, since FireFox won't let us load them from elsewhere
-        /// </summary>
-        private void AddReaderToolsToPage()
-        {
-            MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
-
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
-            var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
-
-            // move css files from the head into scoped tags in ReaderTools.htm
-            var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
-            MoveStylesIntoScopedTag(domForAccordion, div);
-            
-            AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
-
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/underscore_min_152.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/xregexp-all-min.js")); // before bloom_xregexp_categories
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_xregexp_categories.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/jquery.text-markup.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"jquery.div-columns.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/synphony_lib.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"libsynphony/bloom_lib.js"));
-            _domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
-
-            AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
-            _domForCurrentPage.AddJavascriptFileToBody(
-                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
-            _domForCurrentPage.AddJavascriptFileToBody(
-                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"readerTools.js")); // must be last
-
-            // Load into the accordion panel whatever subfolders/htm files are under the ReaderTools folder
-            var subFolders = Directory.GetDirectories(Path.GetDirectoryName(path));
-            //AppendAccordionPanels(subFolders);
-
-            // It's infuriating, but to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
-            // live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
-            // (We haven't made the temp file yet; but it will be in the system temp folder.)
-            var pathToFontAwesomeStyles =
-                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
-            var requiredLocationOfFontAwesomeStyles = Path.GetTempPath() + "/" + "font-awesome/css/font-awesome.min.css";
-            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
-            File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
-            var pathToFontAwesomeFont = Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)) +
-                                        "/fonts/fontawesome-webfont.woff";
-            var requiredLocationOfFontAwesomeFont =
-                Path.GetDirectoryName(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles)) +
-                "/fonts/fontawesome-webfont.woff";
-            Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
-            File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
-            _domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
-        }
-
-        /// <summary>Request from javascript to load a panel into the accordion</summary>
+		/// Request from javascript to load a panel into the accordion.
+		/// NOTE: currently each panel is being loaded separately using this method because of security restrictions placed on file:// urls.
+		/// TODO: see if it is possible to move this to javascript (using http://localhost:8089/bloom/C%3A/.../accordion/DecodableRT/DecodableRT.htm)
+		/// </summary>
         /// <param name="panelName"></param>
         private void LoadAccordionPanel(string panelName)
         {
@@ -762,8 +702,8 @@ namespace Bloom.Edit
                     continue;
                 if (node.Name == "link" && node.Attributes != null && node.Attributes["rel"] != null)
                     continue; // likewise stylesheets must be inserted
-                if (dest.OwnerDocument != null) 
-                    dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
+
+				dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
             }
         }
 
