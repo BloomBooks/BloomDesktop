@@ -1,5 +1,11 @@
 
 /**
+ * The html code for a check mark character
+ * @type String
+ */
+var checkMarkString = '&#10004;';
+
+/**
  * Fires an event for C# to handle
  * @param {type} eventName
  * @param {type} eventData
@@ -10,12 +16,17 @@ function fireCSharpAccordionEvent(eventName, eventData) {
     document.dispatchEvent(event);
 }
 
-function checkbox_click(chkbox) {
+/**
+ * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
+ * @param chkbox
+ */
+function showOrHidePanel_click(chkbox) {
 
     var panel = $(chkbox).data('panel');
 
     if (chkbox.innerHTML === '') {
-        chkbox.innerHTML = '&#10004;';
+
+        chkbox.innerHTML = checkMarkString;
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t1");
         if (panel) fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
     }
@@ -33,7 +44,6 @@ function checkbox_click(chkbox) {
 function restoreAccordionSettings(settings) {
 
     var opts = JSON.parse(settings);
-    var check = '&#10004;';
 
     if (opts['showPE'])
         requestPanel('showPE', 'PageElements');
@@ -49,7 +59,7 @@ function restoreAccordionSettings(settings) {
 
         // find the index of the panel with the 'current' id
         $('#accordion > h3').each(function() {
-            if (($(this).data('panelId')) && ($(this).data('panelId') === opts['current'])) {
+            if ($(this).data('panelId') === opts['current']) {
 
                 // the index is the last segment of the element id
                 var idx = this.id.substr(this.id.lastIndexOf('-') + 1);
@@ -73,12 +83,11 @@ function restoreAccordionSettings(settings) {
 
 function requestPanel(checkBoxId, panelId) {
 
-    // this is the character code for a check mark
-    var check = '&#10004;';
-
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
-        chkBox.innerHTML = check;
+        chkBox.innerHTML = checkMarkString;
+
+        // expects C# to call 'loadAccordionPanel' with the html for the new panel
         fireCSharpAccordionEvent('loadAccordionPanelEvent', panelId);
     }
 }
@@ -88,18 +97,15 @@ function loadAccordionPanel(newContent, panelId) {
     var elements = $.parseHTML(newContent, document, true);
 
     $.each(elements, function() {
-        if (this.nodeName !== 'SCRIPT') {
 
             $(this).data('panelId', panelId);
             $(this).insertBefore('#accordion-settings-header');
-        }
     });
 
     $('#accordion').accordion('refresh');
 
     $('#accordion').onOnce('accordionactivate.accordion', function(event, ui) {
-        // remember current panel
-        //fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + $('#accordion').accordion('option', 'active'));
+
         if (ui.newHeader.data('panelId'))
             fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
         else

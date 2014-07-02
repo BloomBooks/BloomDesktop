@@ -15,16 +15,10 @@ namespace Bloom
 
 		public static void UpdateSetting(this List<string> list, string settingName, bool shouldBeSet)
 		{
-			var isSet = list.Contains(settingName);
-
-			if (isSet && !shouldBeSet)
-			{
+			if (!shouldBeSet)
 				list.Remove(settingName);
-			}
-			else if (!isSet && shouldBeSet)
-			{
+			else if (!list.Contains(settingName) && shouldBeSet)
 				list.Add(settingName);
-			}
 		}
 	}
 }

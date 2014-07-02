@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -6,7 +7,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Palaso.Extensions;
 using System.Xml;
-using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -191,8 +191,6 @@ namespace Bloom.Book
 			get { return Path.GetFileName(FolderPath); }
 		}
 
-
-
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
@@ -211,7 +209,7 @@ namespace Bloom.Book
 
 		public static Color NextBookColor()
 		{
-			return CoverColors[_coverColorIndex++%CoverColors.Length];
+			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
 		public void Save()
@@ -310,7 +308,8 @@ namespace Bloom.Book
 
 	public class ErrorBookInfo : BookInfo
 	{
-		public ErrorBookInfo(string folderPath, Exception exception) : base(folderPath,false/*review*/)
+		public ErrorBookInfo(string folderPath, Exception exception)
+			: base(folderPath, false/*review*/)
 		{
 			Exception = exception;
 		}
@@ -443,7 +442,7 @@ namespace Bloom.Book
 
 		// This is obsolete but loading old Json files fails if we don't have a setter for it.
 		[JsonProperty("languages")]
-		public string[] Languages { get { return new string[0]; } set {}}
+		public string[] Languages { get { return new string[0]; } set { } }
 
 		[JsonProperty("langPointers")]
 		public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
@@ -452,11 +451,11 @@ namespace Bloom.Book
 		public string Summary { get; set; }
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
-		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[JsonProperty("allowUploadingToBloomLibrary", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
 
-		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
+		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
 
