@@ -5,6 +5,10 @@ interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
 }
 
+interface overflowInterface extends JQuery {
+    IsOverflowing(): boolean;
+}
+
 class StyleEditor {
 
     private _previousBox: Element;
@@ -106,6 +110,11 @@ class StyleEditor {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return; // too small, quietly don't do it!
         rule.style.setProperty("font-size", sizeString + units, "important");
+        if ((<overflowInterface>$(target)).IsOverflowing())
+            $(target).addClass('overflow');
+        else
+            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
