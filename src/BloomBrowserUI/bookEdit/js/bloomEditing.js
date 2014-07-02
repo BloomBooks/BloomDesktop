@@ -681,9 +681,9 @@ function AddOverflowHandler() {
         setTimeout(function () {
             if ($this.IsOverflowing())
                 $this.addClass('overflow');
-            else {
-                $this.removeClass('overflow');
-            }
+            else
+                $this.removeClass('overflow'); // If it's not here, this won't hurt anything.
+
             // This will make sure that any language tags on this div stay in position with editing.
             $this.qtip('reposition');
         }, 100); // 100 milliseconds
