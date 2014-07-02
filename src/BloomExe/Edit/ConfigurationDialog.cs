@@ -26,7 +26,6 @@ namespace Bloom.Edit
 		{
 			this.Activated += new EventHandler(On_Activated);
 
-			// DEPRICATED: _browser.WebBrowser.NavigateFinishedNotifier.NavigateFinished += new EventHandler(NavigateFinishedNotifier_NavigateFinished);
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_browser.Navigate(_filePath, false);
