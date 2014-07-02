@@ -432,6 +432,23 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_AllowUploadIsTrue()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			 var metadata = new BookInfo(bookFolderPath, false);
+			Assert.IsTrue(metadata.AllowUploading);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookletMakingIsAppropriateIsTrue()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.IsTrue(metadata.BookletMakingIsAppropriate);
+		}
+		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
