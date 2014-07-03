@@ -304,6 +304,12 @@ namespace Bloom.Publish
 						? PublishModel.DisplayModes.ShowPdf
 						: PublishModel.DisplayModes.WaitForUserToChooseSomething;
 				}
+				else if (_model.DisplayMode == PublishModel.DisplayModes.WaitForUserToChooseSomething)
+				{
+					// This happens if user went directly to Upload and then chooses Simple layout
+					// We haven't actually built a pdf yet, so do it.
+					ControlsChanged();
+				}
 				return;
 			}
 
