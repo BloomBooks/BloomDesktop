@@ -59,8 +59,12 @@ namespace Bloom.WebLibraryIntegration
             _serverThread.Start(_downloadOrders);
         }
 
+
+        public bool HadOrder;
+
         public void HandleBloomBookDownloadOrder(string url)
         {
+            HadOrder = true;
             _downloadOrders.AddOrder(url);
         }
 
@@ -76,7 +80,7 @@ namespace Bloom.WebLibraryIntegration
                 // See also where these registry entries are made by the wix installer (file Installer.wxs).
                 return;
             }
-            
+
             if (AlreadyRegistered(Registry.ClassesRoot))
                 return;
             var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
@@ -108,7 +112,6 @@ namespace Bloom.WebLibraryIntegration
         {
             get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
         }
-
 
         private void StopReceivingArgsFromOtherBloom()
         {
@@ -146,7 +149,7 @@ namespace Bloom.WebLibraryIntegration
                 string argument = null;
                 try
                 {
-                    int len = pipeServer.ReadByte()*256;
+                    int len = pipeServer.ReadByte() * 256;
                     len += pipeServer.ReadByte();
                     var inBuffer = new byte[len];
                     pipeServer.Read(inBuffer, 0, len);
