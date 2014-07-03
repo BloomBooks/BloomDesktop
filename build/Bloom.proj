@@ -12,7 +12,15 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+  <Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" />
   <UsingTask AssemblyFile="C:\Program Files (x86)\MSBuild\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll" TaskName="MsBuild.Community.Tasks.WebDownload" />
+
+  <PropertyGroup>
+	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
+	<Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
+	<Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
+	<Bucket>dev.bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+  </PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -124,10 +132,20 @@
 
 	<Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
 
-	<!-- Note, at the end of this command line we're appending the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+	<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
+	<Copy SourceFiles="../output/$(Version)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
+
+	<!-- Note, this copy appends the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
 		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
+	We have to make this copy because the S3BuildPublisher task does not support renaming.
 	-->
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers_$(Label).htm' />
+	<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(Label).htm"/>
+	<S3BuildPublisher
+	  EncryptionContainerName ="$(Key)"
+	  SourceFiles="../output/installer/DownloadPointers_$(Label).htm"
+	  DestinationBucket="$(Bucket)"
+	  DestinationFolder="channels"
+	  PublicRead="true" />
   </Target>
 
 
@@ -135,7 +153,12 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
 	<Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
 
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' />
+	<S3BuildPublisher
+	EncryptionContainerName ="$(Key)"
+	SourceFiles="../output/installer/BloomInstaller.$(Version).msi"
+	DestinationBucket="$(Bucket)"
+	DestinationFolder="installers"
+	PublicRead="true" />
 
 	<CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
