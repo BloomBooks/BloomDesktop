@@ -687,7 +687,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()
 		{
-			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloom.palaso.org";
+			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 
@@ -726,11 +726,11 @@ namespace Bloom
 
                     try
                     {
-                        if (Dns.GetHostAddresses("bloom.palaso.org").Length > 0)
+						if (Dns.GetHostAddresses("bloomlibrary.org").Length > 0)
                         {
                             if (DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the web page where you can get a new one.", "OLD BETA", MessageBoxButtons.YesNo))
                             {
-                                Process.Start("http://bloom.palaso.org/download");
+								Process.Start("http://bloomlibrary.org/download");
                                 Process.GetCurrentProcess().Kill();
                             }
                             return;
@@ -741,7 +741,7 @@ namespace Bloom
                     }
 
                     Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-                        "This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloom.palaso.org.");
+						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloomlibrary.org.");
             }
 
         }
