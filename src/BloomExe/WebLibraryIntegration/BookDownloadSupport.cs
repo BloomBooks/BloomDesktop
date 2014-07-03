@@ -59,8 +59,12 @@ namespace Bloom.WebLibraryIntegration
 			_serverThread.Start(_downloadOrders);
 		}
 
+
+		public bool HadOrder;
+
 		public void HandleBloomBookDownloadOrder(string url)
 		{
+			HadOrder = true;
 			_downloadOrders.AddOrder(url);
 		}
 
@@ -109,7 +113,6 @@ namespace Bloom.WebLibraryIntegration
 			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
 		}
 
-
 		private void StopReceivingArgsFromOtherBloom()
 		{
 			if (_serverThread != null)
@@ -146,7 +149,7 @@ namespace Bloom.WebLibraryIntegration
 				string argument = null;
 				try
 				{
-					int len = pipeServer.ReadByte()*256;
+					int len = pipeServer.ReadByte() * 256;
 					len += pipeServer.ReadByte();
 					var inBuffer = new byte[len];
 					pipeServer.Read(inBuffer, 0, len);
