@@ -132,9 +132,6 @@
      
     <Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
     
-    <!--Kludge, but S3BuildPublisher needs this file in the build folder-->
-    <Copy SourceFiles="../output/$(Version)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
-
     <!-- Note, this copy appends the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
 		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
     We have to make this copy because the S3BuildPublisher task does not support renaming.
@@ -153,6 +150,9 @@
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
     <Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
 
+    <!--Kludge, but S3BuildPublisher needs this file in the build folder-->
+    <Copy SourceFiles="../output/$(Version)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
+    
     <S3BuildPublisher
     EncryptionContainerName ="$(Key)"
     SourceFiles="../output/installer/BloomInstaller.$(Version).msi"
