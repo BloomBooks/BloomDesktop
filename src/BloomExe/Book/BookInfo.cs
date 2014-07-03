@@ -51,6 +51,8 @@ namespace Bloom.Book
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
+
+			FixDefaultsIfAppropriate();
 		}
 
 		public string Id
@@ -67,6 +69,19 @@ namespace Bloom.Book
         {
             get { return MetaData.AllowUploadingToBloomLibrary; }
         }
+
+		//there was a beta version that would introduce the .json files with the incorrect defaults
+		//we don't have a good way of differentiating when these defaults were set automatically
+		//vs. when someone actually set them to false. So this method is only used if a certain
+		//environment variable is set, so that our librarian (who ran into this) can fix her 
+		//affected collections.
+		public void FixDefaultsIfAppropriate()
+		{
+			if (System.Environment.GetEnvironmentVariable("FixBloomMetaInfo") != "true")
+				return;
+			MetaData.AllowUploadingToBloomLibrary = true;
+			MetaData.BookletMakingIsAppropriate = true;
+		}
 
         public bool BookletMakingIsAppropriate
         {
@@ -323,6 +338,12 @@ namespace Bloom.Book
 	/// </summary>
 	internal class BookMetaData
 	{
+		public BookMetaData()
+		{
+			IsExperimental = false;
+			AllowUploadingToBloomLibrary = true;
+			BookletMakingIsAppropriate = true;
+		}
 		public static BookMetaData FromString(string input)
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
