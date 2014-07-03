@@ -21,7 +21,7 @@ namespace Bloom
     public class UpdateVersionTable
     {
         //unit tests can change this
-        public  string  URLOfTable = "http://bloom.palaso.org/downloads/VersionUpgradeTable.txt";
+        public  string  URLOfTable = "http://bloomlibrary.org/channels/VersionUpgradeTable.txt";
         //unit tests can pre-set this
         public  string TextContentsOfTable { get; set; }
         
