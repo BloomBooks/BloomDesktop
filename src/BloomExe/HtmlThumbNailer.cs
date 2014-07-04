@@ -22,6 +22,10 @@ namespace Bloom
     public class HtmlThumbNailer : IDisposable
     {
         Dictionary<string, Image> _images = new Dictionary<string, Image>();
+
+		// This is used to synchronize browser access between different
+		// instances of Gecko which are used in various classes.
+		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
         private Color _backgroundColorOfResult;
         private Queue<ThumbnailOrder> _orders = new Queue<ThumbnailOrder>();
         private static HtmlThumbNailer _theOnlyOneAllowed;
@@ -51,6 +55,8 @@ namespace Bloom
             }
 
             _theOnlyOneAllowed = this;
+
+			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
 
 			_syncControl = new Control();
 			_syncControl.CreateControl();
@@ -262,7 +268,7 @@ namespace Bloom
 
 			Image pendingThumbnail = null;
 
-			lock (this)
+			lock (_monitorObjectForBrowserNavigation)
 			{
 				Logger.WriteMinorEvent("HtmlThumbNailer ({1}): starting work on thumbnail ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
@@ -312,6 +318,7 @@ namespace Bloom
 					//not worth crashing over, at this point in Bloom's life, since it's just a cache. But since then, I did add a lock() around all this.
 				}
 			}
+
 			//order.ResultingThumbnail = pendingThumbnail;
 			if (_disposed)
 				return;
