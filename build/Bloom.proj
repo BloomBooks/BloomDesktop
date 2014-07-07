@@ -151,7 +151,7 @@
 	<Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
 
 	<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
-	<Copy SourceFiles="../output/$(Version)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
+	<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
 
 	<S3BuildPublisher
 	EncryptionContainerName ="$(Key)"
