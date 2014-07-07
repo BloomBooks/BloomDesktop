@@ -455,12 +455,12 @@ namespace Bloom.Edit
 
 		private void OnPasteImage(GeckoDomEventArgs ge)
 		{
-			if (!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked","Sorry, this book is locked down so that images cannot be changed."));
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
 				return;
-			}
+			string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			if (!CheckIfLockedAndWarn(currentPath))
+				return;
 
 			Image clipboardImage = null;
 			try
@@ -476,9 +476,6 @@ namespace Bloom.Edit
 				if (ge.Target.ClassName.Contains("licenseImage"))
 					return;
 
-				var imageElement = GetImageNode(ge);
-				if (imageElement == null)
-					return;
 				Cursor = Cursors.WaitCursor;
 
 				//nb: later, code closer to the the actual book folder will
@@ -577,23 +574,36 @@ namespace Bloom.Edit
 			return imageElement;
 		}
 
+		/// <summary>
+		/// Returns true if it is either: a) OK to change images, or b) user overrides
+		/// Returns false if user cancels message box
+		/// </summary>
+		/// <param name="imagePath"></param>
+		/// <returns></returns>
+		private bool CheckIfLockedAndWarn(string imagePath)
+		{
+			//TODO: this would let them set it once without us bugging them, but after that if they
+			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
+			if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
+				&& !_model.CanChangeImages())
+			{
+				if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		private void OnChangeImage(GeckoDomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
 
-			//TODO: this would let them set it once without us bugging them, but after that if they
-			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-			if (!currentPath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
-				&& !_model.CanChangeImages())
-			{
-				if(DialogResult.Cancel== MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning","This book is locked down as shell. Are you sure you want to change the picture?"),LocalizationManager.GetString("EditTab.ChangeImage","Change Image"),MessageBoxButtons.OKCancel))
-				{
-					return;
-				}
-			}
+			if (!CheckIfLockedAndWarn(currentPath))
+				return;
 			if (ge.Target.ClassName.Contains("licenseImage"))
 				return;
 
