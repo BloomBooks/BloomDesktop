@@ -19,7 +19,7 @@
     <AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
     <Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
     <Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
-    <Bucket>dev.bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+    <Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
   </PropertyGroup>
 
   <Target Name="VersionNumbers">
