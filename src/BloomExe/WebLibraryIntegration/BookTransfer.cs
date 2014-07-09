@@ -41,15 +41,17 @@ namespace Bloom.WebLibraryIntegration
 		// to receive download downloadOrders from additional instances of Bloom created by clicking a download link
 		// in a web page. These may be handled at any time.
 	    private DownloadOrderList _downloadOrders;
+	    private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 	    public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, DownloadOrderList downloadOrders)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, DownloadOrderList downloadOrders, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
 		    _htmlThumbnailer = htmlThumbnailer;
 		    _downloadOrders = downloadOrders;
+			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 			if (_downloadOrders != null)
 			{
 				_downloadOrders.OrderAdded += DownloadOrderAdded;
@@ -84,6 +86,7 @@ namespace Bloom.WebLibraryIntegration
 		    string order;
 		    while ((order = _downloadOrders.GetOrder()) != null)
 		    {
+			    _bookDownloadStartingEvent.Raise(this);
 			    HandleBloomBookOrder(order);
 		    }
 	    }

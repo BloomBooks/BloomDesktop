@@ -21,14 +21,21 @@ namespace Bloom
     	private readonly LibraryClosing _libraryClosingEvent;
     	private readonly WorkspaceView _workspaceView;
 
-
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection, Sparkle _sparkle)
+		public Shell(Func<WorkspaceView> projectViewFactory,
+										CollectionSettings collectionSettings, 
+										BookDownloadStartingEvent bookDownloadStartingEvent,
+										LibraryClosing libraryClosingEvent, 
+										QueueRenameOfCollection queueRenameOfCollection, 
+										Sparkle _sparkle)
         {
             queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 		    _collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
-            
+
+			//bring the application to the front (will normally be behind the user's web browser)
+			bookDownloadStartingEvent.Subscribe((x) => this.Invoke((Action) (this.Activate)));
+
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
@@ -70,7 +77,6 @@ namespace Bloom
                                     
             this.Controls.Add(this._workspaceView);
 
-            
 		    SetWindowText();
         }
 
