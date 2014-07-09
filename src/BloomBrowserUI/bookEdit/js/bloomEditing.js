@@ -746,7 +746,7 @@ function AddLanguageTags() {
 
         var dictionary = GetDictionary();
         var whatToSay = dictionary[key];
-        if (whatToSay.length == 0 || whatToSay === undefined)
+        if (!whatToSay)
             whatToSay = key; //just show the code
 
         // Put whatToSay into data attribute for pickup by the css
@@ -1242,7 +1242,7 @@ $(document).ready(function () {
     //This took *enormous* fussing in the css. TODO: copy what we learned there
     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
     $(".bloom-draggableLabel").each(function () {
-        // previous to June 2014, containment was not working, so some items may be 
+        // previous to June 2014, containment was not working, so some items may be
         // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
         if ($(this).position().left < 0) {
             $(this).css('left', 0);
@@ -1372,8 +1372,13 @@ $(document).ready(function () {
         });
     });
 
-    var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-
+    var editor;
+    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
+        editor = new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
+    else {
+        editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
     $("div.bloom-editable:visible").each(function () {
 
         $(this).focus(function() {
