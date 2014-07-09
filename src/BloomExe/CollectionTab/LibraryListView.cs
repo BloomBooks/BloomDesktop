@@ -352,7 +352,11 @@ namespace Bloom.CollectionTab
 				if (dialogResult != DialogResult.OK)
 					return;
 			}
-			Process.Start("http://dev.bloomlibrary.org");
+#if DEBUG
+			Process.Start("http://dev.bloomlibrary.org/books");
+#else
+			Process.Start("http://bloomlibrary.org/books");
+#endif
 		}
 
 		DialogResult ShowBloomLibraryLinkVerificationDialog()
