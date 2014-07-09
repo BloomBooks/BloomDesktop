@@ -491,3 +491,35 @@ even when the div is focused (as long as it is empty).*/
 	content: attr(data-placeholder);
 	color: #DDDBDB;
 }
+
+
+.horizontalSplitter {
+	width: 100%;
+	height: 10px;
+	text-align: center;
+	z-index: 10000;
+	border-bottom-color: aliceblue;
+	border-bottom-width: 4px ;
+	border-bottom-style: dashed;
+}
+
+.horizontalSplitter:hover, .horizontalSplitter:active{
+	/*background-color: aliceblue;*/
+	border-bottom-color:deepskyblue;
+}
+
+/*
+Part of an experiment in showing links that add images and text, which we'll come back to later
+.addOns {*/
+	/*margin-top: 10px;*/
+	/*text-align: center;*/
+/*}*/
+
+/*.addOns li{*/
+	/*display:inline-block;*/
+	/*color: lightblue;*/
+	/*padding-right:20px;*/
+/*}*/
+/*.addOns li:hover{*/
+	/*color: deepskyblue;*/
+/*}*/
