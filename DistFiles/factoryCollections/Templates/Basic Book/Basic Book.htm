@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="basePage.css" type="text/css"/>
     <link rel="stylesheet" href="editMode.css" type="text/css"/>
     <link rel="stylesheet" href="Basic Book.css" type="text/css"/>
+    <link rel="stylesheet" href="basePage.css" type="text/css"/>
+    <link rel="stylesheet" href="editMode.css" type="text/css"/>
+    <link rel="stylesheet" href="../../../../src/BloomBrowserUI/bookEdit/css/editMode.css" type="text/css"/>
+    <!--+stylesheets('../../../../src/BloomBrowserUI/lib/jquery-ui.css')-->
+    <script src="../../../../src/BloomBrowserUI/lib/jquery-1.10.1.js"></script>
+    <script src="../../../../src/BloomBrowserUI/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="../../../../src/BloomBrowserUI/bookEdit/js/splitter.js"></script>
+    <script src="../../../../src/BloomBrowserUI/bookEdit/js/bloomEditing.js"></script>
   </head>
   <body>
     <div id="bloomDataDiv">
@@ -19,7 +27,7 @@
       <div data-book="bookTitle" lang="tpi">Nupela Buk</div>
       <div data-book="bookTitle" lang="id">Buku Dasar</div>
     </div>
-    <div class="bloom-page A5Portrait numberedPage bloom-combinedPage imageOnTop" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398382">
+    <div class="A5Portrait bloom-page numberedPage bloom-combinedPage imageOnTop" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398382">
       <div lang="en" class="pageLabel">Basic Text &amp; Picture</div>
       <div class="marginBox">
         <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
@@ -30,58 +38,67 @@
         </div>
       </div>
     </div>
-    <div class="bloom-page A5Portrait numberedPage bloom-combinedPage imageInMiddle" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398383">
-      <div lang="en" class="pageLabel">Picture in Middle</div>
-      <div class="marginBox">
-        <div class="bloom-translationGroup bloom-trailingElement normal-style">
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
-          </div>
-        </div>
-        <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
-        </div>
-        <div class="bloom-translationGroup bloom-trailingElement normal-style">
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="bloom-page A5Portrait numberedPage bloom-combinedPage imageOnBottom" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398384">
-      <div lang="en" class="pageLabel">Picture On Bottom</div>
-      <div class="marginBox">
-        <div class="bloom-translationGroup bloom-trailingElement normal-style">
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
-          </div>
-        </div>
-        <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
-        </div>
-      </div>
-    </div>
-    <div class="bloom-page A5Portrait numberedPage imageWholePage" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398385">
-      <div lang="en" class="pageLabel">Just a Picture</div>
-      <div class="marginBox">
-        <div class="bloom-imageContainer"><img src="placeHolder.png" alt="Could not load the picture"/>
-        </div>
-      </div>
-    </div>
-    <div class="bloom-page A5Portrait numberedPage textWholePage" data-page="extra" id="d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb">
-      <div lang="en" class="pageLabel">Just Text</div>
-      <div class="marginBox">
-        <div class="bloom-translationGroup bloom-trailingElement normal-style bloom-centerVertically">
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="bloom-page A5Portrait numberedPage pictureAndWordPage" data-page="extra" id="FD115DFF-0415-4444-8E76-3D2A18DBBD27">
-      <div lang="en" class="pageLabel">Picture &amp; Word</div>
-      <div class="marginBox">
-        <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
-        </div>
-        <div class="bloom-translationGroup bloom-trailingElement normal-style">
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
-          </div>
-        </div>
-      </div>
-    </div>
+    <!--+page-splittable-choice('Basic Text & Picture2').imageOnTop2#5dcd48df-e9ab-4a07-afd4-6a24d0398392-->
+    <!--	.container-->
+    <!--		//P.top Ubi est bi-color gemna?Eheu, clinias!Cedriums manducare!Nunquam attrahendam buxum.-->
+    <!--		div.heightAdjustable-->
+    <!--			+image-leading-->
+    <!--		div.heightAdjustable-->
+    <!--			p !Nocere interdum ducunt ad varius nutrix.A falsis, amor secundus mens.Pol, flavum homo!   Nunquam fallere domus.Mirabilis rumors ducunt ad sp-->
+    <!--		div.heightAdjustable-->
+    <!--			p. !Nocere interdum ducunt ad varius nutrix.A falsis, amor secundus mens.Pol, flavum homo!   Nunquam fallere domus.Mirabilis rumors ducunt ad sp-->
   </body>
+  <div class="A5Portrait bloom-page numberedPage bloom-combinedPage imageInMiddle" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398383">
+    <div lang="en" class="pageLabel">Picture in Middle</div>
+    <div class="marginBox">
+      <div class="bloom-translationGroup bloom-trailingElement normal-style">
+        <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        </div>
+      </div>
+      <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
+      </div>
+      <div class="bloom-translationGroup bloom-trailingElement normal-style">
+        <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="A5Portrait bloom-page numberedPage bloom-combinedPage imageOnBottom" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398384">
+    <div lang="en" class="pageLabel">Picture On Bottom</div>
+    <div class="marginBox">
+      <div class="bloom-translationGroup bloom-trailingElement normal-style">
+        <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        </div>
+      </div>
+      <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
+      </div>
+    </div>
+  </div>
+  <div class="A5Portrait bloom-page numberedPage imageWholePage" data-page="extra" id="5dcd48df-e9ab-4a07-afd4-6a24d0398385">
+    <div lang="en" class="pageLabel">Just a Picture</div>
+    <div class="marginBox">
+      <div class="bloom-imageContainer"><img src="placeHolder.png" alt="Could not load the picture"/>
+      </div>
+    </div>
+  </div>
+  <div class="A5Portrait bloom-page numberedPage textWholePage" data-page="extra" id="d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb">
+    <div lang="en" class="pageLabel">Just Text</div>
+    <div class="marginBox">
+      <div class="bloom-translationGroup bloom-trailingElement normal-style bloom-centerVertically">
+        <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="A5Portrait bloom-page numberedPage pictureAndWordPage" data-page="extra" id="FD115DFF-0415-4444-8E76-3D2A18DBBD27">
+    <div lang="en" class="pageLabel">Picture &amp; Word</div>
+    <div class="marginBox">
+      <div class="bloom-imageContainer bloom-leadingElement"><img src="placeHolder.png" alt="Could not load the picture"/>
+      </div>
+      <div class="bloom-translationGroup bloom-trailingElement normal-style">
+        <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        </div>
+      </div>
+    </div>
+  </div>
 </html>

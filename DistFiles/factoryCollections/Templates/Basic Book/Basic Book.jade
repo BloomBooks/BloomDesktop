@@ -23,6 +23,12 @@ html
 		meta(name='pageTemplateSource', content='Basic Book')
 		title 'Basic Book'
 		+stylesheets('Basic Book.css')
+		+stylesheets('../../../../src/BloomBrowserUI/bookEdit/css/editMode.css') <!-- REMOVE THIS-->
+		//+stylesheets('../../../../src/BloomBrowserUI/lib/jquery-ui.css')
+		script(src="../../../../src/BloomBrowserUI/lib/jquery-1.10.1.js")
+		script(src="../../../../src/BloomBrowserUI/lib/jquery-ui-1.10.3.custom.min.js")
+		script(src="../../../../src/BloomBrowserUI/bookEdit/js/splitter.js")
+		script(src="../../../../src/BloomBrowserUI/bookEdit/js/bloomEditing.js")
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Basic Book')
@@ -36,7 +42,17 @@ html
 			+image-leading
 			+field-trailing
 
-		+page-splittable-choice('Picture in Middle').imageInMiddle#5dcd48df-e9ab-4a07-afd4-6a24d0398383
+		//+page-splittable-choice('Basic Text & Picture2').imageOnTop2#5dcd48df-e9ab-4a07-afd4-6a24d0398392
+		//	.container
+		//		//P.top Ubi est bi-color gemna?Eheu, clinias!Cedriums manducare!Nunquam attrahendam buxum.
+		//		div.heightAdjustable
+		//			+image-leading
+		//		div.heightAdjustable
+		//			p !Nocere interdum ducunt ad varius nutrix.A falsis, amor secundus mens.Pol, flavum homo!   Nunquam fallere domus.Mirabilis rumors ducunt ad sp
+		//		div.heightAdjustable
+		//			p. !Nocere interdum ducunt ad varius nutrix.A falsis, amor secundus mens.Pol, flavum homo!   Nunquam fallere domus.Mirabilis rumors ducunt ad sp
+
+	+page-splittable-choice('Picture in Middle').imageInMiddle#5dcd48df-e9ab-4a07-afd4-6a24d0398383
 			+field-trailing
 			+image-leading
 			+field-trailing

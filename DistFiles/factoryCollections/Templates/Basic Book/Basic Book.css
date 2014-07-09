@@ -108,6 +108,10 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	vertical-align: bottom;
 	display: table-cell;
 }
+.imageOnTop .marginBox{
+   display:flex;
+   flex-direction: column;
+}
 /*------A4L Side-by-side common*/
 .imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
@@ -119,6 +123,29 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	height: 100% !important;
 	/*[disabled]border:1px solid #000000;*/
 }
+/*.imageOnTop2 .container *{*/
+    /*display: flex !important;*/
+/*}*/
+
+/*.imageOnTop2 .container{*/
+    /*display:flex;*/
+    /*flex-direction: column;*/
+    /*border-color:greenyellow;*/
+    /*border-width:1px;*/
+    /*border-style:solid;*/
+   /*height:100%;*/
+/*}*/
+/*.imageOnTop2 .container .top{*/
+     /*display:block;*/
+    /*min-height: 2em;*/
+    /*height:5cm;*/
+    /*background-color: salmon;*/
+ /*}*/
+/*.imageOnTop2 .bottom{*/
+    /*display: block;*/
+    /*height: 50px;*/
+    /*min-height: 4em;*/
+/*}*/
 .imageOnBottom.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
 	width: 48%;
