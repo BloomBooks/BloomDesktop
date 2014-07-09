@@ -40,7 +40,7 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_downloadOrders = new DownloadOrderList();
 			_htmlThumbNailer = new HtmlThumbNailer(new MonitorTarget());
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer,  _downloadOrders);
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer,  _downloadOrders, new BookDownloadStartingEvent());
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 

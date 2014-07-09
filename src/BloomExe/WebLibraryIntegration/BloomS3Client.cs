@@ -12,6 +12,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
+using Palaso.Code;
 using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
@@ -36,6 +37,7 @@ namespace Bloom.WebLibraryIntegration
 			_bucketName = bucketName;
 			_amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
 				KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
+			Guard.AgainstNull(_amazonS3, "Connection to AWS");
 			_transferUtility = new TransferUtility(_amazonS3);
 		}
 

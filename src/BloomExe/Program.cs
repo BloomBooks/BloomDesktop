@@ -120,7 +120,7 @@ namespace Bloom
 						SetUpLocalization();
 						Browser.SetUpXulRunner();
 						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-							_applicationContainer.HtmlThumbnailer, new DownloadOrderList());
+							_applicationContainer.HtmlThumbnailer, new DownloadOrderList(), new BookDownloadStartingEvent())/*not hooked to anything*/;
 						transfer.UploadFolder(args[1], _applicationContainer);
 						return;
 					}
