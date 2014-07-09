@@ -5,35 +5,35 @@ using Gecko;
 
 namespace Bloom.Edit
 {
-	public partial class ConfigurationDialog : Form
-	{
-		private readonly string _filePath;
-		private readonly string _libraryJsonData;
+    public partial class ConfigurationDialog : Form
+    {
+        private readonly string _filePath;
+    	private readonly string _libraryJsonData;
 
-		/// <summary>
+    	/// <summary>
 		/// Show an html form, prepopulating it with saved values, and returning the new values when they click "OK"
 		/// </summary>
 		/// <param name="configurationHtmlPath"></param>
 		/// <param name="libraryJsonData">Values saved previously</param>
 		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData)
-		{
-			_filePath = configurationHtmlPath;
+        {
+            _filePath = configurationHtmlPath;
 			_libraryJsonData = libraryJsonData;
-			InitializeComponent();
-		}
+			InitializeComponent();       
+        }
 
-		private void ConfigurationDialog_Load(object sender, EventArgs e)
-		{
+        private void ConfigurationDialog_Load(object sender, EventArgs e)
+        {
 			this.Activated += new EventHandler(On_Activated);
 
-			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+            _browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_browser.Navigate(_filePath, false);
 
-		}
+        }
 
-		private void On_Activated(object sender, EventArgs e)
-		{
+    	private void On_Activated(object sender, EventArgs e)
+    	{
 			/* The problem this solves is that when you're switching between this dialog and some
 			 * other application (don't know why, but people did it)... when you come back, the browser would
 			 * be all confused and sometimes you couldn't type at all.
@@ -42,9 +42,9 @@ namespace Bloom.Edit
 
 			_okButton.Select();
 			_browser.Select();
-		}
+    	}
 
-		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
+        void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
 			_browser.AddScriptSource("jquery-1.6.4.js");
 			_browser.AddScriptSource("form2object.js");
@@ -59,7 +59,7 @@ namespace Bloom.Edit
 	                }
 				function preloadSettings()
 					{
-						 x =  " + _libraryJsonData + @"; 
+						 x =  "+_libraryJsonData+ @"; 
 						var $inputs = $('#form').find('[name]');
 						populateForm($inputs, x, 'name');
 					}");
@@ -69,37 +69,37 @@ namespace Bloom.Edit
 			_browser.RunJavaScript("preloadSettings()"); //nb: if this starts removing the defaults, it means we've lost the patch: if(valForForm != null) on line 80 of jsform.js
 		}
 
-		private void _okButton_Click(object sender, EventArgs e)
-		{
-			GeckoDocument doc = _browser.WebBrowser.Document;
+        private void _okButton_Click(object sender, EventArgs e)
+        {
+           GeckoDocument doc = _browser.WebBrowser.Document;
 
-			var body = doc.GetElementsByTagName("body").First();
+            var body = doc.GetElementsByTagName("body").First();
 			GeckoHtmlElement div = doc.CreateElement("div") as GeckoHtmlElement;
-			div.Id = "output";
-			body.AppendChild(div);
+            div.Id = "output";
+            body.AppendChild(div);
 
 			_browser.RunJavaScript("gatherSettings()");
 
-			FormData = div.InnerHtml;
-			DialogResult = DialogResult.OK;
-			Close();
+            FormData = div.InnerHtml;
+            DialogResult = DialogResult.OK;
+            Close();                                                                                                
+        
+        }
 
-		}
+        /// <summary>
+        /// A JSON string of the form
+        /// </summary>
+        public string FormData { get; set; }
 
-		/// <summary>
-		/// A JSON string of the form
-		/// </summary>
-		public string FormData { get; set; }
-
-		private void _cancelButton_Click(object sender, EventArgs e)
-		{
-			DialogResult = DialogResult.Cancel;
-			Close();
-		}
-	}
+        private void _cancelButton_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
+    }
 
 
-	/*DOM.GeckoScriptElement script = Document.CreateElement("script").AsScriptElement();
+    /*DOM.GeckoScriptElement script = Document.CreateElement("script").AsScriptElement();
 script.Type = "text/javascript";
 script.Text = "function doAlert(){ alert('My alert - fired by automating a button click on the [Automated Button]'); }";
 Document.Body.AppendChild(script);
