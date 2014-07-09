@@ -59,7 +59,7 @@ namespace Bloom.Edit
 					}
 				function preloadSettings()
 					{
-						 x =  " + _libraryJsonData + @";
+						 x =  "+_libraryJsonData+ @";
 						var $inputs = $('#form').find('[name]');
 						populateForm($inputs, x, 'name');
 					}");
@@ -71,7 +71,7 @@ namespace Bloom.Edit
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
-			GeckoDocument doc = _browser.WebBrowser.Document;
+		   GeckoDocument doc = _browser.WebBrowser.Document;
 
 			var body = doc.GetElementsByTagName("body").First();
 			GeckoHtmlElement div = doc.CreateElement("div") as GeckoHtmlElement;
