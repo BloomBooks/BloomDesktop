@@ -746,7 +746,7 @@ function AddLanguageTags() {
 
         var dictionary = GetDictionary();
         var whatToSay = dictionary[key];
-        if (whatToSay.length == 0 || whatToSay === undefined)
+        if (!whatToSay)
             whatToSay = key; //just show the code
 
         // Put whatToSay into data attribute for pickup by the css
@@ -1372,8 +1372,13 @@ $(document).ready(function () {
         });
     });
 
-    var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-
+    var editor;
+    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
+        editor = new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
+    else {
+        editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
     $("div.bloom-editable:visible").each(function () {
 
         $(this).focus(function() {
