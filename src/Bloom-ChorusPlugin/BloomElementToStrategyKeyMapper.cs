@@ -35,7 +35,19 @@ namespace Bloom_ChorusPlugin
 
 			if (Matches(element, "self::div[@data-book and @lang]"))
 				return "BookDataItem"; 
-			
+
+            if (Matches(element, "self::div[contains(@class, 'bloom-translationGroup')]"))
+                return "TranslationGroup";
+
+            if (Matches(element, "self::div[contains(@class, 'bloom-content1')]"))
+                return "Content1Div";
+
+            if (Matches(element, "self::div[contains(@class, 'bloom-content2')]"))
+                return "Content2Div";
+
+            if (Matches(element, "self::div[contains(@class, 'bloom-content3')]"))
+                return "Content3Div";
+
 			return element.Name;
 		}
 

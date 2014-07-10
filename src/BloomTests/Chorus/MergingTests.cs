@@ -70,10 +70,10 @@ namespace BloomTests.Chorus
 					                <div class='bloom-page' id='pageC'></div>",
                         theirBody:@"<div class='bloom-page' id='pageA'></div>
                                    <div class='bloom-page' id='pageB'></div>",
-                       testsOnResultingFile: (file) =>
+                        testsOnResultingFile: (file) =>
                                                  {
                                                      AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                                                         "html/body/div[@class='bloom-page']", 3);
+                                                         "//div[@class='bloom-page']", 3);
                                                  },
                         testsOnEventListener: (listener)=>{listener.AssertExpectedConflictCount(0);});
 
@@ -112,15 +112,15 @@ namespace BloomTests.Chorus
                        testsOnResultingFile: (file) =>
                        {
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@class='bloom-page']", 2);
-                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageA']/div/div[text()='changed by us']",1);
-                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageB']/div/div[text()='changed by them']", 1);
+                               "//div[@class='bloom-page']", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageA']//div[text()='changed by us']",1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageB']//div[text()='changed by them']", 1);
                        },
                        testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
 
         }
 
-        [Test, Ignore("Chorus currently handles bloom-page as atomic")]
+        [Test]
         public void Merge_EachEditedTheSamePage_OneUserAddsSeparateBloomEditableDivs()
         {
             TestBodyMerge(ancestorBody: @"<div class='bloom-page' id='pageA'>
@@ -155,14 +155,17 @@ namespace BloomTests.Chorus
                        testsOnResultingFile: (file) =>
                        {
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@class='bloom-page']", 2);
+                               "//div[@class='bloom-page']", 2);
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@id='pageA']/div/div[text()='changed by us']", 1);
+                               "//div[@id='pageA']//div[text()='changed by us']", 1);
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@id='pageB']/div/div[text()='changed by them']", 1);
+                               "//div[@id='pageB']//div[text()='changed by them']", 1);
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@class='bloom-page']/div/div[@class='bloom-content2']", 2);
-                       },
+                               "//div[@class='bloom-page']//div[@class='bloom-content2']", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "//div[contains(@class, 'bloom-content2')]", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "//div[@class='bloom-translationGroup']", 2);                       },
                        testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
 
         }
@@ -207,7 +210,7 @@ namespace BloomTests.Chorus
                        testsOnEventListener: (listener) =>
                        {
                            listener.AssertExpectedConflictCount(1);
-                           listener.AssertFirstConflictType<BothEditedTheSameAtomicElement>();
+                           listener.AssertFirstConflictType<AmbiguousInsertConflict>();
                        });
 
         }
