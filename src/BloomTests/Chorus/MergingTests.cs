@@ -161,8 +161,6 @@ namespace BloomTests.Chorus
 						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
 							   "//div[@id='pageB']//div[text()='changed by them']", 1);
 						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-							   "//div[@class='bloom-page']//div[@class='bloom-content2']", 2);
-						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
 							   "//div[contains(@class, 'bloom-content2')]", 2);
 						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
 							   "//div[@class='bloom-translationGroup']", 2);
