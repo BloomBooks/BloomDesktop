@@ -152,8 +152,13 @@ namespace Bloom.Edit
 													  error=> HandleThumbnailerError(page, error));
 		}
 
-	    private void HandleThumbnailerError(IPage page, Exception error)
-    	{
+		private void HandleThumbnailerError(IPage page, Exception error)
+		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Exception>(HandleThumbnailerError), page, error);
+				return;
+			}
 #if DEBUG
 
 			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,13 +169,18 @@ namespace Bloom.Edit
 
 			Debug.Fail("Debug only" + error.Message);
 #endif
-    		RefreshOneThumbnailCallback(page, Resources.Error70x70);
-    	}
+			RefreshOneThumbnailCallback(page, Resources.Error70x70);
+		}
 
-    	private void RefreshOneThumbnailCallback(IPage page, Image image)
+		private void RefreshOneThumbnailCallback(IPage page, Image image)
 		{
 			if (IsDisposed)
 				return;
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Image>(RefreshOneThumbnailCallback), page, image);
+				return;
+			}
 			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
 			if (imageIndex > -1)
 			{

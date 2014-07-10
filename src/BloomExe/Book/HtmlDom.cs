@@ -158,6 +158,8 @@ namespace Bloom.Book
 	    private XmlElement MakeJavascriptElement(string pathToJavascript)
 	    {
 	        XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
+
+			element.IsEmpty = false;
 	        element.SetAttribute("type", "text/javascript");
 	        element.SetAttribute("src", "file://" + pathToJavascript);
 	        return element;
