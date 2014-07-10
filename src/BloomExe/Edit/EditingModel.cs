@@ -412,6 +412,9 @@ namespace Bloom.Edit
 			if (_currentlyDisplayedBook.BookInfo.Tools.Contains("decodableReader"))
 				AddReaderToolsToPage();
 
+			_domForCurrentPage.Head.InnerXml = _domForCurrentPage.Head.InnerXml.Replace("file://http", "http");
+			_domForCurrentPage.Body.InnerXml = _domForCurrentPage.Body.InnerXml.Replace("file://http", "http");
+
 			return _domForCurrentPage;
 		}
 
