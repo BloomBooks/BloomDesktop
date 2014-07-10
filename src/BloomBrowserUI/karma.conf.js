@@ -39,7 +39,7 @@ module.exports = function (config) {
             'bookEdit/js/libsynphony/bloom_lib.js',
             'bookEdit/js/libsynphony/jquery.text-markup.js',
             'bookEdit/js/*.js',
-            'bookEdit/accordion/readerTools.js',
+            'bookEdit/accordion/accordion.js',
             'bookEdit/test/*.js',
             'bookEdit/test/libsynphony/*.test.js'
         ],

@@ -526,7 +526,7 @@ namespace Bloom.Edit
         {
             MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "ReaderTools.htm");
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
             var domForReaderTools = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
             // move css files from the head into scoped tags in ReaderTools.htm
@@ -551,7 +551,7 @@ namespace Bloom.Edit
             _domForCurrentPage.AddJavascriptFileToBody(
                 _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"synphonyApi.js"));
             _domForCurrentPage.AddJavascriptFileToBody(
-                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"readerTools.js")); // must be last
+                _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js")); // must be last
 
             // Load into the accordion panel whatever subfolders/htm files are under the ReaderTools folder
             var subFolders = Directory.GetDirectories(Path.GetDirectoryName(path));
