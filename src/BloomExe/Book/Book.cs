@@ -357,10 +357,6 @@ namespace Bloom.Book
         	}
             dom.SortStyleSheetLinks();
 
-            // TODO: remove this if it gets fixed in Palaso.XML.XmlDomExtensions.AddStyleSheet
-            if (dom.Head.InnerXml.Contains("file://http"))
-                dom.Head.InnerXml = dom.Head.InnerXml.Replace("file://http", "http");
-
             return dom;
         }
 

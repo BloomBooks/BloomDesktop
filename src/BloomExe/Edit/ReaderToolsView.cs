@@ -27,7 +27,7 @@ namespace Bloom.Edit
             InitializeComponent();
             Browser = new GeckoWebBrowser();
             Browser.Dock = DockStyle.Fill;
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools", "ReaderTools.htm");
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "ReaderTools.htm");
             Browser.HandleCreated += (sender, args) =>
             {
                 Browser.Navigate("file:///" + path);
