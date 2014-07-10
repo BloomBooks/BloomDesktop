@@ -1,13 +1,13 @@
 html
 	head
 	body
-		h3 Decodable Reader Tool
+		h3(data-markuptype="0") Decodable Reader Tool
 		div
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine="Stage "
 					span#stageNumber 1
-					span.ofStage=" of "
+					span.ofStage &nbsp;of&nbsp;
 						span#numberOfStages 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
 				span.setup.stageLine
@@ -23,4 +23,4 @@ html
 						i.fa.fa-long-arrow-up(title='Sort by frequency')
 						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
 			.tableHolder
-				table.wordList#wordList
+				.wordList#wordList

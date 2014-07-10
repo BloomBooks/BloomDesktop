@@ -412,9 +412,6 @@ namespace Bloom.Edit
 			if (_currentlyDisplayedBook.BookInfo.Tools.Contains("decodableReader"))
 				AddReaderToolsToPage();
 
-			_domForCurrentPage.Head.InnerXml = _domForCurrentPage.Head.InnerXml.Replace("file://http", "http");
-			_domForCurrentPage.Body.InnerXml = _domForCurrentPage.Body.InnerXml.Replace("file://http", "http");
-
 			return _domForCurrentPage;
 		}
 
@@ -529,7 +526,7 @@ namespace Bloom.Edit
 		{
 			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools", "ReaderTools.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "ReaderTools.htm");
 			var domForReaderTools = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 
 			// move css files from the head into scoped tags in ReaderTools.htm
@@ -575,7 +572,7 @@ namespace Bloom.Edit
 				"/fonts/fontawesome-webfont.woff";
 			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
 			System.IO.File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
-			_domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles);
+			_domForCurrentPage.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
 		}
 
 		private void AppendAccordionPanels(string[] subFolders)
@@ -644,10 +641,10 @@ namespace Bloom.Edit
 					if (source.StartsWith("jquery")) continue;
 
 					// look for the css file, and build a file URI
-					source = new Uri(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source)).AbsoluteUri;
+					source = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source).ToLocalhost();
 				}
 
-				var import = body.OwnerDocument.CreateTextNode("@import \"" + source.Replace("\\", "/") + "\";\n");
+				var import = body.OwnerDocument.CreateTextNode("@import \"" + source + "\";\n");
 				scope.AppendChild(import);
 				head.RemoveChild(style);
 			}
