@@ -2,6 +2,7 @@
 using System.IO;
 using Chorus.VcsDrivers.Mercurial;
 using Chorus.merge;
+using Chorus.merge.xml.generic;
 using LibChorus.TestUtilities;
 using NUnit.Framework;
 using Palaso.IO;
@@ -12,7 +13,7 @@ namespace BloomTests.Chorus
 {
     public class BookMergingTests
     {
-        [Test, Ignore("not yet")]
+        [Test]
         public void CreateOrLocate_FolderHasAccentedLetter_FindsIt()
         {
             using (var setup = new RepositorySetup("Abé Books"))
@@ -21,7 +22,7 @@ namespace BloomTests.Chorus
             }
         }
 
-        [Test, Ignore("not yet")]
+        [Test]
         public void CreateOrLocate_FolderHasAccentedLetter2_FindsIt()
         {
             using (var testRoot = new TemporaryFolder("bloom sr test"))
@@ -116,6 +117,98 @@ namespace BloomTests.Chorus
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageB']/div/div[text()='changed by them']", 1);
                        },
                        testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
+
+        }
+
+        [Test, Ignore("Chorus currently handles bloom-page as atomic")]
+        public void Merge_EachEditedTheSamePage_OneUserAddsSeparateBloomEditableDivs()
+        {
+            TestBodyMerge(ancestorBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original a</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                            </div></div>",
+                          ourBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>changed by us</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                            </div></div>",
+                         theirBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original a</div>
+                                                <div class='bloom-editable bloom-content2' contenteditable='true' lang='sss'>changed by them</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                                <div class='bloom-editable bloom-content2' contenteditable='true' lang='sss'>changed by them</div>
+                                            </div></div>",
+                       testsOnResultingFile: (file) =>
+                       {
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "html/body/div[@class='bloom-page']", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "html/body/div[@id='pageA']/div/div[text()='changed by us']", 1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "html/body/div[@id='pageB']/div/div[text()='changed by them']", 1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "html/body/div[@class='bloom-page']/div/div[@class='bloom-content2']", 2);
+                       },
+                       testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
+
+        }
+
+        [Test]
+        public void Merge_EachEditedTheSamePage_OneConflict()
+        {
+            TestBodyMerge(ancestorBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original a</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                            </div></div>",
+                          ourBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>changed by us</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                            </div></div>",
+                         theirBody: @"<div class='bloom-page' id='pageA'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>changed by them</div>
+                                            </div>
+                                        </div>
+                                   <div class='bloom-page' id='pageB'>
+                                            <div class='bloom-translationGroup'>
+                                                <div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original b</div>
+                                            </div></div>",
+                       testsOnResultingFile: (file) =>
+                       {
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "html/body/div[@class='bloom-page']", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageA']/div/div[text()='changed by us']", 1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageB']/div/div[text()='original b']", 1);
+                       },
+                       testsOnEventListener: (listener) =>
+                       {
+                           listener.AssertExpectedConflictCount(1);
+                           listener.AssertFirstConflictType<BothEditedTheSameAtomicElement>();
+                       });
 
         }
 
