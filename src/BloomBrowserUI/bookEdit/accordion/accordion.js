@@ -543,6 +543,7 @@ ReaderToolsModel.prototype.saveState = function() {
 
     // this is needed for unit testing
     if (typeof $('#accordion').accordion !== 'function') return;
+    if ($('#accordion').accordion('option', 'active').length === 0) return;
 
     var state = new DRTState();
     state.active = $('#accordion').accordion('option', 'active');
@@ -662,6 +663,8 @@ function initializeSynphony(settingsFileContent, fakeIt) {
 
     // get the list of sample texts
     fireCSharpReaderToolsEvent('getTextsListEvent', 'files'); // get the list of texts
+
+    alert('here');
 }
 
 /**

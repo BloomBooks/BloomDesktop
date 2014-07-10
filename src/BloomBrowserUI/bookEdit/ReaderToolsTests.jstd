@@ -11,7 +11,7 @@ load:
   - js/jquery.div-columns.js
   - js/libsynphony/jquery.text-markup.js
   - js/synphonyApi.js
-  - readerTools/readerTools.js
+  - accordion/accordion.js
 test:
   - test/readerTools.Test.js
 

@@ -1,7 +1,7 @@
 html
 	head
 	body
-		h3 Leveled Reader Tool
+		h3(data-markuptype="1") Leveled Reader Tool
 		div
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
@@ -10,9 +10,9 @@ html
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear
 				tr
-					td.section Word counts
+					td.section(colspan="3") Word counts
 				tr
-					td This Page
+					td(colspan="3") This Page
 				tr
 					td.statistics-label
 					td.statistics-max Max
@@ -25,20 +25,21 @@ html
 					td.statistics-label per sentence
 					td.statistics-max#maxWordsPerSentence 5
 					td.statistics-actual#actualWordsPerSentence 7
-				tr
-					td.section This Book
-				tr
+				tr.hidden
+					td.section(colspan="3") This Book
+				tr.hidden
 					td.statistics-label
 					td.statistics-max Max
 					td.statistics-actual Actual
-				tr
+				tr.hidden
 					td.statistics-label total
 					td.statistics-max#maxWordsPerBook
 					td.statistics-actual#actualWordCount 83
-				td.statistics-label per page
-				td.statistics-max#maxWordsPerPageBook 15
-				td.statistics-actual#actualWordsPerPageBook 14
-				tr
+				tr.hidden
+					td.statistics-label per page
+					td.statistics-max#maxWordsPerPageBook 15
+					td.statistics-actual#actualWordsPerPageBook 14
+				tr.hidden
 					td.statistics-label unique
 					td.statistics-max#maxUniqueWordsPerBook 20
 					td.statistics-actual#actualUniqueWords 22
