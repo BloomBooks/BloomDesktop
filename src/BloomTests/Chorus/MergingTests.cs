@@ -165,10 +165,50 @@ namespace BloomTests.Chorus
 						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
 							   "//div[contains(@class, 'bloom-content2')]", 2);
 						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-							   "//div[@class='bloom-translationGroup']", 2);                       },
+							   "//div[@class='bloom-translationGroup']", 2);
+					   },
 					   testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
 
 		}
+		[Test]
+		public void Merge_EachEditedTheSamePage_MergeMustBeBasedOnLanguage()
+		{
+			TestBodyMerge(ancestorBody: @"<div class='bloom-page' id='pageA'>
+											<div class='bloom-translationGroup'>
+												<div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original sse-lang text</div>
+											</div>
+										  </div>",
+						  ourBody: @"<div class='bloom-page' id='pageA'>
+											<div class='bloom-translationGroup'>
+												<div class='bloom-editable bloom-content1' contenteditable='true' lang='sse'>original sse-lang text</div>
+												<div class='bloom-editable bloom-content2' contenteditable='true' lang='third'>original third-lang text</div>
+											</div>
+										  </div>",
+						 theirBody: @"<div class='bloom-page' id='pageA'>
+											<div class='bloom-translationGroup'>
+												<div class='bloom-editable bloom-content1' contenteditable='true' lang='other'>original other-lang text</div>
+												<div class='bloom-editable bloom-content2' contenteditable='true' lang='sse'>changed by them</div>
+											</div>
+										  </div>",
+					   testsOnResultingFile: (file) =>
+					   {
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[@class='bloom-page']", 1);
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[contains(@class, 'bloom-editable')]", 3);
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[text()='changed by them']", 1);
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[text()='original third-lang text']", 1);
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[text()='original other-lang text']", 1);
+						   AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+							   "//div[@class='bloom-translationGroup']", 1);
+					   },
+					   testsOnEventListener: (listener) => { listener.AssertExpectedConflictCount(0); });
+
+		}
+
 
 		[Test]
 		public void Merge_EachEditedTheSamePage_OneConflict()
