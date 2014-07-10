@@ -44,6 +44,8 @@ namespace Bloom.Book
 
 			foreach (var path in _foldersPotentiallyHoldingPack)
 			{
+				if (!Directory.Exists(path))
+					continue; // XMatter in CommonData may not exist.
 				foreach (var directory in Directory.GetDirectories(path, "*-XMatter", SearchOption.AllDirectories))
 				{
 					_all.Add(new XMatterInfo(directory));
