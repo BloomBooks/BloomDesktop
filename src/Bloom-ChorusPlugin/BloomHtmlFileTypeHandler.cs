@@ -87,43 +87,30 @@ namespace Bloom_ChorusPlugin
 			merger.MergeStrategies.SetStrategy("DataDiv", new ElementStrategy(true)
 			{
 				IsAtomic = false,
-                OrderIsRelevant = false,
-                MergePartnerFinder = new FindByKeyAttribute("id"), //yes, it's a singleton of sorts, but by the id, not the tag
+				OrderIsRelevant = false,
+				MergePartnerFinder = new FindByKeyAttribute("id"), //yes, it's a singleton of sorts, but by the id, not the tag
 			});
-
 			merger.MergeStrategies.SetStrategy("BookDataItem", new ElementStrategy(true)
 			{
 				IsAtomic = true,
 				OrderIsRelevant = false,
 				MergePartnerFinder = new FindByMultipleKeyAttributes(new List<string>(new string[] {"data-book", "lang"}))
-			}); 
-
+			});
 			merger.MergeStrategies.SetStrategy("PageDiv", new ElementStrategy(true)
 			{
-			    IsAtomic = false,
-			    MergePartnerFinder = new FindByKeyAttribute("id"),
-
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("id"),
 			});
-            merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
-            {
-                IsAtomic = false,
-                MergePartnerFinder = new FindByKeyAttribute("class"),
-            });
-            merger.MergeStrategies.SetStrategy("Content1Div", new ElementStrategy(true)
-            {
-                IsAtomic = true,
-                MergePartnerFinder = new FindByKeyAttribute("class"),
-            });
-            merger.MergeStrategies.SetStrategy("Content2Div", new ElementStrategy(true)
-            {
-                IsAtomic = true,
-                MergePartnerFinder = new FindByKeyAttribute("class"),
-            });
-            merger.MergeStrategies.SetStrategy("Content3Div", new ElementStrategy(true)
-            {
-                IsAtomic = true,
-                MergePartnerFinder = new FindByKeyAttribute("class"),
-            });
+			merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
+			{
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+			});
+			merger.MergeStrategies.SetStrategy("LangDiv", new ElementStrategy(true)
+			{
+				IsAtomic = true,
+				MergePartnerFinder = new FindByKeyAttribute("lang"),
+			});
 		}
 
 		public bool CanMergeFile(string pathToFile)

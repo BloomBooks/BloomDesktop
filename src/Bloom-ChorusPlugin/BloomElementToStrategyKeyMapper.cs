@@ -30,23 +30,17 @@ namespace Bloom_ChorusPlugin
 			if (Matches(element, "self::div[@data-collection and @lang]"))
 				return "LibraryDataItem";
 
-            if (Matches(element, "self::div[@data-library and @lang]")) //"library" was the pre-version 1 name for what is now "collection"
-                return "LibraryDataItem";
+			if (Matches(element, "self::div[@data-library and @lang]")) //"library" was the pre-version 1 name for what is now "collection"
+				return "LibraryDataItem";
 
 			if (Matches(element, "self::div[@data-book and @lang]"))
 				return "BookDataItem"; 
 
-            if (Matches(element, "self::div[contains(@class, 'bloom-translationGroup')]"))
-                return "TranslationGroup";
+			if (Matches(element, "self::div[contains(@class, 'bloom-translationGroup')]"))
+				return "TranslationGroup";
 
-            if (Matches(element, "self::div[contains(@class, 'bloom-content1')]"))
-                return "Content1Div";
-
-            if (Matches(element, "self::div[contains(@class, 'bloom-content2')]"))
-                return "Content2Div";
-
-            if (Matches(element, "self::div[contains(@class, 'bloom-content3')]"))
-                return "Content3Div";
+			if (Matches(element, "self::div[@lang and contains(@class, 'bloom-editable')]"))
+				return "LangDiv";
 
 			return element.Name;
 		}

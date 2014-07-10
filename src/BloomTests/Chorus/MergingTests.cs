@@ -243,14 +243,18 @@ namespace BloomTests.Chorus
                        testsOnResultingFile: (file) =>
                        {
                            AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
-                               "html/body/div[@class='bloom-page']", 2);
-                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageA']/div/div[text()='changed by us']", 1);
-                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath("html/body/div[@id='pageB']/div/div[text()='original b']", 1);
+                               "//div[@class='bloom-page']", 2);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "//div[@id='pageA']//div[text()='changed by us']", 1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "//div[@id='pageB']//div[text()='original b']", 1);
+                           AssertThatXmlIn.HtmlFile(file).HasSpecifiedNumberOfMatchesForXpath(
+                               "//div[@class='bloom-translationGroup']", 2);
                        },
                        testsOnEventListener: (listener) =>
                        {
                            listener.AssertExpectedConflictCount(1);
-                           listener.AssertFirstConflictType<AmbiguousInsertConflict>();
+                           listener.AssertFirstConflictType<BothEditedTheSameAtomicElement>();
                        });
 
         }
