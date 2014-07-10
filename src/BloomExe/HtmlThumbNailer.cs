@@ -9,13 +9,14 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Book;
-using Bloom.Properties;
-using BloomTemp;
+using Gecko;
+using Gecko.Events;
 using Gecko.Utils;
 using Palaso.Code;
 using Palaso.Reporting;
-using Gecko;
+using Bloom.Book;
+using Bloom.Properties;
+using BloomTemp;
 
 namespace Bloom
 {
@@ -149,8 +150,8 @@ namespace Bloom
 			using (var waitHandle = new AutoResetEvent(false))
 			{
 				order.WaitHandle = waitHandle;
-				_syncControl.Invoke(new Action<string>(browser.Navigate), filePath);
-				waitHandle.WaitOne(5000);
+				_syncControl.BeginInvoke(new Action<string>(browser.Navigate), filePath);
+				waitHandle.WaitOne(10000);
 			}
 			if (_disposed)
 				return false;
@@ -277,10 +278,7 @@ namespace Bloom
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
 
 				var browser = GetBrowserForPaperSize(order.Document);
-				lock (browser)
-				{
-					pendingThumbnail = CreateThumbNail(order, browser);
-				}
+				pendingThumbnail = CreateThumbNail(order, browser);
 				if (pendingThumbnail == null)
 				{
 					pendingThumbnail = Resources.PagePlaceHolder;
@@ -303,7 +301,7 @@ namespace Bloom
 
 				pendingThumbnail.Tag = order.ThumbNailFilePath; //usefull if we later know we need to clear out that file
 
-				Debug.WriteLine("THumbnail created with dimensions ({0},{1})", browser.Width, browser.Height);
+				Debug.WriteLine("Thumbnail created with dimensions ({0},{1})", browser.Width, browser.Height);
 
 				try
 				//I saw a case where this threw saying that the key was already in there, even though back at the beginning of this function, it wasn't.
@@ -327,10 +325,10 @@ namespace Bloom
 			order.Callback(pendingThumbnail);
 		}
 
-		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
+		private void _browser_OnDocumentCompleted(object sender, GeckoDocumentCompletedEventArgs geckoDocumentCompletedEventArgs)
 		{
-			Debug.WriteLine("_browser_Navigated ({0})", Thread.CurrentThread.ManagedThreadId);
-			ThumbnailOrder order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
+			Debug.WriteLine("_browser_OnDocumentCompleted ({0})", Thread.CurrentThread.ManagedThreadId);
+			var order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
 			order.Done = true;
 			order.WaitHandle.Set();
 		}
@@ -340,22 +338,16 @@ namespace Bloom
 			var paperSizeName = GetPaperSizeName(document);
 
 			GeckoWebBrowser b;
-			if (!_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
+			if (_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
+				return b;
+
+			if (_syncControl.InvokeRequired)
 			{
-				if (_syncControl.InvokeRequired)
-				{
-					using (var waitHandle = new AutoResetEvent(false))
-					{
-						b = (GeckoWebBrowser)_syncControl.Invoke(
-							new Func<AutoResetEvent, GeckoWebBrowser>(MakeNewBrowser), waitHandle);
-						waitHandle.WaitOne(2000);
-					}
-				}
-				else
-					b = MakeNewBrowser(null);
-				b.Navigated += _browser_Navigated;
-				_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
+				b = (GeckoWebBrowser)_syncControl.Invoke(new Func<GeckoWebBrowser>(MakeNewBrowser));
 			}
+			else
+				b = MakeNewBrowser();
+			_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
 			return b;
 		}
 
@@ -366,7 +358,7 @@ namespace Bloom
 		}
 
 
-		private GeckoWebBrowser MakeNewBrowser(AutoResetEvent waitHandle)
+		private GeckoWebBrowser MakeNewBrowser()
 		{
 			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
@@ -374,11 +366,8 @@ namespace Bloom
 #else
 			var browser = new OffScreenGeckoWebBrowser();
 #endif
-			browser.HandleCreated += (sender, e) => {
-				if (waitHandle != null)
-					waitHandle.Set();
-			};
 			browser.CreateControl();
+			browser.DocumentCompleted += _browser_OnDocumentCompleted;
 			return browser;
 		}
 
@@ -525,10 +514,10 @@ namespace Bloom
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
 				browser.Value.Invoke((Action)(() =>
-				{
-					browser.Value.Navigated -= _browser_Navigated;
-					browser.Value.Dispose();
-				}));
+					{
+						browser.Value.DocumentCompleted -= _browser_OnDocumentCompleted;
+						browser.Value.Dispose();
+					}));
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
 			_theOnlyOneAllowed = null;
