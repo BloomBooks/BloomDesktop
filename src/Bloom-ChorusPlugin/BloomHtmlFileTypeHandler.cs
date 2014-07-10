@@ -99,11 +99,31 @@ namespace Bloom_ChorusPlugin
 			});
 
 			merger.MergeStrategies.SetStrategy("PageDiv", new ElementStrategy(true)
-														{
-															IsAtomic = true, //we're not trying to merge inside pages
-															MergePartnerFinder = new FindByKeyAttribute("id"),
+			{
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("id"),
 
-														});
+			});
+			merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
+			{
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+			});
+			merger.MergeStrategies.SetStrategy("Content1Div", new ElementStrategy(true)
+			{
+				IsAtomic = true,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+			});
+			merger.MergeStrategies.SetStrategy("Content2Div", new ElementStrategy(true)
+			{
+				IsAtomic = true,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+			});
+			merger.MergeStrategies.SetStrategy("Content3Div", new ElementStrategy(true)
+			{
+				IsAtomic = true,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+			});
 		}
 
 		public bool CanMergeFile(string pathToFile)
