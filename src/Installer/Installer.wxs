@@ -292,6 +292,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
       <ComponentRef Id="DesktopAnalytics.dll" />
       <ComponentRef Id="Analytics.NET.dll" />
       <ComponentRef Id="PdfDroplet.exe" />
+      <ComponentRef Id="taglib-sharp.dll" />
       <ComponentRef Id="AWSSDK.dll" />
       <ComponentRef Id="RestSharp.dll" />
       <ComponentRef Id="Bloom.exe" />
