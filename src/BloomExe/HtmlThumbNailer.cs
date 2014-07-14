@@ -144,6 +144,10 @@ namespace Bloom
 				});
 		}
 
+#if DEBUG
+		private static bool _ThumbnailTimeoutDisplayed;
+#endif
+
 		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
 		{
 			var order = (ThumbnailOrder)browser.Tag;
@@ -159,7 +163,13 @@ namespace Bloom
 			{
 				Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
-				Debug.Fail("(debug only) Make thumbnail timed out");
+#if DEBUG
+				if (!_ThumbnailTimeoutDisplayed)
+				{
+					_ThumbnailTimeoutDisplayed = true;
+					_syncControl.Invoke((Action)(() => Debug.Fail("(debug only) Make thumbnail timed out")));
+				}
+#endif
 				return false;
 			}
 			return true;
@@ -253,7 +263,7 @@ namespace Bloom
 					}
 					_browserCacheForDifferentPaperSizes.Clear();
 					#if DEBUG
-					Debug.Fail(error.Message);
+					_syncControl.Invoke((Action)(() => Debug.Fail(error.Message)));
 					#endif
 				}
 			}
@@ -382,11 +392,9 @@ namespace Bloom
 #if !__MonoCS__
 			int horizontalOffset = 0;
 			int verticalOffset = 0;
-#endif
-
 			int thumbnailWidth = options.Width;
 			int thumbnailHeight = options.Height;
-
+#endif
 			//unfortunately as long as we're using the winform listview, we seem to need to make the icons
 			//the same size regardless of the book's shape, otherwise the title-captions don't line up.
 
@@ -414,8 +422,12 @@ namespace Bloom
 			}
 			else
 			{
-				thumbnailHeight = contentHeight = options.Height;
-				thumbnailWidth = contentWidth = (int)Math.Floor((float)options.Height * (float)bmp.Width / (float)bmp.Height);
+				contentHeight = options.Height;
+				contentWidth = (int)Math.Floor((float)options.Height * (float)bmp.Width / (float)bmp.Height);
+#if !__MonoCS__
+				thumbnailHeight = contentHeight;
+				thumbnailWidth = contentWidth;
+#endif
 			}
 
 #if !__MonoCS__
@@ -472,8 +484,6 @@ namespace Bloom
 			}
 		}
 
-
-
 		/// <summary>
 		/// How this page looks has changed, so remove from our cache
 		/// </summary>
@@ -498,7 +508,7 @@ namespace Bloom
 							catch (Exception)
 							{
 								Debug.Fail("Could not delete path (would not see this in release version)");
-								//oh well, couldn't delet it);
+								//oh well, couldn't delete it);
 								throw;
 							}
 						}
