@@ -7,13 +7,12 @@ var SynphonyApi = function() {
 
 /**
  * Decodable Leveled Reader Settings
- * @returns {DLRSettings}
  */
 var DLRSettings = function() {
-    this.letters = '';
-    this.letterCombinations = '';
     this.levels = [];
     this.stages = [];
+    this.letters = '';
+    this.letterCombinations = '';
 };
 
 SynphonyApi.prototype.loadSettings = function(fileContent) {
@@ -35,48 +34,54 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
     if (lvls) {
         this.levels = [];
         for (var i = 0; i < lvls.length; i++) {
-            this.addLevel(jQuery.extend(new Level(i), lvls[i]));
+            this.addLevel(jQuery.extend(true, new Level(i+1), lvls[i]));
         }
     }
 
     var stgs = data.stages;
     if (stgs) {
         this.stages = [];
-        for (var i = 0; i < stgs.length; i++) {
-            var newStage = jQuery.extend(true, new Stage(i+1), stgs[i]);
-            this.AddStage(newStage);
+        for (var j = 0; j < stgs.length; j++) {
+            this.AddStage(jQuery.extend(true, new Stage(j+1), stgs[j]));
         }
     }
 };
 
 function FindOrCreateConfigDiv(path) {
-    var dialogContents = $("body").find("div#synphonyConfig");
+    var dialogContents = $("#synphonyConfig");
     if (!dialogContents.length) {
         dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
 
         var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm').replace(/file:\/\/(\w)/, 'file:///$1');
+        alert(url);
         var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
         dialogContents.append(html);
     }
     return dialogContents;
-    //document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + this.source, \'*\');
 }
 
-// Show the configuration dialog. If the user clicks OK, send the new file to C#, then call whenChanged()
-// to let the caller update the UI.
-SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
+/**
+ * Show the configuration dialog
+ */
+SynphonyApi.prototype.showConfigDialog = function() {
 
     var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory());
     var h = 580;
     var w = 720;
 
-    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Taskbar" settings
-    if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
+    // This height and width will fit inside the "800 x 600" settings
+    if (document.body.scrollWidth < 583) {
+        h = 460;
+        w = 390;
+    }
+
+    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
+    else if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
         h = 460;
         w = 580;
     }
 
-    var dlg = $(dialogContents).dialog({
+    $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
         buttons: {
@@ -87,6 +92,8 @@ SynphonyApi.prototype.showConfigDialog = function(whenChanged) {
                 $(this).dialog("close");
             }
         },
+        close: function () { $(this).remove(); },
+        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
         height: h,
         width: w
     });
@@ -141,7 +148,7 @@ Stage.prototype.getFrequency = function(word) {
 
 /**
  *
- * @param {Int} stageNumber Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
+ * @param {int} stageNumber Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
  * @returns {Array} An array of Stage objects
  */
 SynphonyApi.prototype.getStages = function(stageNumber) {
@@ -156,11 +163,14 @@ SynphonyApi.prototype.getStages = function(stageNumber) {
 // Defines an object to hold data about one level in the leveled reader tool
 var Level = function(name) {
     this.name = name;
+    this.thingsToRemember = [];
+
     // For each of these, 0 signifies unlimited.
     this.maxWordsPerPage = 0;
     this.maxWordsPerSentence = 0;
     this.maxWordsPerBook = 0;
     this.maxUniqueWordsPerBook = 0;
+
 };
 
 Level.prototype.getName = function() {
@@ -168,19 +178,19 @@ Level.prototype.getName = function() {
 };
 
 Level.prototype.getMaxWordsPerPage = function() {
-    return this.maxWordsPerPage;
+    return this.maxWordsPerPage || 0;
 };
 
 Level.prototype.getMaxWordsPerSentence = function() {
-    return this.maxWordsPerSentence;
+    return this.maxWordsPerSentence || 0;
 };
 
 Level.prototype.getMaxWordsPerBook = function() {
-    return this.maxWordsPerBook;
+    return this.maxWordsPerBook || 0;
 };
 
 Level.prototype.getMaxUniqueWordsPerBook = function() {
-    return this.maxUniqueWordsPerBook;
+    return this.maxUniqueWordsPerBook || 0;
 };
 
 SynphonyApi.prototype.getLevels = function() {

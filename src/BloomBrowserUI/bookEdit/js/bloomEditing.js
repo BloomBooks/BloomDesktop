@@ -934,7 +934,7 @@ var resizeTimer;
 var windowBorder = 12; // window border is about 12px
 function resizeAccordion() {
     var windowHeight = $(window).height();
-    var root = $(".readerToolsRoot");
+    var root = $(".accordionRoot");
     // Set accordion container height to fit in new window size
     // Then accordion Resize() will adjust it to fit the container
     root.height(windowHeight - windowBorder);
