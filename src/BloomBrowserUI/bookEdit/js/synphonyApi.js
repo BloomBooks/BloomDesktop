@@ -53,7 +53,6 @@ function FindOrCreateConfigDiv(path) {
         dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
 
         var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm').replace(/file:\/\/(\w)/, 'file:///$1');
-        alert(url);
         var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
         dialogContents.append(html);
     }
@@ -148,7 +147,7 @@ Stage.prototype.getFrequency = function(word) {
 
 /**
  *
- * @param {int} stageNumber Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
+ * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
  * @returns {Array} An array of Stage objects
  */
 SynphonyApi.prototype.getStages = function(stageNumber) {
