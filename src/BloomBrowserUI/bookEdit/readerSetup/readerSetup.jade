@@ -1,0 +1,151 @@
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
+		link(rel='stylesheet', href='readerSetup.css', type='text/css')
+		script(src='../../lib/jquery-1.10.1.js')
+		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='../../lib/jquery.easytabs.js')
+		script(src='../js/jquery.div-columns.js')
+		script(src='../js/libsynphony/underscore_min_152.js')
+		script(src='../js/libsynphony/jquery.text-markup.js')
+		script(src='../js/libsynphony/synphony_lib.js')
+		script(src='../js/libsynphony/bloom_lib.js')
+		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
+	body
+		#dlstabs.ui-dialog.ui-widget
+			#powered-by.smaller Powered by&nbsp;
+				a(href='http://call.canil.ca/') Synphony
+				, the Search Engine for Literacy.
+			ul
+				li: a(href='#dlstabs-1') Language
+				li: a(href='#dlstabs-2') Decodable Stages
+				li: a(href='#dlstabs-3') Reader Levels
+			#dlstabs-1.reader-setup-tab
+				.floating(style='width: 200px')
+					label(for='dls_letters') Letters
+					br
+					textarea#dls_letters(style='height: 55px; width: 195px')
+					br
+					span.smaller * List in alphabetic order<br>* Separate by spaces<br>E.g. "a b c d"
+					br
+					br
+					label(for='dls_letter_combinations') Letter Combinations (Graphemes)
+					br
+					textarea#dls_letter_combinations(style='height: 55px; width: 195px')
+					br
+					span.smaller * Separate by spaces<br>E.g. "ai oo sh ng th ing"
+				#word-lists-div.floating
+					label(for='dls_word_lists') Word Lists and Sample Texts
+					br
+					textarea#dls_word_lists(style='height: 55px;' readonly)
+					br
+					a#open-text-folder.smaller Open the sample texts folder for this language.
+					p.smaller About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
+					p.smaller If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
+					p.smaller Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
+					p.smaller Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
+				.floating
+					label(for='dls_more_words') More Words
+					br
+					textarea#dls_more_words(style='height: 328px; width: 100px')
+			#dlstabs-2.reader-setup-tab
+				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
+					table
+						tr
+							td: img(src='../../images/keys-white.png')
+							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
+				#stage-list-container.floating.tab-list-container
+					#stage-list.tab-list
+						.scrolling-table-container
+							.scrolling-table-header
+							.scrolling-table-container-inner
+								table#stages-table(style='border-collapse: collapse')
+									thead
+										tr
+											th: div Stage
+											th: div Letters
+											th(style='width: 100%'): div Sight Words
+									tbody
+									tfoot
+										tr
+											td(colspan='3'): a#setup-add-stage(href='') Add Stage
+					div.smaller(style='float: left') Drag rows to reorder stages.
+					div(style='float: right')
+						a#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
+							span#remove-stage-number 1
+				#stage-detail.floating.tab-detail
+					div(style='display: block; margin: 6px 10px')
+						span.rs-subheading(style='margin: auto 0') Stage&nbsp;
+							span#setup-stage-number.rs-subheading 1
+					#setup-stage-letters-and-words.sub-float
+						div(style='width: 100%')
+							label(for='setup-stage-sight-words') New Sight Words
+							div(style='float: right')
+								a#define-sight-words.smaller(href='') What are sight words?
+							textarea#setup-stage-sight-words(style='height: 35px; width: 100%; box-sizing:border-box;')
+						br
+						div(style='display: block; margin-top: 12px;'): label Previous and New Letters
+						#setup-selected-letters.rs-letter-container
+						.smaller(style='float: left') Click on letters to add them to this stage.
+					#setup-stage-matching-words.sub-float
+						label(style='white-space: nowrap;')
+							span#setup-words-count 15
+							span &nbsp;matching words
+						.rs-word-container
+							#rs-matching-words(style='margin-left: 8px')
+			#dlstabs-3.reader-setup-tab
+				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
+					table
+						tr
+							td: img(src='../../images/steps-white.png', height='32')
+							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
+				#level-list-container.floating.tab-list-container
+					#level-list.tab-list
+						.scrolling-table-container
+							.scrolling-table-header
+							.scrolling-table-container-inner
+								table#levels-table(style='border-collapse: collapse; width: 100%')
+									thead
+										tr
+											th(style='width: 17%'): div Level
+											th(style='width: 24%'): div Sentence
+											th(style='width: 17%'): div Page
+											th(style='width: 17%'): div Book
+											th(style='width: 25%'): div Unique
+											th(style='display: none')
+									tbody
+									tfoot
+										tr
+											td(colspan='5'): a#setup-add-level(href='') Add Level
+					div.smaller(style='float: left') Drag rows to reorder levels.
+					div(style='float: right')
+						a#setup-remove-level.smaller(href='') Remove Level&nbsp;
+							span#remove-level-number 1
+				#level-detail.floating.tab-detail
+					div(style='display: block; margin: 0 10px 6px')
+						span.rs-subheading(style='margin: auto 0') Level&nbsp;
+							span#setup-level-number.rs-subheading 1
+					table
+						tr
+							td: input#use-words-per-sentence.level-checkbox(type='checkbox')
+							td(style='padding-left: 0'): label(for='use-words-per-sentence') Maximum Words in each Sentence
+							td: input#max-words-per-sentence.level-textbox(type='text')
+						tr
+							td: input#use-words-per-page.level-checkbox(type='checkbox')
+							td: label(for='use-words-per-page') Maximum Words on each Page
+							td: input#max-words-per-page.level-textbox(type='text')
+						tr
+							td: input#use-words-per-book.level-checkbox(type='checkbox')
+							td: label(for='use-words-per-book') Maximum Words perBook
+							td: input#max-words-per-book.level-textbox(type='text')
+						tr
+							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')
+							td: label(for='use-unique-words-per-book') Maximum Unique Words per Book
+							td: input#max-unique-words-per-book.level-textbox(type='text')
+					#things-to-remember-container
+						label(for='things-to-remember') Things to remember for this level:
+						ul#things-to-remember
+							li(contenteditable='true')
+		script(src='readerSetup.js')

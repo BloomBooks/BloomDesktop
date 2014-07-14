@@ -1,20 +1,38 @@
 
 <html>
-  <head></head>
+  <head>
+	<link rel="stylesheet" href="readerTools.css" type="text/css"/>
+  </head>
   <body>
-	<h3 data-markuptype="0">Decodable Reader Tool</h3>
-	<div>
-	  <div class="stageLine"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage">&nbsp;of&nbsp;<span id="numberOfStages">2</span></span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span><span class="setup stageLine"><a href="" id="setUpStages">Set up Stages</a></span></div>
-	  <div class="section clear">Words in this stage
+	<h3 data-markuptype="1">Decodable Reader Tool</h3>
+	<div><img id="decodable-keys" src="../../../images/keys-white.pn" style="margin-left: 14px"/>
+	  <div class="stageLine"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage">&nbsp;of&nbsp;<span id="numberOfStages">2</span></span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+	  <div style="margin-left: 6px" class="section clear">Words in this stage
 		<div class="sortBlock">
 		  <div id="sortAlphabetic" class="sortItem rightBorder sortIconSelected"><i title="Sort alphabetically" class="fa fa-sort-alpha-asc"></i></div>
 		  <div id="sortLength" class="sortItem rightBorder"><i title="Sort by word length" class="fa fa-sort-amount-asc"></i></div>
 		  <div id="sortFrequency" class="sortItem"><i title="Sort by frequency" class="fa fa-long-arrow-up"></i><i id="sortFrequency2" title="Sort by frequency" class="fa fa-facebook"></i></div>
 		</div>
 	  </div>
-	  <div class="tableHolder">
+	  <div class="tableHolder clear">
 		<div id="wordList" class="wordList"></div>
 	  </div>
+	  <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:showSetupDialog('stages');">Set up Stages</a></span></div>
+	  <script type="text/javascript">
+		$(document).ready(function() {
+		 setTimeout(initializeDecodableRT, 100);
+		 var path = thisDir + '../../images/keys-white.png';
+		 document.getElementById('decodable-keys').src = path;
+		});
+		$('#accordion').onOnce('accordionactivate.decodableRT', function(event, ui) {
+		 var id = ui.newHeader.data('panelId');
+		 if (id) {
+		  if (id.toString() === 'DecodableRT') {
+		   $.divsToColumns('word');
+		  }
+		 }
+		});
+	  </script>
 	</div>
   </body>
 </html>
