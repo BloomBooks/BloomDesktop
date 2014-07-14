@@ -1,4 +1,5 @@
 ﻿using Bloom.web;
+using System.Collections.Generic;
 
 namespace Bloom
 {
@@ -6,6 +7,7 @@ namespace Bloom
     {
         public static string ToLocalhost(this string fileName)
         {
+			// don't do this if it is done already
             if (fileName.StartsWith(ServerBase.PathEndingInSlash)) return fileName;
             return ServerBase.PathEndingInSlash + fileName.Replace(":", "%3A").Replace("\\", "/");
         }
@@ -16,5 +18,11 @@ namespace Bloom
                 uri = uri.Substring(ServerBase.PathEndingInSlash.Length).Replace("%3A", ":");
             return uri;
         }
+
+		public static int ToInt(this bool value)
+		{
+			if (value) return 1;
+			return 0;
+		}
     }
 }

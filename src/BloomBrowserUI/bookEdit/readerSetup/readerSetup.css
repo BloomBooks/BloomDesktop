@@ -1,150 +1,153 @@
+/* Used by all tabs */
 * { font-size: 9pt; }
-body { margin: 0 }
+body { margin: 0; box-sizing: border-box; }
+div { box-sizing: border-box; }
 .align-top { vertical-align: top; }
 td, th { padding: 0 8px; }
 .smaller { font-size: 8pt; }
 label { font-weight: 700; }
-div.scrolling { overflow: auto; }
-div.floating {
-	display: inline-block;
-	position: relative;
-	float: left;
+div.floating { position: relative; float: left; }
+.rs-heading { font-size: 13pt; font-weight: 400; }
+.rs-subheading { font-size: 13pt; font-weight: 400; }
+#dlstabs { width: auto; position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+.reader-setup-tab { width: 100%; overflow-y: auto; height: calc(100% - 32px); }
+tr.linked:hover { background-color: #f08080 !important; cursor: pointer; }
+tr.selected { background-color: #59b4d4 !important; cursor: pointer; }
+.tab-list-container { width: 100%; }
+.tab-list { border: thin solid #555; -moz-user-select: none; width: 100%; }
+.ui-tabs .ui-state-disabled { display: none; }
+
+.tab-detail {
+    border: thin solid #555;
+    background-color: #555;
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 8px;
 }
 
-div.scrolling-table-container {
-	position: relative; /* could be absolute or relative */
-	padding-top: 26px; /* height of header */
-	width: 100%;
+/* Language Setup */
+@media (max-width: 649px) {
+    #dlstabs-1 div.floating { margin: 8px; }
+    #word-lists-div { width: 250px; }
+    #word-lists-div textarea { width: 245px; }
 }
 
-div.scrolling-table-container-inner {
-	overflow-x: hidden;
-	overflow-y: auto;
-	height: 100%;
-}
-	
-div.scrolling-table-header {
-	background-color: #555;
-	height: 26px; /* height of header */
-	position: absolute;
-	top: 0;
-	right: 0;
-	left: 0;
+@media (min-width: 650px) {
+    #dlstabs-1 div.floating { margin: 0 12px; }
+    #word-lists-div { width: 270px; }
+    #word-lists-div textarea { width: 265px; }
 }
 
+
+/* Decodable Reader Setup */
+div.sub-float { position: relative; }
+#powered-by { position: relative; float: right; padding: 2px 6px; white-space: nowrap; text-align: right; -moz-user-select: none; }
+#setup-stage-letters-and-words { float: left; margin-left: 10px; }
+
+div.scrolling-table-container { height: 100%; }
+div.scrolling-table-container-inner { overflow-x: hidden; overflow-y: auto; height: 100%; }
 div.scrolling-table-container-inner table { background-color: #eee; }
 div.scrolling-table-container-inner table td { color: #000; height: 26px; white-space: nowrap; min-width: 26px; }
 div.scrolling-table-container-inner table tr:nth-child(even) { background-color: #ddd; }
 div.scrolling-table-container-inner table a { color: #333; }
 
-div.scrolling-table-container-inner table th div {
-	position: absolute;
-	top: 0;
-	line-height: 26px; /* height of header */
-	text-align: left;
-}
-
-#stage-list { border: thin solid #555; -moz-user-select: none; width: 100% }
-.rs-heading { 
-	font-size: 13pt; 
-	font-weight: 400; 
-	display: inline-block; 
-}
-
-.rs-subheading { 
-	font-size: 13pt; 
-	font-weight: 400; 
-	display: inline-block; 
-}
+/* height of header = 26px */
+div.scrolling-table-container { position: relative; padding-top: 26px;  width: 100%; }
+div.scrolling-table-header { background-color: #555; height: 26px; position: absolute; top: 0; right: 0; left: 0; }
+div.scrolling-table-container-inner table th div { position: absolute; top: 0; line-height: 26px; text-align: left; }
 
 div.rs-letters {
-	display: inline-block;
-	position: relative;
-	float: left;
-	font-size: 1.1em; 
-	margin: -1px 0 0 -1px; 
-	padding: 4px 0; 
-	text-align: center;  
-	border: thin solid #333;
-	-moz-user-select: none;
+    position: relative;
+    float: left;
+    font-size: 1.1em;
+    margin: -1px 0 0 -1px;
+    padding: 4px 0;
+    text-align: center;
+    border: thin solid #333;
+    -moz-user-select: none;
 }
 
-div.rs-letters-s { width: 30px; }
-div.rs-letters-l { width: 33px; }
 div.unselected-letter { color: #666; background-color: #fff; cursor: pointer; }
 div.previous-letter { color: #000; background-color: #fff; font-weight: 700; cursor: not-allowed; }
-div.current-letter { color: #000; background-color: #C3920F; font-weight: 700; cursor: pointer; }
-
-div.rs-letter-container {
-	height: 154px; 
-	display: inline-block; 
-	overflow-y: auto;
-}
-
-div.rs-letter-container-s { max-width: 187px; overflow-y: hidden; }
-div.rs-letter-container-l { max-width: 187px; overflow-y: auto; }
-
-div.rs-word-container {
-	height: 240px; 
-	display: inline-block; 
-	overflow-y: auto;
-	overflow-x: hidden;
-}
-
-#stage-detail {
-	border: thin solid #555;
-	background-color: #555;
-}
-
-div.sub-float {
-	display: inline-block;
-	position: relative;
-	float: left;
-	margin: 0 0 0 10px;
-}
-
-tr.linked:hover {
-    background-color: #f08080 !important;
-    cursor: pointer;
-}
-
-tr.selected {
-	background-color: #59b4d4 !important;
-    cursor: pointer;
-	font-weight: 700;
-}
-
+div.current-letter { color: #000; background-color: #febf00; font-weight: 700; cursor: pointer; }
+div.rs-letters-s { width: 32px; }
+div.rs-letters-l { width: 35px; }
+div.rs-letter-container { height: 140px; }
+div.rs-letter-container-s { max-width: 223px; overflow-y: hidden; }
+div.rs-letter-container-l { max-width: 221px; overflow-y: auto; }
 div.word { min-width: 40px; margin: 2px; float: left; }
+div.rs-word-container {
+    border: thin solid #333;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 8px;
+    background-color: #bbb;
+    color: #000;
+}
+span.desired-grapheme { color: #b2652b; }
+span.current-sight-word { font-weight: 700; }
+span.sight-word { color: #00528d; }
 
-@media (max-width: 649px) {
-	div.reader-setup-tab { height: 246px !important; overflow: hidden; }
-	div.scrolling { overflow: auto; }
-	#dlstabs-1 div.floating { margin: 8px; }
-	#dlstabs-2 div.floating { margin: 0 8px; }
-	#word-lists-div { width: 250px; }
-	#word-lists-div textarea { width: 245px; }
-	div.scrolling-table-container { height: 149px !important; }
-	#stage-list, #stage-list-container { width: 220px;	}
-	#stage-detail { width: 230px; }
-	#setup-stage-matching-words { width: 185px !important }
+@media (max-width: 539px) {
+    .tab-detail div.sub-float { width: calc(100% - 20px); }
+    #setup-stage-matching-words { float: left; margin-left: 10px; margin-top: 12px; }
+    div.rs-word-container { height: 100px; }
+    #powered-by { width: 100%; }
+    .reader-setup-tab { height: calc(100% - 50px); }
+}
+
+@media (min-width: 540px) and (max-width: 649px) {
+    .tab-detail div.sub-float { width: calc(50% - 17px); }
+    #setup-stage-matching-words { float: right; margin-right: 10px; }
+    div.rs-word-container { height: 240px; }
+    .reader-setup-tab { height: calc(100% - 32px); }
 }
 
 @media (min-width: 650px) {
-	div.reader-setup-tab { height: 363px !important; overflow: hidden; }
-	div.scrolling { overflow: hidden; }
-	#dlstabs-1 div.floating { margin: 0 12px; }
-	#dlstabs-2 div.floating { margin: 0 12px; }
-	#word-lists-div { width: 270px; }
-	#word-lists-div textarea { width: 265px; }
-	div.scrolling-table-container { height: 266px !important; }
-	#stage-list, #stage-list-container { width: 240px;	}
-	#stage-detail { width: 354px; height: 306px !important; }
-	#setup-stage-matching-words { width: 130px !important }
+    #stage-list-container { width: calc(40% - 6px); min-height: 310px; height: calc(100% - 50px); }
+    .tab-list { height: calc(100% - 16px); }
+    #stage-detail { width: calc(60% - 6px); min-height: 310px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
+    #stage-detail div.sub-float { width: calc(100% - 258px); }
+    #setup-stage-letters-and-words { width: 228px !important; }
+    #setup-stage-matching-words { float: right; margin-right: 10px; height: calc(100% - 64px); }
+    div.rs-word-container { height: 100%; }
 }
 
-span.desired-grapheme { color: #e0a711; font-weight: 700; }
-span.sight-word {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: #00a000;
+
+/* Leveled Reader Setup */
+#level-detail table tr td { padding-bottom: 8px; -moz-user-select: none; }
+#level-detail table tr td:first-child { padding-right: 0; padding-top: 2px; }
+#level-detail table tr td:nth-child(2) { padding-left: 2px; }
+#level-detail table input[type="text"] { width: 30px; }
+#things-to-remember-container{
+    display: block;
+    margin-left: 12px;
+    width: calc(100% - 24px);
+    height: calc(100% - 180px);
+}
+
+#things-to-remember {
+    height: 200px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #fff;
+    color: #000;
+    padding-left: 20px;
+    margin-top: 2px;
+    overflow-y: auto;
+}
+
+@media (max-width: 539px) {
+    /* nothing yet */
+}
+
+@media (min-width: 540px) and (max-width: 649px) {
+    /* nothing yet */
+}
+
+@media (min-width: 650px) {
+    #level-list-container { width: calc(100% - 312px); min-height: 310px; height: calc(100% - 50px); }
+    #level-detail { width: 300px; min-height: 310px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
+    #level-detail div.sub-float { width: calc(100% - 258px); }
+    #things-to-remember { height: calc(100% - 12px); }
 }

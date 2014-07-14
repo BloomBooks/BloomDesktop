@@ -1,18 +1,22 @@
 html
 	head
+		link(rel='stylesheet', href='../readerTools.css', type='text/css')
 	body
-		h3(data-markuptype="1") Leveled Reader Tool
+		h3(data-markuptype='2') Leveled Reader Tool
 		div
+			img#levels-steps(src='../../../images/steps-white.png', style='margin-left: 14px; width: 32px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
 				span.stageLabel.stageLine="Level "
 					span#levelNumber 1
+					span.ofStage!="&nbsp;of&nbsp;"
+						span#numberOfLevels 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
-			table.statistics.clear
+			table.statistics.clear(style='margin-left: 6px')
 				tr
-					td.section(colspan="3") Word counts
+					td.section Word counts
 				tr
-					td(colspan="3") This Page
+					td This Page
 				tr
 					td.statistics-label
 					td.statistics-max Max
@@ -25,34 +29,46 @@ html
 					td.statistics-label per sentence
 					td.statistics-max#maxWordsPerSentence 5
 					td.statistics-actual#actualWordsPerSentence 7
-				tr.hidden
-					td.section(colspan="3") This Book
-				tr.hidden
+			// the This Book section is hidden because it has not been implemented yet
+			table.statistics.clear(style='margin-left: 6px; display: none')
+				tr
+					td.section This Book
+				tr
 					td.statistics-label
 					td.statistics-max Max
 					td.statistics-actual Actual
-				tr.hidden
+				tr
 					td.statistics-label total
 					td.statistics-max#maxWordsPerBook
 					td.statistics-actual#actualWordCount 83
-				tr.hidden
-					td.statistics-label per page
-					td.statistics-max#maxWordsPerPageBook 15
-					td.statistics-actual#actualWordsPerPageBook 14
-				tr.hidden
+				td.statistics-label per page
+				td.statistics-max#maxWordsPerPageBook 15
+				td.statistics-actual#actualWordsPerPageBook 14
+				tr
 					td.statistics-label unique
 					td.statistics-max#maxUniqueWordsPerBook 20
 					td.statistics-actual#actualUniqueWords 22
-			.section Keep in mind
-			ul
-				li
-					a(href='http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract') Predictability
-				li
-					a(href='http://pracresources.pbworks.com/f/PatternAndSequence.pdf') Pattern and recognition
-				li
-					a(href='http://www.rif.org/us/literacy-resources/articles/getting-the-most-out-of-picture-books.htm') Illustration support
-				li
-					a(href='http://books.google.com/books?id=ugWzGuZSd60C&pg=PA40&lpg=PA40&dq=literacy+concept+load&source=bl&ots=yRKQYrx2PW&sig=hdP5gw6s1a8reC6pa70eb6OEuSM&hl=en&sa=X&ei=J0RVU8mvE8Kz2gXU_YFw&ved=0CC0Q6AEwAA#v=onepage&q=literacy%20concept%20load&f=false') Concept load
-				li
-					a(href='http://books.google.com/books?id=BBTwHStpbigC&pg=PA58&dq=literacy+topic+familiarity&hl=en&sa=X&ei=X0RVU6vsKOLS2AW69YGIBw&ved=0CEIQ6AEwAg#v=onepage&q=literacy%20topic%20familiarity&f=false') Topic familiarity
-			a(href='http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/') How to make a great leveled reader
+			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
+				span.setup.stageLine
+					a(href="javascript:showSetupDialog('levels');") Set up Levels
+			.section(style='clear: both; margin-left: 8px;') For this Level
+				ul#thingsToRemember
+			.section(style='margin-left: 8px;') Keep in mind
+				ul
+					li
+						a(href='http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract') Predictability
+					li
+						a(href='http://pracresources.pbworks.com/f/PatternAndSequence.pdf') Pattern and recognition
+					li
+						a(href='http://www.rif.org/us/literacy-resources/articles/getting-the-most-out-of-picture-books.htm') Illustration support
+					li
+						a(href='http://books.google.com/books?id=ugWzGuZSd60C&pg=PA40&lpg=PA40&dq=literacy+concept+load&source=bl&ots=yRKQYrx2PW&sig=hdP5gw6s1a8reC6pa70eb6OEuSM&hl=en&sa=X&ei=J0RVU8mvE8Kz2gXU_YFw&ved=0CC0Q6AEwAA#v=onepage&q=literacy%20concept%20load&f=false') Concept load
+					li
+						a(href='http://books.google.com/books?id=BBTwHStpbigC&pg=PA58&dq=literacy+topic+familiarity&hl=en&sa=X&ei=X0RVU6vsKOLS2AW69YGIBw&ved=0CEIQ6AEwAg#v=onepage&q=literacy%20topic%20familiarity&f=false') Topic familiarity
+				a(href='http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/') How to make a great leveled reader
+			script(type='text/javascript').
+				$(document).ready(function() {
+					setTimeout(initializeLeveledRT, 100);
+					var path = thisDir + '../../images/steps-white.png';
+					document.getElementById('levels-steps').src = path;
+				});
