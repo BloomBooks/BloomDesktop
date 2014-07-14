@@ -35,6 +35,8 @@ function showOrHidePanel_click(chkbox) {
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t0");
         $('*:data(panelId)').filter(function() { return $(this).data('panelId') === panel; }).remove();
     }
+
+    resizeAccordion();
 }
 
 /**
