@@ -479,8 +479,8 @@ namespace Bloom.Edit
 				Cursor = Cursors.WaitCursor;
 
 				//nb: later, code closer to the the actual book folder will
-				//improve this file name
-				using (var temp = new TempFile())
+				//improve this file name. Taglib# requires an extension that matches the file content type, however.
+				using (var temp = TempFile.WithExtension("png"))
 				{
 					clipboardImage.Save(temp.Path, ImageFormat.Png);
 //                    using (var progressDialog = new ProgressDialogBackground())
