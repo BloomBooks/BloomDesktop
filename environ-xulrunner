@@ -7,7 +7,11 @@ if [ "${PKG_CONFIG_LIBDIR+set}" = set ]; then
 	unset PKG_CONFIG_LIBDIR
 fi
 
-export XULRUNNER=/usr/lib/xulrunner-29
+if [ -d /usr/lib/xulrunner-geckofx-29 ]; then
+	export XULRUNNER=/usr/lib/xulrunner-geckofx-29
+else
+	export XULRUNNER=/usr/lib/xulrunner-29
+fi
 LD_LIBRARY_PATH="${XULRUNNER}:${LD_LIBRARY_PATH}"
 GECKOFX="$(pkg-config --variable assemblies_dir Geckofx-Core)"
 export LD_PRELOAD=${GECKOFX}/geckofix.so
