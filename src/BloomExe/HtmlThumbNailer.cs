@@ -167,7 +167,7 @@ namespace Bloom
 				if (!_ThumbnailTimeoutDisplayed)
 				{
 					_ThumbnailTimeoutDisplayed = true;
-					_syncControl.Invoke((Action)(() => Debug.Fail("(debug only) Make thumbnail timed out")));
+					_syncControl.Invoke((Action)(() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
 				}
 #endif
 				return false;
