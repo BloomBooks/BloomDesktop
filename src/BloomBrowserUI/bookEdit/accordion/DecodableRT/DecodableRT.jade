@@ -32,11 +32,3 @@ html
 					var path = thisDir + '../../images/keys-white.png';
 					document.getElementById('decodable-keys').src = path;
 				});
-				$('#accordion').onOnce('accordionactivate.decodableRT', function(event, ui) {
-					var id = ui.newHeader.data('panelId');
-					if (id) {
-						if (id.toString() === 'DecodableRT') {
-							$.divsToColumns('word');
-						}
-					}
-				});
