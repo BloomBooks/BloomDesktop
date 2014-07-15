@@ -222,6 +222,20 @@ DIV.ISBNContainer
 	left: 2px;
 	bottom: 216px;
 }
+.A4Portrait DIV.ISBNContainer
+{
+	/*+placement:anchor-bottom-left 2px 450px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 450px;
+}
+.A5Landscape DIV.ISBNContainer
+{
+	/*+placement:anchor-bottom-left 2px 120px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 120px;
+}
 DIV.ISBNContainer .bloom-editable
 {
 	width: 4.3cm !important;
@@ -260,7 +274,7 @@ DIV.coverBottomBookTopic DIV
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1
 {
-/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
+	/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
 	/*[disabled]+placement:anchor-top-right 0px 0px;*/
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational2
@@ -273,7 +287,7 @@ DIV.coverBottomLangName DIV
 	display: inline;
 	font-size: 110% !important;
 	/*[disabled]vertical-align:bottom;*/
-/*This placement is to get vertical alignment with the topic*/
+	/*This placement is to get vertical alignment with the topic*/
 	/*+placement:anchor-top-left 0px 4px;*/
 	position: absolute;
 	left: 0px;
@@ -430,7 +444,7 @@ DIV.verso DIV
 	text-align: center;
 	line-height: normal;
 	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
-	Had to take out the !important, though, to get user font-size to work on the verso page*/
+	  Had to take out the !important, though, to get user font-size to work on the verso page*/
 	font-size: 10pt;
 }
 /*...........originalAcknowledgments*/
@@ -451,16 +465,20 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 	width: 100%;
 	display: block !important;
 }
-/*................license and copyright*/
+.A5Landscape DIV.originalAcknowledgments DIV.bloom-contentNational1
+{
+	height: 3.5cm;
+}
 .A5Landscape DIV.versionAcknowledgments
 {
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
 	bottom: 0;
-	height: 116px !important;
+	height: 100px !important;
 	width: 100%;
 }
+/*................license and copyright*/
 .A4Landscape DIV#versoLicenseAndCopyright
 {
 	/*+placement:anchor-top-left 0 242px;*/
@@ -482,10 +500,10 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
 	width: 100%;
 	height: 129px;
-	/*+placement:shift 0px 16px;*/
+	/*+placement:shift 0px -13px;*/
 	position: relative;
 	left: 0px;
-	top: 16px;
+	top: -13px;
 }
 DIV.licenseNotes
 {
@@ -510,14 +528,21 @@ IMG.licenseImage
 	left: 39%;
 	top: 60px;
 }
+.A5Landscape IMG.licenseImage
+{
+	/*+placement:anchor-top-left 290px 30px;*/
+	position: absolute;
+	left: 290px;
+	top: 30px;
+}
 .A4Portrait IMG.licenseImage
 {
 	/*[disabled]width:114px;*/
 	/*[disabled]height:34px;*/
-	/*+placement:anchor-top-left 7.6cm 1cm;*/
+	/*+placement:anchor-top-left 7.6cm 1.7cm;*/
 	position: absolute;
 	left: 7.6cm;
-	top: 1cm;
+	top: 1.7cm;
 }
 .A4Landscape IMG.licenseImage
 {
@@ -543,6 +568,21 @@ DIV.licenseDescription
 	position: absolute;
 	left: 0;
 	top: 123px;
+}
+.A5Landscape DIV.licenseDescription
+{
+	/*+placement:anchor-top-left 0 107px;*/
+	position: absolute;
+	left: 0;
+	top: 107px;
+}
+.A4Portrait DIV.licenseDescription
+{
+	width: 80%;
+	/*+placement:anchor-top-left 84px 127px;*/
+	position: absolute;
+	left: 84px;
+	top: 127px;
 }
 DIV.licenseUrl
 {

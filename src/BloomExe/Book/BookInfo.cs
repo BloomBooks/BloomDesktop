@@ -51,6 +51,8 @@ namespace Bloom.Book
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
+
+			FixDefaultsIfAppropriate();
 		}
 
 		public string Id
@@ -66,6 +68,19 @@ namespace Bloom.Book
 		public bool AllowUploading
 		{
 			get { return MetaData.AllowUploadingToBloomLibrary; }
+		}
+
+		//there was a beta version that would introduce the .json files with the incorrect defaults
+		//we don't have a good way of differentiating when these defaults were set automatically
+		//vs. when someone actually set them to false. So this method is only used if a certain
+		//environment variable is set, so that our librarian (who ran into this) can fix her
+		//affected collections.
+		public void FixDefaultsIfAppropriate()
+		{
+			if (System.Environment.GetEnvironmentVariable("FixBloomMetaInfo") != "true")
+				return;
+			MetaData.AllowUploadingToBloomLibrary = true;
+			MetaData.BookletMakingIsAppropriate = true;
 		}
 
 		public bool BookletMakingIsAppropriate
@@ -288,18 +303,21 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// The panels being displayed in the accordion for this book
-		/// </summary>
-		public List<string> Tools
+		public List<AccordionTool> Tools
 		{
 			get
 			{
 				if (MetaData.Tools == null)
-					MetaData.Tools = new List<string>();
+					MetaData.Tools = new List<AccordionTool>();
 				return MetaData.Tools;
 			}
 			set { MetaData.Tools = value; }
+		}
+
+		public string CurrentTool
+		{
+			get { return MetaData.CurrentTool; }
+			set { MetaData.CurrentTool = value; }
 		}
 	}
 
@@ -323,6 +341,12 @@ namespace Bloom.Book
 	/// </summary>
 	internal class BookMetaData
 	{
+		public BookMetaData()
+		{
+			IsExperimental = false;
+			AllowUploadingToBloomLibrary = true;
+			BookletMakingIsAppropriate = true;
+		}
 		public static BookMetaData FromString(string input)
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
@@ -474,7 +498,10 @@ namespace Bloom.Book
 		/// <summary>These panels are being displayed in the accordion for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
 		[JsonProperty("tools")]
-		public List<string> Tools { get; set; }
+		public List<AccordionTool> Tools { get; set; }
+
+		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
+		public string CurrentTool { get; set; }
 	}
 
 	/// <summary>
@@ -519,5 +546,14 @@ namespace Bloom.Book
 
 		[JsonProperty("ethnologueCode")]
 		public string EthnologueCode { get; set; }
+	}
+
+	public class AccordionTool
+	{
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("enabled")]
+		public bool Enabled { get; set; }
 	}
 }

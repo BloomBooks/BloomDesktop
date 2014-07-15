@@ -278,6 +278,7 @@ namespace Bloom.web
 				case ".png":  return "image/png";
 				case ".pdf":  return "application/pdf";
 				case ".txt":  return "text/plain";
+				case ".svg":  return "image/svg+xml";
 				default:      return "application/octet-stream";
 			}
 		}
