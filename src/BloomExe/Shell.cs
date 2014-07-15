@@ -34,7 +34,19 @@ namespace Bloom
 			InitializeComponent();
 
 			//bring the application to the front (will normally be behind the user's web browser)
-			bookDownloadStartingEvent.Subscribe((x) => this.Invoke((Action) (this.Activate)));
+			bookDownloadStartingEvent.Subscribe((x) =>
+			{
+				try
+				{
+					this.Invoke((Action)this.Activate);
+				}
+				catch (Exception e)
+				{
+					Debug.Fail("(Debug Only) Can't bring to front in the current state: "+e.Message);
+					//swallow... so we were in some state that we couldn't come to the front... that's ok.
+				}
+			});
+
 
 #if DEBUG
 			WindowState = FormWindowState.Normal;
