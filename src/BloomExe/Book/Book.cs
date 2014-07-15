@@ -7,11 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -45,7 +48,14 @@ namespace Bloom.Book
         private readonly BookData _bookData;
 
 		//for moq'ing only 
-		public Book(){}
+		public Book()
+		{
+#if __MonoCS__
+			// TODO: Fixme - refactor ErrorBook not to use this constructor.
+			// Removing libtidy package from system is an easy way to get an ErrorBook.
+			throw new ApplicationException("This should only be used for test code. ErrorBook uses it and causes uninitalized Books.");
+#endif
+		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,
            CollectionSettings collectionSettings, HtmlThumbNailer thumbnailProvider, 
@@ -89,7 +99,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");        
         }
 
-
+        public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
 
 	    public void InvokeContentsChanged(EventArgs e)
         {
@@ -122,9 +132,25 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+                t = RemoveXmlMarkup(t);
 				return t;
 			}
 		}
+
+        public static string RemoveXmlMarkup(string input)
+        {
+            try
+            {
+                var doc = new XmlDocument();
+                doc.PreserveWhitespace = true;
+                doc.LoadXml("<div>" + input + "</div>");
+                return doc.DocumentElement.InnerText;
+            }
+            catch (XmlException)
+            {
+                return input; // If we can't parse for some reason, return the original string
+            }
+        }
 
 		/// <summary>
         /// we could get the title from the <title/> element, the name of the html, or the name of the folder...
@@ -156,16 +182,16 @@ namespace Bloom.Book
 		    return _bookData.PrettyPrintLanguage(code);
 	    }
 
-		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+		public virtual void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
 		{
-			try
+		    try
 			{
 				if (HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
 				{
 					callback(Resources.Error70x70);
 				}
 				Image thumb;
-				if (_storage.TryGetPremadeThumbnail(out thumb))
+				if (_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
 					callback(thumb);
 					return;
@@ -180,8 +206,7 @@ namespace Bloom.Book
 				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = _storage.FolderPath;
-
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback,errorCallback);
+			    _thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, thumbnailOptions, callback, errorCallback);
 			}
 			catch (Exception err)
 			{
@@ -199,16 +224,19 @@ namespace Bloom.Book
 
         	var pageDom = GetHtmlDomWithJustOnePage(page);
             pageDom.RemoveModeStyleSheets();
-            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
-        	pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
+                pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
+                pageDom.AddEditMode("translation");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
-			}
+                pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
+                pageDom.AddEditMode("original");
+            }
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
             AddCoverColor(pageDom, CoverColor);
@@ -220,7 +248,7 @@ namespace Bloom.Book
 
         private void AddJavaScriptForEditing(HtmlDom dom)
         {
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
+            dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js").ToLocalhost());
         }
 
 
@@ -313,15 +341,22 @@ namespace Bloom.Book
             }
         }
 
+        internal IFileLocator GetFileLocator()
+        {
+            return _storage.GetFileLocator();
+        }
+
         private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
         {
             var dom = _storage.GetRelocatableCopyOfDom(_log);
+            dom.RemoveModeStyleSheets();
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
         	{
-        		dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
+        		dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
         	}
             dom.SortStyleSheetLinks();
+
             return dom;
         }
 
@@ -431,8 +466,7 @@ namespace Bloom.Book
                 if(TypeOverrideForUnitTests != BookType.Unknown)
                     return TypeOverrideForUnitTests;
 
-                return IsEditable ? BookType.Publication : BookType.Template; //TODO
-                //return _storage.BookType;
+                return IsEditable ? BookType.Publication : BookType.Template; //TODO there are other types...should there be some way they can they happen?
             }
         }
 
@@ -470,7 +504,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			} 
 
-            //shells & templates are stored without frontmatter. This will add and update the frontmatter to our preivew dom
+            //shells & templates may be stored without frontmatter. This will add and update the frontmatter to our preivew dom
             if (Type == BookType.Shell || Type == BookType.Template)
 			{
 				BringBookUpToDate(previewDom, new NullProgress());
@@ -521,9 +555,12 @@ namespace Bloom.Book
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
-    		XMatterHelper.RemoveExistingXMatter(bookDOM);
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			//enhance... this is currently just for the whole book. would be better page-by-page, somehow...
-			progress.WriteStatus("Injecting XMatter...");
+    		//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
+            //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
+            Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);			
+            XMatterHelper.RemoveExistingXMatter(bookDOM);
+            layout = Layout.FromDom(bookDOM, layout);			//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
+            progress.WriteStatus("Injecting XMatter...");
 
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
     		TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -542,7 +579,10 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					File.Delete(oldTagsPath);
 				}
-            }
+				// get any license info into the json
+				var metadata = GetLicenseMetadata();
+				UpdateLicenseMetdata(metadata);
+			}
             else //used for making a preview dom
             {
                 var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
@@ -889,25 +929,57 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
 		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
 		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
 		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
 		/// for to identify the main content of the book?
-		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
-		/// language.
+		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
+		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
+        /// we'll say that a book contains a language if it has a title defined in that language.
 		/// </summary>
 	    public IEnumerable<string> AllLanguages
 	    {
 		    get
 		    {
-			    return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+			    var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 				    .Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				    .Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*") // Not a valid language, thoug we sometimes use it for special values
+					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 				    .Distinct();
+                if (langList.Count() == 0)
+                    langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
+                        .Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
+                        .Select(div => div.Attributes["lang"].Value)
+                        .Where(lang => lang != "*" && lang != "z" && lang != "")
+                        .Distinct();
+                return langList;
 		    }
 	    }
+
+        public string GetAboutBookHtml
+        {
+            get
+            {
+                var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
+                var m = new Markdown(options);
+                var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+                contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
+
+                var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
+                var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
+                return html;
+
+            } //todo add other ui languages
+        }
+
+        public bool HasAboutBookInformationToShow { get { return File.Exists(AboutBookMarkdownPath); } }
+        public string AboutBookMarkdownPath  {
+            get
+            {
+                return _storage.FolderPath.CombineForPath("ReadMe_en.md");
+            }
+        }
 
         private void AddCoverColor(HtmlDom dom, Color coverColor)
     	{
@@ -917,8 +989,8 @@ namespace Bloom.Book
             colorStyle.SetAttribute("type","text/css");
             colorStyle.InnerXml = @"<!--
 
-                DIV.coverColor  TEXTAREA	{		background-color: colorValue;	}
-                DIV.bloom-page.coverColor	{		background-color: colorValue;	}
+                DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
+                DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
                 -->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
             var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
@@ -1146,14 +1218,14 @@ namespace Bloom.Book
 	            page.InnerXml = divElement.InnerXml;
 
                  _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
-				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with id "customStyles". Here we copy that over to the book DOM.
-	            var customStyles = editedPageDom.SelectSingleNode("html/head/style[@id='customStyles']");
-				if (customStyles != null)
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
+                 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
+				if (userModifiedStyles != null)
 				{
-					GetOrCreateCustomStyleElementFromStorage().InnerXml = customStyles.InnerXml;
-					Debug.WriteLine("Incoming CustomStyles:   " + customStyles.OuterXml);
+					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
+					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				//Debug.WriteLine("CustomBookStyles:   " + GetOrCreateCustomStyleElementFromStorage().OuterXml);
+				//Debug.WriteLine("User Modified Styles:   " + GetOrCreateUserModifiedStyleElementFromStorage().OuterXml);
                 try
                 {
                     Save();
@@ -1192,19 +1264,19 @@ namespace Bloom.Book
 //        }
 
 	    /// <summary>
-	    /// The <style id='customStyles'/> element is where we keep our user-modifiable style information
+	    /// The <style title='userModifiedStyles'/> element is where we keep our user-modifiable style information
 	    /// </summary>
-	    private XmlElement GetOrCreateCustomStyleElementFromStorage()
+	    private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 	    {
-		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@id='customBookStyles']");
+		    var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
 		    if (matches.Count > 0)
 			    return (XmlElement) matches[0];
 
-		    var emptyCustomStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-		    emptyCustomStylesElement.SetAttribute("id", "customBookStyles");
-		    emptyCustomStylesElement.SetAttribute("type", "text/css");
-		    OurHtmlDom.Head.AppendChild(emptyCustomStylesElement);
-		    return emptyCustomStylesElement;
+		    var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
+		    emptyUserModifiedStylesElement.SetAttribute("title", "userModifiedStyles");
+		    emptyUserModifiedStylesElement.SetAttribute("type", "text/css");
+		    OurHtmlDom.Head.AppendChild(emptyUserModifiedStylesElement);
+		    return emptyUserModifiedStylesElement;
 	    }
 
 	    /// <summary>
@@ -1256,7 +1328,7 @@ namespace Bloom.Book
 
 		private XmlNodeList GetPageElements()
 		{
-			return OurHtmlDom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]");
+			return OurHtmlDom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]");
 		}
 
 		private bool CanRelocatePageAsRequested(int indexOfItemAfterRelocation)
@@ -1354,20 +1426,20 @@ namespace Bloom.Book
 			    var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "customBookStyles" from children, it'll ignore them (they woul conflict with each other)
+				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-				var customStyleSheets = new List<string>();
+				var userModifiedStyleSheets = new List<string>();
 				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
 				{
-					if (!customStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
+					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
-						customStyleSheets.Add(sheetName);
+						userModifiedStyleSheets.Add(sheetName);
 						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
 					}
 				}
 			    printingDom.SortStyleSheetLinks();
 
-				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 				{
 					XmlElement importedPage = (XmlElement) printingDom.RawDom.ImportNode(pageDiv, true);
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
@@ -1378,17 +1450,14 @@ namespace Bloom.Book
 		    }
 	    }
 
-
-
-
 	    private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
 		{
 			var lastPage = 
-				   printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
+				   printingDom.RawDom.SelectSingleNode("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
 			if(lastPage==null) 
 			{
 				//currently nothing but front and back matter
-				var lastFrontMatter= printingDom.RawDom.SelectSingleNode("/html/body/div[contains(@class,'bloom-frontMatter')][last()]") as XmlElement;
+				var lastFrontMatter= printingDom.RawDom.SelectSingleNode("/html/body//div[contains(@class,'bloom-frontMatter')][last()]") as XmlElement;
 				if(lastFrontMatter ==null)
 					throw new ApplicationException("GetLastPageForInsertingNewContent() found no content pages nor frontmatter");
 				return lastFrontMatter;
@@ -1407,8 +1476,6 @@ namespace Bloom.Book
         {
             return _storage.PathToExistingHtml;
         }
-
-    
 
     	public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
     	{
@@ -1435,7 +1502,6 @@ namespace Bloom.Book
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
     	}
 
-
 		/// <summary>
 		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
 		/// *changing xmatter pack, and update to it, changing the languages, etc.
@@ -1460,13 +1526,26 @@ namespace Bloom.Book
 			}
 		}
 
-    	public void RebuildThumbNailAsync(Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+        /// <summary>
+        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// </summary>
+        /// <param name="thumbnailOptions"></param>
+        /// <param name="callback"></param>
+        /// <param name="errorCallback"></param>
+    	public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
     	{
-			if (!_storage.RemoveBookThumbnail())
-				return;
+    	    if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
+    	    {
+                // thumbnail is marked readonly, so just use it
+    	        Image thumb;
+                _storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
+                callback(this.BookInfo, thumb);
+    	        return;
+    	    }
 
     		_thumbnailProvider.RemoveFromCache(_storage.Key);
-			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this.BookInfo,image), 
+    	    thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image), 
 				error=>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
@@ -1545,8 +1624,27 @@ namespace Bloom.Book
         {
             _bookData.SetLicenseMetdata(metadata);
 	        BookInfo.License = metadata.License.Token;
-	        BookInfo.LicenseNotes = metadata.License.RightsStatement;
 			BookInfo.Copyright = metadata.CopyrightNotice;
+            // obfuscate any emails in the license notes.
+            var notes = metadata.License.RightsStatement;
+			if (notes == null)
+				return;
+            // recommended at http://www.regular-expressions.info/email.html.
+            // This purposely does not handle non-ascii emails, or ones with special characters, which he says few servers will handle anyway.
+            // It is also not picky about exactly valid top-level domains (or country codes), and will exclude the rare 'museum' top-level domain.
+            // There are several more complex options we could use there. Just be sure to add () around the bit up to (and including) the @,
+            // and another pair around the rest.
+            var regex = new Regex("\\b([A-Z0-9._%+-]+@)([A-Z0-9.-]+.[A-Z]{2,4})\\b", RegexOptions.IgnoreCase);
+            // We keep the existing email up to 2 characters after the @, and replace the rest with a message.
+            // Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
+            // to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
+            // in the language of the web site user rather than the language of the uploader.
+            notes = regex.Replace(notes,
+                new MatchEvaluator(
+                    m =>
+                        m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
+                        "(download book to read full email address)"));
+	        BookInfo.LicenseNotes = notes;
         }
 
         public void SetTitle(string name)
@@ -1572,7 +1670,8 @@ namespace Bloom.Book
 
 		public void Save()
 	    {
-		    _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
+			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
+			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 		    _storage.Save();
 	    }

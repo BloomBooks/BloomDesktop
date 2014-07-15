@@ -17,7 +17,6 @@ using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace Bloom.Publish
 {
@@ -32,7 +31,7 @@ namespace Bloom.Publish
 
 		public enum DisplayModes
 		{
-			NoBook,
+			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
 			Upload
@@ -40,6 +39,7 @@ namespace Bloom.Publish
 
 		public enum BookletPortions
 		{
+            None,
 			AllPagesNoBooklet,
 			BookletCover,
 			BookletPages,//include front and back matter that isn't coverstock
@@ -59,9 +59,10 @@ namespace Bloom.Publish
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookServer _bookServer;
-		private string _lastDirectory;
+	    private readonly HtmlThumbNailer _htmlThumbNailer;
+	    private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -70,8 +71,9 @@ namespace Bloom.Publish
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			BookletPortion = BookletPortions.BookletPages;
+		    _htmlThumbNailer = htmlThumbNailer;
+		    bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
 		public PublishView View { get; set; }
@@ -117,13 +119,13 @@ namespace Bloom.Publish
 				//we can't safely do any ui-related work from this thread, like putting up a dialog
 				doWorkEventArgs.Result = e;
 				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
-				//                SetDisplayMode(DisplayModes.NoBook);
+				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
 		}
 
 
-		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+		private TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
@@ -140,7 +142,7 @@ namespace Bloom.Publish
 			PageLayout.UpdatePageSplitMode(dom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
+			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -166,7 +168,7 @@ namespace Bloom.Publish
 			return path;
 		}
 
-		DisplayModes _currentDisplayMode = DisplayModes.NoBook;
+		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
 		internal DisplayModes DisplayMode
 		{
 			get
@@ -177,7 +179,7 @@ namespace Bloom.Publish
 			{
 				_currentDisplayMode = value;
 				if (View != null)
-					View.SetDisplayMode(value);
+					View.Invoke((Action) (() => View.SetDisplayMode(value)));
 			}
 		}
 
@@ -209,7 +211,22 @@ namespace Bloom.Publish
 			set { _pdfMaker.ShowCropMarks = value; }
 		}
 
-		public override bool Equals(object obj)
+	    public bool AllowUpload {
+            get { return BookSelection.CurrentSelection.BookInfo.AllowUploading; }
+        }
+
+	    public bool ShowBookletOption
+        {
+            get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }    
+	    }
+
+        public bool ShowCoverOption
+        {
+            //currently the only cover option we have is a booklet one
+            get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+        }
+
+	    public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -240,7 +257,10 @@ namespace Bloom.Publish
 					var portion = "";
 					switch (BookletPortion)
 					{
-						case BookletPortions.AllPagesNoBooklet:
+						case BookletPortions.None:
+					        Debug.Fail("Save should not be enabled");
+                            return;
+					    case BookletPortions.AllPagesNoBooklet:
 							portion = "Pages";
 							break;
 						case BookletPortions.BookletCover:
@@ -351,8 +371,13 @@ namespace Bloom.Publish
 
 	    public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
 	    {
-            var thumbnailer = new HtmlThumbNailer(width, height);//enhance some way to cache this
-	        thumbnailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+	        var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+	        {
+	            BackgroundColor = Color.White, 
+                DrawBorderDashed = false,
+                CenterImageUsingTransparentPadding = false
+	        };
+	        _htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
 	    }
 
 	    public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -386,7 +411,7 @@ namespace Bloom.Publish
 ////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 ////            HtmlDom.AddPublishClassToBody(dom);
 ////
-////	        foreach (var pageDom in dom.SelectNodes("/html/body/div[contains(@class,'bloom-page')]"))
+////	        foreach (var pageDom in dom.SelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
 ////	        {
 ////	            yield return pageDom;
 ////	        }

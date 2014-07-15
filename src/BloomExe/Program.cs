@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -13,13 +13,12 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
-using Microsoft.Win32;
-using Palaso.Extensions;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
+using Skybound.Gecko;
 using System.Linq;
 
 namespace Bloom
@@ -36,6 +35,7 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 		private static ApplicationContainer _applicationContainer;
         public static bool StartUpWithFirstOrNewVersionBehavior;
+
 #if PerProjectMutex		
 		private static Mutex _oneInstancePerProjectMutex;
 #else
@@ -43,22 +43,32 @@ namespace Bloom
 	    private static DateTime _earliestWeShouldCloseTheSplashScreen;
 		private static SplashScreen _splashForm;
 		private static bool _alreadyHadSplashOnce;
+        private static BookDownloadSupport _bookDownloadSupport;
 #endif
 
         [STAThread]
 		[HandleProcessCorruptedStateExceptions] 
         static void Main(string[] args)
         {
-	        try
-	        {
-		        Application.EnableVisualStyles();
-		        Application.SetCompatibleTextRenderingDefault(false);
+			try
+			{
+				Application.EnableVisualStyles();
+				Application.SetCompatibleTextRenderingDefault(false);
 
-		        //bring in settings from any previous version
-		        if (Settings.Default.NeedUpgrade)
-		        {
-			        //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-			        Settings.Default.Upgrade();
+#if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
+				if (!GrabMutexForBloom())
+					return;
+#endif
+
+				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				{
+					OldVersionCheck();
+				}
+				//bring in settings from any previous version
+				if (Settings.Default.NeedUpgrade)
+				{
+					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+					Settings.Default.Upgrade();
 			        Settings.Default.Reload();
 			        Settings.Default.NeedUpgrade = false;
 			        Settings.Default.Save();
@@ -73,8 +83,8 @@ namespace Bloom
 #endif
 
 #if DEBUG
-				using (new Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
-				
+                using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
+
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 		        
@@ -84,71 +94,66 @@ namespace Bloom
 		        using (new Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
 		        
 #endif
-				{
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
-			        {
-				        using (var dlg = new BloomPackInstallDialog(args[0]))
-				        {
-					        dlg.ShowDialog();
-				        }
-				        return;
-			        }
 
-					if (SendArgsToOtherBloomInstance(args))
-						return;
-
+                {
+                    if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+                    {
+                        using (var dlg = new BloomPackInstallDialog(args[0]))
+                        {
+                            dlg.ShowDialog();
+                        }
+                        return;
+                    }
+                    if (SendArgsToOtherBloomInstance(args))
+                        return;
 #if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
-				    if (args.Length > 1)
-				        Thread.Sleep(3000);//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
+                    if (args.Length > 1)
+                        Thread.Sleep(3000);
+                            //this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
 
 #else
                     if (!GrabMutexForBloom())
     					return;
 #endif
 
-			        OldVersionCheck();
+                    OldVersionCheck();
 
-			        SetUpErrorHandling();
+                    SetUpErrorHandling();
 
-			        _applicationContainer = new ApplicationContainer();
+                    _applicationContainer = new ApplicationContainer();
 
-					// We need the download folder to exist if we are asked to download a book.
-					// We also want it to exist, to show the (planned) link that offers to launch the web site.
-					// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
-					// a downloaded book to the UI.
-					// So, we just make sure it exists here at startup.
-					string downloadFolder = BookTransfer.DownloadFolder;
-					if (!Directory.Exists(downloadFolder))
-					{
-						var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(Path.GetDirectoryName(downloadFolder), Path.GetFileName(downloadFolder));
-						var settings = new NewCollectionSettings()
-						{
-							Language1Iso639Code = "en",
-							Language1Name = "English",
-							IsSourceCollection = true,
-							PathToSettingsFile = pathToSettingsFile
-							// All other defaults are fine
-						};
-						CollectionSettings.CreateNewCollection(settings);
-					}
-
-					StartReceivingArgsFromOtherBloom();
-
-			        SetUpLocalization();
-			        Logger.Init();
+                    if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
+                    {
+                        // A special path to upload chunks of stuff. This is not currently documented and is not very robust.
+                        // - User must log in before running this
+                        // - For best results each bloom book needs to be part of a collection in its parent folder
+                        // - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+                        SetUpLocalization();
+                        Browser.SetUpXulRunner();
+                        var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+                            _applicationContainer.HtmlThumbnailer, new DownloadOrderList());
+                        transfer.UploadFolder(args[1], _applicationContainer);
+                        return;
+                    }
 
 
-					if (args.Length == 1)
-					{
-						if (args[0].ToLower().EndsWith(".bloomcollection"))
-						{
-							Settings.Default.MruProjects.AddNewPath(args[0]);
-						}
-						else
-							HandleBloomBookOrder(args[0]);
-					}
+                    _bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
 
-					if (args.Length > 0 && args[0] == "--rename")
+                    SetUpLocalization();
+                    Logger.Init();
+
+
+                    if (args.Length == 1)
+                    {
+                        if (args[0].ToLower().EndsWith(".bloomcollection"))
+                        {
+                            Settings.Default.MruProjects.AddNewPath(args[0]);
+                        }
+                        else
+                            _bookDownloadSupport.HandleBloomBookDownloadOrder(args[0]);
+                    }
+
+                    if (args.Length > 0 && args[0] == "--rename")
                     {
                         try
                         {
@@ -163,156 +168,85 @@ namespace Bloom
                         }
                         catch (Exception error)
                         {
-                            Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
+                            Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+                                "Bloom could not finish renaming your collection folder. Restart your computer and try again.");
                             Environment.Exit(-1);
                         }
-                        
+
                     }
 
-			        _earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
+                    _earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
-					Settings.Default.Save(); 
-
-
-			        Browser.SetUpXulRunner();
-
-			        Application.Idle += Startup;
+                    Settings.Default.Save();
 
 
+                    Browser.SetUpXulRunner();
 
-			        L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-
-			        try
-			        {
-				        Application.Run();
-				        StopReceivingArgsFromOtherBloom();
-			        }
-			        catch (System.AccessViolationException nasty)
-			        {
-				        Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-				        System.Environment.FailFast("AccessViolationException");
-			        }
-
-			        Settings.Default.Save();
-
-			        Logger.ShutDown();
+                    Application.Idle += Startup;
 
 
-			        if (_projectContext != null)
-				        _projectContext.Dispose();
-		        }
-	        }
-			finally
-			{
-				ReleaseMutexForBloom();
-			}
+
+                    L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+
+                    try
+                    {
+                        Application.Run();
+                    }
+                    catch(System.AccessViolationException nasty)
+                    {
+                        Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+                        System.Environment.FailFast("AccessViolationException");
+                    }
+                    finally
+                    {
+                        _bookDownloadSupport.Dispose();
+                    }
+                    Settings.Default.Save();
+
+                    Logger.ShutDown();
+
+
+                    if (_projectContext != null)
+                        _projectContext.Dispose();
+                }
+            }
+            finally
+            {
+                ReleaseMutexForBloom();
+            }
         }
 
-		private static Thread _serverThread;
-		private static bool _shuttingDown;
-		/// <summary>
-		/// Start a server which can process requests from another instance of bloom
-		/// (typically started by initiating a download by navigating to a link starting with bloom://;
-		/// can also be by opening a bookorder file.)
-		/// </summary>
-		private static void StartReceivingArgsFromOtherBloom()
-		{
-			_serverThread = new Thread(ServerThreadAction);
-			_serverThread.Start();
-		}
 
-		private static void StopReceivingArgsFromOtherBloom()
-		{
-			if (_serverThread != null)
-			{
-				_shuttingDown = true;
-				// This will go to our own thread that is waiting for such a connection, allowing the WaitForConnection
-				// to unblock so the thread can terminate.
-				NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
-				try
-				{
-					pipeClient.Connect(100);
-				}
-				catch (TimeoutException)
-				{
-					return; // failed to send, maybe we got a real request during shutdown?
-				}
-				_serverThread.Join(1000); // If for some reason we can't clean up nicely, we'll exit anyway
-				_serverThread = null;
-			}
-		}
+        /// <summary>
+        /// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns>true if another instance is handling things and this one should exit</returns>
+        public static bool SendArgsToOtherBloomInstance(string[] args)
+        {
+            if (args.Length != 1)
+                return false; // We only try to send exactly one argument to another instance.
+            NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", BookDownloadSupport.ArgsPipeName, PipeDirection.Out);
+            try
+            {
+                pipeClient.Connect(200);
+            }
+            catch (TimeoutException)
+            {
+                return false; // no other bloom running, go ahead and deal with request ourselves.
+            }
+            // Send the argument across the pipe to the other instance.
+            byte[] outBuffer = Encoding.UTF8.GetBytes(args[0]);
+            int len = outBuffer.Length;
+            pipeClient.WriteByte((byte)(len / 256));
+            pipeClient.WriteByte((byte)(len & 255));
+            pipeClient.Write(outBuffer, 0, len);
+            pipeClient.Flush();
+            pipeClient.Dispose();
+            return true; // Abort this instance.
+        }
 
-		private const string ArgsPipeName = @"SendBloomArgs";
-
-		/// <summary>
-		/// The function executed by the server thread which listens for messages from other bloom instances.
-		/// Review: do we need to be able to handle many at once? What will happen if the user opens one order while we are handling another?
-		/// </summary>
-		/// <param name="data"></param>
-		private static void ServerThreadAction(object data)
-		{
-			for (;!_shuttingDown;)
-			{
-				NamedPipeServerStream pipeServer = new NamedPipeServerStream(ArgsPipeName, PipeDirection.In);
-				pipeServer.WaitForConnection();
-				if (_shuttingDown)
-					return; // We got the spurious message that allows us to unblock and exit
-				string argument = null;
-				try
-				{
-					int len = pipeServer.ReadByte()*256;
-					len += pipeServer.ReadByte();
-					byte[] inBuffer = new byte[len];
-					pipeServer.Read(inBuffer, 0, len);
-					argument = Encoding.UTF8.GetString(inBuffer);
-				}
-				catch (IOException e)
-				{
-					//Catch the IOException that is raised if the pipe is broken
-					// or disconnected.
-					// I think it is safe to ignore it...worst that happens is that whatever the other Bloom instance
-					// was trying to do doesn't happen.
-				}
-				HandleBloomBookOrder(argument);
-				pipeServer.Dispose();
-			}
-		}
-
-		private static void HandleBloomBookOrder(string argument)
-		{
-			_applicationContainer.OrderList.AddOrder(argument);
-		}
-
-		/// <summary>
-		/// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
-		/// </summary>
-		/// <param name="args"></param>
-		/// <returns>true if another instance is handling things and this one should exit</returns>
-		private static bool SendArgsToOtherBloomInstance(string[] args)
-		{
-			if (args.Length != 1)
-				return false; // We only try to send exactly one argument to another instance.
-			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", ArgsPipeName, PipeDirection.Out);
-			try
-			{
-				pipeClient.Connect(200);
-			}
-			catch (TimeoutException)
-			{
-				return false; // no other bloom running, go ahead and deal with request ourselves.
-			}
-			// Send the argument across the pipe to the other instance.
-			byte[] outBuffer = Encoding.UTF8.GetBytes(args[0]);
-			int len = outBuffer.Length;
-			pipeClient.WriteByte((byte)(len / 256));
-			pipeClient.WriteByte((byte)(len & 255));
-			pipeClient.Write(outBuffer, 0, len);
-			pipeClient.Flush();
-			pipeClient.Dispose();
-			return true; // Abort this instance.
-		}
-
-		private static void Startup(object sender, EventArgs e)
+	    private static void Startup(object sender, EventArgs e)
 		{
 			Application.Idle -= Startup;
 			CareForSplashScreenAtIdleTime(null, null);
@@ -358,7 +292,7 @@ namespace Bloom
 				_splashForm = null; //but we are done with it
 			}
 
-			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
+			if (!_bookDownloadSupport.HadOrder && RegistrationDialog.ShouldWeShowRegistrationDialog())
 			{
 				using (var dlg = new RegistrationDialog(false))
 				{
@@ -528,8 +462,6 @@ namespace Bloom
 		{
 			Debug.Assert(_projectContext == null);
 
-			CheckAndWarnAboutVirtualStore();
-
 			try
 			{
 				//NB: initially, you could have multiple blooms, if they were different projects.
@@ -558,35 +490,6 @@ namespace Bloom
 			}
 
 			return false;
-		}
-
-		//The windows "VirtualStore" is teh source of some really hard to figure out behavior:
-		//The symptom is, getting different results in the installed version, *unless you change the name of the Bloom folder in Program Files*.
-		//Then look at C:\Users\User\AppData\Local\VirtualStore\Program Files (x86)\Bloom and you'll find some old files.
-		private static void CheckAndWarnAboutVirtualStore()
-		{
-			var programFilesName = Path.GetFileName(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles));
-			var virtualStore = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
-								 "VirtualStore");
-			var ourVirtualStore = Path.Combine(virtualStore, programFilesName);
-			ourVirtualStore = Path.Combine(ourVirtualStore, "Bloom");
-
-			if (Directory.Exists(ourVirtualStore))
-			{
-#if DEBUG
-				Debug.Fail("You have a shadow copy of some Bloom files at " + ourVirtualStore + " that has crept in via running the installed version. Find what caused it and stamp it out!");
-#endif
-				try
-				{
-					Directory.Delete(ourVirtualStore, true);
-				}
-				catch (Exception error)
-				{
-					ErrorReport.NotifyUserOfProblem("Bloom could not remove the Virtual Store shadow of Bloom at " + ourVirtualStore +
-					                                ". This can cause some stylesheets to fall out of date.");
-					Analytics.ReportException(error);
-				}
-			}
 		}
 
 		private static void HandleProjectWindowActivated(object sender, EventArgs e)
@@ -687,10 +590,6 @@ namespace Bloom
 			{
 				Application.Idle +=new EventHandler(ReopenProject);
 			}
-            else if (((Shell)sender).QuitForVersionUpdate)
-            {
-                Application.Exit();
-            }
 			else
 			{
 				Application.Exit();
@@ -712,8 +611,9 @@ namespace Bloom
 			{
                 _applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 				                           "Bloom", "Bloom", Application.ProductVersion,
-				                           installedStringFileFolder,
-				                           Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Bloom");
+				                           installedStringFileFolder, 
+                                           "SIL/Bloom",
+                                           Resources.Bloom, "issues@bloomlibrary.org", "Bloom");
 
                 //We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
                 //from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be 
@@ -731,15 +631,8 @@ namespace Bloom
                 var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
                                            "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
                                            installedStringFileFolder,
-                                           Path.Combine(ProjectContext.GetBloomAppDataFolder(), "Localizations"), Resources.Bloom, "issues@bloom.palaso.org", "Palaso.UI");
-
-  /*                var l10nSystem = L10NSystem.BeginInit(preferredLanguage, installedStringFileFolder, targetStringFileFolder, icon, "issues@bloom.palaso.org");
-                    l10nSystem.AddLocalizationPackage(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion);
-                    l10nSystem.AddLocalizationPackage(NameSpace = "Palaso", ID = "Palaso", DisplayName = "Palaso", Version = Application.ProductVersion);
-                or better
-                        [Localizable(NameSpace="Bloom", ID="Bloom", DisplayName="Bloom", Version=Application.ProductVersion)]
-                l10nSystem.EndInit();
-    */
+                                            "SIL/Bloom",
+                                            Resources.Bloom, "issues@bloomlibrary.org", "Palaso.UI");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
@@ -770,7 +663,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()
 		{
-			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloom.palaso.org";
+			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 
@@ -809,11 +702,11 @@ namespace Bloom
 
                     try
                     {
-                        if (Dns.GetHostAddresses("bloom.palaso.org").Length > 0)
+						if (Dns.GetHostAddresses("bloomlibrary.org").Length > 0)
                         {
                             if (DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the web page where you can get a new one.", "OLD BETA", MessageBoxButtons.YesNo))
                             {
-                                Process.Start("http://bloom.palaso.org/download");
+								Process.Start("http://bloomlibrary.org/download");
                                 Process.GetCurrentProcess().Kill();
                             }
                             return;
@@ -824,7 +717,7 @@ namespace Bloom
                     }
 
                     Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-                        "This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloom.palaso.org.");
+						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloomlibrary.org.");
             }
 
         }

@@ -28,7 +28,7 @@
 	text-align: center;
 }
 /*....................National 1*/
-.A5Portrait.cover .bookTitle-style.bloom-contentNational1
+.A5Portrait.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 1.3cm;
@@ -39,7 +39,7 @@
 	left: 0px;
 	top: 130px;
 }
-.B5Portrait.cover .bookTitle-style.bloom-contentNational1
+.B5Portrait.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 1.3cm;
@@ -50,7 +50,7 @@
 	left: 0px;
 	top: 130px;
 }
-.A5Landscape.cover .bookTitle-style.bloom-contentNational1
+.A5Landscape.cover .bookTitle.bloom-contentNational1
 {
 	font-size: 120%;
 	height: 0.8cm;
@@ -222,11 +222,26 @@ DIV.ISBNContainer
 	left: 2px;
 	bottom: 216px;
 }
+.A4Portrait DIV.ISBNContainer
+{
+	/*+placement:anchor-bottom-left 2px 450px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 450px;
+}
+.A5Landscape DIV.ISBNContainer
+{
+	/*+placement:anchor-bottom-left 2px 120px;*/
+	position: absolute;
+	left: 2px;
+	bottom: 120px;
+}
 DIV.ISBNContainer .bloom-editable
 {
 	width: 4.3cm !important;
 	display: inline-block;
 	vertical-align: text-top;
+	max-height: 1.8em;
 }
 .ISBNContainer SPAN
 {
@@ -313,13 +328,13 @@ DIV.titlePage
 	display: block;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titePageTitleBlock DIV.bloom-contentNational2
+DIV#titlePageTitleBlock DIV.bloom-contentNational2, DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
 	height: 35px;
 	text-align: center;
 	width: 419px;
 }
-DIV#titePageTitleBlock DIV.bloom-contentNational1
+DIV#titlePageTitleBlock DIV.bloom-contentNational1, DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
 	height: 35px;
 	text-align: center;
@@ -333,7 +348,7 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 }
 /*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
 It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
-DIV#titePageTitleBlock DIV.bloom-content1
+DIV#titlePageTitleBlock DIV.bloom-content1, DIV#titePageTitleBlock DIV.bloom-content1
 {
 	font-size: 150%;
 	height: 111px;
@@ -403,7 +418,7 @@ DIV.titlePage DIV.langName.bloom-contentNational1
 }
 DIV.titlePage DIV.langName.bloom-content1, DIV.titlePage DIV.langName.bloom-contentNational2
 {
-	/*Idealy, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+	/*Ideally, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
 	display: none;
 }
 DIV.languageLocation
@@ -414,7 +429,7 @@ DIV.languageLocation
 	top: 50px;
 	width: 407px;
 }
-DIV#titePageTitleBlock
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock
 {
 	width: inherit;
 }
@@ -428,8 +443,9 @@ DIV.verso DIV
 {
 	text-align: center;
 	line-height: normal;
-	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10*/
-	font-size: 10pt !important;
+	/*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
+	  Had to take out the !important, though, to get user font-size to work on the verso page*/
+	font-size: 10pt;
 }
 /*...........originalAcknowledgments*/
 .A5Portrait DIV.originalAcknowledgments
@@ -449,16 +465,20 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 	width: 100%;
 	display: block !important;
 }
-/*................license and copyright*/
+.A5Landscape DIV.originalAcknowledgments DIV.bloom-contentNational1
+{
+	height: 3.5cm;
+}
 .A5Landscape DIV.versionAcknowledgments
 {
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
 	bottom: 0;
-	height: 116px !important;
+	height: 100px !important;
 	width: 100%;
 }
+/*................license and copyright*/
 .A4Landscape DIV#versoLicenseAndCopyright
 {
 	/*+placement:anchor-top-left 0 242px;*/
@@ -480,19 +500,19 @@ DIV.originalAcknowledgments DIV.bloom-contentNational1
 {
 	width: 100%;
 	height: 129px;
-	/*+placement:shift 0px 16px;*/
+	/*+placement:shift 0px -13px;*/
 	position: relative;
 	left: 0px;
-	top: 16px;
+	top: -13px;
 }
 DIV.licenseNotes
 {
-	/*+placement:anchor-top-left -4px 193px;*/
+	/*+placement:anchor-top-left 0px 30px;*/
 	position: absolute;
-	left: -4px;
-	top: 193px;
+	left: 0px;
+	top: 30px;
 	width: 100%;
-	height: 51px;
+	height: 29px;
 }
 DIV.copyright
 {
@@ -508,14 +528,21 @@ IMG.licenseImage
 	left: 39%;
 	top: 60px;
 }
+.A5Landscape IMG.licenseImage
+{
+	/*+placement:anchor-top-left 290px 30px;*/
+	position: absolute;
+	left: 290px;
+	top: 30px;
+}
 .A4Portrait IMG.licenseImage
 {
 	/*[disabled]width:114px;*/
 	/*[disabled]height:34px;*/
-	/*+placement:anchor-top-left 7.6cm 1cm;*/
+	/*+placement:anchor-top-left 7.6cm 1.7cm;*/
 	position: absolute;
 	left: 7.6cm;
-	top: 1cm;
+	top: 1.7cm;
 }
 .A4Landscape IMG.licenseImage
 {
@@ -541,6 +568,21 @@ DIV.licenseDescription
 	position: absolute;
 	left: 0;
 	top: 123px;
+}
+.A5Landscape DIV.licenseDescription
+{
+	/*+placement:anchor-top-left 0 107px;*/
+	position: absolute;
+	left: 0;
+	top: 107px;
+}
+.A4Portrait DIV.licenseDescription
+{
+	width: 80%;
+	/*+placement:anchor-top-left 84px 127px;*/
+	position: absolute;
+	left: 84px;
+	top: 127px;
 }
 DIV.licenseUrl
 {

@@ -31,13 +31,12 @@ mixin page-xmatter(label)
 
 mixin page-cover(label)
 	- requireOneArgument('page-cover',arguments)
-	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
+	+page-xmatter(label).cover.frontCover.outsideFrontCover.coverColor.bloom-frontMatter(attributes)
 		block
 
 mixin chooser-topic
-	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode
-		//- REVIEW Make sure this is not visible even when the user isn't allowed to edit it.
-		label.bubble(data-functionOnHintClick="ShowTopicChooser()") Click to choose topic
+	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
 		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
 
 mixin field-ISBN
@@ -48,15 +47,16 @@ mixin field-ISBN
 
 mixin field-acknowledgments-localizedVersion
 	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
-	//- TODO: why both versionAcknowledgments && inside-cover-version-aknowledgments-style?
-	+editable("N1").versionAcknowledgments.inside-cover-version-aknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	//- Why both versionAcknowledgments && inside-cover-version-acknowledgments-style?
+	//-   versionAcknowledgments governs placement on the page, inside-cover-version-acknowledgments-style is a
+	//-   holding place for user style adjustments (like font-size)
+	+editable("N1").versionAcknowledgments.inside-cover-version-acknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
-		label.placeholder Original (or Shell) Acknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledments-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledgments-style(data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
@@ -97,9 +97,10 @@ mixin factoryStandard-outsideFrontCover
 		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 		//- light of jade it is overly complicated.
 
-		+field-prototypeDeclaredExplicity.coverTitle-style
-			+editable(kLanguageForPrototypeOnly).bookTitle(data-book='bookTitle')
-				label.bubble Book title in {lang}
+		+field-prototypeDeclaredExplicity
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bookTitle.coverTitle-style(data-book='bookTitle')
+
 
 		.bloom-imageContainer
 			img(src="placeholder.png", data-book='coverImage')
@@ -120,15 +121,14 @@ mixin factoryStandard-creditsInsideFrontCover
 		+field-acknowledgments-originalVersion
 		+block-licenseAndCopyright#versoLicenseAndCopyright
 		+field-ISBN
-		+field-acknowledgments-localizedVersion.inside-cover-version-aknowledgments-style.versionAcknowledgments
+		+field-acknowledgments-localizedVersion
 
 mixin factoryStandard-titlePage
 	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
-		+field-prototypeDeclaredExplicity#titePageTitleBlock
+		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly)(data-book='bookTitle')
-
+			+editable(kLanguageForPrototypeOnly).title-page-bookTitle-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
@@ -149,13 +149,13 @@ mixin factoryStandard-titlePage
 
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
-	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(attributes, data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
 		+field-mono-meta("N1","insideBackCover").inside-back-cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
-	+page-xmatter('Outside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(attributes, data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").outside-back-cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."

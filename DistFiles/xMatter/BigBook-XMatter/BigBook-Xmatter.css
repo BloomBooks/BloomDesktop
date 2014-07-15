@@ -1,0 +1,198 @@
+/*Cover Page*/
+.A4Landscape.bloom-frontMatter DIV.marginBox
+{
+	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+	height: 188.2mm;
+}
+.coverTitle-style
+{
+	text-align: center;
+	height: 3.5em !important;
+}
+DIV.coverBottomLangName
+{
+	/*[disabled]height:58px;*/
+	/*[disabled]overflow:hidden;*/
+	/*[disabled]text-align:left;*/
+	/*[disabled]width:50%;*/
+	/*[disabled]+placement:anchor-bottom-left 0 0;*/
+	/*[disabled]margin-top:0px;*/
+	/*[disabled]margin-bottom:0px;*/
+	/*[disabled]padding-top:0;*/
+	/*[disabled]padding-bottom:0px;*/
+	/*[disabled]line-height:1;*/
+}
+.A4Landscape.cover .bookTitle.bloom-content1
+{
+	font-size: 72pt;
+	display: block;
+	/*[disabled]line-height:1.2;*/
+	overflow: visible;
+	text-align: center;
+	min-height: 4.2cm;
+	margin-top: 28px;
+}
+.A4Landscape.cover .bookTitle.bloom-contentNational1
+{
+	display: inherit;
+	margin-top: 28px;
+}
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style
+{
+	font-size: 18pt;
+	text-align: center;
+	min-height: 1cm;
+}
+/*These parentheses would be nice, but a bug in Firefox leaves a <br/> that you can't remove without switching pages*/
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:before
+{
+	/*[disabled]content:'(';*/
+}
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:after
+{
+	/*[disabled]content:')';*/
+}
+.A4Landscape.cover DIV.bloom-imageContainer
+{
+	height: 50%;
+}
+/*Instructions Page*/
+.bigbookxmatterInstructions H1
+{
+	text-align: center;
+	color: #000000;
+	font-size: 14pt;
+}
+.bigbookxmatterInstructions .bloom-editable
+{
+	overflow: visible;
+	font-size: 11pt;
+}
+.bigbookxmatterInstructions P
+{
+	margin-left: 0px;
+	margin-top: 18px;
+}
+.bigbookxmatterInstructions UL
+{
+	list-style-type: disc;
+	list-style-position: inside;
+	width: 100%;
+	margin-left: 0px;
+	margin-top: 0px;
+}
+.bigbookxmatterInstructions LI
+{
+	display: list-item;
+	font-size: 12pt;
+}
+/*Metadata/Information Page*/
+.A4Landscape.metadataPage [data-book='originalAcknowledgments'], .A4Landscape.metadataPage [data-book='versionAcknowledgments']
+{
+	min-height: 1.5cm;
+}
+.A4Landscape.metadataPage .bloom-editable
+{
+	/*Dont' go full width. In part because it would be really hard to read such a wide column, but also because it would push the help bubbles off the screen*/
+	width: 15cm;
+}
+.A4Landscape.metadataPage *:not(.pageLabel)
+{
+	font-size: 14pt;
+}
+.A4Landscape.bigBookBackmatter *:not(.pageLabel)
+{
+    font-size: 16pt;
+}
+.A4Landscape.bloom-metaData
+{
+	margin-top: 29px;
+}
+.A4Landscape #versoLicenseAndCopyright
+{
+}
+.metadataPage .bloom-contentNational1
+{
+	display: block !important;
+}
+.metadataPage .vernacularTitle[data-book='bookTitle']:before
+{
+	content: 'Title: ';
+}
+.metadataPage .nationalLanguage1Title[data-book='bookTitle']:before
+{
+	content: '( ';
+}
+.metadataPage .nationalLanguage1Title[data-book='bookTitle']:after
+{
+	content: ')';
+}
+.metadataPage .funding
+{
+	margin-top: 15px;
+	min-height: 1.5cm;
+}
+.metadataPage .licenseBlock
+{
+	margin-bottom: 14px;
+}
+.metadataPage .bloom-metaData
+{
+	width: 15cm;
+}
+.metadataPage .licenseUrl:before
+{
+	content: 'License: ';
+	/*[disabled]margin-left:-0.5cm;*/
+}
+.metadataPage .languageLine:before
+{
+	content: 'Language: ';
+}
+.metadataPage .languageLine *
+{
+	display: inline-block;
+}
+.metadataPage .licenseNotes
+{
+	width: 100%;
+}
+.metadataPage .copyright
+{
+	width: 100%;
+	margin-top: 8px;
+}
+.metadataPage .versionAcknowledgments
+{
+	min-height: 1cm;
+	width: 100%;
+	margin-top: 13px;
+}
+#inLicenseBlockLicenseImage
+{
+	/*[disabled]display:none;*/
+	/*+placement:float-right 98px -23px;*/
+	float: right;
+	position: relative;
+	left: 98px;
+	top: -23px;
+}
+#bottomLicenseImage
+{
+	/*+placement:anchor-bottom-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	display: none;
+}
+/*Inside Back Cover*/
+.insideBackCover .bloom-editable
+{
+	height: 100%;
+}
+/*Outside Back Cover*/
+.outsideBackCover .bloom-editable
+{
+	height: 100%;
+	text-align: center;
+}

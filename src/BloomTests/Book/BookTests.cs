@@ -18,6 +18,7 @@ using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
+using System;
 
 namespace BloomTests.Book
 {
@@ -45,7 +46,6 @@ namespace BloomTests.Book
             _storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
             _storage.SetupGet(x => x.Key).Returns("testkey");
             _storage.SetupGet(x => x.FileName).Returns("testTitle");
-            _storage.SetupGet(x => x.BookType).Returns(Bloom.Book.Book.BookType.Publication);
     	    _storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(()=>
     	                                                                                      {
     	                                                                                          return
@@ -68,30 +68,44 @@ namespace BloomTests.Book
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
-			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","templates"); 
+			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","Templates"); 
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
             _fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css"); 
-			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("editPaneGlobal.css")).Returns("../notareallocation/editPaneGlobal.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js"); 
+
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectoryWithThrow("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
-    		
+
+            _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectoryWithThrow("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
+
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 });
+            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] {new MonitorTarget() });
             _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
       }
+
 		[TearDown]
 		public void TearDown()
 		{
-			_testFolder.Dispose();
+			if (_testFolder != null)
+			{
+				_testFolder.Dispose();
+				_testFolder = null;
+			}
+			_thumbnailer.Object.Dispose();
 		}
 
     	private Bloom.Book.Book CreateBook()
@@ -548,6 +562,25 @@ namespace BloomTests.Book
             Assert.AreEqual("kbt", book.MultilingualContentLanguage3);
         }
 
+        //regression test
+        [Test]
+        public void BringBookUpToDate_A4LandscapeWithNoContentPages_RemainsA4Landscape()
+        {
+            _bookDom = new HtmlDom(@"
+				<html>
+                    <head>
+                        <meta name='xmatter' content='BigBook'/>
+                    </head>
+					<body>
+                        <div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
+						</div>
+					</body>
+				</html>"); 
+            var book = CreateBook();
+           // AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+            book.BringBookUpToDate(new NullProgress());
+            AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+        }
 	
 		
 		/// <summary>
@@ -796,9 +829,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var acksElt = _bookDom.SelectSingleNode("//textarea");
-			acksElt.InnerXml = "changed\r\n<br />more changes";
+			acksElt.InnerXml = "changed" + Environment.NewLine + "<br />more changes";
 			book.Save();
-			Assert.That(_metadata.Credits, Is.EqualTo("changed\r\nmore changes"));
+			Assert.That(_metadata.Credits, Is.EqualTo("changed" + Environment.NewLine + "more changes"));
 		}
 
 		[Test]
@@ -825,10 +858,12 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(book.BookInfo.Isbn, Is.EqualTo("978-0-306-40615-7"));
 
-			// todo: reinstate this when this bug is fixed: https://trello.com/c/CaUlk8kN/546-clearing-isbn-does-not-clear-data-div.
-			//isbnElt.InnerText = " ";
-			//book.Save();
-			//Assert.That(_metadata.volumeInfo.industryIdentifiers.Length, Is.EqualTo(0));
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+			isbnElt = dom.SelectSingleNode("//textarea");
+			isbnElt.InnerText = " ";
+			book.SavePage(dom);
+			book.Save();
+			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
 
 		[Test]
@@ -865,6 +900,35 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
 		}
+
+        [Test]
+        public void Save_UpdatesAllTitles()
+        {
+            _bookDom = new HtmlDom(
+                @"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+							<textarea lang='de' data-book='bookTitle'>Mein schönen Titel</textarea>
+                            <textarea lang='es' data-book='bookTitle'>мy buen título</textarea>
+						</div>  
+					</div>
+				</body></html>".Replace("nice title", "\"nice\" title\\topic"));
+
+            var book = CreateBook();
+
+            book.Save();
+
+            // Enhance: the order is not critical.
+            Assert.That(_metadata.AllTitles, Is.EqualTo("{\"de\":\"Mein schönen Titel\",\"en\":\"my \\\"nice\\\" title\\\\topic\",\"es\":\"мy buen título\"}"));
+        }
 
 		[Test]
 		public void AllLanguages_FindsBloomEditableElements()
@@ -903,6 +967,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
 								This is not in any known language
 							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='z'>
+								We use z for some special purpose, seems to occur in every book, don't want it.
+							</div>
 						</div>
 					</div>  
 				</body></html>");
@@ -925,12 +992,12 @@ namespace BloomTests.Book
 			// Creative Commons License
 		    var licenseData = new Metadata();
 		    licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
-		    licenseData.License.RightsStatement = "Please acknowledge nicely";
+            licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
 			book.UpdateLicenseMetdata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
-			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
+            Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
 
 			// Custom License
 		    licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};

@@ -110,19 +110,23 @@ namespace Bloom.Book
             var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
-			//NB: for a new book based on a page template, I think this should remove *everything*, because the rest is in the xmatter
-			//	for shells, we'll still have pages.
-            //Remove from the new book any div-pages labelled as "extraPage"
-			foreach (XmlElement initialPageDiv in storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			// NB: For a new book based on a page template, I think this should remove *everything*,
+			// because the rest is in the xmatter.
+			// For shells, we'll still have pages.
+
+			//Remove from the new book any div-pages labelled as "extraPage"
+			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
+				initialPageDivs.Count > 0;
+				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
 			{
-				initialPageDiv.ParentNode.RemoveChild(initialPageDiv);
+				initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
             bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
-			var sizeAndOrientation = Layout.FromDom(storage.Dom, Layout.A5Portrait);
+			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, Layout.A5Portrait, _fileLocator);
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
@@ -323,6 +327,16 @@ namespace Bloom.Book
 			//created book is going to be a shell. Any derivatives will then act as shells.  But it won't
 			//prevent us from editing it while in a shell-making collections, since we don't honor this
 			//tag in shell-making collections.
+
+            //The problem is, if you make a book in some vernacular library, then share it so that others
+            //can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
+            //being used as a shell. So everything is editable (not a big deal) but you're also locked out
+            // of editing the acknowledgements for translated version.
+
+            //It seems to me at the moment (May 2014) that the time to mark something as locked down should
+            //be when the they create a book based on a source-with-content book. So the current approach
+            //below, of pre-locking it, would go away.
+
 			if(_isSourceCollection)
 			{
                 storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");

@@ -1,0 +1,34 @@
+html
+	head
+		link(rel='stylesheet', href='readerTools.css', type='text/css')
+	body
+		h3(data-markuptype='1') Decodable Reader Tool
+		div
+			img#decodable-keys(src='../../../images/keys-white.pn', style='margin-left: 14px')
+			.stageLine
+				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
+				span.stageLabel.stageLine="Stage "
+					span#stageNumber 1
+					span.ofStage!="&nbsp;of&nbsp;"
+						span#numberOfStages 2
+				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
+			.section.clear(style='margin-left: 6px') Words in this stage
+				.sortBlock
+					.sortItem.rightBorder.sortIconSelected#sortAlphabetic
+						i.fa.fa-sort-alpha-asc(title='Sort alphabetically')
+					.sortItem.rightBorder#sortLength
+						i.fa.fa-sort-amount-asc(title='Sort by word length')
+					.sortItem#sortFrequency
+						i.fa.fa-long-arrow-up(title='Sort by frequency')
+						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
+			.tableHolder.clear
+				.wordList#wordList
+			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
+				span.setup.stageLine
+					a(href="javascript:showSetupDialog('stages');") Set up Stages
+			script(type='text/javascript').
+				$(document).ready(function() {
+					setTimeout(initializeDecodableRT, 100);
+					var path = thisDir + '../../images/keys-white.png';
+					document.getElementById('decodable-keys').src = path;
+				});

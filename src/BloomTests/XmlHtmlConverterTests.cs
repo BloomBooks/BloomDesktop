@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom;
-using Bloom.Book;
 using NUnit.Framework;
 using Palaso.IO;
-using Palaso.TestUtilities;
 
 namespace BloomTests
 {
@@ -48,5 +44,19 @@ namespace BloomTests
                 Assert.IsTrue(text.Contains("</div>"), text);
             }
         }
+
+	    [Test]
+	    public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
+	    {
+	        const string html = "<!DOCTYPE html><html><head></head><body><div><br></br></div></body></html>";
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+	        var found = 0;
+	        if (dom.DocumentElement != null)
+	        {
+	            var xml = dom.DocumentElement.InnerXml;
+	            found = xml.Select((c, i) => xml.Substring(i)).Count(sub => sub.StartsWith("<br />"));
+	        }
+	        Assert.AreEqual(1, found);
+	    }
 	}
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.WebLibraryIntegration;
+using Palaso.Progress;
 
 namespace BloomBookUploader
 {
@@ -27,7 +28,7 @@ namespace BloomBookUploader
             }
 
             var t = new Bloom.WebLibraryIntegration.BloomS3Client(BloomS3Client.SandboxBucketName);
-            t.UploadBook(Guid.NewGuid().ToString(), arguments[0]);
+            t.UploadBook(Guid.NewGuid().ToString(), arguments[0], new NullProgress());
 
             return 0;
         }
