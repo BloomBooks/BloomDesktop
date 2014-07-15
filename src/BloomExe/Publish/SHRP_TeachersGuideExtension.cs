@@ -21,10 +21,10 @@ namespace Bloom.Publish
         {
            //for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
             //to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
-            const string kSHRPTeachersBook = "DDF29517-F934-4D15-8BF0-A25ABBBF45DD";
+            var kSHRPTeachersBook = new string[]{"DDF29517-F934-4D15-8BF0-A25ABBBF45DD"};
 
             var ancestors = bookLineage.Split(new[] {','});
-            return ancestors.Contains(kSHRPTeachersBook);
+	        return kSHRPTeachersBook.Any(id => ancestors.Contains(id));
         }
 
 

@@ -40,6 +40,7 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
+    <Content Include="bookEdit\js\splitter.js" />
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />

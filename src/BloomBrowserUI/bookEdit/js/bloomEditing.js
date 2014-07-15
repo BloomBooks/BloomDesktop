@@ -15,6 +15,11 @@ $.fn.CenterVerticallyInParent = function() {
     });
 };
 
+//when run from Bloom, there will already be a GetDictionary() defined in the html document
+//having this makes it so we can run this straight from the file system during development
+if (typeof GetDictionary !== 'function') {
+    window.GetDictionary = function () { return {} }; 
+}
 
 function isBrOrWhitespace(node) {
     return node && ( (node.nodeType == 1 && node.nodeName.toLowerCase() == "br") ||
