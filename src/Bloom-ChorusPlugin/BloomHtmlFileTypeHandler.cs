@@ -65,7 +65,7 @@ namespace Bloom_ChorusPlugin
 				                     		ValidationType = ValidationType.None,
 				                     		XmlResolver = null,
 				                     		CloseInput = true,
-				                     		ProhibitDtd = false
+				                     		DtdProcessing = DtdProcessing.Prohibit,
 				                     	};
 				using (
 					var nodeReader = XmlReader.Create(new MemoryStream(Encoding.UTF8.GetBytes(result.MergedNode.OuterXml)),
@@ -100,16 +100,19 @@ namespace Bloom_ChorusPlugin
 			{
 				IsAtomic = false,
 				MergePartnerFinder = new FindByKeyAttribute("id"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
 			});
 			merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
 			{
 				IsAtomic = false,
 				MergePartnerFinder = new FindByKeyAttribute("class"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
 			});
 			merger.MergeStrategies.SetStrategy("LangDiv", new ElementStrategy(true)
 			{
 				IsAtomic = true,
 				MergePartnerFinder = new FindByKeyAttribute("lang"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
 			});
 		}
 
