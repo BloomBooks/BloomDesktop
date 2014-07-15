@@ -90,8 +90,10 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet">
-      <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
+    <Reference Include="PdfDroplet, Version=2.3.495.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
@@ -139,9 +141,11 @@
     </Reference>
     <Reference Include="Geckofx-Core, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
       <Package>Geckofx-Core</Package>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Geckofx-Winforms, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
       <Package>Geckofx-Winforms</Package>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
