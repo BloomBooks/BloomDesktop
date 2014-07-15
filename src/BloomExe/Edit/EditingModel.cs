@@ -634,7 +634,7 @@ namespace Bloom.Edit
 		{
 			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
 
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
 			_accordionFolder = Path.GetDirectoryName(path);
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
