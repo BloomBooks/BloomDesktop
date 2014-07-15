@@ -45,7 +45,7 @@ namespace Bloom.Collection.BloomPack
 				_folderName = GetRootFolderName(zip);
 				if (_folderName == null)
 					return;
-				string destinationFolder = Path.Combine(ProjectContext.InstalledCollectionsDirectory, _folderName);
+				string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 				if (Directory.Exists(destinationFolder))
 				{
 					Logger.WriteEvent("BloomPack already exists, asking...");
@@ -135,9 +135,9 @@ namespace Bloom.Collection.BloomPack
 
 				zip.ZipError += (o, args) => { throw args.Exception; };
 
-				zip.ExtractAll(ProjectContext.InstalledCollectionsDirectory);
+				zip.ExtractAll(ProjectContext.GetInstalledCollectionsDirectory());
 
-				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.InstalledCollectionsDirectory, _folderName);
+				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 				CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
 			}
 		}

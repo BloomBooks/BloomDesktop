@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Autofac.Features.Metadata;
+using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
 using Palaso.Extensions;
+using Palaso.Progress;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -18,8 +21,9 @@ namespace BloomTests.WebLibraryIntegration
 		private string _workFolderPath;
 		private BookTransfer _transfer;
 		private BloomParseClient _parseClient;
-		private OrderList _orders;
+		private DownloadOrderList _downloadOrders;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
+		private HtmlThumbNailer _htmlThumbNailer;
 
 		[SetUp]
 		public void Setup()
@@ -34,14 +38,16 @@ namespace BloomTests.WebLibraryIntegration
 			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
-			_orders = new OrderList();
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _orders);
+			_downloadOrders = new DownloadOrderList();
+			_htmlThumbNailer = new HtmlThumbNailer(new MonitorTarget());
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer,  _downloadOrders);
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
+			_htmlThumbNailer.Dispose();
 			_workFolder.Dispose();
 		}
 
@@ -80,13 +86,16 @@ namespace BloomTests.WebLibraryIntegration
 			int fileCount = Directory.GetFiles(originalBookFolder).Length;
 
 			Login();
-			HashSet<string> notifications = new HashSet<string>();
+			//HashSet<string> notifications = new HashSet<string>();
 
-			var s3Id = _transfer.UploadBook(originalBookFolder, notification =>notifications.Add(notification));
+			var progress = new Palaso.Progress.StringBuilderProgress();
+			var s3Id = _transfer.UploadBook(originalBookFolder,progress);
 
-			Assert.That(notifications.Count, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
-			Assert.That(notifications.Contains("Uploading book record"));
-			Assert.That(notifications.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
+			var uploadMessages = progress.Text.Split(new string[] {"Uploading"}, StringSplitOptions.RemoveEmptyEntries);
+
+			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
+			Assert.That(progress.Text.Contains("Uploading book record"));
+			Assert.That(progress.Text.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
@@ -107,7 +116,7 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			var someBookPath = MakeBook("local", Guid.NewGuid().ToString(), "someone", "test");
 			Login();
-			_transfer.UploadBook(someBookPath);
+			_transfer.UploadBook(someBookPath, new NullProgress());
 			Assert.That(_transfer.IsBookOnServer(someBookPath), Is.True);
 		}
 
@@ -147,7 +156,7 @@ namespace BloomTests.WebLibraryIntegration
 			var newJson = jsonStart + ",\"bookLineage\":\"original\"}";
 			File.WriteAllText(jsonPath, newJson);
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			File.Delete(bookFolder.CombineForPath("one.css"));
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
 			File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
@@ -155,7 +164,7 @@ namespace BloomTests.WebLibraryIntegration
 			newJson = jsonStart + ",\"bookLineage\":\"other\"}";
 			File.WriteAllText(jsonPath, newJson);
 
-			_transfer.UploadBook(bookFolder);
+			_transfer.UploadBook(bookFolder, new NullProgress());
 
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
@@ -166,7 +175,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(File.Exists(newBookFolder.CombineForPath("two.css")), Is.True, "We should have added the new file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 			// Verify that metadata was overwritten, new record not created.
-			var records = _parseClient.GetBookRecords("myId", "me");
+			var records = _parseClient.GetBookRecords("myId");
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse.com record, not added or deleted");
 			Assert.That(records[0].bookLineage.Value, Is.EqualTo("other"));
 		}
@@ -178,20 +187,19 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
 
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
-			Assert.That(metadata.UploadedBy, Is.EqualTo("unittest@example.com"), "should have set updatedBy to id of logged-in user");
+			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
 			Assert.That(metadata.DownloadSource, Is.EqualTo(s3Id));
 
-			var record = _parseClient.GetSingleBookRecord(metadata.Id, _parseClient.Account);
-			string thumbnail = record.thumbnail;
-			Assert.That(thumbnail, Is.StringContaining("thumbnail.png"), "thumbnail url should include correct file name");
-			Assert.That(thumbnail.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "thumbnail url should start with s3 prefix");
+			var record = _parseClient.GetSingleBookRecord(metadata.Id);
+			string baseUrl = record.baseUrl;
+			Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
 			string order = record.bookOrder;
 			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
@@ -207,13 +215,41 @@ namespace BloomTests.WebLibraryIntegration
 			var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
 			int fileCount = Directory.GetFiles(bookFolder).Length;
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder);
+			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
 			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 
 			var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest);
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
+		}
+
+		[Test]
+		public void GetLanguagePointers_CreatesLanguagesButDoesNotDuplicate()
+		{
+			Login();
+			_parseClient.DeleteLanguages();
+			_parseClient.CreateLanguage(new LanguageDescriptor() {IsoCode = "en", Name="English", EthnologueCode = "eng"});
+			_parseClient.CreateLanguage(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
+			Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
+			Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
+			Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
+			Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
+
+			var pointers = _parseClient.GetLanguagePointers(new[]
+			{
+				new LanguageDescriptor() {IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
+				new LanguageDescriptor() {IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
+			});
+			Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
+			Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
+
+			Assert.That(pointers[0], Is.Not.Null);
+			Assert.That(pointers[0].ClassName, Is.EqualTo("language"));
+			var first = _parseClient.GetLanguage(pointers[0].ObjectId);
+			Assert.That(first.name.Value, Is.EqualTo("MyLang"));
+			var second = _parseClient.GetLanguage(pointers[1].ObjectId);
+			Assert.That(second.name.Value, Is.EqualTo("MyOtherLang"));
 		}
 
 		[Test]

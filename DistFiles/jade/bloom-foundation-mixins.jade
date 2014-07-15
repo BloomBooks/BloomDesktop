@@ -20,15 +20,21 @@ mixin stylesheets(nameOfTemplateSpecificCSS)
 	+stylesheet('basePage.css')
 	//- +stylesheet('languageDisplay.css')
 	+stylesheet('editMode.css')
+	+stylesheet('editPaneGlobal.css')
 	+stylesheet(nameOfTemplateSpecificCSS)
 	//- +stylesheet('file://..\customCollectionStyles.css')
 
 mixin bookVariable-title(langCode, title)
 	div(data-book='bookTitle', lang=langCode)=title
 
+//- Copy this into your own template if you need a different
+//- default page size
+mixin pageWithJustPageSize
+	.A5Portrait(attributes)
+		block
+
 mixin page(englishLabel)
-	//- A5Portrait is just the default in Bloom
-	.bloom-page.A5Portrait(attributes)
+	+pageWithJustPageSize.bloom-page(attributes)
 		+page-label-english(englishLabel)
 		.marginBox
 			block
@@ -46,15 +52,8 @@ mixin page-required(englishLabel)
 mixin page-label-english(englishLabel)
 	.pageLabel(lang='en')=englishLabel
 
-//- Gives a basic Bloom translationGroup
-//- mixin bloom-translation-group
-//-	.bloom-translationGroup(class=attributes.class)
-//-		.bloom-editable
-//-			block
-
-
 //- Example Usage with placeholder and bubble:
-//-	+shellField.question
+//-	+field.question
 //-		label.bubble Don't forget to fill this in using {lang}
 //-		label.placeholder question
 mixin field
@@ -62,6 +61,12 @@ mixin field
 	.bloom-translationGroup(attributes)
 		block //this is where <label>s go
 		+editable(kLanguageForPrototypeOnly)
+
+mixin field-withSampleText
+	-requireZeroArguments('field-withSampleText');
+	.bloom-translationGroup(attributes)
+		+editable(kLanguageForPrototypeOnly)
+			block
 
 //- Sometimes, especially when we're just jade-ifying some existing html with existing css,
 //- we need to put attributes directly on the prototyp div instide of a translation group.
@@ -71,12 +76,10 @@ mixin field-prototypeDeclaredExplicity
 	.bloom-translationGroup(attributes)
 		block
 
-//- deprecated. Starting with version 1.1, we've changed how placeholders are handled
+//- deprecated. Starting with version 2.0, we've changed how placeholders are handled
 mixin field-version1(placeholder)
-	+field(data-placeholder=placeholder)
-		+editable(kLanguageForPrototypeOnly)(data-placeholder=placeholder)
-
-
+	+field-withSampleText(data-placeholder=placeholder,attributes)
+		block
 
 //- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
 //-	.roundedBorder
@@ -86,7 +89,7 @@ mixin field-version1(placeholder)
 mixin image
 	- requireZeroArguments('image', arguments);
 	.bloom-imageContainer(attributes)
-		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the image')
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
 		block
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
@@ -99,6 +102,14 @@ mixin grid(rows, columns)
 					td
 						+field
 
+mixin gridxy(columns, rows)
+	- requireTwoArguments("grid", arguments);
+	table.bloomGrid(attributes)
+		- for (var r = 0; r < rows; r++)
+			tr
+				- for(var c = 0; c < columns; c++)
+					td
+						+field
 //- ------------------------------------------------
 //- Mixins for Repetition
 //- ------------------------------------------------
@@ -146,23 +157,18 @@ mixin field-mono-meta(language, dataBookName)
 mixin  page-splittable-choice(englishLabel)
 	+page-choice(englishLabel)(class='bloom-combinedPage', attributes)
 		block
+
 mixin script(javascriptfileName)
 	script(type='text/javascript', src=javascriptfileName)
+
 mixin stylesheet(fullName)
 	- requireOneArgument('stylesheet', arguments);
 	link(rel='stylesheet', href=fullName, type='text/css')
+
 mixin dataDiv
 	div#bloomDataDiv
 		block
-//- TODO: Move all this stuff out of here, it's too specific
-//-	mixin bloom-topic(langAbbrev, topic)
-//-		div(data-book='topic', lang=langAbbrev)=topic
-//-	mixin bloom-CCHyperlink
-//-		a(rel='license', href='http://creativecommons.org/licenses/by/3.0/') Creative Commons Attribution
-//- TODO: move this to basic book, the use of this is too rare to be supported/documented here
-//-	mixin page-extra-combined(label)
-//-		+page(label)(class='bloom-combinedPage')(class=attributes.class, title=attributes.title)
-//-			block
+
 //- +editable should rarely if ever be used directly in a template; it is for other mixins
 mixin editable(language)
 	- requireOneArgument('editable', arguments)

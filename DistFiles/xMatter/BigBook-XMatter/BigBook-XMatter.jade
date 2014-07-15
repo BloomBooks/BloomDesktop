@@ -1,0 +1,97 @@
+include ../../jade/bloom-xmatter-mixins.jade
+doctype html
+
+mixin pageWithJustPageSize
+	.A4Landscape(attributes)
+		block
+
+mixin page(label)
+	+pageWithJustPageSize.bloom-page(data-page="required singleton", attributes=attributes)
+		+page-label-english(label)
+		.marginBox
+			block
+
+
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Big Book Front & Back Matter
+		+stylesheets('BigBook-XMatter.css')
+	body
+		+page('Front Cover').bloom-frontMatter.cover.coverColor(data-export='front-matter-cover')#A455013E-8CE7-42D0-AE43-1676FD5AED08
+			+image(data-book='coverImage')
+			+field-prototypeDeclaredExplicity
+				label.bubble Book title in {lang}
+				+editable('V').bookTitle.coverTitleVernacular-style(data-book='bookTitle')
+				+editable('N1').bookTitle.coverTitleNationalLanguage1-style(data-book='bookTitle')
+
+
+		//- lang='N1' means show the language name here using the national language
+			.coverBottomLangName(data-library="nameOfLanguage",lang="N1")
+				{Lang in N1}
+
+		+page('Inside Front Cover').cover.coverColor.bigBookFrontmatter.bloom-frontMatter.metadataPage#BB160261-9668-4B75-95DE-9B1993E2C6BB
+			.vernacularTitle(data-book='bookTitle',lang="V")
+			+field-prototypeDeclaredExplicity
+				label.bubble Book title in {lang}
+				+editable('N1').nationalLanguage1Title(data-book='bookTitle')
+			.languageLine
+				div(data-library='nameOfLanguage')
+				div(data-library='dialect')
+				|,&nbsp;
+				div(data-library='languageLocation')
+
+			.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+				.copyright(data-book="copyright", lang="*")
+					{copyright}
+				.licenseBlock
+					.licenseUrl(data-book="licenseUrl", lang="en")
+						{License Url}
+					img.licenseImage(src="" data-book="licenseImage")#inLicenseBlockLicenseImage
+					.licenseNotes(data-book="licenseNotes", lang="en")
+						{License Notes}
+					.licenseDescription(data-book="licenseDescription",lang="en")
+						{License Description}
+
+			+field-prototypeDeclaredExplicity
+				label.bubble When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.
+				+editable("N1").bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+			+field-prototypeDeclaredExplicity
+				label.bubble When you make a book from a shell, use this box to tell who did the translation.
+				+editable("N1").versionAcknowledgments.bloom-readOnlyInEditMode(data-book="versionAcknowledgments")
+			+field-prototypeDeclaredExplicity#funding
+				label.bubble Use this to acknowledge any funding agencies.
+				+editable(kLanguageForPrototypeOnly).funding(data-book='funding')
+			img.licenseImage(src="" data-book="licenseImage")#bottomLicenseImage
+
+		+page('Instructions').bigBookFrontmatter.bloom-frontMatter.bigbookxmatterInstructions#A6160261-9668-4B75-95DE-9B1993E2C607
+			+editable('N1')
+				H1 For the Teacher
+				p This Big Book is designed to be used for two weeks. It promotes enjoyment of storybooks, development of vocabulary, the skills of prediction, sequencing and main idea, and the understanding that books are made up of words.
+				p On <strong>Monday</strong>, the teacher
+				ul
+					li shows everyone the cover of the book
+					li	reads the title, while moving a finger under it
+					li	turns to the first page, and discusses the picture (asks the children to predict what will happen)
+					li	reads the text on the first page, fluently (not slowly), and
+					li	asks the children what they think they will see on each page. (The teacher is the only one “reading.”)
+				p	On <strong>Tuesday</strong>, the teacher
+				ul
+					li shows everyone the book, and
+					li reads the story again, following the words with a finger, without as much discussion of the pictures.
+				p On <strong>Wednesday</strong>, the teacher
+				ul
+					li invites children to join in with “reading” when the story comes to parts which are familiar to them
+					li shows a flashcard from the story and tells the class what the card says, and
+					li invites children to find the same word in the storybook (or to match the card with the word in the book to see if it is the same)
+				p On <strong>Thursday</strong>, the teacher
+				ul
+					li points smoothly to the words in the story and lets some volunteers “read” a page, if they can remember the story by now, and
+					li lets the children match the flashcards to the words in the story.
+				p On <strong>Friday</strong>, the children
+				ul
+					li act out (dramatize) the story as others help the teacher “read” it.
+
+		+factoryStandard-insideBackCover.bigBookBackmatter
+		+factoryStandard-outsideBackCover.bigBookBackmatter

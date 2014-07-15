@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Bloom.Collection;
-using Bloom.Properties;
 using Newtonsoft.Json;
 using Palaso.Extensions;
+using System.Xml;
 
 namespace Bloom.Book
 {
@@ -53,6 +51,8 @@ namespace Bloom.Book
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
+
+			FixDefaultsIfAppropriate();
 		}
 
 		public string Id
@@ -64,6 +64,32 @@ namespace Bloom.Book
 		public Color CoverColor { get; set; }
 
 		public string FolderPath { get; set; }
+
+		public bool AllowUploading
+		{
+			get { return MetaData.AllowUploadingToBloomLibrary; }
+		}
+
+		//there was a beta version that would introduce the .json files with the incorrect defaults
+		//we don't have a good way of differentiating when these defaults were set automatically
+		//vs. when someone actually set them to false. So this method is only used if a certain
+		//environment variable is set, so that our librarian (who ran into this) can fix her
+		//affected collections.
+		public void FixDefaultsIfAppropriate()
+		{
+			if (System.Environment.GetEnvironmentVariable("FixBloomMetaInfo") != "true")
+				return;
+			MetaData.AllowUploadingToBloomLibrary = true;
+			MetaData.BookletMakingIsAppropriate = true;
+		}
+
+		public bool BookletMakingIsAppropriate
+		{
+			get
+			{
+				return MetaData.BookletMakingIsAppropriate;
+			}
+		}
 
 		public bool IsSuitableForMakingShells
 		{
@@ -77,7 +103,7 @@ namespace Bloom.Book
 			set { MetaData.IsSuitableForVernacularLibrary = value; }
 		}
 
-		//SeeAlso: commeted IsExperimental on Book
+		//SeeAlso: commented IsExperimental on Book
 		public bool IsExperimental
 		{
 			get { return MetaData.IsExperimental; }
@@ -97,7 +123,22 @@ namespace Bloom.Book
 		public string Title
 		{
 			get { return MetaData.Title; }
-			set { MetaData.Title = value; }
+			set
+			{
+				var titleStr = Book.RemoveXmlMarkup(value);
+				MetaData.Title = titleStr;
+			}
+		}
+
+		/// <summary>
+		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
+		/// This stores a Json string representing lang:title pairs, e.g.,
+		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
+		/// </summary>
+		public string AllTitles
+		{
+			get { return MetaData.AllTitles; }
+			set { MetaData.AllTitles = value; }
 		}
 
 		// Todo: this is currently not used. It is intended to be filled in when we upload the json.
@@ -105,8 +146,8 @@ namespace Bloom.Book
 		// What we upload needs to be a functional URL (probably relative to our site root).
 		public string Thumbnail
 		{
-			get { return MetaData.Thumbnail; }
-			set { MetaData.Thumbnail = value; }
+			get { return MetaData.BaseUrl; }
+			set { MetaData.BaseUrl = value; }
 		}
 
 		public string Isbn
@@ -119,14 +160,6 @@ namespace Bloom.Book
 		{
 			get { return MetaData.BookLineage; }
 			set { MetaData.BookLineage = value; }
-		}
-
-		// Todo: this needs to be set to some suitable person/organization, possibly based on our parse.com login, when something is actually uploaed.
-		// As yet it is not used.
-		public string UploadedBy
-		{
-			get { return MetaData.UploadedBy; }
-			set { MetaData.UploadedBy = value; }
 		}
 
 		// This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
@@ -172,8 +205,6 @@ namespace Bloom.Book
 		{
 			get { return Path.GetFileName(FolderPath); }
 		}
-
-
 
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
@@ -248,10 +279,45 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public string[] Languages
+		public ParseDotComObjectPointer[] LanguageTableReferences
 		{
-			get { return MetaData.Languages; }
-			set { MetaData.Languages = value; }
+			get { return MetaData.LanguageTableReferences; }
+			set { MetaData.LanguageTableReferences = value; }
+		}
+
+		/// <summary>
+		/// The Parse.com object ID of the person who uploaded the book.
+		/// </summary>
+		public string Uploader
+		{
+			get
+			{
+				if (MetaData.Uploader == null)
+					return "";
+				return MetaData.Uploader.ObjectId;
+			}
+
+			set
+			{
+				MetaData.SetUploader(value);
+			}
+		}
+
+		public List<AccordionTool> Tools
+		{
+			get
+			{
+				if (MetaData.Tools == null)
+					MetaData.Tools = new List<AccordionTool>();
+				return MetaData.Tools;
+			}
+			set { MetaData.Tools = value; }
+		}
+
+		public string CurrentTool
+		{
+			get { return MetaData.CurrentTool; }
+			set { MetaData.CurrentTool = value; }
 		}
 	}
 
@@ -275,6 +341,12 @@ namespace Bloom.Book
 	/// </summary>
 	internal class BookMetaData
 	{
+		public BookMetaData()
+		{
+			IsExperimental = false;
+			AllowUploadingToBloomLibrary = true;
+			BookletMakingIsAppropriate = true;
+		}
 		public static BookMetaData FromString(string input)
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
@@ -327,11 +399,13 @@ namespace Bloom.Book
 		[JsonProperty("title")]
 		public string Title { get; set; }
 
+		[JsonProperty("allTitles")]
+		public string AllTitles { get; set; }
+
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
-		// containing the actual url where we can grab the thumbnail.
-		// Locally the thumbnail is always called just thumbnail.png.
-		[JsonProperty("thumbnail")]
-		public string Thumbnail { get; set; }
+		// containing the actual url where we can grab the thumbnails, pdfs, etc.
+		[JsonProperty("baseUrl")]
+		public string BaseUrl { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the book order file which when opened by Bloom causes it
@@ -344,11 +418,6 @@ namespace Bloom.Book
 
 		[JsonProperty("bookLineage")]
 		public string BookLineage { get; set; }
-
-		// Todo: this needs to be set to some suitable person/organization, possibly based on our parse.com login, when something is actually uploaed.
-		// As yet it is not used.
-		[JsonProperty("uploadedBy")]
-		public string UploadedBy { get; set; }
 
 		// This tells Bloom where the data files can be found.
 		// Strictly it is the first argument that needs to be passed to BookTransfer.DownloadBook in order to get the entire book data.
@@ -391,10 +460,100 @@ namespace Bloom.Book
 		[JsonProperty("pageCount")]
 		public int PageCount { get; set; }
 
+		// This is obsolete but loading old Json files fails if we don't have a setter for it.
 		[JsonProperty("languages")]
-		public string[] Languages { get; set; }
+		public string[] Languages { get { return new string[0]; } set {}}
+
+		[JsonProperty("langPointers")]
+		public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
+
+		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
+		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[DefaultValue(true)]
+		public bool AllowUploadingToBloomLibrary { get; set; }
+
+		[JsonProperty("bookletMakingIsAppropriate",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[DefaultValue(true)]
+		public bool BookletMakingIsAppropriate { get; set; }
+
+		public void SetUploader(string id)
+		{
+			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
+			// to an object in another table: in this case the special table of users.
+			if (Uploader == null)
+				Uploader = new ParseDotComObjectPointer() { ClassName = "_User" };
+			Uploader.ObjectId = id;
+		}
+
+		/// <summary>
+		/// The Parse.com ID of the person who uploaded the book.
+		/// This is stored in a special way that parse.com requires for cross-table pointers.
+		/// </summary>
+		[JsonProperty("uploader")]
+		public ParseDotComObjectPointer Uploader { get; set; }
+
+		/// <summary>These panels are being displayed in the accordion for this book</summary>
+		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
+		[JsonProperty("tools")]
+		public List<AccordionTool> Tools { get; set; }
+
+		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
+		public string CurrentTool { get; set; }
+	}
+
+	/// <summary>
+	/// This is the required structure for a parse.com pointer to an object in another table.
+	/// </summary>
+	public class ParseDotComObjectPointer
+	{
+		public ParseDotComObjectPointer()
+		{
+			Type = "Pointer"; // Required for all parse.com pointers.
+		}
+
+		[JsonProperty("__type")]
+		public string Type { get; set; }
+
+		[JsonProperty("className")]
+		public string ClassName { get; set; }
+
+		[JsonProperty("objectId")]
+		public string ObjectId { get; set; }
+	}
+
+	/// <summary>
+	/// This class represents the parse.com Language class (for purposes of generating json)
+	/// </summary>
+	public class LanguageDescriptor
+	{
+		[JsonIgnore]
+		public string Json
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(this);
+			}
+		}
+
+		[JsonProperty("isoCode")]
+		public string IsoCode { get; set; }
+
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("ethnologueCode")]
+		public string EthnologueCode { get; set; }
+	}
+
+	public class AccordionTool
+	{
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("enabled")]
+		public bool Enabled { get; set; }
 	}
 }

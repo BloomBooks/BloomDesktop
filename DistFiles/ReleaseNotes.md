@@ -1,4 +1,28 @@
-﻿## 1.1.6 - 19 Dec 2013
+﻿## 2.0.1038 BETA 6 June 2014
+Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
+
+## 2.0 1022 BETA 13 May 2014
+Templates can now have a markdown "readme" for telling people about the template. Select the Big Book or Wall Calendar templates to see how these are displayed.
+
+## 2.0.1021 BETA 9 May 2014
+Can now publish books to books.bloomlibrary.org
+Can now get books at books.bloomlibrary.org and they will open in Bloom
+Can can font sizes of all similar books
+New Big Book template & Front matter
+Basic Book now auto-enlarges fonts if you make it A4Landscape (for making a5 books into Big Books)
+
+
+## 1.1.574 18 Feb 2014
+New experimental keyboard shortcuts:
+Bold=Ctrl+b, Underline=Ctrl+u, Italics=Ctrl+i, F6=Superscript, Ctrl+space=clear any of those.
+F7=Heading1, F8=Heading2.
+Pasting text with \v 123 will give you a superscript 123.
+
+
+## 1.1  12 Feb 2014
+Make textboxes red when there is more text in them than fits
+
+## 1.1.6 - 19 Dec 2013
 * for template developers: <body> now has a class "publishmode" that you can use to do something different when viewing/publishing vs. editing
 * make shift-insert act just like ctrl+v with respect to filtering the incoming content down to plain text.
 

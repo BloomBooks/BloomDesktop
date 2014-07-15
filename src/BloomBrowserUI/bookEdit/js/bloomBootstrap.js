@@ -20,10 +20,22 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.sizes.j
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.watermark.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'jquery.hotkeys.js"></script>');
+
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'BloomAccordion.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
 
 document.write('<script type="text/javascript" src="' + thisDir + 'toolbar/jquery.toolbar.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'toolbar/jquery.toolbars.css">');
-//document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'toolbar/bootstrap.icons.css">');
-//document.write('<link rel="stylesheet" type="text/css" href="' + fontsDir + 'style.css">');
+
+// synphony-related scripts
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/underscore_min_152.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/xregexp-all-min.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_xregexp_categories.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/jquery.text-markup.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'jquery.div-columns.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/synphony_lib.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');

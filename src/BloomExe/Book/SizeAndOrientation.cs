@@ -134,6 +134,7 @@ namespace Bloom.Book
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/");
+				fileName = fileName.Replace("file://", "").Replace("%20", " ");
 				var path = fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(path))
 				{

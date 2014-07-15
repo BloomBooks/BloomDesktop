@@ -158,7 +158,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(248, 26);
             this.label3.TabIndex = 24;
-            this.label3.Text = "pre-beta (bleeding edge)";
+            this.label3.Text = "alpha";
             // 
             // SplashScreen
             // 

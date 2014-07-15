@@ -56,6 +56,21 @@ namespace Bloom.Publish
 
 		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, DoWorkEventArgs doWorkEventArgs)
 		{
+			// NOTE: This method creates a ProgressDialogBackground. On Linux this has to happen
+			// on the thread that is running our main window, otherwise Gecko might crash. Since
+			// we're already running on a background thread we have to use Invoke.
+			// The solution implemented here is a hack; it would be better and more efficient to
+			// directly create the progress dialog in the calling class (PublishView) and then
+			// run this code in the background. Currently we run this code in a background thread
+			// and then have ProgressDialogBackground do the work on yet another background
+			// thread. However, when porting to Linux this seemed to be to big of a change to do
+			// it immediately, therefore this hack.
+			if (RunningOnBackgroundThread && FirstForm != null)
+			{
+				FirstForm.Invoke((Action)(() => MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs)));
+				return;
+			}
+
 			var customSizes = new Dictionary<string, string>();
 			customSizes.Add("Halfletter", "--page-width 8.5 --page-height 5.5");
 			string pageSizeArguments;
@@ -98,7 +113,10 @@ namespace Bloom.Publish
 					//Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold,
 					//so that's ok.
 
-					" --print-media-type " +
+					// --no-outline was added becuase otherwise using <H1> would cause a table of contents to be created and then adobe reader would show thumbnails, which
+					// wasn't so bad but it was confusing for the user why some documents (ones that had H1) would show it and others would not.
+
+					" --no-outline --print-media-type " +
 					pageSizeArguments +
 					(landscape ? " -O Landscape " : "") +
 #if DEBUG
@@ -176,7 +194,7 @@ namespace Bloom.Publish
 				Debug.WriteLine(result.StandardOutput);
 
 				if (!File.Exists(tempOutput.Path))
-					throw new ApplicationException("Bloom was not able to create the PDF.\r\n\r\nDetails: Wkhtml2pdf did not produce the expected document.");
+					throw new ApplicationException(string.Format("Bloom was not able to create the PDF.{0}{0}Details: Wkhtml2pdf did not produce the expected document.", Environment.NewLine));
 
 				try
 				{
@@ -187,14 +205,31 @@ namespace Bloom.Publish
 					//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
 					//but we had a report (BL-211) of that move failing.
 					throw new ApplicationException(
-							string.Format("Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.\r\n\r\nDetails: {1}",
-										  outputPdfPath, e.Message));
-
+						string.Format("Bloom tried to save the file to {0}, but {2} said that it was locked. Please try again.{3}{3}Details: {1}",
+							outputPdfPath, e.Message, Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux", Environment.NewLine));
 				}
-
-
 			}
+		}
 
+		private static bool RunningOnBackgroundThread
+		{
+			get
+			{
+				if (Application.OpenForms == null || Application.OpenForms.Count < 1)
+					return false;
+
+				return Application.OpenForms[0].InvokeRequired;
+			}
+		}
+
+		private static Form FirstForm
+		{
+			get
+			{
+				if (Application.OpenForms == null || Application.OpenForms.Count < 1)
+					return null;
+				return Application.OpenForms[0];
+			}
 		}
 
 		//About the --zoom parameter. It's a hack to get the pages chopped properly.
@@ -230,19 +265,7 @@ namespace Bloom.Publish
 
 		private string FindWkhtmlToPdf()
 		{
-			var exePath = Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, "wkhtmltopdf");
-			exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-			if (!File.Exists(exePath))
-			{
-				//if this is a programmer, it should be in the lib directory
-				exePath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, Path.Combine("lib", "wkhtmltopdf"));
-				exePath = Path.Combine(exePath, "wkhtmltopdf.exe");
-				if (!File.Exists(exePath))
-				{
-					throw new ApplicationException("Could not find a file that should have been installed with Bloom: " + exePath);
-				}
-			}
-			return exePath;
+			return FileLocator.LocateExecutable("wkhtmltopdf", "wkhtmltopdf.exe");
 		}
 
 		/// <summary>

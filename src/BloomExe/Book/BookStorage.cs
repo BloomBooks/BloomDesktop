@@ -17,6 +17,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -24,19 +25,16 @@ namespace Bloom.Book
 	/* The role of this class is simply to isolate the actual storage mechanism (e.g. file system)
 	 * to a single place.  All the other classes can then just pass around DOMs.
 	 */
-
-
 	public interface IBookStorage
 	{
 		//TODO Covert this most of this section to something like IBookDescriptor, which has enough display in a catalog, do some basic filtering, etc.
-		Book.BookType BookType { get; }
 		string Key { get; }
 		string FileName { get; }
 		string FolderPath { get; }
 		string PathToExistingHtml { get; }
-		bool TryGetPremadeThumbnail(out Image image);
+		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
-		bool RemoveBookThumbnail();
+		bool RemoveBookThumbnail(string fileName);
 
 		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
@@ -108,25 +106,6 @@ namespace Bloom.Book
 			ExpensiveInitialization();
 		}
 
-		//TODO: this is in conflict with the BookType on Book. Get rid of one of them (has trello card for v1.1)
-		public Book.BookType BookType
-		{
-			get
-			{
-				var pathToHtml = PathToExistingHtml;
-				//as of v1.1. this is bogus; previously all templates were supposed to be named "templatePages.htm", so you could tell.
-				if (pathToHtml.EndsWith("Basic Book.htm"))
-					return Book.BookType.Template;
-
-				//directory name matches htm name
-				//                if (!string.IsNullOrEmpty(pathToHtml) && Path.GetFileName(Path.GetDirectoryName(pathToHtml)) == Path.GetFileNameWithoutExtension(pathToHtml))
-				//                {
-				//                    return Book.BookType.Publication;
-				//                }
-				return Book.BookType.Publication;
-			}
-		}
-
 		public string PathToExistingHtml
 		{
 			get { return FindBookHtmlInFolder(_folderPath); }
@@ -153,10 +132,11 @@ namespace Bloom.Book
 		/// <summary>
 		///
 		/// </summary>
+		/// <param name="fileName"></param>
 		/// <returns>false if we shouldn't mess with the thumbnail</returns>
-		public bool RemoveBookThumbnail()
+		public bool RemoveBookThumbnail(string fileName)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+			string path = Path.Combine(_folderPath, fileName);
 			if(File.Exists(path) &&
 			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
@@ -178,9 +158,9 @@ namespace Bloom.Book
 			return _fileLocator;
 		}
 
-		public bool TryGetPremadeThumbnail(out Image image)
+		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+			string path = Path.Combine(_folderPath, fileName);
 			if (File.Exists(path))
 			{
 				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
@@ -232,7 +212,6 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
-			Guard.Against(BookType != Book.BookType.Publication, "Tried to save a non-editable book.");
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
 			if (null != Assembly.GetEntryAssembly()) // null during unit tests
 			{
@@ -249,7 +228,8 @@ namespace Bloom.Book
 				var badFilePath = PathToExistingHtml + ".bad";
 				File.Copy(tempPath, badFilePath, true);
 				//hack so we can package this for palaso reporting
-				errors += "\r\n\r\n\r\nContents:\r\n\r\n" + File.ReadAllText(badFilePath);
+				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
+					File.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
@@ -259,8 +239,7 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-				{ Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null); }
-
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null);
 			}
 
 			MetaData.Save();
@@ -418,9 +397,13 @@ namespace Bloom.Book
 					}
 					continue;
 				}
+				// Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
+				// Also, at present the user can't insert them into a book. Don't report them.
+				// TODO: if we ever allow the user to add .svg files, we'll need to change this
+				if (Path.HasExtension(imageFileName) && Path.GetExtension(imageFileName).ToLowerInvariant() == ".svg")
+					continue;
 
 				//trim off the end of "license.png?123243"
-
 				var startOfDontCacheHack = imageFileName.IndexOf('?');
 				if (startOfDontCacheHack > -1)
 					imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
@@ -502,9 +485,7 @@ namespace Bloom.Book
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
-			candidates.Remove(folderPath.CombineForPath("configuration.htm"));
-			candidates.Remove(folderPath.CombineForPath("credits.htm"));
-			candidates.Remove(folderPath.CombineForPath("instructions.htm"));
+			candidates.RemoveAll((name) => name.ToLower().Contains("configuration"));
 			if (candidates.Count == 1)
 				return candidates[0];
 
@@ -529,7 +510,7 @@ namespace Bloom.Book
 					var uri = folderPath + Path.DirectorySeparatorChar;
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
-					uri = ImageServer.GetPathEndingInSlash() + uri;
+					uri = ImageServer.PathEndingInSlash + uri;
 					path = uri;
 				}
 				else
@@ -625,7 +606,7 @@ namespace Bloom.Book
 					}
 				}
 
-				//todo: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
+				//TODO: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
 				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
 
 				//UpdateStyleSheetLinkPaths(fileLocator);
@@ -714,7 +695,7 @@ namespace Bloom.Book
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", factoryPath,documentPath);
+					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
 			}
 		}
 
@@ -743,7 +724,19 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
 			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
-				EnsureHasLinkToStyleSheet(dom,"customBookStyles.css");
+				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
+			else
+				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
+		{
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == path)
+					dom.RemoveStyleSheetIfFound(path);
+			}
 		}
 
 		private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
@@ -811,10 +804,9 @@ namespace Bloom.Book
 		}
 
 
-
 		private string SanitizeNameForFileSystem(string name)
 		{
-			foreach(char c in Path.GetInvalidFileNameChars())
+			foreach(char c in PathUtilities.GetInvalidOSIndependentFileNameChars())
 			{
 				name = name.Replace(c, ' ');
 			}

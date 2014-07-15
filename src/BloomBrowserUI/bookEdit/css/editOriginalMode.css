@@ -3,31 +3,24 @@ OL#topics
 {
 	list-style: none;
 }
-DIV.ui-sourceTextsForBubble TEXTAREA, DIV.ui-sourceTextsForBubble DIV
-{
-	background-color: transparent;
-	border: none;
-	height: 236px;
-	overflow: auto;
-}
 /*this is used for the "versionAcknowledgments" textarea, which we don't want shell-makers to be filling in*/
 .bloom-readOnlyInEditMode
 {
-/*we have javascript function which notices this setting and makes it read-only
+	/*we have javascript function which notices this setting and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
-	/*[disabled]border:1px solid transparent;*/
+	border: none !important;
 	cursor: not-allowed;
 }
 DIV.bloom-metaData
 {
 	cursor: pointer;
-/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+	/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
 }
 DIV.bloom-metaData TEXTAREA
 {
-/*border: transparent; /* jscript will translate to read only*/
+	/*border: transparent; /* jscript will translate to read only*/
 	cursor: pointer;
-/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+	/*this signals to jscript that in this mode, when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
 }
 /*This is here instead of Factor-XMatter.css so that it only shows when it is editable*/
 DIV.coverBottomBookTopic
