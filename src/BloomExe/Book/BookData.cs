@@ -66,7 +66,7 @@ namespace Bloom.Book
 			_collectionSettings = collectionSettings;
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
-			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+			GatherDataItemsFromXElement(_dataset, _dom.RawDom);
 		}
 
 		/// <summary>
@@ -76,7 +76,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
 				return GetVariableOrNull("contentLanguage2", "*");
 			}
 		}
@@ -139,7 +139,7 @@ namespace Bloom.Book
 			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
-					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
+					UpdateSingleTextVariableThroughoutDOM(v.Key, v.Value.TextAlternatives);
 			}
 			foreach (var tuple in itemsToDelete)
 				UpdateSingleTextVariableThrougoutDom(tuple.Item1, tuple.Item2, "");
@@ -207,9 +207,9 @@ namespace Bloom.Book
 		{
 			//Debug.WriteLine("before: " + dataDiv.OuterXml);
 
-			if(multiText.Count==0)
+			if (multiText.Count == 0)
 			{
-				RemoveDataDivElementIfEmptyValue(key,null);
+				RemoveDataDivElementIfEmptyValue(key, null);
 			}
 			foreach (LanguageForm languageForm in multiText.Forms)
 			{
@@ -269,9 +269,9 @@ namespace Bloom.Book
 		public void Set(string key, string value, string lang)
 		{
 			_dataset.UpdateLanguageString(key, value, lang, false);
-			if(_dataset.TextVariables.ContainsKey(key))
+			if (_dataset.TextVariables.ContainsKey(key))
 			{
-				UpdateSingleTextVariableThroughoutDOM(key,_dataset.TextVariables[key].TextAlternatives);
+				UpdateSingleTextVariableThroughoutDOM(key, _dataset.TextVariables[key].TextAlternatives);
 			}
 			else //we go this path if we just removed the last value from the multitext
 			{
@@ -299,7 +299,7 @@ namespace Bloom.Book
 
 		private XmlElement GetOrCreateDataDiv()
 		{
-			if(_dataDiv!=null)
+			if (_dataDiv != null)
 				return _dataDiv;
 			_dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
 			if (_dataDiv == null)
@@ -327,7 +327,7 @@ namespace Bloom.Book
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
-//            SendDataToDebugConsole(data);
+			//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			UpdateTitle();
@@ -341,21 +341,21 @@ namespace Bloom.Book
 			data.WritingSystemAliases.Add("N1", collectionSettings.Language2Iso639Code);
 			data.WritingSystemAliases.Add("N2", collectionSettings.Language3Iso639Code);
 
-//            if (makeGeneric)
-//            {
-//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
-//                    //This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-//                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
-//                    //review: maybe this should be, like 'xyz"
-//                data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
-//                data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
-//                data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
-//                data.AddGenericLanguageString("country", "Your Country", true);
-//                data.AddGenericLanguageString("province", "Your Province", true);
-//                data.AddGenericLanguageString("district", "Your District", true);
-//                data.AddGenericLanguageString("languageLocation", "(Language Location)", true);
-//            }
-//            else
+			//            if (makeGeneric)
+			//            {
+			//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
+			//                    //This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
+			//                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+			//                    //review: maybe this should be, like 'xyz"
+			//                data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
+			//                data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
+			//                data.AddGenericLanguageString("nameOfNationalLanguage2", "(National Lang)", true);
+			//                data.AddGenericLanguageString("country", "Your Country", true);
+			//                data.AddGenericLanguageString("province", "Your Province", true);
+			//                data.AddGenericLanguageString("district", "Your District", true);
+			//                data.AddGenericLanguageString("languageLocation", "(Language Location)", true);
+			//            }
+			//            else
 			{
 				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1Name, "*", true);
@@ -454,7 +454,7 @@ namespace Bloom.Book
 							itemsToDelete.Add(Tuple.Create(key, lang));
 					}
 					else if (!value.StartsWith("{"))
-						//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
+					//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
 						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" ||
 							 node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
@@ -492,7 +492,7 @@ namespace Bloom.Book
 		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
-		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
+		private void UpdateDomFromDataSet(DataSet data, string elementName, XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
 			try
 			{
@@ -544,7 +544,7 @@ namespace Bloom.Book
 								if (!String.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
 								{
 									//Ideally, we have this string, in this desired language.
-									string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
+									string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] { lang, "*" });
 
 									//But if not, maybe we should copy one in from another national language
 									if (string.IsNullOrEmpty(s))
@@ -630,7 +630,7 @@ namespace Bloom.Book
 				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code))
 			{
 				formToCopyFromSinceOursIsMissing =
-					data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] {languageCodeOfTargetField, "*", "en", "fr", "es", "pt"});
+					data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] { languageCodeOfTargetField, "*", "en", "fr", "es", "pt" });
 				if (formToCopyFromSinceOursIsMissing != null)
 					s = formToCopyFromSinceOursIsMissing.Form;
 
@@ -671,9 +671,9 @@ namespace Bloom.Book
 
 		public void SetLicenseMetdata(Metadata metadata)
 		{
-			var data = new DataSet();
+			var data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
-			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
+			GatherDataItemsFromXElement(data, _dom.RawDom, itemsToDelete);
 
 			string copyright = metadata.CopyrightNotice;
 			data.UpdateLanguageString("copyright", copyright, "*", false);
@@ -738,13 +738,13 @@ namespace Bloom.Book
 				{
 					string licenseNotes = d.TextAlternatives.GetFirstAlternative();
 
-					metadata.License = new CustomLicense {RightsStatement = licenseNotes};
+					metadata.License = new CustomLicense { RightsStatement = licenseNotes };
 				}
 				else
 				{
 					// The only remaining current option is a NullLicense
 					metadata.License = new NullLicense(); //"contact the copyright owner
-				 }
+				}
 			}
 			else // there is a licenseUrl, which means it is a CC license
 			{
@@ -759,7 +759,7 @@ namespace Bloom.Book
 
 		public string GetVariableOrNull(string key, string writingSystem)
 		{
-			var f= _dataset.TextVariables.ContainsKey(key)
+			var f = _dataset.TextVariables.ContainsKey(key)
 					   ? _dataset.TextVariables[key].TextAlternatives[writingSystem]
 					   : null;
 
@@ -810,7 +810,7 @@ namespace Bloom.Book
 				if (info != null)
 					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 				//review: notice we're only changing the value in this dataset
-				this.Set("bookTitle", t,"en");
+				this.Set("bookTitle", t, "en");
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
@@ -829,7 +829,7 @@ namespace Bloom.Book
 						sb.Append("\"");
 						sb.Append(langForm.WritingSystemId);
 						sb.Append("\":\"");
-						sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"","\\\"")); // Escape backslash and double-quote
+						sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
 						sb.Append("\"");
 					}
 					sb.Append("}");
@@ -842,7 +842,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
+				return new string[] { _collectionSettings.Language1Iso639Code ?? "", _collectionSettings.Language2Iso639Code ?? "", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			}
 		}
 
@@ -869,13 +869,13 @@ namespace Bloom.Book
 			if (language3Code == "")
 				language3Code = null;
 
-			Set("contentLanguage2", language2Code,false);
+			Set("contentLanguage2", language2Code, false);
 			Set("contentLanguage3", language3Code, false);
 		}
 
-//        public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
-//        {
-//            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
-//        }
+		//        public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
+		//        {
+		//            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
+		//        }
 	}
 }

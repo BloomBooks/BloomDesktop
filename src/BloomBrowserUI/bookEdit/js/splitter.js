@@ -8,12 +8,12 @@ $(function() {
     });
     $('.bloom-translationGroup, .bloom-imageContainer').each(function(){
         var page = $(this).closest('.bloom-page')[0];
-        if(page.id.indexOf('5dcd48df')!=0 &&
-           $(page).data('pagelineage').indexOf('5dcd48df')!=0)
-            return;
+//      Limit to descendants of Basic Book: if(page.id.indexOf('5dcd48df')!=0 &&
+//           $(page).data('pagelineage').indexOf('5dcd48df')!=0)
+//            return;
         var previous = $(this).prev();
         if(previous.hasClass('bloom-translationGroup') || previous.hasClass('bloom-imageContainer')){
-            $(this).before("<div class='horizontalSplitter'></div>");
+            $(this).before("<div class='horizontalSplitter bloom-ui'></div>");
         }
     });
     function Splitter(affordance, topElement, bottomElement){
@@ -36,13 +36,16 @@ $(function() {
             var topHeight;
             var bottomHeight;
             var verticalChange = event.clientY - self.lastY;
+            console.log("vertical change= " + event.clientY + "-" + self.lastY + " = " + verticalChange);
             topHeight = $(self.topElement).height();
             bottomHeight = $(self.bottomElement).height();
             topHeight = parseInt(topHeight, 10) + verticalChange;
             bottomHeight = parseInt(bottomHeight, 10) - verticalChange;
             $(self.topElement).height(topHeight + 'px');
-            $(self.bottomElement).height(bottomHeight + 'px');
-
+            var h = $(self.bottomElement).height();
+            //$(self.bottomElement).height(bottomHeight + 'px');
+            $(self.bottomElement).css('height',bottomHeight + 'px');
+            console.log(h+"-->"+bottomHeight+" actual:"+$(self.bottomElement).height());
             self.lastY = event.clientY;
         };
 

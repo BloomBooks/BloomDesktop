@@ -94,9 +94,14 @@ TEXTAREA
 DIV.imageOnTop DIV.bloom-imageContainer
 {
 	width: 100%;
-	height: 45% !important;
+	/* this prevents the slider from working height: 45% !important;*/
+	height: 49%;
 	/*above so buttons show*/
 	z-index: 1000;
+}
+.imageOnTop .bloom-translationGroup
+{
+	height: 48%;
 }
 /*Note, to make bottomAlign work takes these 2 rules: one on the container (translationgroup) and another on the element*/
 .imageOnTop.layout-style-BottomAlign .bloom-translationGroup
@@ -108,10 +113,10 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	vertical-align: bottom;
 	display: table-cell;
 }
-.imageOnTop .marginBox{
-   display:flex;
-   flex-direction: column;
-}
+/*.imageOnTop .marginBox{*/
+   /*display:flex; REVIEW */
+   /*flex-direction: column;*/
+/*}*/
 /*------A4L Side-by-side common*/
 .imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
 {
