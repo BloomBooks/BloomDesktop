@@ -48,15 +48,28 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
 };
 
 function FindOrCreateConfigDiv(path) {
+
     var dialogContents = $("#synphonyConfig");
     if (!dialogContents.length) {
         dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
 
-        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm').replace(/file:\/\/(\w)/, 'file:///$1');
+        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm');
         var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
         dialogContents.append(html);
     }
     return dialogContents;
+}
+
+/**
+ * Gets the height of the document, including the non-visible scrolling area, if any.
+ * @returns {number}
+ */
+function getDocumentHeight() {
+    var body = document.body;
+    var html = document.documentElement;
+
+    return Math.max(body.scrollHeight, body.offsetHeight,
+        html.clientHeight, html.scrollHeight, html.offsetHeight);
 }
 
 /**
@@ -91,8 +104,17 @@ SynphonyApi.prototype.showConfigDialog = function() {
                 $(this).dialog("close");
             }
         },
-        close: function () { $(this).remove(); },
-        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
+        close: function () {
+            $(this).remove();
+            $(window).off('resize.readerTools');
+        },
+        open: function () {
+            $('#synphonyConfig').css('overflow', 'hidden');
+            $('div.ui-widget-overlay').height(getDocumentHeight());
+            $(window).onOnce('resize.readerTools', function () {
+                $('div.ui-widget-overlay').height(getDocumentHeight());
+            });
+        },
         height: h,
         width: w
     });
