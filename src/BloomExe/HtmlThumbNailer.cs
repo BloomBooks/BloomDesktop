@@ -145,7 +145,7 @@ namespace Bloom
 		}
 
 #if DEBUG
-		private static bool _ThumbnailTimeoutDisplayed;
+		private static bool _thumbnailTimeoutAlreadyDisplayed;
 #endif
 
 		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
@@ -164,9 +164,9 @@ namespace Bloom
 				Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
 #if DEBUG
-				if (!_ThumbnailTimeoutDisplayed)
+				if (!_thumbnailTimeoutAlreadyDisplayed)
 				{
-					_ThumbnailTimeoutDisplayed = true;
+					_thumbnailTimeoutAlreadyDisplayed = true;
 					_syncControl.Invoke((Action)(() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
 				}
 #endif
