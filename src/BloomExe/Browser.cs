@@ -17,7 +17,6 @@ using Gecko.DOM;
 using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
-//using Palaso.UI.WindowsForms.HtmlBrowser;
 using Palaso.Xml;
 using BloomTemp;
 
@@ -121,20 +120,20 @@ namespace Bloom
             _browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
   */      }
 
-		public void SaveHTML(string path)
-		{
+        public void SaveHTML(string path)
+        {
 			if (InvokeRequired)
 			{
 				Invoke(new Action<string>(SaveHTML), path);
 				return;
 			}
-			_browser.SaveDocument(path, "text/html");
-		}
+            _browser.SaveDocument(path, "text/html");
+        }
 
-		private void UpdateEditButtons()
-		{
-			if (_copyCommand == null)
-				return;
+        private void UpdateEditButtons()
+        {
+            if (_copyCommand == null)
+                return;
 
 			if (InvokeRequired)
 			{
@@ -163,16 +162,16 @@ namespace Bloom
 				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
 				//so it's probably just not ok to check if you're not front-most.
 			}
-		}
+        }
 
-		void OnValidating(object sender, CancelEventArgs e)
+        void OnValidating(object sender, CancelEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			LoadPageDomFromBrowser();
 			//_afterValidatingTimer.Enabled = true;//LoadPageDomFromBrowser();
 		}
-
-		/// <summary> 
+ 
+        /// <summary> 
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -188,7 +187,7 @@ namespace Bloom
 				components.Dispose();
 			}
 			base.Dispose(disposing);
-			_disposed = true;
+            _disposed = true;
 		}
 
         public GeckoWebBrowser WebBrowser { get { return _browser; } }
@@ -208,8 +207,8 @@ namespace Bloom
 		
             _browser.Parent = this;
             _browser.Dock = DockStyle.Fill;
-			Controls.Add(_browser);
-			_browser.NoDefaultContextMenu = true;
+            Controls.Add(_browser);
+        	_browser.NoDefaultContextMenu = true;
 			_browser.ShowContextMenu += OnShowContextMenu;
 
 			_browser.Navigating += _browser_Navigating;
@@ -248,10 +247,13 @@ namespace Bloom
 			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js 
 			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
 			//it will continue to show in firebug, so i won't forget about it
-
 			errorsToHide.Add("jquery.js at line 622");
+
  			WebBrowser.JavascriptError += (sender, error) =>
 			{
+                // Warnings began popping up when we started using http rather than file urls for script tags
+                if (error.Flags.HasFlag(Gecko.ErrorFlags.REPORT_WARNING)) return;
+
 				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
 										error.Filename, error.Line, error.Message);
 				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
@@ -282,8 +284,8 @@ namespace Bloom
 		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			const uint DOM_VK_INSERT = 0x2D;
-			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
+		    const uint DOM_VK_INSERT = 0x2D;
+            if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
 				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
 				{
@@ -301,9 +303,9 @@ namespace Bloom
 		private void PasteFilteredText()
 		{
 			Debug.Assert(!InvokeRequired);
-			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
+            //Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
-			//setting clears everything else:
+            //setting clears everything else:
 			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
 			_browser.Paste();
 		}
@@ -316,7 +318,7 @@ namespace Bloom
 
 			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
 
-			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+            e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
 
         public void OnGetTroubleShootingInformation(object sender, EventArgs e)
@@ -343,8 +345,9 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
-			File.Copy(_url, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
-			Process.Start(temp.Path);
+			var src = _url.FromLocalhost();
+			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			Process.Start(temp.Path.ToLocalhost());
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
@@ -360,30 +363,31 @@ namespace Bloom
 			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
 		}
 
-		void OnBrowser_DomClick(object sender, DomEventArgs e)
-		{
+        void OnBrowser_DomClick(object sender, DomEventArgs e)
+        {
 			Debug.Assert(!InvokeRequired);
-			//this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
-			//it loses its focus.
-			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
+          //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+            //it loses its focus.
+            _browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
+            
+            EventHandler handler = OnBrowserClick;
+            if (handler != null)
+                handler(this, e);
+        }
 
-			EventHandler handler = OnBrowserClick;
-			if (handler != null)
-				handler(this, e);
-		}
-
-		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
-		{
+        void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
+        {
 			Debug.Assert(!InvokeRequired);
-			string url = e.Uri.OriginalString;
-			if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
+			string url = e.Uri.OriginalString.ToLower();
+
+			if ((!url.StartsWith(Bloom.web.ServerBase.PathEndingInSlash)) && (url.StartsWith("http")))
 			{
 				e.Cancel = true;
-				Process.Start(url); //open in the system browser instead
-				Debug.WriteLine("Navigating " + e.Uri);
-			}
-		}
-
+				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+                Debug.WriteLine("Navigating " + e.Uri);
+            }
+        }
+		
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
@@ -424,26 +428,26 @@ namespace Bloom
 			Size = new Size(Size.Width, original);
 	*/	}
 
-		public void Navigate(string url, bool cleanupFileAfterNavigating)
-		{
+    	public void Navigate(string url, bool cleanupFileAfterNavigating)
+        {
 			if (InvokeRequired)
 			{
 				Invoke(new Action<string, bool>(Navigate), url, cleanupFileAfterNavigating);
 				return;
 			}
 
-			_url=url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
+            _url=url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
 				SetNewTempFile(TempFile.TrackExisting(url));
 			}
-			UpdateDisplay();
-		}
+            UpdateDisplay();
+        }
 
-		//NB: make sure the <base> is set correctly, 'cause you don't know where this method will 
-		//save the file before navigating to it.
-		public void Navigate(XmlDocument dom)
-		{
+        //NB: make sure the <base> is set correctly, 'cause you don't know where this method will 
+        //save the file before navigating to it.
+        public void Navigate(XmlDocument dom)
+        {
 			if (InvokeRequired)
 			{
 				Invoke(new Action<XmlDocument>(Navigate), dom);
@@ -463,7 +467,7 @@ namespace Bloom
 			}
         	XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
-			_url = _tempHtmlFile.Path;
+			_url = _tempHtmlFile.Path.ToLocalhost();
             UpdateDisplay();
         }
 
@@ -779,7 +783,7 @@ namespace Bloom
 				var div = _browser.Document.ActiveElement;
 				if (div != null)
 				{
-					div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
+                    div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
 					if (div != null)
 					{
 						if (div.ScrollWidth > _browser.Width)

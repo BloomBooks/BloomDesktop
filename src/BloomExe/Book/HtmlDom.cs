@@ -161,7 +161,7 @@ namespace Bloom.Book
 
 			element.IsEmpty = false;
 	        element.SetAttribute("type", "text/javascript");
-	        element.SetAttribute("src", "file://" + pathToJavascript);
+	        element.SetAttribute("src", pathToJavascript.ToLocalhost());
 	        return element;
 	    }
 
@@ -531,7 +531,8 @@ namespace Bloom.Book
 	                if (!string.IsNullOrEmpty(path))
 	                {
 	                    //this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-	                    linkNode.SetAttribute("href", "file://" + path);
+	                    //linkNode.SetAttribute("href", "file://" + path);
+                        linkNode.SetAttribute("href", path.ToLocalhost());
 	                }
 	                else
 	                {
@@ -542,5 +543,10 @@ namespace Bloom.Book
 	            }
 	        }
 	    }
-	}
+
+        internal void RemoveStyleSheetIfFound(string path)
+        {
+            XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
+        }
+    }
 }

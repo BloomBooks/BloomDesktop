@@ -93,7 +93,32 @@ namespace Bloom.WebLibraryIntegration
 		    var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
 		    var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
 			if (bucketStart == -1)
-				throw new ArgumentException("URL is not within expected bucket");
+            {
+#if DEBUG
+                if (decoded.StartsWith(("BloomLibraryBooks")))
+                {
+                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+                    "The book is from bloomlibrary.org, but you are running the DEBUG version of Bloom, which can only use dev.bloomlibrary.org.");
+                }
+                else
+                {
+                    throw new ApplicationException("Can't match URL of bucket of the book being downloaded, and I don't know why.");
+                }
+
+#else
+                if (decoded.StartsWith(("BloomLibraryBooks-Sandbox")))
+                {
+                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+                        "The book is from the testing version of the bloomlibrary, but you are running the RELEASE version of Bloom. The RELEASE build cannot use the 'dev.bloomlibrary.org' site. If you need to do that for testing purposes, set the windows Environment variable 'BloomSandbox' to 'true'.", decoded);
+                }  
+                else
+                {
+                    throw new ApplicationException(string.Format("Can't match URL of bucket of the book being downloaded {0}, and I don't know why.", decoded));
+                }
+#endif
+                return null;
+            }
+
 		    var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
 	        string url = "unknown";
 	        string title = "unknown";

@@ -224,19 +224,19 @@ namespace Bloom.Book
 
         	var pageDom = GetHtmlDomWithJustOnePage(page);
             pageDom.RemoveModeStyleSheets();
-            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
-        	pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
+                pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
                 pageDom.AddEditMode("translation");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
+                pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
                 pageDom.AddEditMode("original");
             }
-            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css"));
+            pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
             AddCoverColor(pageDom, CoverColor);
@@ -248,7 +248,7 @@ namespace Bloom.Book
 
         private void AddJavaScriptForEditing(HtmlDom dom)
         {
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
+            dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js").ToLocalhost());
         }
 
 
@@ -353,9 +353,10 @@ namespace Bloom.Book
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
         	{
-        		dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
+        		dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
         	}
             dom.SortStyleSheetLinks();
+
             return dom;
         }
 

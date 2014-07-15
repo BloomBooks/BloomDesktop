@@ -1,11 +1,11 @@
 // listen for messages sent to this page
-window.addEventListener('message', processMessage, false);
+window.addEventListener('message', processDLRMessage, false);
 
 /**
  * Respond to messages
  * @param {Event} event
  */
-function processMessage(event) {
+function processDLRMessage(event) {
 
     var params = event.data.split("\n");
 
@@ -17,7 +17,6 @@ function processMessage(event) {
 
         case 'Words': // request from setup dialog for a list of words for a stage
             var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
-            words = $.extend({}, words);
             document.getElementById('settings_frame').contentWindow.postMessage('Words\n' + JSON.stringify(words), '*');
             return;
 
@@ -26,6 +25,10 @@ function processMessage(event) {
             synphony.loadSettings(params[1]);
             model.updateControlContents();
             model.doMarkup();
+            return;
+
+        case 'SetupType':
+            document.getElementById('settings_frame').contentWindow.postMessage('SetupType\n' + model.setupType, '*');
             return;
     }
 }
@@ -51,6 +54,7 @@ var ReaderToolsModel = function() {
     this.allWords = {};
     this.texts = [];
     this.textCounter = 0;
+    this.setupType = '';
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -97,11 +101,20 @@ ReaderToolsModel.prototype.setLevelNumber = function(val) {
         return;
     }
     this.levelNumber = val;
-    this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
+    this.updateLevelLabel();
     this.enableLevelButtons();
     this.updateLevelLimits();
     this.saveState();
     this.doMarkup();
+};
+
+ReaderToolsModel.prototype.updateLevelLabel = function() {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        this.updateElementContent("levelNumber", "");
+        return;
+    }
+    this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
 };
 
 ReaderToolsModel.prototype.sortByLength = function() {
@@ -143,6 +156,7 @@ ReaderToolsModel.prototype.updateControlContents = function() {
     this.enableStageButtons();
     this.enableLevelButtons();
     this.updateLevelLimits();
+    this.updateLevelLabel();
 };
 
 ReaderToolsModel.prototype.updateNumberOfStages = function() {
@@ -163,9 +177,15 @@ ReaderToolsModel.prototype.updateDisabledStatus = function(eltId, isDisabled) {
     this.setPresenceOfClass(eltId, isDisabled, disabledIconClass);
 };
 
-// Find the element with the indicated ID, and make sure that it has the className in its class attribute if isWanted is true, and not otherwise.
-// (Tests currently assume it will be added last, but this is not required.)
-// (class names used with this method should not occur as substrings within a longer class name)
+/**
+ * Find the element with the indicated ID, and make sure that it has the className in its class attribute
+ * if isWanted is true, and not otherwise.
+ * (Tests currently assume it will be added last, but this is not required.)
+ * (class names used with this method should not occur as substrings within a longer class name)
+ * @param {String} eltId Element ID
+ * @param {Boolean} isWanted
+ * @param {String} className
+ */
 ReaderToolsModel.prototype.setPresenceOfClass = function(eltId, isWanted, className) {
     var old = this.getElementAttribute(eltId, "class");
 
@@ -187,14 +207,27 @@ ReaderToolsModel.prototype.enableLevelButtons = function() {
 
 ReaderToolsModel.prototype.updateLevelLimits = function() {
     var level = this.synphony.getLevels()[this.levelNumber - 1];
-    if (!level) {
+    if (!level)
         level = new Level("");
-    }
+
     this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerPageBook", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerSentence", level.getMaxWordsPerSentence());
     this.updateLevelLimit("maxWordsPerBook", level.getMaxWordsPerBook());
     this.updateLevelLimit("maxUniqueWordsPerBook", level.getMaxUniqueWordsPerBook());
+
+    if (level.thingsToRemember.length) {
+
+        var list = document.getElementById('thingsToRemember');
+        list.innerHTML = '';
+
+        for (var i = 0; i < level.thingsToRemember.length; i++) {
+            var li = document.createElement('li');
+            li.appendChild(document.createTextNode(level.thingsToRemember[i]));
+            list.appendChild(li);
+        }
+    }
+
 };
 
 ReaderToolsModel.prototype.updateLevelLimit = function(id, limit) {
@@ -239,7 +272,7 @@ ReaderToolsModel.prototype.updateWordList = function() {
                 var aFreq = a.Count;
                 var bFreq = b.Count;
                 if (aFreq === bFreq) {
-                    return a.Name.localeCompare(b.Name);;
+                    return a.Name.localeCompare(b.Name);
                 }
                 return bFreq - aFreq; // MOST frequent first
             });
@@ -259,8 +292,9 @@ ReaderToolsModel.prototype.updateWordList = function() {
 };
 
 /**
- * Get the sight words for the current stage and all previous stages
- * @param {Int} stageNumber
+ * Get the sight words for the current stage and all previous stages.
+ * Note: The list returned may contain sight words from previous stages that are now decodable.
+ * @param {int} stageNumber
  * @returns {Array} An array of strings
  */
 ReaderToolsModel.prototype.getSightWords = function(stageNumber) {
@@ -279,6 +313,7 @@ ReaderToolsModel.prototype.getSightWords = function(stageNumber) {
 
 /**
  * Get the sight words for the current stage and all previous stages as an array of DataWord objects
+ * Note: The list returned may contain sight words from previous stages that are now decodable.
  * @param {type} stageNumber
  * @returns {DataWord[]}
  */
@@ -328,21 +363,19 @@ ReaderToolsModel.prototype.getStageWordsAndSightWords = function(stageNumber) {
  */
 ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 
-    if ((typeof markupType === 'undefined') || markupType === null) return;
-
     var newMarkupType = null;
     switch(markupType) {
-        case 0:
+        case 1:
             if (this.currentMarkupType !== MarkupType.Decodable)
                 newMarkupType = MarkupType.Decodable;
             break;
 
-        case 1:
+        case 2:
             if (this.currentMarkupType !== MarkupType.Leveled)
                 newMarkupType = MarkupType.Leveled;
             break;
 
-        case 2:
+        default:
             if (this.currentMarkupType !== MarkupType.None)
                 newMarkupType = MarkupType.None;
             break;
@@ -364,13 +397,15 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
  * Displays the correct markup for the current page.
  */
 ReaderToolsModel.prototype.doMarkup = function() {
-    switch(this.currentMarkupType) {
-        case MarkupType.None:
-            break;
 
+    if (this.currentMarkupType === MarkupType.None) return;
+
+    var editableElements = $(".bloom-editable");
+
+    switch(this.currentMarkupType) {
         case MarkupType.Leveled:
             var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
-            $(".bloom-editable").checkLeveledReader(options);
+            editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
             break;
@@ -383,14 +418,13 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
             // get word lists
             var cumulativeWords = this.getStageWords(this.stageNumber);
-            var focusWords = cumulativeWords;
             var sightWords = this.getSightWords(this.stageNumber);
 
             // get known grapheme list from stages
             var knownGraphemes = this.getKnownGraphemes(this.stageNumber);
 
-            $(".bloom-editable").checkDecodableReader({
-                focusWords: focusWords,
+            editableElements.checkDecodableReader({
+                focusWords: cumulativeWords,
                 previousWords: cumulativeWords,
                 sightWords: sightWords,
                 knownGraphemes: knownGraphemes
@@ -485,11 +519,11 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     }
 
     // We need to do this because it is part of an asynchronous loop, and this.textCounter needs to be updated before
-    // the call to fireCSharpReaderToolsEvent
+    // the call to fireCSharpAccordionEvent
     var i = this.textCounter;
     this.textCounter++;
 
-    fireCSharpReaderToolsEvent('getSampleFileContentsEvent', this.texts[i]);
+    fireCSharpAccordionEvent('getSampleFileContentsEvent', this.texts[i]);
 };
 
 /**
@@ -510,7 +544,7 @@ ReaderToolsModel.prototype.addWordsToSynphony = function() {
  * @param {String[]} knownGPCs An array of strings
  * @param {Boolean} restrictToKnownGPCs
  * @param {Boolean} allowUpperCase
- * @param {Int[]} syllableLengths An array of integers, uses 1-24 if empty
+ * @param {int[]} syllableLengths An array of integers, uses 1-24 if empty
  * @param {String[]} selectedGroups An array of strings, uses all groups if empty
  * @param {String[]} partsOfSpeech An array of strings, uses all parts of speach if empty
  * @returns {Array} An array of strings or DataWord objects
@@ -526,8 +560,8 @@ ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desi
     if (!syllableLengths) {
         //using 24 as an arbitrary max number of syllables
         syllableLengths = [];
-        for (var i = 1; i < 25; i++)
-            syllableLengths.push(i);
+        for (var j = 1; j < 25; j++)
+            syllableLengths.push(j);
     }
 
     if (!partsOfSpeech)
@@ -545,7 +579,6 @@ ReaderToolsModel.prototype.saveState = function() {
     if (typeof $('#accordion').accordion !== 'function') return;
 
     var state = new DRTState();
-    state.active = $('#accordion').accordion('option', 'active');
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
@@ -561,12 +594,75 @@ ReaderToolsModel.prototype.restoreState = function() {
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
-    $('#accordion').accordion('option', 'active', state.active);
     this.stageNumber = state.stage;
     this.levelNumber = state.level;
     this.currentMarkupType = state.markupType;
     this.doMarkup();
 };
+
+function initializeDecodableRT() {
+
+    // make sure synphony is initialized
+    if (!model.getSynphony().source) {
+        fireCSharpAccordionEvent('loadReaderToolSettingsEvent', '');
+    }
+
+    // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
+    $('#incStage').onOnce('click.readerTools', function() {
+        model.incrementStage();
+    });
+
+    $('#decStage').onOnce('click.readerTools', function() {
+        model.decrementStage();
+    });
+
+    $('#sortAlphabetic').onOnce('click.readerTools', function() {
+        model.sortAlphabetically();
+    });
+
+    $('#sortLength').onOnce('click.readerTools', function() {
+        model.sortByLength();
+    });
+
+    $('#sortFrequency').onOnce('click.readerTools', function() {
+        model.sortByFrequency();
+    });
+
+    // invoke function when a bloom-editable element loses focus
+    $('.bloom-editable').onOnce('focusout.readerTools', function() {
+        model.doMarkup(); // This is the element that just lost focus.
+    });
+}
+
+function initializeLeveledRT() {
+
+    // make sure synphony is initialized
+    if (!model.getSynphony().source) {
+        fireCSharpAccordionEvent('loadReaderToolSettingsEvent', '');
+    }
+
+    $('#incLevel').onOnce('click.readerTools', function() {
+        model.incrementLevel();
+    });
+
+    $('#decLevel').onOnce('click.readerTools', function() {
+        model.decrementLevel();
+    });
+
+    // invoke function when a bloom-editable element loses focus
+    $('.bloom-editable').onOnce('focusout.readerTools', function() {
+        model.doMarkup(); // This is the element that just lost focus.
+    });
+}
+
+/**
+ * Handles the click events to display the setup dialog
+ * @param {String} showWhat Either 'stages' or 'levels'
+ */
+function showSetupDialog(showWhat) {
+    model.setupType = showWhat;
+    model.getSynphony().showConfigDialog();
+}
 
 function DRTState() {
     this.active = 0;
@@ -577,44 +673,9 @@ function DRTState() {
 
 var model = new ReaderToolsModel();
 if (typeof ($) === "function") {
+
     // Running for real, and jquery properly loaded first
-    $("#incStage").click(function() {
-        model.incrementStage();
-    });
-    $("#decStage").click(function() {
-        model.decrementStage();
-    });
-    $("#incLevel").click(function() {
-        model.incrementLevel();
-    });
-    $("#decLevel").click(function() {
-        model.decrementLevel();
-    });
-    $("#sortAlphabetic").click(function() {
-        model.sortAlphabetically();
-    });
-    $("#sortLength").click(function() {
-        model.sortByLength();
-    });
-    $("#sortFrequency").click(function() {
-        model.sortByFrequency();
-    });
-    $("#setUpStages").click(function(clickEvent) {
-        clickEvent.preventDefault(); // don't try to follow nonexistent href
-        model.getSynphony().showConfigDialog(function() {
-            model.updateControlContents();
-            // Todo: update the doc content also, if relevant limits changed
-            // Todo: update model.levelNumber, if it is now out of range.
-        });
-    });
-
-    var synphony = new SynphonyApi();
-    model.setSynphony(synphony);
-
-    // invoke function when a bloom-editable element loses focus
-    $(".bloom-editable").focusout(function() {
-        model.doMarkup(); // This is the element that just lost focus.
-    });
+    model.setSynphony(new SynphonyApi());
 }
 else {
     // running tests...or someone forgot to install jquery first
@@ -630,7 +691,7 @@ else {
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @param {Booleam} fakeIt
+ * @param {Boolean} fakeIt
  */
 function initializeSynphony(settingsFileContent, fakeIt) {
 
@@ -640,7 +701,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
 
     if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
 
-        var settings = new Object();
+        var settings = {};
         settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z';
         settings.letterCombinations = 'th oo ing';
         settings.moreWords = 'the cat sat on the mat the rat sat on the cat cats and dogs eat rats rats eat lots this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns';
@@ -656,23 +717,12 @@ function initializeSynphony(settingsFileContent, fakeIt) {
     model.updateControlContents();
 
     // change markup based on visible options
-    $('#accordion').on('accordionactivate', function(event, ui) {
+    $('#accordion').onOnce('accordionactivate.readerTools', function(event, ui) {
         model.setMarkupType(ui.newHeader.data('markuptype'));
     } );
 
     // get the list of sample texts
-    fireCSharpReaderToolsEvent('getTextsListEvent', 'files'); // get the list of texts
-}
-
-/**
- * Fires an event for C# to handle
- * @param {type} eventName
- * @param {type} eventData
- */
-function fireCSharpReaderToolsEvent(eventName, eventData) {
-
-    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+    fireCSharpAccordionEvent('getTextsListEvent', 'files'); // get the list of texts
 }
 
 /**
@@ -680,7 +730,6 @@ function fireCSharpReaderToolsEvent(eventName, eventData) {
  */
 function closeSetupDialog() {
     $('#synphonyConfig').dialog("close");
-    $('#synphonyConfig').remove();
 }
 
 /**
