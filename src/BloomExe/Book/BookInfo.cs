@@ -303,18 +303,21 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// The panels being displayed in the accordion for this book
-		/// </summary>
-		public List<string> Tools
+		public List<AccordionTool> Tools
 		{
 			get
 			{
 				if (MetaData.Tools == null)
-					MetaData.Tools = new List<string>();
+					MetaData.Tools = new List<AccordionTool>();
 				return MetaData.Tools;
 			}
 			set { MetaData.Tools = value; }
+		}
+
+		public string CurrentTool
+		{
+			get { return MetaData.CurrentTool; }
+			set { MetaData.CurrentTool = value; }
 		}
 	}
 
@@ -495,7 +498,10 @@ namespace Bloom.Book
 		/// <summary>These panels are being displayed in the accordion for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
 		[JsonProperty("tools")]
-		public List<string> Tools { get; set; }
+		public List<AccordionTool> Tools { get; set; }
+
+		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
+		public string CurrentTool { get; set; }
 	}
 
 	/// <summary>
@@ -540,5 +546,14 @@ namespace Bloom.Book
 
 		[JsonProperty("ethnologueCode")]
 		public string EthnologueCode { get; set; }
+	}
+
+	public class AccordionTool
+	{
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("enabled")]
+		public bool Enabled { get; set; }
 	}
 }
