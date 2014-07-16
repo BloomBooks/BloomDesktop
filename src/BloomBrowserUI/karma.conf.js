@@ -13,6 +13,8 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'lib/jquery-1.10.1.js',
+            'lib/jquery-ui-1.10.3.custom.min.js',
+            'lib/jquery.myimgscale.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
@@ -36,9 +38,10 @@ module.exports = function (config) {
             'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
             'bookEdit/js/libsynphony/bloom_lib.js',
             'bookEdit/js/libsynphony/jquery.text-markup.js',
-            'bookEdit/js/synphonyApi.js',
-            'bookEdit/js/readerTools.js',
-            'bookEdit/test/*.Test.js'
+            'bookEdit/js/*.js',
+            'bookEdit/accordion/accordion.js',
+            'bookEdit/test/*.js',
+            'bookEdit/test/libsynphony/*.test.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

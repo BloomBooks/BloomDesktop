@@ -46,7 +46,7 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
-    <Content Include="bookEdit\js\readerTools.js" />
+    <Content Include="bookEdit\js\readerTools\readerTools.js" />
     <Content Include="bookEdit\js\synphonyApi.js" />
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />

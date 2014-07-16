@@ -25,14 +25,4 @@ describe("Stage tests", function() {
         var stage = new Stage("X");
         expect(stage.getName()).toBe("X");
     });
-    it("parses a string into frequency counts", function() {
-        var stage = new Stage("1");
-        stage.incrementFrequencies("the cat sat on the mat");
-        var words = stage.getWords();
-        expect(words.length).toEqual(5);
-        expect(words).toContain("the");
-        expect(words).toContain("sat");
-        expect(stage.getFrequency("the")).toBe(2);
-        expect(stage.getFrequency("cat")).toBe(1);
-    });
 });

@@ -14,6 +14,7 @@ using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
+using Palaso.UI.WindowsForms.ClearShare.WinFormsUI;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
@@ -156,7 +157,7 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-                var decodedMetadata = GetMetadataCloneWithHtmlDecodedRights(metadata);
+                var decodedMetadata = GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(metadata);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
                 using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
@@ -177,6 +178,9 @@ namespace Bloom.Edit
 							File.Delete(imagePath);
 						}
 
+                        // Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
+					    var copyright = GetHtmlEncodedCopyright(dlg);
+					    dlg.Metadata.CopyrightNotice = copyright;
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
                         var rights = GetHtmlEncodedRights(dlg);
@@ -210,18 +214,26 @@ namespace Bloom.Edit
 			}
     	}
 
-        private string GetHtmlEncodedRights(Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog dlg)
+        private string GetHtmlEncodedRights(MetadataEditorDialog dlg)
         {
             var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
             return rights ?? string.Empty;
         }
 
-        private Metadata GetMetadataCloneWithHtmlDecodedRights(Metadata metadata)
+        private string GetHtmlEncodedCopyright(MetadataEditorDialog dlg)
+        {
+            var copyright = WebUtility.HtmlEncode(dlg.Metadata.CopyrightNotice);
+            return copyright ?? string.Empty;
+        }
+
+        private Metadata GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(Metadata metadata)
         {
             // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
             var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
+            var copyright = WebUtility.HtmlDecode(metadata.CopyrightNotice);
             var safeMetadata = metadata.DeepCopy();
             safeMetadata.License.RightsStatement = rightsStatement;
+            safeMetadata.CopyrightNotice = copyright;
             return safeMetadata;
         }
 
@@ -689,7 +701,7 @@ namespace Bloom.Edit
         /// </summary>
         public void CleanHtmlAndCopyToPageDom()
         {
-            RunJavaScript("$(\".bloom-editable\").removeSynphonyMarkup();");
+ 			RunJavaScript("if ((typeof jQuery !== 'undefined') && jQuery.fn.removeSynphonyMarkup) { jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
             _browser1.ReadEditableAreasNow();
         }
 

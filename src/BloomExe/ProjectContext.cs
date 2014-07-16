@@ -222,7 +222,7 @@ namespace Bloom
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
-            yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerTools");
+            yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion");
 
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 	        yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
@@ -336,6 +336,19 @@ namespace Bloom
 			}
 		}
 
+        /// <summary>
+        /// The folder in common data (e.g., ProgramData/SIL/Bloom/XMatter) where Bloom looks for shared XMatter files.
+        /// This is also where older versions of Bloom installed XMatter.
+        /// This folder might not exist! And may not be writeable!
+        /// </summary>
+        public static string XMatterCommonDataFolder
+        {
+            get
+            {
+                 return GetBloomCommonDataFolder().CombineForPath("XMatter");
+            }
+        }
+
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
@@ -357,6 +370,17 @@ namespace Bloom
 				Directory.CreateDirectory(d);
 			return d;
 		}
+
+        /// <summary>
+        /// Get the directory where common application data is stored for Bloom. Note that this may not exist,
+        /// and should not be assumed to be writeable. (We don't ensure it exists because Bloom typically
+        /// does not have permissions to create folders in CommonApplicationData.)
+        /// </summary>
+        /// <returns></returns>
+        public static string GetBloomCommonDataFolder()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL").CombineForPath("Bloom");
+        }
 
 	
 

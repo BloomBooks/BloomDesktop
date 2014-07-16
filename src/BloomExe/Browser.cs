@@ -17,7 +17,6 @@ using Gecko.DOM;
 using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
-//using Palaso.UI.WindowsForms.HtmlBrowser;
 using Palaso.Xml;
 using BloomTemp;
 
@@ -211,7 +210,7 @@ namespace Bloom
 			_browser.Validating += new CancelEventHandler(OnValidating);
         	_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
             _browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
-
+            
             _updateCommandsTimer.Enabled = true;//hack
         	var errorsToHide = new List<string>();
 			errorsToHide.Add("['Shockwave Flash'] is undefined"); // can happen when mootools (used by calendar) is loaded
@@ -233,10 +232,13 @@ namespace Bloom
 			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js 
 			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
 			//it will continue to show in firebug, so i won't forget about it
-
 			errorsToHide.Add("jquery.js at line 622");
+
  			WebBrowser.JavascriptError += (sender, error) =>
 			{
+                // Warnings began popping up when we started using http rather than file urls for script tags
+                if (error.Flags.HasFlag(Gecko.ErrorFlags.REPORT_WARNING)) return;
+
 				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
 										error.Filename, error.Line, error.Message);
 				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
@@ -321,9 +323,10 @@ namespace Bloom
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
-			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
-			File.Copy(_url, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
-			Process.Start(temp.Path);
+			var temp = Palaso.IO.TempFile.WithExtension(".htm");
+			var src = _url.FromLocalhost();
+			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			Process.Start(temp.Path.ToLocalhost());
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
@@ -353,13 +356,14 @@ namespace Bloom
 
         void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
         {
-            string url = e.Uri.OriginalString;
-            if (url.ToLower().StartsWith("http")) //review: I don't know that this was ever used, since there is no handler for it, but for sure it would block us from adding links to our own website, so I'm removing it:   && !url.ToLower().Contains("bloom"))
+			string url = e.Uri.OriginalString.ToLower();
+
+			if ((!url.StartsWith(Bloom.web.ServerBase.PathEndingInSlash)) && (url.StartsWith("http")))
 			{
 				e.Cancel = true;
-				Process.Start(url); //open in the system browser instead
-                Debug.WriteLine("Navigating " + e.Uri);
-            }
+				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+				Debug.WriteLine("Navigating " + e.Uri);
+			}
         }
 		
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -425,7 +429,7 @@ namespace Bloom
 			}
         	XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
-			_url = _tempHtmlFile.Path;
+			_url = _tempHtmlFile.Path.ToLocalhost();
             UpdateDisplay();
         }
 
@@ -667,7 +671,7 @@ namespace Bloom
             using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
             {
                 string result;
-                context.EvaluateScript(script, out result);
+                context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
                 return result;
            } 	
         }

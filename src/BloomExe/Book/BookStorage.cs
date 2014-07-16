@@ -397,9 +397,13 @@ namespace Bloom.Book
 					}
 					continue;
 				}
+                // Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
+                // Also, at present the user can't insert them into a book. Don't report them.
+                // TODO: if we ever allow the user to add .svg files, we'll need to change this
+                if (Path.HasExtension(imageFileName) && Path.GetExtension(imageFileName).ToLowerInvariant() == ".svg")
+                    continue;
 
-				//trim off the end of "license.png?123243"
-
+			    //trim off the end of "license.png?123243"
 				var startOfDontCacheHack = imageFileName.IndexOf('?');
 				if (startOfDontCacheHack > -1)
 					imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
@@ -718,10 +722,22 @@ namespace Bloom.Book
 			var customCssFilePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
 			if (File.Exists(Path.Combine(_folderPath, customCssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
-			
-			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
-				EnsureHasLinkToStyleSheet(dom,"customBookStyles.css");
+
+            if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
+                EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
+            else
+                EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
 		}
+
+        private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
+        {
+            foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+            {
+                var fileName = link.GetStringAttribute("href");
+                if (fileName == path)
+                    dom.RemoveStyleSheetIfFound(path);
+            }
+        }
 
         private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)
         {
