@@ -860,5 +860,15 @@ namespace Bloom.Edit
 		{
 			get { return "/Tasks/Edit_tasks/Edit_tasks_overview.htm"; }
 		}
+
+		/// <summary>
+		/// Prevent navigation while a dialog box is showing in the browser control
+		/// </summary>
+		/// <param name="isModal"></param>
+		internal void SetModalState(bool isModal)
+		{
+			_templatePagesView.Enabled = !isModal;
+			_pageListView.Enabled = !isModal;
+		}
     }
 }

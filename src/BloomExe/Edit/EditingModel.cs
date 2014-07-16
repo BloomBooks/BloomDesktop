@@ -425,6 +425,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
 			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
+			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
 			var settings = new Dictionary<string, object>();
@@ -432,7 +433,7 @@ namespace Bloom.Edit
 			settings.Add("showPE", tools.Any(t => t.Name == "pageElements").ToInt());
 			settings.Add("showDRT", tools.Any(t => t.Name == "decodableReader").ToInt());
 			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
-			settings.Add("current", accordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
+			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
 
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
@@ -465,24 +466,24 @@ namespace Bloom.Edit
 			switch (args[0])
 			{
 				case "showPE":
-					updateActiveToolSetting("pageElements", args[1] == "1");
+					UpdateActiveToolSetting("pageElements", args[1] == "1");
 					return;
 
 				case "showDRT":
-					updateActiveToolSetting("decodableReader", args[1] == "1");
+					UpdateActiveToolSetting("decodableReader", args[1] == "1");
 					return;
 
 				case "showLRT":
-					updateActiveToolSetting("leveledReader", args[1] == "1");
+					UpdateActiveToolSetting("leveledReader", args[1] == "1");
 					return;
 
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = accordionDirectoryNameToToolName(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
 			}
 		}
 
-		private void updateActiveToolSetting(string toolName, bool enabled)
+		private void UpdateActiveToolSetting(string toolName, bool enabled)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
 			var item = tools.FirstOrDefault(t => t.Name == toolName);
@@ -493,7 +494,7 @@ namespace Bloom.Edit
 				item.Enabled = enabled;
 		}
 
-		private static string accordionToolNameToDirectoryName(string toolName)
+		private static string AccordionToolNameToDirectoryName(string toolName)
 		{
 			switch (toolName)
 			{
@@ -510,7 +511,7 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private static string accordionDirectoryNameToToolName(string directoryName)
+		private static string AccordionDirectoryNameToToolName(string directoryName)
 		{
 			switch (directoryName)
 			{
@@ -525,6 +526,11 @@ namespace Bloom.Edit
 			}
 
 			return string.Empty;
+		}
+
+		private void SetModalState(string isModal)
+		{
+			_view.SetModalState(isModal == "true");
 		}
 
 		private static string CleanUpDataForJavascript(string data)
