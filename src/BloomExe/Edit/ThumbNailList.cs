@@ -154,6 +154,11 @@ namespace Bloom.Edit
 
 		private void HandleThumbnailerError(IPage page, Exception error)
 		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Exception>(HandleThumbnailerError), page, error);
+				return;
+			}
 #if DEBUG
 
 			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -171,6 +176,11 @@ namespace Bloom.Edit
 		{
 			if (IsDisposed)
 				return;
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Image>(RefreshOneThumbnailCallback), page, image);
+				return;
+			}
 			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
 			if (imageIndex > -1)
 			{
