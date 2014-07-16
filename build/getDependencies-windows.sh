@@ -3,7 +3,7 @@
 # project=Bloom
 # build=Bloom-Default-Win32-Auto (Bloom 3)
 # root_dir=..
-# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
+# $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
 
 cd "$(dirname "$0")"
 
@@ -116,7 +116,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
-#     VCS: http://hg.palaso.org/pdfdroplet [default]
+#     VCS: http://bitbucket.org/hatton/pdfdroplet [default]
 # [7] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt349
@@ -201,10 +201,12 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/debug/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/debug/icuin40.dll ../lib/dotnet/icuin40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/debug/icuuc40.dll ../lib/dotnet/icuuc40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/debug/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/icuin40.dll ../lib/dotnet/icuin40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/icuuc40.dll ../lib/dotnet/icuuc40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll

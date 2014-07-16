@@ -1,14 +1,14 @@
 html
 	head
-		title Content of the ReaderTools view (far right pane in book edit)
+		title Content of the Accordion view (far right pane in book edit)
 		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
 		script(src='../../lib/jquery-1.10.1.js')
 		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='../js/jquery.div-columns.js')
 		script(src='../js/BloomAccordion.js')
-		link(rel='stylesheet', href='readerTools.css')
+		link(rel='stylesheet', href='accordion.css')
 	body
-		.readerToolsRoot
+		.accordionRoot
 			#accordion
 		script(src='../js/synphonyApi.js')
-		// Load this last so it can see elements.
-		script(src='../js/readerTools.js')
+		script(src='accordion.js')

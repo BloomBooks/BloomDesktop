@@ -8,9 +8,10 @@ load:
   - js/libsynphony/synphony_lib.js
   - js/libsynphony/bloom_xregexp_categories.js
   - js/libsynphony/bloom_lib.js
+  - js/jquery.div-columns.js
   - js/libsynphony/jquery.text-markup.js
   - js/synphonyApi.js
-  - js/readerTools.js
+  - accordion/accordion.js
 test:
   - test/readerTools.Test.js
 

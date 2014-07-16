@@ -1,0 +1,50 @@
+/*Styles for ReaderTools.htm*/
+div.stageLine {
+	display: inline-block;
+	position: relative;
+	float: right;
+	margin: 10px 14px;
+	-moz-user-select: none;
+}
+span.stageLine { float: left; -moz-user-select: none; }
+td.acceptable { color: green; }
+td.tooLarge { color: orange; }
+td.statistics-label { padding-right: 5px; }
+td.statistics-max { padding-right: 3px; text-align: center; }
+td.statistics-actual { padding-right: 3px; text-align: center; }
+span.setup { font-size: xx-small; margin-left: 10px; }
+div.tableHolder { overflow: auto; max-height: 300px; }
+div.sortBlock {
+	position: relative;
+	float: right;
+	margin: -4px 14px 0 15px;
+	display: inline-block;
+	border: 1px solid #fff;
+}
+div.rightBorder {
+	border: 0 solid white;
+	border-right-width: 1px;
+}
+div.sortIconSelected { background: grey; }
+div.sortItem {
+	display: inline-block;
+	color: white;
+	padding: 2px 3px;
+	cursor: pointer;
+}
+span.ofStage { font-size: xx-small; }
+span.disabledIcon { visibility: hidden; }
+td.disabledLimit { visibility: hidden; }
+
+div.wordList { margin: 4px; }
+div.word { min-width: 40px; margin: 2px; float: left; }
+div.sight-word {
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: green;
+}
+
+div.section ul { padding-left: 16px; margin-top: 4px; }
+div.section ul li { color: #fff; }
+
+.ui-icon-triangle-1-w, .ui-icon-triangle-1-e { cursor: pointer; }

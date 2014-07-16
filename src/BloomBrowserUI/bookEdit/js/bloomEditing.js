@@ -124,7 +124,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
 
 function Cleanup() {
 
-        //for stuff bloom introduces, just use this "bloom-ui" class to have it removed
+    // for stuff bloom introduces, just use this "bloom-ui" class to have it removed
     $(".bloom-ui").each(function() {
         $(this).remove();
     });
@@ -275,7 +275,7 @@ jQuery.expr[':'].hasNoText = function (obj) {
     return jQuery.trim(jQuery(obj).text()).length == 0;
 };
 
- //Sets up the (currently yello) qtip bubbles that give you the contents of the box in the source languages
+ //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
 
     var divForBubble = $(group).clone();
@@ -285,6 +285,7 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("textarea, div").each(function() {
         $(this).attr("readonly", "readonly");
         $(this).removeClass('bloom-editable');
+        $(this).removeClass('overflow'); // don't want red in source text bubbles
         $(this).attr("contenteditable", "false");
         var styleClass = GetStyleClassFromElement(this);
         if (styleClass)
@@ -679,10 +680,11 @@ function AddOverflowHandler() {
         setTimeout(function () {
             if ($this.IsOverflowing())
                 $this.addClass('overflow');
-            else {
-                if ($this.hasClass('overflow'))
-                    $this.removeClass('overflow');
-            }
+            else
+                $this.removeClass('overflow'); // If it's not here, this won't hurt anything.
+
+            // This will make sure that any language tags on this div stay in position with editing.
+            $this.qtip('reposition');
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
@@ -744,7 +746,7 @@ function AddLanguageTags() {
 
         var dictionary = GetDictionary();
         var whatToSay = dictionary[key];
-        if (whatToSay.length == 0 || whatToSay === undefined)
+        if (!whatToSay)
             whatToSay = key; //just show the code
 
         // Put whatToSay into data attribute for pickup by the css
@@ -828,7 +830,7 @@ function AddHintBubbles() {
 // This function is called directly from EditingView.OnShowBookMetadataEditor()
 function SetCopyrightAndLicense(data) {
     //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(data.copyright);
+    $("DIV[data-book='copyright']").text(DecodeHtml(data.copyright));
     $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
     $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
     $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
@@ -932,11 +934,15 @@ var resizeTimer;
 var windowBorder = 12; // window border is about 12px
 function resizeAccordion() {
     var windowHeight = $(window).height();
-    var root = $(".readerToolsRoot");
+    var root = $(".accordionRoot");
     // Set accordion container height to fit in new window size
     // Then accordion Resize() will adjust it to fit the container
     root.height(windowHeight - windowBorder);
     BloomAccordion.Resize();
+}
+
+function DecodeHtml(encodedString) {
+    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
 }
 
 // ---------------------------------------------------------------------------------
@@ -1235,21 +1241,40 @@ $(document).ready(function () {
     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
     //This took *enormous* fussing in the css. TODO: copy what we learned there
     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
-    $(".bloom-draggableLabel")
-        .draggable(
-        {
-            containment: "bloom-imageContainer"
-           ,handle: '.dragHandle'
-        })
-       .mouseenter(function () {
-        $(this).prepend(" <div class='dragHandle'></div>")
-        });
+    $(".bloom-draggableLabel").each(function () {
+        // previous to June 2014, containment was not working, so some items may be
+        // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
+        if ($(this).position().left < 0) {
+            $(this).css('left', 0);
+        }
+        if ($(this).position().top < 0) {
+            $(this).css('top', 0);
+        }
+        if ($(this).position().left + $(this).width() > $(this).parent().width()) {
+            $(this).css('left', $(this).parent().width() - $(this).width());
+        }
+        if ($(this).position().top > $(this).parent().height()) {
+            $(this).css('top', $(this).parent().height() - $(this).height());
+        }
 
-        jQuery(".bloom-draggableLabel").mouseleave(function () {
-            $(this).find(".dragHandle").each(function () {
-                $(this).remove()
-            })
+        $(this).draggable(
+        {
+            containment: "parent", //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
+            handle: '.dragHandle'
         });
+    });
+
+
+    $(".bloom-draggableLabel")
+       .mouseenter(function () {
+        $(this).prepend(" <div class='dragHandle'></div>");
+    });
+
+    jQuery(".bloom-draggableLabel").mouseleave(function () {
+        $(this).find(".dragHandle").each(function() {
+            $(this).remove()
+        });
+    });
 
     // add drag and resize ability where elements call for it
     //   $(".bloom-draggable").draggable({containment: "parent"});
@@ -1347,8 +1372,13 @@ $(document).ready(function () {
         });
     });
 
-    var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-
+    var editor;
+    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
+        editor = new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
+    else {
+        editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
     $("div.bloom-editable:visible").each(function () {
 
         $(this).focus(function() {
