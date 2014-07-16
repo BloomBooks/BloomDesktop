@@ -47,6 +47,12 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
     }
 };
 
+SynphonyApi.fireCSharpEvent = function(eventName, eventData) {
+
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+};
+
 function FindOrCreateConfigDiv(path) {
 
     var dialogContents = $("#synphonyConfig");
@@ -107,6 +113,7 @@ SynphonyApi.prototype.showConfigDialog = function() {
         close: function () {
             $(this).remove();
             $(window).off('resize.readerTools');
+            SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
         },
         open: function () {
             $('#synphonyConfig').css('overflow', 'hidden');
@@ -118,6 +125,8 @@ SynphonyApi.prototype.showConfigDialog = function() {
         height: h,
         width: w
     });
+
+    SynphonyApi.fireCSharpEvent('setModalStateEvent', 'true');
 };
 
 // This is at least useful for testing; maybe for real use.
