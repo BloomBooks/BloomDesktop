@@ -294,7 +294,7 @@ ReaderToolsModel.prototype.updateWordList = function() {
 /**
  * Get the sight words for the current stage and all previous stages.
  * Note: The list returned may contain sight words from previous stages that are now decodable.
- * @param {int} stageNumber
+ * @param {int} [stageNumber]
  * @returns {Array} An array of strings
  */
 ReaderToolsModel.prototype.getSightWords = function(stageNumber) {
@@ -333,7 +333,7 @@ ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
 
 /**
  * Get the graphemes for the current stage and all previous stages
- * @param {type} stageNumber
+ * @param {int} stageNumber
  * @returns {Array} An array of strings
  */
 ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
@@ -342,6 +342,11 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
     return _.pluck(stages, 'letters').join(' ').split(' ');
 };
 
+/**
+ *
+ * @param {int} stageNumber
+ * @returns {Array}
+ */
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
     var g = this.getKnownGraphemes(stageNumber);
@@ -543,10 +548,10 @@ ReaderToolsModel.prototype.addWordsToSynphony = function() {
  * @param {String[]} desiredGPCs An array of strings
  * @param {String[]} knownGPCs An array of strings
  * @param {Boolean} restrictToKnownGPCs
- * @param {Boolean} allowUpperCase
- * @param {int[]} syllableLengths An array of integers, uses 1-24 if empty
- * @param {String[]} selectedGroups An array of strings, uses all groups if empty
- * @param {String[]} partsOfSpeech An array of strings, uses all parts of speach if empty
+ * @param {Boolean} [allowUpperCase]
+ * @param {int[]} [syllableLengths] An array of integers, uses 1-24 if empty
+ * @param {String[]} [selectedGroups] An array of strings, uses all groups if empty
+ * @param {String[]} [partsOfSpeech] An array of strings, uses all parts of speech if empty
  * @returns {Array} An array of strings or DataWord objects
  */
 ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech) {
@@ -594,10 +599,9 @@ ReaderToolsModel.prototype.restoreState = function() {
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
-    this.stageNumber = state.stage;
-    this.levelNumber = state.level;
     this.currentMarkupType = state.markupType;
-    this.doMarkup();
+    this.setStageNumber(state.stage);
+    this.setLevelNumber(state.level);
 };
 
 function initializeDecodableRT() {
@@ -632,6 +636,8 @@ function initializeDecodableRT() {
     $('.bloom-editable').onOnce('focusout.readerTools', function() {
         model.doMarkup(); // This is the element that just lost focus.
     });
+
+    setTimeout(function() { $.divsToColumns('word'); }, 100);
 }
 
 function initializeLeveledRT() {

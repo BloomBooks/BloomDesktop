@@ -154,6 +154,7 @@ namespace Bloom
 															var locations = new List<string>();
 															locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
 															locations.Add(XMatterAppDataFolder);
+															locations.Add(XMatterCommonDataFolder);
 															return new XMatterPackFinder(locations);
 														});
 
