@@ -2,7 +2,7 @@ doctype html
 html
 	head
 		meta(charset='UTF-8')
-		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
+		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
 		script(src='../../lib/jquery-1.10.1.js')
 		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
@@ -53,7 +53,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/keys-white.png')
+							td: img(src='../../images/keys.png')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
@@ -72,7 +72,7 @@ html
 											td(colspan='3'): a#setup-add-stage(href='') Add Stage
 					div.smaller(style='float: left') Drag rows to reorder stages.
 					div(style='float: right')
-						a#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
+						a.blue-link#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
 							span#remove-stage-number 1
 				#stage-detail.floating.tab-detail
 					div(style='display: block; margin: 6px 10px')
@@ -98,7 +98,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/steps-white.png', height='32')
+							td: img(src='../../images/steps.png', height='32')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
@@ -120,7 +120,7 @@ html
 											td(colspan='5'): a#setup-add-level(href='') Add Level
 					div.smaller(style='float: left') Drag rows to reorder levels.
 					div(style='float: right')
-						a#setup-remove-level.smaller(href='') Remove Level&nbsp;
+						a.blue-link#setup-remove-level.smaller(href='') Remove Level&nbsp;
 							span#remove-level-number 1
 				#level-detail.floating.tab-detail
 					div(style='display: block; margin: 0 10px 6px')

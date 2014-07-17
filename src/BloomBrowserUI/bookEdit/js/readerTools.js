@@ -681,7 +681,8 @@ function initializeLeveledRT() {
  */
 function showSetupDialog(showWhat) {
     model.setupType = showWhat;
-    model.getSynphony().showConfigDialog();
+    var title = 'Set up ' + (showWhat == 'stages' ? 'Decodable' : 'Leveled') + ' Reader Tool';
+    model.getSynphony().showConfigDialog(title);
 }
 
 function DRTState() {
