@@ -5,7 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -409,10 +408,7 @@ namespace Bloom.Edit
 		public HtmlDom GetXmlDocumentForCurrentPage()
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-
-			AddFontAwesomeToPage(_domForCurrentPage);
-			AddAccordionToPage();
-
+			AddAccordionToPage(_domForCurrentPage);
 			return _domForCurrentPage;
 		}
 
@@ -630,25 +626,25 @@ namespace Bloom.Edit
 			dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
 		}
 
-		private void AddAccordionToPage()
+		private void AddAccordionToPage(HtmlDom dom)
 		{
-			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
+			MoveBodyAndStylesIntoScopedDiv(dom);
 
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
 			_accordionFolder = Path.GetDirectoryName(path);
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-			AddFontAwesomeToPage(domForAccordion);
 
 			// move css files from the head into scoped tags in ReaderTools.htm
 			var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
 			MoveStylesIntoScopedTag(domForAccordion, div);
 
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
+			AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, dom.Body);
 
-			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
+			dom.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
+			AddFontAwesomeToPage(dom);
 
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
+			AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, dom.Head);
 
 			// Load settings into the accordion panel
 			AppendAccordionSettingsPanel();
