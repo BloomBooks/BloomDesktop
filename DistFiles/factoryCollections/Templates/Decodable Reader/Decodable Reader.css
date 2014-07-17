@@ -1,0 +1,10 @@
+/* Decodable readers are for beginners, so make the default text size and line spacing a little bigger than usual.
+ * The line height has to be specified on the bloom-editable div because the basic book template specifies
+ * an absolute line-height of 1.3 which overrides anything we put on bloom-page.
+ * I don't know why it doesn't work to put the font-size on bloom-editable, but it doesn't. */
+div.bloom-page {
+	font-size: 150%;
+}
+div.bloom-editable {
+	line-height: 1.5
+}
