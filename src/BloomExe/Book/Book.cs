@@ -527,7 +527,31 @@ namespace Bloom.Book
 			}
 
 			bookDOM.RenameMetaElement("bookLineage", "bloomBookLineage");
+
+			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 		}
+
+		// Around May 2014 we added a class, .bloom-requireParagraphs, backed by javascript that makes geckofx
+		// emit <p>s instead of <br>s (which you can't style and don't leave a space in wkhtmltopdf).
+		// If there is existing text after we added this, it needs code to do the conversion. There
+		// is already javascript for this, but by having it here allows us to update an entire collection in one commmand.
+		// Note, this doesn't yet do as much as the javascript version, which also can be triggered by a border-top-style
+		// of "dashed", so that books shipped without this class can still be converted over.
+		public void UpdateTextsNewlyChangedToRequiresParagraph(HtmlDom bookDom)
+		{
+			var texts = OurHtmlDom.SafeSelectNodes("//*[contains(@class,'bloom-requiresParagraphs')]/div[contains(@class,'bloom-editable') and br]");
+			foreach (XmlElement text in texts)
+			{
+				string s = "";
+				foreach (var chunk in text.InnerXml.Split(new string[] { "<br />", "<br/>"}, StringSplitOptions.None))
+				{
+					if (chunk.Trim().Length > 0)
+						s += "<p>" + chunk + "</p>";
+				}
+				text.InnerXml = s;
+			}
+		}
+
 
 		private static void FixBookIdAndLineageIfNeeded(HtmlDom bookDOM)
 		{
