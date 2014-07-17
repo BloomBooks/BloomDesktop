@@ -264,7 +264,7 @@ namespace BloomTests.Chorus
 						   listener.AssertFirstConflictType<BothEditedTheSameAtomicElement>();
 						   var conflict = listener.Conflicts[0];
 						   conflict.HtmlDetails.Contains("Page number: 2");
-						   Assert.AreEqual("BloomBook page group lang", conflict.Context.DataLabel);
+						   Assert.AreEqual("BloomBook group language=sse", conflict.Context.DataLabel);
 					   });
 
 		}
@@ -316,7 +316,7 @@ namespace BloomTests.Chorus
                            listener.AssertFirstConflictType<BothEditedTheSameAtomicElement>();
 	                       var conflict = listener.Conflicts[0];
 	                       conflict.HtmlDetails.Contains("Page number: 1");
-						   Assert.AreEqual("BloomBook page group lang", conflict.Context.DataLabel);
+						   Assert.AreEqual("BloomBook group language=sse", conflict.Context.DataLabel);
 					   });
 
         }
