@@ -46,11 +46,19 @@ DIV.pageLabel
 	text-align: left;
 	color: #96A9B3;
 	margin-left: 5px;
-	/*+placement:anchor-top-left 71px 19px;*/
+	/*+placement:anchor-top-left 0px 19px;*/
 	position: absolute;
-	left: 71px;
+	left: 0px;
 	top: 19px;
 	float: left;
+}
+.evenPage DIV.pageLabel
+{
+	margin-left: 2.5cm;
+}
+.oddPage DIV.pageLabel
+{
+	margin-left: 1.3cm;
 }
 DIV.ui-tooltip-title
 {
@@ -379,8 +387,7 @@ DIV.marginBox
 has the mouse in it, so you can't find these labels if they are empty.*/
 	border: thin dotted #9C9292;
 }
-
-/* Simulate the html5 placeholder attribute which is not available on divs*/
+/*Simulate the html5 placeholder attribute which is not available on divs*/
 [contentEditable=true][data-placeholder]:empty:not(:focus):before
 {
 	content: attr(data-placeholder);
