@@ -19,6 +19,7 @@ namespace Bloom_ChorusPlugin
 		/// <returns></returns>
 		public ContextDescriptor GenerateContextDescriptor(string mergeElement, string filePath)
 		{
+			Guard.Against(false, "It should be impossible to get this message.");
 			return null; // to satisfy compiler
 		}
 
@@ -27,6 +28,8 @@ namespace Bloom_ChorusPlugin
 		#region Implementation of IGenerateContextDescriptorFromNode
 
 		/// <summary>
+		/// Generates breadcrumbs to let the user know where in the Bloom book structure a conflict occurred.
+		///
 		/// If the ContextDescriptorGenerator implements this interface, it will be called instead of
 		/// the IGenerateContextDescriptor version.
 		/// </summary>
@@ -43,7 +46,7 @@ namespace Bloom_ChorusPlugin
 					label = "BloomBook header";
 					break;
 				case "meta":
-					label = "BloomBook meta element";
+					label = "BloomBook metadata";
 					break;
 				case "title":
 					label = "BloomBook title";
@@ -55,7 +58,7 @@ namespace Bloom_ChorusPlugin
 					label = "BloomBook body";
 					break;
 				case "img":
-					label = "BloomBook page imageContainer image";
+					label = "BloomBook image";
 					break;
 				case "div":
 					label = "BloomBook body unknownDiv";
@@ -73,16 +76,16 @@ namespace Bloom_ChorusPlugin
 					{
 						label = "BloomBook page";
 						if (classes.Contains("bloom-frontMatter"))
-							label = "BloomBook page frontMatter";
+							label = "BloomBook frontMatter";
 						else if (classes.Contains("bloom-backMatter"))
-							label = "BloomBook page backMatter";
+							label = "BloomBook backMatter";
 					}
 					else if (classes.Contains("marginBox"))
-						label = "BloomBook page margins";
+						label = "BloomBook margins";
 					else if (classes.Contains("bloom-translationGroup"))
-						label = "BloomBook page group";
+						label = "BloomBook group";
 					else if (classes.Contains("bloom-editable") && mergeElement.HasAttribute("lang"))
-						label = "BloomBook page group lang";
+						label = "BloomBook group language=" + mergeElement.GetAttribute("lang");
 					break;
 			}
 
@@ -95,6 +98,7 @@ namespace Bloom_ChorusPlugin
 
 		public string HtmlContext(XmlNode mergeElement)
 		{
+			// TODO: might need to merge elements outside of bloom-pages eventually.
 			Guard.Against(mergeElement == null, "mergeElement was null");
 
 			var pageElement = FindNearestBloomPageElement(mergeElement);
@@ -106,6 +110,12 @@ namespace Bloom_ChorusPlugin
 
 		private string FindPageNumber(XmlNode mergeElement, string pageId)
 		{
+			// TODO: At this point it counts front-matter too! We need to start counting when we get either
+			//   1- a bloom-startPageNumbering class
+			//   2- our first numberedPage class
+			//   Unfortunately, it's not clear that either of those is guaranteed to exist in a book!
+			// Also, how to label front-matter/back-matter pages? lower-case roman numerals?
+			// Or should all front/back matter pages just return "front matter" or "back matter"?
 			var pageNumber = 0;
 			const string xpath = "//div[contains(@class,'bloom-page')]";
 			var document = mergeElement.OwnerDocument;
@@ -122,19 +132,10 @@ namespace Bloom_ChorusPlugin
 
 		private static XmlElement FindNearestBloomPageElement(XmlNode mergeElement)
 		{
-			const string xpath = "self::div[contains(@class,'bloom-page')]";
-			string elementName;
-			do
-			{
-				elementName = mergeElement.Name;
-				if (elementName == "div")
-				{
-					var pageNode = mergeElement.SelectSingleNode(xpath);
-					if (pageNode != null)
-						return pageNode as XmlElement;
-				}
-				mergeElement = mergeElement.ParentNode;
-			} while (elementName != "body");
+			const string xpath = "ancestor-or-self::div[contains(@class,'bloom-page')]";
+			var pageNode = mergeElement.SelectSingleNode(xpath);
+			if (pageNode != null)
+				return pageNode as XmlElement;
 			throw new ArgumentException("No bloom-page element found", "mergeElement");
 		}
 
