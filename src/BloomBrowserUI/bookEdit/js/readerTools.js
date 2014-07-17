@@ -509,11 +509,18 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
  */
 ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
 
-    var words = libsynphony.getWordsFromHtmlString(fileContents);
-
-    for (var i = 0; i < words.length; i++) {
-        this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
+    // is this a Synphony data file?
+    if (fileContents.substr(0, 12) === 'setLangData(') {
+        libsynphony.langDataFromString(fileContents);
     }
+    else {
+        var words = libsynphony.getWordsFromHtmlString(fileContents);
+
+        for (var i = 0; i < words.length; i++) {
+            this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
+        }
+    }
+
 };
 
 /**
