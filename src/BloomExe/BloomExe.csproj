@@ -1002,6 +1002,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <SourceFiles Include="../../lib/dotnet/*.config"/>
   </ItemGroup>
   <Target Name="AfterBuild">
-    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>
