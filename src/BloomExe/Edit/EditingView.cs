@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using DesktopAnalytics;
+using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -36,7 +36,7 @@ namespace Bloom.Edit
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
-		private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
+		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
 
 		public delegate EditingView Factory();//autofac uses this
@@ -56,12 +56,12 @@ namespace Bloom.Edit
 			InitializeComponent();
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
 			//don't let it grow automatically
-//            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
+			//            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
-			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
+			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
-			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
+			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
 
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
 
@@ -103,13 +103,13 @@ namespace Bloom.Edit
 				return;
 
 			Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
-//			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
-//			Debug.WriteLine("active control: " + ActiveControl.Name);
-//			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
-//			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
-//			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
-//			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
-//			//focus() made it worse, select has no effect
+			//			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
+			//			Debug.WriteLine("active control: " + ActiveControl.Name);
+			//			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
+			//			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
+			//			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
+			//			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
+			//			//focus() made it worse, select has no effect
 
 			/* These two lines are the result of several hours of work. The problem this solves is that when
 			 * you're switching between applications (e.g., building a shell book), the browser would highlight
@@ -143,7 +143,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if(!_model.CanEditCopyrightAndLicense)
+				if (!_model.CanEditCopyrightAndLicense)
 				{
 					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
 					return;
@@ -186,11 +186,11 @@ namespace Bloom.Edit
 						var rights = GetHtmlEncodedRights(dlg);
 						dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
-						string licenseImageName = licenseImage==null? string.Empty: "license.png";
+						string licenseImageName = licenseImage == null ? string.Empty : "license.png";
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
+								dlg.Metadata.CopyrightNotice.Replace("'", "\\'"),
 								licenseImageName,
 								dlg.Metadata.License.Url, rights, description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
@@ -239,7 +239,7 @@ namespace Bloom.Edit
 
 		private void SetupThumnailLists()
 		{
-			_pageListView.Dock=DockStyle.Fill;
+			_pageListView.Dock = DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			_templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
 			_splitContainer1.Panel1.Controls.Add(_pageListView);
@@ -268,11 +268,11 @@ namespace Bloom.Edit
 
 		void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
-		   //TODO: this is causing green boxes when you quit while it is still working
-		   //we should change this to a proper background task, with good
-		   //cancellation in case we switch documents.  Note we may also switch
-		   //to some other way of making the thumbnails... e.g. it would be nice
-		   //to have instant placeholders, with thumbnails later.
+			//TODO: this is causing green boxes when you quit while it is still working
+			//we should change this to a proper background task, with good
+			//cancellation in case we switch documents.  Note we may also switch
+			//to some other way of making the thumbnails... e.g. it would be nice
+			//to have instant placeholders, with thumbnails later.
 
 			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
@@ -286,7 +286,7 @@ namespace Bloom.Edit
 		private void CheckFontAvailablility()
 		{
 			var fontMessage = _model.GetFontAvailabilityMessage();
-			if(!string.IsNullOrEmpty(fontMessage))
+			if (!string.IsNullOrEmpty(fontMessage))
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
 																 fontMessage);
@@ -295,14 +295,14 @@ namespace Bloom.Edit
 
 
 		/// <summary>
-	   /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
+		/// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
 		{
 			_visible = visible;
 			if (visible)
 			{
-				if(_model.GetBookHasChanged())
+				if (_model.GetBookHasChanged())
 				{
 					//now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
 					SetTranslationPanelVisibility();
@@ -400,9 +400,9 @@ namespace Bloom.Edit
 				OnEditImageMetdata(ge);
 
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if(anchor!=null && anchor.Href!="" && anchor.Href!="#")
+			if (anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
-				if(anchor.Href.Contains("bookMetadataEditor"))
+				if (anchor.Href.Contains("bookMetadataEditor"))
 				{
 					OnShowBookMetadataEditor();
 					ge.Handled = true;
@@ -410,19 +410,21 @@ namespace Bloom.Edit
 				}
 				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
 				{
-					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
+					var startOfFunctionName = anchor.Href.LastIndexOf("/") + 1;
 					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
 					_browser1.RunJavaScript(function);
 					ge.Handled = true;
 					return;
 				}
-				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
+				if (anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
-					// We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
-					// since although its href is empty, the  <base href which we supply inserts an effective http: url.
-					// We don't need anything to happen here for this case.
-					if (anchor.Id == "setUpStages")
+					// do not open in external browser if localhost
+					if (anchor.Href.ToLower().StartsWith(ServerBase.PathEndingInSlash))
+					{
+						ge.Handled = false; // let gecko handle it
 						return;
+					}
+
 					Process.Start(anchor.Href);
 					ge.Handled = true;
 					return;
@@ -439,14 +441,14 @@ namespace Bloom.Edit
 				}
 
 			}
-//			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
+			//			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 		}
 
 
 		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
-			var start = 1+ target.OuterHtml.IndexOf("#");
+			var start = 1 + target.OuterHtml.IndexOf("#");
 			var end = target.OuterHtml.IndexOf("\">");
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
@@ -462,8 +464,8 @@ namespace Bloom.Edit
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
-				bool looksOfficial = imageInfo.Metadata!=null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-				if(looksOfficial)
+				bool looksOfficial = imageInfo.Metadata != null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+				if (looksOfficial)
 				{
 					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
 					return;
@@ -480,8 +482,8 @@ namespace Bloom.Edit
 						var editor = new PageEditingModel();
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
 
-						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"), MessageBoxButtons.YesNo);
-						if(answer == DialogResult.Yes)
+						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion", "Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog", "Picture Intellectual Property Information"), MessageBoxButtons.YesNo);
+						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
 							try
@@ -507,7 +509,7 @@ namespace Bloom.Edit
 			if (!_model.CanChangeImages())
 			{
 				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked","Sorry, this book is locked down so that images cannot be changed."));
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked", "Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
 
@@ -518,7 +520,7 @@ namespace Bloom.Edit
 				if (clipboardImage == null)
 				{
 					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard","Before you can paste an image, copy one onto your 'clipboard', from another program."));
+						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard", "Before you can paste an image, copy one onto your 'clipboard', from another program."));
 					return;
 				}
 
@@ -536,13 +538,13 @@ namespace Bloom.Edit
 				using (var temp = new TempFile())
 				{
 					clipboardImage.Save(temp.Path, ImageFormat.Png);
-//                    using (var progressDialog = new ProgressDialogBackground())
-//                    {
-//                        progressDialog.ShowAndDoWork((progress, args) =>
-//                                                         {
-//                                                             ImageUpdater.CompressImage(temp.Path, progress);
-//                                                         });
-//                    }
+					//                    using (var progressDialog = new ProgressDialogBackground())
+					//                    {
+					//                        progressDialog.ShowAndDoWork((progress, args) =>
+					//                                                         {
+					//                                                             ImageUpdater.CompressImage(temp.Path, progress);
+					//                                                         });
+					//                    }
 					using (var palasoImage = PalasoImage.FromFile(temp.Path))
 					{
 						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
@@ -565,12 +567,12 @@ namespace Bloom.Edit
 
 		private Image GetImageFromClipboard()
 		{
-			if(Clipboard.ContainsImage())
+			if (Clipboard.ContainsImage())
 				return Clipboard.GetImage();
 
 			var dataObject = Clipboard.GetDataObject();
-			if(dataObject==null)
-			   return null;
+			if (dataObject == null)
+				return null;
 
 			// the ContainsImage() returns false when copying an PNG from MS Word
 			// so here we explicitly ask for a PNG and see if we can convert it.
@@ -586,7 +588,7 @@ namespace Bloom.Edit
 				}
 			}
 
-		   //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
+			//People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
 			if (dataObject.GetDataPresent(DataFormats.FileDrop))
 			{
 				//This line gets all the file paths that were selected in explorer
@@ -629,14 +631,14 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
 
 			//TODO: this would let them set it once without us bugging them, but after that if they
 			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
 			if (!currentPath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
 				&& !_model.CanChangeImages())
 			{
-				if(DialogResult.Cancel== MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning","This book is locked down as shell. Are you sure you want to change the picture?"),LocalizationManager.GetString("EditTab.ChangeImage","Change Image"),MessageBoxButtons.OKCancel))
+				if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
 				{
 					return;
 				}
@@ -663,16 +665,16 @@ namespace Bloom.Edit
 				}
 			};
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
-			using(var dlg = new ImageToolboxDialog(imageInfo, null))
+			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
-				if(DialogResult.OK== dlg.ShowDialog())
+				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						 _model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
+						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
 					}
-					catch(System.IO.IOException error)
+					catch (System.IO.IOException error)
 					{
 						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
 					}
@@ -682,7 +684,7 @@ namespace Bloom.Edit
 					}
 					catch (Exception error)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom had a problem including that image");
+						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
 					}
 				}
 			}
@@ -724,7 +726,7 @@ namespace Bloom.Edit
 				_contentLanguagesDropdown.DropDownItems.Clear();
 				foreach (var l in _model.ContentLanguages)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
+					ToolStripMenuItem item = (ToolStripMenuItem)_contentLanguagesDropdown.DropDownItems.Add(l.ToString());
 					item.Tag = l;
 					item.Enabled = !l.Locked;
 					item.Checked = l.Selected;
@@ -737,22 +739,22 @@ namespace Bloom.Edit
 				var layoutChoices = _model.GetLayoutChoices();
 				foreach (var l in layoutChoices)
 				{
-					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices."+l.ToString(), l.ToString());
-					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(text);
+					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + l.ToString(), l.ToString());
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(text);
 					item.Tag = l;
 					//we don't allow the split options here
-					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
+					if (l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
+						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice", "This option is only available in the Publish tab.");
 					}
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 
-				if(layoutChoices.Count()<2)
+				if (layoutChoices.Count() < 2)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts", "There are no other layout options for this template.", "Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
 					item.Tag = null;
 					item.Enabled = false;
 				}
@@ -791,9 +793,9 @@ namespace Bloom.Edit
 
 		void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
 		{
-			if(_updatingDisplay)
+			if (_updatingDisplay)
 				return;
-			var item = (ToolStripMenuItem) sender;
+			var item = (ToolStripMenuItem)sender;
 			((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
 
 			_model.ContentLanguagesSelectionChanged();
@@ -803,7 +805,7 @@ namespace Bloom.Edit
 		{
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
-			UpdateButtonEnabled(_pasteButton,_pasteCommand);
+			UpdateButtonEnabled(_pasteButton, _pasteCommand);
 			UpdateButtonEnabled(_undoButton, _undoCommand);
 			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
 		}
@@ -834,12 +836,12 @@ namespace Bloom.Edit
 		public void ClearOutDisplay()
 		{
 			_pageListView.Clear();
-			_browser1.Navigate("about:blank",false);
+			_browser1.Navigate("about:blank", false);
 		}
 
 		private void _deletePageButton_Click_1(object sender, EventArgs e)
 		{
-			if(ConfirmRemovePageDialog.Confirm())
+			if (ConfirmRemovePageDialog.Confirm())
 			{
 				_deletePageCommand.Execute();
 			}
@@ -849,8 +851,8 @@ namespace Bloom.Edit
 		{
 			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
 			//then did a callback to this view, such that ParentForm was null, and this died
-			Debug.Assert(ParentForm!=null);
-			if(ParentForm!=null)
+			Debug.Assert(ParentForm != null);
+			if (ParentForm != null)
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
 			}
