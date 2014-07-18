@@ -844,10 +844,6 @@ function SetCopyrightAndLicense(data) {
     SetBookCopyrightAndLicenseButtonVisibility();
 }
 
-function DecodeHtml(encodedString) {
-    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
-}
-
 function SetBookCopyrightAndLicenseButtonVisibility() {
     var shouldShowButton = !($("DIV.copyright").text());
     $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
@@ -931,13 +927,12 @@ function ShowTopicChooser() {
 }
 
 var resizeTimer;
-var windowBorder = 12; // window border is about 12px
 function resizeAccordion() {
     var windowHeight = $(window).height();
     var root = $(".accordionRoot");
     // Set accordion container height to fit in new window size
     // Then accordion Resize() will adjust it to fit the container
-    root.height(windowHeight - windowBorder);
+    root.height(windowHeight);
     BloomAccordion.Resize();
 }
 
