@@ -31,7 +31,7 @@ namespace BloomTests.Book
             Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
             VerifyLangData(results[0], "en", "English", "eng");
             VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
-            VerifyLangData(results[2], "xyk", "xyk", "xyk");
+            VerifyLangData(results[2], "xy3", "xy3", "xy3");
         }
 
         [Test]
