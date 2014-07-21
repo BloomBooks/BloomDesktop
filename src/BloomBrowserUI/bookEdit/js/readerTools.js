@@ -55,6 +55,7 @@ var ReaderToolsModel = function() {
     this.texts = [];
     this.textCounter = 0;
     this.setupType = '';
+    this.fontName = '';
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -712,11 +713,13 @@ else {
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
+ * @param {String} fontName The font to use for text boxes and text areas.
  * @param {Boolean} fakeIt
  */
-function initializeSynphony(settingsFileContent, fakeIt) {
+function initializeSynphony(settingsFileContent, fontName, fakeIt) {
 
     var synphony = model.getSynphony();
+    model.fontName = fontName;
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
 
