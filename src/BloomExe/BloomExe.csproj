@@ -1001,7 +1001,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <Target Name="BeforeBuild">
   </Target>
   -->
+  <ItemGroup>
+    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css"/>
+  </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader"/>
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader"/>
   </Target>
 </Project>
