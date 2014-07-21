@@ -251,8 +251,12 @@ namespace Bloom
 
 			WebBrowser.JavascriptError += (sender, error) =>
 			{
-				// Warnings began popping up when we started using http rather than file urls for script tags
-				if (error.Flags.HasFlag(Gecko.ErrorFlags.REPORT_WARNING)) return;
+				// Warnings began popping up when we started using http rather than file urls for script tags.
+				// 21 JUL 2014, PH: This is a confirmed bug in firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1020846)
+				//   and is supposed to be fixed in firefox 33.
+				if (error.Flags.HasFlag(Gecko.ErrorFlags.REPORT_WARNING)
+					&& error.Message.Contains("is being assigned a //# sourceMappingURL, but already has one"))
+					return;
 
 				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
 										error.Filename, error.Line, error.Message);
