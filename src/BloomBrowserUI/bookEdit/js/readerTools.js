@@ -114,6 +114,12 @@ ReaderToolsModel.prototype.updateLevelLabel = function() {
         this.updateElementContent("levelNumber", "");
         return;
     }
+
+    if (levels.length < this.levelNumber) {
+        this.setLevelNumber(levels.length);
+        return;
+    }
+
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
 };
 
