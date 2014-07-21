@@ -338,7 +338,7 @@ function removeStage() {
     if (rows.length > 0) {
 
         // renumber remaining stages
-        renumberStages(rows);
+        renumberRows(rows);
 
         // select a different stage
         if (rows.length >= current_stage)
@@ -348,12 +348,12 @@ function removeStage() {
     }
 }
 
-function renumberStages(rows) {
+function renumberRows(rows) {
 
-    var stageNum = 1;
+    var rowNum = 1;
 
     $.each(rows, function() {
-        this.cells[0].innerHTML = stageNum++;
+        this.cells[0].innerHTML = rowNum++;
     });
 }
 
@@ -364,7 +364,7 @@ function updateStageNumbers() {
 
     var tbody = $('#stages-table').find('tbody');
     var rows = tbody.find('tr');
-    renumberStages(rows);
+    renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
     document.getElementById('setup-stage-number').innerHTML = currentStage;
@@ -429,6 +429,30 @@ function addNewLevel() {
 
     // go to the new stage
     tbody.find('tr:last').click();
+}
+
+function removeLevel() {
+
+    var tbody = $('#levels-table').find('tbody');
+
+    // remove the current stage
+    var current_row = tbody.find('tr.selected');
+    var current_stage = current_row.find("td").eq(0).html();
+    current_row.remove();
+
+    var rows = tbody.find('tr');
+
+    if (rows.length > 0) {
+
+        // renumber remaining levels
+        renumberRows(rows);
+
+        // select a different stage
+        if (rows.length >= current_stage)
+            tbody.find('tr:nth-child(' + current_stage + ')').click();
+        else
+            tbody.find('tr:nth-child(' + rows.length + ')').click();
+    }
 }
 
 /**
@@ -532,7 +556,13 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
-// event handlers
+/**
+ * Event handlers
+ *
+ * NOTE: Returning false from a click event handler cancels the default action of the element.
+ *       e.g. If the element is an anchor with the href set, navigation is canceled.
+ *       e.g. If the element is a submit button, form submission is canceled.
+ */
 if (typeof ($) === "function") {
 
     $("#open-text-folder").onOnce('click', function() {
@@ -562,6 +592,11 @@ if (typeof ($) === "function") {
 
     $('#setup-add-level').onOnce('click', function() {
         addNewLevel();
+        return false;
+    });
+
+    $('#setup-remove-level').onOnce('click', function() {
+        removeLevel();
         return false;
     });
 

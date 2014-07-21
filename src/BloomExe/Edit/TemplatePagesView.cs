@@ -63,5 +63,9 @@ namespace Bloom.Edit
             _thumbNailList.SetItems(new IPage[] { });
         }
 
+        public new bool Enabled
+        {
+            set { _thumbNailList.Enabled = value; }
+        }
     }
 }
