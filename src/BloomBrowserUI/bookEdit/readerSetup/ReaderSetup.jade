@@ -25,14 +25,14 @@ html
 				.floating(style='width: 200px')
 					label(for='dls_letters') Letters
 					br
-					textarea#dls_letters(style='height: 55px; width: 195px')
+					textarea#dls_letters.book-font(style='height: 55px; width: 195px')
 					br
 					span.smaller * List in alphabetic order<br>* Separate by spaces<br>E.g. "a b c d"
 					br
 					br
 					label(for='dls_letter_combinations') Letter Combinations (Graphemes)
 					br
-					textarea#dls_letter_combinations(style='height: 55px; width: 195px')
+					textarea#dls_letter_combinations.book-font(style='height: 55px; width: 195px')
 					br
 					span.smaller * Separate by spaces<br>E.g. "ai oo sh ng th ing"
 				#word-lists-div.floating
@@ -48,7 +48,7 @@ html
 				.floating
 					label(for='dls_more_words') More Words
 					br
-					textarea#dls_more_words(style='height: 328px; width: 100px')
+					textarea#dls_more_words.book-font(style='height: 328px; width: 100px')
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
@@ -83,11 +83,11 @@ html
 							label(for='setup-stage-sight-words') New Sight Words
 							div(style='float: right')
 								a#define-sight-words.smaller(href='') What are sight words?
-							textarea#setup-stage-sight-words(style='height: 35px; width: 100%; box-sizing:border-box;')
+							textarea#setup-stage-sight-words.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
 						br
 						div(style='display: block; margin-top: 12px;'): label Previous and New Letters
 						#setup-selected-letters.rs-letter-container
-						.smaller(style='float: left') Click on letters to add them to this stage.
+						#click-letters.smaller(style='float: left') Click on letters to add them to this stage.
 					#setup-stage-matching-words.sub-float
 						label(style='white-space: nowrap;')
 							span#setup-words-count 15

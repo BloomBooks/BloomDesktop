@@ -43,6 +43,7 @@ tr.selected { background-color: #fff0b3 !important; cursor: pointer; }
 div.sub-float { position: relative; }
 #powered-by { position: relative; float: right; padding: 2px 6px; white-space: nowrap; text-align: right; -moz-user-select: none; }
 #setup-stage-letters-and-words { float: left; margin-left: 10px; }
+#click-letters { padding-bottom: 10px; }
 
 div.scrolling-table-container { height: 100%; }
 div.scrolling-table-container-inner { overflow-x: hidden; overflow-y: auto; height: 100%; }
@@ -72,9 +73,8 @@ div.previous-letter { color: #000; background-color: #fff; font-weight: 700; cur
 div.current-letter { color: #000; background-color: #febf00; font-weight: 700; cursor: pointer; }
 div.rs-letters-s { width: 32px; }
 div.rs-letters-l { width: 35px; }
-div.rs-letter-container { height: 140px; }
-div.rs-letter-container-s { max-width: 223px; overflow-y: hidden; }
-div.rs-letter-container-l { max-width: 221px; overflow-y: auto; }
+div.rs-letter-container-s { max-width: 218px; overflow-y: hidden; border-top: 1px solid #333; border-left: 1px solid #333; }
+div.rs-letter-container-l { max-width: 223px; overflow-y: auto; height: 180px; border: 1px solid #333; }
 div.word { min-width: 40px; margin: 2px; float: left; }
 div.rs-word-container {
 	border: thin solid #666;
@@ -104,9 +104,9 @@ span.sight-word { color: #00528d; }
 }
 
 @media (min-width: 650px) {
-	#stage-list-container { width: calc(40% - 6px); min-height: 310px; height: calc(100% - 50px); }
+	#stage-list-container { width: calc(40% - 6px); min-height: 360px; height: calc(100% - 50px); }
 	.tab-list { height: calc(100% - 16px); }
-	#stage-detail { width: calc(60% - 6px); min-height: 310px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
+	#stage-detail { width: calc(60% - 6px); min-height: 360px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
 	#stage-detail div.sub-float { width: calc(100% - 258px); }
 	#setup-stage-letters-and-words { width: 228px !important; }
 	#setup-stage-matching-words { float: right; margin-right: 10px; height: calc(100% - 64px); }

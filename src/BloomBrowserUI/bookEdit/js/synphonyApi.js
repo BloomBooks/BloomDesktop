@@ -60,7 +60,9 @@ function FindOrCreateConfigDiv(path, title) {
         dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
 
         var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm');
-        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
+        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" ' +
+            'onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\'); ' +
+            'document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Font\\n\' + model.fontName, \'*\');"></iframe>';
         dialogContents.append(html);
     }
     return dialogContents;
