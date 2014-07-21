@@ -556,7 +556,13 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
-// event handlers
+/**
+ * Event handlers
+ *
+ * NOTE: Returning false from a click event handler cancels the default action of the element.
+ *       e.g. If the element is an anchor with the href set, navigation is canceled.
+ *       e.g. If the element is a submit button, form submission is canceled.
+ */
 if (typeof ($) === "function") {
 
     $("#open-text-folder").onOnce('click', function() {
