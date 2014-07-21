@@ -114,6 +114,12 @@ ReaderToolsModel.prototype.updateLevelLabel = function() {
         this.updateElementContent("levelNumber", "");
         return;
     }
+
+    if (levels.length < this.levelNumber) {
+        this.setLevelNumber(levels.length);
+        return;
+    }
+
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
 };
 
@@ -219,15 +225,16 @@ ReaderToolsModel.prototype.updateLevelLimits = function() {
     if (level.thingsToRemember.length) {
 
         var list = document.getElementById('thingsToRemember');
-        list.innerHTML = '';
+        if (list !== null) {
+            list.innerHTML = '';
 
-        for (var i = 0; i < level.thingsToRemember.length; i++) {
-            var li = document.createElement('li');
-            li.appendChild(document.createTextNode(level.thingsToRemember[i]));
-            list.appendChild(li);
+            for (var i = 0; i < level.thingsToRemember.length; i++) {
+                var li = document.createElement('li');
+                li.appendChild(document.createTextNode(level.thingsToRemember[i]));
+                list.appendChild(li);
+            }
         }
     }
-
 };
 
 ReaderToolsModel.prototype.updateLevelLimit = function(id, limit) {
