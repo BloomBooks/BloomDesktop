@@ -94,7 +94,7 @@ TEXTAREA
 DIV.imageOnTop DIV.bloom-imageContainer
 {
 	width: 100%;
-	height: 45% !important;
+	height: 70% !important;
 	/*above so buttons show*/
 	z-index: 1000;
 }
@@ -197,21 +197,24 @@ DIV.imageOnTop DIV.bloom-imageContainer
 }
 DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 {
-	height: 53% !important;
+	height: 25% !important;
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
 	bottom: 0;
 	width: 100%;
 }
-.imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable.bloom-content1
+.imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable
 {
 	height: 100%;
 }
-.imageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable.bloom-content2
+.imageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable
 {
-	height: 4.5cm;
-	/*[disabled]+placement:anchor-bottom-left 0px 0px;*/
+	height: 50%;
+}
+.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
+{
+    height: 30%;
 }
 .imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer
 {
@@ -220,12 +223,12 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	position: absolute;
 	left: 0;
 	top: 0;
-	height: 33% !important;
+	height: 45% !important;
 	/*[disabled]border:1px solid #000000;*/
 }
 DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
 {
-	height: 63% !important;
+	height: 50% !important;
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
@@ -298,14 +301,12 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
-.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content1
+.imageOnTop.bloom-bilingual DIV.bloom-editable
 {
 	height: 30%;
 }
 .imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2
 {
-	height: 30%;
-	/*+placement:anchor-bottom-left 0px 0px;*/
 	position: absolute;
 	left: 0px;
 	bottom: 0px;
