@@ -85,8 +85,12 @@ namespace Bloom.Publish
 				return;
 			}
 #endif
-			// TODO
-			throw new NotImplementedException("This used to call _adobeReaderControl.Print, but that doesn't exist on GeckoBrowser");
+            var browser = ((GeckoWebBrowser)_pdfViewerControl);
+            using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
+            {
+                string result;
+                context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
+            } 	
 		}
 	}
 }
