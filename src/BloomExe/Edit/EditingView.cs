@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using DesktopAnalytics;
+using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -418,11 +418,13 @@ namespace Bloom.Edit
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
-					// We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
-					// since although its href is empty, the  <base href which we supply inserts an effective http: url.
-					// We don't need anything to happen here for this case.
-					if (anchor.Id == "setUpStages")
+					// do not open in external browser if localhost
+					if (anchor.Href.ToLower().StartsWith(ServerBase.PathEndingInSlash))
+					{
+						ge.Handled = false; // let gecko handle it
 						return;
+					}
+
 					Process.Start(anchor.Href);
 					ge.Handled = true;
 					return;

@@ -219,15 +219,16 @@ ReaderToolsModel.prototype.updateLevelLimits = function() {
     if (level.thingsToRemember.length) {
 
         var list = document.getElementById('thingsToRemember');
-        list.innerHTML = '';
+        if (list !== null) {
+            list.innerHTML = '';
 
-        for (var i = 0; i < level.thingsToRemember.length; i++) {
-            var li = document.createElement('li');
-            li.appendChild(document.createTextNode(level.thingsToRemember[i]));
-            list.appendChild(li);
+            for (var i = 0; i < level.thingsToRemember.length; i++) {
+                var li = document.createElement('li');
+                li.appendChild(document.createTextNode(level.thingsToRemember[i]));
+                list.appendChild(li);
+            }
         }
     }
-
 };
 
 ReaderToolsModel.prototype.updateLevelLimit = function(id, limit) {
