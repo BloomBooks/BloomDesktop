@@ -1,50 +1,14 @@
-div.accordionRoot {
-	display: inline-block;
-	background-color: #404040;
-	color: white;
-	font-size: x-small;
-	position: fixed;
-	top: -1px;
-	bottom: 1px;
-	right: 0;
-	width: 200px;
-    z-index: 18000; /* Just over help bubbles, but under topic dialog */
-}
-
-.ui-accordion-header { -moz-user-select: none; }
-td.section { margin-top: 20px; padding-top: 20px; }
-span.scroll-button { color: white; float: left; }
-div.ui-accordion { padding-left: 0px; padding-right: 0px; }
-div.ui-accordion-content { padding-left: 3px !important; padding-right: 0px !important; }
-div.section { padding-top: 20px; color: lightskyblue; }
-div.clear, table.clear { clear: both; }
-.hidden { display: none !important; }
-.align-top { vertical-align: top; }
-
-input[type="checkbox"] {
-	color: #fff;
-	background-color: transparent;
-	border-color: #fff;
-}
-
-div.checkbox {
-	width: 11px !important;
-	height: 11px !important;
-	border: 1px solid #fff;
-	display: inline-block;
-	position: relative;
-	float: left;
-	margin: 2px 6px 6px;
-	font-size: 17px;
-	overflow: visible;
-	line-height: 4px;
-	cursor: pointer;
-	-moz-user-select: none;
-}
-
-div.checkbox-label {
-	position: relative;
-	float: left;
-	-moz-user-select: none;
-	cursor: default;
-}
+/*! Styles for Accordion.htm */
+div.accordionRoot{display:inline-block;background-color:#404040;color:#fff;font-size:x-small;position:fixed;top:-1px;bottom:1px;right:0;width:200px;z-index:18000}
+.ui-accordion-header{-moz-user-select:none}
+td.section{margin-top:20px;padding-top:20px}
+span.scroll-button{color:#fff;float:left}
+div.ui-accordion{padding-left:0;padding-right:0}
+div.ui-accordion-content{padding-left:3px!important;padding-right:0!important}
+div.section{padding-top:20px;color:#87cefa}
+div.clear,table.clear{clear:both}
+.hidden{display:none!important}
+.align-top{vertical-align:top}
+input[type=checkbox]{color:#fff;background-color:transparent;border-color:#fff}
+div.checkbox{width:11px!important;height:11px!important;border:1px solid #fff;display:inline-block;position:relative;float:left;margin:2px 6px 6px;font-size:17px;overflow:visible;line-height:4px;cursor:pointer;-moz-user-select:none}
+div.checkbox-label{position:relative;float:left;-moz-user-select:none;cursor:default}
