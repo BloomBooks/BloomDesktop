@@ -139,6 +139,9 @@ function loadReaderSetupData(jsonData) {
     if (!data.letters) data.letters = '';
     if (!data.letterCombinations) data.letterCombinations = '';
     if (!data.moreWords) data.moreWords = '';
+    if (!data.stages) data.stages = [];
+    if (!data.levels) data.levels = [];
+
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
