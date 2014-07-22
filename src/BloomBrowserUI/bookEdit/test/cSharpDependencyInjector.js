@@ -24,5 +24,7 @@ function ForCodeInspection_UnusedFunctions() {
     setSampleFileContents('');
     setTextsList('');
     closeSetupDialog();
-
+    SetCopyrightAndLicense(null);
+    loadAccordionPanel('', '');
+    restoreAccordionSettings('');
 }

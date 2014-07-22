@@ -207,6 +207,9 @@
     <Compile Include="Edit\ReaderToolsView.Designer.cs">
       <DependentUpon>ReaderToolsView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\TransparentPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Extensions.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
