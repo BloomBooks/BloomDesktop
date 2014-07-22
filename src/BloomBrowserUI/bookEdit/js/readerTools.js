@@ -57,6 +57,7 @@ var ReaderToolsModel = function() {
     this.setupType = '';
 
     // Please do not remove fontName. It is used, in spite of what WebStorm says.
+    // This is the book font, which is used in the reader setup dialog.
     this.fontName = '';
 };
 
