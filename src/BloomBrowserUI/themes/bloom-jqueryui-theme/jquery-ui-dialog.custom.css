@@ -45,7 +45,7 @@ div.ui-tabs ul.ui-tabs-nav li a.ui-tabs-anchor { color: #000; }
 div.ui-tabs ul.ui-tabs-nav li { list-style: none; float: left; position: relative; top: 2px; margin: 0 -1px 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
 div.ui-tabs div.ui-tabs-panel ul { border: 1px solid #999; }
 
-/* lines below this one been taken unchanged from jquery.ui.tabs.css */
+/* lines below this one have been taken unchanged from jquery.ui.tabs.css */
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
 .ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
