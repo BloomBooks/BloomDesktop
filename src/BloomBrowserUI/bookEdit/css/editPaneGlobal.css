@@ -140,3 +140,4 @@ BODY[editMode="translation"] DIV.ui-sourceTextsForBubble UL
 	background: none;
 }
 
+.ui-front { z-index: 19000; }

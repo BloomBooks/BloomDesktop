@@ -18,7 +18,6 @@ namespace Bloom.Edit
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
-
 		private ListViewItem _currentDraggingItem;
 		private ListViewItem _currentTarget;
 		private Pen _boundsPen;
@@ -210,7 +209,7 @@ namespace Bloom.Edit
     	public RelocatePageEvent RelocatePageEvent { get; set; }
 
     	private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
+    	{
 			if (_inSelectionAlready)
 				return;
 			if (!_intentionallyChangingSelection)//yes, having painful phantom selections when the cursor leaves this control
@@ -440,7 +439,25 @@ namespace Bloom.Edit
 					Thumbnailer.PageChanged(pageId);
     		}
     	}
-    }
+
+		public new bool Enabled
+		{
+			set
+			{
+				if (!value)
+				{
+					var panel = new TransparentPanel("disabled", _listView);
+					Controls.Add(panel);
+					panel.BringToFront();	
+				}
+				else
+				{
+					Controls.RemoveByKey("disabled");
+				}
+			}
+		}
+	}
+
 
 	/// <summary>
 	/// This makes a list view act, well, like one would expect; the items
