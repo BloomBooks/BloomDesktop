@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -411,6 +412,10 @@ namespace Bloom.Publish
 		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
 		{
 
+		}
+		private void _openPDF_Click(object sender, EventArgs e)
+		{
+			Process.Start(_model.PdfFilePath);
 		}
 
 		/// <summary>
