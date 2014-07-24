@@ -1,0 +1,59 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export MONO_PREFIX = /opt/mono-sil
+export BUILD = Debug
+
+PACKAGE = bloom-desktop
+DESTDIR = debian/$(PACKAGE)
+LIB     = usr/lib/$(PACKAGE)
+SHARE   = usr/share/$(PACKAGE)
+
+%:
+	dh $@ --with=cli --parallel
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	build/getDependencies-Linux.sh
+	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom VS2010.sln"
+
+override_dh_auto_test:
+
+override_dh_auto_clean:
+	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom VS2010.sln" /t:Clean
+	dh_clean
+
+override_dh_auto_install:
+	# Install library files
+	install -d $(DESTDIR)/$(LIB)
+	install -m 644 output/$(BUILD)/* $(DESTDIR)/$(LIB)
+	install -d $(DESTDIR)/$(SHARE)
+	install -m 644 environ* $(DESTDIR)/$(SHARE)
+	cd $(DESTDIR)/$(LIB) && rm AxInterop* BloomTests* Interop* Moq* nunit*
+	# Install data files
+	cp -r DistFiles $(DESTDIR)/$(LIB)/
+	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
+	# Install executables
+	install -d $(DESTDIR)/usr/bin
+	install debian/bloom $(DESTDIR)/usr/bin
+	# Add to Applications menu
+	install -d $(DESTDIR)/usr/share/pixmaps
+	install -m 644 debian/bloom.png $(DESTDIR)/usr/share/pixmaps/
+	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/pixmaps/
+	install -d $(DESTDIR)/usr/share/applications
+	desktop-file-install --dir $(DESTDIR)/usr/share/applications debian/bloom.desktop
+
+# Don't export any assemblies to other packages
+override_dh_makeclilibs:
+
+# Include mono-sil in shlib dirs searched
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(MONO_PREFIX)/lib
+
+# Include mono-sil in cli dirs searched
+override_dh_clideps:
+	dh_clideps -l$(MONO_PREFIX)/lib
