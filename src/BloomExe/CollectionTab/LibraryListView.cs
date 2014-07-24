@@ -461,7 +461,7 @@ namespace Bloom.CollectionTab
 		private void UpdateDownloadedBooks(object sender)
 		{
 			var collection = sender as BookCollection;
-			var newBook = BookWithNoButton(collection);
+			var newBook = GetBookAddedSinceButtonsWereMade(collection);
 			if (newBook != null)
 			{
 				// It's always worth reloading...maybe we didn't have a button before because it was not
@@ -548,10 +548,17 @@ namespace Bloom.CollectionTab
 
 		/// <summary>
 		/// If there is a book in the collection which has no button but should have one, return it.
+		/// It is of course possible that there is more than one new book, in which case we will pick one arbitrarily.
+		/// If the user downloads several very close together, we will get a notification for each,
+		/// but we may not have time to rebuild the list for each. The selection will change as rapidly as we can
+		/// update (or at least as often as we go half a second without being notified of a new book).
+		/// It should stabilize on one of the most recent new books, but just possibly not the very most recent.
+		/// If we want to do better than this (or to select a book that was downloaded but not new), we will need
+		/// to process information about what changed from the file watcher event.
 		/// </summary>
 		/// <param name="collection"></param>
 		/// <returns></returns>
-		private BookInfo BookWithNoButton(BookCollection collection)
+		private BookInfo GetBookAddedSinceButtonsWereMade(BookCollection collection)
 		{
 			var pathsWithButtons = new HashSet<string>();
 			foreach (var item in _sourceBooksFlow.Controls)
