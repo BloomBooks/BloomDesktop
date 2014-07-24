@@ -172,15 +172,12 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
-					// now we're all set to handle any pending book orders, especially one that may have been created
-					// at startup from a command line argument. We're also ready to receive any notifications of new books
-					// downloaded.
-					if (_bookTransferrer != null)
-					{
-						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
-						_bookTransferrer.HandleOrders();
-					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
+					if (Program.PathToBookDownloadedAtStartup != null)
+					{
+						// We started up with a command to downloaded a book...Select it.
+						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+					}
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
 					ImproveAndRefreshBookButtons();
@@ -383,10 +380,7 @@ namespace Bloom.CollectionTab
     		{
     		    try
     		    {
-    		    	var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
-    		    	          (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
-
-                    if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+					if (IsSuitableSourceForThisEditableCollection(bookInfo) || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
                     {
                         if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
                         {
@@ -402,6 +396,8 @@ namespace Bloom.CollectionTab
     		}
             if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
             {
+                collection.CollectionChanged += DownLoadedBooksChanged;
+                collection.WatchDirectory(); // In case another instance downloads a book.
                 var bloomLibrayLink = new LinkLabel()
                 {
                     Text =
@@ -419,7 +415,66 @@ namespace Bloom.CollectionTab
             return loadedAtLeastOneBook;
     	}
 
-    	private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
+ 	   private bool IsSuitableSourceForThisEditableCollection(BookInfo bookInfo)
+		{
+			return (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
+				   (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
+		}
+
+		private Timer _newDownloadTimer;
+		/// <summary>
+		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
+		/// This will happen on a thread-pool thread.
+		/// Since we are updating the UI in response we want to deal with it on the main thread.
+		/// This also has the effect that it can't happen in the middle of another LoadSourceCollectionButtons().
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void DownLoadedBooksChanged(object sender, EventArgs eventArgs)
+		{
+			Invoke((Action) (() =>
+			{
+				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
+				// copying the new book there. Finishing should not take long, because the download is done...at worst
+				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
+				// As a safeguard, wait half a second before we update things.
+				if (_newDownloadTimer != null)
+				{
+					// Things changed again before we started the update! Forget the old update and wait until things
+					// are stable for the required interval.
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();					
+				}
+				_newDownloadTimer = new Timer();
+				_newDownloadTimer.Tick += (o, args) =>
+				{
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+					_newDownloadTimer = null;
+					UpdateDownloadedBooks(sender);
+				};
+				_newDownloadTimer.Interval = 500;
+				_newDownloadTimer.Start();
+			}));
+		}
+
+		private void UpdateDownloadedBooks(object sender)
+		{
+			var collection = sender as BookCollection;
+			var newBook = BookWithNoButton(collection);
+			if (newBook != null)
+			{
+				// It's always worth reloading...maybe we didn't have a button before because it was not
+				// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+				// other way...we want the button to have valid metadata for the book.
+				// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+				LoadSourceCollectionButtons();
+				if (Enabled)
+					SelectBook(newBook);
+			}
+		}
+
+        private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
     	{
 			var button = new Button(){Size=new Size(90,110)};
     		button.Text = ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay);
@@ -489,32 +544,16 @@ namespace Bloom.CollectionTab
     	private void OnCollectionChanged(object sender, EventArgs e)
     	{
     		_primaryCollectionReloadPending = true;
-    	}
-
-		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
-		{
-			var newBook = e.BookDetails;
-			Invoke((Action) (() =>
-			{
-				if (!HaveButtonForBook(newBook))
-				{
-					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
-					downloadCollection.InsertBookInfo(newBook);
-					// It's always worth reloading...maybe we didn't have a button before because it was not
-					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
-					// other way...we want the button to have valid metadata for the book.
-					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
-					LoadSourceCollectionButtons();					
-				}
-				// This actually works...displays the book and offers to let you use it as a template...even if it
-				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
-				// whether this is desirable.
-				SelectBook(newBook);
-			}));
 		}
 
-		private bool HaveButtonForBook(BookInfo newBook)
+		/// <summary>
+		/// If there is a book in the collection which has no button but should have one, return it.
+		/// </summary>
+		/// <param name="collection"></param>
+		/// <returns></returns>
+		private BookInfo BookWithNoButton(BookCollection collection)
 		{
+			var pathsWithButtons = new HashSet<string>();
 			foreach (var item in _sourceBooksFlow.Controls)
 			{
 				var button = item as Button;
@@ -523,10 +562,14 @@ namespace Bloom.CollectionTab
 				var info = button.Tag as BookInfo;
 				if (info == null)
 					continue;
-				if (info.FolderPath == newBook.FolderPath)
-					return true;
+				pathsWithButtons.Add(info.FolderPath);
 			}
-			return false;
+			foreach (var book in collection.GetBookInfos())
+			{
+				if (!pathsWithButtons.Contains(book.FolderPath) && IsSuitableSourceForThisEditableCollection(book))
+					return book;
+			}
+			return null;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)

@@ -187,6 +187,29 @@ namespace Bloom.Collection
 		    set { throw new NotImplementedException(); }
 	    }
 
-        public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+
+		/// <summary>
+		/// Watch for changes to your directory (currently just additions). Raise CollectionChanged if you see anything.
+		/// </summary>
+		public void WatchDirectory()
+		{
+			FileSystemWatcher watcher = new FileSystemWatcher();
+			watcher.Path = PathToDirectory;
+			// The default filter, LastWrite|FileName|DirectoryName, is probably OK.
+			// Watch everything for now.
+			// watcher.Filter = "*.txt";
+			watcher.Created += WatcherOnChange;
+			watcher.Changed += WatcherOnChange;
+
+			// Begin watching.
+			watcher.EnableRaisingEvents = true;
+		}
+
+		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			_bookInfos = null; // Possibly obsolete; next request will update it.
+			NotifyCollectionChanged();
+		}
     }
 }

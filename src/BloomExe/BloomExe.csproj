@@ -355,7 +355,6 @@
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
