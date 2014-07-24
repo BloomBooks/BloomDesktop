@@ -37,6 +37,9 @@ override_dh_auto_install:
 	# Install data files
 	cp -r DistFiles $(DESTDIR)/$(LIB)/
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
+	# Install browser support files
+	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
+	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/BloomBrowserUI
 	# Install executables
 	install -d $(DESTDIR)/usr/bin
 	install debian/bloom $(DESTDIR)/usr/bin
