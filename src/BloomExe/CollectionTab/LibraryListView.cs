@@ -36,6 +36,7 @@ namespace Bloom.CollectionTab
 		private bool _primaryCollectionReloadPending;
 		private LinkLabel _missingBooksLink;
 		private bool _disposed;
+		private BookCollection _downloadedBookCollection;
 		enum ButtonManagementStage
 		{
 			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
@@ -396,6 +397,7 @@ namespace Bloom.CollectionTab
 			}
 			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
 			{
+				_downloadedBookCollection = collection;
 				collection.CollectionChanged += DownLoadedBooksChanged;
 				collection.WatchDirectory(); // In case another instance downloads a book.
 				var bloomLibrayLink = new LinkLabel()
@@ -845,6 +847,11 @@ namespace Bloom.CollectionTab
 			if (disposing && (components != null))
 			{
 				components.Dispose();
+			}
+			if (disposing && _downloadedBookCollection != null)
+			{
+				_downloadedBookCollection.StopWatchingDirectory();
+				_downloadedBookCollection.CollectionChanged -= DownLoadedBooksChanged;
 			}
 			base.Dispose(disposing);
 			_disposed = true;
