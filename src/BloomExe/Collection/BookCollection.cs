@@ -187,6 +187,42 @@ namespace Bloom.Collection
 		    set { throw new NotImplementedException(); }
 	    }
 
-        public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+
+	    private FileSystemWatcher _watcher;
+		/// <summary>
+		/// Watch for changes to your directory (currently just additions). Raise CollectionChanged if you see anything.
+		/// </summary>
+		public void WatchDirectory()
+		{
+			_watcher = new FileSystemWatcher();
+			_watcher.Path = PathToDirectory;
+			// The default filter, LastWrite|FileName|DirectoryName, is probably OK.
+			// Watch everything for now.
+			// watcher.Filter = "*.txt";
+			_watcher.Created += WatcherOnChange;
+			_watcher.Changed += WatcherOnChange;
+
+			// Begin watching.
+			_watcher.EnableRaisingEvents = true;
+		}
+
+		/// <summary>
+		/// This could plausibly be a Dispose(), but I don't want to make BoolCollection Disposable, as most of them don't need it.
+		/// </summary>
+	    public void StopWatchingDirectory()
+	    {
+		    if (_watcher != null)
+		    {
+			    _watcher.Dispose();
+			    _watcher = null;
+		    }
+	    }
+
+		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			_bookInfos = null; // Possibly obsolete; next request will update it.
+			NotifyCollectionChanged();
+		}
     }
 }
