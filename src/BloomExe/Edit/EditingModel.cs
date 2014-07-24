@@ -456,7 +456,13 @@ namespace Bloom.Edit
 #else
 			var fakeIt = "false";
 #endif
-			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
+			var bookFontName = _currentlyDisplayedBook.CollectionSettings.DefaultLanguage1FontName;
+			if (bookFontName.Length > 0)
+				bookFontName = CleanUpDataForJavascript("\"" + bookFontName + "\", sans-serif");
+			else
+				bookFontName = "sans-serif";
+
+			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", \"" + bookFontName + "\", " + fakeIt + ");}");
 		}
 
 		private void SaveAccordionSettings(string data)

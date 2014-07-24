@@ -8,6 +8,7 @@ var fontsDir = thisDir + "../iconfont/";
 document.write('<script type="text/javascript" src="' + libDir + 'jquery-1.10.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
 document.write('<script type="text/javascript" src="' + libDir + 'jquery-ui-1.10.3.custom.min.js"></script>');//nb: we just rename whatever version of jqueryui we have to this.
 document.write('<link rel="stylesheet" type="text/css" href="' + themeDir + 'bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css">');
+document.write('<link rel="stylesheet" type="text/css" href="' + themeDir + 'bloom-jqueryui-theme/jquery-ui-dialog.custom.css">');
 
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.easytabs.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.hashchange.min.js"></script>');//needed by easytabs

@@ -42,6 +42,13 @@ function processMessage(event) {
             else
                 $('#dlstabs').tabs('option', 'disabled', [1]);
             return;
+
+        case 'Font':
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            style.innerHTML = '.book-font { font-family: ' + params[1] + '; }';
+            document.getElementsByTagName('head')[0].appendChild(style);
+            return;
     }
 }
 
@@ -132,6 +139,9 @@ function loadReaderSetupData(jsonData) {
     if (!data.letters) data.letters = '';
     if (!data.letterCombinations) data.letterCombinations = '';
     if (!data.moreWords) data.moreWords = '';
+    if (!data.stages) data.stages = [];
+    if (!data.levels) data.levels = [];
+
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
@@ -147,7 +157,7 @@ function loadReaderSetupData(jsonData) {
     for (var i = 0; i < stages.length; i++) {
         if (!stages[i].letters) stages[i].letters = '';
         if (!stages[i].sightWords) stages[i].sightWords = '';
-        tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td>' + stages[i].letters + '</td><td>' + stages[i].sightWords + '</td></tr>');
+        tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td></tr>');
     }
 
     // click event for stage rows
@@ -244,7 +254,7 @@ function displayLetters() {
     letters = letters.filter(function(n){ return n !== ''; });
 
     /**
-     * If there are more than 35 letters the parent div containing the letter divs will scroll vertically, so the
+     * If there are more than 42 letters the parent div containing the letter divs will scroll vertically, so the
      * letter divs need to be a different width to accommodate the scroll bar.
      *
      * The suffix 's' stands for 'short', and 'l' stands for 'long.'
@@ -256,14 +266,14 @@ function displayLetters() {
      * letter div class rs-letters-l fit 6 on a row (because of the scroll bar)
      */
     var suffix = 's';
-    if (letters.length > 35) suffix = 'l';
+    if (letters.length > 42) suffix = 'l';
 
     var div = $('#setup-selected-letters');
     div.html('');
     div.removeClass('rs-letter-container-s').removeClass('rs-letter-container-l').addClass('rs-letter-container-' + suffix);
 
     for (var i = 0; i < letters.length; i++) {
-        div.append($('<div class="unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
+        div.append($('<div class="book-font unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
     }
 
     $('div.rs-letters').onOnce('click', function() {
@@ -311,7 +321,7 @@ function updateSightWords(ta) {
 function addNewStage() {
 
     var tbody = $('#stages-table').find('tbody');
-    tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td></td><td></td></tr>');
+    tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td></tr>');
 
     // click event for stage rows
     tbody.find('tr:last').onOnce('click', function() {
@@ -404,7 +414,7 @@ function displayWordsForSelectedStage(wordsStr) {
 
         if (!w.html)
             w.html = $.markupGraphemes(w.GPCForm, desiredGPCs);
-        result += '<div class="word">' + w.html + '</div>';
+        result += '<div class="book-font word">' + w.html + '</div>';
     });
 
     // set the list
