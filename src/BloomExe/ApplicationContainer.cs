@@ -53,7 +53,6 @@ namespace Bloom
 				}).InstancePerLifetimeScope();
 
 				builder.Register(c => LocalizationManager).SingleInstance();
-				builder.Register(c => new DownloadOrderList()).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{
@@ -81,11 +80,6 @@ namespace Bloom
 			}
 
 			public LocalizationManager LocalizationManager;
-
-			public DownloadOrderList DownloadOrderList
-			{
-				get { return _container.Resolve<DownloadOrderList>(); }
-			}
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
