@@ -53,37 +53,36 @@ SynphonyApi.fireCSharpEvent = function(eventName, eventData) {
     document.dispatchEvent(event);
 };
 
-function FindOrCreateConfigDiv(path) {
+/**
+ * Create the configuration dialog
+ * @param {String} path
+ * @param {String} title
+ * @returns {JQuery|*|jQuery|HTMLElement}
+ */
+function FindOrCreateConfigDiv(path, title) {
 
     var dialogContents = $("#synphonyConfig");
     if (!dialogContents.length) {
-        dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
+        dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
 
         var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm');
-        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
+
+        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" ' +
+            'onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\'); ' +
+            'document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Font\\n\' + model.fontName, \'*\');"></iframe>';
+
         dialogContents.append(html);
     }
     return dialogContents;
 }
 
 /**
- * Gets the height of the document, including the non-visible scrolling area, if any.
- * @returns {number}
- */
-function getDocumentHeight() {
-    var body = document.body;
-    var html = document.documentElement;
-
-    return Math.max(body.scrollHeight, body.offsetHeight,
-        html.clientHeight, html.scrollHeight, html.offsetHeight);
-}
-
-/**
  * Show the configuration dialog
+ * @param {String} title The title of the dialog
  */
-SynphonyApi.prototype.showConfigDialog = function() {
+SynphonyApi.prototype.showConfigDialog = function(title) {
 
-    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory());
+    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory(), title);
     var h = 580;
     var w = 720;
 
@@ -102,26 +101,19 @@ SynphonyApi.prototype.showConfigDialog = function() {
     $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
-        buttons: {
-            "OK": function () {
-                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
-            },
-            "Cancel": function () {
-                $(this).dialog("close");
-            }
+        beforeClose: function(e) {
+            var config = $('#synphonyConfig');
+
+            // if this is not the first close attempt, ew already saved, so close.
+            if (config.attr('close')) return;
+
+            // we need to save before closing, so cancel the first attempt and save. C# will close after saving.
+            e.preventDefault();
+            config.attr('close', true);
+            document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
         },
-        close: function () {
-            $(this).remove();
-            $(window).off('resize.readerTools');
-            SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
-        },
-        open: function () {
-            $('#synphonyConfig').css('overflow', 'hidden');
-            $('div.ui-widget-overlay').height(getDocumentHeight());
-            $(window).onOnce('resize.readerTools', function () {
-                $('div.ui-widget-overlay').height(getDocumentHeight());
-            });
-        },
+        close: function () { $(this).remove(); },
+        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
         height: h,
         width: w
     });
@@ -170,10 +162,6 @@ var Stage = function(name) {
 
 Stage.prototype.getName = function() {
     return this.name;
-};
-
-Stage.prototype.getFrequency = function(word) {
-    return this.words[word];
 };
 
 /**
