@@ -112,7 +112,10 @@ SynphonyApi.prototype.showConfigDialog = function(title) {
             config.attr('close', true);
             document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
         },
-        close: function () { $(this).remove(); },
+        close: function() {
+            $(this).remove();
+            SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
+        },
         open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
         height: h,
         width: w
