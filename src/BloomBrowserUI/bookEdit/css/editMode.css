@@ -70,13 +70,21 @@ DIV.pageLabel
 	text-align: left;
 	/*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
 	color: rgba(0, 0, 0, 0.2);
-	margin-left: 5px;
-	/*+placement:anchor-top-left 71px 19px;*/
+	/*+placement:anchor-top-left 0px 19px;*/
 	position: absolute;
-	left: 71px;
+	left: 0;
 	top: 19px;
 	float: left;
 }
+.evenPage DIV.pageLabel
+{
+    margin-left: 2.5cm;
+}
+.oddPage DIV.pageLabel
+{
+    margin-left: 1.3cm;
+}
+
 DIV.ui-tooltip-title
 {
 	text-align: justify;
