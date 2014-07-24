@@ -56,7 +56,8 @@
             this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
-            this._superToolTip = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
+			this._superToolTip = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
+			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
             this._workingIndicator.SuspendLayout();
             this._topBarPanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -165,13 +166,13 @@
             // _contextMenuStrip
             // 
             this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._openinBrowserMenuItem});
-            this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
+            this._openinBrowserMenuItem,
+            this._openPDF});
             this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
             this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
             this._contextMenuStrip.Name = "_contextMenuStrip";
-            this._contextMenuStrip.Size = new System.Drawing.Size(434, 26);
+			this._contextMenuStrip.Size = new System.Drawing.Size(434, 70);
             // 
             // _openinBrowserMenuItem
             // 
@@ -382,10 +383,20 @@
             this._adobeReaderControl.Size = new System.Drawing.Size(716, 537);
             this._adobeReaderControl.TabIndex = 16;
             // 
-            // _superToolTip
-            // 
-            this._superToolTip.FadingInterval = 10;
-            // 
+			// superToolTip1
+			// 
+			this._superToolTip.FadingInterval = 10;
+			// 
+			// _openPDF
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._openPDF, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
+			this._L10NSharpExtender.SetLocalizingId(this._openPDF, ".openThePDFInTheDefaultSystemPdfViewerToolStripMenuItem");
+			this._openPDF.Name = "_openPDF";
+			this._openPDF.Size = new System.Drawing.Size(433, 22);
+			this._openPDF.Text = "Open the PDF in the default system pdf viewer";
+			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
+			// 
             // PublishView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -434,6 +445,7 @@
 		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.CheckBox _showCropMarks;
 		private System.Windows.Forms.RadioButton _uploadRadio;
+		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;
     }
 }
