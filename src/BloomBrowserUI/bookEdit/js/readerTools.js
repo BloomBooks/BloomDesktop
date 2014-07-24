@@ -55,6 +55,10 @@ var ReaderToolsModel = function() {
     this.texts = [];
     this.textCounter = 0;
     this.setupType = '';
+
+    // Please do not remove fontName. It is used, in spite of what WebStorm says.
+    // This is the book font, which is used in the reader setup dialog.
+    this.fontName = '';
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -681,7 +685,8 @@ function initializeLeveledRT() {
  */
 function showSetupDialog(showWhat) {
     model.setupType = showWhat;
-    model.getSynphony().showConfigDialog();
+    var title = 'Set up ' + (showWhat == 'stages' ? 'Decodable' : 'Leveled') + ' Reader Tool';
+    model.getSynphony().showConfigDialog(title);
 }
 
 function DRTState() {
@@ -711,11 +716,14 @@ else {
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
+ * @param {String} fontName The font to use for text boxes and text areas.
  * @param {Boolean} fakeIt
+ * @global {ReaderToolsModel) model
  */
-function initializeSynphony(settingsFileContent, fakeIt) {
+function initializeSynphony(settingsFileContent, fontName, fakeIt) {
 
     var synphony = model.getSynphony();
+    model.fontName = fontName;
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
 
