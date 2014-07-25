@@ -5,7 +5,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using IWshRuntimeLibrary;
 using Palaso.Reporting;
+using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -219,10 +221,18 @@ namespace Bloom.Collection
 		    }
 	    }
 
+	    public event EventHandler<ProjectChangedEventArgs> FolderContentChanged;
+
 		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
 		{
 			_bookInfos = null; // Possibly obsolete; next request will update it.
-			NotifyCollectionChanged();
+			if (FolderContentChanged != null)
+				FolderContentChanged(this, new ProjectChangedEventArgs() {Path = fileSystemEventArgs.FullPath});
 		}
     }
+
+	public class ProjectChangedEventArgs : EventArgs
+	{
+		public string Path { get; set; }
+	}
 }

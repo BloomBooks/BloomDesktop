@@ -126,7 +126,7 @@ namespace BloomTests.Book
 			var collection = new BookCollection(temp.Path, BookCollection.CollectionType.SourceCollection, null);
 			collection.WatchDirectory();
 			bool gotNotification = false;
-			collection.CollectionChanged += (sender, args) =>
+			collection.FolderContentChanged += (sender, args) =>
 			{
 				gotNotification = true;
 			};

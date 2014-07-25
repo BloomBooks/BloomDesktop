@@ -117,18 +117,21 @@ namespace Bloom
 						// Otherwise, carry on with starting up normally.
 						if (TryToGrabMutexForBloom())
 							FinishStartup();
+						else
+						{
+							_onlyOneBloomMutex = null; // we don't own it, so ReleaseMutexForBloom must not try to release it.
+							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+							string message = LocalizationManager.GetString("Download.Completed",
+								@"Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. "
+								+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+							message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+							MessageBox.Show(message, caption);
+						}
 						return;
 					}
 
-#if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
-                    if (args.Length > 1)
-                        Thread.Sleep(3000);
-                            //this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
-
-#else
                     if (!GrabMutexForBloom())
     					return;
-#endif
 
                     OldVersionCheck();
 
@@ -405,20 +408,13 @@ namespace Bloom
 		private static bool TryToGrabMutexForBloom()
 		{
 			bool mutexAcquired = false;
-			try
+			_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
+			if (!mutexAcquired)
 			{
-				_onlyOneBloomMutex = Mutex.OpenExisting(_mutexId);
-				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1*1000), false);
+				// Already existed...see if we can get it.
+				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
 			}
-			catch (WaitHandleCannotBeOpenedException e) //doesn't exist, we're the first.
-			{
-				_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
-				mutexAcquired = true;
-			}
-			catch (AbandonedMutexException e)
-			{
-				//that's ok, we'll try again if appropriate			   
-			}
+
 			return mutexAcquired;
 		}
 

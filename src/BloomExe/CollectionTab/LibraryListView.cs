@@ -398,7 +398,7 @@ namespace Bloom.CollectionTab
             if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
             {
 	            _downloadedBookCollection = collection;
-                collection.CollectionChanged += DownLoadedBooksChanged;
+                collection.FolderContentChanged += DownLoadedBooksChanged;
                 collection.WatchDirectory(); // In case another instance downloads a book.
                 var bloomLibrayLink = new LinkLabel()
                 {
@@ -432,7 +432,7 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="eventArgs"></param>
-		private void DownLoadedBooksChanged(object sender, EventArgs eventArgs)
+		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
 		{
 			Invoke((Action) (() =>
 			{
@@ -453,28 +453,37 @@ namespace Bloom.CollectionTab
 					_newDownloadTimer.Stop();
 					_newDownloadTimer.Dispose();
 					_newDownloadTimer = null;
-					UpdateDownloadedBooks(sender);
+					UpdateDownloadedBooks(eventArgs.Path);
 				};
 				_newDownloadTimer.Interval = 500;
 				_newDownloadTimer.Start();
 			}));
 		}
 
-		private void UpdateDownloadedBooks(object sender)
-		{
-			var collection = sender as BookCollection;
-			var newBook = GetBookAddedSinceButtonsWereMade(collection);
-			if (newBook != null)
-			{
-				// It's always worth reloading...maybe we didn't have a button before because it was not
-				// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
-				// other way...we want the button to have valid metadata for the book.
-				// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
-				LoadSourceCollectionButtons();
-				if (Enabled)
-					SelectBook(newBook);
-			}
-		}
+	    private void UpdateDownloadedBooks(string pathToChangedBook)
+	    {
+			var newBook = new BookInfo(pathToChangedBook, false);
+		    // It's always worth reloading...maybe we didn't have a button before because it was not
+		    // suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+		    // other way...we want the button to have valid metadata for the book.
+		    // Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+		    LoadSourceCollectionButtons();
+		    if (Enabled && CollectionTabIsActive)
+			    SelectBook(newBook);
+	    }
+
+	    /// <summary>
+		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
+		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
+		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
+		/// (although Visible is still true!) and we should not try to switch.
+		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
+		/// be dangerous.
+		/// </summary>
+	    private bool CollectionTabIsActive
+	    {
+		    get { return Parent.Parent.Parent.Parent != null; }
+	    }
 
         private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
     	{
@@ -546,39 +555,6 @@ namespace Bloom.CollectionTab
     	private void OnCollectionChanged(object sender, EventArgs e)
     	{
     		_primaryCollectionReloadPending = true;
-		}
-
-		/// <summary>
-		/// If there is a book in the collection which has no button but should have one, return it.
-		/// It is of course possible that there is more than one new book, in which case we will pick one arbitrarily.
-		/// If the user downloads several very close together, we will get a notification for each,
-		/// but we may not have time to rebuild the list for each. The selection will change as rapidly as we can
-		/// update (or at least as often as we go half a second without being notified of a new book).
-		/// It should stabilize on one of the most recent new books, but just possibly not the very most recent.
-		/// If we want to do better than this (or to select a book that was downloaded but not new), we will need
-		/// to process information about what changed from the file watcher event.
-		/// </summary>
-		/// <param name="collection"></param>
-		/// <returns></returns>
-		private BookInfo GetBookAddedSinceButtonsWereMade(BookCollection collection)
-		{
-			var pathsWithButtons = new HashSet<string>();
-			foreach (var item in _sourceBooksFlow.Controls)
-			{
-				var button = item as Button;
-				if (button == null)
-					continue;
-				var info = button.Tag as BookInfo;
-				if (info == null)
-					continue;
-				pathsWithButtons.Add(info.FolderPath);
-			}
-			foreach (var book in collection.GetBookInfos())
-			{
-				if (!pathsWithButtons.Contains(book.FolderPath) && IsSuitableSourceForThisEditableCollection(book))
-					return book;
-			}
-			return null;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)
@@ -851,7 +827,7 @@ namespace Bloom.CollectionTab
 	        if (disposing && _downloadedBookCollection != null)
 	        {
 		        _downloadedBookCollection.StopWatchingDirectory();
-		        _downloadedBookCollection.CollectionChanged -= DownLoadedBooksChanged;
+		        _downloadedBookCollection.FolderContentChanged -= DownLoadedBooksChanged;
 	        }
 	        base.Dispose(disposing);
             _disposed = true;
