@@ -248,6 +248,20 @@
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\ConversionOrder.cs" />
+    <Compile Include="Publish\ConversionProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\ConversionProgress.Designer.cs">
+      <DependentUpon>ConversionProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\GeckofxHtmlToPDFComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Publish\GeckofxHtmlToPDFComponent.Designer.cs">
+      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfComponent.cs" />
     <Compile Include="Publish\PdfViewer.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -549,6 +563,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\ConversionProgress.resx">
+      <DependentUpon>ConversionProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\GeckofxHtmlToPDFComponent.resx">
+      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PdfViewer.resx">
       <DependentUpon>PdfViewer.cs</DependentUpon>

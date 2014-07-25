@@ -93,7 +93,7 @@ namespace Bloom.Publish
 		}
 
 
-		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
+		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
@@ -111,7 +111,7 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-					                  layoutMethod, BookletPortion, doWorkEventArgs);
+                                      layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 				}
 			}
 			catch (Exception e)
@@ -132,10 +132,6 @@ namespace Bloom.Publish
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
             HtmlDom.AddPublishClassToBody(dom);
-            //HtmlDom.AddWebkitClassToBody(dom);
-
-			//wkhtmltopdf can't handle file://
-			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
