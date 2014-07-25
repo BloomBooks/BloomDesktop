@@ -141,15 +141,11 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
             this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
-#if !__MonoCS__ // Hide booklet options on Linux until we get a port of PdfDroplet
             this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 2);
-#endif
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 6);
-#if !__MonoCS__ // Hide booklet options on Linux until we get a port of PdfDroplet
             this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
-#endif
             this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
