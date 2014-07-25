@@ -35,8 +35,12 @@ namespace Bloom.Publish
 			_loginDialog = login;
 
 			InitializeComponent();
+#if __MonoCS__ // Hide booklet options on Linux until we get a port of PdfDroplet
+			tableLayoutPanel1.Controls.Remove(_bookletCoverRadio);
+			tableLayoutPanel1.Controls.Remove(_bookletBodyRadio);
+#endif
 
-			if(this.DesignMode)
+			if (this.DesignMode)
 				return;
 
 			_model = model;
