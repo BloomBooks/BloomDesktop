@@ -91,7 +91,7 @@ TEXTAREA
 	position: relative;
 }
 /*Image On Top*/
-DIV.imageOnTop DIV.bloom-imageContainer
+.imageOnTop .bloom-imageContainer
 {
 	width: 100%;
 	height: 45% !important;
@@ -103,13 +103,13 @@ DIV.imageOnTop DIV.bloom-imageContainer
 {
 	display: table;
 }
-.imageOnTop.layout-style-BottomAlign DIV.bloom-editable
+.imageOnTop.layout-style-BottomAlign .bloom-editable
 {
 	vertical-align: bottom;
 	display: table-cell;
 }
 /*------A4L Side-by-side common*/
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
+.imageOnTop.A4Landscape.layout-style-SideBySide .bloom-imageContainer
 {
 	width: 48%;
 	/*+placement:anchor-top-left 0 0;*/
@@ -119,7 +119,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	height: 100% !important;
 	/*[disabled]border:1px solid #000000;*/
 }
-.imageOnBottom.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer
+.imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-imageContainer
 {
 	width: 48%;
 	height: 100%;
@@ -129,7 +129,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	left: 0px !important;
 	top: 0px !important;
 }
-.imageOnBottom.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
+.imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-translationGroup
 {
 	height: 17.8cm !important;
 	width: 45%;
@@ -142,7 +142,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 {
 	height: 17.7cm !important;
 }
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup
+.imageOnTop.A4Landscape.layout-style-SideBySide .bloom-translationGroup
 {
 	height: 100% !important;
 	width: 45%;
@@ -151,7 +151,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	left: 549px !important;
 	top: 2px !important;
 }
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable
+.imageOnTop.A4Landscape.layout-style-SideBySide .bloom-editable
 {
 	/*[disabled]height:33%;*/
 	/*[disabled]width:45%;*/
@@ -163,7 +163,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	height: 8cm !important;
 }
 /*.......A4L Stacked*/
-.imageOnTop.A4Landscape DIV.bloom-imageContainer
+.imageOnTop.A4Landscape .bloom-imageContainer
 {
 	width: 100%;
 	/*+placement:anchor-top-left 0 0;*/
@@ -173,7 +173,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 	height: 70%;
 	/*[disabled]border:1px solid #000000;*/
 }
-.imageOnTop.layout-style-SplitAcrossPages DIV.bloom-imageContainer
+.imageOnTop.layout-style-SplitAcrossPages .bloom-imageContainer
 {
 	width: 100%;
 	height: 100% !important;
@@ -195,7 +195,7 @@ DIV.imageOnTop DIV.bloom-imageContainer
 {
 	font-size: 300%;
 }
-DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
+.imageOnTop.A4Landscape .bloom-translationGroup
 {
 	height: 53% !important;
 	/*+placement:anchor-bottom-left 0 0;*/
@@ -204,16 +204,16 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
-.imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable.bloom-content1
+.imageOnTop.A4Landscape.bloom-monolingual .bloom-editable.bloom-content1
 {
 	height: 100%;
 }
-.imageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable.bloom-content2
+.imageOnTop.A4Landscape.bloom-bilingual .bloom-editable.bloom-content2
 {
 	height: 4.5cm;
 	/*[disabled]+placement:anchor-bottom-left 0px 0px;*/
 }
-.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer
+.imageOnTop.A4Landscape.bloom-trilingual .bloom-imageContainer
 {
 	width: 100%;
 	/*+placement:anchor-top-left 0 0;*/
@@ -223,7 +223,7 @@ DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup
 	height: 33% !important;
 	/*[disabled]border:1px solid #000000;*/
 }
-DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
+.imageOnTop.A4Landscape.bloom-trilingual .bloom-translationGroup
 {
 	height: 63% !important;
 	/*+placement:anchor-bottom-left 0 0;*/
@@ -232,20 +232,20 @@ DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
-DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
+.imageOnTop.A4Landscape.bloom-trilingual .bloom-editable
 {
 	/*[disabled]+placement:anchor-top-left 549px 2px;*/
 	width: 100%;
 	height: 30%;
 }
 /*...... A5P mono*/
-.imageOnTop.bloom-monolingual DIV.bloom-editable
+.imageOnTop.bloom-monolingual .bloom-editable
 {
 	/*[disabled]height:100%;*/
 	/*[disabled]width:100%;*/
 	/*[disabled]display:table-cell;*/
 }
-DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
+.imageOnTop.A5Portrait.bloom-monolingual .bloom-translationGroup
 {
 	height: 48% !important;
 	width: 100%;
@@ -254,7 +254,7 @@ DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 	left: 0;
 	bottom: 0;
 }
-DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
+.imageOnTop.A4Portrait.bloom-monolingual .bloom-translationGroup
 {
 	height: 48% !important;
 	width: 100%;
@@ -264,7 +264,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 }
 /*........bilingual, placing 1st lang on top, 2nd below the picture*/
-.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer
+.imageOnTop.A5Portrait.bloom-bilingual .bloom-imageContainer
 {
 	height: 30% !important;
 	/*+placement:anchor-top-left 0px 228px;*/
@@ -272,7 +272,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	left: 0px;
 	top: 228px;
 }
-.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-translationGroup
+.imageOnTop.A5Portrait.bloom-bilingual .bloom-translationGroup
 {
 	height: 100%;
 	/*+placement:anchor-bottom-left 0 0;*/
@@ -281,7 +281,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
-.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer
+.imageOnTop.A4Portrait.bloom-bilingual .bloom-imageContainer
 {
 	height: 30% !important;
 	/*+placement:anchor-top-left 0px 35%;*/
@@ -289,7 +289,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	left: 0px;
 	top: 35%;
 }
-.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-translationGroup
+.imageOnTop.A4Portrait.bloom-bilingual .bloom-translationGroup
 {
 	height: 100%;
 	/*+placement:anchor-bottom-left 0 0;*/
@@ -298,11 +298,11 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
-.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content1
+.imageOnTop.bloom-bilingual .bloom-editable.bloom-content1
 {
 	height: 30%;
 }
-.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2
+.imageOnTop.bloom-bilingual .bloom-editable.bloom-content2
 {
 	height: 30%;
 	/*+placement:anchor-bottom-left 0px 0px;*/
@@ -311,7 +311,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0px;
 }
 /*--------trilingual, with 1st lang on top, 2nd and 3rd below the picture*/
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-imageContainer
 {
 	height: 27% !important;
 	/*+placement:anchor-top-left 1px 196px;*/
@@ -319,7 +319,7 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	left: 1px;
 	top: 196px;
 }
-DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-translationGroup
 {
 	height: 100%;
 	/*+placement:anchor-bottom-left 0 0;*/
@@ -332,7 +332,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 {
 	height: 26%;
 }
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content2
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-editable.bloom-content2
 {
 	height: 19%;
 	/*+placement:shift 0 33%;*/
@@ -340,7 +340,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 	left: 0;
 	top: 33%;
 }
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content3
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-editable.bloom-content3
 {
 	height: 19%;
 	/*+placement:shift 0px 33%;*/
@@ -351,27 +351,27 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 	margin-top: 12px;
 }
 /*Image In Middle*/
-DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV
+.imageInMiddle.bloom-monolingual .bloom-translationGroup DIV
 {
 	height: 100% !important;
 	width: 100%;
 }
-DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV
+.imageInMiddle.bloom-bilingual .bloom-translationGroup DIV
 {
 	height: 50% !important;
 	width: 100%;
 }
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
+.imageInMiddle.bloom-trilingual .bloom-translationGroup DIV
 {
 	height: 33% !important;
 	width: 100%;
 }
-DIV.imageInMiddle DIV.bloom-translationGroup.top
+.imageInMiddle .bloom-translationGroup.top
 {
 	height: 30%;
 	width: 100%;
 }
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
+.imageInMiddle.bloom-trilingual .bloom-translationGroup.top
 {
 	height: 6.9cm;
 	width: 488px;
@@ -380,7 +380,7 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
 	left: 26px;
 	top: 30px;
 }
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top
+.imageInMiddle.bloom-trilingual.A4Landscape .bloom-translationGroup.top
 {
 	height: 8.8cm;
 	width: 488px;
@@ -389,7 +389,7 @@ DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top
 	left: 0;
 	top: 0;
 }
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
+.imageInMiddle.bloom-trilingual.A4Landscape .bloom-translationGroup.bottom
 {
 	height: 9.1cm;
 	width: 488px;
@@ -398,13 +398,13 @@ DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
 	left: 1px;
 	top: 365px;
 }
-DIV.imageInMiddle DIV.bloom-imageContainer
+.imageInMiddle .bloom-imageContainer
 {
 	width: 100%;
 	height: 30%;
 	margin-top: 30px;
 }
-DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer
+.imageInMiddle.bloom-trilingual.layout-style-SideBySide .bloom-imageContainer
 {
 	/*+placement:anchor-top-left 549px -29px;*/
 	position: absolute !important;
@@ -413,7 +413,7 @@ DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContai
 	height: 100%;
 	width: 45%;
 }
-DIV.imageInMiddle DIV.bloom-translationGroup.bottom
+.imageInMiddle .bloom-translationGroup.bottom
 {
 	height: 30%;
 	width: 100%;
@@ -422,7 +422,7 @@ DIV.imageInMiddle DIV.bloom-translationGroup.bottom
 	left: 0;
 	bottom: 0;
 }
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
+.imageInMiddle.bloom-trilingual .bloom-translationGroup.bottom
 {
 	height: 6.5cm;
 	width: 478px;
@@ -432,7 +432,7 @@ DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
 	top: 490px;
 }
 /*Image On Bottom*/
-DIV.imageOnBottom DIV.bloom-translationGroup
+.imageOnBottom .bloom-translationGroup
 {
 	width: 100%;
 	height: 50%;
@@ -441,22 +441,22 @@ DIV.imageOnBottom DIV.bloom-translationGroup
 	left: 0;
 	top: 0;
 }
-.imageOnBottom DIV.bloom-translationGroup DIV
+.imageOnBottom .bloom-translationGroup DIV
 {
 	height: 100%;
 	width: 100%;
 }
-.imageOnBottom.bloom-bilingual DIV.bloom-translationGroup DIV
+.imageOnBottom.bloom-bilingual .bloom-translationGroup DIV
 {
 	height: 50%;
 	width: 100%;
 }
-.imageOnBottom.bloom-trilingual DIV.bloom-translationGroup DIV
+.imageOnBottom.bloom-trilingual .bloom-translationGroup DIV
 {
 	height: 33%;
 	width: 100%;
 }
-.imageOnBottom DIV.bloom-imageContainer
+.imageOnBottom .bloom-imageContainer
 {
 	height: 45%;
 	width: 100%;
@@ -466,7 +466,7 @@ DIV.imageOnBottom DIV.bloom-translationGroup
 	bottom: 0px;
 }
 /*Image Whole Page*/
-DIV.imageWholePage DIV.bloom-imageContainer
+.imageWholePage .bloom-imageContainer
 {
 	width: 100%;
 	height: 100%;
@@ -476,7 +476,7 @@ DIV.imageWholePage DIV.bloom-imageContainer
 	height: 18.9cm;
 	margin-top: 1cm;
 }
-DIV.imageWholePage IMG
+.imageWholePage IMG
 {
 	display: table-cell;
 	/*doesn't work*/
@@ -486,30 +486,30 @@ DIV.imageWholePage IMG
 	/*marginBox takes care of this*/
 	/*[disabled]max-width:12.2cm;*/
 }
-DIV.imageWholePage TD
+.imageWholePage TD
 {
 	text-align: center;
 }
-DIV.imageWholePage TABLE
+.imageWholePage TABLE
 {
 	width: 556px;
 	height: 786px;
 }
 /*Text Whole Page
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
-DIV.textWholePage DIV.bloom-translationGroup
+.textWholePage .bloom-translationGroup
 {
 	width: 100%;
 	max-height: 100%;
 	/*[disabled]overflow:hidden;*/
 }
-DIV.textWholePage DIV.bloom-translationGroup DIV
+.textWholePage .bloom-translationGroup DIV
 {
 	min-height: 67px;
 	/*[disabled]height:30%;*/
 }
 /*Picture and Word Page*/
-.pictureAndWordPage DIV.bloom-translationGroup
+.pictureAndWordPage .bloom-translationGroup
 {
 	width: 100%;
 	text-align: center;
