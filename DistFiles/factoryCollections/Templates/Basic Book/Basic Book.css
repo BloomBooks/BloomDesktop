@@ -279,7 +279,6 @@ DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable
 }
 DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 {
-	height: 48% !important;
 	width: 100%;
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
@@ -468,10 +467,6 @@ DIV.imageOnBottom DIV.bloom-translationGroup
 {
 	width: 100%;
 	height: 50%;
-	/*+placement:anchor-top-left;*/
-	position: absolute;
-	left: 0;
-	top: 0;
 }
 .imageOnBottom DIV.bloom-translationGroup DIV
 {

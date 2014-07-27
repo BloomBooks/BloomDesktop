@@ -1,11 +1,11 @@
 $(function() {
 
     // We stick a horizontalSplitter in between pairs of objects with the heightAdjustable class
-    $('.heightAdjustable').each(function(){
-        if($(this).next().hasClass('heightAdjustable')){
-            $(this).after("<div class='horizontalSplitter'></div>");
-        }
-    });
+//    $('.heightAdjustable').each(function(){
+//        if($(this).next().hasClass('heightAdjustable')){
+//            $(this).after("<div class='horizontalSplitter'></div>");
+//        }
+//    });
     $('.bloom-translationGroup, .bloom-imageContainer').each(function(){
         var page = $(this).closest('.bloom-page')[0];
 //      Limit to descendants of Basic Book: if(page.id.indexOf('5dcd48df')!=0 &&
@@ -45,6 +45,7 @@ $(function() {
             var h = $(self.bottomElement).height();
             //$(self.bottomElement).height(bottomHeight + 'px');
             $(self.bottomElement).css('height',bottomHeight + 'px');
+            //$(self.bottomElement).css('height','50px');
             console.log(h+"-->"+bottomHeight+" actual:"+$(self.bottomElement).height());
             self.lastY = event.clientY;
         };
