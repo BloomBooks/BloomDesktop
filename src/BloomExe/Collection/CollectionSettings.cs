@@ -226,7 +226,10 @@ namespace Bloom.Collection
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
 				sb.AppendLine();
-				sb.AppendLine("BODY");
+
+				// Font not being applied inside scoped div
+				//sb.AppendLine("BODY");
+				sb.AppendLine("*");
 				sb.AppendLine("{");
 				sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
 				sb.AppendLine("}");
