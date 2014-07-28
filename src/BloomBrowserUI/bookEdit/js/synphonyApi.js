@@ -101,16 +101,13 @@ SynphonyApi.prototype.showConfigDialog = function(title) {
     $(dialogContents).dialog({
         autoOpen: "true",
         modal: "true",
-        beforeClose: function(e) {
-            var config = $('#synphonyConfig');
-
-            // if this is not the first close attempt, ew already saved, so close.
-            if (config.attr('close')) return;
-
-            // we need to save before closing, so cancel the first attempt and save. C# will close after saving.
-            e.preventDefault();
-            config.attr('close', true);
-            document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+        buttons: {
+            "OK": function () {
+                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+            },
+            "Cancel": function () {
+                $(this).dialog("close");
+            }
         },
         close: function() {
             $(this).remove();
