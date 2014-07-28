@@ -37,10 +37,14 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
+            var tabs = $('#dlstabs');
             if (params[1] === 'stages')
-                $('#dlstabs').tabs('option', 'disabled', [2]);
-            else
-                $('#dlstabs').tabs('option', 'disabled', [1]);
+                tabs.tabs('option', 'disabled', [2]);
+            else {
+                tabs.tabs('option', 'disabled', [0, 1]);
+                tabs.tabs('option', 'active', 2);
+            }
+
             return;
 
         case 'Font':
