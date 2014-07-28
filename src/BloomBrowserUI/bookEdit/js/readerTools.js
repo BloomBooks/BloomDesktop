@@ -416,7 +416,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.currentMarkupType === MarkupType.None) return;
 
-    var editableElements = $(".bloom-editable");
+    var editableElements = $(".bloom-content1");
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
