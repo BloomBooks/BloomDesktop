@@ -1,4 +1,4 @@
-div.ui-dialog { background: #ddd; padding: 0; }
+div.ui-dialog, div.ui-dialog-buttonpane { background: #ddd; padding: 0; }
 div.ui-dialog a { color: #000; outline: 0; }
 div.ui-dialog a.blue-link { color: #2392db; }
 div.ui-dialog textarea, div.ui-dialog input[type="text"] { border: 1px solid #999; }
@@ -11,7 +11,7 @@ div.ui-dialog div.ui-dialog-titlebar {
 	border-bottom: 1px solid #666;
 }
 
-div.ui-dialog div.ui-dialog-content { background: #ddd; padding: 0; margin: 0 0 16px 0; border-bottom: 1px solid #666; }
+div.ui-dialog div.ui-dialog-content { background: #ddd; padding: 0; margin: 0; border-bottom: 1px solid #666; }
 
 div.ui-dialog button.ui-dialog-titlebar-close {
 	background: #aaa;
@@ -20,6 +20,14 @@ div.ui-dialog button.ui-dialog-titlebar-close {
 }
 
 div.ui-dialog div.ui-dialog-titlebar .ui-icon-closethick { background-position: -96px -128px; }
+
+div.ui-dialog div.ui-dialog-buttonpane { margin: -1px 0 0; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-button { padding: 0; margin: 4px 0 4px 6px; background: #999; color: #ccc; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover,
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-focus { background: #999; border: 1px solid #666; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover { color: #fff; }
+
+div.ui-dialog div.ui-dialog-buttonset button.ui-button span.ui-button-text { padding: 3px 10px; }
 
 /*
  * based on: jQuery UI Tabs 1.8.16
