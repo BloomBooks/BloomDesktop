@@ -22,10 +22,6 @@ function processMessage(event) {
         case 'Data':
             loadReaderSetupData(params[1]);
             window.parent.postMessage('SetupType', '*');
-
-            // initialize the selected letters
-            $('#stages-table').find('tbody tr:first').click();
-            $('#levels-table').find('tbody tr:first').click();
             return;
 
         case 'Files':
@@ -37,10 +33,23 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
-            if (params[1] === 'stages')
+            if (params[1] === 'stages') {
                 $('#dlstabs').tabs('option', 'disabled', [2]);
-            else
+                var firstStage = $('#stages-table').find('tbody tr:first');
+                if (firstStage && (firstStage.length === 0))
+                    addNewStage();
+                else
+                    firstStage.click(); // select the first stage
+            }
+            else {
                 $('#dlstabs').tabs('option', 'disabled', [1]);
+                var firstLevel = $('#levels-table').find('tbody tr:first');
+                if (firstLevel && (firstLevel.length === 0))
+                    addNewLevel();
+                else
+                    firstLevel.click(); // select the first level
+            }
+
             return;
 
         case 'Font':
