@@ -77,7 +77,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt2
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>"Mercurial", "MercurialExtensions/**"=>"MercurialExtensions"}
+#     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>".", "MercurialExtensions/**"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
 # [2] build: geckofx-11 Continuous (bt143)
 #     project: GeckoFx
@@ -205,6 +205,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
-unzip -uqo ../Downloads/Mercurial.zip -d ../Mercurial
+unzip -uqo ../Downloads/Mercurial.zip -d ../.
 unzip -uqo ../Downloads/xulrunner-11.0.en-US.win32.zip -d ../lib
 # End of script
