@@ -16,6 +16,7 @@ tr.selected { background-color: #fff0b3 !important; cursor: pointer; }
 .tab-list-container { width: 100%; }
 .tab-list { border: thin solid #666; -moz-user-select: none; width: 100%; }
 .ui-tabs .ui-state-disabled { display: none; }
+textarea { resize: none; }
 
 .tab-detail {
     border: 0;
