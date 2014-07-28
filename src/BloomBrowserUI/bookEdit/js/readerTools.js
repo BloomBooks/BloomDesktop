@@ -717,30 +717,14 @@ else {
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
  * @param {String} fontName The font to use for text boxes and text areas.
- * @param {Boolean} fakeIt
  * @global {ReaderToolsModel) model
  */
-function initializeSynphony(settingsFileContent, fontName, fakeIt) {
+function initializeSynphony(settingsFileContent, fontName) {
 
     var synphony = model.getSynphony();
     model.fontName = fontName;
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
-
-    if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
-
-        var settings = {};
-        settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z';
-        settings.letterCombinations = 'th oo ing';
-        settings.moreWords = 'the cat sat on the mat the rat sat on the cat cats and dogs eat rats rats eat lots this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns';
-        settings.stages = [];
-
-        settings.stages.push({"letters":"a c m r t","sightWords":"feline canine"});
-        settings.stages.push({"letters":"d g o e s","sightWords":"carnivore omnivore"});
-        settings.stages.push({"letters":"h i j n th","sightWords":"rodent"});
-
-        synphony.loadSettings(JSON.stringify(settings));
-    }
 
     model.updateControlContents();
 
