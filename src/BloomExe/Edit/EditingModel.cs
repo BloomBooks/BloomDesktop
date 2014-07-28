@@ -451,18 +451,14 @@ namespace Bloom.Edit
 				decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
 
 			var input = CleanUpJsonDataForJavascript(decodableLeveledSettings);
-#if DEBUG
-			var fakeIt = "true";
-#else
-			var fakeIt = "false";
-#endif
+
 			var bookFontName = _currentlyDisplayedBook.CollectionSettings.DefaultLanguage1FontName;
 			if (bookFontName.Length > 0)
 				bookFontName = CleanUpDataForJavascript("\"" + bookFontName + "\", sans-serif");
 			else
 				bookFontName = "sans-serif";
 
-			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", \"" + bookFontName + "\", " + fakeIt + ");}");
+			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", \"" + bookFontName + "\");}");
 		}
 
 		private void SaveAccordionSettings(string data)
