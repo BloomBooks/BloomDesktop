@@ -99,15 +99,22 @@ function requestPanel(checkBoxId, panelId) {
 
 function loadAccordionPanel(newContent, panelId) {
 
-    var elements = $.parseHTML(newContent, document, true);
+    var div = $.parseHTML(newContent, document, true);
+    var accordion = $('#accordion');
+    var order, insertBefore;
 
-    $.each(elements, function() {
+    $.each(div, function() {
 
-            $(this).data('panelId', panelId);
-            $(this).insertBefore('#accordion-settings-header');
+        // where should this panel be inserted?
+        if (!order) {
+            order = $(this).data('order');
+            insertBefore = accordion.children().filter(function() { return $(this).data('order') > order; }).first();
+        }
+
+        $(this).data('panelId', panelId);
+        $(this).insertBefore(insertBefore);
     });
 
-    var accordion = $('#accordion');
     accordion.accordion('refresh');
 
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
