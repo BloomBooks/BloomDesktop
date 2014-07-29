@@ -3,8 +3,10 @@
 var BloomAccordion = (function () {
     function BloomAccordion() {
         $("#accordion").accordion({
-            heightStyle: "fill"
+            heightStyle: "fill",
+            collapsible: true
         });
+        $("#accordion").accordion('option', 'active', false);
     }
     BloomAccordion.Resize = function () {
         $("#accordion").accordion("refresh");

@@ -5,6 +5,8 @@
  */
 var checkMarkString = '&#10004;';
 
+var showingPanel = false;
+
 /**
  * Fires an event for C# to handle
  * @param {String} eventName
@@ -28,7 +30,10 @@ function showOrHidePanel_click(chkbox) {
 
         chkbox.innerHTML = checkMarkString;
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t1");
-        if (panel) fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
+        if (panel) {
+            showingPanel = true;
+            fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
+        }
     }
     else {
         chkbox.innerHTML = '';
@@ -109,7 +114,12 @@ function loadAccordionPanel(newContent, panelId) {
 
     var accordion = $('#accordion');
     accordion.accordion('refresh');
-
+    if (showingPanel) {
+        showingPanel = false;
+        var count = accordion.find('> h3').length;
+        if (count > 1)
+            accordion.accordion('option', 'active', count - 2);
+    }
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
         if (ui.newHeader.data('panelId'))
