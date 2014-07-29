@@ -1024,9 +1024,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <ItemGroup>
+    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css"/>
+  </ItemGroup>
+  <ItemGroup>
     <SourceFiles Include="../../lib/dotnet/*.config"/>
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader"/>
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader"/>
   </Target>
 </Project>
