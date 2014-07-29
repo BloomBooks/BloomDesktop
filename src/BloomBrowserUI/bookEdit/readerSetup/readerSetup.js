@@ -33,8 +33,9 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
-            if (params[1] === 'stages') {
-                $('#dlstabs').tabs('option', 'disabled', [2]);
+            var tabs = $('#dlstabs');
+            if (params[1] === 'stages')
+                tabs.tabs('option', 'disabled', [2]);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
                     addNewStage();
@@ -42,7 +43,8 @@ function processMessage(event) {
                     firstStage.click(); // select the first stage
             }
             else {
-                $('#dlstabs').tabs('option', 'disabled', [1]);
+                tabs.tabs('option', 'disabled', [0, 1]);
+                tabs.tabs('option', 'active', 2);
                 var firstLevel = $('#levels-table').find('tbody tr:first');
                 if (firstLevel && (firstLevel.length === 0))
                     addNewLevel();
