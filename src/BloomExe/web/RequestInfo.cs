@@ -46,13 +46,21 @@ namespace Bloom.web
 
 		public void ReplyWithFileContent(string path)
 		{
-			var buffer = new byte[1024*512]; //512KB
-			using ( var fs = File.OpenRead(path))
+			var buffer = new byte[1024 * 512]; //512KB
+			var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+
+			using (var fs = File.OpenRead(path))
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
-				int read;
-				while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
-					_actualContext.Response.OutputStream.Write(buffer, 0, read); 
+				_actualContext.Response.AppendHeader("Last-Modified", lastModified);
+
+				if (_actualContext.Request.HttpMethod != "HEAD")
+				{
+					int read;
+					while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+						_actualContext.Response.OutputStream.Write(buffer, 0, read);
+				}
+
 			}
 
 			_actualContext.Response.OutputStream.Close();
