@@ -97,17 +97,46 @@ TEXTAREA {
   height: 1.6cm;
   position: relative;
 }
-.imageOnTop .bloom-imageContainer {
+.bloom-translationGroup {
   width: 100%;
+}
+._topLeft {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+._bottomLeft {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+}
+.imageOnTop .bloom-imageContainer {
   height: 45% !important;
   z-index: 1000;
+  width: 100%;
+}
+.imageOnTop.bloom-bilingual .bloom-editable {
+  height: 30%;
+}
+.imageOnTop.bloom-bilingual .bloom-editable.bloom-content1 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+.imageOnTop.bloom-bilingual .bloom-editable.bloom-content2 {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+}
+.imageOnTop.bloom-trilingual .bloom-editable {
+  height: 26%;
 }
 .imageOnTop.layout-style-BottomAlign .bloom-translationGroup {
   display: table;
 }
 .imageOnTop.layout-style-BottomAlign .bloom-editable {
   vertical-align: bottom;
-  display: table-cell;
+  display: table-cell !important;
 }
 .imageOnTop.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
   width: 48%;
@@ -171,15 +200,9 @@ TEXTAREA {
   height: 30%;
 }
 .imageOnTop.layout-style-SplitAcrossPages .bloom-imageContainer {
-  width: 100%;
   height: 100% !important;
 }
 .imageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup {
-  width: 100%;
-  /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-  /*[disabled]position:relative;*/
-  /*So instead, we're settling for starting the text part of the way down*/
-  position: relative !important;
   display: block !important;
   position: absolute;
   left: 0px;
@@ -190,10 +213,9 @@ TEXTAREA {
 }
 .imageOnTop.A5Portrait.bloom-monolingual .bloom-translationGroup {
   height: 48% !important;
-  width: 100%;
   position: absolute;
-  left: 0;
-  bottom: 0;
+  left: 0px;
+  bottom: 0px;
 }
 .imageOnTop.A5Portrait.bloom-bilingual .bloom-imageContainer {
   height: 30% !important;
@@ -204,42 +226,45 @@ TEXTAREA {
 .imageOnTop.A5Portrait.bloom-bilingual .bloom-translationGroup {
   height: 100%;
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+  left: 0px;
+  bottom: 0px;
 }
 .imageOnTop.A5Portrait.bloom-trilingual .bloom-imageContainer {
-  height: 27% !important;
+  height: 22.8% !important;
   position: absolute;
-  left: 1px;
-  top: 196px;
+  left: 0px;
+  top: topPercent;
 }
 .imageOnTop.A5Portrait.bloom-trilingual .bloom-translationGroup {
   height: 100%;
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+  left: 0px;
+  top: 0px;
+}
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-editable {
+  height: 22.8%;
+  display: block;
+}
+.imageOnTop.A5Portrait.bloom-trilingual .bloom-editable.bloom-content1 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
 }
 .imageOnTop.A5Portrait.bloom-trilingual .bloom-editable.bloom-content2 {
-  height: 19%;
-  position: relative;
+  position: absolute;
   left: 0;
-  top: 33%;
+  top: 51.6%;
 }
 .imageOnTop.A5Portrait.bloom-trilingual .bloom-editable.bloom-content3 {
-  height: 19%;
-  position: relative;
+  position: absolute;
   left: 0px;
-  top: 33%;
-  margin-top: 12px;
+  bottom: 0px;
 }
 .imageOnTop.A4Portrait.bloom-monolingual .bloom-translationGroup {
   height: 48% !important;
-  width: 100%;
   position: absolute;
-  left: 0;
-  bottom: 0;
+  left: 0px;
+  bottom: 0px;
 }
 .imageOnTop.A4Portrait.bloom-bilingual .bloom-imageContainer {
   height: 30% !important;
@@ -250,21 +275,8 @@ TEXTAREA {
 .imageOnTop.A4Portrait.bloom-bilingual .bloom-translationGroup {
   height: 100%;
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-}
-.imageOnTop.bloom-bilingual .bloom-editable.bloom-content1 {
-  height: 30%;
-}
-.imageOnTop.bloom-bilingual .bloom-editable.bloom-content2 {
-  height: 30%;
-  position: absolute;
   left: 0px;
   bottom: 0px;
-}
-.imageOnTop.bloom-trilingual .bloom-content1 {
-  height: 26%;
 }
 .imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
   width: 48%;
