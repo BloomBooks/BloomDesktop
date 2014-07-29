@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -27,6 +28,7 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			var initialCount = _client.GetBookCount();
 			CreateBookRecord();
+			Thread.Sleep(3000);//jh added this because the test failed frequently, but not when stepping through. Hypothesizing that AWS S3 doesn't update the count immediately
 			Assert.Greater(_client.GetBookCount(), initialCount);
 		}
 
