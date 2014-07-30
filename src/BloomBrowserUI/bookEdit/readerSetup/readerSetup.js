@@ -6,6 +6,9 @@ var previousGPCs;
 var sightWords;
 var currentSightWords;
 
+function accordionWindow() {
+    return window.parent.document.getElementById('accordion').contentWindow;
+}
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -21,7 +24,7 @@ function processMessage(event) {
 
         case 'Data':
             loadReaderSetupData(params[1]);
-            window.parent.postMessage('SetupType', '*');
+            accordionWindow().postMessage('SetupType', '*');
             return;
 
         case 'Files':
@@ -34,7 +37,7 @@ function processMessage(event) {
 
         case 'SetupType':
             var tabs = $('#dlstabs');
-            if (params[1] === 'stages')
+            if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [2]);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
@@ -118,7 +121,7 @@ function saveClicked() {
 
     // send to parent
     var settingsStr = JSON.stringify(s);
-    window.parent.postMessage('Refresh\n' + settingsStr, '*');
+    accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // send to C#
     fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
@@ -230,7 +233,7 @@ function requestWordsForSelectedStage() {
     }));
     sightWords = _.union(sightWords, currentSightWords);
 
-    window.parent.postMessage('Words\n' + knownGPCS, '*');
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -639,7 +642,7 @@ if (typeof ($) === "function") {
     });
 }
 
-$(document).ready(function() {
-    window.parent.postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({stop: updateStageNumbers });
+$(document).ready(function () {
+    accordionWindow().postMessage('Texts', '*');
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
 });

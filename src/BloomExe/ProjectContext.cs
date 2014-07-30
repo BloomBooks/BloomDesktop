@@ -9,6 +9,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
@@ -29,7 +30,7 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private ServerBase _httpServer;
+		private EnhancedImageServer _httpServer;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -50,19 +51,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
-			{
-				// REVIEW: This seems to be used only for testing purposes
-				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
-				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-				_httpServer.StartWithSetupIfNeeded();
-			}
-			else
-			{
-				_httpServer = _scope.Resolve<EnhancedImageServer>();
-				_httpServer.StartWithSetupIfNeeded();
-			}
+			_httpServer.StartWithSetupIfNeeded();
         }
 
 		/// ------------------------------------------------------------------------------------
@@ -87,7 +76,6 @@ namespace Bloom
 					typeof(SendReceiveCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
-					typeof(BookRenamedEvent),
 					typeof(LibraryClosing),
                     typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
@@ -97,8 +85,9 @@ namespace Bloom
                     typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
                     typeof(EditingModel)}.Contains(t));
-				
-				
+
+			    var bookRenameEvent = new BookRenamedEvent();
+			    builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
                 
                 try
                 {
@@ -184,6 +173,19 @@ namespace Bloom
 
 				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
+                string collectionDirectory = Path.GetDirectoryName(projectSettingsPath); 
+                if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+                {
+                    // REVIEW: This seems to be used only for testing purposes
+                    BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+                    var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+                    _httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+                }
+                else
+                {
+                    _httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+                }
+			    builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>
 				                                	{

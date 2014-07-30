@@ -331,9 +331,10 @@ namespace Bloom.Edit
 			if (_model.HaveCurrentEditableBook)
 			{
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
-				var dom = _model.GetXmlDocumentForCurrentPage();
+			    HtmlDom domForCurrentPage;
+				var dom = _model.GetXmlDocumentForCurrentPage(out domForCurrentPage);
 				_browser1.Focus();
-				_browser1.Navigate(dom.RawDom);
+				_browser1.Navigate(dom.RawDom, domForCurrentPage.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
                 // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
@@ -703,7 +704,7 @@ namespace Bloom.Edit
         /// </summary>
         public void CleanHtmlAndCopyToPageDom()
         {
- 			RunJavaScript("if ((typeof jQuery !== 'undefined') && jQuery.fn.removeSynphonyMarkup) { jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
+            RunJavaScript("var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
             _browser1.ReadEditableAreasNow();
         }
 

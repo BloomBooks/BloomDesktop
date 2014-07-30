@@ -1,6 +1,9 @@
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
+function getSetupDialogWindow() {
+    return parent.window.document.getElementById("settings_frame").contentWindow;
+}
 /**
  * Respond to messages
  * @param {Event} event
@@ -12,12 +15,12 @@ function processDLRMessage(event) {
     switch(params[0]) {
         case 'Texts': // request from setup dialog for the list of sample texts
             if (model.texts)
-                document.getElementById('settings_frame').contentWindow.postMessage('Files\n' + model.texts.join("\r"), '*');
+                getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
             return;
 
         case 'Words': // request from setup dialog for a list of words for a stage
             var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
-            document.getElementById('settings_frame').contentWindow.postMessage('Words\n' + JSON.stringify(words), '*');
+            getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
             return;
 
         case 'Refresh': // notification from setup dialog that settings have changed
@@ -28,7 +31,7 @@ function processDLRMessage(event) {
             return;
 
         case 'SetupType':
-            document.getElementById('settings_frame').contentWindow.postMessage('SetupType\n' + model.setupType, '*');
+            getSetupDialogWindow().postMessage('SetupType\n' + model.setupType, '*');
             return;
     }
 }
@@ -380,21 +383,21 @@ ReaderToolsModel.prototype.getStageWordsAndSightWords = function(stageNumber) {
 ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 
     var newMarkupType = null;
-    switch(markupType) {
-        case 1:
-            if (this.currentMarkupType !== MarkupType.Decodable)
-                newMarkupType = MarkupType.Decodable;
-            break;
+    switch (markupType) {
+    case 1:
+        if (this.currentMarkupType !== MarkupType.Decodable)
+            newMarkupType = MarkupType.Decodable;
+        break;
 
-        case 2:
-            if (this.currentMarkupType !== MarkupType.Leveled)
-                newMarkupType = MarkupType.Leveled;
-            break;
+    case 2:
+        if (this.currentMarkupType !== MarkupType.Leveled)
+            newMarkupType = MarkupType.Leveled;
+        break;
 
-        default:
-            if (this.currentMarkupType !== MarkupType.None)
-                newMarkupType = MarkupType.None;
-            break;
+    default:
+        if (this.currentMarkupType !== MarkupType.None)
+            newMarkupType = MarkupType.None;
+        break;
     }
 
     // if no change, return now
@@ -409,6 +412,10 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
     this.saveState();
 };
 
+ReaderToolsModel.prototype.getElementsToCheck = function() {
+    return $(".bloom-content1", parent.window.document.getElementById('page').contentWindow.document);
+};
+
 /**
  * Displays the correct markup for the current page.
  */
@@ -416,7 +423,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.currentMarkupType === MarkupType.None) return;
 
-    var editableElements = $(".bloom-content1");
+    var editableElements = this.getElementsToCheck();
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
@@ -466,7 +473,7 @@ ReaderToolsModel.prototype.maxWordsPerPage = function() {
 };
 
 ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
-    var max = $(".bloom-editable").getMaxSentenceLength();
+    var max = this.getElementsToCheck().getMaxSentenceLength();
     $("#actualWordsPerSentence").html(max.toString());
     var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
     // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
@@ -477,7 +484,7 @@ ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
 };
 
 ReaderToolsModel.prototype.updateTotalWordsOnPage = function() {
-    var count = $(".bloom-editable").getTotalWordCount();
+    var count = this.getElementsToCheck().getTotalWordCount();
     $("#actualWordsPerPage").html(count.toString());
     var acceptable = count <= this.maxWordsPerPage();
     this.setPresenceOfClass("actualWordsPerPage", acceptable, "acceptable");
@@ -650,11 +657,6 @@ function initializeDecodableRT() {
         model.sortByFrequency();
     });
 
-    // invoke function when a bloom-editable element loses focus
-    $('.bloom-editable').onOnce('focusout.readerTools', function() {
-        model.doMarkup(); // This is the element that just lost focus.
-    });
-
     setTimeout(function() { $.divsToColumns('word'); }, 100);
 }
 
@@ -671,11 +673,6 @@ function initializeLeveledRT() {
 
     $('#decLevel').onOnce('click.readerTools', function() {
         model.decrementLevel();
-    });
-
-    // invoke function when a bloom-editable element loses focus
-    $('.bloom-editable').onOnce('focusout.readerTools', function() {
-        model.doMarkup(); // This is the element that just lost focus.
     });
 }
 
@@ -741,7 +738,7 @@ function initializeSynphony(settingsFileContent, fontName) {
  * Called by C# after the setup data has been saved, following Save click.
  */
 function closeSetupDialog() {
-    $('#synphonyConfig').dialog("close");
+    $('#synphonyConfig', parent.window.document).dialog("close");
 }
 
 /**

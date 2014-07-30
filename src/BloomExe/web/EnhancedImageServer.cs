@@ -16,13 +16,28 @@ namespace Bloom.web
 		{
 		}
 
+        public string CurrentPageContent { get; set; }
+        public string AccordionContent { get; set; }
+
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (base.ProcessRequest(info))
 				return true;
 
 			var localPath = GetLocalPathWithoutQuery(info);
-			string path = null;
+            if (localPath == "currentPageContent")
+            {
+                info.ContentType = "text/html";
+                info.WriteCompleteOutput(CurrentPageContent ?? "");
+                return true;
+            }
+            else if (localPath == "accordionContent")
+            {
+                info.ContentType = "text/html";
+                info.WriteCompleteOutput(AccordionContent ?? "");
+                return true;
+            }
+            string path = null;
 			try
 			{
 				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", localPath);

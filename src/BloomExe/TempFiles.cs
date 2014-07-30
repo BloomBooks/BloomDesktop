@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
@@ -62,14 +63,9 @@ namespace BloomTemp
 		{
 			var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
-			
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+			var settings = GetXmlWriterSettingsForHtml5();
 
-			// Enhance JohnT: no reason to go to disk for this intermediate version.
+		    // Enhance JohnT: no reason to go to disk for this intermediate version.
 			using (var writer = XmlWriter.Create(temp.Path, settings))
 			{
 				dom.WriteContentTo(writer);
@@ -85,15 +81,52 @@ namespace BloomTemp
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
 			string xhtml = File.ReadAllText(temp.Path);
-			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
-			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
+		    File.WriteAllText(temp.Path, CleanupHtml5(xhtml));
 
 			return temp;
 		}
 
-		private static string GetHtmlTempPath()
+        /// <summary>
+        /// Create a string that could be the contents of an HTML5 file and which corresponds to the specified DOM
+        /// (presumed to contain appropriate content).
+        /// This method has no business in this class except that it is so parallel to CreateHtml5FromXml that I wanted to keep them together.
+        /// </summary>
+        /// <param name="dom"></param>
+	    public static string CreateHtml5StringFromXml(XmlNode dom)
+        {
+            var output = new StringBuilder();
+            using (var writer = XmlWriter.Create(output, GetXmlWriterSettingsForHtml5()))
+            {
+                dom.WriteContentTo(writer);
+                writer.Close();
+            }
+            return CleanupHtml5(output.ToString());
+        }
+
+        /// <summary>
+        /// Return the settings that should be used for an XmlWriter to write a DOM as HTML5.
+        /// (The writer results should then be passed through CleanupHtml5.)
+        /// </summary>
+        /// <returns></returns>
+	    public static XmlWriterSettings GetXmlWriterSettingsForHtml5()
+	    {
+	        XmlWriterSettings settings = new XmlWriterSettings();
+	        settings.Indent = true;
+	        settings.CheckCharacters = true;
+	        settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+	        //CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+	        return settings;
+	    }
+
+	    public static string CleanupHtml5(string xhtml)
+	    {
+	        var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+	        xhtml = re.Replace(xhtml, "<$1 $2></$1>");
+	        //now insert the non-xml-ish <!doctype html>
+	        return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
+	    }
+
+	    private static string GetHtmlTempPath()
 		{
 			string x,y;
 			do

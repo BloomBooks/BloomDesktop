@@ -1,11 +1,8 @@
 
 <html>
-  <head>
-    <link rel="stylesheet" href="../readerTools.css" type="text/css"/>
-  </head>
   <body>
     <h3 data-markuptype="2">Leveled Reader Tool</h3>
-    <div><img id="levels-steps" src="../../../images/steps-white.png" style="margin-left: 14px; width: 32px"/>
+    <div><img id="levels-steps" src="http://localhost:8089/bloom/images/steps-white.png" style="margin-left: 14px; width: 32px"/>
       <div class="stageLine"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Level <span id="levelNumber">1</span><span class="ofStage">&nbsp;of&nbsp;<span id="numberOfLevels">2</span></span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
       <table style="margin-left: 6px" class="statistics clear">
         <tr>
@@ -68,11 +65,9 @@
         </ul><a href="http://www.brighthubeducation.com/teaching-methods-tips/71264-using-leveled-readers-in-the-classroom/">How to make a great leveled reader</a>
       </div>
       <script type="text/javascript">
-        $(document).ready(function() {
-         setTimeout(initializeLeveledRT, 100);
-         var path = thisDir + '../../images/steps-white.png';
-         document.getElementById('levels-steps').src = path;
-        });
+          $(document).ready(function() {
+              setTimeout(initializeLeveledRT, 100);
+          });
       </script>
     </div>
   </body>

@@ -926,16 +926,6 @@ function ShowTopicChooser() {
     });
 }
 
-var resizeTimer;
-function resizeAccordion() {
-    var windowHeight = $(window).height();
-    var root = $(".accordionRoot");
-    // Set accordion container height to fit in new window size
-    // Then accordion Resize() will adjust it to fit the container
-    root.height(windowHeight);
-    BloomAccordion.Resize();
-}
-
 function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
 }
@@ -1051,6 +1041,14 @@ $(document).ready(function () {
         }
     //TODO if you do Ctrl+A and delete, you're now outside of our <p></p> zone. clicking out will trigger the blur handerl above, which will restore it.
     });
+
+    // invoke function when a bloom-editable element loses focus.
+    $('.bloom-editable').focusout(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
+        }
+    });    
 
     SetBookCopyrightAndLicenseButtonVisibility();
 
@@ -1390,12 +1388,4 @@ $(document).ready(function () {
     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
-    var accordion = new BloomAccordion();
-    resizeAccordion(); // Make sure it gets run once, at least.
-
-    // Now bind the window's resize function to the accordion resizer
-    $(window).bind('resize', function () {
-        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-        resizeTimer = setTimeout(resizeAccordion, 100);
-    });
 });
