@@ -261,7 +261,7 @@ namespace Bloom.CollectionTab
 					//We showed at least one book, so now go back and insert the header
 					var collectionHeader = new Label()
 						{
-							Text = collection.Name,
+							Text = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name),
 							Size = new Size(_sourceBooksFlow.Width - 20, 20),
 							ForeColor = Palette.TextAgainstDarkBackground,
 							Padding = new Padding(10, 0, 0, 0)
