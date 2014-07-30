@@ -102,8 +102,17 @@ function requestPanel(checkBoxId, panelId) {
     }
 }
 
-function loadAccordionPanel(newContent, panelId) {
+var resizeTimer;
+function resizeAccordion() {
+    var windowHeight = $(window).height();
+    var root = $(".accordionRoot");
+    // Set accordion container height to fit in new window size
+    // Then accordion Resize() will adjust it to fit the container
+    root.height(windowHeight);
+    BloomAccordion.Resize();
+}
 
+function loadAccordionPanel(newContent, panelId) {
     var elements = $.parseHTML(newContent, document, true);
 
     $.each(elements, function() {
@@ -129,3 +138,14 @@ function loadAccordionPanel(newContent, panelId) {
     });
 
 }
+
+$(document).ready(function () {
+    new BloomAccordion(); // have to create this somewhere to get it initialized.
+    resizeAccordion(); // Make sure it gets run once, at least.
+
+    // Now bind the window's resize function to the accordion resizer
+    $(window).bind('resize', function () {
+        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+        resizeTimer = setTimeout(resizeAccordion, 100);
+    });
+});

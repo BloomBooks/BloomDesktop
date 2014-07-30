@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
@@ -27,7 +28,8 @@ namespace Bloom
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
 		private string _url;
-		private XmlDocument _pageDom;
+		private XmlDocument _pageDom; // root DOM we navigate do
+		private XmlDocument _editDom; // DOM, dypically in a frame of _pageDom, which we are editing.
 		private TempFile _tempHtmlFile;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
@@ -450,15 +452,16 @@ namespace Bloom
 
 		//NB: make sure the <base> is set correctly, 'cause you don't know where this method will
 		//save the file before navigating to it.
-		public void Navigate(XmlDocument dom)
+		public void Navigate(XmlDocument dom, XmlDocument editDom = null)
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<XmlDocument>(Navigate), dom);
+				Invoke(new Action<XmlDocument, XmlDocument>(Navigate), dom, editDom);
 				return;
 			}
 
 			_pageDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
+			_editDom = editDom ?? dom;
 
 			/*	This doesn't work for the 1st book shown, or when you change book sizes.
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
@@ -547,11 +550,22 @@ namespace Bloom
 		private void LoadPageDomFromBrowser()
 		{
 			Debug.Assert(!InvokeRequired);
-			if (_pageDom == null)
+			if (_editDom == null)
 				return;
 
+			var contentDocument = _browser.Document;
+			if (_editDom != _pageDom)
+			{
+				// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
+				var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
+				if (frameElement == null)
+					return;
+				contentDocument = frameElement.ContentDocument;
+			}
+			if (contentDocument == null)
+				return; // can this happen?
 			// As of august 2012 textareas only occur in the Calendar
-			if (_pageDom.SelectNodes("//textarea").Count > 0)
+			if (_editDom.SelectNodes("//textarea").Count > 0)
 			{
 				//This approach was to force an onblur so that we can get at the actual user-edited value.
 				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
@@ -559,12 +573,12 @@ namespace Bloom
 				//_browser.WebBrowserFocus.Activate();
 
 				// Now, we just do the blur directly.
-				var activeElement = _browser.Window.Document.ActiveElement;
+				var activeElement = contentDocument.ActiveElement;
 				if (activeElement != null)
 					activeElement.Blur();
 			}
 
-			var body = _browser.Document.GetElementsByTagName("body");
+			var body = contentDocument.GetElementsByTagName("body");
 			if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
 				return;
 
@@ -577,10 +591,10 @@ namespace Bloom
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
 				var bodyDom = dom.SelectSingleNode("//body");
 
-				if (_pageDom == null)
+				if (_editDom == null)
 					return;
 
-				var destinationDomPage = _pageDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
+				var destinationDomPage = _editDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
 				if (destinationDomPage == null)
 					return;
 				var expectedPageId = destinationDomPage["id"];
@@ -595,9 +609,9 @@ namespace Bloom
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
 					return;
 				}
-				_pageDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+				_editDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var userModifiedStyleSheet = _browser.Document.StyleSheets.FirstOrDefault(s =>
+				var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
 					{
 						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
 						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
@@ -614,7 +628,7 @@ namespace Bloom
 						/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
 						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
 						 * rules don't show up inside of it. So
-						 * this won't work: _pageDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+						 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
 						 */
 						var styles = new StringBuilder();
 						styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
@@ -624,7 +638,7 @@ namespace Bloom
 						}
 						styles.AppendLine("</style>");
 						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
-						_pageDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+						_editDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 					}
 					catch (COMException)
 					{
@@ -634,11 +648,11 @@ namespace Bloom
 				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-//				foreach (XmlElement j in _pageDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+//				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
 //				{
 //					j.ParentNode.RemoveChild(j);
 //				}
-//				foreach (XmlAttribute j in _pageDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+//				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
 //				{
 //					j.OwnerElement.RemoveAttributeNode(j);
 //				}
@@ -654,7 +668,7 @@ namespace Bloom
 
 			try
 			{
-				XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageDom.OuterXml);
+				XmlHtmlConverter.ThrowIfHtmlHasErrors(_editDom.OuterXml);
 			}
 			catch (Exception e)
 			{
