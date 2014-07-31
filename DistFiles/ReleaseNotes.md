@@ -1,4 +1,11 @@
-﻿## 2.0.1038 BETA 6 June 2014
+﻿## 2.1 Alpha
+Now uses the same engine for editing and pdf-making, increasing fidelity between the two
+New engine renders fonts better
+Graphite Complex-non-roman script rendering
+Adobe Acrobat no longer needed to view PDFs in the Publish tab
+
+
+## 2.0.1038 BETA 6 June 2014
 Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
 
 ## 2.0 1022 BETA 13 May 2014
