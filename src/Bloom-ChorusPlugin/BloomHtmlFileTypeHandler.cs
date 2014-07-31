@@ -65,7 +65,7 @@ namespace Bloom_ChorusPlugin
 				                     		ValidationType = ValidationType.None,
 				                     		XmlResolver = null,
 				                     		CloseInput = true,
-				                     		ProhibitDtd = false
+				                     		DtdProcessing = DtdProcessing.Prohibit,
 				                     	};
 				using (
 					var nodeReader = XmlReader.Create(new MemoryStream(Encoding.UTF8.GetBytes(result.MergedNode.OuterXml)),
@@ -87,23 +87,33 @@ namespace Bloom_ChorusPlugin
 			merger.MergeStrategies.SetStrategy("DataDiv", new ElementStrategy(true)
 			{
 				IsAtomic = false,
-                OrderIsRelevant = false,
-                MergePartnerFinder = new FindByKeyAttribute("id"), //yes, it's a singleton of sorts, but by the id, not the tag
+				OrderIsRelevant = false,
+				MergePartnerFinder = new FindByKeyAttribute("id"), //yes, it's a singleton of sorts, but by the id, not the tag
 			});
-
 			merger.MergeStrategies.SetStrategy("BookDataItem", new ElementStrategy(true)
 			{
 				IsAtomic = true,
 				OrderIsRelevant = false,
 				MergePartnerFinder = new FindByMultipleKeyAttributes(new List<string>(new string[] {"data-book", "lang"}))
-			}); 
-
+			});
 			merger.MergeStrategies.SetStrategy("PageDiv", new ElementStrategy(true)
-			                                          	{
-			                                          		IsAtomic = true, //we're not trying to merge inside pages
-			                                          		MergePartnerFinder = new FindByKeyAttribute("id"),
-
-			                                          	});
+			{
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("id"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
+			});
+			merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
+			{
+				IsAtomic = false,
+				MergePartnerFinder = new FindByKeyAttribute("class"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
+			});
+			merger.MergeStrategies.SetStrategy("LangDiv", new ElementStrategy(true)
+			{
+				IsAtomic = true,
+				MergePartnerFinder = new FindByKeyAttribute("lang"),
+				ContextDescriptorGenerator = new BloomPageContextGenerator()
+			});
 		}
 
 		public bool CanMergeFile(string pathToFile)
