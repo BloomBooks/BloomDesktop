@@ -102,24 +102,44 @@ function requestPanel(checkBoxId, panelId) {
     }
 }
 
+/**
+ * Adds one panel to the accordion
+ * @param {String} newContent
+ * @param {String} panelId
+ */
 function loadAccordionPanel(newContent, panelId) {
 
-    var elements = $.parseHTML(newContent, document, true);
-
-    $.each(elements, function() {
-
-            $(this).data('panelId', panelId);
-            $(this).insertBefore('#accordion-settings-header');
-    });
-
+    var parts = $($.parseHTML(newContent, document, true));
     var accordion = $('#accordion');
+
+    // expect parts to have 2 items, an h3 and a div
+    if (parts.length < 2) return;
+
+    // get the accordion panel tab/button
+    var tab = parts.filter('h3').first();
+
+    // Get the order. If no order, set to top (zero)
+    var order = tab.data('order');
+    if (!order && (order !== 0)) order = 0;
+
+    // get the panel content div
+    var div = parts.filter('div').first();
+
+    // Where to insert the new panel?
+    // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
+    // in the accordion. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
+    var insertBefore = accordion.children().filter(function() { return $(this).data('order') > order; }).first();
+
+    // Insert now.
+    // NOTE: tag each of the items with the "panelId" so they are easier to locate when it is time to remove them.
+    tab.data('panelId', panelId);
+    tab.insertBefore(insertBefore);
+    div.data('panelId', panelId);
+    div.insertBefore(insertBefore);
+
     accordion.accordion('refresh');
-    if (showingPanel) {
-        showingPanel = false;
-        var count = accordion.find('> h3').length;
-        if (count > 1)
-            accordion.accordion('option', 'active', count - 2);
-    }
+
+    // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
         if (ui.newHeader.data('panelId'))
@@ -128,4 +148,11 @@ function loadAccordionPanel(newContent, panelId) {
             fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
     });
 
+    // if requested, open the panel that was just inserted
+    if (showingPanel) {
+        showingPanel = false;
+        var id = tab.attr('id');
+        id = parseInt(id.substr(id.lastIndexOf('_')));
+        accordion.accordion('option', 'active', id);
+    }
 }
