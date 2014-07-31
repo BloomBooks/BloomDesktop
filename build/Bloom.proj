@@ -35,7 +35,9 @@
     <CreateProperty Value="2.1.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
-   
+    <CreateProperty Value="BloomInstaller.$(Version).$(Label).msi">
+      <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
+    </CreateProperty> 
     <Message Text="Version: $(Version)" Importance="high"/>
   </Target>
 
@@ -148,14 +150,14 @@
 
 
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
-    <Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
+    <Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
 
     <!--Kludge, but S3BuildPublisher needs this file in the build folder-->
     <Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
     
     <S3BuildPublisher
     EncryptionContainerName ="$(Key)"
-    SourceFiles="../output/installer/BloomInstaller.$(Version).msi"
+    SourceFiles="../output/installer/$(InstallerFileName)"
     DestinationBucket="$(Bucket)"
     DestinationFolder="installers"
     PublicRead="true" />
@@ -179,10 +181,10 @@
     <MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
 
     <!-- remove an existing one with the same name, if necessary -->
-    <Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
+    <Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
 
     <Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
-          DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
+          DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
           />
 
     <!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
