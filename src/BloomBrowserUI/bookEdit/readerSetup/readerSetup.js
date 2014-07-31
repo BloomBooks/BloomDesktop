@@ -34,7 +34,7 @@ function processMessage(event) {
 
         case 'SetupType':
             var tabs = $('#dlstabs');
-            if (params[1] === 'stages')
+            if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [2]);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
