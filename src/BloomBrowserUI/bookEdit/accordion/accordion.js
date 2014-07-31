@@ -138,12 +138,6 @@ function loadAccordionPanel(newContent, panelId) {
     div.insertBefore(insertBefore);
 
     accordion.accordion('refresh');
-    if (showingPanel) {
-        showingPanel = false;
-        var count = accordion.find('> h3').length;
-        if (count > 1)
-            accordion.accordion('option', 'active', count - 2);
-    }
 
     // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
@@ -154,4 +148,11 @@ function loadAccordionPanel(newContent, panelId) {
             fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
     });
 
+    // if requested, open the panel that was just inserted
+    if (showingPanel) {
+        showingPanel = false;
+        var id = tab.attr('id');
+        id = parseInt(id.substr(id.lastIndexOf('_')));
+        accordion.accordion('option', 'active', id);
+    }
 }
