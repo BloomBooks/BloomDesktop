@@ -1,0 +1,55 @@
+include ../../../jade/bloom-foundation-mixins
+
+//- items marked with 'bloom-leadingElement' will be on the left page of a side-by-side layout
+mixin image-leading
+	+image(class='bloom-leadingElement', attributes)
+
+//- items marked with 'bloom-trailingElement' will be on the right page of a side-by-side layout
+mixin field-trailing
+	//- Is default-style needed? Yes, but it needs to be normal-style. (BL-26)
+	+field(class='bloom-trailingElement normal-style', attributes)
+
+doctype html
+html
+	head
+		+metadata-standard()
+		meta(name='defaultNameForDerivedBooks', content='My Book')
+		//- TODO remove this when we move to json metadata
+		meta(name='SuitableForMakingShells', content='yes')
+
+		meta(name='bloomBookId', content='ea43ce61-a752-429d-ad1a-ec282db33328')
+
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Leveled Reader')
+		title 'Basic Book'
+		+stylesheets('Basic Book.css')
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Leveled Reader')
+			+bookVariable-title('id', 'Pembaca diratakan')
+
+		//- NB: HTML 4 ids were not supposed to start with numbers. But for html 5, they
+		//- can. Unfortunately webstorm doesn't know that.
+
+		+page-splittable-choice('Basic Text & Picture').imageOnTop#e9f2142b-f135-4bcd-9123-5a2623f5302f(page-lineage='5dcd48df-e9ab-4a07-afd4-6a24d0398382')
+			+image-leading
+			+field-trailing
+
+		+page-splittable-choice('Picture in Middle').imageInMiddle#c5aae471-f801-4c5d-87b7-1614d56b0c53(page-lineage='5dcd48df-e9ab-4a07-afd4-6a24d0398383')
+			+field-trailing
+			+image-leading
+			+field-trailing
+
+		+page-splittable-choice('Picture On Bottom').imageOnBottom#a1f437fe-c002-4548-af02-fe84d048b8fc(page-lineage='5dcd48df-e9ab-4a07-afd4-6a24d0398384')
+			+field-trailing
+			+image-leading
+
+		+page-choice('Just a Picture').imageWholePage#d7599aa7-f35c-4029-8aa2-9afda870bcfa(page-lineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385')
+			+image
+
+		+page-choice('Just Text').textWholePage#d93a28c6-9ff8-4f61-a820-49093e3e275b(page-lineage='d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb')
+			+field-trailing.bloom-centerVertically
+
+		+page-choice('Picture & Word').pictureAndWordPage#a903467a-dad2-4767-8be9-54336cae7731(page-lineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27')
+			+image-leading
+			+field-trailing
