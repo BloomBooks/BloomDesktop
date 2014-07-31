@@ -228,8 +228,11 @@
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
 		which is fine for developers, but not for our official builds.
+
+		Note, the original name for this on Dropbox may differ (e.g. "Bloom2.1.chm") but we
+		are renaming it here to just Bloom.chm.
 		-->
-		<WebDownload FileUri="https://www.dropbox.com/s/yyz41un2smi2u7n/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<WebDownload FileUri="https://www.dropbox.com/s/3v8n25tqqbs70h0/Bloom2_1.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
 
   <Target Name="MakeWixForXulRunner" >
