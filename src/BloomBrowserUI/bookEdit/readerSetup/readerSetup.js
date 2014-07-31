@@ -22,10 +22,6 @@ function processMessage(event) {
         case 'Data':
             loadReaderSetupData(params[1]);
             window.parent.postMessage('SetupType', '*');
-
-            // initialize the selected letters
-            $('#stages-table').find('tbody tr:first').click();
-            $('#levels-table').find('tbody tr:first').click();
             return;
 
         case 'Files':
@@ -40,9 +36,20 @@ function processMessage(event) {
             var tabs = $('#dlstabs');
             if (params[1] === 'stages')
                 tabs.tabs('option', 'disabled', [2]);
+                var firstStage = $('#stages-table').find('tbody tr:first');
+                if (firstStage && (firstStage.length === 0))
+                    addNewStage();
+                else
+                    firstStage.click(); // select the first stage
+            }
             else {
                 tabs.tabs('option', 'disabled', [0, 1]);
                 tabs.tabs('option', 'active', 2);
+                var firstLevel = $('#levels-table').find('tbody tr:first');
+                if (firstLevel && (firstLevel.length === 0))
+                    addNewLevel();
+                else
+                    firstLevel.click(); // select the first level
             }
 
             return;
