@@ -58,11 +58,11 @@ namespace Bloom.web
 				// time and bandwidth needed to download the full contents of the file. The 2 pieces of information being returned 
 				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
 				// contents of the file have changed, and if they have changed the requestor can then decide if the file needs to
-				// be reloaded.
+				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
 				if (_actualContext.Request.HttpMethod == "HEAD")
 				{
 					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
-					// causing Geckfx to cache the contents of the files. This made debugging difficult because, even if the file
+					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
 					// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
 					_actualContext.Response.AppendHeader("Last-Modified", lastModified);
 				}
