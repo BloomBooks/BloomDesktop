@@ -52,9 +52,12 @@ namespace Bloom.web
 			using (var fs = File.OpenRead(path))
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
-				_actualContext.Response.AppendHeader("Last-Modified", lastModified);
 
-				if (_actualContext.Request.HttpMethod != "HEAD")
+				if (_actualContext.Request.HttpMethod == "HEAD")
+				{
+					_actualContext.Response.AppendHeader("Last-Modified", lastModified);
+				}
+				else
 				{
 					int read;
 					while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
