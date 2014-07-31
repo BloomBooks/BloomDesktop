@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -115,6 +117,22 @@ namespace BloomTests.Book
 			collection.InsertBookInfo(infoNew);
 			Assert.That(state[2], Is.EqualTo(infoNew), "book info should replace existing book");
 			Assert.That(state, Has.Count.EqualTo(4));
+		}
+
+		[Test]
+		public void WatchDirectory_CausesNotification_OnAddFile()
+		{
+			var temp = new TemporaryFolder("BookCollectionWatch");
+			var collection = new BookCollection(temp.Path, BookCollection.CollectionType.SourceCollection, null);
+			collection.WatchDirectory();
+			bool gotNotification = false;
+			collection.FolderContentChanged += (sender, args) =>
+			{
+				gotNotification = true;
+			};
+			File.WriteAllText(Path.Combine(temp.Path, "somefile"), @"This is some test data");
+			// It takes a little time to get the notification. This tells NUnit to try every 20ms for up to 1s.
+			Assert.That(() => gotNotification, Is.True.After(1000, 20));
 		}
 	}
 }

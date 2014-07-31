@@ -36,6 +36,7 @@ namespace Bloom.CollectionTab
 		private bool _primaryCollectionReloadPending;
 		private LinkLabel _missingBooksLink;
 		private bool _disposed;
+		private BookCollection _downloadedBookCollection;
 		enum ButtonManagementStage
 		{
 			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
@@ -172,15 +173,12 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
-					// now we're all set to handle any pending book orders, especially one that may have been created
-					// at startup from a command line argument. We're also ready to receive any notifications of new books
-					// downloaded.
-					if (_bookTransferrer != null)
-					{
-						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
-						_bookTransferrer.HandleOrders();
-					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
+					if (Program.PathToBookDownloadedAtStartup != null)
+					{
+						// We started up with a command to downloaded a book...Select it.
+						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+					}
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
 					ImproveAndRefreshBookButtons();
@@ -263,7 +261,7 @@ namespace Bloom.CollectionTab
 					//We showed at least one book, so now go back and insert the header
 					var collectionHeader = new Label()
 						{
-							Text = collection.Name,
+							Text = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name),
 							Size = new Size(_sourceBooksFlow.Width - 20, 20),
 							ForeColor = Palette.TextAgainstDarkBackground,
 							Padding = new Padding(10, 0, 0, 0)
@@ -352,7 +350,9 @@ namespace Bloom.CollectionTab
 				if (dialogResult != DialogResult.OK)
 					return;
 			}
-			Process.Start("http://dev.bloomlibrary.org");
+			Process.Start(BookTransfer.UseSandbox
+				? "http://dev.bloomlibrary.org/books"
+				: "http://bloomlibrary.org/books");
 		}
 
 		DialogResult ShowBloomLibraryLinkVerificationDialog()
@@ -381,10 +381,7 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
-							  (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
-
-					if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+					if (IsSuitableSourceForThisEditableCollection(bookInfo) || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
 					{
 						if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 						{
@@ -400,6 +397,9 @@ namespace Bloom.CollectionTab
 			}
 			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
 			{
+				_downloadedBookCollection = collection;
+				collection.FolderContentChanged += DownLoadedBooksChanged;
+				collection.WatchDirectory(); // In case another instance downloads a book.
 				var bloomLibrayLink = new LinkLabel()
 				{
 					Text =
@@ -415,6 +415,74 @@ namespace Bloom.CollectionTab
 				return true;
 			}
 			return loadedAtLeastOneBook;
+		}
+
+	   private bool IsSuitableSourceForThisEditableCollection(BookInfo bookInfo)
+		{
+			return (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
+				   (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
+		}
+
+		private Timer _newDownloadTimer;
+		/// <summary>
+		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
+		/// This will happen on a thread-pool thread.
+		/// Since we are updating the UI in response we want to deal with it on the main thread.
+		/// This also has the effect that it can't happen in the middle of another LoadSourceCollectionButtons().
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
+		{
+			Invoke((Action) (() =>
+			{
+				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
+				// copying the new book there. Finishing should not take long, because the download is done...at worst
+				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
+				// As a safeguard, wait half a second before we update things.
+				if (_newDownloadTimer != null)
+				{
+					// Things changed again before we started the update! Forget the old update and wait until things
+					// are stable for the required interval.
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+				}
+				_newDownloadTimer = new Timer();
+				_newDownloadTimer.Tick += (o, args) =>
+				{
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+					_newDownloadTimer = null;
+					UpdateDownloadedBooks(eventArgs.Path);
+				};
+				_newDownloadTimer.Interval = 500;
+				_newDownloadTimer.Start();
+			}));
+		}
+
+		private void UpdateDownloadedBooks(string pathToChangedBook)
+		{
+			var newBook = new BookInfo(pathToChangedBook, false);
+			// It's always worth reloading...maybe we didn't have a button before because it was not
+			// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+			// other way...we want the button to have valid metadata for the book.
+			// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+			LoadSourceCollectionButtons();
+			if (Enabled && CollectionTabIsActive)
+				SelectBook(newBook);
+		}
+
+		/// <summary>
+		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
+		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
+		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
+		/// (although Visible is still true!) and we should not try to switch.
+		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
+		/// be dangerous.
+		/// </summary>
+		private bool CollectionTabIsActive
+		{
+			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
 		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
@@ -487,44 +555,6 @@ namespace Bloom.CollectionTab
 		private void OnCollectionChanged(object sender, EventArgs e)
 		{
 			_primaryCollectionReloadPending = true;
-		}
-
-		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
-		{
-			var newBook = e.BookDetails;
-			Invoke((Action) (() =>
-			{
-				if (!HaveButtonForBook(newBook))
-				{
-					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
-					downloadCollection.InsertBookInfo(newBook);
-					// It's always worth reloading...maybe we didn't have a button before because it was not
-					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
-					// other way...we want the button to have valid metadata for the book.
-					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
-					LoadSourceCollectionButtons();
-				}
-				// This actually works...displays the book and offers to let you use it as a template...even if it
-				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
-				// whether this is desirable.
-				SelectBook(newBook);
-			}));
-		}
-
-		private bool HaveButtonForBook(BookInfo newBook)
-		{
-			foreach (var item in _sourceBooksFlow.Controls)
-			{
-				var button = item as Button;
-				if (button == null)
-					continue;
-				var info = button.Tag as BookInfo;
-				if (info == null)
-					continue;
-				if (info.FolderPath == newBook.FolderPath)
-					return true;
-			}
-			return false;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)
@@ -793,6 +823,11 @@ namespace Bloom.CollectionTab
 			if (disposing && (components != null))
 			{
 				components.Dispose();
+			}
+			if (disposing && _downloadedBookCollection != null)
+			{
+				_downloadedBookCollection.StopWatchingDirectory();
+				_downloadedBookCollection.FolderContentChanged -= DownLoadedBooksChanged;
 			}
 			base.Dispose(disposing);
 			_disposed = true;

@@ -167,7 +167,7 @@ namespace BloomTests.Book
 		/// so it seems to fit better here.
 		/// </summary>
 		[Test]
-		public void BringBookUpToDate_ConvertsTagsToJson()
+		public void BringBookUpToDate_ConvertsTagsToJsonWithExpectedDefaults()
 		{
 			var storage = GetInitialStorage();
 			var locator = (FileLocator) storage.GetFileLocator();
@@ -196,6 +196,8 @@ namespace BloomTests.Book
 				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.True);
 				Assert.That(storage.MetaData.IsFolio, Is.True);
 				Assert.That(storage.MetaData.IsExperimental, Is.True);
+				Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
+				Assert.That(storage.MetaData.AllowUploading, Is.True);
 			}
 		}
 
