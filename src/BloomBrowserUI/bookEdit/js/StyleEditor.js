@@ -99,6 +99,10 @@ var StyleEditor = (function () {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return;
         rule.style.setProperty("font-size", sizeString + units, "important");
+        if ($(target).IsOverflowing())
+            $(target).addClass('overflow');
+        else
+            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip

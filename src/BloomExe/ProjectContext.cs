@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -91,6 +92,7 @@ namespace Bloom
 					typeof(LibraryClosing),
                     typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
+					typeof(BookDownloadStartingEvent),
 					typeof(BookSelection),
 					typeof(CurrentEditableCollectionSelection),
                     typeof(RelocatePageEvent),
@@ -204,6 +206,7 @@ namespace Bloom
 		internal static BloomS3Client CreateBloomS3Client()
 		{
 			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+
 		}
 
 

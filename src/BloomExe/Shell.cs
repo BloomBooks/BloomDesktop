@@ -24,12 +24,31 @@ namespace Bloom
     	private readonly WorkspaceView _workspaceView;
 
 		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
+										BookDownloadStartingEvent bookDownloadStartingEvent,
+										LibraryClosing libraryClosingEvent, 
+										QueueRenameOfCollection queueRenameOfCollection, 
+										Sparkle _sparkle)
         {
             queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 		    _collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
-            
+
+			//bring the application to the front (will normally be behind the user's web browser)
+			bookDownloadStartingEvent.Subscribe((x) =>
+			{
+				try
+				{
+					this.Invoke((Action)this.Activate);
+				}
+				catch (Exception e)
+				{
+					Debug.Fail("(Debug Only) Can't bring to front in the current state: "+e.Message);
+					//swallow... so we were in some state that we couldn't come to the front... that's ok.
+				}
+			});
+
+
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
@@ -57,7 +76,6 @@ namespace Bloom
                                     
             this.Controls.Add(this._workspaceView);
 
-            
 		    SetWindowText();
         }
 

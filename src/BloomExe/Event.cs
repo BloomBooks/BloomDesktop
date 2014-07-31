@@ -144,6 +144,15 @@ namespace Bloom
 		}
 	}
 
+	public class BookDownloadStartingEvent : Event<object>
+	{
+		public BookDownloadStartingEvent()
+			: base("BookDownloadStartingEvent", LoggingLevel.Major)
+		{
+
+		}
+	}
+
 	/// <summary>
 	/// ANything displaying the book should re-load it.
 	/// </summary>

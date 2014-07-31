@@ -94,8 +94,17 @@ The key to this text being aligned vertically is the bloom-centerContentVertiacl
 	max-height: 100%;
 	/*[disabled]overflow:hidden;*/
 }
-.textWholePage .bloom-editable
+.textWholePage.bloom-monolingual .bloom-editable
 {
 	min-height: 3em;
-	/*[disabled]height:30%;*/
+}
+.textWholePage.bloom-bilingual .bloom-editable
+{
+	min-height: 3em;
+	max-height: 50%;
+}
+.textWholePage.bloom-trilingual .bloom-editable
+{
+	min-height: 2.5em;
+	max-height: 30%;
 }
