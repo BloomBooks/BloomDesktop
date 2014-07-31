@@ -655,6 +655,8 @@ function initializeDecodableRT() {
         model.doMarkup(); // This is the element that just lost focus.
     });
 
+    model.updateControlContents();
+
     setTimeout(function() { $.divsToColumns('word'); }, 100);
 }
 
@@ -677,6 +679,8 @@ function initializeLeveledRT() {
     $('.bloom-editable').onOnce('focusout.readerTools', function() {
         model.doMarkup(); // This is the element that just lost focus.
     });
+
+    model.updateControlContents();
 }
 
 /**
