@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <S3BuildPublisherLibrary>.\Snowcode.S3BuildPublisher.dll</S3BuildPublisherLibrary>
+  </PropertyGroup>
+
+  <!-- Support Tasks -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="StoreClientDetailsTask" />
+
+  <!-- S3 Tasks -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="S3BuildPublisher" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateS3BucketTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteS3BucketTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="PutS3TextObjectTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="PutS3FileObjectTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteS3ObjectTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="SetS3ObjectAclTask" />
+
+  <!-- EC2 Tasks -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="AssociateIpAddressTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DisassociateIpAddressTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="StartEC2InstancesTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="StopEC2InstancesTask" />
+
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="RunEC2InstancesTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="TerminateEC2InstancesTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="RebootEC2InstancesTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DescribeEC2InstanceTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="WaitForEC2InstancesTask" />
+
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateVolumeTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateVolumeFromSnapshotTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteVolumeTask" />
+  
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="AttachVolumeTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DetachVolumeTask" />
+  
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateSnapShotTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSnapShotTask" />
+  
+  <!-- Simple Notification Service Tasks-->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateSNSTopicTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSNSTopicTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="PublishSNSNotificationTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="SubscribeToSNSTopicTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="UnsubscribeFromSNSTopicTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="AddSNSPermissionsTask" />
+  
+  <!-- SQS -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateSQSQueueTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSQSQueueTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="SendSQSMessageTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="ReceiveSQSMessageTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="WaitForSQSMessageTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSQSMessageTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="GetSQSAttribuitesTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="GrantSendMessageRightsTask" />
+
+  <!-- SimpleDB -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateSimpleDBDomainTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSimpleDBDomainTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="PutSimpleDBAttributeTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="GetSimpleDBAttributeTask" />
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="DeleteSimpleDBAttributesTask" />
+  
+  <!-- RDS -->
+  <UsingTask AssemblyFile="$(S3BuildPublisherLibrary)" TaskName="CreateRDSDatabaseTask" />
+</Project>
