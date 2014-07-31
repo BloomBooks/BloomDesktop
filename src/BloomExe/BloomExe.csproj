@@ -368,7 +368,6 @@
     <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
-    <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1027,14 +1026,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <ItemGroup>
-    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css"/>
+    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css" />
   </ItemGroup>
   <ItemGroup>
-    <SourceFiles Include="../../lib/dotnet/*.config"/>
+    <SourceFiles Include="../../lib/dotnet/*.config" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader"/>
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader"/>
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
   </Target>
 </Project>

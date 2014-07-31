@@ -12,6 +12,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Workspace;
+using NetSparkle;
 using Palaso.Reporting;
 using Palaso.Extensions;
 
@@ -23,11 +24,12 @@ namespace Bloom
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
 
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
-										BookDownloadStartingEvent bookDownloadStartingEvent,
-										LibraryClosing libraryClosingEvent,
-										QueueRenameOfCollection queueRenameOfCollection,
-										Sparkle _sparkle)
+		public Shell(Func<WorkspaceView> projectViewFactory,
+												CollectionSettings collectionSettings,
+												BookDownloadStartingEvent bookDownloadStartingEvent,
+												LibraryClosing libraryClosingEvent,
+												QueueRenameOfCollection queueRenameOfCollection,
+												Sparkle _sparkle)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
@@ -43,7 +45,7 @@ namespace Bloom
 				}
 				catch (Exception e)
 				{
-					Debug.Fail("(Debug Only) Can't bring to front in the current state: "+e.Message);
+					Debug.Fail("(Debug Only) Can't bring to front in the current state: " + e.Message);
 					//swallow... so we were in some state that we couldn't come to the front... that's ok.
 				}
 			});
