@@ -179,11 +179,11 @@ namespace Bloom.Edit
 						}
 
 						// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-						var copyright = GetHtmlEncodedCopyright(dlg);
+						var copyright = dlg.Metadata.CopyrightNotice;
 						dlg.Metadata.CopyrightNotice = copyright;
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						var rights = GetHtmlEncodedRights(dlg);
+						var rights = dlg.Metadata.License.RightsStatement;
 						dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
@@ -192,7 +192,7 @@ namespace Bloom.Edit
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
 								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
 								licenseImageName,
-								dlg.Metadata.License.Url, rights, description);
+								dlg.Metadata.License.Url, rights.Replace("'", "\\'"), description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
@@ -212,18 +212,6 @@ namespace Bloom.Edit
 #endif
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
-		}
-
-		private string GetHtmlEncodedRights(MetadataEditorDialog dlg)
-		{
-			var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
-			return rights ?? string.Empty;
-		}
-
-		private string GetHtmlEncodedCopyright(MetadataEditorDialog dlg)
-		{
-			var copyright = WebUtility.HtmlEncode(dlg.Metadata.CopyrightNotice);
-			return copyright ?? string.Empty;
 		}
 
 		private Metadata GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(Metadata metadata)
