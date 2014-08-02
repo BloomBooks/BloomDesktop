@@ -1362,10 +1362,10 @@ jQuery(document).ready(function () {
 //    )
 function SetCopyrightAndLicense(data) {
     //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(DecodeHtml(data.copyright));
+    $("DIV[data-book='copyright']").text(data.copyright);
     $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
     $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
+    $("DIV[data-book='licenseNotes']").text(data.licenseNotes);
     var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
     if (data.licenseImage.length == 0) {
         licenseImageValue = ""; //don't wan the date on there
@@ -1374,10 +1374,6 @@ function SetCopyrightAndLicense(data) {
 
     $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
     SetBookCopyrightAndLicenseButtonVisibility();
-}
-
-function DecodeHtml(encodedString) {
-    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility() {

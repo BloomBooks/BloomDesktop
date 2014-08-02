@@ -157,10 +157,8 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-                var decodedMetadata = GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(metadata);
-
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
+                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -190,9 +188,9 @@ namespace Bloom.Edit
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
+                                MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
-                                dlg.Metadata.License.Url, rights.Replace("'", "\\'"), description);
+                                dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
                         _browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 						
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
@@ -214,15 +212,11 @@ namespace Bloom.Edit
 			}
     	}
 
-        private Metadata GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(Metadata metadata)
+        // Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
+        private string MakeJavaScriptContent(string input)
         {
-            // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
-            var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
-            var copyright = WebUtility.HtmlDecode(metadata.CopyrightNotice);
-            var safeMetadata = metadata.DeepCopy();
-            safeMetadata.License.RightsStatement = rightsStatement;
-            safeMetadata.CopyrightNotice = copyright;
-            return safeMetadata;
+            // Order is important here...we do NOT want to double the backslash we insert before a single quote.
+            return input.Replace("\\", "\\\\").Replace("'", "\\'");
         }
 
         private void SetupThumnailLists()
