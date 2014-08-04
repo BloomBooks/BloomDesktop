@@ -13,8 +13,8 @@ using L10NSharp;
 
 namespace Bloom.Edit
 {
-    public partial class ThumbNailList : UserControl
-    {
+	public partial class ThumbNailList : UserControl
+	{
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
@@ -25,86 +25,103 @@ namespace Bloom.Edit
 		private int _numberofEmptyListItemsAtStart;
 		public HtmlThumbNailer Thumbnailer;
 		private Image _placeHolderImage;
-        public event EventHandler PageSelectedChanged;
+		public event EventHandler PageSelectedChanged;
 
-        public ThumbNailList()
-        {
-            InitializeComponent();
-            this.Font = new System.Drawing.Font(SystemFonts.DialogFont.FontFamily, 9F);
-        	_listView.LargeImageList = _thumbnailImageList;
-        	_listView.Sorting = SortOrder.Ascending;
-        	_listView.ListViewItemSorter = new SortListViewItemByIndex();
-              _listView.OwnerDraw = true;
-             _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
-             _boundsPen = new Pen(Brushes.DarkGray, 2);
-        	
+		public ThumbNailList()
+		{
+			InitializeComponent();
+			this.Font = new System.Drawing.Font(SystemFonts.DialogFont.FontFamily, 9F);
+			_listView.LargeImageList = _thumbnailImageList;
+			_listView.Sorting = SortOrder.Ascending;
+			_listView.ListViewItemSorter = new SortListViewItemByIndex();
+			//  _listView.OwnerDraw = true;
+			//SetDoubleBuffered(_listView);
+			// _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
+			 _boundsPen = new Pen(Brushes.DarkGray, 2);
+			
 			_placeHolderImage = new Bitmap(32, 32);
 
-        }
+		}
 
-        void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            e.DrawDefault = true;
+//		//from http://stackoverflow.com/a/77233/723299
+//		public static void SetDoubleBuffered(System.Windows.Forms.Control c)
+//		{
+//			if (System.Windows.Forms.SystemInformation.TerminalServerSession)
+//				return;
+//
+//			System.Reflection.PropertyInfo aProp =
+//				  typeof(System.Windows.Forms.Control).GetProperty(
+//						"DoubleBuffered",
+//						System.Reflection.BindingFlags.NonPublic |
+//						System.Reflection.BindingFlags.Instance);
+//
+//			aProp.SetValue(c, true, null);
+//		}
+//
+		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
+		{
+			e.DrawDefault = true;
+			e.Graphics.FillRectangle(Brushes.Gray, e.Bounds);
 			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
 			{
 				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Bottom, e.Bounds.Left, e.Bounds.Top);
 			}
-            //indicate selection in a more obvious way than just the grey screen we get by default
-            if(e.Item.Selected )
-            {
-                var r = e.Bounds;
-                r.Inflate(-1,-1);
-                e.Graphics.DrawRectangle(_boundsPen,r);
-            }
+			//indicate selection in a more obvious way than just the grey screen we get by default
+			if(e.Item.Selected )
+			{
+				var r = e.Bounds;
+				r.Inflate(-1,-1);
+				e.Graphics.DrawRectangle(_boundsPen,r);
+			}
 
 
-            if (e.Item == ItemWhichWouldPrecedeANewPageInsertion)
-            {
-                e.Graphics.DrawLine(Pens.White, e.Bounds.Right-8, e.Bounds.Bottom-2, e.Bounds.Right-5, e.Bounds.Bottom-6);
-                e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 5, e.Bounds.Bottom - 6);
-            }
-        }
+			if (e.Item == ItemWhichWouldPrecedeANewPageInsertion)
+			{
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right-8, e.Bounds.Bottom-2, e.Bounds.Right-5, e.Bounds.Bottom-6);
+				e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 5, e.Bounds.Bottom - 6);
+			}
+		}
 
-        public bool KeepShowingSelection
-        {
-            set
-            {
-                //_listView.HideSelection = !value;
-            }
-        }
+		public bool KeepShowingSelection
+		{
+			set
+			{
+				//_listView.HideSelection = !value;
+			}
+		}
 
-       private void InvokePageSelectedChanged(Page page)
-        {
-            EventHandler handler = PageSelectedChanged;
-            if (handler != null && /*REVIEW */ page!=null )
-            {
-                handler(page, null);
-            }
-        }
-        public void SetItems(IEnumerable<IPage> items)
-        {
-            _listView.ListViewItemSorter = null;
-            SuspendLayout();
+	   private void InvokePageSelectedChanged(Page page)
+		{
+			EventHandler handler = PageSelectedChanged;
+			if (handler != null && /*REVIEW */ page!=null )
+			{
+				handler(page, null);
+			}
+		}
+		public void SetItems(IEnumerable<IPage> items)
+		{
+			_listView.ListViewItemSorter = null;
+			SuspendLayout();
 			_listView.BeginUpdate();
-            _listView.Items.Clear();
-            _thumbnailImageList.Images.Clear();
+			_listView.Items.Clear();
+			_thumbnailImageList.Images.Clear();
 
-            _numberofEmptyListItemsAtStart = 0;
-        	int pageNumber = 0;
-            foreach (IPage page in items)
-            {
-                if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
-                    return;
+			_numberofEmptyListItemsAtStart = 0;
+			int pageNumber = 0;
+			foreach (IPage page in items)
+			{
+				if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
+					return;
 
-                if (page is PlaceHolderPage)
-                    ++_numberofEmptyListItemsAtStart;
+				if (page is PlaceHolderPage)
+					++_numberofEmptyListItemsAtStart;
 
 				AddOnePage(page, ref pageNumber);
-            }
-            _listView.ListViewItemSorter = new SortListViewItemByIndex();
-        	_listView.EndUpdate();
-            ResumeLayout();
-        }
+			}
+			_listView.ListViewItemSorter = new SortListViewItemByIndex();
+			_listView.EndUpdate();
+			ResumeLayout();
+		}
 
 		public void UpdateThumbnailCaptions()
 		{
@@ -113,8 +130,8 @@ namespace Bloom.Edit
 			foreach (ListViewItem item in _listView.Items)
 			{
 				IPage page = (IPage) item.Tag;
-			    var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-                item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
+				item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
 			}
 			_listView.EndUpdate();
 		}
@@ -122,9 +139,9 @@ namespace Bloom.Edit
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
 			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
-            label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label); 
-            
-            ListViewItem item = new ListViewItem(label, 0);
+			label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label); 
+			
+			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;
 			
 			Image thumbnail = Resources.PagePlaceHolder; ;
@@ -142,18 +159,18 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
-            var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
-            {
-                BackgroundColor = Palette.TextAgainstDarkBackground,
-                DrawBorderDashed = false,
-                CenterImageUsingTransparentPadding = true
-            };
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Palette.TextAgainstDarkBackground,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = true
+			};
 			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image), 
 													  error=> HandleThumbnailerError(page, error));
 		}
 
-	    private void HandleThumbnailerError(IPage page, Exception error)
-    	{
+		private void HandleThumbnailerError(IPage page, Exception error)
+		{
 #if DEBUG
 
 			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,10 +181,10 @@ namespace Bloom.Edit
 
 			Debug.Fail("Debug only" + error.Message);
 #endif
-    		RefreshOneThumbnailCallback(page, Resources.Error70x70);
-    	}
+			RefreshOneThumbnailCallback(page, Resources.Error70x70);
+		}
 
-    	private void RefreshOneThumbnailCallback(IPage page, Image image)
+		private void RefreshOneThumbnailCallback(IPage page, Image image)
 		{
 			if (IsDisposed)
 				return;
@@ -197,10 +214,10 @@ namespace Bloom.Edit
 		public bool CanSelect { get; set; }
 		public bool PreferPageNumbers { get; set; }
 		
-    	public RelocatePageEvent RelocatePageEvent { get; set; }
+		public RelocatePageEvent RelocatePageEvent { get; set; }
 
-    	private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
+		private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+		{
 			if (_inSelectionAlready)
 				return;
 			if (!_intentionallyChangingSelection)//yes, having painful phantom selections when the cursor leaves this control
@@ -208,7 +225,7 @@ namespace Bloom.Edit
 				_listView.SelectedIndices.Clear();
 			}
 
-        	_inSelectionAlready = true;
+			_inSelectionAlready = true;
 			try
 			{
 				if (_listView.SelectedItems.Count == 0)
@@ -230,40 +247,40 @@ namespace Bloom.Edit
 			{
 				_inSelectionAlready = false;
 			}
-        }
+		}
 
-        private void ThumbNailList_BackColorChanged(object sender, EventArgs e)
-        {
-            _listView.BackColor = BackColor;
-        }
+		private void ThumbNailList_BackColorChanged(object sender, EventArgs e)
+		{
+			_listView.BackColor = BackColor;
+		}
 
 		private void _listView_MouseDown(object sender, MouseEventArgs e)
 		{
 			_intentionallyChangingSelection = true;
-		    //_mouseDownLocation = e.Location;
+			//_mouseDownLocation = e.Location;
 			if (this.RelocatePageEvent !=null)
 			{
-                var listItem = _listView.GetItemAt(e.X, e.Y);
-                if (listItem == null)
-                    return;
-                if (!((IPage)listItem.Tag).CanRelocate)
-                {
-                    return;
-                }
-                Capture = true;
-			    
-			    _currentDraggingItem = listItem;
+				var listItem = _listView.GetItemAt(e.X, e.Y);
+				if (listItem == null)
+					return;
+				if (!((IPage)listItem.Tag).CanRelocate)
+				{
+					return;
+				}
+				Capture = true;
+				
+				_currentDraggingItem = listItem;
 				Cursor = Cursors.Hand;
 			}
 		}
 
-        /// <summary>
-        /// used to visually indicate where the page would show up, if we add a new one
-        /// </summary>
-        public ListViewItem ItemWhichWouldPrecedeANewPageInsertion
-        {
-            get; set;
-        }
+		/// <summary>
+		/// used to visually indicate where the page would show up, if we add a new one
+		/// </summary>
+		public ListViewItem ItemWhichWouldPrecedeANewPageInsertion
+		{
+			get; set;
+		}
 
 		private void _listView_MouseUp(object sender, MouseEventArgs e)
 		{
@@ -279,21 +296,21 @@ namespace Bloom.Edit
 
 			Capture = false;
 			Debug.WriteLine("MouseUp");
-            _intentionallyChangingSelection = false;
+			_intentionallyChangingSelection = false;
 
 			if (Control.MouseButtons == MouseButtons.Left)
 				return;
 			
 			Cursor = Cursors.Default;
 
-		    bool notPointingAtOriginalLocation= _listView.GetItemAt(e.X, e.Y) != _currentDraggingItem;
+			bool notPointingAtOriginalLocation= _listView.GetItemAt(e.X, e.Y) != _currentDraggingItem;
 
 //		    var horizontalMovement = Math.Abs(mouseDownLocation.X - e.X);
 //            var verticalMovement = Math.Abs(mouseDownLocation.Y - e.Y);
 //		    bool sufficientDistance = horizontalMovement > _thumbnailImageList.ImageSize.Width
 //                || verticalMovement > _thumbnailImageList.ImageSize.Height;
 
-            if (notPointingAtOriginalLocation &&  RelocatePageEvent != null && _currentDraggingItem != null)
+			if (notPointingAtOriginalLocation &&  RelocatePageEvent != null && _currentDraggingItem != null)
 			{
 				Debug.WriteLine("Re-ordering");
 				if (_currentTarget == null ||
@@ -327,52 +344,52 @@ namespace Bloom.Edit
 		}
 
 
-        private void _listView_MouseMove(object sender, MouseEventArgs e)
+		private void _listView_MouseMove(object sender, MouseEventArgs e)
 		{
 
-            if (_listView.GetItemAt(e.X, e.Y) == _currentDraggingItem)
-                return; //not really a "move" if we're still pointing at the original item
+			if (_listView.GetItemAt(e.X, e.Y) == _currentDraggingItem)
+				return; //not really a "move" if we're still pointing at the original item
 
 			if (this.RelocatePageEvent != null && _currentDraggingItem != null)
 			{
-			    if (Control.MouseButtons != MouseButtons.Left)
-			    {
+				if (Control.MouseButtons != MouseButtons.Left)
+				{
 //hack trying to get a correct notion of when the mouse is up
-			        _listView_MouseUp(null, e);
-			        return;
-			    }
-                
-			    Debug.WriteLine("Dragging");
-			    Cursor = Cursors.Hand;
-			    ListViewItem  target=null;
-                if (null == _listView.GetItemAt(e.X, e.Y))
-                {
-                    target = _listView.GetItemAt(e.X+20, e.Y);
-                }
-                else
-                {
-                    target = _listView.GetItemAt(e.X, e.Y);    
-                }
-			    
-                if (target == null)
-                {
-                    //when we point right in the middle, we'll get a null target, but we sure want one,
-                    //so try looking to one side
+					_listView_MouseUp(null, e);
+					return;
+				}
+				
+				Debug.WriteLine("Dragging");
+				Cursor = Cursors.Hand;
+				ListViewItem  target=null;
+				if (null == _listView.GetItemAt(e.X, e.Y))
+				{
+					target = _listView.GetItemAt(e.X+20, e.Y);
+				}
+				else
+				{
+					target = _listView.GetItemAt(e.X, e.Y);    
+				}
+				
+				if (target == null)
+				{
+					//when we point right in the middle, we'll get a null target, but we sure want one,
+					//so try looking to one side
 
-                    Debug.WriteLine("null target");
-                }
-                else
-                {
-                    Debug.WriteLine("target: " + target.Text);
+					Debug.WriteLine("null target");
+				}
+				else
+				{
+					Debug.WriteLine("target: " + target.Text);
 
-                    //if we're pointing to the right of some item, we want to insert *after* it.
-                    var middle = target.Position.X + (_thumbnailImageList.ImageSize.Width/2);
-                    if (e.X > middle && _listView.Items.Count - 1 > target.Index)
-                    {
-                        target = _listView.Items[target.Index + 1]; //choose the next item
-                    }
-                }
-			    if (_currentDraggingItem == target)//doesn't count to drag on yourself
+					//if we're pointing to the right of some item, we want to insert *after* it.
+					var middle = target.Position.X + (_thumbnailImageList.ImageSize.Width/2);
+					if (e.X > middle && _listView.Items.Count - 1 > target.Index)
+					{
+						target = _listView.Items[target.Index + 1]; //choose the next item
+					}
+				}
+				if (_currentDraggingItem == target)//doesn't count to drag on yourself
 				{
 					return;
 				}
@@ -385,52 +402,52 @@ namespace Bloom.Edit
 			}
 		}
 
-        public void SelectPage(IPage page)
-        {
-            if (_listView == null)
-                return;
+		public void SelectPage(IPage page)
+		{
+			if (_listView == null)
+				return;
 
-            foreach (ListViewItem listViewItem in _listView.Items)
-            {
-                var itemPage = listViewItem.Tag as IPage;
-                if (itemPage == null)
-                    continue;
-                
-                if(itemPage.Id == page.Id) //actual page object may change between book loads, but the id is consistent
-                {
-                    try
-                    {
-                        _intentionallyChangingSelection = true;
-                        listViewItem.Selected = true;
-                        ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
-                    	listViewItem.EnsureVisible();
-                    }
-                    finally
-                    {
-                        _intentionallyChangingSelection = false;
-                    }
-                    return;
-                }
-            }
-// actually, this is common because we might not yet have been told to update our list   Debug.Fail("Did not find item to select");
-        }
-
-        public void SetPageInsertionPoint(IPage pageBeforeInsertion)
-        {
-            ItemWhichWouldPrecedeANewPageInsertion = _listView.Items.OfType<ListViewItem>().FirstOrDefault(i => i.Tag == pageBeforeInsertion);
-        }
-
-    	public void EmptyThumbnailCache()
-    	{
-    		foreach (ListViewItem item in _listView.Items)
-    		{
+			foreach (ListViewItem listViewItem in _listView.Items)
+			{
+				var itemPage = listViewItem.Tag as IPage;
+				if (itemPage == null)
+					continue;
 				
-    			var pageId = (item.Tag as IPage).Id;
+				if(itemPage.Id == page.Id) //actual page object may change between book loads, but the id is consistent
+				{
+					try
+					{
+						_intentionallyChangingSelection = true;
+						listViewItem.Selected = true;
+						ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
+						listViewItem.EnsureVisible();
+					}
+					finally
+					{
+						_intentionallyChangingSelection = false;
+					}
+					return;
+				}
+			}
+// actually, this is common because we might not yet have been told to update our list   Debug.Fail("Did not find item to select");
+		}
+
+		public void SetPageInsertionPoint(IPage pageBeforeInsertion)
+		{
+			ItemWhichWouldPrecedeANewPageInsertion = _listView.Items.OfType<ListViewItem>().FirstOrDefault(i => i.Tag == pageBeforeInsertion);
+		}
+
+		public void EmptyThumbnailCache()
+		{
+			foreach (ListViewItem item in _listView.Items)
+			{
+				
+				var pageId = (item.Tag as IPage).Id;
 				if(!(item.Tag is PlaceHolderPage))
 					Thumbnailer.PageChanged(pageId);
-    		}
-    	}
-    }
+			}
+		}
+	}
 
 	/// <summary>
 	/// This makes a list view act, well, like one would expect; the items
