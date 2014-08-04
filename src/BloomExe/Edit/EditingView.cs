@@ -215,6 +215,8 @@ namespace Bloom.Edit
         // Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
         private string MakeJavaScriptContent(string input)
         {
+            if (input == null)
+                return "";
             // Order is important here...we do NOT want to double the backslash we insert before a single quote.
             return input.Replace("\\", "\\\\").Replace("'", "\\'");
         }
