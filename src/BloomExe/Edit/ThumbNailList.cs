@@ -34,17 +34,34 @@ namespace Bloom.Edit
 			_listView.LargeImageList = _thumbnailImageList;
 			_listView.Sorting = SortOrder.Ascending;
 			_listView.ListViewItemSorter = new SortListViewItemByIndex();
-			  _listView.OwnerDraw = true;
-			 _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
+			//  _listView.OwnerDraw = true;
+			//SetDoubleBuffered(_listView);
+			// _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
 			 _boundsPen = new Pen(Brushes.DarkGray, 2);
 
 			_placeHolderImage = new Bitmap(32, 32);
 
 		}
 
+//		//from http://stackoverflow.com/a/77233/723299
+//		public static void SetDoubleBuffered(System.Windows.Forms.Control c)
+//		{
+//			if (System.Windows.Forms.SystemInformation.TerminalServerSession)
+//				return;
+//
+//			System.Reflection.PropertyInfo aProp =
+//				  typeof(System.Windows.Forms.Control).GetProperty(
+//						"DoubleBuffered",
+//						System.Reflection.BindingFlags.NonPublic |
+//						System.Reflection.BindingFlags.Instance);
+//
+//			aProp.SetValue(c, true, null);
+//		}
+//
 		void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
 		{
 			e.DrawDefault = true;
+			e.Graphics.FillRectangle(Brushes.Gray, e.Bounds);
 			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
 			{
 				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Bottom, e.Bounds.Left, e.Bounds.Top);
