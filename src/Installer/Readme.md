@@ -2,6 +2,8 @@ On Windows, Bloom Desktop uses Microsoft's open source ["WIX Toolset"](http://wi
 
 Requirements for building the installer:
 
+-- bash so you can run build/getDependencies.sh
+
 - WIX Toolset. Version 1.0 shipped with WIX Toolset 3.7.
 
 - MSBuild Community tasks. I got the msi from https://github.com/loresoft/msbuildtasks/downloads.
@@ -14,8 +16,6 @@ Requirements for building the installer:
 
 - A customized .bat for running the installer:
 Copy build/testInstallerBuild.bat, rename it something like 'RalphsTestInstallerBuild.bat'. Then modify the location of the 
-/property:LargeFilesDir=
-to be where you put the xulrunner zip file.
 
 Run your bat file, and if all goes well you'll get an installer in your output/installer folder.
 
