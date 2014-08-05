@@ -228,8 +228,7 @@ namespace Bloom.WebLibraryIntegration
 					FilePath = file,
 					Key = prefix + fileName
 				};
-				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
-				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
+				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file.
 				// This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
 				// of BloomLibrary.
 				// I'm not sure whether there is still any reason to do it for other files.
@@ -238,8 +237,14 @@ namespace Bloom.WebLibraryIntegration
 				// it may not be needed for anything. Still, at least for the files a browser would not know how to
 				// open, it seems desirable to download them with their original names, if such a thing should ever happen.
 				// So I'm leaving the code in for now except in cases where we know we don't want it.
+				// It is possible to also set the filename ( after attachment, put ; filename='" + Path.GetFileName(file) + "').
+				// In principle this would be a good thing, since the massive AWS filenames are not useful.
+				// However, AWSSDK can't cope with setting this for files with non-ascii names.
+				// It seems that the header we insert here eventually becomes a header for a web request, and these allow only ascii.
+				// There may be some way to encode non-ascii filenames to get the effect, if we ever want it again. Or AWS may fix the problem.
+				// If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
 				if (Path.GetExtension(file).ToLowerInvariant() != ".pdf")
-					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
+					request.Headers.ContentDisposition = "attachment";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus", "Uploading {0}"),
