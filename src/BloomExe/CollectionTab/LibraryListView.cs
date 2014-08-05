@@ -331,7 +331,10 @@ namespace Bloom.CollectionTab
 			}
 
 			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
-			//The books that will already be localized are those in the main "templates" section: Basic Book, Calendar, etc.
+			//The idea is, if we already have a localization mapping for this name, then 
+			// we're not going to get a better title by digging into the document itself and overriding what the localizer
+			// chose to call it.
+			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
 			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay))
 			{
 				var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
