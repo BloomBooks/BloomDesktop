@@ -9,6 +9,10 @@ namespace Bloom
 		{
 			// don't do this if it is done already
 			if (fileName.StartsWith(ServerBase.PathEndingInSlash)) return fileName;
+
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			fileName = fileName.Replace("(", "%28").Replace(")", "%29");
+
 			return ServerBase.PathEndingInSlash + fileName.Replace(":", "%3A").Replace("\\", "/");
 		}
 
