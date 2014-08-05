@@ -675,7 +675,7 @@ namespace Bloom.Book
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
 
-			string copyright = metadata.CopyrightNotice;
+			string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
 			data.UpdateLanguageString("copyright", copyright, "*", false);
 
 			string description = metadata.License.GetDescription("en");
@@ -685,7 +685,7 @@ namespace Bloom.Book
 			data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
 
 			string licenseNotes = metadata.License.RightsStatement;
-			data.UpdateLanguageString("licenseNotes", licenseNotes, "*", false);
+			data.UpdateLanguageString("licenseNotes", WebUtility.HtmlEncode(licenseNotes), "*", false);
 
 			string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
@@ -727,7 +727,7 @@ namespace Bloom.Book
 			string licenseUrl = "";
 			if (data.TextVariables.TryGetValue("licenseUrl", out d))
 			{
-				licenseUrl = d.TextAlternatives.GetFirstAlternative();
+				licenseUrl = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 			}
 
 			if (licenseUrl == null || licenseUrl.Trim() == "")
@@ -738,7 +738,7 @@ namespace Bloom.Book
 				{
 					string licenseNotes = d.TextAlternatives.GetFirstAlternative();
 
-					metadata.License = new CustomLicense {RightsStatement = licenseNotes};
+					metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes) };
 				}
 				else
 				{
@@ -751,7 +751,7 @@ namespace Bloom.Book
 				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
 				if (data.TextVariables.TryGetValue("licenseNotes", out d))
 				{
-					metadata.License.RightsStatement = d.TextAlternatives.GetFirstAlternative();
+					metadata.License.RightsStatement = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 				}
 			}
 			return metadata;
