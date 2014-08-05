@@ -200,5 +200,15 @@ namespace Bloom
 
 		}
 	}
+	/// <summary>
+	/// fired when its possible that string should update from the localization manager
+	/// </summary>
+	public class LocalizationChangedEvent : Event<object>
+	{
+		public LocalizationChangedEvent()
+			: base("LocalizationChangedEvent", LoggingLevel.Major)
+		{
 
+		}
+	}
 }
