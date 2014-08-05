@@ -223,6 +223,7 @@ namespace Bloom.Publish
             this._titleLabel.Size = new System.Drawing.Size(27, 13);
             this._titleLabel.TabIndex = 2;
             this._titleLabel.Text = "Title";
+            this._titleLabel.UseMnemonic = false;
             // 
             // _copyrightLabel
             // 
@@ -313,6 +314,7 @@ namespace Bloom.Publish
             this._creditsLabel.Size = new System.Drawing.Size(604, 20);
             this._creditsLabel.TabIndex = 13;
             this._creditsLabel.Text = "credits";
+            this._creditsLabel.UseMnemonic = false;
             // 
             // _summaryBox
             // 
@@ -368,6 +370,7 @@ namespace Bloom.Publish
             this._licenseSuggestion.Size = new System.Drawing.Size(604, 30);
             this._licenseSuggestion.TabIndex = 24;
             this._licenseSuggestion.Text = "License Suggestion";
+            this._licenseSuggestion.UseMnemonic = false;
             // 
             // _creativeCommonsLink
             // 

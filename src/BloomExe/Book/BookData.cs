@@ -12,6 +12,7 @@ using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
+using RestSharp;
 
 namespace Bloom.Book
 {
@@ -815,10 +816,10 @@ namespace Bloom.Book
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
             {
 	            var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
-	            _dom.Title = t;
+                _dom.Title = t;
                 if (info != null)
                 {
-                    info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+                    info.Title = HttpDecode(t.Replace("<br />", "")); // Clean out breaks inserted at newlines.
                     // Now build the AllTitles field
                     var sb = new StringBuilder();
                     sb.Append("{");
@@ -829,13 +830,18 @@ namespace Bloom.Book
                         sb.Append("\"");
                         sb.Append(langForm.WritingSystemId);
                         sb.Append("\":\"");
-                        sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"","\\\"")); // Escape backslash and double-quote
+                        sb.Append(HttpDecode(langForm.Form).Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
                         sb.Append("\"");
                     }
                     sb.Append("}");
                     info.AllTitles = sb.ToString();
                 }
             }
+        }
+
+        string HttpDecode(string input)
+        {
+            return input.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"); // & last in case of &amp;lt; which should yield &lt; not <
         }
 
 	    private string[] WritingSystemIdsToTry
