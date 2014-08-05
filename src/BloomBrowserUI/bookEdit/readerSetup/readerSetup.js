@@ -101,7 +101,10 @@ function saveClicked() {
         var stage = {};
         stage.letters = stages[i].cells[1].innerHTML;
         stage.sightWords = stages[i].cells[2].innerHTML;
-        s.stages.push(stage);
+
+        // do not save stage with no data
+        if (stage.letters || stage.sightWords)
+            s.stages.push(stage);
     }
 
     // levels

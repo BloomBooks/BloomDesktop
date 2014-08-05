@@ -350,7 +350,9 @@ ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
 ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 
     var stages = this.synphony.getStages(stageNumber);
-    return _.pluck(stages, 'letters').join(' ').split(' ');
+
+    // compact to remove empty items if no graphemes are selected
+    return _.compact(_.pluck(stages, 'letters').join(' ').split(' '));
 };
 
 /**
@@ -361,6 +363,7 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
     var g = this.getKnownGraphemes(stageNumber);
+    if (g.length === 0) return [];
     return this.selectWordsFromSynphony(false, g, g, true, true);
 };
 
