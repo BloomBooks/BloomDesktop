@@ -248,7 +248,8 @@ namespace Bloom.Book
 
         private void AddJavaScriptForEditing(HtmlDom dom)
         {
-            dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js").ToLocalhost());
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
         }
 
 
