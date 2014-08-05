@@ -64,14 +64,10 @@ namespace Bloom.Book
 					var makeSureItsThere = Head;
 					var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 					//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
-
-					//so we set the xhtml (not the text) of the node
-					titleNode.InnerXml = t;
-					//then ask it for the text again (will drop the xhtml)
-					var justTheText = titleNode.InnerText.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-					//then clear it
+					//so we clear it by setting the xhtml (not the text) of the node
 					titleNode.InnerXml = "";
-					//and set the text again!
+					var justTheText = t.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
+					//and set the text to what we want...if this contains HTML markup it will be escaped and show up literally.
 					titleNode.InnerText = justTheText;
 				}
 			}
