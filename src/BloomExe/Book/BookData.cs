@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
+using System.Xml.Linq;
 using Bloom.Collection;
 using Palaso.Code;
 using Palaso.Text;
@@ -819,7 +820,7 @@ namespace Bloom.Book
                 _dom.Title = t;
                 if (info != null)
                 {
-                    info.Title = HttpDecode(t.Replace("<br />", "")); // Clean out breaks inserted at newlines.
+                    info.Title = TextOfInnerHtml(t.Replace("<br />", "")); // Clean out breaks inserted at newlines.
                     // Now build the AllTitles field
                     var sb = new StringBuilder();
                     sb.Append("{");
@@ -830,7 +831,7 @@ namespace Bloom.Book
                         sb.Append("\"");
                         sb.Append(langForm.WritingSystemId);
                         sb.Append("\":\"");
-                        sb.Append(HttpDecode(langForm.Form).Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
+                        sb.Append(TextOfInnerHtml(langForm.Form).Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
                         sb.Append("\"");
                     }
                     sb.Append("}");
@@ -839,9 +840,18 @@ namespace Bloom.Book
             }
         }
 
-        string HttpDecode(string input)
+        /// <summary>
+        /// The data we extract into title fields of _dataSet is the InnerXml of some XML node.
+        /// This might have markup, e.g., making a word italic. It will also have the amp, lt, and gt escaped.
+        /// We want to reduce it to plain text to store in bookInfo.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        string TextOfInnerHtml(string input)
         {
-            return input.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"); // & last in case of &amp;lt; which should yield &lt; not <
+            // Parsing it as XML and then extracting the value removes any markup.
+            var doc = XElement.Parse("<doc>" + input + "</doc>");
+            return doc.Value; // ?.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"); // & last in case of &amp;lt; which should yield &lt; not <
         }
 
 	    private string[] WritingSystemIdsToTry
