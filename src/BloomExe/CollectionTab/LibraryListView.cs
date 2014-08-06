@@ -53,11 +53,12 @@ namespace Bloom.CollectionTab
 
         private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-        public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
         {
             _model = model;
             _bookSelection = bookSelection;
+			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 	        _bookTransferrer = bookTransferrer;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
@@ -328,13 +329,21 @@ namespace Bloom.CollectionTab
 				}
 				return;
 			}
-
-            var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
+			
+			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
+			//The idea is, if we already have a localization mapping for this name, then 
+			// we're not going to get a better title by digging into the document itself and overriding what the localizer
+			// chose to call it.
+			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
+			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay))
+			{
+		    var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 		    if (titleBestForUserDisplay != button.Text)
 		    {
-			    Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);
+					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
 				button.Text = titleBestForUserDisplay;
 		    }
+			}
 		    if (button.ImageIndex==999)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 		    {
 				ScheduleRefreshOfOneThumbnail(book);
@@ -386,7 +395,7 @@ namespace Bloom.CollectionTab
                         if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
                         {
                             loadedAtLeastOneBook = true;
-                            AddOneBook(bookInfo, flowLayoutPanel);
+							AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLower() == "templates");
                         }
                     }
     		    }
@@ -485,10 +494,14 @@ namespace Bloom.CollectionTab
 		    get { return Parent.Parent.Parent.Parent != null; }
 	    }
 
-        private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
+        private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
     	{
 			var button = new Button(){Size=new Size(90,110)};
-    		button.Text = ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay);
+	        string title = bookInfo.QuickTitleUserDisplay;
+	        if (localizeTitle)
+		        title = LocalizationManager.GetDynamicString("Bloom", "Template."+title,title);
+
+	        button.Text = ShortenTitleIfNeeded(title);
     		button.TextImageRelation = TextImageRelation.ImageAboveText;
 			button.ImageAlign = ContentAlignment.TopCenter;
     		button.TextAlign = ContentAlignment.BottomCenter;

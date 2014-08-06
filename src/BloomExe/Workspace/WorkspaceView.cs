@@ -27,6 +27,7 @@ namespace Bloom.Workspace
 		private readonly CollectionSettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
+		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
 		private LibraryView _collectionView;
@@ -52,6 +53,7 @@ namespace Bloom.Workspace
 							SendReceiveCommand sendReceiveCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
+							LocalizationChangedEvent localizationChangedEvent,
 		                     FeedbackDialog.Factory feedbackDialogFactory,
 							ChorusSystem chorusSystem,
                             LocalizationManager localizationManager
@@ -62,6 +64,7 @@ namespace Bloom.Workspace
 			_settingsDialogFactory = settingsDialogFactory;
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
+			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
 		    _localizationManager = localizationManager;
@@ -176,6 +179,7 @@ namespace Bloom.Workspace
 				                               		Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 				                               		item.Select();
 				                               		_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+													_localizationChangedEvent.Raise(null);
 				                               	});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
 				{
@@ -192,6 +196,8 @@ namespace Bloom.Workspace
 			                               	{
                                                 _localizationManager.ShowLocalizationDialogBox(false);
 			                               		SetupUILanguageMenu();
+												LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
+												_localizationChangedEvent.Raise(null);
 			                               	});
 		}
 

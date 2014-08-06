@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
@@ -57,24 +58,25 @@ namespace BloomTemp
     }
 
 	public static class TempFileUtils
-	{
-		public static TempFile CreateHtm5FromXml(XmlNode dom)
-		{
-			var temp = TempFile.TrackExisting(GetHtmlTempPath());
+        {
+        public static TempFile CreateHtm5FromXml(XmlNode dom)
+        {
+            var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
 			
-			XmlWriterSettings settings = new XmlWriterSettings();
+        	XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
 			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+        	//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
 
 			// Enhance JohnT: no reason to go to disk for this intermediate version.
-			using (var writer = XmlWriter.Create(temp.Path, settings))
-			{
+            var sb = new StringBuilder();
+			using (var writer = XmlWriter.Create(sb, settings))
+            {
 				dom.WriteContentTo(writer);
-				writer.Close();
-			}
+                writer.Close();
+            }
 			// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
 			// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
 			// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
@@ -84,34 +86,34 @@ namespace BloomTemp
 			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
-			string xhtml = File.ReadAllText(temp.Path);
+        	string xhtml = sb.ToString();
 			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
 
-			return temp;
-		}
+            return temp;
+        }
 
-		private static string GetHtmlTempPath()
-		{
-			string x,y;
-			do
-			{
+        private static string GetHtmlTempPath()
+        {
+        	string x,y;
+        	do
+        	{
 				x = Path.GetTempFileName();
-				y = x + ".htm";
-			} while (File.Exists(y));
-			File.Move(x,y);
-			return y;
-		}
-	}
+				y = x + ".htm";        
+        	} while (File.Exists(y));
+            File.Move(x,y);
+            return y;
+        }
+    }
 
 	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means
 	// refactoring some Palaso code and moving TemporaryFolder from Palaso.TestUtilities into
 	// Palaso.IO
-	public class TemporaryFolder : IDisposable
-	{
-		private string _path;
+    public class TemporaryFolder : IDisposable
+    {
+        private string _path;
 
 
         static public TemporaryFolder TrackExisting(string path)
