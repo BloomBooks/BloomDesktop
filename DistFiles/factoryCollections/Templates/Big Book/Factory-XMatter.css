@@ -328,13 +328,13 @@ DIV.titlePage
 	display: block;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titePageTitleBlock DIV.bloom-contentNational2
+DIV#titlePageTitleBlock DIV.bloom-contentNational2, DIV#titePageTitleBlock DIV.bloom-contentNational2
 {
 	height: 35px;
 	text-align: center;
 	width: 419px;
 }
-DIV#titePageTitleBlock DIV.bloom-contentNational1
+DIV#titlePageTitleBlock DIV.bloom-contentNational1, DIV#titePageTitleBlock DIV.bloom-contentNational1
 {
 	height: 35px;
 	text-align: center;
@@ -348,7 +348,7 @@ DIV#titePageTitleBlock DIV.bloom-contentNational1
 }
 /*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
 It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
-DIV#titePageTitleBlock DIV.bloom-content1
+DIV#titlePageTitleBlock DIV.bloom-content1, DIV#titePageTitleBlock DIV.bloom-content1
 {
 	font-size: 150%;
 	height: 111px;
@@ -429,7 +429,7 @@ DIV.languageLocation
 	top: 50px;
 	width: 407px;
 }
-DIV#titePageTitleBlock
+DIV#titlePageTitleBlock, DIV#titePageTitleBlock
 {
 	width: inherit;
 }
@@ -568,6 +568,21 @@ DIV.licenseDescription
 	position: absolute;
 	left: 0;
 	top: 123px;
+}
+.A5Landscape DIV.licenseDescription
+{
+	/*+placement:anchor-top-left 0 107px;*/
+	position: absolute;
+	left: 0;
+	top: 107px;
+}
+.A4Portrait DIV.licenseDescription
+{
+	width: 80%;
+	/*+placement:anchor-top-left 84px 127px;*/
+	position: absolute;
+	left: 84px;
+	top: 127px;
 }
 .A5Landscape DIV.licenseDescription
 {

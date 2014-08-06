@@ -238,7 +238,7 @@ namespace Bloom
 
 		private static bool IsBloomBookOrder(string[] args)
 		{
-			return args.Length == 1 && !args[0].EndsWith(".bloomcollection");
+			return args.Length == 1 && !args[0].ToLower().EndsWith(".bloomcollection");
 		}
 
 		private static void Startup(object sender, EventArgs e)
