@@ -36,6 +36,7 @@ function processMessage(event) {
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [2]);
+                tabs.tabs('option', 'active', 1);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
                     addNewStage();
@@ -100,7 +101,10 @@ function saveClicked() {
         var stage = {};
         stage.letters = stages[i].cells[1].innerHTML;
         stage.sightWords = stages[i].cells[2].innerHTML;
-        s.stages.push(stage);
+
+        // do not save stage with no data
+        if (stage.letters || stage.sightWords)
+            s.stages.push(stage);
     }
 
     // levels
@@ -228,7 +232,11 @@ function requestWordsForSelectedStage() {
     sightWords = $.makeArray($(tr).prevAll().map(function() {
         return this.cells[2].innerHTML.split(' ');
     }));
+
     sightWords = _.union(sightWords, currentSightWords);
+
+    // remove empty items
+    sightWords = _.compact(sightWords);
 
     window.parent.postMessage('Words\n' + knownGPCS, '*');
 }
