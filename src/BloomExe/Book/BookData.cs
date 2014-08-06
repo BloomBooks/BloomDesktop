@@ -847,11 +847,11 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        string TextOfInnerHtml(string input)
+        internal static string TextOfInnerHtml(string input)
         {
             // Parsing it as XML and then extracting the value removes any markup.
             var doc = XElement.Parse("<doc>" + input + "</doc>");
-            return doc.Value; // ?.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"); // & last in case of &amp;lt; which should yield &lt; not <
+            return doc.Value;
         }
 
 	    private string[] WritingSystemIdsToTry
