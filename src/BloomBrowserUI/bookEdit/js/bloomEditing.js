@@ -425,23 +425,21 @@ function MakeSourceTextDivForGroup(group) {
 
 
 function GetLocalizedHint(whatToSay, targetElement) {
-    if(whatToSay.startsWith("*")){
+
+    if(whatToSay.startsWith("*"))
         whatToSay = whatToSay.substring(1,1000);
-    }
 
-    var dictionary = GetDictionary();
+    // look for elements being passed, e.g. anchor tags
+    if (whatToSay.substr(0, 1) === '<')
+        whatToSay = $(whatToSay).text();
 
-    if(whatToSay in dictionary) {
-        whatToSay = dictionary[whatToSay];
-    }
+    // get the translation
+    whatToSay = localizationManager.getText(whatToSay);
 
-    //stick in the language
-    for (key in dictionary) {
-        if (key.startsWith("{"))
-            whatToSay = whatToSay.replace(key, dictionary[key]);
+    // stick in the language
+    if (whatToSay.indexOf('{lang}') != -1)
+        whatToSay = whatToSay.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
 
-        whatToSay = whatToSay.replace("{lang}", dictionary[$(targetElement).attr('lang')]);
-    }
     return whatToSay;
 }
 
