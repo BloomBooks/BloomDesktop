@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Palaso.Network;
@@ -10,6 +11,7 @@ namespace Bloom.WebLibraryIntegration
 	/// This class represents an instance of a hyperlink which, when activated, causes a bloom book to be downloaded and opened.
 	///
 	/// Such a link looks like bloom://localhost/order?orderFile={path}, where path is appropriate urlencoded.
+	/// Optionally, it may be followed by &title={title}, where title is the book title (urlencoded).
 	///
 	/// To allow Bloom to be automatically started when such a link is activated requires some registry entries:
 	///
@@ -38,6 +40,7 @@ namespace Bloom.WebLibraryIntegration
 		public const string kLocalHost = "localhost";
 		/// <summary>Command-line argument: This is redundant for now, but just in case Bloom comes to handle any other kinds of URLs</summary>
 		public const string kOrder = "order";
+
 		/// <summary>
 		/// The one-and-only argument in a bloom order link: the path to the file.
 		/// </summary>
@@ -48,17 +51,30 @@ namespace Bloom.WebLibraryIntegration
 		/// The url extracted from the overall order where we can find the bloom book order file.
 		/// </summary>
 		public string OrderUrl { get; set; }
+		public string Title { get; set; }
 
 		public BloomLinkArgs(string url)
 		{
 			if (!url.StartsWith(kBloomUrlPrefix))
 				throw new ArgumentException(String.Format("unrecognized BloomLinkArgs URL string: {0}", url));
 			// I think we can't use the standard HttpUtility because we are trying to stick to the .NET 4.0 Client profile
-			var query = HttpUtilityFromMono.UrlDecode(url.Substring(kBloomUrlPrefix.Length));
-			var parts = query.Split('=');
+			var queryData = url.Substring(kBloomUrlPrefix.Length);
+			var qparams = queryData.Split('&');
+			var parts = qparams[0].Split('=');
 			if (parts.Length != 2 || parts[0] != kOrderFile)
 				throw new ArgumentException(String.Format("badly formed BloomLinkArgs URL string: {0}", url));
-			OrderUrl = parts[1];
+			OrderUrl = HttpUtilityFromMono.UrlDecode(parts[1]);
+			if (qparams.Length > 1 && qparams[1].StartsWith("title="))
+				Title = HttpUtilityFromMono.UrlDecode(qparams[1].Substring("title=".Length));
+			else
+			{
+				// Make up a title from the book order. This should be obsolete once all instances of Bloom Library
+				// are supplying titles.
+				var indexOfSlash = OrderUrl.LastIndexOf('/');
+				var bookOrder = OrderUrl.Substring(indexOfSlash + 1);
+				Title = Path.GetFileNameWithoutExtension(bookOrder);
+
+			}
 		}
 	}
 }
