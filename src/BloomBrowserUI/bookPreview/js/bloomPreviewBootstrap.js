@@ -6,3 +6,5 @@ document.write('<script type="text/javascript" src="' + lib + 'jquery-1.10.1.js"
 document.write('<script type="text/javascript" src="' + lib + 'jquery.myimgscale.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomPreview.js"></script>');
 
+document.write('<script type="text/javascript" src="' + lib + 'localizationManager.js"></script>');
+document.write('<script type="text/javascript" src="' + lib + 'jquery.i18n.custom.js"></script>');

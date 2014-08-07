@@ -74,14 +74,14 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
             // , adjust: { y: -20 }
         };
     }
-    else { // with the big back covers, the adjustment just makes things worse.      
+    else { // with the big back covers, the adjustment just makes things worse.
         pos = {
             at: 'right center',
             my: 'left center'
         };
     }
 
-    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
+    //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
@@ -101,9 +101,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         shouldShowAlways = false;
         hideEvents = 'focusout mouseleave';
     }
-    
+
     whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
-    
+
     $(targetElement).qtip({
         content: whatToSay,
         position: pos,
@@ -144,7 +144,7 @@ function Cleanup() {
     $("*.editTimeOnly").remove();
     $("*.dragHandle").remove();
     $("*").removeAttr("data-easytabs");
-    
+
     $("div.ui-resizable-handle").remove();
     $('div, figure').each(function() {
         $(this).removeClass('ui-draggable');
@@ -180,7 +180,7 @@ function AddToolbox(){
                     var $x = $($(ui.draggable).clone()[0]);
                     // $x.text("");
 
-                    //we need different behavior when it is in the toolbox vs. once it is live 
+                    //we need different behavior when it is in the toolbox vs. once it is live
                     $x.attr("class", $x.data("classesafterdrop"));
                     $x.removeAttr("classesafterdrop");
 
@@ -200,7 +200,7 @@ function AddToolbox(){
                     $x.removeClass("widgetInToolbox");
                     SetupResizableElement($x);
                     SetupDeletable($x);
-                    
+
                     $(this).append($x);
                 }
             }
@@ -211,7 +211,7 @@ function AddToolbox(){
         var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
         // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
         var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
-         
+
         var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
 
 
@@ -277,7 +277,7 @@ jQuery.expr[':'].hasNoText = function (obj) {
 
  //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
-    
+
     var divForBubble = $(group).clone();
     $(divForBubble).removeAttr('style');
 
@@ -293,7 +293,7 @@ function MakeSourceTextDivForGroup(group) {
             $(this).removeClass(styleClass);
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
-    
+
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
@@ -309,14 +309,14 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function() {
         $(this).remove();
     });
-    
+
     //in case some formatting didn't get cleaned up
     StyleEditor.CleanupElement(divForBubble);
 
     //if there are no languages to show in the bubble, bail out now
     if ($(divForBubble).find("textarea, div").length == 0)
         return;
-    
+
 /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument    $(this).after(divForBubble);*/
 
     var selectorOfDefaultTab="li:first-child";
@@ -383,7 +383,7 @@ function MakeSourceTextDivForGroup(group) {
 	    showEvents = false;
 	    hideEvents = false;
 	    shouldShowAlways = true;
-        
+
         //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
             showEvents = 'focusin';
@@ -425,23 +425,21 @@ function MakeSourceTextDivForGroup(group) {
 
 
 function GetLocalizedHint(whatToSay, targetElement) {
-    if(whatToSay.startsWith("*")){
+
+    if(whatToSay.startsWith("*"))
         whatToSay = whatToSay.substring(1,1000);
-    }
 
-    var dictionary = GetDictionary();
+    // look for elements being passed, e.g. anchor tags
+    if (whatToSay.substr(0, 1) === '<')
+        whatToSay = $(whatToSay).text();
 
-    if(whatToSay in dictionary) {
-        whatToSay = dictionary[whatToSay];
-    }
+    // get the translation
+    whatToSay = localizationManager.getText(whatToSay);
 
-    //stick in the language
-    for (key in dictionary) {
-        if (key.startsWith("{"))
-            whatToSay = whatToSay.replace(key, dictionary[key]);
+    // stick in the language
+    if (whatToSay.indexOf('{lang}') != -1)
+        whatToSay = whatToSay.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
 
-        whatToSay = whatToSay.replace("{lang}", dictionary[$(targetElement).attr('lang')]);
-    }
     return whatToSay;
 }
 
@@ -647,23 +645,23 @@ jQuery.fn.IsOverflowing = function () {
     // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
     // so we'll apply the same 'fudge' factor to both comparisons.
     var focusedBorderFudgeFactor = 2;
-	
+
 	 //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
-	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it 
+	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
 	 //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
 	 //element.
 	 var growFromCenterVerticalFudgeFactor =0;
 	 if($(element).data('firefoxheight')){
 		growFromCenterVerticalFudgeFactor = 2;
 	 }
-	 
+
 	 //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
 	 //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
 	 // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
 	 var shortBoxFudgeFactor = 4;
-	 
+
 	//console.log('s='+element.scrollHeight+' c='+element.clientHeight);
-		
+
 	 return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
 			 element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
 		 elemBottom > parentBottom + focusedBorderFudgeFactor;
@@ -987,11 +985,11 @@ jQuery(document).ready(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-         
+
         var enclosingEditableDiv = labelElement.parent();
         enclosingEditableDiv.attr('data-hint', labelElement.text());
         labelElement.remove();
-         
+
         //attach the bubble, this editable only, then remove it
         MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
     });
@@ -1005,7 +1003,7 @@ jQuery(document).ready(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
         var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-         
+
         //attach the bubble, separately, to every field inside the group
         labelElement.parent().find("div").each(function () {
             var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
@@ -1033,10 +1031,10 @@ jQuery(document).ready(function () {
     $("*.bloom-translationGroup > label.placeholder").each(function () {
 
         var labelText = $(this).text();
-         
+
         //put the attributes on the individual child divs
         $(this).parent().find('.bloom-editable').each(function () {
-             
+
             //enhance: it would make sense to allow each of these to be customized for their div
             //so that you could have a placeholder that said "Name in {lang}", for example.
             $(this).attr('data-placeholder', labelText);
@@ -1051,14 +1049,14 @@ jQuery(document).ready(function () {
         var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
         if (!whatToSay || whatToSay.length == 0)
             return;
-         
+
         //make hints that start with a * only show when the field has focus
         var showOnFocusOnly = whatToSay.startsWith("*");
 
         if (whatToSay.startsWith("*")) {
             whatToSay = whatToSay.substring(1, 1000);
         }
-       
+
         MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
     });
 
@@ -1153,7 +1151,7 @@ jQuery(document).ready(function () {
             }
 
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-             
+
             whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
             var pos = { at: 'right center',
@@ -1208,7 +1206,7 @@ jQuery(document).ready(function () {
     //This took *enormous* fussing in the css. TODO: copy what we learned there
     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
     $(".bloom-draggableLabel").each(function () {
-        // previous to June 2014, containment was not working, so some items may be 
+        // previous to June 2014, containment was not working, so some items may be
         // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
         if ($(this).position().left < 0) {
             $(this).css('left', 0);
@@ -1306,7 +1304,7 @@ jQuery(document).ready(function () {
     SetOverlayForImagesWithoutMetadata();
 
     //focus on the first editable field
-    
+
     SetupShowingTopicChooserWhenTopicIsClicked();
 
     //copy source texts out to their own div, where we can make a bubble with tabs out of them
@@ -1336,7 +1334,7 @@ jQuery(document).ready(function () {
             }
         });
     });
-     
+
     var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
 
     $("div.bloom-editable:visible").each(function () {
@@ -1390,12 +1388,12 @@ function FindOrCreateTopicDialogDiv() {
 
         var topics = JSON.parse(GetSettings().topics);
         // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
-        
+
         dialogContents.append("<ol id='topics'></ol>");
         for (i in topics) {
             $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
         }
-        
+
         $("#topics").selectable();
 
         //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
@@ -1414,7 +1412,7 @@ function FindOrCreateTopicDialogDiv() {
         $("#topics li").hover(
         function() {
             $(this).addClass('ui-state-hover');
-        }, 
+        },
         function() {
             $(this).removeClass('ui-state-hover');
         });
@@ -1422,7 +1420,7 @@ function FindOrCreateTopicDialogDiv() {
     return dialogContents;
 }
 
-//note, the normal way is for the user to click the link on the qtip. 
+//note, the normal way is for the user to click the link on the qtip.
 //But clicking on the exiting topic may be natural too, and this prevents
 //them from editing it by hand.
 function SetupShowingTopicChooserWhenTopicIsClicked() {
