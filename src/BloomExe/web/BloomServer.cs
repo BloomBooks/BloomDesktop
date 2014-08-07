@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Palaso.IO;
 using Palaso.Reporting;
 
@@ -17,7 +18,7 @@ namespace Bloom.web
 	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
 
 	// REVIEW: This class doesn't seem to be intented yet for production use
-	public class BloomServer : ServerBase
+	public class BloomServer : EnhancedImageServer
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookCollection _booksInProjectLibrary;
@@ -26,6 +27,7 @@ namespace Bloom.web
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 		                   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
+            :base(new LowResImageCache(new BookRenamedEvent()))
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;

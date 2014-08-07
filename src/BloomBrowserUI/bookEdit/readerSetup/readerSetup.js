@@ -6,6 +6,9 @@ var previousGPCs;
 var sightWords;
 var currentSightWords;
 
+function accordionWindow() {
+    return window.parent.document.getElementById('accordion').contentWindow;
+}
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -21,7 +24,7 @@ function processMessage(event) {
 
         case 'Data':
             loadReaderSetupData(params[1]);
-            window.parent.postMessage('SetupType', '*');
+            accordionWindow().postMessage('SetupType', '*');
             return;
 
         case 'Files':
@@ -122,7 +125,7 @@ function saveClicked() {
 
     // send to parent
     var settingsStr = JSON.stringify(s);
-    window.parent.postMessage('Refresh\n' + settingsStr, '*');
+    accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // send to C#
     fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
@@ -238,7 +241,7 @@ function requestWordsForSelectedStage() {
     // remove empty items
     sightWords = _.compact(sightWords);
 
-    window.parent.postMessage('Words\n' + knownGPCS, '*');
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -647,7 +650,7 @@ if (typeof ($) === "function") {
     });
 }
 
-$(document).ready(function() {
-    window.parent.postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({stop: updateStageNumbers });
+$(document).ready(function () {
+    accordionWindow().postMessage('Texts', '*');
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
 });
