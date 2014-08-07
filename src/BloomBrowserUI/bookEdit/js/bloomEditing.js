@@ -1,3 +1,37 @@
+// listen for messages sent to this page (from other iframes)
+window.addEventListener('message', processExternalMessage, false);
+/**
+ * Respond to messages from other iframes
+ * @param {Event} event
+ */
+function processExternalMessage(event) {
+
+    var params = event.data.split("\n");
+
+    switch(params[0]) {
+
+        case 'Qtips': // request from accordion to add qtips to marked-up spans
+            // q-tips; first 3 are for decodable, last for leveled; could make separate messages.
+            var editableElements = $(".bloom-content1");
+            editableElements.find('span.' + $.cssSightWord()).each(function() {
+                $(this).qtip({ content: 'Sight word' });
+            });
+
+            editableElements.find('span.' + $.cssWordNotFound()).each(function() {
+                $(this).qtip({ content: 'Word not valid' });
+            });
+
+            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+                $(this).qtip({ content: 'Possible word' });
+            });
+
+            editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
+                $(this).qtip({ content: 'Sentence too long' });
+            });
+            return;
+    }
+}
+
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         var ah = $(this).height();

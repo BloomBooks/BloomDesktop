@@ -435,11 +435,6 @@ ReaderToolsModel.prototype.doMarkup = function() {
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
 
-            // q-tips
-            editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
-                $(this).qtip({ content: 'Sentence too long' });
-            });
-
             break;
 
         case MarkupType.Decodable:
@@ -462,21 +457,9 @@ ReaderToolsModel.prototype.doMarkup = function() {
                 knownGraphemes: knownGraphemes
             });
 
-            // q-tips
-            editableElements.find('span.' + $.cssSightWord()).each(function() {
-                $(this).qtip({ content: 'Sight word' });
-            });
-
-            editableElements.find('span.' + $.cssWordNotFound()).each(function() {
-                $(this).qtip({ content: 'Word not valid' });
-            });
-
-            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-                $(this).qtip({ content: 'Possible word' });
-            });
-
             break;
     }
+    parent.window.document.getElementById('page').contentWindow.postMessage('Qtips', "*");
 };
 
 ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
