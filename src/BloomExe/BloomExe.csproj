@@ -71,8 +71,9 @@
     <Reference Include="Autofac.Configuration">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="AWSSDK">
-      <HintPath>..\..\packages\AWSSDK.2.0.2.0\lib\net35\AWSSDK.dll</HintPath>
+    <Reference Include="AWSSDK, Version=2.1.7.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\AWSSDK.2.1.7.0\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
@@ -367,7 +368,6 @@
     <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
-    <Compile Include="WebLibraryIntegration\DownloadOrderList.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1000,6 +1000,8 @@
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
     <None Include="Resources\cloud.png" />
     <None Include="Resources\upload.png" />
+    <None Include="Resources\SIL_Logo_2014Small1.png" />
+    <None Include="Resources\betatag2.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
@@ -1024,14 +1026,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <ItemGroup>
-    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css"/>
+    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css" />
   </ItemGroup>
   <ItemGroup>
-    <SourceFiles Include="../../lib/dotnet/*.config"/>
+    <SourceFiles Include="../../lib/dotnet/*.config" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader"/>
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader"/>
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
   </Target>
 </Project>

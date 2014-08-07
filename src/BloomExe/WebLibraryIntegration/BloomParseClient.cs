@@ -132,7 +132,7 @@ namespace Bloom.WebLibraryIntegration
             _sessionToken = String.Empty;
 		    Account = string.Empty;
             var request = MakeGetRequest("login");
-            request.AddParameter("username", account);
+            request.AddParameter("username", account.ToLowerInvariant());
             request.AddParameter("password", password);
             var response = _client.Execute(request);
             var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
@@ -193,7 +193,7 @@ namespace Bloom.WebLibraryIntegration
 	    {
 		    var request = MakePostRequest("users");
 		    var metadataJson =
-			    "{\"username\":\"" + account + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
+			    "{\"username\":\"" + account.ToLowerInvariant() + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = _client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
@@ -304,7 +304,7 @@ namespace Bloom.WebLibraryIntegration
 	    internal bool UserExists(string account)
 	    {
 		    var request = MakeGetRequest("users");
-			request.AddParameter("where", "{\"username\":\"" + account + "\"}");
+			request.AddParameter("where", "{\"username\":\"" + account.ToLowerInvariant() + "\"}");
 			var response = _client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			// Todo

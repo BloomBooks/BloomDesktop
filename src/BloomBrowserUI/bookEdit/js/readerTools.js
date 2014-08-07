@@ -353,7 +353,9 @@ ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
 ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 
     var stages = this.synphony.getStages(stageNumber);
-    return _.pluck(stages, 'letters').join(' ').split(' ');
+
+    // compact to remove empty items if no graphemes are selected
+    return _.compact(_.pluck(stages, 'letters').join(' ').split(' '));
 };
 
 /**
@@ -364,6 +366,7 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
     var g = this.getKnownGraphemes(stageNumber);
+    if (g.length === 0) return [];
     return this.selectWordsFromSynphony(false, g, g, true, true);
 };
 
@@ -431,6 +434,12 @@ ReaderToolsModel.prototype.doMarkup = function() {
             editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
+
+            // q-tips
+            editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
+                $(this).qtip({ content: 'Sentence too long' });
+            });
+
             break;
 
         case MarkupType.Decodable:
@@ -452,6 +461,20 @@ ReaderToolsModel.prototype.doMarkup = function() {
                 sightWords: sightWords,
                 knownGraphemes: knownGraphemes
             });
+
+            // q-tips
+            editableElements.find('span.' + $.cssSightWord()).each(function() {
+                $(this).qtip({ content: 'Sight word' });
+            });
+
+            editableElements.find('span.' + $.cssWordNotFound()).each(function() {
+                $(this).qtip({ content: 'Word not valid' });
+            });
+
+            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+                $(this).qtip({ content: 'Possible word' });
+            });
+
             break;
     }
 };
@@ -657,6 +680,8 @@ function initializeDecodableRT() {
         model.sortByFrequency();
     });
 
+    model.updateControlContents();
+
     setTimeout(function() { $.divsToColumns('word'); }, 100);
 }
 
@@ -674,6 +699,8 @@ function initializeLeveledRT() {
     $('#decLevel').onOnce('click.readerTools', function() {
         model.decrementLevel();
     });
+
+    model.updateControlContents();
 }
 
 /**

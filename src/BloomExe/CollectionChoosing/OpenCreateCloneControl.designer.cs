@@ -40,7 +40,6 @@ namespace Bloom.CollectionChoosing
             this.button9 = new System.Windows.Forms.Button();
             this._templateButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this._lookingForSourceCollectionsHtml = new Bloom.HtmlLabel();
             this._readMoreLink = new System.Windows.Forms.LinkLabel();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             this.tableLayoutPanel2.SuspendLayout();
@@ -65,7 +64,6 @@ namespace Bloom.CollectionChoosing
             this.tableLayoutPanel2.Controls.Add(this.button9, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this._templateButton, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.label1, 2, 0);
-            this.tableLayoutPanel2.Controls.Add(this._lookingForSourceCollectionsHtml, 0, 6);
             this.tableLayoutPanel2.Controls.Add(this._readMoreLink, 2, 4);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
@@ -224,24 +222,7 @@ namespace Bloom.CollectionChoosing
             this.label1.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
     "ese red buttons to copy their collection to your computer.\r\nLater, use Send/Recei" +
     "ve to share your work back with them.";
-            // 
-            // _lookingForSourceCollectionsHtml
-            // 
-            this._lookingForSourceCollectionsHtml.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutPanel2.SetColumnSpan(this._lookingForSourceCollectionsHtml, 3);
-            this._lookingForSourceCollectionsHtml.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this._lookingForSourceCollectionsHtml.Font = new System.Drawing.Font("Segoe UI", 9.75F);
-            this._lookingForSourceCollectionsHtml.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
-            this._lookingForSourceCollectionsHtml.HTML = "Are you are looking for shell books to translate into your language? Check out the <a href=\'http://bloomlibrary.org/#/browse/'>Bloom Book Library</a>.";
-            this._L10NSharpExtender.SetLocalizableToolTip(this._lookingForSourceCollectionsHtml, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._lookingForSourceCollectionsHtml, null);
-            this._L10NSharpExtender.SetLocalizingId(this._lookingForSourceCollectionsHtml, "OpenCreateNewCollectionsDialog.MoreBloompacksInformation");
-            this._lookingForSourceCollectionsHtml.Location = new System.Drawing.Point(0, 318);
-            this._lookingForSourceCollectionsHtml.Margin = new System.Windows.Forms.Padding(0);
-            this._lookingForSourceCollectionsHtml.Name = "_lookingForSourceCollectionsHtml";
-            this._lookingForSourceCollectionsHtml.Size = new System.Drawing.Size(889, 25);
-            this._lookingForSourceCollectionsHtml.TabIndex = 27;
-            // 
+             // 
             // _readMoreLink
             // 
             this._readMoreLink.AutoSize = true;
@@ -294,7 +275,6 @@ namespace Bloom.CollectionChoosing
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.Button _templateButton;
         private System.Windows.Forms.Label label1;
-        private HtmlLabel _lookingForSourceCollectionsHtml;
         private System.Windows.Forms.Button _browseButton;
         private System.Windows.Forms.LinkLabel _readMoreLink;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;

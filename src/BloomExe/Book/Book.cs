@@ -248,7 +248,8 @@ namespace Bloom.Book
 
         private void AddJavaScriptForEditing(HtmlDom dom)
         {
-            dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js").ToLocalhost());
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
         }
 
 
@@ -603,7 +604,33 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+			
+			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
     	}
+
+
+		// Around May 2014 we added a class, .bloom-requireParagraphs, backed by javascript that makes geckofx 
+		// emit <p>s instead of <br>s (which you can't style and don't leave a space in wkhtmltopdf).
+		// If there is existing text after we added this, it needs code to do the conversion. There
+		// is already javascript for this, but by having it here allows us to update an entire collection in one commmand.
+		// Note, this doesn't yet do as much as the javascript version, which also can be triggered by a border-top-style
+		// of "dashed", so that books shipped without this class can still be converted over.
+		public void UpdateTextsNewlyChangedToRequiresParagraph(HtmlDom bookDom)
+		{
+			var texts = OurHtmlDom.SafeSelectNodes("//*[contains(@class,'bloom-requiresParagraphs')]/div[contains(@class,'bloom-editable') and br]");
+			foreach (XmlElement text in texts)
+			{
+				string s = "";
+				foreach (var chunk in text.InnerXml.Split(new string[] { "<br />", "<br/>"}, StringSplitOptions.None))
+				{
+					if (chunk.Trim().Length > 0)
+						s += "<p>" + chunk + "</p>";
+				}
+				text.InnerXml = s;
+			}
+		}
+
+
 
 	    internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 	    {

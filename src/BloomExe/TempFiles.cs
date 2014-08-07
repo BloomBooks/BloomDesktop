@@ -64,9 +64,10 @@ namespace BloomTemp
 			var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
 			var settings = GetXmlWriterSettingsForHtml5();
-
-		    // Enhance JohnT: no reason to go to disk for this intermediate version.
-			using (var writer = XmlWriter.Create(temp.Path, settings))
+			
+			// Enhance JohnT: no reason to go to disk for this intermediate version.
+            var sb = new StringBuilder();
+			using (var writer = XmlWriter.Create(sb, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
@@ -80,7 +81,7 @@ namespace BloomTemp
 			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
-			string xhtml = File.ReadAllText(temp.Path);
+			string xhtml =  sb.ToString();
 		    File.WriteAllText(temp.Path, CleanupHtml5(xhtml));
 
 			return temp;
@@ -120,13 +121,13 @@ namespace BloomTemp
 
 	    public static string CleanupHtml5(string xhtml)
 	    {
-	        var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
-	        xhtml = re.Replace(xhtml, "<$1 $2></$1>");
-	        //now insert the non-xml-ish <!doctype html>
+			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
+			//now insert the non-xml-ish <!doctype html>
 	        return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
-	    }
+		}
 
-	    private static string GetHtmlTempPath()
+		private static string GetHtmlTempPath()
 		{
 			string x,y;
 			do
