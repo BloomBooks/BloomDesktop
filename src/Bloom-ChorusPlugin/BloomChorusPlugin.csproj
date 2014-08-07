@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="BloomHtmlFileTypeHandler.cs" />
     <Compile Include="BloomElementToStrategyKeyMapper.cs" />
+    <Compile Include="BloomPageContextGenerator.cs" />
     <Compile Include="HtmlFileForMerging.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
