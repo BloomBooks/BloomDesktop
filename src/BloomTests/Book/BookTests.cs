@@ -831,9 +831,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var titleElt = _bookDom.SelectSingleNode("//textarea");
-			titleElt.InnerText = "changed";
+			titleElt.InnerText = "changed & <mangled>";
 			book.Save();
-			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
 		[Test]
