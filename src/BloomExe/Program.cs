@@ -13,6 +13,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
+using Gecko;
 using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -198,6 +199,9 @@ namespace Bloom
 
                     }
 					Browser.SetUpXulRunner();
+#if DEBUG
+	                StartDebugServer();
+#endif
 					L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 					FinishStartup();
@@ -588,6 +592,53 @@ namespace Bloom
 			}
 		}
 
+		static nsILocalFile toNsFile(string file)
+		{
+			var nsfile = Xpcom.CreateInstance<nsILocalFile>("@mozilla.org/file/local;1");
+			nsfile.InitWithPath(new nsAString(file));
+			return nsfile;
+		}
+
+		static void registerChromeDir(string dir)
+		{
+			var chromeDir = toNsFile(dir);
+			var chromeFile = chromeDir.Clone();
+			chromeFile.Append(new nsAString("chrome.manifest"));
+			Xpcom.ComponentRegistrar.AutoRegister(chromeFile);
+			Xpcom.ComponentManager.AddBootstrappedManifestLocation(chromeDir);
+		}
+
+		/// <summary>
+		/// This code (and the two methods above) were taken from https://bitbucket.org/duanyao/moz-devtools-patch
+		/// with thanks to Duane Yao.
+		/// It starts up a server that allows FireFox to be used to inspect and debug the content of geckofx windows.
+		/// See the ReadMe in remoteDebugging for instructions.
+		/// Note that this should NOT be done in production. There are security issues.
+		/// </summary>
+		static void StartDebugServer()
+		{
+			GeckoPreferences.User["devtools.debugger.remote-enabled"] = true;
+
+			// It seems these files MUST be in a subdirectory of the application directory. At least, I haven't figured out
+			// how it can be anywhere else. Therefore the build copies the necessary files there.
+			// If you try to change it, be aware that the chrome.manifest file contains the name of the parent folder;
+			// if you rename the folder and don't change the name there, you get navigation errors in the code below and
+			// remote debugging doesn't work.
+			var chromeDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "remoteDebugging");
+			registerChromeDir(chromeDir);
+			var browser = new GeckoWebBrowser();
+			browser.NavigationError += (s, e) =>
+			{
+				Console.WriteLine(">>>StartDebugServer error: " + e.ErrorCode.ToString("X"));
+				browser.Dispose();
+			};
+			browser.DocumentCompleted += (s, e) =>
+			{
+				Console.WriteLine(">>>StartDebugServer complete");
+				browser.Dispose();
+			};
+			browser.Navigate("chrome://remoteDebugging/content/moz-remote-debug.html");
+		}
 
 	    private static void ReopenProject(object sender, EventArgs e)
 		{
