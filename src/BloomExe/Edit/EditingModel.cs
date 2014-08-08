@@ -414,7 +414,7 @@ namespace Bloom.Edit
         /// Return the top-level document that should be displayed in the browser for the current page.
         /// Currently this is NOT _domForCurrentPage, which is the actual page content; rather it is
         /// a wrapper page which contains two iframes, one with _domForCurrentPage and one with the accordion.
-        /// Enhance JohnT: Since PublishViewFrame.htm does not change, it should be possible to modify
+        /// Enhance JohnT: Since EditViewFrame.htm does not change, it should be possible to modify
         /// the caller so that it just loads that file directly, rather than making a temp file out of
         /// the DOM we make out of the file. However, we probably soon want to make the accordion optional,
         /// at which point we may just return _domForCurrentPage when it is turned off.
@@ -426,7 +426,7 @@ namespace Bloom.Edit
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
             _server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
 			_server.AccordionContent = MakeAccordionContent();
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "PublishViewFrame.htm");
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
             return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
         }
 
