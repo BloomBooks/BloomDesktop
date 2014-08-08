@@ -315,8 +315,9 @@ namespace Bloom.Edit
 			if (_model.HaveCurrentEditableBook)
 			{
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
-				HtmlDom domForCurrentPage;
-				var dom = _model.GetXmlDocumentForCurrentPage(out domForCurrentPage);
+				_model.SetupServerWithCurrentPageIframeContents();
+				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
+				var dom = _model.GetXmlDocumentForEditScreenWebPage();
 				_browser1.Focus();
 				_browser1.Navigate(dom.RawDom, domForCurrentPage.RawDom);
 				_pageListView.Focus();

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using Bloom.Book;
@@ -410,22 +411,36 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
-		/// <summary>
-		/// Return the top-level document that should be displayed in the browser for the current page.
-		/// Currently this is NOT _domForCurrentPage, which is the actual page content; rather it is
-		/// a wrapper page which contains two iframes, one with _domForCurrentPage and one with the accordion.
-		/// Enhance JohnT: Since EditViewFrame.htm does not change, it should be possible to modify
-		/// the caller so that it just loads that file directly, rather than making a temp file out of
-		/// the DOM we make out of the file. However, we probably soon want to make the accordion optional,
-		/// at which point we may just return _domForCurrentPage when it is turned off.
-		/// </summary>
-		/// <returns></returns>
-		public HtmlDom GetXmlDocumentForCurrentPage(out HtmlDom domForCurrentPage)
+		public void SetupServerWithCurrentPageIframeContents()
 		{
-			domForCurrentPage = _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
 			_server.AccordionContent = MakeAccordionContent();
+		}
+
+		/// <summary>
+		/// Return the DOM that represents the content of the current page.
+		/// Note that this is typically not the top-level thing displayed by the browser; rather, it is embedded in an
+		/// iframe.
+		/// </summary>
+		/// <returns></returns>
+		public HtmlDom GetXmlDocumentForCurrentPage()
+		{
+			return _domForCurrentPage;
+		}
+
+		/// <summary>
+		/// Return the top-level document that should be displayed in the browser for the current page.
+		/// Enhance JohnT: Since EditViewFrame.htm does not change, it should be possible to modify
+		/// the caller so that it just loads that file directly, rather than making a temp file out of
+		/// the DOM we make out of the file. However, we probably soon want to make the accordion optional,
+		/// at which point we may just return _domForCurrentPage when it is turned off, or more likely,
+		/// return a modified DOM which hides it.
+		/// </summary>
+		/// <returns></returns>
+		public HtmlDom GetXmlDocumentForEditScreenWebPage()
+		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
 			return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 		}
