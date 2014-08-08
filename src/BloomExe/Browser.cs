@@ -28,8 +28,8 @@ namespace Bloom
         protected GeckoWebBrowser _browser;
         bool _browserIsReadyToNavigate;
         private string _url;
-    	private XmlDocument _pageDom; // root DOM we navigate do
-	    private XmlDocument _editDom; // DOM, dypically in a frame of _pageDom, which we are editing.
+    	private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
+	    private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
     	private TempFile _tempHtmlFile;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
@@ -460,13 +460,13 @@ namespace Bloom
 				return;
 			}
 
-			_pageDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
-            _editDom = editDom ?? dom;
+			_rootDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
+            _pageEditDom = editDom ?? dom;
 
 			/*	This doesn't work for the 1st book shown, or when you change book sizes.
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
 			*/
-			XmlElement body = (XmlElement) _pageDom.GetElementsByTagName("body")[0];
+			XmlElement body = (XmlElement) _rootDom.GetElementsByTagName("body")[0];
         	var scale = GetScaleToShowWholeWidthOfPage();
 			if (scale > 0f)
 			{
@@ -550,11 +550,11 @@ namespace Bloom
         private void LoadPageDomFromBrowser()
     	{
 			Debug.Assert(!InvokeRequired);
-			if (_editDom == null)
+			if (_pageEditDom == null)
                 return;
 
     	    var contentDocument = _browser.Document;
-    	    if (_editDom != _pageDom)
+    	    if (_pageEditDom != _rootDom)
     	    {
                 // Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
     	        var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
@@ -565,7 +565,7 @@ namespace Bloom
     	    if (contentDocument == null)
     	        return; // can this happen?
             // As of august 2012 textareas only occur in the Calendar
-            if (_editDom.SelectNodes("//textarea").Count > 0)
+            if (_pageEditDom.SelectNodes("//textarea").Count > 0)
             {
                 //This approach was to force an onblur so that we can get at the actual user-edited value.
                 //This caused problems, with Bloom itself (the Shell) not knowing that it is active.
@@ -591,10 +591,10 @@ namespace Bloom
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
 				var bodyDom = dom.SelectSingleNode("//body");
 
-				if (_editDom == null)
+				if (_pageEditDom == null)
 					return;
 
-                var destinationDomPage = _editDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
+                var destinationDomPage = _pageEditDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
 				if (destinationDomPage == null)
 					return;
 				var expectedPageId = destinationDomPage["id"];
@@ -609,7 +609,7 @@ namespace Bloom
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
 					return;
 				}
-				_editDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
+				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
                 var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
 					{
@@ -638,7 +638,7 @@ namespace Bloom
 						}
 						styles.AppendLine("</style>");
 						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
-                        _editDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+                        _pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 					}
 					catch (COMException)
 					{
@@ -668,7 +668,7 @@ namespace Bloom
 
 			try
 			{ 
-				XmlHtmlConverter.ThrowIfHtmlHasErrors(_editDom.OuterXml);
+				XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageEditDom.OuterXml);
 			}
 			catch (Exception e)
 			{
