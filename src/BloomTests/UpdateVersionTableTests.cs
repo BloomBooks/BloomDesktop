@@ -81,6 +81,7 @@ namespace BloomTests
             Assert.AreEqual("http://third.com/third", t.GetAppcastUrl());
         }
 
+        [Test]
         public void CanReadActualFileFromServer()
         {
             var t = new UpdateVersionTable(); 
