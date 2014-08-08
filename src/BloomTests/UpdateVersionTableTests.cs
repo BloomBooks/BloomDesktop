@@ -81,7 +81,7 @@ namespace BloomTests
             Assert.AreEqual("http://third.com/third", t.GetAppcastUrl());
         }
 
-        [Test, Ignore("currently (temporarily) breaking on TeamCity due to an IP address conflict")]
+        [Test]
         public void CanReadActualFileFromServer()
         {
             var t = new UpdateVersionTable(); 
