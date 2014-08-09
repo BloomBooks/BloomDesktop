@@ -18,17 +18,6 @@ namespace Bloom.Book
     {
         public static void AddUIDictionaryToDom(HtmlDom pageDom, CollectionSettings collectionSettings)
         {
-			// add i18n initialization script to the page
-            XmlElement i18nScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-i18n']") as XmlElement;
-            if (i18nScriptElement != null)
-                i18nScriptElement.ParentNode.RemoveChild(i18nScriptElement);
-
-            i18nScriptElement = pageDom.RawDom.CreateElement("script");
-            i18nScriptElement.SetAttribute("type", "text/javascript");
-            i18nScriptElement.SetAttribute("id", "ui-i18n");
-            i18nScriptElement.InnerText = "$(document).ready(function() { $('body').find('*[data-i18n]').localize(); });";
-            pageDom.Head.InsertAfter(i18nScriptElement, pageDom.Head.LastChild);
-
             // add dictionary script to the page
             XmlElement dictionaryScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
             if (dictionaryScriptElement != null)
@@ -66,8 +55,35 @@ namespace Bloom.Book
 
             dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
+			// add i18n initialization script to the page
+			AddLocalizationTriggerToDom(pageDom);
+
 			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
         }
+
+		/// <summary>
+		/// Adds a script to the page that triggers i18n after the page is fully loaded.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		private static void AddLocalizationTriggerToDom(HtmlDom pageDom)
+		{
+			XmlElement i18nScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-i18n']") as XmlElement;
+			if (i18nScriptElement != null)
+				i18nScriptElement.ParentNode.RemoveChild(i18nScriptElement);
+
+			i18nScriptElement = pageDom.RawDom.CreateElement("script");
+			i18nScriptElement.SetAttribute("type", "text/javascript");
+			i18nScriptElement.SetAttribute("id", "ui-i18n");
+
+			// Explanation of the JavaScript:
+			//   $(document).ready(function() {...}) tells the browser to run the code inside the braces after the document has completed loading.
+			//   $('body') is a jQuery function that selects the contents of the body tag.
+			//   .find('*[data-i18n]') instructs jQuery to return a collection of all elements inside the body tag that have a "data-i18n" attribute.
+			//   .localize() runs the jQuery.fn.localize() method, which loops through the above collection of elements and attempts to localize the text.
+			i18nScriptElement.InnerText = "$(document).ready(function() { $('body').find('*[data-i18n]').localize(); });";
+
+			pageDom.Head.InsertAfter(i18nScriptElement, pageDom.Head.LastChild);
+		}
 
         private static void MakePageLabelLocalizable(HtmlDom singlePageHtmlDom, Dictionary<string, string> d)
         {
