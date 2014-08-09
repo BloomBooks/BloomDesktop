@@ -34,9 +34,11 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
