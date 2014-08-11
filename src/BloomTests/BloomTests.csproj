@@ -153,6 +153,7 @@
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
     <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
+    <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />

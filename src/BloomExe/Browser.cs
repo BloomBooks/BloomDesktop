@@ -74,6 +74,12 @@ namespace Bloom
             InitializeComponent();
         }
 
+		/// <summary>
+		/// Should be set by every caller of the constructor before attempting navigation. The only reason we don't make it a constructor argument
+		/// is so that Browser can be used in designer.
+		/// </summary>
+		public NavigationIsolator Isolator { get; set; }
+
         public void SetEditingCommands( CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
         {
             _cutCommand = cutCommand;
@@ -446,7 +452,7 @@ namespace Bloom
             if (_url!=null)
             {
                 _browser.Visible = true;
-                _browser.Navigate(_url);
+				Isolator.Navigate(_browser, _url);
 			}
         }
 
@@ -628,7 +634,7 @@ namespace Bloom
 			//TODO: work on getting the ability to get a return value: http://chadaustin.me/2009/02/evaluating-javascript-in-an-embedded-xulrunnergecko-window/ , EvaluateStringWithValue, nsiscriptcontext,  
 
  
-        	WebBrowser.Navigate("javascript:void(" +script+")");
+        	Isolator.Navigate(WebBrowser, "javascript:void(" +script+")");
         	// from experimentation (at least with a script that shows an alert box), the script isn't run until this happens:
         	//var filter = new TestMessageFilter();
         	//Application.AddMessageFilter(filter);

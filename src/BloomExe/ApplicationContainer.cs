@@ -62,9 +62,9 @@ namespace Bloom
 
                 //this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
                 //HtmlThumbnailer & ConfigurationDialog, at least, use this.
-                builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
+                builder.Register(c => new NavigationIsolator()).InstancePerLifetimeScope();
 
-                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<MonitorTarget>())).SingleInstance();
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
 
 				_container = builder.Build();
 			}

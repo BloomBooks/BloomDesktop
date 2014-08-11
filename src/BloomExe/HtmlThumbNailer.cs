@@ -21,7 +21,7 @@ namespace Bloom
     public class HtmlThumbNailer: IDisposable
     {
         Dictionary<string, Image> _images = new Dictionary<string, Image>();
-        private readonly MonitorTarget _monitorObjectForBrowserNavigation;
+		private readonly NavigationIsolator _isolator;
         private Color _backgroundColorOfResult;
         private bool _browserHandleCreated;
     	private Queue<ThumbnailOrder> _orders= new Queue<ThumbnailOrder>();
@@ -35,7 +35,7 @@ namespace Bloom
 
     	private bool _disposed;
 
-        public HtmlThumbNailer(MonitorTarget monitorObjectForBrowserNavigation)
+		public HtmlThumbNailer(NavigationIsolator monitorObjectForBrowserNavigation)
         {
             if (_theOnlyOneAllowed != null)
             {
@@ -45,38 +45,32 @@ namespace Bloom
 
             _theOnlyOneAllowed = this;
 
-    	    _monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
+    	    _isolator = monitorObjectForBrowserNavigation;
     	    Application.Idle += new EventHandler(Application_Idle);
         }
 
 		void Application_Idle(object sender, EventArgs e)
 		{
-		    if (_orders.Count > 0)
-		    {
-                if (Monitor.TryEnter(_monitorObjectForBrowserNavigation))
-		            //don't try to work with the browser while other processes are doing it to... maybe can remove this when we clear out any Application.DoEvents() that our current old version of Geckofx is forcing us to use because of unreliable end-of-navigation detection
-		        {
-		            try
-		            {
-                        ThumbnailOrder thumbnailOrder = _orders.Dequeue();
-		                try
-		                {
-		                    ProcessOrder(thumbnailOrder);
-		                }
-		                catch (Exception error)
-		                {
-		                    //putting up a green box here, because, say, the page was messed up, is bad manners
-		                    Logger.WriteEvent("HtmlThumbNailer reported exception:{0}", error.Message);
-		                    thumbnailOrder.ErrorCallback(error);
-		                }
-		            }
-		            finally
-		            {
-		                // Ensure that the lock is released.
-                        Monitor.Exit(_monitorObjectForBrowserNavigation);
-		            }
-		        }
-		    }
+			if (_orders.Count > 0)
+			{
+				ThumbnailOrder thumbnailOrder = _orders.Dequeue();
+				try
+				{
+					if (!ProcessOrder(thumbnailOrder))
+					{
+						// For some reason...possibly another navigation was in progress...we can't do this just now.
+						// Try it again later.
+						// Enhance: should we have some limit after which we give up?
+						_orders.Enqueue(thumbnailOrder);
+					}
+				}
+				catch (Exception error)
+				{
+					//putting up a green box here, because, say, the page was messed up, is bad manners
+					Logger.WriteEvent("HtmlThumbNailer reported exception:{0}", error.Message);
+					thumbnailOrder.ErrorCallback(error);
+				}
+			}
 		}
 
 		public void RemoveFromCache(string key)
@@ -161,7 +155,7 @@ namespace Bloom
         	            	});
         }
 
-		void ProcessOrder(ThumbnailOrder order)
+		bool ProcessOrder(ThumbnailOrder order)
 		{
 			//e.Result = order;
 			//Thread.CurrentThread.Name = "Thumbnailer" + order.Key;
@@ -183,7 +177,8 @@ namespace Bloom
 						order.Done = false;
 						browser.Tag = order;
 						
-						browser.Navigate(temp.Path);
+						if (!_isolator.NavigateIfIdle(browser,temp.Path))
+							return false;
 
                         var minimumTime = DateTime.Now.AddSeconds(1); 
                         var stopTime = DateTime.Now.AddSeconds(5);
@@ -193,12 +188,12 @@ namespace Bloom
 							//Thread.Sleep(100);
 						}
 						if (_disposed)
-							return;
+							return false;
 						if (!order.Done)
 						{
 							Logger.WriteEvent("HtmlThumNailer: Timed out on ({0})", order.ThumbNailFilePath);
 							Debug.Fail("(debug only) Make thumbnail timed out");
-							return;
+							return false;
 						}
 
 						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
@@ -245,7 +240,7 @@ namespace Bloom
                             //							docImage.Save(@"c:\dev\temp\zzzz.bmp");
 #endif
                             if (_disposed)
-                                return;
+                                return false;
 
                             pendingThumbnail = MakeThumbNail(docImage, order.Options);
                         }
@@ -311,9 +306,10 @@ namespace Bloom
 			}
 			//order.ResultingThumbnail = pendingThumbnail;
 			if (_disposed)
-				return;
+				return false;
 			Logger.WriteMinorEvent("HtmlThumNailer: finished work on thumbnail ({0})", order.ThumbNailFilePath); 
 			order.Callback(pendingThumbnail);
+			return true;
 		}
 
 		void _browser_Navigated(object sender, GeckoNavigatedEventArgs e)
