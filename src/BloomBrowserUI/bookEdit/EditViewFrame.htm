@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="http://localhost:8089/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"/>
-    <script src="http://localhost:8089/bloom/lib/jquery-1.10.1.js"></script>
-    <script src="http://localhost:8089/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<link rel="stylesheet" href="http://localhost:8089/bloom/bookEdit/accordion/accordion.css"/>
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"/>
+    <script src="/bloom/lib/jquery-1.10.1.js"></script>
+    <script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
+	<link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css"/>
 	<style type="text/css">
-		html, body, div { margin: 0; padding: 0; border: 0 none; height:100%}
-		body {overflow:hidden}
-		#left { margin-right: 200px;}
-		#right { width: 200px; float: right;}
+        html, body, div { margin: 0; padding: 0; border: 0 none; height:100%}
+        body {overflow:hidden}
+        .accordion #left { margin-right: 200px;}
+        .accordion #right { width: 200px; float: right;}
+        .no-accordion #left { width: 100%;}
+        .no-accordion #right { display: none;}
 	</style>
 	<script type="text/javascript">
 		function showSetupDialog(showWhat) {
@@ -17,14 +19,14 @@
 		}
 	</script>
 </head>
-<body>
+<body class="no-accordion">
 	<div id="right">
-		<iframe id="accordion" src="http://localhost:8089/bloom/accordionContent" width="100%" height=100%>
+		<iframe id="accordion" src="/bloom/accordionContent" width="100%" height=100%>
 		  <p>Your browser does not support iframes.</p>
 		</iframe>
 	</div>
 	<div id="left">
-		<iframe id="page" src="http://localhost:8089/bloom/currentPageContent" width="100%" height="100%">
+		<iframe id="page" src="/bloom/currentPageContent" width="100%" height="100%">
 		  <p>Your browser does not support iframes.</p>
 		</iframe>
 	</div>

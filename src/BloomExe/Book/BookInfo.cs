@@ -319,6 +319,12 @@ namespace Bloom.Book
 			get { return MetaData.CurrentTool; }
 			set { MetaData.CurrentTool = value; }
 		}
+
+		public bool ReaderToolsAvailable
+		{
+			get { return MetaData.ReaderToolsAvailable; }
+			set { MetaData.ReaderToolsAvailable = value; }
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -502,6 +508,10 @@ namespace Bloom.Book
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }
+
+		[JsonProperty("readerToolsAvailable")]
+		[DefaultValue(false)]
+		public bool ReaderToolsAvailable { get; set; }
 	}
 
 	/// <summary>
