@@ -33,28 +33,19 @@ namespace Bloom.WebLibraryIntegration
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
 		private readonly HtmlThumbNailer _htmlThumbnailer;
-		// A list of 'downloadOrders' to download books. These may be urls or (this may be obsolete) paths to book order files.
-		// One order is created when a url or book order is found as the single command line argument.
-		// It gets processed by an initial call to HandleOrders in LibraryListView.ManageButtonsAtIdleTime
-		// when everything is sufficiently initialized to handle downloading a new book.
-		// Orders may also be created in the Program.ServerThreadAction method, on a thread that is set up
-		// to receive download downloadOrders from additional instances of Bloom created by clicking a download link
-		// in a web page. These may be handled at any time.
-		private DownloadOrderList _downloadOrders;
+		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, DownloadOrderList downloadOrders)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
 			_htmlThumbnailer = htmlThumbnailer;
-			_downloadOrders = downloadOrders;
-			if (_downloadOrders != null)
-			{
-				_downloadOrders.OrderAdded += DownloadOrderAdded;
-			}
+			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
+
+		public string LastBookDownloadedPath { get; set; }
 
 		public static bool UseSandbox
 		{
@@ -69,22 +60,6 @@ namespace Bloom.WebLibraryIntegration
 				temp = temp.ToLowerInvariant();
 				return temp == "yes" || temp == "true" || temp == "y" || temp == "t";
 #endif
-			}
-		}
-
-		void DownloadOrderAdded(object sender, EventArgs e)
-		{
-			HandleOrders();
-		}
-
-		public void HandleOrders()
-		{
-			if (_downloadOrders == null)
-				return;
-			string order;
-			while ((order = _downloadOrders.GetOrder()) != null)
-			{
-				HandleBloomBookOrder(order);
 			}
 		}
 
@@ -131,6 +106,7 @@ namespace Bloom.WebLibraryIntegration
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
 				var destinationPath = DownloadBook(metadata.DownloadSource, destPath);
+				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
 					new Dictionary<string, string>() {{"url", url}, {"title",title}});
@@ -192,48 +168,58 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private ProgressDialog _progressDialog;
+		private string _downloadRequest;
 
-		private void HandleBloomBookOrder(string argument)
+		internal void HandleBloomBookOrder(string argument)
 		{
-			var mainWindow = ShellWindow;
-			if (mainWindow == null)
-				return; // We shouldn't be trying to handle downloadOrders while we don't have a main window open.
-			mainWindow.Invoke((Action)(() =>
+			_downloadRequest = argument;
+			using (_progressDialog = new ProgressDialog())
 			{
-				_progressDialog = new ProgressDialog();
 				_progressDialog.CanCancel = false; // one day we may allow this...
 				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
 				if (IsUrlOrder(argument))
 				{
 					var link = new BloomLinkArgs(argument);
-					var indexOfSlash = link.OrderUrl.LastIndexOf('/');
-					var bookOrder = link.OrderUrl.Substring(indexOfSlash + 1);
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(bookOrder);
+					_progressDialog.StatusText = link.Title;
 				}
 				else
 				{
 					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
 				}
-				_progressDialog.Show(mainWindow);
-			}));
-			try
-			{
-				// If we are passed a bloom book order URL, download the corresponding book and open it.
-				if (IsUrlOrder(argument))
+
+				// We must do the download in a background thread, even though the whole process is doing nothing else,
+				// so we can invoke stuff on the main thread to (e.g.) update the progress bar.
+				BackgroundWorker worker = new BackgroundWorker();
+				worker.DoWork += OnDoDownload;
+				_progressDialog.BackgroundWorker = worker;
+				//dlg.CancelRequested += new EventHandler(OnCancelRequested);
+				_progressDialog.ShowDialog(); // hidden automatically when task completes
+				if (_progressDialog.ProgressStateResult != null &&
+					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-					var link = new BloomLinkArgs(argument);
-					DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
-				}
-				// If we are passed a bloom book order, download the corresponding book and open it.
-				else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
-				{
-					HandleBookOrder(argument);
+					Palaso.Reporting.ErrorReport.ReportFatalException(
+						_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 				}
 			}
-			finally
+		}
+
+		/// <summary>
+		/// this runs in a worker thread
+		/// </summary>
+		private void OnDoDownload(object sender, DoWorkEventArgs args)
+		{
+			// If we are passed a bloom book order URL, download the corresponding book and open it.
+			if (IsUrlOrder(_downloadRequest))
 			{
-				_progressDialog.Invoke((Action) (() => _progressDialog.Dispose()));
+				var link = new BloomLinkArgs(_downloadRequest);
+				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+			}
+				// If we are passed a bloom book order, download the corresponding book and open it.
+			else if (_downloadRequest.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+					 File.Exists(_downloadRequest))
+			{
+				HandleBookOrder(_downloadRequest);
 			}
 		}
 

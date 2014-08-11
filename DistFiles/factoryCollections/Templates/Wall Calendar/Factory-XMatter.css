@@ -584,6 +584,21 @@ DIV.licenseDescription
 	left: 84px;
 	top: 127px;
 }
+.A5Landscape DIV.licenseDescription
+{
+	/*+placement:anchor-top-left 0 107px;*/
+	position: absolute;
+	left: 0;
+	top: 107px;
+}
+.A4Portrait DIV.licenseDescription
+{
+	width: 80%;
+	/*+placement:anchor-top-left 84px 127px;*/
+	position: absolute;
+	left: 84px;
+	top: 127px;
+}
 DIV.licenseUrl
 {
 	display: none;

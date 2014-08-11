@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using DesktopAnalytics;
+using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -157,10 +157,8 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-				var decodedMetadata = GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(metadata);
-
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
+				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -179,20 +177,20 @@ namespace Bloom.Edit
 						}
 
 						// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-						var copyright = GetHtmlEncodedCopyright(dlg);
+						var copyright = dlg.Metadata.CopyrightNotice;
 						dlg.Metadata.CopyrightNotice = copyright;
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						var rights = GetHtmlEncodedRights(dlg);
+						var rights = dlg.Metadata.License.RightsStatement;
 						dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
+								MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
-								dlg.Metadata.License.Url, rights, description);
+								dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
 						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
@@ -214,27 +212,13 @@ namespace Bloom.Edit
 			}
 		}
 
-		private string GetHtmlEncodedRights(MetadataEditorDialog dlg)
+		// Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
+		private string MakeJavaScriptContent(string input)
 		{
-			var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
-			return rights ?? string.Empty;
-		}
-
-		private string GetHtmlEncodedCopyright(MetadataEditorDialog dlg)
-		{
-			var copyright = WebUtility.HtmlEncode(dlg.Metadata.CopyrightNotice);
-			return copyright ?? string.Empty;
-		}
-
-		private Metadata GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(Metadata metadata)
-		{
-			// HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
-			var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
-			var copyright = WebUtility.HtmlDecode(metadata.CopyrightNotice);
-			var safeMetadata = metadata.DeepCopy();
-			safeMetadata.License.RightsStatement = rightsStatement;
-			safeMetadata.CopyrightNotice = copyright;
-			return safeMetadata;
+			if (input == null)
+				return "";
+			// Order is important here...we do NOT want to double the backslash we insert before a single quote.
+			return input.Replace("\\", "\\\\").Replace("'", "\\'");
 		}
 
 		private void SetupThumnailLists()
@@ -331,9 +315,11 @@ namespace Bloom.Edit
 			if (_model.HaveCurrentEditableBook)
 			{
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
-				var dom = _model.GetXmlDocumentForCurrentPage();
+				_model.SetupServerWithCurrentPageIframeContents();
+				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
+				var dom = _model.GetXmlDocumentForEditScreenWebPage();
 				_browser1.Focus();
-				_browser1.Navigate(dom.RawDom);
+				_browser1.Navigate(dom.RawDom, domForCurrentPage.RawDom);
 				_pageListView.Focus();
 				_browser1.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
@@ -418,11 +404,13 @@ namespace Bloom.Edit
 				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
-					// We check for "setUpStages" because the hot link in the decodable reader control otherwise triggers this path,
-					// since although its href is empty, the  <base href which we supply inserts an effective http: url.
-					// We don't need anything to happen here for this case.
-					if (anchor.Id == "setUpStages")
+					// do not open in external browser if localhost
+					if (anchor.Href.ToLower().StartsWith(ServerBase.PathEndingInSlash))
+					{
+						ge.Handled = false; // let gecko handle it
 						return;
+					}
+
 					Process.Start(anchor.Href);
 					ge.Handled = true;
 					return;
@@ -701,7 +689,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if ((typeof jQuery !== 'undefined') && jQuery.fn.removeSynphonyMarkup) { jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
+			RunJavaScript("var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
 			_browser1.ReadEditableAreasNow();
 		}
 
@@ -859,6 +847,16 @@ namespace Bloom.Edit
 		public string HelpTopicUrl
 		{
 			get { return "/Tasks/Edit_tasks/Edit_tasks_overview.htm"; }
+		}
+
+		/// <summary>
+		/// Prevent navigation while a dialog box is showing in the browser control
+		/// </summary>
+		/// <param name="isModal"></param>
+		internal void SetModalState(bool isModal)
+		{
+			_templatePagesView.Enabled = !isModal;
+			_pageListView.Enabled = !isModal;
 		}
 	}
 }

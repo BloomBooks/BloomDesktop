@@ -34,9 +34,11 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
@@ -99,6 +101,10 @@ var StyleEditor = (function () {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return;
         rule.style.setProperty("font-size", sizeString + units, "important");
+        if ($(target).IsOverflowing())
+            $(target).addClass('overflow');
+        else
+            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip

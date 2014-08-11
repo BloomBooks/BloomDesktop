@@ -4,8 +4,8 @@ div.accordionRoot {
 	color: white;
 	font-size: x-small;
 	position: fixed;
-	top: 0;
-	bottom: 0;
+	top: -1px;
+	bottom: 1px;
 	right: 0;
 	width: 200px;
 	z-index: 18000; /* Just over help bubbles, but under topic dialog */

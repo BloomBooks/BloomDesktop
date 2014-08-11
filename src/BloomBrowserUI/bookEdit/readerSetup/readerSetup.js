@@ -6,6 +6,9 @@ var previousGPCs;
 var sightWords;
 var currentSightWords;
 
+function accordionWindow() {
+    return window.parent.document.getElementById('accordion').contentWindow;
+}
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -21,11 +24,7 @@ function processMessage(event) {
 
         case 'Data':
             loadReaderSetupData(params[1]);
-            window.parent.postMessage('SetupType', '*');
-
-            // initialize the selected letters
-            $('#stages-table').find('tbody tr:first').click();
-            $('#levels-table').find('tbody tr:first').click();
+            accordionWindow().postMessage('SetupType', '*');
             return;
 
         case 'Files':
@@ -37,10 +36,33 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
-            if (params[1] === 'stages')
-                $('#dlstabs').tabs('option', 'disabled', [2]);
-            else
-                $('#dlstabs').tabs('option', 'disabled', [1]);
+            var tabs = $('#dlstabs');
+            if (params[1] === 'stages') {
+                tabs.tabs('option', 'disabled', [2]);
+                tabs.tabs('option', 'active', 1);
+                var firstStage = $('#stages-table').find('tbody tr:first');
+                if (firstStage && (firstStage.length === 0))
+                    addNewStage();
+                else
+                    firstStage.click(); // select the first stage
+            }
+            else {
+                tabs.tabs('option', 'disabled', [0, 1]);
+                tabs.tabs('option', 'active', 2);
+                var firstLevel = $('#levels-table').find('tbody tr:first');
+                if (firstLevel && (firstLevel.length === 0))
+                    addNewLevel();
+                else
+                    firstLevel.click(); // select the first level
+            }
+
+            return;
+
+        case 'Font':
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            style.innerHTML = '.book-font { font-family: ' + params[1] + '; }';
+            document.getElementsByTagName('head')[0].appendChild(style);
             return;
     }
 }
@@ -82,7 +104,10 @@ function saveClicked() {
         var stage = {};
         stage.letters = stages[i].cells[1].innerHTML;
         stage.sightWords = stages[i].cells[2].innerHTML;
-        s.stages.push(stage);
+
+        // do not save stage with no data
+        if (stage.letters || stage.sightWords)
+            s.stages.push(stage);
     }
 
     // levels
@@ -100,7 +125,7 @@ function saveClicked() {
 
     // send to parent
     var settingsStr = JSON.stringify(s);
-    window.parent.postMessage('Refresh\n' + settingsStr, '*');
+    accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // send to C#
     fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
@@ -132,6 +157,9 @@ function loadReaderSetupData(jsonData) {
     if (!data.letters) data.letters = '';
     if (!data.letterCombinations) data.letterCombinations = '';
     if (!data.moreWords) data.moreWords = '';
+    if (!data.stages) data.stages = [];
+    if (!data.levels) data.levels = [];
+
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
@@ -147,7 +175,7 @@ function loadReaderSetupData(jsonData) {
     for (var i = 0; i < stages.length; i++) {
         if (!stages[i].letters) stages[i].letters = '';
         if (!stages[i].sightWords) stages[i].sightWords = '';
-        tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td>' + stages[i].letters + '</td><td>' + stages[i].sightWords + '</td></tr>');
+        tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td></tr>');
     }
 
     // click event for stage rows
@@ -207,9 +235,13 @@ function requestWordsForSelectedStage() {
     sightWords = $.makeArray($(tr).prevAll().map(function() {
         return this.cells[2].innerHTML.split(' ');
     }));
+
     sightWords = _.union(sightWords, currentSightWords);
 
-    window.parent.postMessage('Words\n' + knownGPCS, '*');
+    // remove empty items
+    sightWords = _.compact(sightWords);
+
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -244,7 +276,7 @@ function displayLetters() {
     letters = letters.filter(function(n){ return n !== ''; });
 
     /**
-     * If there are more than 35 letters the parent div containing the letter divs will scroll vertically, so the
+     * If there are more than 42 letters the parent div containing the letter divs will scroll vertically, so the
      * letter divs need to be a different width to accommodate the scroll bar.
      *
      * The suffix 's' stands for 'short', and 'l' stands for 'long.'
@@ -256,14 +288,14 @@ function displayLetters() {
      * letter div class rs-letters-l fit 6 on a row (because of the scroll bar)
      */
     var suffix = 's';
-    if (letters.length > 35) suffix = 'l';
+    if (letters.length > 42) suffix = 'l';
 
     var div = $('#setup-selected-letters');
     div.html('');
     div.removeClass('rs-letter-container-s').removeClass('rs-letter-container-l').addClass('rs-letter-container-' + suffix);
 
     for (var i = 0; i < letters.length; i++) {
-        div.append($('<div class="unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
+        div.append($('<div class="book-font unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
     }
 
     $('div.rs-letters').onOnce('click', function() {
@@ -311,7 +343,7 @@ function updateSightWords(ta) {
 function addNewStage() {
 
     var tbody = $('#stages-table').find('tbody');
-    tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td></td><td></td></tr>');
+    tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td></tr>');
 
     // click event for stage rows
     tbody.find('tr:last').onOnce('click', function() {
@@ -338,7 +370,7 @@ function removeStage() {
     if (rows.length > 0) {
 
         // renumber remaining stages
-        renumberStages(rows);
+        renumberRows(rows);
 
         // select a different stage
         if (rows.length >= current_stage)
@@ -348,12 +380,12 @@ function removeStage() {
     }
 }
 
-function renumberStages(rows) {
+function renumberRows(rows) {
 
-    var stageNum = 1;
+    var rowNum = 1;
 
     $.each(rows, function() {
-        this.cells[0].innerHTML = stageNum++;
+        this.cells[0].innerHTML = rowNum++;
     });
 }
 
@@ -364,7 +396,7 @@ function updateStageNumbers() {
 
     var tbody = $('#stages-table').find('tbody');
     var rows = tbody.find('tr');
-    renumberStages(rows);
+    renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
     document.getElementById('setup-stage-number').innerHTML = currentStage;
@@ -404,7 +436,7 @@ function displayWordsForSelectedStage(wordsStr) {
 
         if (!w.html)
             w.html = $.markupGraphemes(w.GPCForm, desiredGPCs);
-        result += '<div class="word">' + w.html + '</div>';
+        result += '<div class="book-font word">' + w.html + '</div>';
     });
 
     // set the list
@@ -429,6 +461,30 @@ function addNewLevel() {
 
     // go to the new stage
     tbody.find('tr:last').click();
+}
+
+function removeLevel() {
+
+    var tbody = $('#levels-table').find('tbody');
+
+    // remove the current stage
+    var current_row = tbody.find('tr.selected');
+    var current_stage = current_row.find("td").eq(0).html();
+    current_row.remove();
+
+    var rows = tbody.find('tr');
+
+    if (rows.length > 0) {
+
+        // renumber remaining levels
+        renumberRows(rows);
+
+        // select a different stage
+        if (rows.length >= current_stage)
+            tbody.find('tr:nth-child(' + current_stage + ')').click();
+        else
+            tbody.find('tr:nth-child(' + rows.length + ')').click();
+    }
 }
 
 /**
@@ -532,7 +588,13 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
-// event handlers
+/**
+ * Event handlers
+ *
+ * NOTE: Returning false from a click event handler cancels the default action of the element.
+ *       e.g. If the element is an anchor with the href set, navigation is canceled.
+ *       e.g. If the element is a submit button, form submission is canceled.
+ */
 if (typeof ($) === "function") {
 
     $("#open-text-folder").onOnce('click', function() {
@@ -565,6 +627,11 @@ if (typeof ($) === "function") {
         return false;
     });
 
+    $('#setup-remove-level').onOnce('click', function() {
+        removeLevel();
+        return false;
+    });
+
     var toRemember = $('#things-to-remember');
     toRemember.onOnce('keydown', handleThingsToRemember);
     toRemember.onOnce('keyup', storeThingsToRemember);
@@ -583,7 +650,7 @@ if (typeof ($) === "function") {
     });
 }
 
-$(document).ready(function() {
-    window.parent.postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({stop: updateStageNumbers });
+$(document).ready(function () {
+    accordionWindow().postMessage('Texts', '*');
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
 });

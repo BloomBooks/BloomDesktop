@@ -25,6 +25,7 @@ namespace Bloom
 {
 	static class Program
 	{
+		private const string _mutexId = "bloom";
 
 		//static HttpListener listener = new HttpListener();
 
@@ -45,7 +46,7 @@ namespace Bloom
 		private static bool _alreadyHadSplashOnce;
 		private static BookDownloadSupport _bookDownloadSupport;
 #endif
-
+		internal static string PathToBookDownloadedAtStartup { get; set; }
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static void Main(string[] args)
@@ -104,17 +105,44 @@ namespace Bloom
 						}
 						return;
 					}
-					if (SendArgsToOtherBloomInstance(args))
+					if (IsBloomBookOrder(args))
+					{
+						// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
+						// There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
+						// do something with it. The time interval would be very short, because download uses a temp folder until it has the whole thing
+						// and then copies (or more commonly moves) it over in one step, and making a book from a template involves a similarly short
+						// step of copying the template to the new book. Hopefully users have (or will soon learn) enough sense not to
+						// try to use a template while in the middle of downloading a new version.
+						SetUpErrorHandling();
+						_applicationContainer = new ApplicationContainer();
+						SetUpLocalization();
+						Logger.Init();
+						new BookDownloadSupport();
+						Browser.SetUpXulRunner();
+						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+							_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+						transfer.HandleBloomBookOrder(args[0]);
+						PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+						// If another instance is running, this one has served its purpose and can exit right away.
+						// Otherwise, carry on with starting up normally.
+						if (TryToGrabMutexForBloom())
+							FinishStartup();
+						else
+						{
+							_onlyOneBloomMutex = null; // we don't own it, so ReleaseMutexForBloom must not try to release it.
+							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+							string message = LocalizationManager.GetString("Download.Completed",
+								@"Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. "
+								+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+							message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+							MessageBox.Show(message, caption);
+						}
 						return;
-#if DEBUG //the exception you get when there is no other BLOOM is a pain when running debugger with break-on-exceptions
-					if (args.Length > 1)
-						Thread.Sleep(3000);
-							//this is here for testing the --rename scenario where the previous run needs a chance to die before we continue, but we're not using the mutex becuase it's a pain when using the debugger
+					}
 
-#else
 					if (!GrabMutexForBloom())
 						return;
-#endif
 
 					OldVersionCheck();
 
@@ -131,13 +159,12 @@ namespace Bloom
 						SetUpLocalization();
 						Browser.SetUpXulRunner();
 						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-							_applicationContainer.HtmlThumbnailer, new DownloadOrderList());
+							_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
 						transfer.UploadFolder(args[1], _applicationContainer);
 						return;
 					}
 
-
-					_bookDownloadSupport = new BookDownloadSupport(_applicationContainer.DownloadOrderList);
+					new BookDownloadSupport(); // creating this sets some things up so we can download.
 
 					SetUpLocalization();
 					Logger.Init();
@@ -145,12 +172,8 @@ namespace Bloom
 
 					if (args.Length == 1)
 					{
-						if (args[0].ToLower().EndsWith(".bloomcollection"))
-						{
-							Settings.Default.MruProjects.AddNewPath(args[0]);
-						}
-						else
-							_bookDownloadSupport.HandleBloomBookDownloadOrder(args[0]);
+						Debug.Assert(args[0].ToLower().EndsWith(".bloomcollection")); // Anything else handled above.
+						Settings.Default.MruProjects.AddNewPath(args[0]);
 					}
 
 					if (args.Length > 0 && args[0] == "--rename")
@@ -174,40 +197,10 @@ namespace Bloom
 						}
 
 					}
-
-					_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
-
-					Settings.Default.Save();
-
-
 					Browser.SetUpXulRunner();
-
-					Application.Idle += Startup;
-
-
-
 					L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-					try
-					{
-						Application.Run();
-					}
-					catch(System.AccessViolationException nasty)
-					{
-						Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-						System.Environment.FailFast("AccessViolationException");
-					}
-					finally
-					{
-						_bookDownloadSupport.Dispose();
-					}
-					Settings.Default.Save();
-
-					Logger.ShutDown();
-
-
-					if (_projectContext != null)
-						_projectContext.Dispose();
+					FinishStartup();
 				}
 			}
 			finally
@@ -216,34 +209,36 @@ namespace Bloom
 			}
 		}
 
-
-		/// <summary>
-		/// If there is another instance of bloom running and we have a single command-line argument, send it to the other Bloom.
-		/// </summary>
-		/// <param name="args"></param>
-		/// <returns>true if another instance is handling things and this one should exit</returns>
-		public static bool SendArgsToOtherBloomInstance(string[] args)
+		private static void FinishStartup()
 		{
-			if (args.Length != 1)
-				return false; // We only try to send exactly one argument to another instance.
-			NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", BookDownloadSupport.ArgsPipeName, PipeDirection.Out);
+			_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
+
+			Settings.Default.Save();
+
+			Application.Idle += Startup;
+
 			try
 			{
-				pipeClient.Connect(200);
+				Application.Run();
 			}
-			catch (TimeoutException)
+			catch (System.AccessViolationException nasty)
 			{
-				return false; // no other bloom running, go ahead and deal with request ourselves.
+				Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
+				System.Environment.FailFast("AccessViolationException");
 			}
-			// Send the argument across the pipe to the other instance.
-			byte[] outBuffer = Encoding.UTF8.GetBytes(args[0]);
-			int len = outBuffer.Length;
-			pipeClient.WriteByte((byte)(len / 256));
-			pipeClient.WriteByte((byte)(len & 255));
-			pipeClient.Write(outBuffer, 0, len);
-			pipeClient.Flush();
-			pipeClient.Dispose();
-			return true; // Abort this instance.
+
+			Settings.Default.Save();
+
+			Logger.ShutDown();
+
+
+			if (_projectContext != null)
+				_projectContext.Dispose();
+		}
+
+		private static bool IsBloomBookOrder(string[] args)
+		{
+			return args.Length == 1 && !args[0].ToLower().EndsWith(".bloomcollection");
 		}
 
 		private static void Startup(object sender, EventArgs e)
@@ -292,11 +287,11 @@ namespace Bloom
 				_splashForm = null; //but we are done with it
 			}
 
-			if (!_bookDownloadSupport.HadOrder && RegistrationDialog.ShouldWeShowRegistrationDialog())
+			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
 			{
 				using (var dlg = new RegistrationDialog(false))
 				{
-					if (_projectContext!=null && _projectContext.ProjectWindow != null)
+					if (_projectContext != null && _projectContext.ProjectWindow != null)
 						dlg.ShowDialog(_projectContext.ProjectWindow);
 					else
 					{
@@ -389,23 +384,7 @@ namespace Bloom
 			//If that fails, we put up a dialog and wait a number of seconds,
 			//while we wait for the mutex to come free.
 
-			string mutexId = "bloom";
-			bool mutexAcquired = false;
-			try
-			{
-				_onlyOneBloomMutex = Mutex.OpenExisting(mutexId);
-				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
-			}
-			catch (WaitHandleCannotBeOpenedException e)//doesn't exist, we're the first.
-			{
-				_onlyOneBloomMutex = new Mutex(true, mutexId, out mutexAcquired);
-				mutexAcquired = true;
-			}
-			catch (AbandonedMutexException e)
-			{
-				//that's ok, we'll get it below
-			}
-
+			var mutexAcquired = TryToGrabMutexForBloom();
 
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{
@@ -413,12 +392,12 @@ namespace Bloom
 				dlg.Show();
 				try
 				{
-					_onlyOneBloomMutex = Mutex.OpenExisting(mutexId);
+					_onlyOneBloomMutex = Mutex.OpenExisting(_mutexId);
 					mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(10 * 1000), false);
 				}
 				catch (AbandonedMutexException e)
 				{
-					_onlyOneBloomMutex = new Mutex(true, mutexId, out mutexAcquired);
+					_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
 					mutexAcquired = true;
 				}
 				catch (Exception e)
@@ -435,6 +414,19 @@ namespace Bloom
 				return false;
 			}
 			return true;
+		}
+
+		private static bool TryToGrabMutexForBloom()
+		{
+			bool mutexAcquired = false;
+			_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
+			if (!mutexAcquired)
+			{
+				// Already existed...see if we can get it.
+				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
+			}
+
+			return mutexAcquired;
 		}
 
 		public static void ReleaseMutexForBloom()

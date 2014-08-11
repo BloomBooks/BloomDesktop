@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Gecko;
@@ -55,7 +56,23 @@ namespace Bloom.Publish
 			var url = string.Format("{0}{1}?file=/bloom/{2}", Bloom.web.ServerBase.PathEndingInSlash,
 				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"), pdfFile);
 
-			((GeckoWebBrowser)_pdfViewerControl).Navigate(url);
+			var browser = ((GeckoWebBrowser)_pdfViewerControl);
+			browser.Navigate(url);
+			browser.DocumentCompleted += (sender, args) =>
+			{
+				// We want to suppress several of the buttons that the control normally shows.
+				// It's nice if we don't have to modify the html and related files, because they are unzipped from a package we install
+				// from a source I'm not sure we control, and installed into a directory we can't modify at runtime.
+				// A workaround is to tweak the stylesheet to hide them. The actual buttons (and two menu items) are easily
+				// hidden by ID.
+				// Unfortunately we're getting rid of a complete group in the pull-down menu, which leaves an ugly pair of
+				// adjacent separators. And the separators don't have IDs so we can't easily select just one to hide.
+				// Fortunately there are no other divs in the parent (besides the separator) so we just hide the second one.
+				// This is unfortunately rather fragile and may not do exactly what we want if the viewer.html file
+				// defining the pdfjs viewer changes.
+				GeckoStyleSheet stylesheet = browser.Document.StyleSheets.First();
+				stylesheet.CssRules.Add("#openFile, #print, #download, #viewBookmark, #pageRotateCw, #pageRotateCcw, #secondaryToolbarButtonContainer div:nth-of-type(2)  {display: none}");
+			};
 			return true;
 		}
 
@@ -68,8 +85,12 @@ namespace Bloom.Publish
 				return;
 			}
 #endif
-			// TODO
-			throw new NotImplementedException("This used to call _adobeReaderControl.Print, but that doesn't exist on GeckoBrowser");
+			var browser = ((GeckoWebBrowser)_pdfViewerControl);
+			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
+			{
+				string result;
+				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
+			}
 		}
 	}
 }

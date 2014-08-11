@@ -5,6 +5,8 @@
  */
 var checkMarkString = '&#10004;';
 
+var showingPanel = false;
+
 /**
  * Fires an event for C# to handle
  * @param {String} eventName
@@ -28,13 +30,18 @@ function showOrHidePanel_click(chkbox) {
 
         chkbox.innerHTML = checkMarkString;
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t1");
-        if (panel) fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
+        if (panel) {
+            showingPanel = true;
+            fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
+        }
     }
     else {
         chkbox.innerHTML = '';
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t0");
         $('*:data(panelId)').filter(function() { return $(this).data('panelId') === panel; }).remove();
     }
+
+    resizeAccordion();
 }
 
 /**
@@ -95,19 +102,53 @@ function requestPanel(checkBoxId, panelId) {
     }
 }
 
+var resizeTimer;
+function resizeAccordion() {
+    var windowHeight = $(window).height();
+    var root = $(".accordionRoot");
+    // Set accordion container height to fit in new window size
+    // Then accordion Resize() will adjust it to fit the container
+    root.height(windowHeight);
+    BloomAccordion.Resize();
+}
+
+/**
+ * Adds one panel to the accordion
+ * @param {String} newContent
+ * @param {String} panelId
+ */
 function loadAccordionPanel(newContent, panelId) {
-
-    var elements = $.parseHTML(newContent, document, true);
-
-    $.each(elements, function() {
-
-            $(this).data('panelId', panelId);
-            $(this).insertBefore('#accordion-settings-header');
-    });
-
+    var parts = $($.parseHTML(newContent, document, true));
     var accordion = $('#accordion');
+
+    // expect parts to have 2 items, an h3 and a div
+    if (parts.length < 2) return;
+
+    // get the accordion panel tab/button
+    var tab = parts.filter('h3').first();
+
+    // Get the order. If no order, set to top (zero)
+    var order = tab.data('order');
+    if (!order && (order !== 0)) order = 0;
+
+    // get the panel content div
+    var div = parts.filter('div').first();
+
+    // Where to insert the new panel?
+    // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
+    // in the accordion. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
+    var insertBefore = accordion.children().filter(function() { return $(this).data('order') > order; }).first();
+
+    // Insert now.
+    // NOTE: tag each of the items with the "panelId" so they are easier to locate when it is time to remove them.
+    tab.data('panelId', panelId);
+    tab.insertBefore(insertBefore);
+    div.data('panelId', panelId);
+    div.insertBefore(insertBefore);
+
     accordion.accordion('refresh');
 
+    // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
         if (ui.newHeader.data('panelId'))
@@ -116,4 +157,22 @@ function loadAccordionPanel(newContent, panelId) {
             fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
     });
 
+    // if requested, open the panel that was just inserted
+    if (showingPanel) {
+        showingPanel = false;
+        var id = tab.attr('id');
+        id = parseInt(id.substr(id.lastIndexOf('_')));
+        accordion.accordion('option', 'active', id);
+    }
 }
+
+$(document).ready(function () {
+    new BloomAccordion(); // have to create this somewhere to get it initialized.
+    resizeAccordion(); // Make sure it gets run once, at least.
+
+    // Now bind the window's resize function to the accordion resizer
+    $(window).bind('resize', function () {
+        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+        resizeTimer = setTimeout(resizeAccordion, 100);
+    });
+});

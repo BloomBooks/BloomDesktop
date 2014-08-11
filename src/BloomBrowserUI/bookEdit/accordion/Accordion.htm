@@ -2,18 +2,33 @@
 <html>
   <head>
 	<title>Content of the Accordion view (far right pane in book edit)</title>
-	<link rel="stylesheet" href="../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"/>
-	<script src="../../lib/jquery-1.10.1.js"></script>
-	<script src="../../lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="../js/jquery.div-columns.js"></script>
-	<script src="../js/BloomAccordion.js"></script>
-	<link rel="stylesheet" href="accordion.css"/>
+	<link rel="stylesheet" href="http://localhost:8089/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"/>
+	<script src="http://localhost:8089/bloom/lib/jquery-1.10.1.js"></script>
+	<script src="http://localhost:8089/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
+	<!--<script src="http://localhost:8089/bloom/lib/jquery.myimgscale.js.js"></script>-->
+	<script src="http://localhost:8089/bloom/bookEdit/js/jquery.div-columns.js"></script>
+	<!--<script src="http://localhost:8089/bloom/bookEdit/js/bloomEditing.js"></script>-->
+	<script src="http://localhost:8089/bloom/bookEdit/js/BloomAccordion.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/underscore_min_152.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/xregexp-all-min.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/bloom_xregexp_categories.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/jquery.div-columns.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/synphonyApi.js"></script>
+	<!-- not sure we need all three qtip files are needed. qtips are only in the accordion so far.
+	Something is needed so that $(...).qtip works when manipulating the main page DOM. -->
+	<script src="http://localhost:8089/bloom/lib/jquery.qtip.js"></script>
+	<script src="http://localhost:8089/bloom/lib/jquery.qtipSecondary.js"></script>
+	<script src="http://localhost:8089/bloom/bookEdit/js/readerTools.js"></script>
+	<link rel="stylesheet" href="http://localhost:8089/bloom/lib/jquery.qtip.css"/>
+	<link rel="stylesheet" href="http://localhost:8089/bloom/bookEdit/accordion/accordion.css"/>
+	<link rel="stylesheet" href="http://localhost:8089/bloom/bookEdit/accordion/readerTools.css"/>
   </head>
   <body>
 	<div class="accordionRoot">
 	  <div id="accordion"></div>
 	</div>
-	<script src="../js/synphonyApi.js"></script>
-	<script src="accordion.js"></script>
   </body>
 </html>

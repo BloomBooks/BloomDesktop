@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,8 +37,12 @@ namespace Bloom.Publish
 			_loginDialog = login;
 
 			InitializeComponent();
+#if __MonoCS__ // Hide booklet options on Linux until we get a port of PdfDroplet
+			tableLayoutPanel1.Controls.Remove(_bookletCoverRadio);
+			tableLayoutPanel1.Controls.Remove(_bookletBodyRadio);
+#endif
 
-			if(this.DesignMode)
+			if (this.DesignMode)
 				return;
 
 			_model = model;
@@ -124,33 +130,41 @@ namespace Bloom.Publish
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			_model.PdfGenerationSucceeded = false;
-			if(e.Result is Exception)
+			if (!e.Cancelled)
 			{
-				var error = e.Result as Exception;
-				if(error is ApplicationException)
+				if (e.Result is Exception)
 				{
-					//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
-					//note, we don't want to include the original, as it leads to people sending in reports we don't
-					//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
-					//installed, or they had the PDF open in Word, or something like that.
-					ErrorReport.NotifyUserOfProblem(error.Message);
+					var error = e.Result as Exception;
+					if (error is ApplicationException)
+					{
+						//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
+						//note, we don't want to include the original, as it leads to people sending in reports we don't
+						//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
+						//installed, or they had the PDF open in Word, or something like that.
+						ErrorReport.NotifyUserOfProblem(error.Message);
+					}
+					else // for others, just give a generic message and include the original exception in the message
+					{
+						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
+					}
+					// We CAN upload even without a preview.
+					_model.DisplayMode = (_uploadRadio.Checked
+						? PublishModel.DisplayModes.Upload
+						: PublishModel.DisplayModes.WaitForUserToChooseSomething);
+					UpdateDisplay();
+					return;
 				}
-				else // for others, just give a generic message and include the original exception in the message
+				_model.PdfGenerationSucceeded = true;
+					// should be the only place this is set, when we generated successfully.
+				if (IsHandleCreated) // May not be when bulk uploading
 				{
-					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
+					_model.DisplayMode = (_uploadRadio.Checked
+						? PublishModel.DisplayModes.Upload
+						: PublishModel.DisplayModes.ShowPdf);
+					Invoke((Action) (UpdateDisplay));
 				}
-				// We CAN upload even without a preview.
-				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.WaitForUserToChooseSomething);
-				UpdateDisplay();
-				return;
 			}
-			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
-			if (IsHandleCreated) // May not be when bulk uploading
-			{
-				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
-				Invoke((Action) (UpdateDisplay));
-			}
-			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
+			if(e.Cancelled || _model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
 				MakeBooklet();
 			}
@@ -392,7 +406,7 @@ namespace Bloom.Publish
 		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
-			_model.LoadBook(e);
+			_model.LoadBook(sender as BackgroundWorker, e);
 		}
 
 		private void OnSave_Click(object sender, EventArgs e)
@@ -412,6 +426,10 @@ namespace Bloom.Publish
 		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
 		{
 
+		}
+		private void _openPDF_Click(object sender, EventArgs e)
+		{
+			Process.Start(_model.PdfFilePath);
 		}
 
 		/// <summary>

@@ -1,6 +1,9 @@
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
+function getSetupDialogWindow() {
+    return parent.window.document.getElementById("settings_frame").contentWindow;
+}
 /**
  * Respond to messages
  * @param {Event} event
@@ -12,12 +15,12 @@ function processDLRMessage(event) {
     switch(params[0]) {
         case 'Texts': // request from setup dialog for the list of sample texts
             if (model.texts)
-                document.getElementById('settings_frame').contentWindow.postMessage('Files\n' + model.texts.join("\r"), '*');
+                getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
             return;
 
         case 'Words': // request from setup dialog for a list of words for a stage
             var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
-            document.getElementById('settings_frame').contentWindow.postMessage('Words\n' + JSON.stringify(words), '*');
+            getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
             return;
 
         case 'Refresh': // notification from setup dialog that settings have changed
@@ -28,7 +31,7 @@ function processDLRMessage(event) {
             return;
 
         case 'SetupType':
-            document.getElementById('settings_frame').contentWindow.postMessage('SetupType\n' + model.setupType, '*');
+            getSetupDialogWindow().postMessage('SetupType\n' + model.setupType, '*');
             return;
     }
 }
@@ -55,6 +58,10 @@ var ReaderToolsModel = function() {
     this.texts = [];
     this.textCounter = 0;
     this.setupType = '';
+
+    // Please do not remove fontName. It is used, in spite of what WebStorm says.
+    // This is the book font, which is used in the reader setup dialog.
+    this.fontName = '';
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -114,6 +121,12 @@ ReaderToolsModel.prototype.updateLevelLabel = function() {
         this.updateElementContent("levelNumber", "");
         return;
     }
+
+    if (levels.length < this.levelNumber) {
+        this.setLevelNumber(levels.length);
+        return;
+    }
+
     this.updateElementContent("levelNumber", levels[this.levelNumber - 1].getName());
 };
 
@@ -219,15 +232,16 @@ ReaderToolsModel.prototype.updateLevelLimits = function() {
     if (level.thingsToRemember.length) {
 
         var list = document.getElementById('thingsToRemember');
-        list.innerHTML = '';
+        if (list !== null) {
+            list.innerHTML = '';
 
-        for (var i = 0; i < level.thingsToRemember.length; i++) {
-            var li = document.createElement('li');
-            li.appendChild(document.createTextNode(level.thingsToRemember[i]));
-            list.appendChild(li);
+            for (var i = 0; i < level.thingsToRemember.length; i++) {
+                var li = document.createElement('li');
+                li.appendChild(document.createTextNode(level.thingsToRemember[i]));
+                list.appendChild(li);
+            }
         }
     }
-
 };
 
 ReaderToolsModel.prototype.updateLevelLimit = function(id, limit) {
@@ -339,7 +353,9 @@ ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
 ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 
     var stages = this.synphony.getStages(stageNumber);
-    return _.pluck(stages, 'letters').join(' ').split(' ');
+
+    // compact to remove empty items if no graphemes are selected
+    return _.compact(_.pluck(stages, 'letters').join(' ').split(' '));
 };
 
 /**
@@ -350,6 +366,7 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
     var g = this.getKnownGraphemes(stageNumber);
+    if (g.length === 0) return [];
     return this.selectWordsFromSynphony(false, g, g, true, true);
 };
 
@@ -369,21 +386,21 @@ ReaderToolsModel.prototype.getStageWordsAndSightWords = function(stageNumber) {
 ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 
     var newMarkupType = null;
-    switch(markupType) {
-        case 1:
-            if (this.currentMarkupType !== MarkupType.Decodable)
-                newMarkupType = MarkupType.Decodable;
-            break;
+    switch (markupType) {
+    case 1:
+        if (this.currentMarkupType !== MarkupType.Decodable)
+            newMarkupType = MarkupType.Decodable;
+        break;
 
-        case 2:
-            if (this.currentMarkupType !== MarkupType.Leveled)
-                newMarkupType = MarkupType.Leveled;
-            break;
+    case 2:
+        if (this.currentMarkupType !== MarkupType.Leveled)
+            newMarkupType = MarkupType.Leveled;
+        break;
 
-        default:
-            if (this.currentMarkupType !== MarkupType.None)
-                newMarkupType = MarkupType.None;
-            break;
+    default:
+        if (this.currentMarkupType !== MarkupType.None)
+            newMarkupType = MarkupType.None;
+        break;
     }
 
     // if no change, return now
@@ -398,6 +415,10 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
     this.saveState();
 };
 
+ReaderToolsModel.prototype.getElementsToCheck = function() {
+    return $(".bloom-content1", parent.window.document.getElementById('page').contentWindow.document);
+};
+
 /**
  * Displays the correct markup for the current page.
  */
@@ -405,7 +426,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.currentMarkupType === MarkupType.None) return;
 
-    var editableElements = $(".bloom-editable");
+    var editableElements = this.getElementsToCheck();
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
@@ -413,6 +434,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
             editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
+
             break;
 
         case MarkupType.Decodable:
@@ -434,8 +456,10 @@ ReaderToolsModel.prototype.doMarkup = function() {
                 sightWords: sightWords,
                 knownGraphemes: knownGraphemes
             });
+
             break;
     }
+    parent.window.document.getElementById('page').contentWindow.postMessage('Qtips', "*");
 };
 
 ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
@@ -455,7 +479,7 @@ ReaderToolsModel.prototype.maxWordsPerPage = function() {
 };
 
 ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
-    var max = $(".bloom-editable").getMaxSentenceLength();
+    var max = this.getElementsToCheck().getMaxSentenceLength();
     $("#actualWordsPerSentence").html(max.toString());
     var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
     // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
@@ -466,7 +490,7 @@ ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
 };
 
 ReaderToolsModel.prototype.updateTotalWordsOnPage = function() {
-    var count = $(".bloom-editable").getTotalWordCount();
+    var count = this.getElementsToCheck().getTotalWordCount();
     $("#actualWordsPerPage").html(count.toString());
     var acceptable = count <= this.maxWordsPerPage();
     this.setPresenceOfClass("actualWordsPerPage", acceptable, "acceptable");
@@ -502,11 +526,18 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
  */
 ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
 
-    var words = libsynphony.getWordsFromHtmlString(fileContents);
-
-    for (var i = 0; i < words.length; i++) {
-        this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
+    // is this a Synphony data file?
+    if (fileContents.substr(0, 12) === 'setLangData(') {
+        libsynphony.langDataFromString(fileContents);
     }
+    else {
+        var words = libsynphony.getWordsFromHtmlString(fileContents);
+
+        for (var i = 0; i < words.length; i++) {
+            this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
+        }
+    }
+
 };
 
 /**
@@ -632,10 +663,7 @@ function initializeDecodableRT() {
         model.sortByFrequency();
     });
 
-    // invoke function when a bloom-editable element loses focus
-    $('.bloom-editable').onOnce('focusout.readerTools', function() {
-        model.doMarkup(); // This is the element that just lost focus.
-    });
+    model.updateControlContents();
 
     setTimeout(function() { $.divsToColumns('word'); }, 100);
 }
@@ -655,10 +683,7 @@ function initializeLeveledRT() {
         model.decrementLevel();
     });
 
-    // invoke function when a bloom-editable element loses focus
-    $('.bloom-editable').onOnce('focusout.readerTools', function() {
-        model.doMarkup(); // This is the element that just lost focus.
-    });
+    model.updateControlContents();
 }
 
 /**
@@ -667,7 +692,8 @@ function initializeLeveledRT() {
  */
 function showSetupDialog(showWhat) {
     model.setupType = showWhat;
-    model.getSynphony().showConfigDialog();
+    var title = 'Set up ' + (showWhat == 'stages' ? 'Decodable' : 'Leveled') + ' Reader Tool';
+    model.getSynphony().showConfigDialog(title);
 }
 
 function DRTState() {
@@ -697,28 +723,15 @@ else {
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @param {Boolean} fakeIt
+ * @param {String} fontName The font to use for text boxes and text areas.
+ * @global {ReaderToolsModel) model
  */
-function initializeSynphony(settingsFileContent, fakeIt) {
+function initializeSynphony(settingsFileContent, fontName) {
 
     var synphony = model.getSynphony();
+    model.fontName = fontName;
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
-
-    if (fakeIt && synphony.getStages().length === 0 && synphony.getLevels().length === 0) {
-
-        var settings = {};
-        settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z';
-        settings.letterCombinations = 'th oo ing';
-        settings.moreWords = 'the cat sat on the mat the rat sat on the cat cats and dogs eat rats rats eat lots this is a long sentence to give a better demonstration of how it handles a variety of words some of which are quite long which means if things are not confused it will make two columns';
-        settings.stages = [];
-
-        settings.stages.push({"letters":"a c m r t","sightWords":"feline canine"});
-        settings.stages.push({"letters":"d g o e s","sightWords":"carnivore omnivore"});
-        settings.stages.push({"letters":"h i j n th","sightWords":"rodent"});
-
-        synphony.loadSettings(JSON.stringify(settings));
-    }
 
     model.updateControlContents();
 
@@ -735,7 +748,7 @@ function initializeSynphony(settingsFileContent, fakeIt) {
  * Called by C# after the setup data has been saved, following Save click.
  */
 function closeSetupDialog() {
-    $('#synphonyConfig').dialog("close");
+    $('#synphonyConfig', parent.window.document).dialog("close");
 }
 
 /**

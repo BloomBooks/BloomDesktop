@@ -1,4 +1,18 @@
-﻿## 2.0.1038 BETA 6 June 2014
+﻿## 2.1 Alpha
+Now uses the same engine for editing and pdf-making, increasing fidelity between the two
+New engine renders fonts better
+Graphite Complex-non-roman script rendering
+Adobe Acrobat no longer needed to view PDFs in the Publish tab
+
+## Known Bugs
+"A5Portrait Bottom Align" cannot layout correct in bilingual or trilingual mode [BL-46]. We will fix this in Bloom 2.1 using flexbox layout.
+
+
+## 2.0.1038 BETA 23 July 2014
+A4Landscape with "Picture on top" now gives 70% of the page to the picture, was previously 45%.
+
+
+## 2.0.1038 BETA 6 June 2014
 Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
 
 ## 2.0 1022 BETA 13 May 2014

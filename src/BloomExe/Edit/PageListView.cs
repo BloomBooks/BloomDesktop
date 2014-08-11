@@ -109,5 +109,10 @@ namespace Bloom.Edit
 		{
 			_thumbNailList.EmptyThumbnailCache();
 		}
+
+		public new bool Enabled
+		{
+			set { _thumbNailList.Enabled = value; }
+		}
 	}
 }

@@ -1,0 +1,2 @@
+suitableForMakingShells
+suitableForVernacularLibrary

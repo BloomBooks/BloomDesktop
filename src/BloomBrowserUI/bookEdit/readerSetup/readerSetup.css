@@ -11,15 +11,16 @@ div.floating { position: relative; float: left; }
 .rs-subheading { font-size: 13pt; font-weight: 400; }
 #dlstabs { width: auto; position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
 .reader-setup-tab { width: 100%; overflow-y: auto; height: calc(100% - 32px); }
-tr.linked:hover { background-color: #f08080 !important; cursor: pointer; }
-tr.selected { background-color: #59b4d4 !important; cursor: pointer; }
+tr.linked:hover { background-color: #ccc !important; cursor: pointer; }
+tr.selected { background-color: #fff0b3 !important; cursor: pointer; }
 .tab-list-container { width: 100%; }
-.tab-list { border: thin solid #555; -moz-user-select: none; width: 100%; }
+.tab-list { border: thin solid #666; -moz-user-select: none; width: 100%; }
 .ui-tabs .ui-state-disabled { display: none; }
+textarea { resize: none; }
 
 .tab-detail {
-	border: thin solid #555;
-	background-color: #555;
+	border: 0;
+	background-color: #bbb;
 	width: 100%;
 	margin-top: 12px;
 	margin-bottom: 8px;
@@ -43,17 +44,18 @@ tr.selected { background-color: #59b4d4 !important; cursor: pointer; }
 div.sub-float { position: relative; }
 #powered-by { position: relative; float: right; padding: 2px 6px; white-space: nowrap; text-align: right; -moz-user-select: none; }
 #setup-stage-letters-and-words { float: left; margin-left: 10px; }
+#click-letters { padding-bottom: 10px; }
 
 div.scrolling-table-container { height: 100%; }
 div.scrolling-table-container-inner { overflow-x: hidden; overflow-y: auto; height: 100%; }
 div.scrolling-table-container-inner table { background-color: #eee; }
 div.scrolling-table-container-inner table td { color: #000; height: 26px; white-space: nowrap; min-width: 26px; }
-div.scrolling-table-container-inner table tr:nth-child(even) { background-color: #ddd; }
-div.scrolling-table-container-inner table a { color: #333; }
+div.scrolling-table-container-inner table tr:nth-child(even) { background-color: #e0e0e0; }
+div.scrolling-table-container-inner table a { color: #2392db; }
 
 /* height of header = 26px */
 div.scrolling-table-container { position: relative; padding-top: 26px;  width: 100%; }
-div.scrolling-table-header { background-color: #555; height: 26px; position: absolute; top: 0; right: 0; left: 0; }
+div.scrolling-table-header { background-color: #ddd; height: 26px; position: absolute; top: 0; right: 0; left: 0; border-bottom: 1px solid #666; }
 div.scrolling-table-container-inner table th div { position: absolute; top: 0; line-height: 26px; text-align: left; }
 
 div.rs-letters {
@@ -72,16 +74,15 @@ div.previous-letter { color: #000; background-color: #fff; font-weight: 700; cur
 div.current-letter { color: #000; background-color: #febf00; font-weight: 700; cursor: pointer; }
 div.rs-letters-s { width: 32px; }
 div.rs-letters-l { width: 35px; }
-div.rs-letter-container { height: 140px; }
-div.rs-letter-container-s { max-width: 223px; overflow-y: hidden; }
-div.rs-letter-container-l { max-width: 221px; overflow-y: auto; }
+div.rs-letter-container-s { max-width: 218px; overflow-y: hidden; border-top: 1px solid #333; border-left: 1px solid #333; }
+div.rs-letter-container-l { max-width: 223px; overflow-y: auto; height: 180px; border: 1px solid #333; }
 div.word { min-width: 40px; margin: 2px; float: left; }
 div.rs-word-container {
-	border: thin solid #333;
+	border: thin solid #666;
 	overflow-y: auto;
 	overflow-x: hidden;
 	margin-bottom: 8px;
-	background-color: #bbb;
+	background-color: #e0e0e0;
 	color: #000;
 }
 span.desired-grapheme { color: #b2652b; }
@@ -104,9 +105,9 @@ span.sight-word { color: #00528d; }
 }
 
 @media (min-width: 650px) {
-	#stage-list-container { width: calc(40% - 6px); min-height: 310px; height: calc(100% - 50px); }
+	#stage-list-container { width: calc(40% - 6px); min-height: 360px; height: calc(100% - 50px); }
 	.tab-list { height: calc(100% - 16px); }
-	#stage-detail { width: calc(60% - 6px); min-height: 310px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
+	#stage-detail { width: calc(60% - 6px); min-height: 360px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
 	#stage-detail div.sub-float { width: calc(100% - 258px); }
 	#setup-stage-letters-and-words { width: 228px !important; }
 	#setup-stage-matching-words { float: right; margin-right: 10px; height: calc(100% - 64px); }
