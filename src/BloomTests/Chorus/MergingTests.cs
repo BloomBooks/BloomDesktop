@@ -12,7 +12,7 @@ namespace BloomTests.Chorus
 {
     public class BookMergingTests
     {
-        [Test, Ignore("not yet")]
+        [Test]
         public void CreateOrLocate_FolderHasAccentedLetter_FindsIt()
         {
             using (var setup = new RepositorySetup("Abé Books"))
@@ -21,7 +21,7 @@ namespace BloomTests.Chorus
             }
         }
 
-        [Test, Ignore("not yet")]
+        [Test]
         public void CreateOrLocate_FolderHasAccentedLetter2_FindsIt()
         {
             using (var testRoot = new TemporaryFolder("bloom sr test"))
