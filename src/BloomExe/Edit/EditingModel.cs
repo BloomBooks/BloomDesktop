@@ -442,7 +442,23 @@ namespace Bloom.Edit
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
-			return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+
+			// only show the accordion when the template enables it
+			var css_class = dom.Body.GetAttributeNode("class");
+
+			if (css_class == null)
+			{
+				css_class = dom.Body.OwnerDocument.CreateAttribute("class");
+				dom.Body.Attributes.Append(css_class);
+			}
+
+			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+				css_class.Value = "accordion";
+			else
+				css_class.Value = "no-accordion";
+
+			return dom;
 		}
 
 		/// <summary>
@@ -639,33 +655,33 @@ namespace Bloom.Edit
 			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setSampleFileContents) === \"function\") {document.getElementById('accordion').contentWindow.setSampleFileContents(\"" + text + "\");}");
 		}
 
-		/// <summary>
-		/// In order to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
-		/// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
-		/// (We haven't made the temp file yet; but it will be in the system temp folder.)
-		/// </summary>
-		private void AddFontAwesomeToPage(HtmlDom dom)
-		{
-			// current location
-			var pathToFontAwesomeStyles = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
-			var pathToFontAwesomeFont = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)),
-				"fonts", "fontawesome-webfont.woff");
+		///// <summary>
+		///// In order to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
+		///// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
+		///// (We haven't made the temp file yet; but it will be in the system temp folder.)
+		///// </summary>
+		//private void AddFontAwesomeToPage(HtmlDom dom)
+		//{
+		//	// current location
+		//	var pathToFontAwesomeStyles = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
+		//	var pathToFontAwesomeFont = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)),
+		//		"fonts", "fontawesome-webfont.woff");
 
-			// required location
-			var tempFontAwesomeDir = Path.Combine(Path.GetTempPath(), "font-awesome");
-			var requiredLocationOfFontAwesomeStyles = Path.Combine(tempFontAwesomeDir, "css", "font-awesome.min.css");
-			var requiredLocationOfFontAwesomeFont = Path.Combine(tempFontAwesomeDir, "fonts", "fontawesome-webfont.woff");
+		//	// required location
+		//	var tempFontAwesomeDir = Path.Combine(Path.GetTempPath(), "font-awesome");
+		//	var requiredLocationOfFontAwesomeStyles = Path.Combine(tempFontAwesomeDir, "css", "font-awesome.min.css");
+		//	var requiredLocationOfFontAwesomeFont = Path.Combine(tempFontAwesomeDir, "fonts", "fontawesome-webfont.woff");
 
-			// create directories
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
+		//	// create directories
+		//	Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
+		//	Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
 
-			// copy files
-			File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
-			File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
+		//	// copy files
+		//	File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
+		//	File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
 
-			dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
-		}
+		//	dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
+		//}
 
 		private string MakeAccordionContent()
 		{
@@ -674,8 +690,7 @@ namespace Bloom.Edit
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-			domForAccordion.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
-			AddFontAwesomeToPage(domForAccordion);
+			//AddFontAwesomeToPage(domForAccordion);
 
 			// Load settings into the accordion panel
 			AppendAccordionSettingsPanel(domForAccordion);
