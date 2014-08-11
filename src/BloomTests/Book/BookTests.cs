@@ -179,8 +179,44 @@ namespace BloomTests.Book
 			Assert.AreEqual("peace", textarea2.InnerText);
     	}
 
+		
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_HasOneBR()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									a<br/>c
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 2);
+		}
 
-
+		//Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
+		//be separated by the styling of the new paragraphs
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_RemovesEmptyLines()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									<br/>a<br/>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 1);
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
@@ -802,9 +838,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var titleElt = _bookDom.SelectSingleNode("//textarea");
-			titleElt.InnerText = "changed";
+			titleElt.InnerText = "changed & <mangled>";
 			book.Save();
-			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
 		[Test]

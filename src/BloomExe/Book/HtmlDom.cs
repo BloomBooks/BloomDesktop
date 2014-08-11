@@ -280,25 +280,6 @@ namespace Bloom.Book
 			}
 		}
 
-		//        /// <summary>
-		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-		//        /// </summary>
-		//        /// <param name="dom"></param>
-		//        private void StripStyleSheetLinkPaths(HtmlDom dom)
-		//        {
-		//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-		//            {
-		//                var href = linkNode.GetAttribute("href");
-		//                if (href == null)
-		//                {
-		//                    continue;
-		//                }
-		//                linkNode.SetAttribute("href", Path.GetFileName(href));
-		//            }
-		//        }
-
-
-
 		public static void AddClass(XmlElement e, string className)
 		{
 			e.SetAttribute("class", (e.GetAttribute("class").Replace(className,"").Trim() + " " + className).Trim());

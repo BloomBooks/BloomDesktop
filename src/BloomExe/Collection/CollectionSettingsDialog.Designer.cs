@@ -544,7 +544,7 @@
 			this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
 			this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
 			this._showExperimentalTemplates.TabIndex = 3;
-			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary, Calendar)";
+			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary)";
 			this._showExperimentalTemplates.UseVisualStyleBackColor = true;
 			this._showExperimentalTemplates.CheckedChanged += new System.EventHandler(this._showExperimentalTemplates_CheckedChanged);
 			// 

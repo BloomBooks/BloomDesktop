@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -27,6 +28,7 @@ namespace BloomTests.WebLibraryIntegration
         {
             var initialCount = _client.GetBookCount();
             CreateBookRecord();
+			Thread.Sleep(3000);//jh added this because the test failed frequently, but not when stepping through. Hypothesizing that AWS S3 doesn't update the count immediately
             Assert.Greater(_client.GetBookCount(), initialCount);
         }
 
@@ -41,12 +43,25 @@ namespace BloomTests.WebLibraryIntegration
 			if (_client.LogIn("mytest@example.com", "nonsense"))
 				_client.DeleteCurrentUser();
 		    Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-		    _client.CreateUser("mytest@example.com", "nonsense");
+            Assert.That(_client.UserExists("mytest@example.com"), Is.False);
+            _client.CreateUser("mytest@example.com", "nonsense");
 			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True);
+            Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "login is not case-independent");
+            Assert.That(_client.UserExists("mytest@example.com"), Is.True);
+            Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
 			_client.DeleteCurrentUser();
 			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-		}
+            Assert.That(_client.UserExists("mytest@example.com"), Is.False); 
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
+            _client.CreateUser("Mytest@Example.com", "nonsense");
+            Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
+            Assert.That(_client.UserExists("Mytest@Example.com"), Is.True);
+            Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
+            _client.DeleteCurrentUser();
+            Assert.That(_client.LoggedIn, Is.False);
+            Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
+        }
 
         [Test]
         public void LoggedIn_Initially_IsFalse()

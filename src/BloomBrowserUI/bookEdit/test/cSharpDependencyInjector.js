@@ -24,5 +24,9 @@ function ForCodeInspection_UnusedFunctions() {
     setSampleFileContents('');
     setTextsList('');
     closeSetupDialog();
+    SetCopyrightAndLicense(null);
+    loadAccordionPanel('', '');
+    restoreAccordionSettings('');
 
+    var x = model.fontName;
 }

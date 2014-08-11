@@ -47,13 +47,28 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
     }
 };
 
-function FindOrCreateConfigDiv(path) {
-    var dialogContents = $("#synphonyConfig");
-    if (!dialogContents.length) {
-        dialogContents = $("<div id='synphonyConfig' title='Synphony Configuration'/>").appendTo($("body"));
+SynphonyApi.fireCSharpEvent = function(eventName, eventData) {
 
-        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm').replace(/file:\/\/(\w)/, 'file:///$1');
-        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\');"></iframe>';
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+};
+
+/**
+ * Create the configuration dialog
+ * @param {String} path
+ * @param {String} title
+ * @returns {JQuery|*|jQuery|HTMLElement}
+ */
+function FindOrCreateConfigDiv(path, title) {
+    var dialogContents = $("#synphonyConfig", window.parent.document);
+    if (!dialogContents.length) {
+        dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body", window.parent.document));
+
+        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm');
+
+        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" ' +
+            'onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + document.getElementById(\'accordion\').contentWindow.model.getSynphony().source, \'*\'); ' +
+            'document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Font\\n\' + document.getElementById(\'accordion\').contentWindow.model.fontName, \'*\');"></iframe>';
         dialogContents.append(html);
     }
     return dialogContents;
@@ -61,21 +76,22 @@ function FindOrCreateConfigDiv(path) {
 
 /**
  * Show the configuration dialog
+ * @param {String} title The title of the dialog
  */
-SynphonyApi.prototype.showConfigDialog = function() {
+SynphonyApi.prototype.showConfigDialog = function (title) {
 
-    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory());
+    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory(), title);
     var h = 580;
     var w = 720;
 
     // This height and width will fit inside the "800 x 600" settings
-    if (document.body.scrollWidth < 583) {
+    if (window.parent.document.body.scrollWidth < 583) {
         h = 460;
         w = 390;
     }
 
     // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
-    else if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
+    else if ((window.parent.document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
         h = 460;
         w = 580;
     }
@@ -85,17 +101,22 @@ SynphonyApi.prototype.showConfigDialog = function() {
         modal: "true",
         buttons: {
             "OK": function () {
-                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+                 window.parent.document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
             },
             "Cancel": function () {
                 $(this).dialog("close");
             }
         },
-        close: function () { $(this).remove(); },
-        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
+        close: function() {
+            $(this).remove();
+            SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
+        },
+        open: function () { $('#synphonyConfig', window.parent.document).css('overflow', 'hidden'); },
         height: h,
         width: w
     });
+
+    SynphonyApi.fireCSharpEvent('setModalStateEvent', 'true');
 };
 
 // This is at least useful for testing; maybe for real use.
@@ -139,10 +160,6 @@ var Stage = function(name) {
 
 Stage.prototype.getName = function() {
     return this.name;
-};
-
-Stage.prototype.getFrequency = function(word) {
-    return this.words[word];
 };
 
 /**

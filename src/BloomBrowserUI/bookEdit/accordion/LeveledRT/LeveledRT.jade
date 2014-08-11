@@ -2,9 +2,9 @@ html
 	head
 		link(rel='stylesheet', href='../readerTools.css', type='text/css')
 	body
-		h3(data-markuptype='2') Leveled Reader Tool
+		h3(data-markuptype='2', data-order='20') Leveled Reader Tool
 		div
-			img#levels-steps(src='../../../images/steps-white.png', style='margin-left: 14px; width: 32px')
+			img#levels-steps(src='http://localhost:8089/bloom/images/steps-white.png', style='margin-left: 14px; width: 32px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
 				span.stageLabel.stageLine="Level "
@@ -69,6 +69,4 @@ html
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeLeveledRT, 100);
-					var path = thisDir + '../../images/steps-white.png';
-					document.getElementById('levels-steps').src = path;
 				});

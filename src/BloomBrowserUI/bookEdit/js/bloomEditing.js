@@ -1,3 +1,37 @@
+// listen for messages sent to this page (from other iframes)
+window.addEventListener('message', processExternalMessage, false);
+/**
+ * Respond to messages from other iframes
+ * @param {Event} event
+ */
+function processExternalMessage(event) {
+
+    var params = event.data.split("\n");
+
+    switch(params[0]) {
+
+        case 'Qtips': // request from accordion to add qtips to marked-up spans
+            // q-tips; first 3 are for decodable, last for leveled; could make separate messages.
+            var editableElements = $(".bloom-content1");
+            editableElements.find('span.' + $.cssSightWord()).each(function() {
+                $(this).qtip({ content: 'Sight word' });
+            });
+
+            editableElements.find('span.' + $.cssWordNotFound()).each(function() {
+                $(this).qtip({ content: 'Word not valid' });
+            });
+
+            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+                $(this).qtip({ content: 'Possible word' });
+            });
+
+            editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
+                $(this).qtip({ content: 'Sentence too long' });
+            });
+            return;
+    }
+}
+
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         var ah = $(this).height();
@@ -684,7 +718,8 @@ function AddOverflowHandler() {
                 $this.removeClass('overflow'); // If it's not here, this won't hurt anything.
 
             // This will make sure that any language tags on this div stay in position with editing.
-            $this.qtip('reposition');
+            // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+            $("div.bloom-editable, textarea").qtip('reposition');
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
@@ -844,10 +879,6 @@ function SetCopyrightAndLicense(data) {
     SetBookCopyrightAndLicenseButtonVisibility();
 }
 
-function DecodeHtml(encodedString) {
-    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'");
-}
-
 function SetBookCopyrightAndLicenseButtonVisibility() {
     var shouldShowButton = !($("DIV.copyright").text());
     $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
@@ -928,17 +959,6 @@ function ShowTopicChooser() {
         var x = dlg.dialog("option", "buttons");
         x['OK'].apply(dlg);
     });
-}
-
-var resizeTimer;
-var windowBorder = 12; // window border is about 12px
-function resizeAccordion() {
-    var windowHeight = $(window).height();
-    var root = $(".accordionRoot");
-    // Set accordion container height to fit in new window size
-    // Then accordion Resize() will adjust it to fit the container
-    root.height(windowHeight - windowBorder);
-    BloomAccordion.Resize();
 }
 
 function DecodeHtml(encodedString) {
@@ -1056,6 +1076,14 @@ $(document).ready(function () {
         }
     //TODO if you do Ctrl+A and delete, you're now outside of our <p></p> zone. clicking out will trigger the blur handerl above, which will restore it.
     });
+
+    // invoke function when a bloom-editable element loses focus.
+    $('.bloom-editable').focusout(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
+        }
+    });    
 
     SetBookCopyrightAndLicenseButtonVisibility();
 
@@ -1395,12 +1423,4 @@ $(document).ready(function () {
     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
-    var accordion = new BloomAccordion();
-    resizeAccordion(); // Make sure it gets run once, at least.
-
-    // Now bind the window's resize function to the accordion resizer
-    $(window).bind('resize', function () {
-        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-        resizeTimer = setTimeout(resizeAccordion, 100);
-    });
 });

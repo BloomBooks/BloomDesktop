@@ -2,7 +2,7 @@ doctype html
 html
 	head
 		meta(charset='UTF-8')
-		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
+		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
 		script(src='../../lib/jquery-1.10.1.js')
 		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
@@ -25,14 +25,14 @@ html
 				.floating(style='width: 200px')
 					label(for='dls_letters') Letters
 					br
-					textarea#dls_letters(style='height: 55px; width: 195px')
+					textarea#dls_letters.book-font(style='height: 55px; width: 195px')
 					br
 					span.smaller * List in alphabetic order<br>* Separate by spaces<br>E.g. "a b c d"
 					br
 					br
 					label(for='dls_letter_combinations') Letter Combinations (Graphemes)
 					br
-					textarea#dls_letter_combinations(style='height: 55px; width: 195px')
+					textarea#dls_letter_combinations.book-font(style='height: 55px; width: 195px')
 					br
 					span.smaller * Separate by spaces<br>E.g. "ai oo sh ng th ing"
 				#word-lists-div.floating
@@ -40,7 +40,7 @@ html
 					br
 					textarea#dls_word_lists(style='height: 55px;' readonly)
 					br
-					a#open-text-folder.smaller Open the sample texts folder for this language.
+					a#open-text-folder.smaller(href='') Open the sample texts folder for this language.
 					p.smaller About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
 					p.smaller If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
 					p.smaller Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
@@ -48,12 +48,12 @@ html
 				.floating
 					label(for='dls_more_words') More Words
 					br
-					textarea#dls_more_words(style='height: 328px; width: 100px')
+					textarea#dls_more_words.book-font(style='height: 328px; width: 100px')
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/keys-white.png')
+							td: img(src='../../images/keys.png')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
@@ -72,7 +72,7 @@ html
 											td(colspan='3'): a#setup-add-stage(href='') Add Stage
 					div.smaller(style='float: left') Drag rows to reorder stages.
 					div(style='float: right')
-						a#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
+						a.blue-link#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
 							span#remove-stage-number 1
 				#stage-detail.floating.tab-detail
 					div(style='display: block; margin: 6px 10px')
@@ -83,14 +83,14 @@ html
 							label(for='setup-stage-sight-words') New Sight Words
 							div(style='float: right')
 								a#define-sight-words.smaller(href='') What are sight words?
-							textarea#setup-stage-sight-words(style='height: 35px; width: 100%; box-sizing:border-box;')
+							textarea#setup-stage-sight-words.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
 						br
 						div(style='display: block; margin-top: 12px;'): label Previous and New Letters
 						#setup-selected-letters.rs-letter-container
-						.smaller(style='float: left') Click on letters to add them to this stage.
+						#click-letters.smaller(style='float: left') Click on letters to add them to this stage.
 					#setup-stage-matching-words.sub-float
 						label(style='white-space: nowrap;')
-							span#setup-words-count 15
+							span#setup-words-count 0
 							span &nbsp;matching words
 						.rs-word-container
 							#rs-matching-words(style='margin-left: 8px')
@@ -98,7 +98,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/steps-white.png', height='32')
+							td: img(src='../../images/steps.png', height='32')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
@@ -120,7 +120,7 @@ html
 											td(colspan='5'): a#setup-add-level(href='') Add Level
 					div.smaller(style='float: left') Drag rows to reorder levels.
 					div(style='float: right')
-						a#setup-remove-level.smaller(href='') Remove Level&nbsp;
+						a.blue-link#setup-remove-level.smaller(href='') Remove Level&nbsp;
 							span#remove-level-number 1
 				#level-detail.floating.tab-detail
 					div(style='display: block; margin: 0 10px 6px')
@@ -137,7 +137,7 @@ html
 							td: input#max-words-per-page.level-textbox(type='text')
 						tr
 							td: input#use-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-book') Maximum Words perBook
+							td: label(for='use-words-per-book') Maximum Words per Book
 							td: input#max-words-per-book.level-textbox(type='text')
 						tr
 							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')

@@ -4,12 +4,15 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
+using Bloom.web;
+using BloomTemp;
 using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Progress;
@@ -36,6 +39,7 @@ namespace Bloom.Edit
     	private IPage _previouslySelectedPage;
         private bool _inProcessOfDeleting;
 		private string _accordionFolder;
+        private EnhancedImageServer _server;
 
     	//public event EventHandler UpdatePageList;
 
@@ -52,7 +56,8 @@ namespace Bloom.Edit
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			LibraryClosing libraryClosingEvent,
             CollectionSettings collectionSettings,
-			SendReceiver sendReceiver)
+			SendReceiver sendReceiver,
+            EnhancedImageServer server)
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
@@ -60,6 +65,7 @@ namespace Bloom.Edit
         	_deletePageCommand = deletePageCommand;
         	_collectionSettings = collectionSettings;
         	_sendReceiver = sendReceiver;
+            _server = server;
 
         	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
             pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -405,11 +411,38 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
-    	public HtmlDom GetXmlDocumentForCurrentPage()
-        {
-            _domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-			AddAccordionToPage(_domForCurrentPage);
-    	    return _domForCurrentPage;
+	    public void SetupServerWithCurrentPageIframeContents()
+	    {
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
+			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
+			_server.AccordionContent = MakeAccordionContent();		    
+	    }
+
+	    /// <summary>
+	    /// Return the DOM that represents the content of the current page.
+	    /// Note that this is typically not the top-level thing displayed by the browser; rather, it is embedded in an
+	    /// iframe.
+	    /// </summary>
+	    /// <returns></returns>
+	    public HtmlDom GetXmlDocumentForCurrentPage()
+	    {
+		    return _domForCurrentPage;
+	    }
+
+		/// <summary>
+		/// Return the top-level document that should be displayed in the browser for the current page.
+		/// Enhance JohnT: Since EditViewFrame.htm does not change, it should be possible to modify
+		/// the caller so that it just loads that file directly, rather than making a temp file out of
+		/// the DOM we make out of the file. However, we probably soon want to make the accordion optional,
+		/// at which point we may just return _domForCurrentPage when it is turned off, or more likely,
+		/// return a modified DOM which hides it.
+		/// </summary>
+		/// <returns></returns>
+		public HtmlDom GetXmlDocumentForEditScreenWebPage()
+		{
+            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
+            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
         }
 
         /// <summary>
@@ -425,6 +458,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
 			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
+			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
 			var settings = new Dictionary<string, object>();
@@ -432,11 +466,11 @@ namespace Bloom.Edit
 			settings.Add("showPE", tools.Any(t => t.Name == "pageElements").ToInt());
 			settings.Add("showDRT", tools.Any(t => t.Name == "decodableReader").ToInt());
 			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
-			settings.Add("current", accordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
+			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
 
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
-			_view.RunJavaScript("if (typeof(restoreAccordionSettings) === \"function\") {restoreAccordionSettings(\"" + settingsStr + "\");}");
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.restoreAccordionSettings) === \"function\") {document.getElementById('accordion').contentWindow.restoreAccordionSettings(\"" + settingsStr + "\");}");
         }
 
 		/// <summary>Gets reader tool settings from DecodableLevelData.json and send to javascript</summary>
@@ -450,12 +484,14 @@ namespace Bloom.Edit
 				decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
 
 			var input = CleanUpJsonDataForJavascript(decodableLeveledSettings);
-#if DEBUG
-			var fakeIt = "true";
-#else
-            var fakeIt = "false";
-#endif
-			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
+
+			var bookFontName = _currentlyDisplayedBook.CollectionSettings.DefaultLanguage1FontName;
+			if (bookFontName.Length > 0) 
+				bookFontName = CleanUpDataForJavascript("\"" + bookFontName + "\", sans-serif");
+			else
+				bookFontName = "sans-serif";
+
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.initializeSynphony) === \"function\") {document.getElementById('accordion').contentWindow.initializeSynphony(\"" + input + "\", \"" + bookFontName + "\");}");
 		}
 
 		private void SaveAccordionSettings(string data)
@@ -465,24 +501,24 @@ namespace Bloom.Edit
 			switch (args[0])
 			{
 				case "showPE":
-					updateActiveToolSetting("pageElements", args[1] == "1");
+					UpdateActiveToolSetting("pageElements", args[1] == "1");
 					return;
 
 				case "showDRT":
-					updateActiveToolSetting("decodableReader", args[1] == "1");
+					UpdateActiveToolSetting("decodableReader", args[1] == "1");
 					return;
 
 				case "showLRT":
-					updateActiveToolSetting("leveledReader", args[1] == "1");
+					UpdateActiveToolSetting("leveledReader", args[1] == "1");
 					return;
 
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = accordionDirectoryNameToToolName(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
 			}
 		}
 
-		private void updateActiveToolSetting(string toolName, bool enabled)
+		private void UpdateActiveToolSetting(string toolName, bool enabled)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
 			var item = tools.FirstOrDefault(t => t.Name == toolName);
@@ -493,7 +529,7 @@ namespace Bloom.Edit
 				item.Enabled = enabled;
 		}
 
-		private static string accordionToolNameToDirectoryName(string toolName)
+		private static string AccordionToolNameToDirectoryName(string toolName)
 		{
 			switch (toolName)
 			{
@@ -510,7 +546,7 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private static string accordionDirectoryNameToToolName(string directoryName)
+		private static string AccordionDirectoryNameToToolName(string directoryName)
 		{
 			switch (directoryName)
 			{
@@ -525,6 +561,11 @@ namespace Bloom.Edit
 			}
 
 			return string.Empty;
+		}
+
+		private void SetModalState(string isModal)
+		{
+			_view.SetModalState(isModal == "true");
 		}
 
 		private static string CleanUpDataForJavascript(string data)
@@ -554,7 +595,7 @@ namespace Bloom.Edit
             var path = _collectionSettings.DecodableLevelPathName;
             File.WriteAllText(path, content, Encoding.UTF8);
 
-            _view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.closeSetupDialog) === \"function\") {document.getElementById('accordion').contentWindow.closeSetupDialog();}");
         }
 
         /// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
@@ -582,7 +623,7 @@ namespace Bloom.Edit
                 }
             }
 
-            _view.RunJavaScript("if (typeof(setTextsList) === \"function\") {setTextsList(\"" + fileList + "\");}");
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setTextsList) === \"function\") {document.getElementById('accordion').contentWindow.setTextsList(\"" + fileList + "\");}");
         }
 
         /// <summary>Gets the contents of a Sample Text file</summary>
@@ -595,7 +636,7 @@ namespace Bloom.Edit
             var text = File.ReadAllText(path);
             text = CleanUpDataForJavascript(text);
 
-            _view.RunJavaScript("if (typeof(setSampleFileContents) === \"function\") {setSampleFileContents(\"" + text + "\");}");
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setSampleFileContents) === \"function\") {document.getElementById('accordion').contentWindow.setSampleFileContents(\"" + text + "\");}");
         }
 
 		/// <summary>
@@ -626,28 +667,20 @@ namespace Bloom.Edit
 			dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
 		}
 
-		private void AddAccordionToPage(HtmlDom dom)
+		private string MakeAccordionContent()
 		{
-			MoveBodyAndStylesIntoScopedDiv(dom);
-
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
 			_accordionFolder = Path.GetDirectoryName(path);
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-			// move css files from the head into scoped tags in ReaderTools.htm
-			var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
-			MoveStylesIntoScopedTag(domForAccordion, div);
-
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, dom.Body);
-
-			dom.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
-			AddFontAwesomeToPage(dom);
-
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, dom.Head);
+            domForAccordion.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
+            AddFontAwesomeToPage(domForAccordion);
 
 			// Load settings into the accordion panel
-			AppendAccordionSettingsPanel();
+            AppendAccordionSettingsPanel(domForAccordion);
+		    XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
+            return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
 		}
 
 		/// <summary>
@@ -663,86 +696,22 @@ namespace Bloom.Edit
 			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, panelName + ".htm");
 			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
 
-			// move stylesheets to scoped div
-			var div = subPanelDom.Body.SelectSingleNode("//div");
-			MoveStylesIntoScopedTag(subPanelDom, div);
-
 			// escape for javascript
 			var html = CleanUpDataForJavascript(subPanelDom.Body.InnerXml);
 
 			// load panel into the accordion
-			_view.RunJavaScript("if (typeof(loadAccordionPanel) === \"function\") {loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
+            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.loadAccordionPanel) === \"function\") {document.getElementById('accordion').contentWindow.loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
 		}
 
 		/// <summary>Loads the initial panel into the accordion</summary>
-		private void AppendAccordionSettingsPanel()
+        private void AppendAccordionSettingsPanel(HtmlDom domForAccordion)
 		{
-			var accordion = _domForCurrentPage.Body.SelectSingleNode("//div[@id='accordion']");
+            var accordion = domForAccordion.Body.SelectSingleNode("//div[@id='accordion']");
 			var subFolder = Path.Combine(_accordionFolder, "settings");
 			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, "Settings.htm");
 			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
 			AppendAllChildren(subPanelDom.Body, accordion);
 		}
-
-        /// <summary>
-        /// Move everything in the body into a new div, which begins with a style scoped element.
-        /// Replace stylesheet links in the head with importing those styles into the style element.
-        /// </summary>
-        /// <param name="_domForCurrentPage"></param>
-        private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
-        {
-            var body = domForCurrentPage.Body;
-            var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
-            var newDiv = body.OwnerDocument.CreateElement("div");
-            newDiv.SetAttribute("style", "float:left");
-            // Various things in JavaScript land that want to add things using the styles add them to this element instead of body.
-            newDiv.SetAttribute("id", "mainPageScope");
-            body.AppendChild(newDiv);
-
-            MoveStylesIntoScopedTag(domForCurrentPage, newDiv);
-            
-            foreach (var child in childrenToMove)
-                newDiv.AppendChild(child);
-        }
-
-        private void MoveStylesIntoScopedTag(HtmlDom domForCurrentPage, XmlNode target)
-        {
-            var body = domForCurrentPage.Body;
-            var head = domForCurrentPage.Head;
-
-            // get the style sheets linked to this document
-            var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
-
-            // create a style tag for the style sheets
-            var scope = body.OwnerDocument.CreateElement("style");
-            target.AppendChild(scope);
-            scope.SetAttribute("scoped", "scoped");
-
-            foreach (var style in stylesToMove)
-            {
-                var source = style.Attributes["href"].Value;
-                if (source.Contains("editPaneGlobal"))
-                    continue; // Leave this one at the global level, it contains things that should NOT be scoped.
-
-				if (!source.StartsWith("file") && !source.StartsWith("http"))
-                {
-                    // get the filename
-                    var idx = source.LastIndexOfAny("\\/".ToCharArray());
-                    if (idx > -1)
-                        source = source.Substring(idx + 1);
-
-                    // do not attempt to do this to jquery
-                    if (source.StartsWith("jquery")) continue;
-
-                    // look for the css file, and build a file URI
-                    source = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source).ToLocalhost();
-                }
-
-                var import = body.OwnerDocument.CreateTextNode("@import \"" + source + "\";\n");
-                scope.AppendChild(import);
-                head.RemoveChild(style);
-            }
-        }
 
         void AppendAllChildren(XmlNode source, XmlNode dest)
         {
@@ -768,7 +737,7 @@ namespace Bloom.Edit
         {
             if (_domForCurrentPage != null)
             {
-				_view.CleanHtmlAndCopyToPageDom();
+                _view.CleanHtmlAndCopyToPageDom();
                 _bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
             }
         }
