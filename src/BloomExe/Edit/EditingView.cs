@@ -395,24 +395,13 @@ namespace Bloom.Edit
 					return;
 				}
 
-				// If the href starts with "javascript" let Gecko handle it normally.
-				// Using iframes has caused "_browser1.RunJavaScript(function);" to stop working because the script files are
-				// no longer loaded in window.document, but in window.document.iframe.contentWindow.document.
+				// Let Gecko handle hrefs that are explicitly tagged "javascript"
 				if (anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
 				{
 					ge.Handled = false; // let gecko handle it
 					return;
 				}
 
-				// the href is a javascript function without the "javascript" prefix
-				if (anchor.Href.Contains("("))
-				{
-					var startOfFunctionName = anchor.Href.LastIndexOf("/") + 1;
-					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
-					_browser1.RunJavaScript(function);
-					ge.Handled = true;
-					return;
-				}
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
 					// do not open in external browser if localhost
