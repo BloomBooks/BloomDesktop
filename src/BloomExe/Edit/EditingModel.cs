@@ -468,6 +468,13 @@ namespace Bloom.Edit
 			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
 			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
 
+			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
+			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
+				settings.Add("decodableState", decodableTool.State);
+			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
+			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
+				settings.Add("leveledState", leveledTool.State);
+
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
 			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.restoreAccordionSettings) === \"function\") {document.getElementById('accordion').contentWindow.restoreAccordionSettings(\"" + settingsStr + "\");}");
@@ -515,7 +522,18 @@ namespace Bloom.Edit
 				case "current":
 					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
+				case "state":
+					UpdateToolState(args[1], args[2]);
+					return;
 			}
+		}
+		private void UpdateToolState(string toolName, string state)
+		{
+			var tools = _currentlyDisplayedBook.BookInfo.Tools;
+			var item = tools.FirstOrDefault(t => t.Name == toolName);
+
+			if (item != null)
+				item.State = state;
 		}
 
 		private void UpdateActiveToolSetting(string toolName, bool enabled)

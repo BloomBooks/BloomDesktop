@@ -618,7 +618,8 @@ ReaderToolsModel.prototype.saveState = function() {
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-
+    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tdecodableReader\t" + this.stageNumber);
+    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
     libsynphony.dbSet('drt_state', state);
 };
 
