@@ -191,7 +191,7 @@ namespace Bloom.Edit
                                 MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
                                 dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
-                        _browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+						_browser1.RunJavaScript("document.getElementById('page').contentWindow.SetCopyrightAndLicense(" + result + ")");
 						
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
 						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
