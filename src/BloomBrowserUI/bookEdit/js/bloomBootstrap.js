@@ -16,6 +16,9 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtip.js
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtipSecondary.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + libDir + 'jquery.qtip.css">');
 
+document.write('<script type="text/javascript" src="' + libDir + 'localizationManager.js"></script>');
+document.write('<script type="text/javascript" src="' + libDir + 'jquery.i18n.custom.js"></script>');
+
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.sizes.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.watermark.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgscale.js"></script>');
