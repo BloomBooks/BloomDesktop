@@ -394,9 +394,20 @@ namespace Bloom.Edit
 					ge.Handled = true;
 					return;
 				}
-				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
+
+				// If the href starts with "javascript" let Gecko handle it normally.
+				// Using iframes has caused "_browser1.RunJavaScript(function);" to stop working because the script files are
+				// no longer loaded in window.document, but in window.document.iframe.contentWindow.document.
+				if (anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
 				{
-					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
+					ge.Handled = false; // let gecko handle it
+					return;
+				}
+
+				// the href is a javascript function without the "javascript" prefix
+				if (anchor.Href.Contains("("))
+				{
+					var startOfFunctionName = anchor.Href.LastIndexOf("/") + 1;
 					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
 					_browser1.RunJavaScript(function);
 					ge.Handled = true;
