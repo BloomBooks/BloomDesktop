@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -342,7 +343,10 @@ namespace Bloom
 
 			builder.AppendLine();
 
-			builder.AppendLine(File.ReadAllText(_url));
+			using (var client = new WebClient())
+			{
+				builder.AppendLine(client.DownloadString(_url));
+			}
 			Clipboard.SetText(builder.ToString());
 			MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
 		}
@@ -351,7 +355,11 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
-			var src = _url.FromLocalhost();
+			string src;
+			using (var client = new WebClient())
+			{
+				src = client.DownloadString(_url);
+			}
 			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(temp.Path.ToLocalhost());
 		}
