@@ -105,7 +105,7 @@ namespace Bloom_ChorusPlugin
 			merger.MergeStrategies.SetStrategy("TranslationGroup", new ElementStrategy(true)
 			{
 				IsAtomic = false,
-				MergePartnerFinder = new FindByKeyAttribute("class"),
+				MergePartnerFinder = new FindByKeyAttributeInList("class"),
 				ContextDescriptorGenerator = new BloomPageContextGenerator()
 			});
 			merger.MergeStrategies.SetStrategy("LangDiv", new ElementStrategy(true)

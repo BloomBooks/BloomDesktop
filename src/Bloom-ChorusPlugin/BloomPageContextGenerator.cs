@@ -98,13 +98,25 @@ namespace Bloom_ChorusPlugin
 
 		public string HtmlContext(XmlNode mergeElement)
 		{
-			// TODO: might need to merge elements outside of bloom-pages eventually.
 			Guard.Against(mergeElement == null, "mergeElement was null");
 
-			var pageElement = FindNearestBloomPageElement(mergeElement);
-			var pageId = pageElement.GetAttribute("id"); // guid of bloom-page
-			var pageNumber = FindPageNumber(mergeElement, pageId);
-			var context = "<div><div class='pageInfo' id='" + pageId +"'>Page number: " + pageNumber + "</div>" + mergeElement.OuterXml + "</div>";
+			string pageId;
+			string pageNumber;
+
+			// TODO: might need to merge elements outside of bloom-pages eventually.
+			try
+			{
+				var pageElement = FindNearestBloomPageElement(mergeElement);
+				pageId = pageElement.GetAttribute("id"); // guid of bloom-page
+				pageNumber = FindPageNumber(mergeElement, pageId);
+			}
+			catch (ArgumentException)
+			{
+				// mergeElement had no bloom-page
+				pageId = "Page Id not found";
+				pageNumber = "MetaData";
+			}
+			var context = "<div><div class='pageInfo' id='" + pageId + "'>Page number: " + pageNumber + "</div>" + mergeElement.OuterXml + "</div>";
 			return XmlUtilities.GetXmlForShowingInHtml(context);
 		}
 
@@ -114,7 +126,7 @@ namespace Bloom_ChorusPlugin
 			//   1- a bloom-startPageNumbering class
 			//   2- our first numberedPage class
 			//   Unfortunately, it's not clear that either of those is guaranteed to exist in a book!
-			// Also, how to label front-matter/back-matter pages? lower-case roman numerals?
+			// Also, how to label front-matter/back-matter pages? some two-level numbering system? (0.1 = first FM page...)
 			// Or should all front/back matter pages just return "front matter" or "back matter"?
 			var pageNumber = 0;
 			const string xpath = "//div[contains(@class,'bloom-page')]";
