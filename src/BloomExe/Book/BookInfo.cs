@@ -48,6 +48,16 @@ namespace Bloom.Book
 				}
 			}
 
+			// should the accordion be enabled?
+			if ((_metadata != null) && (_metadata.Tools != null))
+			{
+				if (!_metadata.ReaderToolsAvailable)
+				{
+					if (_metadata.Tools.Any(t => t.Enabled))
+						_metadata.ReaderToolsAvailable = true;
+				}
+			}
+
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
