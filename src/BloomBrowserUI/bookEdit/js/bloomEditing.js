@@ -52,34 +52,26 @@ function CanChangeBookLicense() {
 }
 
 //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
+function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
-    if ($(targetElement).css('display') == 'none') {
-        return;
-    }
+    var target = $(targetElement);
+    var source = $(elementWithBubbleAttributes);
 
-    if ($(targetElement).css('border-bottom-color') == 'transparent') {
-        return; //don't put tips if they can't edit it. That's just confusing
-    }
-    if ($(targetElement).css('display') == 'none') {
+    if (target.css('display') === 'none')
         return; //don't put tips if they can't see it.
-    }
 
-    theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-    if ($(targetElement).height() < 100) {
-        pos = {
-            at: 'right center', //I like this, but it doesn't reposition well -->'right center',
-            my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
-           , viewport: $(window)
-            // , adjust: { y: -20 }
-        };
-    }
-    else { // with the big back covers, the adjustment just makes things worse.
-        pos = {
-            at: 'right center',
-            my: 'left center'
-        };
-    }
+    if (target.css('border-bottom-color') === 'transparent')
+        return; //don't put tips if they can't edit it. That's just confusing
+
+    var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+
+    var pos = { at: 'right center', my: 'left center' };
+
+    if (target.height() < 100)
+        pos.viewport = $(window);
+
+    if (target.hasClass('coverBottomBookTopic'))
+        pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
@@ -88,7 +80,23 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
     var shouldShowAlways = true;
     var hideEvents = shouldShowAlways ? null : 'focusout mouseleave';
 
-    var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
+    // get the default text/stringId
+    var whatToSay = target.attr('data-hint');
+    if (!whatToSay) whatToSay = source.attr('data-hint');
+    if (!whatToSay) whatToSay = source.text();
+
+    // no empty bubbles
+    if (!whatToSay) return;
+
+    // determine onFocusOnly
+    var onFocusOnly = whatToSay.startsWith('*');
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+    // get the localized string
+    if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+    whatToSay = localizationManager.getLocalizedHint(whatToSay, target);
+
+    var functionCall = source.data("functiononhintclick");
     if (functionCall) {
         if (functionCall == 'bookMetadataEditor' && !CanChangeBookLicense())
             return;
@@ -102,9 +110,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         hideEvents = 'focusout mouseleave';
     }
 
-    whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
-
-    $(targetElement).qtip({
+    target.qtip({
         content: whatToSay,
         position: pos,
         show: {
@@ -294,10 +300,12 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
+    var vernacularLang = localizationManager.getVernacularLang();
+
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
-    $(divForBubble).find("*[lang='" + GetDictionary().vernacularLang + "']").each(function() {
+    $(divForBubble).find("*[lang='" + vernacularLang + "']").each(function() {
         $(this).remove();
     });
     //don't want empty items in the bubble
@@ -327,14 +335,13 @@ function MakeSourceTextDivForGroup(group) {
         var list = $(this).find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
-        var dictionary = GetDictionary();
         var items = $(this).find("textarea, div");
         items.sort(function(a, b) {
             var keyA = $(a).attr('lang');
             var keyB = $(b).attr('lang');
-            if (keyA == dictionary.vernacularLang)
+            if (keyA === vernacularLang)
                 return -1;
-            if (keyB == dictionary.vernacularLang)
+            if (keyB === vernacularLang)
                 return 1;
             if (keyA < keyB)
                 return -1;
@@ -345,12 +352,12 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = dictionary[iso];
+            var languageName = localizationManager.getIso();
             if (!languageName)
                 languageName = iso;
-            var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+            var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            if(iso=== GetSettings().defaultSourceLanguage) {
+            if(iso === GetSettings().defaultSourceLanguage) {
                 selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
@@ -421,26 +428,6 @@ function MakeSourceTextDivForGroup(group) {
 	        hide: hideEvents
 	    });
 	});
-}
-
-
-function GetLocalizedHint(whatToSay, targetElement) {
-
-    if(whatToSay.startsWith("*"))
-        whatToSay = whatToSay.substring(1,1000);
-
-    // look for elements being passed, e.g. anchor tags
-    if (whatToSay.substr(0, 1) === '<')
-        whatToSay = $(whatToSay).text();
-
-    // get the translation
-    whatToSay = localizationManager.getText(whatToSay);
-
-    // stick in the language
-    if (whatToSay.indexOf('{lang}') != -1)
-        whatToSay = whatToSay.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
-
-    return whatToSay;
 }
 
 //add a delete button which shows up when you hover
@@ -912,19 +899,16 @@ jQuery(document).ready(function () {
 
     //Add little language tags
     $("div.bloom-editable:visible").each(function () {
+
+        //with a really small box that also had a hint qtip, there wasn't enough room and the two fought with each other, leading to flashing back and forth
+        if ($(this).width() < 100) return;
+
         var key = $(this).attr("lang");
-        var dictionary = GetDictionary();
-        var whatToSay = dictionary[key];
-        if (whatToSay == null)
+        if (key === "*") return; //seeing a "*" was confusing even to me
+
+        var whatToSay = localizationManager.getText(key);
+        if (whatToSay === null)
             whatToSay = key; //just show the code
-
-        if (key == "*")
-            return; //seeing a "*" was confusing even to me
-
-        //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
-        if ($(this).width() < 100) {
-            return;
-        }
 
         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
         // first usage (for instance) was turning off language tags for a whole page
@@ -938,12 +922,8 @@ jQuery(document).ready(function () {
         var shouldShowAlways = true; // "mouseleave unfocus";
         var hideEvents = false; // "mouseover focusin";
 
-        //             shouldShowAlways = false;
-        //           hideEvents = 'unfocus mouseleave';
-
         $(this).qtip({
             content: whatToSay,
-
             position: {
                 my: 'top right',
                 at: 'bottom right',
@@ -983,15 +963,13 @@ jQuery(document).ready(function () {
     //so it is preferred when making new templates by hand.
     $("*.bloom-editable label.bubble").each(function () {
         var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
         var enclosingEditableDiv = labelElement.parent();
         enclosingEditableDiv.attr('data-hint', labelElement.text());
         labelElement.remove();
 
         //attach the bubble, this editable only, then remove it
-        MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
+        MakeHelpBubble($(enclosingEditableDiv), labelElement);
     });
 
     //<label class='bubble'> inside a div.bloom-translationGroup to gives a hint bubble outside each of
@@ -1001,22 +979,18 @@ jQuery(document).ready(function () {
     //behaviors through classes
     $("*.bloom-translationGroup > label.bubble").each(function () {
         var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
 
         //attach the bubble, separately, to every field inside the group
         labelElement.parent().find("div").each(function () {
             var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-            MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
+            MakeHelpBubble($(this), labelElement);
         });
     });
 
     $("*.bloom-imageContainer > label.bubble").each(function () {
         var labelElement = $(this);
         var imageContainer = $(this).parent();
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-        MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
+        MakeHelpBubble(imageContainer, labelElement);
     });
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
@@ -1046,18 +1020,7 @@ jQuery(document).ready(function () {
     //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
     //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
     $("*[data-hint]").each(function () {
-        var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-        if (!whatToSay || whatToSay.length == 0)
-            return;
-
-        //make hints that start with a * only show when the field has focus
-        var showOnFocusOnly = whatToSay.startsWith("*");
-
-        if (whatToSay.startsWith("*")) {
-            whatToSay = whatToSay.substring(1, 1000);
-        }
-
-        MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
+        MakeHelpBubble($(this), $(this));
     });
 
     $.fn.hasAttr = function (name) {
@@ -1152,7 +1115,7 @@ jQuery(document).ready(function () {
 
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
 
-            whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
+            whatToSay = localizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
             var pos = { at: 'right center',
                 my: 'left center'

@@ -22,8 +22,8 @@
  *      localizationManager.setElementText().
  *   6. The JS function localizationManager.setElementText() reads the stringId from the "data-i18n" attribute and uses
  *      it to search for the localized text in the dictionary created in step 1.
- *   7. The JS function GetLocalizedHint() in bloomEditing.js has also been updated to retrieve the localized hint from
- *      localizationManager rather than searching the dictionary directly.
+ *   7. There is a separate function, localizationManager.getLocalizedHint(), for localizing the text of hint bubbles
+ *      because sometimes there is a {lang} tag in the hint text that needs to be substituted.
  *   8. Strings that are generated dynamically by JS can also be localized by the localizationManager. An example of
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
@@ -129,6 +129,32 @@ LocalizationManager.prototype.setElementText = function (element) {
 
     if (text) elem.text(text);
 };
+
+/**
+ * Hints sometimes have a {lang} tag in the text that needs to be substituted.
+ * @param {String} whatToSay
+ * @param {element} targetElement
+ * @returns {String}
+ */
+LocalizationManager.prototype.getLocalizedHint = function(whatToSay, targetElement) {
+
+    // get the translation
+    whatToSay = this.getText(whatToSay);
+
+    // stick in the language
+    if (whatToSay.indexOf('{lang}') != -1)
+        whatToSay = whatToSay.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
+
+    return whatToSay;
+}
+
+LocalizationManager.prototype.getVernacularLang = function() {
+    return this.getText('vernacularLang');
+}
+
+LocalizationManager.prototype.getIso = function() {
+    return this.getText('iso');
+}
 
 var localizationManager = new LocalizationManager();
 
