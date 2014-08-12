@@ -10,11 +10,14 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery-ui-1.10
 document.write('<link rel="stylesheet" type="text/css" href="' + themeDir + 'bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css">');
 
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.easytabs.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.hashchange.min.js"></script>');//needed by easytabs 
+document.write('<script type="text/javascript" src="' + libDir + 'jquery.hashchange.min.js"></script>');//needed by easytabs
 
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtip.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtipSecondary.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + libDir + 'jquery.qtip.css">');
+
+document.write('<script type="text/javascript" src="' + libDir + 'localizationManager.js"></script>');
+document.write('<script type="text/javascript" src="' + libDir + 'jquery.i18n.custom.js"></script>');
 
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.sizes.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.watermark.js"></script>');
