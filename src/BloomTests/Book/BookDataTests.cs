@@ -43,11 +43,11 @@ namespace BloomTests.Book
         [Test]
         public void MakeLanguageUploadData_FindsDefaultInfo()
         {
-            var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyk"});
+            var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
             Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
             VerifyLangData(results[0], "en", "English", "eng");
             VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
-            VerifyLangData(results[2], "xyk", "xyk", "xyk");
+            VerifyLangData(results[2], "xy3", "xy3", "xy3");
         }
 
         [Test]
