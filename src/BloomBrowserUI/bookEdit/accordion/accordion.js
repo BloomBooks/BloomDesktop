@@ -61,6 +61,20 @@ function restoreAccordionSettings(settings) {
     if (opts['showLRT'])
         requestPanel('showLRT', 'LeveledRT');
 
+    if (opts['decodableState']) {
+        var state = libsynphony.dbGet('drt_state');
+        if (!state) state = new DRTState();
+        state.stage = 0 + opts['decodableState'];
+        libsynphony.dbSet('drt_state', state);
+    };
+
+    if (opts['leveledState']) {
+        var state = libsynphony.dbGet('drt_state');
+        if (!state) state = new DRTState();
+        state.level = 0 + opts['leveledState'];
+        libsynphony.dbSet('drt_state', state);
+    };
+
     // set the current panel
     if (opts['current']) {
 

@@ -555,5 +555,12 @@ namespace Bloom.Book
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
+
+		/// <summary>
+		/// Different tools may use this arbitrarily. Currently decodable and leveled readers use it to store
+		/// the stage or level a book belongs to (at least the one last active when editing it).
+		/// </summary>
+		[JsonProperty("state")]
+		public string State { get; set; }
 	}
 }
