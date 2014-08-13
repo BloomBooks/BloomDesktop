@@ -1,6 +1,6 @@
 html
 	head
-		link(rel='stylesheet', href='../readerTools.css', type='text/css')
+
 	body
 		h3(data-markuptype='2', data-order='20') Leveled Reader Tool
 		div
@@ -50,7 +50,7 @@ html
 					td.statistics-actual#actualUniqueWords 22
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
-					a(href="javascript:showSetupDialog('levels');") Set up Levels
+					a(href="javascript:parent.window.showSetupDialog('levels');") Set up Levels
 			.section(style='clear: both; margin-left: 8px;') For this Level
 				ul#thingsToRemember
 			.section(style='margin-left: 8px;') Keep in mind

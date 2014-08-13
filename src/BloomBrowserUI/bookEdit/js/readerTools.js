@@ -4,6 +4,7 @@ window.addEventListener('message', processDLRMessage, false);
 function getSetupDialogWindow() {
     return parent.window.document.getElementById("settings_frame").contentWindow;
 }
+
 /**
  * Respond to messages
  * @param {Event} event
@@ -73,6 +74,9 @@ ReaderToolsModel.prototype.decrementStage = function() {
 };
 
 ReaderToolsModel.prototype.setStageNumber = function(val) {
+
+    val = parseInt(val);
+
     var stages = this.synphony.getStages();
     if (val < 1 || val > stages.length) {
         return;
@@ -103,6 +107,9 @@ ReaderToolsModel.prototype.decrementLevel = function() {
 };
 
 ReaderToolsModel.prototype.setLevelNumber = function(val) {
+
+    val = parseInt(val);
+
     var levels = this.synphony.getLevels();
     if (val < 1 || val > levels.length) {
         return;
@@ -618,7 +625,8 @@ ReaderToolsModel.prototype.saveState = function() {
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-
+    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tdecodableReader\t" + this.stageNumber);
+    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
     libsynphony.dbSet('drt_state', state);
 };
 
@@ -686,16 +694,6 @@ function initializeLeveledRT() {
     model.updateControlContents();
 }
 
-/**
- * Handles the click events to display the setup dialog
- * @param {String} showWhat Either 'stages' or 'levels'
- */
-function showSetupDialog(showWhat) {
-    model.setupType = showWhat;
-    var title = 'Set up ' + (showWhat == 'stages' ? 'Decodable' : 'Leveled') + ' Reader Tool';
-    model.getSynphony().showConfigDialog(title);
-}
-
 function DRTState() {
     this.active = 0;
     this.stage = 1;
@@ -742,13 +740,6 @@ function initializeSynphony(settingsFileContent, fontName) {
 
     // get the list of sample texts
     fireCSharpAccordionEvent('getTextsListEvent', 'files'); // get the list of texts
-}
-
-/**
- * Called by C# after the setup data has been saved, following Save click.
- */
-function closeSetupDialog() {
-    $('#synphonyConfig', parent.window.document).dialog("close");
 }
 
 /**

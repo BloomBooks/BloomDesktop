@@ -201,6 +201,7 @@
 					ComponentGroupId="DistFiles"
 						RootDirectory="$(RootDir)\DistFiles"
 				OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
+				IgnoreRegexPattern=".*(/|\\)factoryCollections(/|\\)Templates(/|\\)(Decodable|Leveled) Reader(/|\\).*"
 				MatchRegExPattern=".*"
 				>
 	  <!--what does this do?-->

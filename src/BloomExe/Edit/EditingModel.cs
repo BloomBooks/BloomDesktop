@@ -442,7 +442,23 @@ namespace Bloom.Edit
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
-			return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+
+			// only show the accordion when the template enables it
+			var css_class = dom.Body.GetAttributeNode("class");
+
+			if (css_class == null)
+			{
+				css_class = dom.Body.OwnerDocument.CreateAttribute("class");
+				dom.Body.Attributes.Append(css_class);
+			}
+
+			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+				css_class.Value = "accordion";
+			else
+				css_class.Value = "no-accordion";
+
+			return dom;
 		}
 
 		/// <summary>
@@ -454,7 +470,6 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("loadReaderToolSettingsEvent", LoadReaderToolSettings);
 			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("loadAccordionPanelEvent", LoadAccordionPanel);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
 			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
@@ -467,6 +482,13 @@ namespace Bloom.Edit
 			settings.Add("showDRT", tools.Any(t => t.Name == "decodableReader").ToInt());
 			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
 			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
+
+			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
+			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
+				settings.Add("decodableState", decodableTool.State);
+			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
+			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
+				settings.Add("leveledState", leveledTool.State);
 
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
@@ -515,7 +537,20 @@ namespace Bloom.Edit
 				case "current":
 					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
+
+				case "state":
+					UpdateToolState(args[1], args[2]);
+					return;
 			}
+		}
+
+		private void UpdateToolState(string toolName, string state)
+		{
+			var tools = _currentlyDisplayedBook.BookInfo.Tools;
+			var item = tools.FirstOrDefault(t => t.Name == toolName);
+
+			if (item != null)
+				item.State = state;
 		}
 
 		private void UpdateActiveToolSetting(string toolName, bool enabled)
@@ -595,7 +630,7 @@ namespace Bloom.Edit
 			var path = _collectionSettings.DecodableLevelPathName;
 			File.WriteAllText(path, content, Encoding.UTF8);
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.closeSetupDialog) === \"function\") {document.getElementById('accordion').contentWindow.closeSetupDialog();}");
+			_view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
 		}
 
 		/// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
@@ -639,34 +674,6 @@ namespace Bloom.Edit
 			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setSampleFileContents) === \"function\") {document.getElementById('accordion').contentWindow.setSampleFileContents(\"" + text + "\");}");
 		}
 
-		/// <summary>
-		/// In order to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
-		/// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
-		/// (We haven't made the temp file yet; but it will be in the system temp folder.)
-		/// </summary>
-		private void AddFontAwesomeToPage(HtmlDom dom)
-		{
-			// current location
-			var pathToFontAwesomeStyles = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
-			var pathToFontAwesomeFont = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)),
-				"fonts", "fontawesome-webfont.woff");
-
-			// required location
-			var tempFontAwesomeDir = Path.Combine(Path.GetTempPath(), "font-awesome");
-			var requiredLocationOfFontAwesomeStyles = Path.Combine(tempFontAwesomeDir, "css", "font-awesome.min.css");
-			var requiredLocationOfFontAwesomeFont = Path.Combine(tempFontAwesomeDir, "fonts", "fontawesome-webfont.woff");
-
-			// create directories
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
-
-			// copy files
-			File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
-			File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
-
-			dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
-		}
-
 		private string MakeAccordionContent()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
@@ -674,33 +681,10 @@ namespace Bloom.Edit
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-			domForAccordion.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
-			AddFontAwesomeToPage(domForAccordion);
-
 			// Load settings into the accordion panel
 			AppendAccordionSettingsPanel(domForAccordion);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
-		}
-
-		/// <summary>
-		/// Request from javascript to load a panel into the accordion.
-		/// NOTE: currently each panel is being loaded separately using this method because of security restrictions placed on file:// urls.
-		/// TODO: see if it is possible to move this to javascript (using http://localhost:8089/bloom/C%3A/.../accordion/DecodableRT/DecodableRT.htm)
-		/// </summary>
-		/// <param name="panelName"></param>
-		private void LoadAccordionPanel(string panelName)
-		{
-			// load the requested panel
-			var subFolder = Path.Combine(_accordionFolder, panelName);
-			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, panelName + ".htm");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
-
-			// escape for javascript
-			var html = CleanUpDataForJavascript(subPanelDom.Body.InnerXml);
-
-			// load panel into the accordion
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.loadAccordionPanel) === \"function\") {document.getElementById('accordion').contentWindow.loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
 		}
 
 		/// <summary>Loads the initial panel into the accordion</summary>
