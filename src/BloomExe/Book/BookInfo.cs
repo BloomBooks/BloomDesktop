@@ -48,6 +48,16 @@ namespace Bloom.Book
 				}
 			}
 
+			// should the accordion be enabled?
+			if ((_metadata != null) && (_metadata.Tools != null))
+			{
+				if (!_metadata.ReaderToolsAvailable) 
+				{
+					if (_metadata.Tools.Any(t => t.Enabled))
+						_metadata.ReaderToolsAvailable = true;
+				}
+			}
+
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
@@ -319,6 +329,12 @@ namespace Bloom.Book
 			get { return MetaData.CurrentTool; }
 			set { MetaData.CurrentTool = value; }
 		}
+
+		public bool ReaderToolsAvailable
+		{
+			get { return MetaData.ReaderToolsAvailable; }
+			set { MetaData.ReaderToolsAvailable = value; }
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -502,6 +518,10 @@ namespace Bloom.Book
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }
+
+		[JsonProperty("readerToolsAvailable")]
+		[DefaultValue(false)]
+		public bool ReaderToolsAvailable { get; set; }
 	}
 
 	/// <summary>
@@ -555,5 +575,12 @@ namespace Bloom.Book
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
+
+		/// <summary>
+		/// Different tools may use this arbitrarily. Currently decodable and leveled readers use it to store
+		/// the stage or level a book belongs to (at least the one last active when editing it).
+		/// </summary>
+		[JsonProperty("state")]
+		public string State { get; set; }
 	}
 }

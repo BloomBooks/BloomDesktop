@@ -191,7 +191,7 @@ namespace Bloom.Edit
                                 MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
                                 dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
-                        _browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+						_browser1.RunJavaScript("document.getElementById('page').contentWindow.SetCopyrightAndLicense(" + result + ")");
 						
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
 						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
@@ -394,14 +394,14 @@ namespace Bloom.Edit
 					ge.Handled = true; 
 					return;
 				}
-				if (anchor.Href.Contains("("))//tied to, for example,  data-functionOnHintClick="ShowTopicChooser()"
+
+				// Let Gecko handle hrefs that are explicitly tagged "javascript"
+				if (anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
 				{
-					var startOfFunctionName = anchor.Href.LastIndexOf("/")+1;
-					var function = anchor.Href.Substring(startOfFunctionName, anchor.Href.Length - startOfFunctionName);
-					_browser1.RunJavaScript(function);
-					ge.Handled = true;
+					ge.Handled = false; // let gecko handle it
 					return;
 				}
+
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
 					// do not open in external browser if localhost

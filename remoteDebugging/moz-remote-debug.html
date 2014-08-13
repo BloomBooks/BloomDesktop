@@ -1,0 +1,16 @@
+﻿<!DOCTYPE html>
+<meta charset="UTF-8" />
+<html>
+    <!--This file is used to enable 'remote' debugging, that is, so FireFox (version must be same as xulrunner) can debug content of geckofx windows-->
+    <title>remotedebug</title>
+    <h1>remotedebug</h1>
+    <script>
+        Components.utils.import('resource://gre/modules/devtools/dbg-server.jsm');
+        DebuggerServer.chromeWindowType = null;
+        if (!DebuggerServer.initialized) {
+            DebuggerServer.init();
+            DebuggerServer.addBrowserActors(null);
+        }
+        DebuggerServer.openListener(6000);
+    </script>
+</html>
