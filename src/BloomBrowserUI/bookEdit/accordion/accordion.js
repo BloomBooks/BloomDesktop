@@ -32,7 +32,7 @@ function showOrHidePanel_click(chkbox) {
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t1");
         if (panel) {
             showingPanel = true;
-            fireCSharpAccordionEvent('loadAccordionPanelEvent', panel);
+            requestPanel(chkbox.id, panel)
         }
     }
     else {
@@ -111,8 +111,13 @@ function requestPanel(checkBoxId, panelId) {
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
 
-        // expects C# to call 'loadAccordionPanel' with the html for the new panel
-        fireCSharpAccordionEvent('loadAccordionPanelEvent', panelId);
+        var panelUrl = '/bloom/bookEdit/accordion/' + panelId + '/' + panelId + '.htm';
+        var ajaxSettings = {type: 'GET', url: panelUrl};
+
+        $.ajax(ajaxSettings)
+            .done(function (data) {
+                loadAccordionPanel(data, panelId);
+            });
     }
 }
 
