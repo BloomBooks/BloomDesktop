@@ -124,9 +124,13 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
 
     var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
     if (functionCall) {
-        if (functionCall == 'bookMetadataEditor' && !CanChangeBookLicense())
+        if (functionCall === 'bookMetadataEditor' && !CanChangeBookLicense())
             return;
         shouldShowAlways = true;
+
+        if (functionCall.contains('('))
+            functionCall = 'javascript:' + functionCall + ';';
+
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
         hideEvents = false; // Don't specify a hide event...
     }
@@ -1083,7 +1087,7 @@ $(document).ready(function () {
         if (accordion) {
             accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
         }
-    });    
+    });
 
     SetBookCopyrightAndLicenseButtonVisibility();
 
