@@ -25,7 +25,7 @@ html
 				.wordList#wordList
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
-					a(href="javascript:showSetupDialog('stages');") Set up Stages
+					a(href="javascript:parent.window.showSetupDialog('stages');") Set up Stages
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeDecodableRT, 100);

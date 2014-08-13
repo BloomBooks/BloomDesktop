@@ -74,6 +74,9 @@ ReaderToolsModel.prototype.decrementStage = function() {
 };
 
 ReaderToolsModel.prototype.setStageNumber = function(val) {
+
+    val = parseInt(val);
+
     var stages = this.synphony.getStages();
     if (val < 1 || val > stages.length) {
         return;
@@ -104,6 +107,9 @@ ReaderToolsModel.prototype.decrementLevel = function() {
 };
 
 ReaderToolsModel.prototype.setLevelNumber = function(val) {
+
+    val = parseInt(val);
+
     var levels = this.synphony.getLevels();
     if (val < 1 || val > levels.length) {
         return;
