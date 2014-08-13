@@ -2,15 +2,15 @@ doctype html
 html
 	head
 		meta(charset='UTF-8')
-		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
+		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
-		script(src='../../lib/jquery-1.10.1.js')
-		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
-		script(src='../js/jquery.div-columns.js')
-		script(src='../js/libsynphony/underscore_min_152.js')
-		script(src='../js/libsynphony/jquery.text-markup.js')
-		script(src='../js/libsynphony/synphony_lib.js')
-		script(src='../js/libsynphony/bloom_lib.js')
+		script(src='/bloom/lib/jquery-1.10.1.js')
+		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='/bloom/bookEdit/js/jquery.div-columns.js')
+		script(src='/bloom/bookEdit/js/libsynphony/underscore_min_152.js')
+		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
+		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
+		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
 		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
 	body
 		#dlstabs.ui-dialog.ui-widget
@@ -53,7 +53,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/keys.png')
+							td: img(src='/bloom/images/keys.png')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
@@ -98,7 +98,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/steps.png', height='32')
+							td: img(src='/bloom/images/steps.png', height='32')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
