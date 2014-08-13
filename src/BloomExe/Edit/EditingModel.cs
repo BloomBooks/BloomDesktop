@@ -441,8 +441,8 @@ namespace Bloom.Edit
 		/// <returns></returns>
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
-            var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
-            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
 			// only show the accordion when the template enables it
 			var css_class = dom.Body.GetAttributeNode("class");
@@ -457,7 +457,7 @@ namespace Bloom.Edit
 				css_class.Value = "accordion";
 			else
 				css_class.Value = "no-accordion";
-			
+
 			return dom;
         }
 
@@ -484,7 +484,7 @@ namespace Bloom.Edit
 			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
 			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
 
-	        var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
+			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
 			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
 				settings.Add("decodableState", decodableTool.State);
 			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
@@ -538,11 +538,13 @@ namespace Bloom.Edit
 				case "current":
 					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
+
 				case "state":
 					UpdateToolState(args[1], args[2]);
 					return;
 			}
 		}
+		
 		private void UpdateToolState(string toolName, string state)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
@@ -629,7 +631,7 @@ namespace Bloom.Edit
             var path = _collectionSettings.DecodableLevelPathName;
             File.WriteAllText(path, content, Encoding.UTF8);
 
-            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.closeSetupDialog) === \"function\") {document.getElementById('accordion').contentWindow.closeSetupDialog();}");
+            _view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
         }
 
         /// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
@@ -680,12 +682,10 @@ namespace Bloom.Edit
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-            //AddFontAwesomeToPage(domForAccordion);
-
 			// Load settings into the accordion panel
-            AppendAccordionSettingsPanel(domForAccordion);
-		    XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
-            return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
+			AppendAccordionSettingsPanel(domForAccordion);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
+			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
 		}
 
 		/// <summary>

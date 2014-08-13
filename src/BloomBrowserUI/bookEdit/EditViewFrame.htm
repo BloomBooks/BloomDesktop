@@ -1,34 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css"/>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css" type="text/css">
     <script src="/bloom/lib/jquery-1.10.1.js"></script>
     <script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css"/>
-	<style type="text/css">
-        html, body, div { margin: 0; padding: 0; border: 0 none; height:100%}
-        body {overflow:hidden}
-        .accordion #left { margin-right: 200px;}
-        .accordion #right { width: 200px; float: right;}
-        .no-accordion #left { width: 100%;}
-        .no-accordion #right { display: none;}
-	</style>
-	<script type="text/javascript">
-		function showSetupDialog(showWhat) {
-			document.getElementById('accordion').contentWindow.showSetupDialog(showWhat);
-		}
-	</script>
-</head>
-<body class="no-accordion">
-	<div id="right">
-		<iframe id="accordion" src="/bloom/accordionContent" width="100%" height=100%>
-		  <p>Your browser does not support iframes.</p>
-		</iframe>
-	</div>
-	<div id="left">
-		<iframe id="page" src="/bloom/currentPageContent" width="100%" height="100%">
-		  <p>Your browser does not support iframes.</p>
-		</iframe>
-	</div>
-</body>
+    <script src="/bloom/bookEdit/js/editViewFrame.js"></script>
+    <style type="text/css">
+      html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
+      body { overflow:hidden }
+      .accordion #left { margin-right: 200px;}
+      .accordion #right { width: 200px; float: right;}
+      .no-accordion #left { width: 100%;}
+      .no-accordion #right { display: none;}
+    </style>
+  </head>
+  <body class="no-accordion">
+    <div id="right">
+      <iframe id="accordion" width="100%" height="100%" src="/bloom/accordionContent">Your browser does not support iframes.</iframe>
+    </div>
+    <div id="left">
+      <iframe id="page" width="100%" height="100%" src="/bloom/currentPageContent">Your browser does not support iframes.</iframe>
+    </div>
+  </body>
 </html>
