@@ -470,7 +470,6 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("loadReaderToolSettingsEvent", LoadReaderToolSettings);
 			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("loadAccordionPanelEvent", LoadAccordionPanel);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
 			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
@@ -686,26 +685,6 @@ namespace Bloom.Edit
 			AppendAccordionSettingsPanel(domForAccordion);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
-		}
-
-		/// <summary>
-		/// Request from javascript to load a panel into the accordion.
-		/// NOTE: currently each panel is being loaded separately using this method because of security restrictions placed on file:// urls.
-		/// TODO: see if it is possible to move this to javascript (using http://localhost:8089/bloom/C%3A/.../accordion/DecodableRT/DecodableRT.htm)
-		/// </summary>
-		/// <param name="panelName"></param>
-		private void LoadAccordionPanel(string panelName)
-		{
-			// load the requested panel
-			var subFolder = Path.Combine(_accordionFolder, panelName);
-			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, panelName + ".htm");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
-
-			// escape for javascript
-			var html = CleanUpDataForJavascript(subPanelDom.Body.InnerXml);
-
-			// load panel into the accordion
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.loadAccordionPanel) === \"function\") {document.getElementById('accordion').contentWindow.loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
 		}
 
 		/// <summary>Loads the initial panel into the accordion</summary>
