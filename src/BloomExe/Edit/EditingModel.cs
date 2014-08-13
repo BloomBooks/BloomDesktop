@@ -538,11 +538,13 @@ namespace Bloom.Edit
 				case "current":
 					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
 					return;
+
 				case "state":
 					UpdateToolState(args[1], args[2]);
 					return;
 			}
 		}
+
 		private void UpdateToolState(string toolName, string state)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
@@ -629,7 +631,7 @@ namespace Bloom.Edit
 			var path = _collectionSettings.DecodableLevelPathName;
 			File.WriteAllText(path, content, Encoding.UTF8);
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.closeSetupDialog) === \"function\") {document.getElementById('accordion').contentWindow.closeSetupDialog();}");
+			_view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
 		}
 
 		/// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
@@ -679,8 +681,6 @@ namespace Bloom.Edit
 			_accordionFolder = Path.GetDirectoryName(path);
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-
-			//AddFontAwesomeToPage(domForAccordion);
 
 			// Load settings into the accordion panel
 			AppendAccordionSettingsPanel(domForAccordion);
