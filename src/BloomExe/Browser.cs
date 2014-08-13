@@ -355,11 +355,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
-			string src;
-			using (var client = new WebClient())
-			{
-				src = client.DownloadString(_url);
-			}
+			var src = _url.FromLocalhost();
 			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(temp.Path.ToLocalhost());
 		}
