@@ -57,11 +57,6 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
-#if !DEBUG //the exception you get when there is no other BLOOM is pain when running debugger with break-on-exceptions
-				if (!GrabMutexForBloom())
-					return;
-#endif
-
 				if (Palaso.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
