@@ -65,10 +65,12 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
     var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
 
-    var pos = { at: 'right center', my: 'left center' };
-
-    if (target.height() < 100)
-        pos.viewport = $(window);
+    var pos = {
+        at: 'right center',
+        my: 'left center',
+        viewport: $(window),
+        adjust: { method: 'none' }
+    };
 
     if (target.hasClass('coverBottomBookTopic'))
         pos.adjust = { y: -20 };
@@ -117,11 +119,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
             event: 'focusin mouseenter',
             ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
         }
-       , tip: { corner: 'left center' }
        , hide: {
            event: hideEvents
        },
-        adjust: { method: 'flip none' },
         style: {
             classes: theClasses
         }
