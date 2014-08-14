@@ -435,7 +435,7 @@ function displayWordsForSelectedStage(wordsStr) {
     _.each(words, function(w) {
 
         if (!w.html)
-            w.html = $.markupGraphemes(w.GPCForm, desiredGPCs);
+            w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
         result += '<div class="book-font word">' + w.html + '</div>';
     });
 

@@ -49,6 +49,81 @@ var MarkupType = {
     Decodable: 2
 };
 
+/**
+ * Adds a new DataWord object to Vocabulary Group
+ * @param word Either a single word (string) or an array of words
+ * @param {int} [freq] The number of times this word occurs
+ */
+LanguageData.prototype.addInsensitiveWord = function(word, freq) {
+
+    var sortedGraphemes = _.sortBy(_.pluck(this.GPCS, 'Grapheme'), 'length').reverse();
+
+    // if this is a single word...
+    if (!Array.isArray(word)) word = [word];
+
+    for (var i = 0; i < word.length; i++) {
+
+        var w = word[i].toLowerCase();
+
+        // check if the word already exists
+        var dw = this.findWord(w);
+        if (!dw) {
+            dw = new DataWord(w);
+            dw.GPCForm = this.getInsensitiveGpcForm(w, sortedGraphemes);
+            this.group1.push(dw);
+        }
+        else {
+            dw.Count += freq;
+        }
+    }
+};
+
+/**
+ * Gets the normalized, accent-insensitive GPCForm value of a word
+ * Requires normalizer_lowercase_nomark.js and unicode.js.
+ * @param {String} word
+ * @param {String[]} sortedGraphemes Array of all graphemes, sorted by descending length
+ * @returns {String[]}
+ */
+LanguageData.prototype.getInsensitiveGpcForm = function(word, sortedGraphemes) {
+
+    // Unicode normalization is not included in Gecko 29, so we are using github.com/reyesr/javascript-unicode.
+    var uc = net.kornr.unicode;
+
+    // Convert to all lower-case, and remove all diacritics. We don't want diacritics included in the gpcForm.
+    word = uc.lowercase_nomark(word);
+
+    var gpcForm = [];
+    var hit = 1;
+
+    while (word.length > 0) {
+
+        hit = 0;
+
+        for (var i = 0; i < sortedGraphemes.length; i++) {
+
+            var g = sortedGraphemes[i];
+
+            if (word.substr(g.length * (-1)) === g) {
+                gpcForm.unshift(g);
+                word = word.substr(0, word.length - g.length);
+                hit = 1;
+                break;
+            }
+        }
+
+        // If hit = 0, the last character still in the word is not in the list of graphemes.
+        // We are adding it now  so the gpcForm returned will be as accurate as possible, and
+        // will contain all the characters in the word.
+        if (hit === 0) {
+            gpcForm.unshift( word.substr(-1));
+            word = word.substr(0, word.length - 1);
+        }
+    }
+
+    return gpcForm;
+};
+
 var ReaderToolsModel = function() {
     this.stageNumber = 1;
     this.levelNumber = 1;
@@ -423,7 +498,13 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 };
 
 ReaderToolsModel.prototype.getElementsToCheck = function() {
-    return $(".bloom-content1", parent.window.document.getElementById('page').contentWindow.document);
+
+    var page = parent.window.document.getElementById('page');
+    if (page)
+        return $(".bloom-content1", page.contentWindow.document);
+
+    // this happens during unit testing
+    return $(".bloom-content1");
 };
 
 /**
@@ -466,7 +547,11 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
             break;
     }
-    parent.window.document.getElementById('page').contentWindow.postMessage('Qtips', "*");
+
+    // the contentWindow is not available during unit testing
+    var page = parent.window.document.getElementById('page');
+    if (page)
+        page.contentWindow.postMessage('Qtips', "*");
 };
 
 ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
