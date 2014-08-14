@@ -28,7 +28,7 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
 
     lang_data.addGrapheme(data.letters.split(' '));
     lang_data.addGrapheme(data.letterCombinations.split(' '));
-    lang_data.addWord(data.moreWords.split(' '));
+    lang_data.addInsensitiveWord(data.moreWords.split(' '));
 
     var lvls = data.levels;
     if (lvls) {
@@ -82,7 +82,7 @@ SynphonyApi.prototype.addWords = function(words) {
 
     if (!lang_data) lang_data = new LanguageData();
     for (var i = 0; i < wordNames.length; i++) {
-        lang_data.addWord(wordNames[i], words[wordNames[i]]);
+        lang_data.addInsensitiveWord(wordNames[i], words[wordNames[i]]);
     }
 };
 
