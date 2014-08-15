@@ -1337,6 +1337,11 @@
         <seg>Notice</seg>
       </tuv>
     </tu>
+    <tu tuid="Publish.Upload.Acknowledgments">
+      <tuv xml:lang="en">
+        <seg>Acknowledgments</seg>
+      </tuv>
+    </tu>
     <tu tuid="Publish.Upload.AdditionalRequests">
       <tuv xml:lang="en">
         <seg>AdditionalRequests: </seg>
