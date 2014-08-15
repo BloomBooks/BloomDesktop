@@ -427,13 +427,13 @@ UL.toolbox LI
 .languageTip
 {
 	/* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
-	margin-right: 0px;
+	margin-right: 1px;
 }
 .bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after
 {
 	content: attr(data-languageTipContent);
 	bottom: 0px;
-	margin-right: 4px;
+	margin-right: 2px;
 }
 /*Simulate the html5 placeholder attribute which is not available on divs
 The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug

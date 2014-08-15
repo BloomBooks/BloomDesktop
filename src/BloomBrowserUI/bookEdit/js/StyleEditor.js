@@ -250,7 +250,7 @@ var StyleEditor = (function () {
             formatButton.trigger('click'); // This re-displays the qtip with the new value.
         });
 
-        this.AttachLanguageTip($(targetBox), bottom);
+        StyleEditor.AttachLanguageTip($(targetBox), bottom);
     };
 
     //Attach and detach a language tip which is used when the applicable edittable div has focus.
