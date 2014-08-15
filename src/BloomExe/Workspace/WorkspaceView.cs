@@ -2,14 +2,13 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.Library;
 using Bloom.Properties;
 using Bloom.Publish;
+using Palaso.UI.WindowsForms.ReleaseNotes;
 using PalasoUIWinforms.Registration;
 using Chorus;
 using Chorus.UI.Sync;
@@ -338,7 +337,11 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages","0 Release Notes.htm"));
+			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
+			using (var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon, path))
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
