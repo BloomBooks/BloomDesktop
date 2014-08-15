@@ -1416,10 +1416,14 @@ $(document).ready(function () {
         $(this).focus(function() {
            editor.AttachToBox(this);
         });
-        //no: this removes the button just when we're clickin on one of the toolbar items
+        //no: this removes the button just when we're clicking on one of the toolbar items
         //$(this).focusout(function () {
         //    editor.DetachFromBox(this);
         //});
+
+        $(this).focusout(function () {
+            editor.DetachLanguageTip(this);
+        });
     });
 
     //focus on the first editable field
