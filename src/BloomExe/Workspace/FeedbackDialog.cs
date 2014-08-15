@@ -18,10 +18,11 @@ namespace Bloom.Workspace
 
 		private readonly IChangeableFileLocator _fileLocator;
 
-		public FeedbackDialog(IChangeableFileLocator fileLocator)
+		public FeedbackDialog(IChangeableFileLocator fileLocator, NavigationIsolator _isolator)
     	{
     		_fileLocator = fileLocator;
     		InitializeComponent();
+			_browser.Isolator = _isolator;
     	}
 
 		public void Show()

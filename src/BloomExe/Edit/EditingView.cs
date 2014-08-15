@@ -43,7 +43,8 @@ namespace Bloom.Edit
 
         
         public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
-            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand)
+            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand,
+			NavigationIsolator isolator)
         {
             _model = model;
             _pageListView = pageListView;
@@ -54,6 +55,7 @@ namespace Bloom.Edit
             _undoCommand = undoCommand;
             _deletePageCommand = deletePageCommand;
             InitializeComponent();
+	        _browser1.Isolator = isolator;
             _splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
             //don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);

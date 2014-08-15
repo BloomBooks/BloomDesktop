@@ -15,11 +15,12 @@ namespace Bloom.Edit
 		/// </summary>
 		/// <param name="configurationHtmlPath"></param>
 		/// <param name="libraryJsonData">Values saved previously</param>
-		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData)
+		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData, NavigationIsolator isolator)
         {
             _filePath = configurationHtmlPath;
 			_libraryJsonData = libraryJsonData;
-			InitializeComponent();       
+			InitializeComponent();
+    		_browser.Isolator = isolator;
         }
 
         private void ConfigurationDialog_Load(object sender, EventArgs e)

@@ -192,7 +192,10 @@ var StyleEditor = (function () {
         var pxSize = parseInt(sizeString);
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
-        return "Changes the text size for all boxes carrying the style \'" + styleName + "\' and language \'" + lang + "\'.\nCurrent size is " + ptSize + "pt.";
+
+        // localize
+        var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
+        return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     };
 
     StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
