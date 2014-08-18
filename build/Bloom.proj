@@ -12,7 +12,15 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+  <Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" />
   <UsingTask AssemblyFile="C:\Program Files (x86)\MSBuild\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll" TaskName="MsBuild.Community.Tasks.WebDownload" />
+  
+  <PropertyGroup>
+    <AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
+    <Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
+    <Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
+    <Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+  </PropertyGroup>
 
   <Target Name="VersionNumbers">
     <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -24,10 +32,12 @@
     <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
     <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-    <CreateProperty Value="1.1.$(BuildCounter)">
+    <CreateProperty Value="2.1.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
-   
+    <CreateProperty Value="BloomInstaller.$(Version).$(Label).msi">
+      <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
+    </CreateProperty> 
     <Message Text="Version: $(Version)" Importance="high"/>
   </Target>
 
@@ -46,7 +56,7 @@
   </Target>
 
 
-	<Target Name="Test" DependsOnTargets="GetWkhtmlToXIntoLib; GetXulRunnerIntoLib; Build; DownloadDistFilesNeedForTests;">
+	<Target Name="Test" DependsOnTargets="Build; DownloadDistFilesNeedForTests;">
 		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
 			<Output ItemName="TestAssemblies" TaskParameter="Include" />
 		</CreateItem>
@@ -57,29 +67,64 @@
 	</Target>
 
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
-
+	<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
+	
+	
+	<!-- 1) we customize and upload a version of DownloadPointers, named after our Label (RELEASE or BETA), and upload it. 
+			That file is then iframe'd in to a download page somewhere.
+			
+		 2) we customize and just save a version of appcast.xml, which is used by our crude in-app downloader/updater
+	-->
+  
     <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
     <Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
-           DestinationFolder ="$(RootDir)\output\installer"/>
-        <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
            DestinationFolder ="$(RootDir)\output\installer"/>
 		   
     <!-- replace some parts of the file with the version number & date -->
     
-    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-                 DatePlaceholder='RELEASE_RELEASE_DATE'
-                Regex='RELEASE_VERSION_NUMBER'
+      <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+                 DatePlaceholder='RELEASE_DATE'
+                Regex='CHANNEL_LABEL'
+                 ReplacementText ="$(Label)" />
+
+	 <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+                 DatePlaceholder='RELEASE_DATE'
+                Regex='VERSION_NUMBER'
                  ReplacementText ="$(Version)" />
 				  
-	<!-- This file can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt222/.lastSuccessful/appcast.xml   (note the bt222 part is fragile, it's dependent on the actual project in TeamCity,
-		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  ).
-		Enhance: Have this build script generate a path containing that url (or multiple ones, one per channel (alpha,beta,release). Do that before the installer runs so the file goes out with the app. Finally, 
-		have app (which must know the url for the appcast.xml) read a file and give it to Sparkle -->
+		
+	<!--- also copy this appcast.xml file, which is used by the in-app update downloader -->
+    <Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
+           DestinationFolder ="$(RootDir)\output\installer"/>
+		   
+	<!-- In TeamCity, this appcast.xml file needs to be listed in the General Settings:Artifact paths, so that it can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
+		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  Our new VersionUpgradeTable approach (see below) lets us get arround this if we need to change to a new configuration id).
+	-->
+		
+	<!-- Note: The issue of channels is worked out yet. For one thing, this current approach doesn't have some common appcast.xml that multiple TeamCity configurations can be updating.
+			Instead, each configuration is maintaining its own appcast.xml, and the installers that came from a config only know to check that one config. So RELEASE versions only
+			find out about new RELEASE versions from the same configuration, not about betas, not about new Releases from some new configuration.
+			
+		For another, a strict "Channel" approach is overly simplistic; you don't actually want to be stuck with a beta if a release just came out. What we'd want is more of a "tolerance"
+		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).  
+		
+		Update: Bloom now has a way of us controlling the "channel": At runtime, Bloom tries to retrieves "VersionUpgradeTable.txt"
+		from a fixed URL. It looks up its current version and the table tells it which appcast to download.
+		
+		In this way, we can control the upgrade path for users of old versions. We can, for example, move beta users to
+		a release version. For more information, see the class UpdateVersionTable. If you don't find it in Bloom, it may
+		have been moved to github.com/hatton/NetSparkle so that other apps can use it.
+		
+		-->
+	
 	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-                 DatePlaceholder='RELEASE_VERSION_NUMBER'
-                Regex='RELEASE_VERSION_NUMBER'
+                 DatePlaceholder='VERSION_NUMBER'
+                Regex='VERSION_NUMBER'
                  ReplacementText ="$(Version)" />
-    
+    	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
+                 DatePlaceholder='VERSION_NUMBER'
+                Regex='TEAMCITY_CONFIGURATION'
+                 ReplacementText ="$(BuildConfigurationID)" />
     <!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
                    DatePlaceholder='DEV_RELEASE_DATE'
                   Regex='DEV_VERSION_NUMBER'
@@ -87,22 +132,41 @@
     
     <!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
      
-    <Message Text="Attempting rsync of DownloadPointers.htm" Importance="high"/>
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers.htm' /> 
+    <Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
+    
+    <!-- Note, this copy appends the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
+    We have to make this copy because the S3BuildPublisher task does not support renaming.
+	-->
+    <Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(Label).htm"/>
+    <S3BuildPublisher
+      EncryptionContainerName ="$(Key)"
+      SourceFiles="../output/installer/DownloadPointers_$(Label).htm"
+      DestinationBucket="$(Bucket)"
+      DestinationFolder="channels"
+      PublicRead="true" />
   </Target>
   
 
 
   <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
-    <Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
+    <Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
 
-    <Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' /> 
+    <!--Kludge, but S3BuildPublisher needs this file in the build folder-->
+    <Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
+    
+    <S3BuildPublisher
+    EncryptionContainerName ="$(Key)"
+    SourceFiles="../output/installer/$(InstallerFileName)"
+    DestinationBucket="$(Bucket)"
+    DestinationFolder="installers"
+    PublicRead="true" />
 
     <CallTarget Targets ='MakeDownloadPointers'/>
   </Target>
 
    
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; GetWkhtmlToXIntoLib; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
 
  
     <!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
@@ -117,10 +181,10 @@
     <MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
 
     <!-- remove an existing one with the same name, if necessary -->
-    <Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
+    <Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
 
     <Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
-          DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
+          DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
           />
 
     <!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
@@ -137,6 +201,7 @@
             		ComponentGroupId="DistFiles"
 				        RootDirectory="$(RootDir)\DistFiles"
                 OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
+                IgnoreRegexPattern=".*(/|\\)factoryCollections(/|\\)Templates(/|\\)(Decodable|Leveled) Reader(/|\\).*"
                 MatchRegExPattern=".*"
 				>
       <!--what does this do?-->
@@ -166,25 +231,14 @@
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
 		which is fine for developers, but not for our official builds.
+		
+		Note, the original name for this on Dropbox may differ (e.g. "Bloom2.1.chm") but we
+		are renaming it here to just Bloom.chm.
 		-->
-		<WebDownload FileUri="https://dl.dropboxusercontent.com/s/wbhocwhrb2unflc/Bloom.chm?token_hash=AAFkMXoM2OfGoPCx8nF1d3DwLWFAbTZz1wIbF4V5s8EKOQamp;dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<WebDownload FileUri="https://www.dropbox.com/s/3v8n25tqqbs70h0/Bloom2_1.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
-   
-  <Target Name="GetXulRunnerIntoLib">
-    <RemoveDir Directories="..\lib\xulrunner" />    
-    <!-- we expect this has only one element, named "xulrunner"-->
-        <Unzip ZipFileName="..\lib\xulrunner-11.0.en-US.win32.zip"
-           TargetDirectory="..\lib\"/>
-  </Target>
-
-  <Target Name="GetWkhtmlToXIntoLib">
-    <RemoveDir
-           Directories="..\lib\wkhtmltopdf" />
-    <Unzip ZipFileName="..\lib\wkhtmltopdf-0.10.0_rc2.zip"
-           TargetDirectory="..\lib\"/>
-  </Target>
   
-  <Target Name="MakeWixForXulRunner" DependsOnTargets="GetXulRunnerIntoLib">
+  <Target Name="MakeWixForXulRunner" >
     <MakeWixForDirTree
                 DirectoryReferenceId="XulRunnerDir"
             		ComponentGroupId="XulRunner"

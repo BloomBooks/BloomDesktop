@@ -2,23 +2,16 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
    <channel>
       <title>Bloom Releases</title>
-      <link>http://bloom.palaso.org/download/</link>
+      <link>http://bloomlibrary.org/installers/</link>
       <description>Most recent changes with links to updates.</description>
       <language>en</language>
          <item>
-            <title>Version RELEASE_VERSION_NUMBER</title>
+            <title>Version VERSION_NUMBER</title>
 						<sparkle:releaseNotesLink>
-							http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/ReleaseNotes.md
+                            <!-- TEAMCITY_CONFIGURATION must be replaced with, for example, 'bt78' -->
+							http://build.palaso.org/guestAuth/repository/download/TEAMCITY_CONFIGURATION/.lastSuccessful/ReleaseNotes.md
 						</sparkle:releaseNotesLink>
-            <enclosure url="http://bloom.palaso.org/downloads/BloomInstaller.RELEASE_VERSION_NUMBER.msi" sparkle:version="RELEASE_VERSION_NUMBER" type="application/octet-stream" />
+            <enclosure url="http://bloomlibrary.org/installers/BloomInstaller.VERSION_NUMBER.msi" sparkle:version="VERSION_NUMBER" type="application/octet-stream" />
          </item>
-     <!--<item>
-       <title>Version DEV_VERSION_NUMBER</title>
-       <sparkle:releaseNotesLink>
-         http://build.palaso.org/guestAuth/repository/download/bt78/.lastSuccessful/ReleaseNotes.md
-       </sparkle:releaseNotesLink>
-       <enclosure url="http://bloom.palaso.org/downloads/BloomInstaller.DEV_VERSION_NUMBER.msi" sparkle:version="DEV_VERSION_NUMBER" type="application/octet-stream" />
-     </item>-->
-
    </channel>
 </rss>

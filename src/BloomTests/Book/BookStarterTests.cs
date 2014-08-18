@@ -1,18 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
-using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace BloomTests.Book
 {
@@ -173,8 +169,6 @@ namespace BloomTests.Book
 
             AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'cover ')]", 4);
             AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'titlePage')]", 1);
-
-            //should only get these two pages
             AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", 5);
         }
 
@@ -435,6 +429,23 @@ namespace BloomTests.Book
 			Assert.That(metadata.Id, Is.Not.Null, "New book should get an ID");
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_AllowUploadIsTrue()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			 var metadata = new BookInfo(bookFolderPath, false);
+			Assert.IsTrue(metadata.AllowUploading);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookletMakingIsAppropriateIsTrue()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var metadata = new BookInfo(bookFolderPath, false);
+			Assert.IsTrue(metadata.BookletMakingIsAppropriate);
+		}
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
 		{

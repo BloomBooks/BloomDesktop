@@ -1,3 +1,37 @@
+// listen for messages sent to this page (from other iframes)
+window.addEventListener('message', processExternalMessage, false);
+/**
+ * Respond to messages from other iframes
+ * @param {Event} event
+ */
+function processExternalMessage(event) {
+
+    var params = event.data.split("\n");
+
+    switch(params[0]) {
+
+        case 'Qtips': // request from accordion to add qtips to marked-up spans
+            // q-tips; first 3 are for decodable, last for leveled; could make separate messages.
+            var editableElements = $(".bloom-content1");
+            editableElements.find('span.' + $.cssSightWord()).each(function() {
+                $(this).qtip({ content: 'Sight word' });
+            });
+
+            editableElements.find('span.' + $.cssWordNotFound()).each(function() {
+                $(this).qtip({ content: 'Word not valid' });
+            });
+
+            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+                $(this).qtip({ content: 'Possible word' });
+            });
+
+            editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
+                $(this).qtip({ content: 'Sentence too long' });
+            });
+            return;
+    }
+}
+
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         var ah = $(this).height();
@@ -30,80 +64,111 @@ function TrimTrailingLineBreaksInDivs(node) {
     }
 }
 
+function CanChangeBookLicense() {
+
+    // First, need to look in .bloomCollection file for <IsSourceCollection> value
+    // if 'true', return true.
+    var isSource = GetSettings().isSourceCollection;
+    if (isSource && isSource.toLowerCase() == 'true') // comes out as capitalized string, if it's there
+        return true;
+
+    // meta[@name='lockedDownAsShell' and @content='true'], if exists, return false
+    var lockedAsShell = $(document).find('meta[name="lockedDownAsShell"]');
+    if (lockedAsShell.length > 0 && lockedAsShell.attr('content').toLowerCase() == 'true')
+        return false;
+    // meta[@name='canChangeLicense'] and @content='false'], if exists, return false
+    var canChange = $(document).find('meta[name="canChangeLicense"]');
+    if (canChange.length > 0 && canChange.attr('content').toLowerCase() == 'false')
+        return false;
+
+    // Otherwise return true
+    return true;
+}
 
 //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
+function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
-    if ($(targetElement).css('display') == 'none') {
-        return;
-    }
+    var target = $(targetElement);
+    var source = $(elementWithBubbleAttributes);
 
-    if ($(targetElement).css('border-bottom-color') == 'transparent') {
-        return; //don't put tips if they can't edit it. That's just confusing
-    }
-    if ($(targetElement).css('display') == 'none') {
+    if (target.css('display') === 'none')
         return; //don't put tips if they can't see it.
-    }
 
-    theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-    if ($(targetElement).height() < 100) {
-        pos = {
-            at: 'right center', //I like this, but it doesn't reposition well -->'right center',
-            my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
-           , viewport: $(window)
-            // , adjust: { y: -20 }
-        };
-    }
-    else { // with the big back covers, the adjustment just makes things worse.      
-        pos = {
+    if (target.css('border-bottom-color') === 'transparent')
+        return; //don't put tips if they can't edit it. That's just confusing
+
+    var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+
+    var pos = {
             at: 'right center',
-            my: 'left center'
+        my: 'left center',
+        viewport: $(window),
+        adjust: { method: 'none' }
         };
-    }
+
+    if (target.hasClass('coverBottomBookTopic'))
+        pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.  
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
     //at the moment, the logic is all around whoever has the data-hint
     //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
     var shouldShowAlways = true;
-    var hideEvents = shouldShowAlways ? null : "focusout mouseleave";
+    var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
-    var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
+    // get the default text/stringId
+    var whatToSay = target.attr('data-hint');
+    if (!whatToSay) whatToSay = source.attr('data-hint');
+    if (!whatToSay) whatToSay = source.text();
+
+    // no empty bubbles
+    if (!whatToSay) return;
+
+    // determine onFocusOnly
+    var onFocusOnly = whatToSay.startsWith('*');
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+    // get the localized string
+    if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+    whatToSay = localizationManager.getLocalizedHint(whatToSay, target);
+
+    var functionCall = source.data("functiononhintclick");
     if (functionCall) {
+        if (functionCall === 'bookMetadataEditor' && !CanChangeBookLicense())
+            return;
         shouldShowAlways = true;
+
+        if (functionCall.contains('('))
+            functionCall = 'javascript:' + functionCall + ';';
+
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-        hideEvents = false;
+        hideEvents = false; // Don't specify a hide event...
     }
 
     if (onFocusOnly) {
         shouldShowAlways = false;
-        hideEvents = 'unfocus mouseleave';
+        hideEvents = 'focusout mouseleave';
     }
     
-    whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
-    
-    $(targetElement).qtip({
+    target.qtip({
         content: whatToSay,
         position: pos,
         show: {
-            event: " focusin mouseenter",
+            event: 'focusin mouseenter',
             ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
         }
-       , tip: { corner: "left center" }
        , hide: {
            event: hideEvents
        },
-        adjust: { method: "flip none" },
         style: {
             classes: theClasses
         }
-        //            ,adjust:{screen:true, resize:true}
     });
 }
 
 function Cleanup() {
 
-        //for stuff bloom introduces, just use this "bloom-ui" class to have it removed
+    // for stuff bloom introduces, just use this "bloom-ui" class to have it removed
     $(".bloom-ui").each(function() {
         $(this).remove();
     });
@@ -188,8 +253,8 @@ function AddToolbox(){
         var heading1CenteredWidget = '<div class="heading1-style centered widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 1 Centered</div></div>';
         var heading2LeftWidget = '<div class="heading2-style widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 2, Left</div></div>';
         var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
-        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeholder.png"></div>';
-        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeholder.png"></div>';
+        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
+        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
          
         var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
 
@@ -204,35 +269,6 @@ function AddToolbox(){
                 }
             });
         });
-        
-        /*
-        $(this).qtip({
-            content: "<h3>Toolbox</h3><ul class='toolbox'><li>" + heading1Box + "</li><li>" + translationBox + "</li><li>" + imageBox + "</li></ul>",
-            show: { ready: true },
-            hide: false,
-            position: {
-                at: 'right center',
-                my: 'left center'
-            },
-            events: {
-                render: function(event, api) {
-                    $(this).find('.toolbox').draggable({
-                        //note: this is just used for drawing what you drag around..
-                             //it isn't what the droppable is actually given
-                        helper: function(event) {
-                            var tearOff = $(this).clone() //.removeClass('toolbox');//by removing this, we show it with the actual size it will be when dropped
-                            return tearOff;
-                        }
-                    });
-                }
-            },
-            style: {
-                width: 200,
-                height: 300,
-                classes: 'ui-tooltip-dark',
-                tip: { corner: false }
-            }
-        });*/
         $(this).qtipSecondary({
             content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>",
             show: { ready: true },
@@ -264,27 +300,53 @@ function AddExperimentalNotice(element) {
     });
 }
 
- //Sets up the (currently green) qtip bubbles that give you the contents of the box in the source languages
+function GetStyleClassFromElement(element) {
+    var c = $(element).attr("class");
+    if (!c)
+        c = "";
+    var classes = c.split(' ');
+
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('-style') > 0) {
+            return classes[i];
+        }
+    }
+    return null;
+}
+
+//:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
+jQuery.expr[':'].hasNoText = function (obj) {
+    return jQuery.trim(jQuery(obj).text()).length == 0;
+};
+
+ //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
     
     var divForBubble = $(group).clone();
     $(divForBubble).removeAttr('style');
 
-    //make the source texts in the bubble read-only
+    //make the source texts in the bubble read-only and remove any user font size adjustments
     $(divForBubble).find("textarea, div").each(function() {
         $(this).attr("readonly", "readonly");
         $(this).removeClass('bloom-editable');
+        $(this).removeClass('overflow'); // don't want red in source text bubbles
         $(this).attr("contenteditable", "false");
+        var styleClass = GetStyleClassFromElement(this);
+        if (styleClass)
+            $(this).removeClass(styleClass);
+        $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
     
+    var vernacularLang = localizationManager.getVernacularLang();
+
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
-    $(divForBubble).find("*[lang='" + GetDictionary().vernacularLang + "']").each(function() {
+    $(divForBubble).find("*[lang='" + vernacularLang + "']").each(function() {
         $(this).remove();
     });
     //don't want empty items in the bubble
-    $(divForBubble).find("textarea:empty, div:empty").each(function() {
+    $(divForBubble).find("textarea:empty, div:hasNoText").each(function() {
         $(this).remove();
     });
 
@@ -310,14 +372,13 @@ function MakeSourceTextDivForGroup(group) {
         var list = $(this).find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
-        var dictionary = GetDictionary();
         var items = $(this).find("textarea, div");
         items.sort(function(a, b) {
             var keyA = $(a).attr('lang');
             var keyB = $(b).attr('lang');
-            if (keyA == dictionary.vernacularLang)
+            if (keyA === vernacularLang)
                 return -1;
-            if (keyB == dictionary.vernacularLang)
+            if (keyB === vernacularLang)
                 return 1;
             if (keyA < keyB)
                 return -1;
@@ -328,27 +389,28 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = dictionary[iso];
+            var languageName = localizationManager.getIso();
             if (!languageName)
                 languageName = iso;
-            var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+            var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            if(iso=== GetSettings().defaultSourceLanguage) {
+            if(iso === GetSettings().defaultSourceLanguage) {
                 selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-            if (shellEditingMode || !shouldShowOnPage) {
+            if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
                 $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
             }
         });
     });
 
     //now turn that new div into a set of tabs
+    // Review: as of 9 May 2014 the tab links have turned into bulleted links
     if ($(divForBubble).find("li").length > 0) {
         $(divForBubble).easytabs({
             animate: false,
             defaultTab: selectorOfDefaultTab
-        })
+        });
 //        $(divForBubble).bind('easytabs:after', function(event, tab, panel, settings){
 //            alert(panel.selector)
 //        });
@@ -358,24 +420,25 @@ function MakeSourceTextDivForGroup(group) {
 		$(divForBubble).remove();//no tabs, so hide the bubble
 		return;
 	}
-		
+
     // turn that tab thing into a bubble, and attach it to the original div ("group")
 	$(group).each(function () {
-	    var targetHeight = $(this).height();
+	    // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
 	    showEvents = false;
 	    hideEvents = false;
 	    shouldShowAlways = true;
         
-        //todo: really, this should detect some made-up style, so thatwe can control this behavior via the stylesheet
+        //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
         if($(this).hasClass('wordsDiv')) {
-            showEvents = " focusin ";
-            hideEvents = ' focusout ';
+            showEvents = 'focusin';
+            hideEvents = 'focusout';
             shouldShowAlways = false;
         }
 	    $(this).qtip({
-	        position: { at: 'right center',
-	            my: 'left center',
+	        position: {
+                my: 'left top',
+                at: 'right top',
 	            adjust: {
 	                x: 10,
 	                y: 0
@@ -387,41 +450,22 @@ function MakeSourceTextDivForGroup(group) {
 	            event: showEvents,
 	            ready: shouldShowAlways
 	        },
-	        events: {
-	            render: function (event, api) {
-	                api.elements.content.height(targetHeight);
-	            }
-	        },
+	        //events: {
+	        //    render: function (event, api) {
+	        //        api.elements.content.height(targetHeight);
+	        //    }
+	        //},
 	        style: {
-	            //doesn't work: tip:{ size: {height: 50, width:50}             },
-	            //doesn't work: tip:{ size: {x: 50, y:50}             },
+                tip: {
+                    corner: true,
+                    width: 10,
+                    height: 10
+                },
 	            classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
 	        },
 	        hide: hideEvents
 	    });
 	});
-}
-
-
-function GetLocalizedHint(whatToSay, targetElement) {
-    if(whatToSay.startsWith("*")){
-        whatToSay = whatToSay.substring(1,1000);
-    }
-
-    var dictionary = GetDictionary();
-
-    if(whatToSay in dictionary) {
-        whatToSay = dictionary[whatToSay];
-    }
-
-    //stick in the language
-    for (key in dictionary) {
-        if (key.startsWith("{"))
-            whatToSay = whatToSay.replace(key, dictionary[key]);
-
-        whatToSay = whatToSay.replace("{lang}", dictionary[$(targetElement).attr('lang')]);
-    }
-    return whatToSay;
 }
 
 //add a delete button which shows up when you hover
@@ -480,7 +524,7 @@ function CreditsAreRelevantForImage(img) {
     return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
 }
 
-//While the actual metada is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
+//While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 function SetOverlayForImagesWithoutMetadata() {
     $(".bloom-imageContainer").each(function () {
@@ -493,7 +537,7 @@ function SetOverlayForImagesWithoutMetadata() {
         UpdateOverlay(container, img);
 
         //and if the bloom program changes these values (i.e. the user changes them using bloom), I
-        //haven't figured out a way (appart from polling) to know that. So for now I'm using a hack
+        //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
         //where Bloom calls click() on the image when it wants an update, and we detect that here.
         $(img).click(function () {
             UpdateOverlay(container, img);
@@ -508,8 +552,8 @@ function UpdateOverlay(container, img) {
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
-    var license = $(img).attr('data-license');
-    if (!license || license.length == 0) {
+    var copyright = $(img).attr('data-copyright');
+    if (!copyright || copyright.length == 0) {
 
         var buttonModifier = "largeImageButton";
         if ($(container).height() < 80) {
@@ -519,7 +563,6 @@ function UpdateOverlay(container, img) {
         $(container).prepend("<button class='editMetadataButton imgMetadataProblem "+buttonModifier+"' title='Image is missing information on Credits, Copyright, or License'></button>");
     }
 }
-
 
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
@@ -531,9 +574,7 @@ function SetAlternateTextOnImages(element) {
     else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
-
 }
-
 
 function SetupResizableElement(element) {
     $(element).mouseenter(
@@ -621,39 +662,315 @@ jQuery.fn.IsOverflowing = function () {
         parentBottom = $(marginBoxParent[0]).offset().top + $(marginBoxParent[0]).outerHeight(true);
     else
         parentBottom = 999999;
-    var elemBottom = $(element).offset().top + $(element).outerHeight(true);
+    var elemTop = parseInt($(element).offset().top);
+    var elemBottom = elemTop + $(element).outerHeight(false);
+    // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
     // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
     // This is because of the thin grey border on a focused input box.
     // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
     // so we'll apply the same 'fudge' factor to both comparisons.
     var focusedBorderFudgeFactor = 2;
-    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor ||
-        elemBottom > parentBottom + focusedBorderFudgeFactor;
+	
+	 //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
+	 //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it 
+	 //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
+	 //element.
+	 var growFromCenterVerticalFudgeFactor =0;
+	 if($(element).data('firefoxheight')){
+		growFromCenterVerticalFudgeFactor = 2;
+	 }
+	 
+	 //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
+	 //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
+	 // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
+	 var shortBoxFudgeFactor = 4;
+	 
+	//console.log('s='+element.scrollHeight+' c='+element.clientHeight);
+		
+	 return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
+			 element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+		 elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
+
+// Checks for overflow and adds/removes the proper class
+// N.B. This function is specifically designed to be called from within AddOverflowHandler()
+function MarkOverflowInternal(element) {
+    if (element.IsOverflowing())
+        element.addClass('overflow');
+    else
+        element.removeClass('overflow'); // If it's not here, this won't hurt anything.
+}
 
 // When a div is overfull,
 // we add the overflow class and it gets a red background or something
 function AddOverflowHandler() {
-    $("div.bloom-editable").on("keyup paste", function (e) {
+	//NB: for some historical reason in March 2014 the calendar still uses textareas
+    $("div.bloom-editable, textarea").on("keyup paste", function (e) {
         var $this = $(this);
         // Give the browser time to get the pasted text into the DOM first, before testing for overflow
         // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
         //        At first I was concerned that this might slow typing, but it doesn't seem to.
         setTimeout(function () {
-            if ($this.IsOverflowing())
-                $this.addClass('overflow');
-            else {
-                if ($this.hasClass('overflow'))
-                    $this.removeClass('overflow');
-            }
+            MarkOverflowInternal($this);
+
+            // This will make sure that any language tags on this div stay in position with editing.
+            // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+            $("div.bloom-editable, textarea").qtip('reposition');
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
+
+    // Test initial overflow state on page
+    $("div.bloom-editable, textarea").each(function () {
+        var $this = $(this);
+        MarkOverflowInternal($this);
+    });
 }
 
-//---------------------------------------------------------------------------------
+// Add various editing key handlers
+function AddEditKeyHandlers() {
+    //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
+    //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
+    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
+        var selection = document.getSelection();
+        if (selection) {
+            //NB: by using exeCommand, we get undo-ability
+            document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
+        }
+    });
 
-jQuery(document).ready(function () {
+    // Make F7 apply top-level header style (H1)
+    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+
+    // Make F8 apply header style (H2)
+    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+
+    //there doesn't appear to be a good simple way to clear out formatting
+    $("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
+        e.preventDefault();
+        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
+        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
+        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
+    });
+
+}
+
+// Add little language tags
+function AddLanguageTags() {
+    $(".bloom-editable:visible[contentEditable=true]").each(function () {
+        // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
+        // with each other, leading to flashing back and forth
+        // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
+        if ($(this).width() < 100) {
+            return;
+        }
+
+        var key = $(this).attr("lang");
+        if (key == "*" || key.length < 1)
+            return; //seeing a "*" was confusing even to me
+
+        // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
+        // first usage (for instance) was turning off language tags for a whole page
+        if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
+            return;
+        }
+
+        var dictionary = GetDictionary();
+        var whatToSay = dictionary[key];
+        if (!whatToSay)
+            whatToSay = key; //just show the code
+
+        // Put whatToSay into data attribute for pickup by the css
+        $(this).attr('data-languageTipContent', whatToSay);
+    });
+}
+
+// Add (yellow) hint bubbles from (usually) label.bubble elements
+function AddHintBubbles() {
+    //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
+    //bloom-translationGroup (those should have a single <label> for the whole group).
+    //Notice that the <label> inside an editable div is in a precarious position, it could get
+    //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
+    //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
+    //so it is preferred when making new templates by hand.
+    $(".bloom-editable:visible label.bubble").each(function () {
+        var labelElement = $(this);
+        var whatToSay = labelElement.text();
+        if (!whatToSay)
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+        var enclosingEditableDiv = labelElement.parent();
+        enclosingEditableDiv.attr('data-hint', labelElement.text());
+        labelElement.remove();
+
+        //attach the bubble, this editable only, then remove it
+        MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
+    });
+
+    // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
+    // the fields, with some template-filling and localization for each.
+    // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
+    // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
+    // behaviors through classes
+    $(".bloom-translationGroup > label.bubble").each(function () {
+        var labelElement = $(this);
+        var whatToSay = labelElement.text();
+        if (!whatToSay)
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+        //attach the bubble, separately, to every visible field inside the group
+        labelElement.parent().find("div.bloom-editable:visible").each(function () {
+            MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
+        });
+    });
+
+    $("*.bloom-imageContainer > label.bubble").each(function () {
+        var labelElement = $(this);
+        var imageContainer = $(this).parent();
+        var whatToSay = labelElement.text();
+        if (!whatToSay)
+            return;
+        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
+        MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
+    });
+
+    //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
+    //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
+    //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
+    $("*[data-hint]").each(function () {
+        var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+        if (!whatToSay)
+            return;
+
+        //make hints that start with a * only show when the field has focus
+        var showOnFocusOnly = whatToSay.startsWith("*");
+
+        if (whatToSay.startsWith("*")) {
+            whatToSay = whatToSay.substring(1, 1000);
+        }
+
+        if (whatToSay.length == 0 || $(this).css('display') == 'none')
+            return;
+
+        MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
+    });
+}
+
+// This function is called directly from EditingView.OnShowBookMetadataEditor()
+function SetCopyrightAndLicense(data) {
+    //nb: for textarea, we need val(). But for div, it would be text()
+    $("DIV[data-book='copyright']").text(DecodeHtml(data.copyright));
+    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
+    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
+    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
+    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
+    if (data.licenseImage.length == 0) {
+        licenseImageValue = ""; //don't wan the date on there
+        $("IMG[data-book='licenseImage']").attr('alt', '');
+    }
+
+    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
+    SetBookCopyrightAndLicenseButtonVisibility();
+}
+
+function SetBookCopyrightAndLicenseButtonVisibility() {
+    var shouldShowButton = !($("DIV.copyright").text());
+    $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
+}
+
+function FindOrCreateTopicDialogDiv() {
+    var dialogContents = $("body").find("div#topicChooser");
+    if (!dialogContents.length) {
+        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
+
+        var topics = JSON.parse(GetSettings().topics);
+        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment",
+        // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
+
+        dialogContents.append("<ol id='topics'></ol>");
+        for (i in topics) {
+            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
+        }
+
+        $("#topics").selectable();
+
+        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
+        //when you select an item, nothing visible happens (from stackoverflow)
+        $("#topics").selectable({
+            unselected: function() {
+                $(":not(.ui-selected)", this).each(function() {
+                    $(this).removeClass('ui-state-highlight');
+                });
+            },
+            selected: function() {
+                $(".ui-selected", this).each(function() {
+                    $(this).addClass('ui-state-highlight');
+                });
+            }
+        });
+        $("#topics li").hover(
+            function() {
+                $(this).addClass('ui-state-hover');
+            },
+            function() {
+                $(this).removeClass('ui-state-hover');
+            });
+    }
+    return dialogContents;
+}
+
+//note, the normal way is for the user to click the link on the qtip.
+//But clicking on the exiting topic may be natural too, and this prevents
+//them from editing it by hand.
+function SetupShowingTopicChooserWhenTopicIsClicked() {
+    $("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        ShowTopicChooser();
+    });
+}
+
+// This is called directly from Bloom via RunJavaScript()
+function ShowTopicChooser() {
+    var dialogContents = FindOrCreateTopicDialogDiv();
+    var dlg = $(dialogContents).dialog({
+        autoOpen: "true",
+        modal: "true",
+        //zIndex removed in newer jquery, now we get it in the css
+        buttons: {
+            "OK": function () {
+                var t = $("ol#topics li.ui-selected");
+                if (t.length) {
+                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
+                }
+                $(this).dialog("close");
+            }
+        }
+    });
+
+    //make a double click on an item close the dialog
+    dlg.find("li").dblclick(function () {
+        var x = dlg.dialog("option", "buttons");
+        x['OK'].apply(dlg);
+    });
+}
+
+function DecodeHtml(encodedString) {
+    return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
+}
+
+// ---------------------------------------------------------------------------------
+// document ready function
+// ---------------------------------------------------------------------------------
+$(document).ready(function () {
     if($.fn.qtip)
         $.fn.qtip.zindex = 15000;
     //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
@@ -668,28 +985,109 @@ jQuery(document).ready(function () {
     AddToolbox();
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
-    jQuery("textarea").blur(function () {
+    $("textarea").blur(function () {
         this.innerHTML = this.value;
     });
 
-    SetBookCopyrightAndLicenseButtonVisibility();
 
-    /*
-    //when a textarea gets focus, send Bloom a dictionary of all the translations found within
-    //the same parent element
-    jQuery("textarea, div.bloom-editable").focus(function () {
-    event = document.createEvent('MessageEvent');
-    var origin = window.location.protocol + '//' + window.location.host;
-    var obj = {};
-    $(this).parent().find("textarea, div.bloom-editable").each(function () {
-    obj[$(this).attr("lang")] = $(this).text();
-    })
-    var json = obj; //.get();
-    json = JSON.stringify(json);
-    event.initMessageEvent('textGroupFocused', true, true, json, origin, 1234, window, null);
-    document.dispatchEvent(event);
+    jQuery.fn.reverse = function () {
+         return this.pushStack(this.get().reverse(), arguments);
+    };
+
+    //if this browser doesn't have endsWith built in, add it
+    if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function (suffix) {
+            return this.indexOf(suffix, this.length - suffix.length) !== -1;
+        };
+    }
+
+    //firefox adds a <BR> when you press return, which is lame because you can't put css styles on BR, such as indent.
+    //Eventually we may use a wysiwyg add-on which does this conversion as you type, but for now, we change it when
+    //you tab or click out.
+    jQuery(".bloom-editable").blur(function () {
+
+        //This might mess some things up, so we're only applying it selectively
+        if ($(this).closest('.bloom-requiresParagraphs').length == 0
+           && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+        return;
+
+        var x = $(this).html();
+
+        //the first time we see a field editing in Firefox, it won't have a p opener
+        if (!x.startsWith('<p>')) {
+            x = "<p>" + x;
+        }
+
+        x = x.split("<br>").join("</p><p>");
+
+        //the first time we see a field editing in Firefox, it won't have a p closer
+        if (!x.endsWith('</p>')) {
+            x = x + "</p>";
+        }
+        $(this).html(x);
+
+        //If somehow you get leading empty paragraphs, FF won't let you delete them
+        $('p').each(function () {
+            if ($(this).text() === "") {
+                $(this).remove();
+            } else {
+                return false; //break
+            }
+        });
+
+        //for some reason, perhaps FF-related, we end up with a new empty paragraph each time
+        //so remove trailing <p></p>s
+        $('p').reverse().each(function () {
+            if ($(this).text() === "") {
+                $(this).remove();
+            } else {
+                return false; //break
+            }
+        });
     });
-    */
+
+    //when we discover an empty text box that has been marked to use paragraphs, start us off on the right foot
+    $('.bloom-editable').focus(function () {
+        if ($(this).closest('.bloom-requiresParagraphs').length == 0
+            && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+                return;
+
+        if ($(this).text() == '') {
+            //stick in a paragraph, which makes FF do paragraphs instead of BRs.
+            $(this).html('<p>&nbsp;</p>'); // &zwnj; (zero width non-joiner) would be better but it makes the cursor invisible
+
+            //now select that space, so we delete it when we start typing
+
+            var el = $(this).find('p')[0].childNodes[0];
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+        else {
+            var el = $(this).find('p')[0];
+            if (!el)
+                return; // these have text, but not p's yet. We'll have to wait until they leave (blur) to add in the P's.
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(true);//move to start of first paragraph
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    //TODO if you do Ctrl+A and delete, you're now outside of our <p></p> zone. clicking out will trigger the blur handerl above, which will restore it.
+    });
+
+    // invoke function when a bloom-editable element loses focus.
+    $('.bloom-editable').focusout(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
+        }
+    });
+
+    SetBookCopyrightAndLicenseButtonVisibility();
 
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(".bloom-translationGroup").each(function () {
@@ -734,36 +1132,8 @@ jQuery(document).ready(function () {
     // we add the overflow class and it gets a red background or something
     AddOverflowHandler();
 
-    //Make F8 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
-    //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
-        var selection = document.getSelection();
-        if (selection != null && selection != '') {
-            //NB: by using exeCommand, we get undo-ability
-            document.execCommand("insertHTML", false, "<span class='superscript'>" + document.getSelection() + "</span>");
-        }
-    });
-    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
-        e.preventDefault();
-        document.execCommand("formatBlock", false, "H1");
-    });
+    AddEditKeyHandlers();
 
-    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
-        e.preventDefault();
-        document.execCommand("formatBlock", false, "H2");
-    });
-//    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+shift+c', function (e) {
-//        e.preventDefault();
-//        document.execCommand("justifyCenter", false, null);
-//    });
-
-    //there doesn't appear to be a good simple way to clear out formatting
-    jQuery("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
-        e.preventDefault();
-        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
-        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
-        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
-    });
     //--------------------------------
     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 
@@ -781,113 +1151,9 @@ jQuery(document).ready(function () {
         };
     }
 
-    //Add little language tags
-    $("div.bloom-editable:visible").each(function () {
-        var key = $(this).attr("lang");
-        var dictionary = GetDictionary();
-        var whatToSay = dictionary[key];
-        if (whatToSay == null)
-            whatToSay = key; //just show the code
+    AddLanguageTags();
 
-        if (key = "*")
-            return; //seeing a "*" was confusing even to me
-
-        //with a really small box that also had a hint qtip, there wasn't enough room and the two fough with each other, leading to flashing back and forth
-        if ($(this).width() < 100) {
-            return;
-        }
-
-        // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-        // first usage (for instance) was turning off language tags for a whole page
-        if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
-            return;
-        }
-
-        //TODO: I haven't been able to get these to work right... I just want the tooltip to hide when the user is in the box at the moment,
-        //then reappear
-
-        var shouldShowAlways = true; // "mouseleave unfocus";
-        var hideEvents = false; // "mouseover focusin";
-
-        //             shouldShowAlways = false;
-        //           hideEvents = 'unfocus mouseleave';
-
-        $(this).qtip({
-            content: whatToSay,
-
-            position: {
-                my: 'top right',
-                at: 'bottom right',
-                adjust: { y: -25 }
-            },
-            show: { ready: shouldShowAlways },
-            hide: {
-                event: hideEvents
-            },
-            style: {
-                classes: 'ui-languageToolTip',
-                tip: {
-                  border :0
-                }
-            }
-        });
-        // doing this makes it imposible to reposition them           .removeData('qtip'); // allows multiple tooltips. See http://craigsworks.com/projects/qtip2/tutorials/advanced/
-    });
-
-    // I took away this feature becuase qtip was changing titles to "oldtitle" which caused problems because we save the result. So now, we just
-    // say that if you want a momentary qtip, do a data-hint and start it with '*'   //Add popup yellow bubbles to match title attributes
-    //    $("*[title]").each(function() {
-    //        $(this).qtip({ position: {
-    //                at: 'right bottom', //I like this, but it doesn't reposition well -->at: 'right center',
-    //                my: 'top left', //I like this, but it doesn't reposition well-->  my: 'left center',
-    //                viewport: $(window)
-    //            },
-    //            style: { classes:'ui-tooltip-shadow ui-tooltip-plain' } });
-    //    });
-
-    //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
-    //bloom-translationGroup (those should have a single <label> for the whole group).
-    //Notice that the <label> inside an editable div is in a precarious position, it could get
-    //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
-    //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
-    //so it is preferred when making new templates by hand.
-    $("*.bloom-editable label.bubble").each(function () {
-        var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-         
-        var enclosingEditableDiv = labelElement.parent();
-        enclosingEditableDiv.attr('data-hint', labelElement.text());
-        labelElement.remove();
-         
-        //attach the bubble, this editable only, then remove it
-        MakeHelpBubble($(enclosingEditableDiv), labelElement, whatToSay, onFocusOnly);
-    });
-
-    //<label class='bubble'> inside a div.bloom-translationGroup to gives a hint bubble outside each of
-    // the fields, with some template-filing and localization for each.
-    // Note that Version 1.0, we didn't have this <label> ability but we had @data-hint.
-    //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
-    //behaviors through classes
-    $("*.bloom-translationGroup > label.bubble").each(function () {
-        var labelElement = $(this);
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-         
-        //attach the bubble, separately, to every field inside the group
-        labelElement.parent().find("div").each(function () {
-            var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-            MakeHelpBubble($(this), labelElement, whatToSay, onFocusOnly);
-        });
-    });
-
-    $("*.bloom-imageContainer > label.bubble").each(function () {
-        var labelElement = $(this);
-        var imageContainer = $(this).parent();
-        var whatToSay = labelElement.text();
-        var onFocusOnly = labelElement.hasClass('bloom-showOnlyWhenTargetHasFocus');
-        MakeHelpBubble(imageContainer, labelElement, whatToSay, onFocusOnly);
-    });
+    AddHintBubbles();
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
@@ -895,9 +1161,9 @@ jQuery(document).ready(function () {
     //Now, what's going on here is that we also support
     //<label class='placeholder'> inside a div.bloom-translationGroup to get this placeholder
     //behavior on each of the fields inside the group .
-    //Using <label> instead of the attribute makes the html much easer to read, write, and add additional
+    //Using <label> instead of the attribute makes the html much easier to read, write, and add additional
     //behaviors through classes.
-    //So the job of this bit here is to take the label.bubble and create the data-placeholders.
+    //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
     $("*.bloom-translationGroup > label.placeholder").each(function () {
 
         var labelText = $(this).text();
@@ -912,24 +1178,6 @@ jQuery(document).ready(function () {
         });
     });
 
-    //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
-    //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
-    //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
-    $("*[data-hint]").each(function () {
-        var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-        if (!whatToSay || whatToSay.length == 0)
-            return;
-         
-        //make hints that start with a * only show when the field has focus
-        var showOnFocusOnly = whatToSay.startsWith("*");
-
-        if (whatToSay.startsWith("*")) {
-            whatToSay = whatToSay.substring(1, 1000);
-        }
-       
-        MakeHelpBubble($(this), $(this), whatToSay, showOnFocusOnly);
-    });
-
     $.fn.hasAttr = function (name) {
         var attr = $(this).attr(name);
 
@@ -937,37 +1185,6 @@ jQuery(document).ready(function () {
         // `attr` is false.  Check for both.
         return (typeof attr !== 'undefined' && attr !== false);
     };
-
-    //Show data on fields
-    /* disabled to see if we can do fine without it
-    $("*[data-book], *[data-library], *[lang]").each(function() {
-
-    var data = " ";
-    if ($(this).hasAttr("data-book")) {
-    data = $(this).attr("data-book");
-    }
-    if ($(this).hasAttr("data-library")) {
-    data = $(this).attr("data-library");
-    }
-    $(this).qtipSecondary({
-    content: {text: $(this).attr("lang") + "<br>" + data}, //, title: { text:  $(this).attr("lang")}},
-
-    position: {
-    my: 'top right',
-    at: 'top left'
-    },
-    //                  show: {
-    //                                  event: false, // Don't specify a show event...
-    //                                  ready: true // ... but show the tooltip when ready
-    //                              },
-    //                  hide:false,//{     fixed: true },// Make it fixed so it can be hovered over    },
-    style: {'default': false,
-    tip: {corner: false,border: false},
-    classes: 'fieldInfo-qtip'
-    }
-    });
-    });
-    */
 
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
@@ -1010,7 +1227,6 @@ jQuery(document).ready(function () {
         }
     });
 
-
     // If the user moves over something they can't edit, show a tooltip explaining why not
     $('*[data-hint]').each(function () {
 
@@ -1022,7 +1238,7 @@ jQuery(document).ready(function () {
 
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
              
-            whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
+            whatToSay = localizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
             var pos = { at: 'right center',
                 my: 'left center'
@@ -1031,7 +1247,7 @@ jQuery(document).ready(function () {
                 content: whatToSay,
                 position: pos,
                 show: {
-                    event: " focusin mouseenter"
+                    event: 'focusin mouseenter'
                 },
                 style: {
                     classes: theClasses
@@ -1052,44 +1268,43 @@ jQuery(document).ready(function () {
         }
     });
 
-    // this is gone because of a memory violation bug in geckofx 11 with messaging. Now we just notice the click from within c#
-    //    // Send all the data from this div in a message, so Bloom can do something like show a custom dialog box
-    // for editing the data. We only notice the click if the cursor style is 'pointer', so that CSS can turn this on/off.
-    //    $('div.bloom-metaData').each(function() {
-    //        if ($(this).css('cursor') == 'pointer') {
-    //            $(this).click(function() {
-    //                event = document.createEvent('MessageEvent');
-    //                var origin = window.location.protocol + '//' + window.location.host;
-    //                var obj = {};
-    //                $(this).find("*[data-book]").each(function() {
-    //                    obj[$(this).attr("data-book")] = $(this).text();
-    //                })
-    //                var json = obj; //.get();
-    //                json = JSON.stringify(json);
-    //                event.initMessageEvent('divClicked', true, true, json, origin, "", window, null);
-    //                document.dispatchEvent(event);
-    //            })
-    //        }
-    //    });
-
     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
     //This took *enormous* fussing in the css. TODO: copy what we learned there
     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
-    $(".bloom-draggableLabel")
-        .draggable(
-        {
-            containment: "bloom-imageContainer"
-           ,handle: '.dragHandle'
-        })
-       .mouseenter(function () {
-        $(this).prepend(" <div class='dragHandle'></div>")
-        });
+    $(".bloom-draggableLabel").each(function () {
+        // previous to June 2014, containment was not working, so some items may be 
+        // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
+        if ($(this).position().left < 0) {
+            $(this).css('left', 0);
+        }
+        if ($(this).position().top < 0) {
+            $(this).css('top', 0);
+        }
+        if ($(this).position().left + $(this).width() > $(this).parent().width()) {
+            $(this).css('left', $(this).parent().width() - $(this).width());
+        }
+        if ($(this).position().top > $(this).parent().height()) {
+            $(this).css('top', $(this).parent().height() - $(this).height());
+        }
 
-        jQuery(".bloom-draggableLabel").mouseleave(function () {
-            $(this).find(".dragHandle").each(function () {
-                $(this).remove()
-            })
+        $(this).draggable(
+        {
+            containment: "parent", //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
+            handle: '.dragHandle'
         });
+    });
+
+
+    $(".bloom-draggableLabel")
+       .mouseenter(function () {
+        $(this).prepend(" <div class='dragHandle'></div>");
+    });
+
+    jQuery(".bloom-draggableLabel").mouseleave(function () {
+        $(this).find(".dragHandle").each(function() {
+            $(this).remove()
+        });
+    });
 
     // add drag and resize ability where elements call for it
     //   $(".bloom-draggable").draggable({containment: "parent"});
@@ -1158,8 +1373,9 @@ jQuery(document).ready(function () {
     
     SetupShowingTopicChooserWhenTopicIsClicked();
 
-    //copy source texts out to their own div, where we can make a bubble with tabs out of them
-    //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
+    // and then we couldn't translate the book.
     $("*.bloom-translationGroup").each(function () {
         if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
@@ -1178,21 +1394,34 @@ jQuery(document).ready(function () {
     $(".bloom-imageContainer img").each(function () {
         $(this).parent().resize(function () {
             $(this).find("img").scaleImage({ scale: "fit" });
-            ResetRememberedSize(this);
+            try {
+                ResetRememberedSize(this);
+            } catch (error) {
+                console.log(error);
+            }
         });
     });
      
-    var editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-
+    var editor;
+    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
+        editor = new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
+    else {
+        editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
     $("div.bloom-editable:visible").each(function () {
 
         $(this).focus(function() {
            editor.AttachToBox(this);
         });
-        //no: this removes the button just when we're clickin on one of the toolbar items
+        //no: this removes the button just when we're clicking on one of the toolbar items
         //$(this).focusout(function () {
         //    editor.DetachFromBox(this);
         //});
+
+        $(this).focusout(function () {
+            editor.DetachLanguageTip(this);
+        });
     });
 
     //focus on the first editable field
@@ -1201,104 +1430,3 @@ jQuery(document).ready(function () {
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
 });
-
-//function SetCopyrightAndLicense(data) {
-//    $('*[data-book="copyright"]').each(function(){
-//        $(this).text(data.copyright);}
-//    )
-function SetCopyrightAndLicense(data) {
-    //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(data.copyright);
-    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
-    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    $("DIV[data-book='licenseNotes']").text(data.licenseNotes);
-    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
-    if (data.licenseImage.length == 0) {
-        licenseImageValue = ""; //don't wan the date on there
-        $("IMG[data-book='licenseImage']").attr('alt', '');
-    }
-
-    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
-    SetBookCopyrightAndLicenseButtonVisibility();
-}
-
-function SetBookCopyrightAndLicenseButtonVisibility() {
-    var shouldShowButton = !($("DIV.copyright").text());
-    $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
-}
-
-function FindOrCreateTopicDialogDiv() {
-    var dialogContents = $("body").find("div#topicChooser");
-    if (!dialogContents.length) {
-        //$(temp).load(url);//this didn't work in bloom (it did in my browser, but it was FFver 9 wen Bloom was 8. Or the FF has the cross-domain security loosened perhaps?
-        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
-
-        var topics = JSON.parse(GetSettings().topics);
-        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
-        
-        dialogContents.append("<ol id='topics'></ol>");
-        for (i in topics) {
-            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
-        }
-        
-        $("#topics").selectable();
-
-        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following, when you select an item, nothing visible happens (from stackoverflow)
-        $("#topics").selectable({
-            unselected: function() {
-                $(":not(.ui-selected)", this).each(function() {
-                    $(this).removeClass('ui-state-highlight');
-                });
-            },
-            selected: function() {
-                $(".ui-selected", this).each(function() {
-                    $(this).addClass('ui-state-highlight');
-                });
-            }
-        });
-        $("#topics li").hover(
-        function() {
-            $(this).addClass('ui-state-hover');
-        }, 
-        function() {
-            $(this).removeClass('ui-state-hover');
-        });
-    }
-    return dialogContents;
-}
-
-//note, the normal way is for the user to click the link on the qtip. 
-//But clicking on the exiting topic may be natural too, and this prevents
-//them from editing it by hand.
-function SetupShowingTopicChooserWhenTopicIsClicked() {
-    $("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        ShowTopicChooser();
-    });
-}
-
-// This is called directly from Bloom via RunJavaScript()
-function ShowTopicChooser() {
-    var dialogContents = FindOrCreateTopicDialogDiv();
-    var dlg = $(dialogContents).dialog({
-        autoOpen: "true",
-        modal: "true",
-        //zIndex removed in newer jquery, now we get it in the css
-        buttons: {
-            "OK": function () {
-                var t = $("ol#topics li.ui-selected");
-                if (t.length) {
-                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
-                }
-                $(this).dialog("close");
-            }
-        }
-    });
-
-    //make a double click on an item close the dialog
-    dlg.find("li").dblclick(function () {
-        var x = dlg.dialog("option", "buttons");
-        x['OK'].apply(dlg);
-    });
-}

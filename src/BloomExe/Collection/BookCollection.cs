@@ -5,7 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using IWshRuntimeLibrary;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.FileSystem;
+using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -69,7 +72,7 @@ namespace Bloom.Collection
 
         public void DeleteBook(Book.BookInfo bookInfo)
         {
-			var didDelete = Bloom.ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
+			var didDelete = ConfirmRecycleDialog.Recycle(bookInfo.FolderPath);
 	        if (!didDelete)
 		        return;
 			
@@ -187,6 +190,50 @@ namespace Bloom.Collection
 		    set { throw new NotImplementedException(); }
 	    }
 
-        public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+
+	    private FileSystemWatcher _watcher;
+		/// <summary>
+		/// Watch for changes to your directory (currently just additions). Raise CollectionChanged if you see anything.
+		/// </summary>
+		public void WatchDirectory()
+		{
+			_watcher = new FileSystemWatcher();
+			_watcher.Path = PathToDirectory;
+			// The default filter, LastWrite|FileName|DirectoryName, is probably OK.
+			// Watch everything for now.
+			// watcher.Filter = "*.txt";
+			_watcher.Created += WatcherOnChange;
+			_watcher.Changed += WatcherOnChange;
+
+			// Begin watching.
+			_watcher.EnableRaisingEvents = true;
+		}
+
+		/// <summary>
+		/// This could plausibly be a Dispose(), but I don't want to make BoolCollection Disposable, as most of them don't need it.
+		/// </summary>
+	    public void StopWatchingDirectory()
+	    {
+		    if (_watcher != null)
+		    {
+			    _watcher.Dispose();
+			    _watcher = null;
+		    }
+	    }
+
+	    public event EventHandler<ProjectChangedEventArgs> FolderContentChanged;
+
+		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			_bookInfos = null; // Possibly obsolete; next request will update it.
+			if (FolderContentChanged != null)
+				FolderContentChanged(this, new ProjectChangedEventArgs() {Path = fileSystemEventArgs.FullPath});
+		}
     }
+
+	public class ProjectChangedEventArgs : EventArgs
+	{
+		public string Path { get; set; }
+	}
 }

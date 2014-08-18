@@ -544,7 +544,7 @@
 			this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
 			this._showExperimentalTemplates.Size = new System.Drawing.Size(415, 23);
 			this._showExperimentalTemplates.TabIndex = 3;
-			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary, Calendar)";
+			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary)";
 			this._showExperimentalTemplates.UseVisualStyleBackColor = true;
 			this._showExperimentalTemplates.CheckedChanged += new System.EventHandler(this._showExperimentalTemplates_CheckedChanged);
 			// 
@@ -655,7 +655,9 @@
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._tab);
+#if !__MonoCS__
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+#endif
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");

@@ -91,6 +91,15 @@ namespace Bloom.WebLibraryIntegration
 
 		private void DoSignUp()
 		{
+			if (!_termsOfUseCheckBox.Checked)
+			{
+				MessageBox.Show(this,
+					LocalizationManager.GetString("Publish.Upload.Login.MustAgreeTerms",
+						"In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use."),
+					LocalizationManager.GetString("Publish.Upload.Login.PleaseAgreeTerms", "Please agree to terms of use"),
+					MessageBoxButtons.OK);
+				return;
+			}
 			bool userExists;
 			try
 			{
@@ -167,8 +176,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private void ShowTermsOfUse(bool show)
 		{
-			Height = show ? _originalHeight : _termsOfUseLabel.Top - 2 + (Height - ClientRectangle.Height);
-			_termsOfUseLabel.Visible = show;
+			Height = show ? _originalHeight : _termsOfUseCheckBox.Top - 2 + (Height - ClientRectangle.Height);
+			_termsOfUseCheckBox.Visible = show;
 			_showTermsOfUse.Visible = show;
 		}
 

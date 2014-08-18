@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
-using Palaso.Extensions;
 using Palaso.UI.WindowsForms.Extensions;
 
 namespace Bloom
@@ -19,6 +18,14 @@ namespace Bloom
 		public HtmlLabel()
 		{
 			InitializeComponent();
+
+			_browser = new GeckoWebBrowser();
+
+			_browser.Parent = this;
+			_browser.Dock = DockStyle.Fill;
+			Controls.Add(_browser);
+			_browser.NoDefaultContextMenu = true;
+			_browser.Margin = new Padding(0);
 		}
 
 
@@ -38,9 +45,9 @@ namespace Bloom
 				if (_browser!=null)
 				{
 					_browser.Visible = !string.IsNullOrEmpty(_html);
-				    var htmlColor = ColorTranslator.ToHtml(ForeColor);
+					var htmlColor = ColorTranslator.ToHtml(ForeColor);
 					if(_browser.Visible)
-                        _browser.LoadHtml("<span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span>");
+						_browser.LoadHtml("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body><span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span></body></html>");
 				}
 			}
 		}
@@ -52,32 +59,23 @@ namespace Bloom
 			if (this.DesignModeAtAll())
 				return;
 
-			_browser = new GeckoWebBrowser();
-
-			_browser.Parent = this;
-			_browser.Dock = DockStyle.Fill;
-			Controls.Add(_browser);
-			_browser.NoDefaultContextMenu = true;
-			_browser.Margin = new Padding(0);
-			
 			HTML = _html;//in the likely case that there's html waiting to be shown
-			_browser.DomClick += new EventHandler<GeckoDomEventArgs>(OnBrowser_DomClick);
+			_browser.DomClick += new EventHandler<DomMouseEventArgs>(OnBrowser_DomClick);
 		
 		}
 
-		private void OnBrowser_DomClick(object sender, GeckoDomEventArgs e)
+		private void OnBrowser_DomClick(object sender, DomEventArgs ge)
 		{
 			if (this.DesignModeAtAll())
 				return;
 
-		  var ge = e as GeckoDomEventArgs;
 			if (ge.Target == null)
 				return;
-			if (ge.Target.TagName=="A")
+			if (ge.Target.CastToGeckoElement().TagName=="A")
 			{
-				var url = ge.Target.GetAttribute("href");
+				var url = ge.Target.CastToGeckoElement().GetAttribute("href");
 				System.Diagnostics.Process.Start(url);
-				e.Handled = true; //don't let the browser navigate itself
+				ge.Handled = true; //don't let the browser navigate itself
 			}
 		}
 	}

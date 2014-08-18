@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Forms;
 using System.Xml;
+using Palaso.IO;
 
 namespace BloomTemp
 {
@@ -47,7 +47,7 @@ namespace BloomTemp
         private TempLiftFile()
         {
         }
-        public static TempLiftFile TrackExisting(string path)
+        public new static TempLiftFile TrackExisting(string path)
         {
             Debug.Assert(File.Exists(path));
             TempLiftFile t = new TempLiftFile();
@@ -57,147 +57,95 @@ namespace BloomTemp
 
     }
 
-    public class TempFile : IDisposable
-    {
-        protected string _path;
+	public static class TempFileUtils
+	{
+		public static TempFile CreateHtm5FromXml(XmlNode dom)
+		{
+			var temp = TempFile.TrackExisting(GetHtmlTempPath());
 
-        public TempFile()
-        {
-            _path = System.IO.Path.GetTempFileName();
-        }
-
-        internal TempFile(bool dontMakeMeAFile)
-        {
-        }
-        
-
-
-        public TempFile(TemporaryFolder parentFolder)
-        {
-            if (parentFolder != null)
-            {
-                _path = parentFolder.GetPathForNewTempFile(true);
-            }
-            else
-            {
-                _path = System.IO.Path.GetTempFileName();
-            }
-
-        }
-
-
-        public TempFile(string contents)
-            : this()
-        {
-            File.WriteAllText(_path, contents);
-        }
-
-        public TempFile(string[] contentLines)
-            : this()
-        {
-            File.WriteAllLines(_path, contentLines);
-        }
-
-        public string Path
-        {
-            get { return _path; }
-        }
-        public void Dispose()
-        {
-            File.Delete(_path);
-        }
-
-
-        //        public static TempFile TrackExisting(string path)
-        //        {
-        //            return new TempFile(path, false);
-        //        }
-        public static TempFile CopyOf(string pathToExistingFile)
-        {
-            TempFile t = new TempFile();
-            File.Copy(pathToExistingFile, t.Path, true);
-            return t;
-        }
-
-        private TempFile(string existingPath, bool dummy)
-        {
-            _path = existingPath;
-        }
-
-        public static TempFile TrackExisting(string path)
-        {
-            return new TempFile(path, false);
-        }
-
-        public static TempFile CreateAndGetPathButDontMakeTheFile()
-        {
-            TempFile t = new TempFile();
-            File.Delete(t.Path);
-            return t;
-        }
-
-        public static TempFile CreateXmlFileWithContents(string fileName, TemporaryFolder folder, string xmlBody)
-        {
-            string path = folder.Combine(fileName);
-            using (XmlWriter x = XmlWriter.Create(path))
-            {
-                x.WriteStartDocument();
-                x.WriteRaw(xmlBody);
-            }
-            return new TempFile(path, true);
-        }
-
-
-
-        public static TempFile CreateHtm5FromXml(XmlNode dom)
-        {
-            var temp = TempFile.TrackExisting(GetHtmlTempPath());
-
+			var settings = GetXmlWriterSettingsForHtml5();
 			
-        	XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-        	//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
-
 			// Enhance JohnT: no reason to go to disk for this intermediate version.
-			using (var writer = XmlWriter.Create(temp.Path, settings))
-            {
+            var sb = new StringBuilder();
+			using (var writer = XmlWriter.Create(sb, settings))
+			{
 				dom.WriteContentTo(writer);
-                writer.Close();
-            }
+				writer.Close();
+			}
 			// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
 			// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
 			// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
 			// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
-			// There are probably more elements than these two which may not be empty. However we can't just use [^ ]* in place of title|div
+            // Also, embedded controls (like ReaderTools.htm) now pass through this xml-to-html conversion, and this file contains
+            // several more kinds of empty element, some of which have attributes.
+			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
-        	string xhtml = File.ReadAllText(temp.Path);
-        	var re = new Regex("<(title|div) />");
-        	xhtml = re.Replace(xhtml, "<$1></$1>");
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, "<!DOCTYPE html>\r\n" + xhtml);
+			string xhtml =  sb.ToString();
+		    File.WriteAllText(temp.Path, CleanupHtml5(xhtml));
 
-            return temp;
-        }
+			return temp;
+		}
 
-        private static string GetHtmlTempPath()
+        /// <summary>
+        /// Create a string that could be the contents of an HTML5 file and which corresponds to the specified DOM
+        /// (presumed to contain appropriate content).
+        /// This method has no business in this class except that it is so parallel to CreateHtml5FromXml that I wanted to keep them together.
+        /// </summary>
+        /// <param name="dom"></param>
+	    public static string CreateHtml5StringFromXml(XmlNode dom)
         {
-        	string x,y;
-        	do
-        	{
-				x = System.IO.Path.GetTempFileName();
-				y = x + ".htm";        
-        	} while (File.Exists(y));
-            File.Move(x,y);
-            return y;
+            var output = new StringBuilder();
+            using (var writer = XmlWriter.Create(output, GetXmlWriterSettingsForHtml5()))
+            {
+                dom.WriteContentTo(writer);
+                writer.Close();
+            }
+            return CleanupHtml5(output.ToString());
         }
-    }
 
-    public class TemporaryFolder : IDisposable
-    {
-        private string _path;
+        /// <summary>
+        /// Return the settings that should be used for an XmlWriter to write a DOM as HTML5.
+        /// (The writer results should then be passed through CleanupHtml5.)
+        /// </summary>
+        /// <returns></returns>
+	    public static XmlWriterSettings GetXmlWriterSettingsForHtml5()
+	    {
+	        XmlWriterSettings settings = new XmlWriterSettings();
+	        settings.Indent = true;
+	        settings.CheckCharacters = true;
+	        settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+	        //CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+	        return settings;
+	    }
+
+	    public static string CleanupHtml5(string xhtml)
+	    {
+			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
+			//now insert the non-xml-ish <!doctype html>
+	        return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
+		}
+
+		private static string GetHtmlTempPath()
+		{
+			string x,y;
+			do
+			{
+				x = Path.GetTempFileName();
+				y = x + ".htm";
+			} while (File.Exists(y));
+			File.Move(x,y);
+			return y;
+		}
+	}
+
+	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means
+	// refactoring some Palaso code and moving TemporaryFolder from Palaso.TestUtilities into
+	// Palaso.IO
+	public class TemporaryFolder : IDisposable
+	{
+		private string _path;
 
 
         static public TemporaryFolder TrackExisting(string path)
@@ -348,8 +296,5 @@ namespace BloomTemp
             }
         }
     }
-
-
- 
 
 }

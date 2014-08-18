@@ -207,15 +207,8 @@ namespace Bloom.Book
 
 				//now split the elements
 
-				foreach (XmlElement div in leader.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-trailingElement')]"))
-				{
-					div.ParentNode.RemoveChild(div);
-				}
-
-				foreach (XmlElement div in trailer.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-leadingElement')]"))
-				{
-					div.ParentNode.RemoveChild(div);
-				}
+				leader.DeleteNodes("descendant-or-self::*[contains(@class, 'bloom-trailingElement')]");
+				trailer.DeleteNodes("descendant-or-self::*[contains(@class, 'bloom-leadingElement')]");
 			}
 		}
 	}
