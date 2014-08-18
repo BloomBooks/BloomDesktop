@@ -226,6 +226,7 @@
     <Compile Include="MiscUI\TipDialog.designer.cs">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="NavigationIsolator.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

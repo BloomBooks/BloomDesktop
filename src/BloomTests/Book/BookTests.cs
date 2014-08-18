@@ -92,7 +92,7 @@ namespace BloomTests.Book
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] {new MonitorTarget() });
+			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator() });
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
 	  }
@@ -344,7 +344,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
-			Assert.AreEqual(3, scriptNodes.Count);
+			Assert.AreEqual(4, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
 		}

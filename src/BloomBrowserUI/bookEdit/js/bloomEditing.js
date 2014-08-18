@@ -86,34 +86,28 @@ function CanChangeBookLicense() {
 }
 
 //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, onFocusOnly) {
+function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
-    if ($(targetElement).css('display') == 'none') {
-        return;
-    }
+    var target = $(targetElement);
+    var source = $(elementWithBubbleAttributes);
 
-    if ($(targetElement).css('border-bottom-color') == 'transparent') {
-        return; //don't put tips if they can't edit it. That's just confusing
-    }
-    if ($(targetElement).css('display') == 'none') {
+    if (target.css('display') === 'none')
         return; //don't put tips if they can't see it.
-    }
 
-    theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-    if ($(targetElement).height() < 100) {
-        pos = {
-            at: 'right center', //I like this, but it doesn't reposition well -->'right center',
-            my: 'left center' //I like this, but it doesn't reposition well-->  'left center',
-           , viewport: $(window)
-            // , adjust: { y: -20 }
-        };
-    }
-    else { // with the big back covers, the adjustment just makes things worse.
-        pos = {
+    if (target.css('border-bottom-color') === 'transparent')
+        return; //don't put tips if they can't edit it. That's just confusing
+
+    var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+
+    var pos = {
             at: 'right center',
-            my: 'left center'
+        my: 'left center',
+        viewport: $(window),
+        adjust: { method: 'none' }
         };
-    }
+
+    if (target.hasClass('coverBottomBookTopic'))
+        pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
@@ -122,7 +116,23 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
     var shouldShowAlways = true;
     var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
-    var functionCall = $(elementWithBubbleAttributes).data("functiononhintclick");
+    // get the default text/stringId
+    var whatToSay = target.attr('data-hint');
+    if (!whatToSay) whatToSay = source.attr('data-hint');
+    if (!whatToSay) whatToSay = source.text();
+
+    // no empty bubbles
+    if (!whatToSay) return;
+
+    // determine onFocusOnly
+    var onFocusOnly = whatToSay.startsWith('*');
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus');
+
+    // get the localized string
+    if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+    whatToSay = localizationManager.getLocalizedHint(whatToSay, target);
+
+    var functionCall = source.data("functiononhintclick");
     if (functionCall) {
         if (functionCall === 'bookMetadataEditor' && !CanChangeBookLicense())
             return;
@@ -140,20 +150,16 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes, whatToSay, o
         hideEvents = 'focusout mouseleave';
     }
 
-    whatToSay = GetLocalizedHint(whatToSay, $(targetElement));
-
-    $(targetElement).qtip({
+    target.qtip({
         content: whatToSay,
         position: pos,
         show: {
             event: 'focusin mouseenter',
             ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
         }
-       , tip: { corner: 'left center' }
        , hide: {
            event: hideEvents
        },
-        adjust: { method: 'flip none' },
         style: {
             classes: theClasses
         }
@@ -331,10 +337,12 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
+    var vernacularLang = localizationManager.getVernacularLang();
+
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want the vernacular in the bubble
-    $(divForBubble).find("*[lang='" + GetDictionary().vernacularLang + "']").each(function() {
+    $(divForBubble).find("*[lang='" + vernacularLang + "']").each(function() {
         $(this).remove();
     });
     //don't want empty items in the bubble
@@ -364,14 +372,13 @@ function MakeSourceTextDivForGroup(group) {
         var list = $(this).find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
-        var dictionary = GetDictionary();
         var items = $(this).find("textarea, div");
         items.sort(function(a, b) {
             var keyA = $(a).attr('lang');
             var keyB = $(b).attr('lang');
-            if (keyA == dictionary.vernacularLang)
+            if (keyA === vernacularLang)
                 return -1;
-            if (keyB == dictionary.vernacularLang)
+            if (keyB === vernacularLang)
                 return 1;
             if (keyA < keyB)
                 return -1;
@@ -382,12 +389,12 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = dictionary[iso];
+            var languageName = localizationManager.getIso();
             if (!languageName)
                 languageName = iso;
-            var shouldShowOnPage = (iso == dictionary.vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+            var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            if(iso=== GetSettings().defaultSourceLanguage) {
+            if(iso === GetSettings().defaultSourceLanguage) {
                 selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
             }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
@@ -459,27 +466,6 @@ function MakeSourceTextDivForGroup(group) {
           hide: hideEvents
       });
   });
-}
-
-function GetLocalizedHint(whatToSay, targetElement) {
-    if(whatToSay.startsWith("*")){
-        whatToSay = whatToSay.substring(1,1000);
-    }
-
-    var dictionary = GetDictionary();
-
-    if(whatToSay in dictionary) {
-        whatToSay = dictionary[whatToSay];
-    }
-
-    //stick in the language
-    for (key in dictionary) {
-        if (key.startsWith("{"))
-            whatToSay = whatToSay.replace(key, dictionary[key]);
-
-        whatToSay = whatToSay.replace("{lang}", dictionary[$(targetElement).attr('lang')]);
-    }
-    return whatToSay;
 }
 
 //add a delete button which shows up when you hover
@@ -1240,7 +1226,7 @@ $(document).ready(function () {
 
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
 
-            whatToSay = GetLocalizedHint(whatToSay,$(this)) + " <br/>" + whyDisabled;
+            whatToSay = localizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
             var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
             var pos = { at: 'right center',
                 my: 'left center'
@@ -1416,10 +1402,14 @@ $(document).ready(function () {
         $(this).focus(function() {
            editor.AttachToBox(this);
         });
-        //no: this removes the button just when we're clickin on one of the toolbar items
+        //no: this removes the button just when we're clicking on one of the toolbar items
         //$(this).focusout(function () {
         //    editor.DetachFromBox(this);
         //});
+
+        $(this).focusout(function () {
+            editor.DetachLanguageTip(this);
+        });
     });
 
     //focus on the first editable field

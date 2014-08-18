@@ -58,13 +58,13 @@ namespace Bloom.CollectionChoosing
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel2.Controls.Add(this._browseButton, 0, 5);
-			this.tableLayoutPanel2.Controls.Add(this.button6, 2, 1);
-			this.tableLayoutPanel2.Controls.Add(this.button7, 2, 2);
-			this.tableLayoutPanel2.Controls.Add(this.button8, 2, 3);
 			this.tableLayoutPanel2.Controls.Add(this.button9, 0, 0);
 			this.tableLayoutPanel2.Controls.Add(this._templateButton, 0, 1);
 			this.tableLayoutPanel2.Controls.Add(this.label1, 2, 0);
-			this.tableLayoutPanel2.Controls.Add(this._readMoreLink, 2, 4);
+			this.tableLayoutPanel2.Controls.Add(this.button8, 2, 4);
+			this.tableLayoutPanel2.Controls.Add(this.button7, 2, 3);
+			this.tableLayoutPanel2.Controls.Add(this.button6, 2, 2);
+			this.tableLayoutPanel2.Controls.Add(this._readMoreLink, 2, 5);
 			this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -112,7 +112,7 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this.button6, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.button6, null);
 			this._L10NSharpExtender.SetLocalizingId(this.button6, "OpenCreateNewCollectionsDialog.CopyFromUsbDrive");
-			this.button6.Location = new System.Drawing.Point(363, 63);
+			this.button6.Location = new System.Drawing.Point(363, 108);
 			this.button6.Name = "button6";
 			this.button6.Size = new System.Drawing.Size(404, 39);
 			this.button6.TabIndex = 19;
@@ -133,7 +133,7 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this.button7, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.button7, null);
 			this._L10NSharpExtender.SetLocalizingId(this.button7, "OpenCreateNewCollectionsDialog.CopyFromInternet");
-			this.button7.Location = new System.Drawing.Point(363, 108);
+			this.button7.Location = new System.Drawing.Point(363, 153);
 			this.button7.Name = "button7";
 			this.button7.Size = new System.Drawing.Size(405, 36);
 			this.button7.TabIndex = 20;
@@ -154,7 +154,7 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this.button8, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.button8, null);
 			this._L10NSharpExtender.SetLocalizingId(this.button8, "OpenCreateNewCollectionsDialog.CopyFromChorusHub");
-			this.button8.Location = new System.Drawing.Point(363, 153);
+			this.button8.Location = new System.Drawing.Point(363, 198);
 			this.button8.Name = "button8";
 			this.button8.Size = new System.Drawing.Size(391, 36);
 			this.button8.TabIndex = 21;
@@ -216,13 +216,14 @@ namespace Bloom.CollectionChoosing
 			this.label1.Location = new System.Drawing.Point(363, 10);
 			this.label1.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(420, 50);
+			this.tableLayoutPanel2.SetRowSpan(this.label1, 2);
+			this.label1.Size = new System.Drawing.Size(425, 51);
 			this.label1.TabIndex = 24;
 			this.label1.Tag = "sendreceive";
 			this.label1.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
-	"ese red buttons to copy their collection to your computer.\r\nLater, use Send/Recei" +
-	"ve to share your work back with them.";
-			 //
+	"ese red buttons to copy their collection to your computer.\r\nLater, use Send/Rece" +
+	"ive to share your work back with them.";
+			//
 			// _readMoreLink
 			//
 			this._readMoreLink.AutoSize = true;
@@ -230,7 +231,7 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this._readMoreLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._readMoreLink, "This opens the Chorus Help to learn more about send/receive.");
 			this._L10NSharpExtender.SetLocalizingId(this._readMoreLink, "OpenCreateNewCollectionsDialog.ReadMoreLink");
-			this._readMoreLink.Location = new System.Drawing.Point(363, 210);
+			this._readMoreLink.Location = new System.Drawing.Point(363, 265);
 			this._readMoreLink.Margin = new System.Windows.Forms.Padding(3, 15, 3, 0);
 			this._readMoreLink.Name = "_readMoreLink";
 			this._readMoreLink.Size = new System.Drawing.Size(63, 13);

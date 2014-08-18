@@ -37,7 +37,7 @@ namespace BloomTests.WebLibraryIntegration
 			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
-			_htmlThumbNailer = new HtmlThumbNailer(new MonitorTarget());
+			_htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator());
 			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer, new BookDownloadStartingEvent());
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
