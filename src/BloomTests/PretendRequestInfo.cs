@@ -1,6 +1,7 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Specialized;
 
 namespace Bloom.web
 {
@@ -46,6 +47,11 @@ namespace Bloom.web
 		public void WriteError(int errorCode)
 		{
 			StatusCode = errorCode;
+		}
+
+		public NameValueCollection GetQueryString()
+		{
+			return new NameValueCollection();
 		}
 	}
 }

@@ -22,7 +22,6 @@ function ForCodeInspection_UnusedFunctions() {
     // don't actually do anything
     if (1 === 1) return;
 
-    initializeSynphony('', false);
     setSampleFileContents('');
     setTextsList('');
     closeSetupDialog();
