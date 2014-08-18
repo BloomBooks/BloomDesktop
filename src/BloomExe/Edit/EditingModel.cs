@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using Bloom.Book;
@@ -668,7 +667,13 @@ namespace Bloom.Edit
 			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
 			path = Path.Combine(path, fileName);
 
+			// first try utf-8/ascii encoding (the .Net default)
 			var text = File.ReadAllText(path);
+
+			// If the "unknown" character (65533) is present, C# did not sucessfully decode the file. Try the system default encoding and codepage.
+			if (text.Contains((char)65533))
+				text = File.ReadAllText(path, Encoding.Default);
+
 			text = CleanUpDataForJavascript(text);
 
 			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setSampleFileContents) === \"function\") {document.getElementById('accordion').contentWindow.setSampleFileContents(\"" + text + "\");}");
