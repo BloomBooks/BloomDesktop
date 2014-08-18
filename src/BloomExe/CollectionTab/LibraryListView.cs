@@ -684,6 +684,10 @@ namespace Bloom.CollectionTab
 				if (_primaryCollectionReloadPending)
 				{
 					LoadPrimaryCollectionButtons();
+					// One reason to reload is that we created a new book. We need to go through the steps of selecting it
+					// so that e.g. its menu options are properly configured.
+					if (SelectedBook != null)
+						SelectBook(SelectedBook.BookInfo);
 				}
 			}
 			else
