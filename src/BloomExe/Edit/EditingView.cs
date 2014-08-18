@@ -614,23 +614,37 @@ namespace Bloom.Edit
 			return null;
     	}
 
+        /// <summary>
+        /// Returns true if it is either: a) OK to change images, or b) user overrides
+        /// Returns false if user cancels message box
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
+        private bool CheckIfLockedAndWarn(string imagePath)
+        {
+			// Enhance: we may want to reinstate some sort of (disableable) warning when they edit a picture while translating.
+			// Original comment:  this would let them set it once without us bugging them, but after that if they
+            //go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
+			//if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
+			//	&& !_model.CanChangeImages())
+			//{
+			//	if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
+			//	{
+			//		return false;
+			//	}
+			//}
+            return true;
+        }
+
     	private void OnChangeImage(DomEventArgs ge)
         {
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");			
-			
-			//TODO: this would let them set it once without us bugging them, but after that if they
-			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-			if (!currentPath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
-				&& !_model.CanChangeImages())
-			{
-				if(DialogResult.Cancel== MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning","This book is locked down as shell. Are you sure you want to change the picture?"),LocalizationManager.GetString("EditTab.ChangeImage","Change Image"),MessageBoxButtons.OKCancel))
-				{
+			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+
+			 if (!CheckIfLockedAndWarn(currentPath))
 					return;
-				}
-			}
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			if (target.ClassName.Contains("licenseImage"))
 				return;
