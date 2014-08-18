@@ -393,14 +393,24 @@ function renumberRows(rows) {
  * Called to update the stage numbers on the screen after rows are reordered.
  */
 function updateStageNumbers() {
+    updateNumbers('stages-table', 'setup-stage-number', 'remove-stage-number');
+}
 
-    var tbody = $('#stages-table').find('tbody');
+/**
+ * Called to update the level numbers on the screen after rows are reordered.
+ */
+function updateLevelNumbers() {
+    updateNumbers('levels-table', 'setup-level-number', 'remove-level-number');
+}
+
+function updateNumbers(tableId, setupNumberId, removeNumberId) {
+    var tbody = $('#' + tableId).find('tbody');
     var rows = tbody.find('tr');
     renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
-    document.getElementById('setup-stage-number').innerHTML = currentStage;
-    document.getElementById('remove-stage-number').innerHTML = currentStage;
+    $('#' + setupNumberId).innerHTML = currentStage;
+    $('#' + removeNumberId).innerHTML = currentStage;
 }
 
 function displayWordsForSelectedStage(wordsStr) {
@@ -653,4 +663,5 @@ if (typeof ($) === "function") {
 $(document).ready(function () {
     accordionWindow().postMessage('Texts', '*');
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
+    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
 });
