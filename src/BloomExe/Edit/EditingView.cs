@@ -568,16 +568,17 @@ namespace Bloom.Edit
         /// <returns></returns>
         private bool CheckIfLockedAndWarn(string imagePath)
         {
-            //TODO: this would let them set it once without us bugging them, but after that if they
+			// Enhance: we may want to reinstate some sort of (disableable) warning when they edit a picture while translating.
+			// Original comment:  this would let them set it once without us bugging them, but after that if they
             //go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-            if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
-                && !_model.CanChangeImages())
-            {
-                if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
-                {
-                    return false;
-                }
-            }
+			//if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
+			//	&& !_model.CanChangeImages())
+			//{
+			//	if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
+			//	{
+			//		return false;
+			//	}
+			//}
             return true;
         }
 
