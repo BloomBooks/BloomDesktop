@@ -547,7 +547,7 @@ namespace Bloom.CollectionTab
 
 		private string ShortenTitleIfNeeded(string title)
 		{
-			int kMaxCaptionLetters = 17;
+			int kMaxCaptionLetters = 25; // This allows 2 rows of caption including ellipsis (if longer than that)
 			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
 		}
 
