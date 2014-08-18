@@ -67,7 +67,7 @@ function initializeReaderSetupDialog() {
 
     var model = document.getElementById('accordion').contentWindow.model;
 
-    var sourceMsg = 'Data\n' +  model.getSynphony().source;
+    var sourceMsg = 'Data\n' +  JSON.stringify(model.getSynphony().source);
     var fontMsg = 'Font\n' +  model.fontName;
     document.getElementById('settings_frame').contentWindow.postMessage(sourceMsg, '*');
     document.getElementById('settings_frame').contentWindow.postMessage(fontMsg, '*');
