@@ -11,6 +11,7 @@ using Bloom.Book;
 using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
+using Palaso.IO;
 
 
 namespace Bloom
@@ -23,7 +24,7 @@ namespace Bloom
 		/// <param name="content"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration)
+		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
 			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
 		}
@@ -35,13 +36,16 @@ namespace Bloom
 		/// <param name="includeXmlDeclaration"></param>
 		/// <exception cref="">Throws if there are parsing errors</exception>
 		/// <returns></returns>
-		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration)
+		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration = false)
 		{
 			var dom = new XmlDocument();
 			//hack. tidy deletes <span data-libray='somethingImportant'></span>
+			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
 			content = content.Replace("></span>", ">REMOVEME</span>");
+			content = content.Replace("></i>", ">REMOVEME</i>");
 
-
+			// fix for <br></br> tag doubling
+			content = content.Replace("<br></br>", "<br />");
 
 			//using (var temp = new TempFile())
 			var temp = new TempFile();
@@ -194,28 +198,23 @@ namespace Bloom
 			}
 		}
 
+		/// <summary>
+		/// Convert the DOM (which is expected to be XHTML5) to HTML5
+		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
 		{
-
 			var initialOutputPath = Path.GetTempFileName();
 
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
-			//I know... bizarre
-			typeof (XmlWriterSettings).GetField("outputMethod", BindingFlags.NonPublic | BindingFlags.Instance)
-									  .SetValue(settings, XmlOutputMethod.Html);
-
+			settings.OmitXmlDeclaration = true;
 
 			using (var writer = XmlWriter.Create(initialOutputPath, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
 			}
-
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(initialOutputPath));
 
 			//now re-write, indented nicely
 			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
@@ -225,7 +224,7 @@ namespace Bloom
 				tidy.AddTidyMetaElement = false;
 				tidy.OutputXml = false;
 				tidy.OutputHtml = true;
-				tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+				tidy.DocType = DocTypeMode.Html5;
 				tidy.MergeDivs = AutoBool.No;
 				tidy.MergeSpans = AutoBool.No;
 				tidy.PreserveEntities = true;
@@ -237,7 +236,6 @@ namespace Bloom
 				tidy.CleanAndRepair();
 				tidy.Save(tempPath);
 			}
-			File.WriteAllText(tempPath, "<!DOCTYPE html>\r\n" + File.ReadAllText(tempPath));
 			File.Delete(initialOutputPath);
 			return tempPath;
 		}

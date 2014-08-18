@@ -1,0 +1,63 @@
+div.ui-dialog, div.ui-dialog-buttonpane { background: #ddd; padding: 0; }
+div.ui-dialog a { color: #000; outline: 0; }
+div.ui-dialog a.blue-link { color: #2392db; }
+div.ui-dialog textarea, div.ui-dialog input[type="text"] { border: 1px solid #999; }
+div.ui-dialog input[type="text"] { padding: 2px; }
+
+div.ui-dialog div.ui-dialog-titlebar {
+	background: #ddd;
+	border: 0;
+	color: #000;
+	border-bottom: 1px solid #666;
+}
+
+div.ui-dialog div.ui-dialog-content { background: #ddd; padding: 0; margin: 0; border-bottom: 1px solid #666; }
+
+div.ui-dialog button.ui-dialog-titlebar-close {
+	background: #aaa;
+	border: 1px solid #666;
+	right: 8px;
+}
+
+div.ui-dialog div.ui-dialog-titlebar .ui-icon-closethick { background-position: -96px -128px; }
+
+div.ui-dialog div.ui-dialog-buttonpane { margin: -1px 0 0; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-button { padding: 0; margin: 4px 0 4px 6px; background: #999; color: #ccc; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover,
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-focus { background: #999; border: 1px solid #666; }
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover { color: #fff; }
+
+div.ui-dialog div.ui-dialog-buttonset button.ui-button span.ui-button-text { padding: 3px 10px; }
+
+/*
+ * based on: jQuery UI Tabs 1.8.16
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Tabs#theming
+ */
+div.ui-tabs {
+	position: relative;
+	padding: 0; zoom: 1;
+	background: #fff;
+	font-family: "Segoe UI", Arial, sans-serif;
+	font-size: 11px;
+}
+
+div.ui-tabs ul.ui-tabs-nav li.ui-state-default { border: 1px solid #666; font-size: 12px; font-weight: 700; }
+div.ui-tabs ul.ui-tabs-nav li.ui-tabs-active { background-color: #ddd; }
+div.ui-tabs div.ui-tabs-panel { background-color: #ddd; border-top: 1px solid #666; }
+div.ui-tabs ul.ui-tabs-nav li a.ui-tabs-anchor { color: #000; }
+div.ui-tabs ul.ui-tabs-nav li { list-style: none; float: left; position: relative; top: 2px; margin: 0 -1px 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
+div.ui-tabs div.ui-tabs-panel ul { border: 1px solid #999; }
+
+/* lines below this one have been taken unchanged from jquery.ui.tabs.css */
+.ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
+.ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: text; }
+.ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-selected a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
+.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }
+.ui-tabs .ui-tabs-hide { display: none !important; }

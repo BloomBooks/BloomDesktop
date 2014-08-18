@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
+using Bloom.ToPalaso;
+using Bloom.ToPalaso.Experimental;
 using Newtonsoft.Json.Linq;
 using Palaso.Code;
 using Palaso.Extensions;
 using Gecko;
 using Palaso.IO;
+using Palaso.Reporting;
+using Palaso.Xml;
 
 namespace Bloom.Edit
 {
@@ -18,10 +23,13 @@ namespace Bloom.Edit
 	public class Configurator
 	{
 		private readonly string _folderInWhichToReadAndSaveLibrarySettings;
+		private readonly NavigationIsolator _isolator;
+		public delegate Configurator Factory(string folderInWhichToReadAndSaveLibrarySettings);//autofac uses this
 
-		public Configurator(string folderInWhichToReadAndSaveLibrarySettings)
+		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, NavigationIsolator isolator)
 		{
 			_folderInWhichToReadAndSaveLibrarySettings = folderInWhichToReadAndSaveLibrarySettings;
+			_isolator = isolator;
 			PathToLibraryJson = _folderInWhichToReadAndSaveLibrarySettings.CombineForPath("configuration.txt");
 			RequireThat.Directory(folderInWhichToReadAndSaveLibrarySettings).Exists();
 			LocalData = string.Empty;
@@ -37,12 +45,12 @@ namespace Bloom.Edit
 			return File.Exists(Path.Combine(folderPath, "configuration.htm"));
 		}
 
-		public  DialogResult ShowConfigurationDialog(string folderPath)
+		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData()))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData(), _isolator))
 			{
 				var result = dlg.ShowDialog(null);
-				if(result == DialogResult.OK)
+				if (result == DialogResult.OK)
 				{
 					CollectJsonData(dlg.FormData);
 				}
@@ -56,7 +64,16 @@ namespace Bloom.Edit
 		/// <param name="bookPath"></param>
 		public void ConfigureBook(string bookPath)
 		{
-			/* setup jquery in chrome console (first open a local file):
+			using (var dlg = new ProgressDialogForeground())
+			{
+				dlg.Text = L10NSharp.LocalizationManager.GetString("ConfiguringBookMessage", "Building...");
+				dlg.ShowAndDoWork((progress) => ConfigureBookInternal(bookPath));
+			}
+		}
+
+		private void ConfigureBookInternal(string bookPath)
+		{
+		/* setup jquery in chrome console (first open a local file):
 			 * script = document.createElement("script");
 				script.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js");
 
@@ -77,13 +94,11 @@ namespace Bloom.Edit
 
 			var b = new GeckoWebBrowser();
 			var neededToMakeThingsWork = b.Handle;
-			b.Navigate(bookPath);
-			Application.DoEvents();
+			NavigateAndWait(b, bookPath);
 
 			//Now we call the method which takes that confuration data and adds/removes/updates pages.
 			//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-			RunJavaScript(b,"updateDom(jQuery.parseJSON('"+GetAllData()+"'))");
-			Application.DoEvents();
+			RunJavaScript(b, "updateDom(jQuery.parseJSON('" + GetAllData() + "'))");
 
 			//Ok, so we should have a modified DOM now, which we can save back over the top.
 
@@ -92,12 +107,69 @@ namespace Bloom.Edit
 			b.SaveDocument(temp.Path);
 			File.Delete(bookPath);
 			File.Move(temp.Path, bookPath);
+
+			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+			//NB: this check only makes sense for the calendar, which is the only template we've create that
+			// uses this class, and there are no other templates on the drawing board that would use it.
+			// If/when we use this for something else, this
+			//won't work. But by then, we should be using a version of geckofx that can reliably tell us
+			//when it is done with the previous navigation.
+			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
+			{
+				Logger.WriteMinorEvent(File.ReadAllText(bookPath)); //this will come to us if they report it
+				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
+			}
+
+			//NB: we *want* exceptions thrown from the above to make it out.
+		}
+
+		private void NavigateAndWait(GeckoWebBrowser browser, string url)
+		{
+			Cursor.Current = Cursors.WaitCursor;
+			try
+			{
+				//browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+				/* in geckofx14, this never fires (perhaps it does for docs, but not javascript?):
+				browser.DocumentCompleted -= browser_DocumentNavigated;
+				browser.DocumentCompleted += browser_DocumentNavigated;
+			 */
+
+				browser.Navigated -= browser_DocumentNavigated;
+				browser.Navigated += browser_DocumentNavigated;
+
+				_isolator.Navigate(browser, url);
+
+				//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
+				//this could be simplified when we upgrade
+				DateTime giveUpTime = DateTime.Now.AddSeconds(2);
+				while (DateTime.Now < giveUpTime && browser.Tag == null)
+				{
+					Application.DoEvents();
+				}
+				if (browser.Tag == null)
+					throw new ApplicationException("Timed out waiting for browser to configure book");
+
+				//the above doesn't really ensure that the javascript is done. Wait another few seconds.
+				DateTime minimumTimeToWait = DateTime.Now.AddSeconds(4);
+				while (DateTime.Now < minimumTimeToWait)
+				{
+					Application.DoEvents();
+				}
+			}
+			finally
+			{
+				Cursor.Current = Cursors.Default;
+			}
+		}
+
+		void browser_DocumentNavigated(object sender, EventArgs e)
+		{
+			((GeckoWebBrowser)sender).Tag = sender;
 		}
 
 		public void RunJavaScript(GeckoWebBrowser b, string script)
 		{
-			b.Navigate("javascript:void(" + script + ")");
-			Application.DoEvents(); //review... is there a better way?  it seems that NavigationFinished isn't raised.
+			NavigateAndWait(b, "javascript:void(" + script + ")");
 		}
 
 		public string LocalData { get; set; }
@@ -188,7 +260,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
-			return existing.ToString().Replace("\r\n", "").Replace("\\", "");
+			return existing.ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", "");
 		}
 
 		private bool IsComplexObject(string value)
@@ -225,13 +297,11 @@ namespace Bloom.Edit
 			string libraryData = GetLibraryData();
 			var local = GetInnerjson(LocalData);
 			var library = GetInnerjson(libraryData);
-			if(!string.IsNullOrEmpty(libraryData))
-				return "{"+local+", "+ library+"}";
-			else
-			{
-				return LocalData;
-			}
+			if (!string.IsNullOrEmpty(library))
+				return "{" + local + ", " + library + "}";
+			return LocalData;
 		}
+
 		private string GetInnerjson(string json)
 		{
 

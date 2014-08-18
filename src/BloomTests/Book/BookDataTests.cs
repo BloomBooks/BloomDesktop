@@ -24,6 +24,50 @@ namespace BloomTests.Book
 				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
+		[Test]
+		public void TextOfInnerHtml_RemovesMarkup()
+		{
+			var input = "This <em>is</em> the day";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("This is the day"));
+		}
+
+		[Test]
+		public void TextOfInnerHtml_HandlesXmlEscapesCorrectly()
+		{
+			var input = "Jack &amp; Jill like xml sequences like &amp;amp; &amp; &amp;lt; &amp; &amp;gt; for characters like &lt;&amp;&gt;";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("Jack & Jill like xml sequences like &amp; & &lt; & &gt; for characters like <&>"));
+		}
+
+		[Test]
+		public void MakeLanguageUploadData_FindsDefaultInfo()
+		{
+			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
+			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+			VerifyLangData(results[0], "en", "English", "eng");
+			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+			VerifyLangData(results[2], "xy3", "xy3", "xy3");
+		}
+
+		[Test]
+		public void MakeLanguageUploadData_FindsOverriddenNames()
+		{
+			_collectionSettings.Language1Name = "Cockney";
+			// Note: no current way of overriding others; verify they aren't changed.
+			var results = _collectionSettings.MakeLanguageUploadData(new[] { "en", "tpi", "xyz" });
+			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
+			VerifyLangData(results[0], "en", "English", "eng");
+			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
+			VerifyLangData(results[2], "xyz", "Cockney", "xyz");
+		}
+
+		void VerifyLangData(LanguageDescriptor lang, string code, string name, string ethCode)
+		{
+			Assert.That(lang.IsoCode, Is.EqualTo(code));
+			Assert.That(lang.Name, Is.EqualTo(name));
+			Assert.That(lang.EthnologueCode, Is.EqualTo(ethCode));
+		}
 
 	   [Test]
 		public void SuckInDataFromEditedDom_NoDataDIvTitleChanged_NewTitleInCache()
@@ -111,10 +155,10 @@ namespace BloomTests.Book
 			 </body></html>");
 			var data = new BookData(dom,  _collectionSettings, null);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
-			textarea1.InnerText = "peace";
+			textarea1.InnerText = "peace & quiet";
 			data.SynchronizeDataItemsThroughoutDOM();
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
-			Assert.AreEqual("peace", paragraph.InnerText);
+			Assert.AreEqual("peace & quiet", paragraph.InnerText);
 		}
 
 
@@ -302,7 +346,7 @@ namespace BloomTests.Book
 //            </div></head><body></body></html>");
 			var dom = new HtmlDom();
 			var data = new BookData(dom, new CollectionSettings(){Country="the country", Province = "the province", District= "the district"}, null);
-			Assert.AreEqual("the district, the province<br/>the country", data.GetVariableOrNull("languageLocation", "*"));
+			Assert.AreEqual("the district, the province, the country", data.GetVariableOrNull("languageLocation", "*"));
 		  }
 
 		/*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1Name, true);

@@ -29,14 +29,14 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
             Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
             Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
-            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
             Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
             Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
+            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
+            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
+            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
+            Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
             this._loadTimer = new System.Windows.Forms.Timer(this.components);
             this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this._workingIndicator = new System.Windows.Forms.Panel();
@@ -48,20 +48,22 @@
             this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._menusToolStrip = new System.Windows.Forms.ToolStrip();
             this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-            this._bodyRadio = new System.Windows.Forms.RadioButton();
-            this._coverRadio = new System.Windows.Forms.RadioButton();
-            this._simplePDFRadio = new System.Windows.Forms.RadioButton();
+            this._bookletCoverRadio = new System.Windows.Forms.RadioButton();
+            this.label1 = new System.Windows.Forms.Label();
             this._uploadRadio = new System.Windows.Forms.RadioButton();
             this._showCropMarks = new System.Windows.Forms.CheckBox();
+            this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
+            this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-            this.superToolTip1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
-            this.label1 = new System.Windows.Forms.Label();
-            this._adobeReaderControl = new Bloom.Publish.AdobeReaderControl();
+			this._pdfViewer = new PdfViewer();
+			this._superToolTip = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
+			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
             this._workingIndicator.SuspendLayout();
             this._topBarPanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this._contextMenuStrip.SuspendLayout();
             this._menusToolStrip.SuspendLayout();
+			this._pdfViewer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -140,12 +142,12 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
             this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this._coverRadio, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this._showCropMarks, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this._bodyRadio, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this._simplePDFRadio, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -165,13 +167,13 @@
             // _contextMenuStrip
             // 
             this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._openinBrowserMenuItem});
-            this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
+            this._openinBrowserMenuItem,
+            this._openPDF});
             this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
             this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
             this._contextMenuStrip.Name = "_contextMenuStrip";
-            this._contextMenuStrip.Size = new System.Drawing.Size(434, 26);
+			this._contextMenuStrip.Size = new System.Drawing.Size(434, 70);
             // 
             // _openinBrowserMenuItem
             // 
@@ -220,45 +222,16 @@
             this._layoutChoices.Text = "Page Layout";
             this._layoutChoices.ToolTipText = "Choose a page size and orientation";
             // 
-            // _bodyRadio
+            // _bookletCoverRadio
             // 
-            this._bodyRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._bodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._bodyRadio, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._bodyRadio, null);
-            this._L10NSharpExtender.SetLocalizingId(this._bodyRadio, "PublishTab.BodyOnlyRadio");
-            this._bodyRadio.Location = new System.Drawing.Point(3, 224);
-            this._bodyRadio.Name = "_bodyRadio";
-            this._bodyRadio.Size = new System.Drawing.Size(94, 96);
-            superToolTipInfo3.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            superToolTipInfo3.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-            superToolTipInfo3.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-            superToolTipInfo3.BodyText = "Make a booklet from the inside pages of the book.\r Pages will be laid out and reo" +
-    "rdered so that when you fold it, you\'ll have a booklet.\r\n";
-            superToolTipInfo3.HeaderText = "Booklet Inside Pages";
-            superToolTipInfo3.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-            superToolTipInfo3.ShowHeader = false;
-            superToolTipInfoWrapper3.SuperToolTipInfo = superToolTipInfo3;
-            superToolTipInfoWrapper3.UseSuperToolTip = true;
-            this.superToolTip1.SetSuperStuff(this._bodyRadio, superToolTipInfoWrapper3);
-            this._bodyRadio.TabIndex = 14;
-            this._bodyRadio.TabStop = true;
-            this._bodyRadio.Text = "Booklet";
-            this._bodyRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this._bodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._bodyRadio.UseVisualStyleBackColor = true;
-            this._bodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-            // 
-            // _coverRadio
-            // 
-            this._coverRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._coverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._coverRadio, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._coverRadio, null);
-            this._L10NSharpExtender.SetLocalizingId(this._coverRadio, "PublishTab.CoverOnlyRadio");
-            this._coverRadio.Location = new System.Drawing.Point(3, 130);
-            this._coverRadio.Name = "_coverRadio";
-            this._coverRadio.Size = new System.Drawing.Size(94, 88);
+            this._bookletCoverRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._bookletCoverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._bookletCoverRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._bookletCoverRadio, null);
+            this._L10NSharpExtender.SetLocalizingId(this._bookletCoverRadio, "PublishTab.CoverOnlyRadio");
+            this._bookletCoverRadio.Location = new System.Drawing.Point(3, 130);
+            this._bookletCoverRadio.Name = "_bookletCoverRadio";
+            this._bookletCoverRadio.Size = new System.Drawing.Size(94, 88);
             superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
             superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
@@ -269,41 +242,25 @@
             superToolTipInfo1.ShowHeader = false;
             superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
             superToolTipInfoWrapper1.UseSuperToolTip = true;
-            this.superToolTip1.SetSuperStuff(this._coverRadio, superToolTipInfoWrapper1);
-            this._coverRadio.TabIndex = 8;
-            this._coverRadio.TabStop = true;
-            this._coverRadio.Text = "Cover";
-            this._coverRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this._coverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._coverRadio.UseVisualStyleBackColor = true;
-            this._coverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+            this._superToolTip.SetSuperStuff(this._bookletCoverRadio, superToolTipInfoWrapper1);
+            this._bookletCoverRadio.TabIndex = 8;
+            this._bookletCoverRadio.TabStop = true;
+            this._bookletCoverRadio.Text = "Booklet Cover";
+            this._bookletCoverRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this._bookletCoverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._bookletCoverRadio.UseVisualStyleBackColor = true;
+            this._bookletCoverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
             // 
-            // _simplePDFRadio
+            // label1
             // 
-            this._simplePDFRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._simplePDFRadio.Image = global::Bloom.Properties.Resources.simplePages;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._simplePDFRadio, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._simplePDFRadio, "Instead of making a booklet, just make normal pages");
-            this._L10NSharpExtender.SetLocalizingId(this._simplePDFRadio, "PublishTab.OnePagePerPaperRadio");
-            this._simplePDFRadio.Location = new System.Drawing.Point(3, 27);
-            this._simplePDFRadio.Name = "_simplePDFRadio";
-            this._simplePDFRadio.Size = new System.Drawing.Size(94, 97);
-            superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-            superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-            superToolTipInfo4.BodyText = "Make a PDF of every page of the book, one page per piece of paper.";
-            superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-            superToolTipInfo4.ShowHeader = false;
-            superToolTipInfoWrapper4.SuperToolTipInfo = superToolTipInfo4;
-            superToolTipInfoWrapper4.UseSuperToolTip = true;
-            this.superToolTip1.SetSuperStuff(this._simplePDFRadio, superToolTipInfoWrapper4);
-            this._simplePDFRadio.TabIndex = 10;
-            this._simplePDFRadio.TabStop = true;
-            this._simplePDFRadio.Text = "Simple";
-            this._simplePDFRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this._simplePDFRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._simplePDFRadio.UseVisualStyleBackColor = true;
-            this._simplePDFRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
+            this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
+            this._L10NSharpExtender.SetLocalizingId(this.label1, "label1");
+            this.label1.Location = new System.Drawing.Point(3, 323);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(108, 1);
+            this.label1.TabIndex = 17;
             // 
             // _uploadRadio
             // 
@@ -324,7 +281,7 @@
             superToolTipInfo2.ShowHeader = false;
             superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
             superToolTipInfoWrapper2.UseSuperToolTip = true;
-            this.superToolTip1.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
+            this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
             this._uploadRadio.TabIndex = 16;
             this._uploadRadio.TabStop = true;
             this._uploadRadio.Text = "Upload";
@@ -352,53 +309,107 @@
             this._showCropMarks.Visible = false;
             this._showCropMarks.CheckedChanged += new System.EventHandler(this.OnShowCropMarks_CheckedChanged);
             // 
+            // _bookletBodyRadio
+            // 
+            this._bookletBodyRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._bookletBodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._bookletBodyRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._bookletBodyRadio, null);
+            this._L10NSharpExtender.SetLocalizingId(this._bookletBodyRadio, "PublishTab.BodyOnlyRadio");
+            this._bookletBodyRadio.Location = new System.Drawing.Point(3, 224);
+            this._bookletBodyRadio.Name = "_bookletBodyRadio";
+            this._bookletBodyRadio.Size = new System.Drawing.Size(94, 96);
+            superToolTipInfo3.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            superToolTipInfo3.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+            superToolTipInfo3.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+            superToolTipInfo3.BodyText = "Make a booklet from the inside pages of the book.\r Pages will be laid out and reo" +
+    "rdered so that when you fold it, you\'ll have a booklet.\r\n";
+            superToolTipInfo3.HeaderText = "Booklet Inside Pages";
+            superToolTipInfo3.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+            superToolTipInfo3.ShowHeader = false;
+            superToolTipInfoWrapper3.SuperToolTipInfo = superToolTipInfo3;
+            superToolTipInfoWrapper3.UseSuperToolTip = true;
+            this._superToolTip.SetSuperStuff(this._bookletBodyRadio, superToolTipInfoWrapper3);
+            this._bookletBodyRadio.TabIndex = 14;
+            this._bookletBodyRadio.TabStop = true;
+            this._bookletBodyRadio.Text = "Booklet Insides";
+            this._bookletBodyRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this._bookletBodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._bookletBodyRadio.UseVisualStyleBackColor = true;
+            this._bookletBodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+            // 
+            // _simpleAllPagesRadio
+            // 
+            this._simpleAllPagesRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._simpleAllPagesRadio.Image = global::Bloom.Properties.Resources.simplePages;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._simpleAllPagesRadio, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._simpleAllPagesRadio, "Instead of making a booklet, just make normal pages");
+            this._L10NSharpExtender.SetLocalizingId(this._simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
+            this._simpleAllPagesRadio.Location = new System.Drawing.Point(3, 27);
+            this._simpleAllPagesRadio.Name = "_simpleAllPagesRadio";
+            this._simpleAllPagesRadio.Size = new System.Drawing.Size(94, 97);
+            superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+            superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+            superToolTipInfo4.BodyText = "Make a PDF of every page of the book, one page per piece of paper.";
+            superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+            superToolTipInfo4.ShowHeader = false;
+            superToolTipInfoWrapper4.SuperToolTipInfo = superToolTipInfo4;
+            superToolTipInfoWrapper4.UseSuperToolTip = true;
+            this._superToolTip.SetSuperStuff(this._simpleAllPagesRadio, superToolTipInfoWrapper4);
+            this._simpleAllPagesRadio.TabIndex = 10;
+            this._simpleAllPagesRadio.TabStop = true;
+            this._simpleAllPagesRadio.Text = "Simple";
+            this._simpleAllPagesRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this._simpleAllPagesRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._simpleAllPagesRadio.UseVisualStyleBackColor = true;
+            this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+            // 
             // _L10NSharpExtender
             // 
             this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             this._L10NSharpExtender.PrefixForNewItems = null;
+            //
+            // _pdfViewer
+            //
+            this._pdfViewer.BackColor = System.Drawing.Color.White;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._pdfViewer, null);
+            this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
+            this._pdfViewer.Location = new System.Drawing.Point(114, 3);
+            this._pdfViewer.Name = "_pdfViewer";
+            this._pdfViewer.Size = new System.Drawing.Size(716, 537);
+            this._pdfViewer.TabIndex = 16;
+            this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
             // 
-            // superToolTip1
-            // 
-            this.superToolTip1.FadingInterval = 10;
-            // 
-            // label1
-            // 
-            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
-            this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
-            this._L10NSharpExtender.SetLocalizingId(this.label1, "label1");
-            this.label1.Location = new System.Drawing.Point(3, 323);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(108, 1);
-            this.label1.TabIndex = 17;
-            // 
-            // _adobeReaderControl
-            // 
-            this._adobeReaderControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._adobeReaderControl.BackColor = System.Drawing.Color.White;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._adobeReaderControl, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._adobeReaderControl, null);
-            this._L10NSharpExtender.SetLocalizingId(this._adobeReaderControl, "adobeReaderControl1.AdobeReaderControl");
-            this._adobeReaderControl.Location = new System.Drawing.Point(114, 3);
-            this._adobeReaderControl.Name = "_adobeReaderControl";
-            this._adobeReaderControl.Size = new System.Drawing.Size(716, 537);
-            this._adobeReaderControl.TabIndex = 16;
-            // 
+			// superToolTip1
+			// 
+			this._superToolTip.FadingInterval = 10;
+			// 
+			// _openPDF
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._openPDF, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
+			this._L10NSharpExtender.SetLocalizingId(this._openPDF, ".openThePDFInTheDefaultSystemPdfViewerToolStripMenuItem");
+			this._openPDF.Name = "_openPDF";
+			this._openPDF.Size = new System.Drawing.Size(433, 22);
+			this._openPDF.Text = "Open the PDF in the default system pdf viewer";
+			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
+			// 
             // PublishView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.Controls.Add(this._pdfViewer);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this._workingIndicator);
-            this.Controls.Add(this._adobeReaderControl);
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
             this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
             this.Name = "PublishView";
             this.Size = new System.Drawing.Size(833, 540);
+            this._pdfViewer.ResumeLayout();
             this._workingIndicator.ResumeLayout(false);
             this._topBarPanel.ResumeLayout(false);
             this._topBarPanel.PerformLayout();
@@ -423,17 +434,18 @@
 		private System.Windows.Forms.Button _saveButton;
 		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private AdobeReaderControl _adobeReaderControl;
+		private PdfViewer _pdfViewer;
 		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
-		private System.Windows.Forms.RadioButton _simplePDFRadio;
-		private System.Windows.Forms.RadioButton _coverRadio;
-		private System.Windows.Forms.RadioButton _bodyRadio;
+		private System.Windows.Forms.RadioButton _simpleAllPagesRadio;
+		private System.Windows.Forms.RadioButton _bookletCoverRadio;
+		private System.Windows.Forms.RadioButton _bookletBodyRadio;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
-		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip superToolTip1;
+		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.CheckBox _showCropMarks;
 		private System.Windows.Forms.RadioButton _uploadRadio;
+		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;
     }
 }

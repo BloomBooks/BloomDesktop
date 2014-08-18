@@ -8,15 +8,14 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using Palaso.UI.WindowsForms.ReleaseNotes;
 using PalasoUIWinforms.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -27,6 +26,7 @@ namespace Bloom.Workspace
 		private readonly CollectionSettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
+		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
 		private LibraryView _collectionView;
@@ -35,7 +35,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-		private Sparkle _sparkleApplicationUpdater;
+
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 
@@ -52,9 +52,9 @@ namespace Bloom.Workspace
 							SendReceiveCommand sendReceiveCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
+							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ChorusSystem chorusSystem,
-							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
 
 			)
@@ -63,16 +63,13 @@ namespace Bloom.Workspace
 			_settingsDialogFactory = settingsDialogFactory;
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
+			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
-			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-#if !DEBUG
-			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
-#endif
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
@@ -181,6 +178,7 @@ namespace Bloom.Workspace
 													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 													item.Select();
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+													_localizationChangedEvent.Raise(null);
 												});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
 				{
@@ -197,6 +195,8 @@ namespace Bloom.Workspace
 											{
 												_localizationManager.ShowLocalizationDialogBox(false);
 												SetupUILanguageMenu();
+												LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
+												_localizationChangedEvent.Raise(null);
 											});
 		}
 
@@ -332,13 +332,13 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start("http://bloom.palaso.org");
+			Process.Start("http://bloomlibrary.org");
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
-			using(var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon,path))
+			using (var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon, path))
 			{
 				dlg.ShowDialog();
 			}
@@ -415,7 +415,7 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
 
 

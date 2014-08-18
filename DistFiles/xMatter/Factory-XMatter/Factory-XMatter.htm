@@ -1,5 +1,4 @@
-﻿
-<!-- TODO: this is a mess--><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
 	<meta charset="UTF-8">
@@ -7,39 +6,38 @@
 	<title>Factory-default Front & Back Matter</title>
 	<link rel="stylesheet" href="basePage.css" type="text/css"/>
 	<link rel="stylesheet" href="editMode.css" type="text/css"/>
+	<link rel="stylesheet" href="editPaneGlobal.css" type="text/css"/>
 	<link rel="stylesheet" href="Factory-XMatter.css" type="text/css"/>
   </head>
   <body>
 	<!-- FRONT COVER-->
-	<div class="bloom-page A5Portrait cover coverColor bloom-frontMatter" data-page="required singleton" data-export="front-matter-cover" id="74731b2d-18b0-420f-ac96-6de20f659810">
+	<div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter" data-page="required singleton" data-export="front-matter-cover" id="74731b2d-18b0-420f-ac96-6de20f659810">
 	  <div lang="en" class="pageLabel">Front Cover</div>
 	  <div class="marginBox">
-		<div class="bloom-translationGroup coverTitle-style">
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bookTitle" data-book="bookTitle">
-			<label class="bubble">Book title in {lang}</label>
+		<div class="bloom-translationGroup">
+		  <label class="bubble">Book title in {lang}</label>
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bookTitle coverTitle-style" data-book="bookTitle">
 		  </div>
 		</div>
-		<div class="bloom-imageContainer"><img src="placeholder.png" data-book="coverImage"/></div>
+		<div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/></div>
 		<div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits cover-credits-style" data-book="smallCoverCredits">
 		  <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
 		</div>
 		<div class="coverBottomLangName">
 		  <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
 		</div>
-		<div class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
-		  <label data-functionOnHintClick="ShowTopicChooser()" class="bubble">Click to choose topic</label>
+		<div data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
 		  <div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
 		</div>
 	  </div>
 	</div>
 	<!-- Inside Front Cover CREDITS PAGE-->
-	<div class="bloom-page A5Portrait cover coverColor bloom-frontMatter verso" data-page="required singleton" data-export="front-matter-credits" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
+	<div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter verso" data-page="required singleton" data-export="front-matter-credits" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
 	  <div lang="en" class="pageLabel">Credits Page</div>
 	  <div class="marginBox">
 		<div class="bloom-translationGroup originalAcknowledgments">
-		  <label class="placeholder">Original (or Shell) Acknowledgments</label>
 		  <label class="bubble">Original (or Shell) Acknowledgments in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary inside-cover-original-acknowledments-style" data-book="originalAcknowledgments">{Original Acknowledgments}
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary inside-cover-original-acknowledgments-style" data-book="originalAcknowledgments">{Original Acknowledgments}
 		  </div>
 		</div>
 		<div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" id="versoLicenseAndCopyright" class="bloom-metaData">
@@ -52,17 +50,17 @@
 		  <div data-book="ISBN" lang="*" class="bloom-editable"></div>
 		</div>
 		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.-->
-		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments inside-cover-version-aknowledgments-style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
+		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments inside-cover-version-acknowledgments-style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
 		</div>
 	  </div>
 	</div>
 	<!-- TITLE PAGE-->
-	<div class="bloom-page A5Portrait titlePage bloom-frontMatter bloom-startPageNumbering" data-page="required singleton" data-export="front-matter-title-page" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
+	<div class="A5Portrait bloom-page titlePage bloom-frontMatter bloom-startPageNumbering" data-page="required singleton" data-export="front-matter-title-page" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
 	  <div lang="en" class="pageLabel">Title Page</div>
 	  <div class="marginBox">
-		<div class="bloom-translationGroup" id="titePageTitleBlock">
+		<div class="bloom-translationGroup" id="titlePageTitleBlock">
 		  <label class="bubble">Book title in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable" data-book="bookTitle">
+		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable title-page-bookTitle-style" data-book="bookTitle">
 		  </div>
 		</div>
 		<div class="bloom-translationGroup" id="originalContributions">
@@ -93,7 +91,7 @@
 	  </div>
 	</div>
 	<!-- Inside Back Cover-->
-	<div class="bloom-page A5Portrait cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-inside-back-cover" id="502BE62F-A4D0-4225-A598-1A203FA73239">
+	<div class="A5Portrait bloom-page cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-inside-back-cover" id="502BE62F-A4D0-4225-A598-1A203FA73239">
 	  <div lang="en" class="pageLabel">Inside Back Cover</div>
 	  <div class="marginBox">
 		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable inside-back-cover-style" data-book="insideBackCover">
@@ -102,11 +100,11 @@
 	  </div>
 	</div>
 	<!-- Outside Back Cover-->
-	<div class="bloom-page A5Portrait cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-back-cover" id="6AB1D898-9E35-498E-99D4-132B46FAFDA4">
+	<div class="A5Portrait bloom-page cover coverColor outsideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-back-cover" id="6AB1D898-9E35-498E-99D4-132B46FAFDA4">
 	  <div lang="en" class="pageLabel">Outside Back Cover</div>
 	  <div class="marginBox">
 		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable outside-back-cover-style" data-book="outsideBackCover">
-		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."</label>
+		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
 		</div>
 	  </div>
 	</div>

@@ -32,7 +32,7 @@ namespace Bloom.Publish
 		public static void UpdateBook(HtmlDom dom, string language1Iso639Code)
 		{
 			int day = 0;
-			foreach (XmlElement pageDiv in dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement pageDiv in dom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
 			{
 				var term = pageDiv.SelectSingleNode("//div[contains(@data-book,'term')]").InnerText.Trim();
 				var week = pageDiv.SelectSingleNode("//div[contains(@data-book,'week')]").InnerText.Trim();

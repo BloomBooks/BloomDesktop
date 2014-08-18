@@ -43,7 +43,7 @@ namespace Bloom.Book
 		}
 
 
-		public override void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+		public override void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			callback(Resources.Error70x70);
 		}

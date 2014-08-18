@@ -19,6 +19,7 @@ using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
+using Palaso.UI.WindowsForms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -134,7 +135,7 @@ namespace Bloom.CollectionTab
 			{
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (Bloom.ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
@@ -186,9 +187,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
+		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			book.RebuildThumbNailAsync(callback,errorCallback);
+			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
 		}
 
 		public void MakeBloomPack(string path)
@@ -327,20 +328,31 @@ namespace Bloom.CollectionTab
 
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
-			var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
-
-			TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
-
-			if (_bookSelection != null)
+			try
 			{
-				_bookSelection.SelectBook(newBook);
+				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
+
+
+				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+
+				if (_bookSelection != null)
+				{
+					_bookSelection.SelectBook(newBook);
+				}
+				//enhance: would be nice to know if this is a new shell
+				if (sourceBook.IsShellOrTemplate)
+				{
+					Analytics.Track("Create Book",
+						new Dictionary<string, string>() {{"Category", sourceBook.CategoryForUsageReporting}});
+				}
+				_editBookCommand.Raise(newBook);
 			}
-			//enhance: would be nice to know if this is a new shell
-			if (sourceBook.IsShellOrTemplate)
+			catch (Exception e)
 			{
-				Analytics.Track("Create Book", new Dictionary<string, string>() { { "Category", sourceBook.CategoryForUsageReporting } });
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Bloom ran into an error while creating that book. (Sorry!)");
 			}
-			_editBookCommand.Raise(newBook);
+
 		}
 
 		public Book.Book GetBookFromBookInfo(BookInfo bookInfo)

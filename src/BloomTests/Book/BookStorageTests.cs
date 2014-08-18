@@ -167,26 +167,38 @@ namespace BloomTests.Book
 		/// so it seems to fit better here.
 		/// </summary>
 		[Test]
-		public void BringBookUpToDate_ConvertsTagsToJson()
+		public void BringBookUpToDate_ConvertsTagsToJsonWithExpectedDefaults()
 		{
 			var storage = GetInitialStorage();
-			var locator = (FileLocator)storage.GetFileLocator();
+			var locator = (FileLocator) storage.GetFileLocator();
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
 			var tagsPath = Path.Combine(folder, "tags.txt");
 			File.WriteAllText(tagsPath, "suitableForMakingShells\nexperimental\nfolio\n");
-			var collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
-				collectionSettings,
-				new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60 }).Object, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+			var collectionSettings =
+				new CollectionSettings(new NewCollectionSettings()
+				{
+					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
+					Language1Iso639Code = "xyz",
+					Language2Iso639Code = "en",
+					Language3Iso639Code = "fr"
+				});
+			using (var htmlThumbNailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator() }).Object)
+			{
+				var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
+					collectionSettings,
+					htmlThumbNailer, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 
-			book.BringBookUpToDate(new NullProgress());
+				book.BringBookUpToDate(new NullProgress());
 
-			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
-			Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.True);
-			Assert.That(storage.MetaData.IsFolio, Is.True);
-			Assert.That(storage.MetaData.IsExperimental, Is.True);
+				Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
+				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.True);
+				Assert.That(storage.MetaData.IsFolio, Is.True);
+				Assert.That(storage.MetaData.IsExperimental, Is.True);
+				Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
+				Assert.That(storage.MetaData.AllowUploading, Is.True);
+			}
 		}
 
 		[Test]

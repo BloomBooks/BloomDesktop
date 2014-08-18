@@ -1,0 +1,16 @@
+server: http://localhost:4224
+
+load:
+  - ../lib/jasmine/jasmine.js
+  - ../lib/jasmine/JasmineAdapter-1.1.2.js
+  - js/libsynphony/underscore_min_152.js
+  - js/libsynphony/xregexp-all-min.js
+  - js/libsynphony/synphony_lib.js
+  - js/libsynphony/bloom_xregexp_categories.js
+  - js/libsynphony/bloom_lib.js
+  - js/libsynphony/jquery.text-markup.js
+  - js/synphonyApi.js
+test:
+  - test/SynphonyApi.Test.js
+
+timeout: 90

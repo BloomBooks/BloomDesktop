@@ -68,7 +68,7 @@
             this._radioNormalVernacularCollection.Size = new System.Drawing.Size(212, 29);
             this._radioNormalVernacularCollection.TabIndex = 6;
             this._radioNormalVernacularCollection.TabStop = true;
-            this._radioNormalVernacularCollection.Text = "Vernacular Collection";
+            this._radioNormalVernacularCollection.Text = "Vernacular/Local Language Collection";
             this._radioNormalVernacularCollection.UseVisualStyleBackColor = true;
             this._radioNormalVernacularCollection.CheckedChanged += new System.EventHandler(this._radioNormalVernacularCollection_CheckedChanged);
             // 

@@ -40,10 +40,12 @@ _NCrunch*
 *.vsp
 build/xulrunner*
 build/Palaso.BuildTasks.dll
+build/MSBuild.*
 packages/*.*
 copy*.*
 Copy*.bat
 *.orig
+*.map
 *.ncrunchsolution
 Mercurial/
 Presentations/
@@ -58,16 +60,32 @@ lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 DistFiles/exiftool.exe
 Copy*.bat
-lib/wkhtmltopdf/*
+DistFiles/wkhtmltopdf/
+lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
-build/Palaso.BuildTasks.dll
+build/Palaso.BuildTasks.dll*
 lib/failed update of AeroWizard Modified for dotnet 4 client/*
+*.userprefs
+Downloads/
 Bloom Q&A SIL Literacy Oct 2013.pdf
 Locked Sample Uganda RTI P1 Primer/
 jasmine.d.ts
 connections.dll
 DistFiles/Bloom.chw
 DistFiles/Bloom.chm
-build\ChorusInstallerStuff\ChorusMergeModule.msm
-build\JohnsTestInstallerBuild.bat
+build/ChorusInstallerStuff/ChorusMergeModule.msm
+build/JohnsTestInstallerBuild.bat
+src/BloomBrowserUI/bookEdit/js/libsynphony/
+src/BloomBrowserUI/bookEdit/test/libsynphony/
+lib/dotnet/
+TestResult.xml
+DistFiles/pdf/
+nbproject/
+lib/wkhtmltopdf*.zip
+DistFiles/ReleaseNotes.html
+ReadMe_*.html
+B3.sln
+B2.sln
+node_modules/*
+*.usertasks
