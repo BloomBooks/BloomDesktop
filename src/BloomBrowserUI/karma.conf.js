@@ -15,6 +15,8 @@ module.exports = function (config) {
             'lib/jquery-1.10.1.js',
             'lib/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
+            'lib/jquery.qtip.js',
+            'lib/localizationManager.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',

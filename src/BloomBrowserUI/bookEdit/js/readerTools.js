@@ -423,7 +423,13 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 };
 
 ReaderToolsModel.prototype.getElementsToCheck = function() {
-    return $(".bloom-content1", parent.window.document.getElementById('page').contentWindow.document);
+
+    var page = parent.window.document.getElementById('page');
+    if (page)
+        return $(".bloom-content1", page.contentWindow.document);
+
+    // this happens during unit testing
+    return $(".bloom-content1");
 };
 
 /**
@@ -466,7 +472,11 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
             break;
     }
-    parent.window.document.getElementById('page').contentWindow.postMessage('Qtips', "*");
+
+    // the contentWindow is not available during unit testing
+    var page = parent.window.document.getElementById('page');
+    if (page)
+        page.contentWindow.postMessage('Qtips', "*");
 };
 
 ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
