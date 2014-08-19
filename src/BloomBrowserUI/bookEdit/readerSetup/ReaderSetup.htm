@@ -11,40 +11,35 @@
     <script src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
     <script src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
     <script src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
+    <script src="/bloom/lib/localizationManager.js"></script>
+    <script src="/bloom/lib/jquery.i18n.custom.js"></script>
     <script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
   </head>
   <body>
     <div id="dlstabs" class="ui-dialog ui-widget">
-      <div id="powered-by" class="smaller">Powered by&nbsp;<a href="http://call.canil.ca/">Synphony</a>, the Search Engine for Literacy.</div>
+      <div id="powered-by" class="smaller"><span data-i18n="ReaderSetup.PoweredBy">Powered by&nbsp;</span><a href="http://call.canil.ca/" data-i18n="ReaderSetup.Synphony">Synphony</a><span data-i18n="ReaderSetup.SearchEngine">, the Search Engine for Literacy.</span></div>
       <ul>
-        <li><a href="#dlstabs-1">Language</a></li>
-        <li><a href="#dlstabs-2">Decodable Stages</a></li>
-        <li><a href="#dlstabs-3">Reader Levels</a></li>
+        <li><a href="#dlstabs-1" data-i18n="ReaderSetup.Language">Language</a></li>
+        <li><a href="#dlstabs-2" data-i18n="ReaderSetup.DecodableStages">Decodable Stages</a></li>
+        <li><a href="#dlstabs-3" data-i18n="ReaderSetup.ReaderLevels">Reader Levels</a></li>
       </ul>
       <div id="dlstabs-1" class="reader-setup-tab">
         <div style="width: 200px" class="floating">
-          <label for="dls_letters">Letters</label><br>
-          <textarea id="dls_letters" style="height: 55px; width: 195px" class="book-font"></textarea>
-          <ul class="asterisk">
-            <li><span class="smaller">List letters and word-forming characters in alphabetic order.</span></li>
-            <li><span class="smaller">Separate by spaces</span><br><span class="smaller">E.g. "a b c d"</span></li>
-          </ul><br>
-          <label for="dls_letter_combinations">Letter Combinations (Graphemes)</label><br>
-          <textarea id="dls_letter_combinations" style="height: 55px; width: 195px" class="book-font"></textarea><br>
-          <ul class="asterisk">
-            <li><span class="smaller">Separate by spaces</span><br><span class="smaller">E.g. "ai oo sh ng th ing"</span></li>
-          </ul>
+          <label for="dls_letters" data-i18n="ReaderSetup.Letters">Letters</label><br>
+          <textarea id="dls_letters" style="height: 55px; width: 195px" class="book-font"></textarea><br><span data-i18n="ReaderSetup.LetterHelp" class="smaller">* List in alphabetic order<br>* Separate by spaces<br>E.g. "a b c d"</span><br><br>
+          <label for="dls_letter_combinations" data-i18n="ReaderSetup.Combinations">Letter Combinations (Graphemes)</label><br>
+          <textarea id="dls_letter_combinations" style="height: 55px; width: 195px" class="book-font"></textarea><br><span data-i18n="ReaderSetup.CombinationHelp" class="smaller">* Separate by spaces<br>E.g. "ai oo sh ng th ing"</span>
         </div>
         <div id="word-lists-div" class="floating">
-          <label for="dls_word_lists">Word Lists and Sample Texts</label><br>
-          <textarea id="dls_word_lists" style="height: 55px;" readonly></textarea><br><a id="open-text-folder" href="" class="smaller">Open the sample texts folder for this language.</a>
-          <p class="smaller">About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</p>
-          <p class="smaller">If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.</p>
-          <p class="smaller">Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</p>
-          <p class="smaller">Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</p>
+          <label for="dls_word_lists" data-i18n="ReaderSetup.SampleTexts">Word Lists and Sample Texts</label><br>
+          <textarea id="dls_word_lists" style="height: 55px;" readonly></textarea><br><a id="open-text-folder" href="" data-i18n="ReaderSetup.OpenSampleTexts" class="smaller">Open the sample texts folder for this language.</a>
+          <p data-i18n="ReaderSetup.AboutSampleTexts1" class="smaller">About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</p>
+          <p data-i18n="ReaderSetup.AboutSampleTexts2" class="smaller">If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.</p>
+          <p data-i18n="ReaderSetup.AboutSampleTexts2" class="smaller">Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</p>
+          <p data-i18n="ReaderSetup.AboutSampleTexts4" class="smaller">Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</p>
         </div>
         <div class="floating">
-          <label for="dls_more_words">More Words</label><br>
+          <label for="dls_more_words" data-i18n="ReaderSetup.MoreWords">More Words</label><br>
           <textarea id="dls_more_words" style="height: 328px; width: 100px" class="book-font"></textarea>
         </div>
       </div>
@@ -53,7 +48,7 @@
           <table>
             <tr>
               <td><img src="/bloom/images/keys.png"></td>
-              <td style="vertical-align: baseline;"><span style="margin: auto 0" class="rs-heading">Stages</span></td>
+              <td style="vertical-align: baseline;"><span style="margin: auto 0" data-i18n="ReaderSetup.Stages" class="rs-heading">Stages</span></td>
             </tr>
           </table>
         </div>
@@ -66,45 +61,45 @@
                   <thead>
                     <tr>
                       <th>
-                        <div>Stage</div>
+                        <div data-i18n="ReaderSetup.StageHeader">Stage</div>
                       </th>
                       <th style="min-width: 35px">
-                        <div>Letters</div>
+                        <div data-i18n="ReaderSetup.lettersHeader">Letters</div>
                       </th>
                       <th style="width: 100%">
-                        <div>Sight Words</div>
+                        <div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
                       </th>
                     </tr>
                   </thead>
                   <tbody></tbody>
                   <tfoot>
                     <tr>
-                      <td colspan="3"><a id="setup-add-stage" href="">Add Stage</a></td>
+                      <td colspan="3"><a id="setup-add-stage" href="" data-i18n="ReaderSetup.AddStage">Add Stage</a></td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
           </div>
-          <div style="float: left" class="smaller">Drag rows to reorder stages.</div>
-          <div style="float: right"><a id="setup-remove-stage" href="" class="blue-link smaller">Remove Stage&nbsp;<span id="remove-stage-number">1</span></a></div>
+          <div style="float: left" data-i18n="ReaderSetup.ReorderStages" class="smaller">Drag rows to reorder stages.</div>
+          <div style="float: right"><a id="setup-remove-stage" href="" data-i18n="ReaderSetup.RemoveStage" class="blue-link smaller">Remove Stage {0}</a></div>
         </div>
         <div id="stage-detail" class="floating tab-detail">
-          <div style="display: block; margin: 6px 10px"><span style="margin: auto 0" class="rs-subheading">Stage&nbsp;<span id="setup-stage-number" class="rs-subheading">1</span></span></div>
+          <div style="display: block; margin: 6px 10px"><span style="margin: auto 0" data-i18n="ReaderSetup.StageLabel" class="rs-subheading">Stage&nbsp;</span><span id="setup-stage-number" class="rs-subheading">1</span></div>
           <div id="setup-stage-letters-and-words" class="sub-float">
             <div style="width: 100%">
-              <label for="setup-stage-sight-words">New Sight Words</label>
-              <div style="float: right"><a id="define-sight-words" href="" class="smaller">What are sight words?</a></div>
+              <label for="setup-stage-sight-words" data-i18n="ReaderSetup.SightWordLabel">New Sight Words</label>
+              <div style="float: right"><a id="define-sight-words" href="" data-i18n="ReaderSetup.SightWordHelp" class="smaller">What are sight words?</a></div>
               <textarea id="setup-stage-sight-words" style="height: 35px; width: 100%; box-sizing:border-box;" class="book-font"></textarea>
             </div><br>
             <div style="display: block; margin-top: 12px;">
-              <label>Previous and New Letters</label>
+              <label data-i18n="ReaderSetup.SelectedLetters">Previous and New Letters</label>
             </div>
             <div id="setup-selected-letters" class="rs-letter-container"></div>
-            <div id="click-letters" style="float: left" class="smaller">Click on letters to add them to this stage.</div>
+            <div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
           </div>
           <div id="setup-stage-matching-words" class="sub-float">
-            <label style="white-space: nowrap;"><span id="setup-words-count">0</span><span>&nbsp;matching words</span></label>
+            <label style="white-space: nowrap;"><span id="setup-words-count">0</span><span data-i18n="ReaderSetup.MatchingWords">&nbsp;matching words</span></label>
             <div class="rs-word-container">
               <div id="rs-matching-words" style="margin-left: 8px"></div>
             </div>
@@ -116,7 +111,7 @@
           <table>
             <tr>
               <td><img src="/bloom/images/steps.png" height="32"></td>
-              <td style="vertical-align: baseline;"><span style="margin: auto 0" class="rs-heading">Reader Levels</span></td>
+              <td style="vertical-align: baseline;"><span style="margin: auto 0" data-i18n="ReaderSetup.Levels" class="rs-heading">Reader Levels</span></td>
             </tr>
           </table>
         </div>
@@ -129,19 +124,19 @@
                   <thead>
                     <tr>
                       <th style="width: 17%">
-                        <div>Level</div>
+                        <div data-i18n="ReaderSetup.LevelHeader">Level</div>
                       </th>
                       <th style="width: 24%">
-                        <div>Sentence</div>
+                        <div data-i18n="ReaderSetup.SentenceHeader">Sentence</div>
                       </th>
                       <th style="width: 17%">
-                        <div>Page</div>
+                        <div data-i18n="ReaderSetup.PageHeader">Page</div>
                       </th>
                       <th style="width: 17%">
-                        <div>Book</div>
+                        <div data-i18n="ReaderSetup.BookHeader">Book</div>
                       </th>
                       <th style="width: 25%">
-                        <div>Unique</div>
+                        <div data-i18n="ReaderSetup.UniqueHeader">Unique</div>
                       </th>
                       <th style="display: none"></th>
                     </tr>
@@ -149,25 +144,25 @@
                   <tbody></tbody>
                   <tfoot>
                     <tr>
-                      <td colspan="5"><a id="setup-add-level" href="">Add Level</a></td>
+                      <td colspan="5"><a id="setup-add-level" href="" data-i18n="ReaderSetup.AddLevel">Add Level</a></td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
           </div>
-          <div style="float: left" class="smaller">Drag rows to reorder levels.</div>
-          <div style="float: right"><a id="setup-remove-level" href="" class="blue-link smaller">Remove Level&nbsp;<span id="remove-level-number">1</span></a></div>
+          <div style="float: left" data-i18n="ReaderSetup.ReorderLevels" class="smaller">Drag rows to reorder levels.</div>
+          <div style="float: right"><a id="setup-remove-level" href="" data-i18n="ReaderSetup.RemoveLevel" class="blue-link smaller">Remove Level {0}</a></div>
         </div>
         <div id="level-detail" class="floating tab-detail">
-          <div style="display: block; margin: 0 10px 6px"><span style="margin: auto 0" class="rs-subheading">Level&nbsp;<span id="setup-level-number" class="rs-subheading">1</span></span></div>
+          <div style="display: block; margin: 0 10px 6px"><span style="margin: auto 0" data-i18n="ReaderSetup.LevelLabel" class="rs-subheading">Level&nbsp;</span><span id="setup-level-number" class="rs-subheading">1</span></div>
           <table>
             <tr>
               <td>
                 <input id="use-words-per-sentence" type="checkbox" class="level-checkbox">
               </td>
               <td style="padding-left: 0">
-                <label for="use-words-per-sentence">Maximum Words in each Sentence</label>
+                <label for="use-words-per-sentence" data-i18n="ReaderSetup.SentenceMaxWords">Maximum Words in each Sentence</label>
               </td>
               <td>
                 <input id="max-words-per-sentence" type="text" class="level-textbox">
@@ -178,7 +173,7 @@
                 <input id="use-words-per-page" type="checkbox" class="level-checkbox">
               </td>
               <td>
-                <label for="use-words-per-page">Maximum Words on each Page</label>
+                <label for="use-words-per-page" data-i18n="ReaderSetup.PageMaxWords">Maximum Words on each Page</label>
               </td>
               <td>
                 <input id="max-words-per-page" type="text" class="level-textbox">
@@ -189,7 +184,7 @@
                 <input id="use-words-per-book" type="checkbox" class="level-checkbox">
               </td>
               <td>
-                <label for="use-words-per-book">Maximum Words per Book</label>
+                <label for="use-words-per-book" data-i18n="ReaderSetup.BookMaxWords">Maximum Words per Book</label>
               </td>
               <td>
                 <input id="max-words-per-book" type="text" class="level-textbox">
@@ -200,7 +195,7 @@
                 <input id="use-unique-words-per-book" type="checkbox" class="level-checkbox">
               </td>
               <td>
-                <label for="use-unique-words-per-book">Maximum Unique Words per Book</label>
+                <label for="use-unique-words-per-book" data-i18n="ReaderSetup.MaxUniqueWords">Maximum Unique Words per Book</label>
               </td>
               <td>
                 <input id="max-unique-words-per-book" type="text" class="level-textbox">
@@ -208,7 +203,7 @@
             </tr>
           </table>
           <div id="things-to-remember-container">
-            <label for="things-to-remember">Things to remember for this level:</label>
+            <label for="things-to-remember" data-i18n="ReaderSetup.ToRemember">Things to remember for this level:</label>
             <ul id="things-to-remember">
               <li contenteditable="true"></li>
             </ul>

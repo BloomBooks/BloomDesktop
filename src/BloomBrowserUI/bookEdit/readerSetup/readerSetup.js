@@ -211,7 +211,7 @@ function selectStage(tr) {
 
     var currentStage = tr.cells[0].innerHTML;
     document.getElementById('setup-stage-number').innerHTML = currentStage;
-    document.getElementById('remove-stage-number').innerHTML = currentStage;
+    document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
     document.getElementById('setup-stage-sight-words').value = tr.cells[2].innerHTML;
 
     $('#stages-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
@@ -393,24 +393,31 @@ function renumberRows(rows) {
  * Called to update the stage numbers on the screen after rows are reordered.
  */
 function updateStageNumbers() {
-    updateNumbers('stages-table', 'setup-stage-number', 'remove-stage-number');
+    updateNumbers('stages-table');
 }
 
 /**
  * Called to update the level numbers on the screen after rows are reordered.
  */
 function updateLevelNumbers() {
-    updateNumbers('levels-table', 'setup-level-number', 'remove-level-number');
+    updateNumbers('levels-table');
 }
 
-function updateNumbers(tableId, setupNumberId, removeNumberId) {
+function updateNumbers(tableId) {
     var tbody = $('#' + tableId).find('tbody');
     var rows = tbody.find('tr');
     renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
-    $('#' + setupNumberId).innerHTML = currentStage;
-    $('#' + removeNumberId).innerHTML = currentStage;
+
+    if (tableId === 'levels-table') {
+        document.getElementById('setup-level-number').innerHTML = currentStage;
+        document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentStage);
+    }
+    else {
+        document.getElementById('setup-stage-number').innerHTML = currentStage;
+        document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
+    }
 }
 
 function displayWordsForSelectedStage(wordsStr) {
@@ -505,9 +512,9 @@ function selectLevel(tr) {
 
     if (tr.classList.contains('selected')) return;
 
-    var currentStage = tr.cells[0].innerHTML;
-    document.getElementById('setup-level-number').innerHTML = currentStage;
-    document.getElementById('remove-level-number').innerHTML = currentStage;
+    var currentLevel = tr.cells[0].innerHTML;
+    document.getElementById('setup-level-number').innerHTML = currentLevel;
+    document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentLevel);
 
     $('#levels-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
     $(tr).removeClass('linked').addClass('selected');
@@ -685,4 +692,5 @@ $(document).ready(function () {
     accordionWindow().postMessage('Texts', '*');
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
     $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
+    $('body').find('*[data-i18n]').localize();
 });
