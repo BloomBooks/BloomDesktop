@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -161,7 +162,8 @@ namespace BloomTemp
 			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
 
 			// Enhance JohnT: no reason to go to disk for this intermediate version.
-			using (var writer = XmlWriter.Create(temp.Path, settings))
+			var sb = new StringBuilder();
+			using (var writer = XmlWriter.Create(sb, settings))
 			{
 				dom.WriteContentTo(writer);
 				writer.Close();
@@ -173,7 +175,7 @@ namespace BloomTemp
 			// There are probably more elements than these two which may not be empty. However we can't just use [^ ]* in place of title|div
 			// because there are some elements that never have content like <br /> which should NOT be converted.
 			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
-			string xhtml = File.ReadAllText(temp.Path);
+			string xhtml = sb.ToString();
 			var re = new Regex("<(title|div) />");
 			xhtml = re.Replace(xhtml, "<$1></$1>");
 			//now insert the non-xml-ish <!doctype html>

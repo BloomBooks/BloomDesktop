@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
-using Palaso.Extensions;
 using Palaso.UI.WindowsForms.Extensions;
 
 namespace Bloom
@@ -40,7 +39,7 @@ namespace Bloom
 					_browser.Visible = !string.IsNullOrEmpty(_html);
 					var htmlColor = ColorTranslator.ToHtml(ForeColor);
 					if(_browser.Visible)
-						_browser.LoadHtml("<span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span>");
+						_browser.LoadHtml("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body><span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span></body></html>");
 				}
 			}
 		}
