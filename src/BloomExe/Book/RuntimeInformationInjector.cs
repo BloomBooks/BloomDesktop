@@ -87,6 +87,21 @@ namespace Bloom.Book
 
 		private static void MakePageLabelLocalizable(HtmlDom singlePageHtmlDom, Dictionary<string, string> d)
 		{
+			/*
+			 * It was done with standard jquery i18n, using the English string as the key. Since it
+			 * changed that string to some other language, and we then saved that, we lose the key.
+			 * That meant that once localized into something other than English, the page was stuck
+			 * in that language forever, as we have no capacity to translate, say, from Italian to
+			 * English. We only go one direction. So it became impossible to go back to English or any other language.
+			 *
+			 * The other problem this caused was that the L10NSharp code would now see the other language text and
+			 * would add that to the English TMX file.
+			 *
+			 * What will the solution be? Ideas:
+			 * 1) Just hide the English on the theory that this isn't a required feature but English might offend
+			 * 2) Display:none the English, and show a temporary string of the translated item somehow in its place
+			 * 3) Preserve the english in another attribute and replace it when it's time to save, in bloomEditing.js:Cleanup()
+
 			var pageElement = singlePageHtmlDom.RawDom.SelectSingleNode("//div") as XmlElement;
 			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[contains(@class, 'pageLabel')]"))
 			{
@@ -97,7 +112,7 @@ namespace Bloom.Book
 				if (!element.HasAttribute("data-i18n"))
 					element.SetAttribute("data-i18n", key);
 			}
-
+			*/
 		}
 
 		private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
