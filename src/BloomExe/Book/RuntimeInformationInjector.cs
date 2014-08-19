@@ -117,6 +117,7 @@ namespace Bloom.Book
 
 		private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
 		{
+			SafelyAddLanguage(d, "en", "English");
 			SafelyAddLanguage(d, "ha", "Hausa");
 			SafelyAddLanguage(d, "hi", "Hindi");
 			SafelyAddLanguage(d, "es", "Spanish");
@@ -190,7 +191,10 @@ namespace Bloom.Book
 		private static void AddTranslationToDictionary(Dictionary<string, string> d, string key, string defaultText)  {
 
 			var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
-			if (!d.ContainsKey(key)) d.Add(key, translation);
+			if (!d.ContainsKey(key))
+			{
+				d.Add(key, translation);
+			}
 		}
 
 		/// <summary>
