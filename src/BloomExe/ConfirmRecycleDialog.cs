@@ -18,6 +18,9 @@ namespace Bloom
 		public ConfirmRecycleDialog(string labelForThingBeingDeleted) : this()
 		{
 			LabelForThingBeingDeleted = labelForThingBeingDeleted.Trim();
+
+			//Note: This receives an already-localized labelForThingBeingDeleted; e.g. LibraryModel.DeleteBook() also does some of the localization.
+
 			_messageLabel.Text = string.Format(_messageLabel.Text, LabelForThingBeingDeleted);
 
 			// Sometimes, setting the text in the previous line will force the table layout control
